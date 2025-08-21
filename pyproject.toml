@@ -1,0 +1,208 @@
+[build-system]
+requires = ["hatchling>=1.4", "jupyter_client>=8"]
+build-backend = "hatchling.build"
+
+[project]
+name = "async-kernel"
+
+dynamic = ["version"]
+authors = [{name = "", email = "ipython-dev@python.org"}]
+license = {file = "LICENSE"}
+readme = "README.md"
+description = "A python kernel for Jupyter running inside an anyio (asyncio or trio) event loop."
+keywords = ["Interactive", "Interpreter", "Shell", "Web", "Jupyter"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "ipython>=9.4",
+    "comm>=0.2.2",
+    "traitlets>=5.14.3",
+    "jupyter_client>=8.6.3",
+    "pyzmq>=26.0",
+    "anyio>=4.8.0,<5.0.0",
+    "typing_extensions>=4.14.1",
+    "sniffio",
+    "matplotlib-inline>=0.1"
+]
+
+[project.urls]
+Homepage = "https://fleming79.github.io/async-kernel"
+Documentation = "https://fleming79.github.io/async-kernel"
+Source = "https://github.com/fleming79/async-kernel"
+Tracker = "https://github.com/fleming79/async-kernel/issues"
+
+[project.scripts]
+async-kernel = "async_kernel.command:command_line"
+
+[dependency-groups]
+docs = ["mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-jupyter",
+    "mkdocs-open-in-new-tab",
+    "mkdocs-git-revision-date-localized-plugin",
+    "jupyterlab",
+    "ipywidgets",
+    "pandas"
+]
+dev = [
+    "debugpy",
+    "ruff",
+    "hatch",
+    "pre-commit",
+    "pytest-cov",
+    "pytest-timeout",
+    "pytest-mock",
+    "pytest-retry",
+    "pytest>=8.4,<9",
+    "matplotlib",
+    "trio",
+    "basedpyright>=1.31.1",
+]
+cov = [
+  "coverage[toml]",
+  "pytest-cov",
+  "matplotlib",
+  "trio",
+]
+
+[tool.hatch.version]
+path = "src/async_kernel/_version.py"
+
+# Used to call hatch_build.py
+[tool.hatch.build.hooks.custom]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"data_kernelspec" = "share/jupyter/kernels"
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+xfail_strict = true
+log_cli_level =  "INFO"
+addopts = [
+  "-raXs", "--durations=10", "--color=yes", "--doctest-modules",
+   "--showlocals", "--strict-markers", "--strict-config",
+  "-s",
+]
+testpaths = ["tests"]
+
+filterwarnings= []
+
+[tool.coverage.report]
+exclude_lines = [
+  "def __repr__",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "class .*\bProtocol\\):",
+  "@(abc\\.)?abstractmethod",
+  "except .*",
+  "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
+  ".*sys.platform == \"win32\".*"
+]
+
+[tool.coverage.run]
+parallel = true
+relative_files = true
+source = ["async_kernel"]
+omit = ["tests/*", "hatch_build.py"]
+
+[tool.ruff]
+required-version = ">=0.12.8"
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+  "B",        # flake8-bugbear
+  "I",        # isort
+  "F",        # Pyflakes
+  "ARG",      # flake8-unused-arguments
+  "C4",       # flake8-comprehensions
+  "EM",       # flake8-errmsg
+  "ICN",      # flake8-import-conventions
+  "G",        # flake8-logging-format
+  "PERF",     # Perflint
+  "PGH",      # pygrep-hooks
+  "PIE",      # flake8-pie
+  "PL",       # pylint
+  "PLR",      # Refactor
+  "PT",       # flake8-pytest-style
+  "PTH",      # flake8-use-pathlib
+  "RET",      # flake8-return
+  "RUF",      # Ruff-specific
+  "SIM",      # flake8-simplify
+  "T20",      # flake8-print
+  "TRY",      # tryceratops
+  "FURB",     # Refurb
+  "UP",       # pyupgrade
+  "YTT",      # flake8-2020
+  "EXE",      # flake8-executable
+  "NPY",      # NumPy specific rules
+  "PD",       # pandas-vet
+  "PYI",      # flake8-pyi
+  "TC",       # flake8-type-checking
+]
+ignore = [
+  "PLR",    # Design related pylint codes
+  "B027", # Allow non-abstract empty methods in abstract base classes
+  "T201", # `print` found
+  "SIM105", # Use `contextlib.suppress(ValueError)` instead of try-except-pass
+  "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+  "ARG001", # Unused function argument
+  "ARG002",  # Unused method argument
+  "PTH123", # `open()` should be replaced by `Path.open()`
+  "UP031", # Use format specifiers instead of percent format
+  "PT023", # Use `@pytest.mark.skip` over `@pytest.mark.skip()`
+]
+
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["PLC0415"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.interrogate]
+ignore-init-module=true
+ignore-private=true
+ignore-semiprivate=true
+ignore-property-decorators=true
+ignore-nested-functions=true
+ignore-nested-classes=true
+fail-under=95
+exclude = ["docs", "tests"]
+
+[tool.check-wheel-contents]
+toplevel = ["async_kernel/"]
+ignore = ["W002"]
+
+[tool.repo-review.ignore]
+PC140 = "doesn't detect basedpyright as a typechecker" # Use a type checker
+MY = "Not using mypy yet" # Skip all MyPy
+RTD100 = "Using mkdocs not read the docs"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.basedpyright]
+include = ['src/**', 'tests/**']
+reportMissingParameterType = false
+reportExplicitAny = false
+reportUnknownParameterType = false
+reportUnannotatedClassAttribute = false
+reportMissingTypeArgument  = false
+reportMissingImports = false
+reportUnusedCallResult  = false
+reportUninitializedInstanceVariable = false
+reportUnknownVariableType = false
+reportAny = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportImportCycles = false
+reportMissingTypeStubs = false
+reportUnusedParameter = false
