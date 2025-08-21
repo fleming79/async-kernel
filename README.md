@@ -13,7 +13,7 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
 
 - Concurrent message handling
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
-- Configurable backend - "asyncio" (default) or "trio backend" [^config-backend]
+- Configurable backend - "asyncio" (default) or "trio backend"
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell) provides:
     - code execution
     - magic
@@ -28,7 +28,7 @@ pip install async-kernel
 
 ### Trio
 
-To add a kernel spec for `trio`[^config-backend].
+To add a kernel spec for `trio`.
 
 ```shell
 pip install trio
@@ -45,7 +45,4 @@ async-kernel -a async-trio
 Async kernel started from [IPyKernel](https://github.com/ipython/ipykernel) with
 the initial idea of running execute requests outside of the message loop.
 
-We thank the original contributors of IPyKernel that made Async kernel possible.
-
-[^config-backend]: The default backend is 'asyncio'. To add a 'trio' backend,
-    define a KernelSpec with a kernel name that includes trio in it.
+We acknowledge the work of the original contributors to IPyKernel that has made Async kernel possible.
