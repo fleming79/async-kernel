@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import logging
 import pathlib
+import sys
 import threading
 import time
 from typing import TYPE_CHECKING, Literal, cast
@@ -10,7 +11,6 @@ from typing import TYPE_CHECKING, Literal, cast
 import anyio
 import pytest
 import zmq
-from py import sys
 
 import async_kernel.utils
 from async_kernel.caller import Caller
@@ -26,16 +26,13 @@ if TYPE_CHECKING:
 from async_kernel.kernel import bind_socket
 
 
-@pytest.fixture(scope="module", params=["tcp", "ipc"])
+@pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
 def transport(request):
     return request.param
 
 
 @pytest.mark.flaky
 def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
-    if sys.platform != "linux":
-        pytest.skip("transport='ipc' not supported.")
-
     ctx = zmq.Context()
     ip = tmp_path / "mypath" if transport == "ipc" else "0.0.0.0"
     with ctx:
