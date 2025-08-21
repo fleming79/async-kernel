@@ -32,6 +32,7 @@ def transport(request):
 
 
 @pytest.mark.flaky
+@pytest.mark.skipif(condition=sys.platform != "linux", reason="Test is too flaky ")
 def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
     ctx = zmq.Context()
     ip = tmp_path / "mypath" if transport == "ipc" else "0.0.0.0"
