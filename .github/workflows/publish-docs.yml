@@ -1,10 +1,14 @@
 name: Publish docs
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
 permissions:
   contents: write
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -25,7 +29,7 @@ jobs:
       - name: Install the project
         run: |
           uv sync --group docs
-          uv run async-kernel -a async-docs --cell_execute_timeout 0.1
+          uv run async-kernel -a async-docs --shell.execute_request_timeout 0.1
           echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:

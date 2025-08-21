@@ -6,7 +6,17 @@ on:
     branches:
       - main
 jobs:
+  pre-commit:
+    name: Pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: pre-commit/action@v3.0.1
   test:
+    needs: pre-commit
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,6 +45,7 @@ jobs:
         run: uv run basedpyright
 
   coverage:
+    needs: pre-commit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,14 +58,3 @@ jobs:
       - name: Run tests with coverage
         timeout-minutes: 5
         run: uv run pytest -vv --cov --cov-fail-under=100
-
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.x
-      - uses: pre-commit/action@v3.0.1
-      - uses: pre-commit-ci/lite-action@v1.1.0
-        if: always()

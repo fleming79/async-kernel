@@ -160,7 +160,7 @@ class LanguageInfo(Reference):
 class KernelInfoReply(Reply):
     protocol_version = Version(min="5.4")
     implementation = Unicode("async_kernel")
-    implementation_version = Version(min="0.1b0")
+    implementation_version = Version(min="0.0")
     language_info = Dict()
     banner = Unicode()
 
