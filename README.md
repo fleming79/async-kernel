@@ -42,12 +42,10 @@ async-kernel -a async-trio
 
 ## Origin
 
-Async kernel started from [IPyKernel](https://github.com/ipython/ipykernel).
-It has almost been totally rewritten to make it easier to maintain and it
-is can now handle concurrent messaging.
+Async kernel started from [IPyKernel](https://github.com/ipython/ipykernel) with
+the initial idea of running execute requests outside of the message loop.
 
 We thank the original contributors of IPyKernel that made Async kernel possible.
 
-See also [Changelog - origin](CHANGELOG.md#origin).
-
-[^config-backend]: The default backend is 'asyncio'. To add a 'trio' backend, define a KernelSpec with a kernel name that includes trio in it.
+[^config-backend]: The default backend is 'asyncio'. To add a 'trio' backend,
+    define a KernelSpec with a kernel name that includes trio in it.

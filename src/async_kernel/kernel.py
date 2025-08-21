@@ -212,7 +212,7 @@ class Kernel(ConnectionFileMixin):
 
             This is a convenient way to start a kernel for debugging.
 
-    Origins: [IPyKernel Kernel][ipykernel.kernelbase.Kernel], [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp] &  [IPyKernel IPythonKernel][ipykernel.kernelapp.IPythonKernel]
+    Origins: [IPyKernel Kernel][ipykernel.kernelbase.Kernel], [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp] &  [IPyKernel IPythonKernel][ipykernel.ipkernel.IPythonKernel]
     """
 
     _instance: Self | None = None
