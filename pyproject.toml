@@ -83,6 +83,8 @@ version-file = "_version.py"
 [tool.hatch.build.targets.wheel.shared-data]
 "data_kernelspec" = "share/jupyter/kernels"
 
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
