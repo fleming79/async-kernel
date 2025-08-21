@@ -36,7 +36,8 @@ from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CaselessStrEnum, CBool, Container, Dict, Instance, Int, Set, Tuple, UseEnum, default
 from zmq import Context, Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
-from async_kernel import Caller, _version, utils
+import async_kernel
+from async_kernel import Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell
 from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
@@ -211,7 +212,7 @@ class Kernel(ConnectionFileMixin):
 
             This is a convenient way to start a kernel for debugging.
 
-    Origins: [IPyKernel Kernel][ipykernel.kernelbase.Kernel], [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp] &  [IPyKernel IPythonKernel][ipykernel.kernelapp.IPythonKernel]
+    Origins: [IPyKernel Kernel][ipykernel.kernelbase.Kernel], [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp] &  [IPyKernel IPythonKernel][ipykernel.ipkernel.IPythonKernel]
     """
 
     _instance: Self | None = None
@@ -274,10 +275,10 @@ class Kernel(ConnectionFileMixin):
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
         return {
-            "protocol_version": _version.kernel_protocol_version,
+            "protocol_version": async_kernel.kernel_protocol_version,
             "implementation": "async_kernel",
-            "implementation_version": _version.__version__,
-            "language_info": _version.language_info,
+            "implementation_version": async_kernel.__version__,
+            "language_info": async_kernel.kernel_protocol_version_info,
             "banner": self.shell.banner,
             "help_links": self.help_links,
             "debugger": not utils.LAUNCHED_BY_DEBUGPY,

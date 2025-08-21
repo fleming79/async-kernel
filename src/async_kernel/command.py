@@ -15,6 +15,7 @@ from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import Backend, KernelName, get_kernel_dir, write_kernel_spec
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
     from pathlib import Path
 
     __all__ = ["command_line", "setattr_nested"]
@@ -47,7 +48,7 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> None:
             setattr(obj, name, eval(value))
 
 
-def command_line(wait_exit_context=anyio.sleep_forever) -> None:
+def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_forever) -> None:
     """Parses command-line arguments to manage and start kernels.
 
     This function uses `argparse` to handle command-line arguments for

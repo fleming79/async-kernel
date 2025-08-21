@@ -92,6 +92,7 @@ plugins:
           inventories:
             - https://docs.python.org/3/objects.inv
             - https://ipython.readthedocs.io/en/stable/objects.inv
+            - https://ipykernel.readthedocs.io/en/stable/objects.inv
           options:
             docstring_options:
               ignore_init_summary: true
@@ -160,13 +161,14 @@ nav:
   - Reference:
       - reference/index.md
       - reference/caller.md
-      - reference/main.md
+      - reference/command.md
       - reference/kernel.md
       - reference/asyncshell.md
       - reference/typing.md
       - reference/utils.md
 
   - About:
-      - Contributing: contributing.md
-      - Changelog: changelog.md
-      - License: license.md
+      - about/index.md
+      - Contributing: about/contributing.md
+      - Changelog: about/changelog.md
+      - License: about/license.md
