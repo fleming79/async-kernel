@@ -1,26 +1,28 @@
-name: Publish docs
+name: Generate changelog
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: "Version tag"
         default: "v.0.1-rc0"
-  push:
 
 jobs:
-  generate_changelog:
+  changelog:
+    name: Generate changelog
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Generate a changelog
-        uses: orhun/git-cliff-action@v3
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
-          args: --verbose --tag ${{ github.event.inputs.tag }}
+          args: --verbose
         env:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
