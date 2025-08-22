@@ -30,15 +30,17 @@ jobs:
 
       - name: Commit
         run: |
+          set +e
+          git branch -D changelog
           git checkout -b changelog
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          set +e
           git add CHANGELOG.md
           git commit -m "Update changelog"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git <branch>
 
       - name: Create pull request
         # ref: https://cli.github.com/manual/gh_pr_create
-        run: gh pr create --head fleming79:changelog --title "Update changelog" --body "Created by git cliff running in enerate_changelog Github action"
+        run: gh pr create --head changelog --title 'Update changelog' --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
