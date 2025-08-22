@@ -30,7 +30,7 @@ jobs:
 
       - name: Commit
         run: |
-          git checkout main -b changelog
+          git checkout -b changelog
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           set +e
