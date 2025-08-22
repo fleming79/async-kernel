@@ -62,10 +62,6 @@ jobs:
     permissions:
       id-token: write # IMPORTANT: mandatory for trusted publishing
 
-    env:
-      # Use non-local-version (distance from last tag) https://setuptools-scm.readthedocs.io/en/latest/integrations/#configuration-details
-      SETUPTOOLS_SCM_OVERRIDES_FOR_ASYNC_KERNEL: '{"local_scheme": "no-local-version"}'
-
     steps:
       - name: Download all the dists
         uses: actions/download-artifact@v5
