@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,10 +30,18 @@ jobs:
 
       - name: Commit
         run: |
+          set +e
           git checkout main
+          git branch -D changelog
+          git checkout -b changelog
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          set +e
           git add CHANGELOG.md
           git commit -m "Update changelog"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git changelog
+
+      - name: Create pull request
+        # ref: https://cli.github.com/manual/gh_pr_create
+        run: gh pr create --head changelog --title 'Update changelog' --body 'Changlog by git-cliff. PR by Github action.'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
