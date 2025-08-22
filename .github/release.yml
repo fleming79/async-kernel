@@ -1,0 +1,23 @@
+changelog:
+  exclude:
+    authors:
+      - dependabot
+      - pre-commit-ci
+  categories:
+    - title: New features added
+      labels:
+        - feature
+        - enhancement
+    - title: Bug fixes
+      labels:
+        - bug
+    - title: Maintenance
+      labels:
+        - maintenance
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Breaking Changes
+      labels:
+        - Semver-Major
+        - breaking-change
