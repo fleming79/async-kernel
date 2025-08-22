@@ -13,7 +13,7 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
 
 - Concurrent message handling
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
-- Configurable backend - "asyncio" (default) or "trio backend"
+- Configurable backend - "asyncio" (default) or "trio backend" [^config-backend]
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell) provides:
     - code execution
     - magic
@@ -42,7 +42,7 @@ async-kernel -a async-trio
 
 ## Origin
 
-Async kernel started from [IPyKernel](https://github.com/ipython/ipykernel) with
+Async kernel started as a fork ([commit id = `#8322a7684b004ee95f07b2f86f61e28146a5996d`](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)) of [IPyKernel](https://github.com/ipython/ipykernel) with
 the initial idea of running execute requests outside of the message loop.
 
-We acknowledge the work of the original contributors to IPyKernel that has made Async kernel possible.
+We thank the original contributors of IPyKernel that made Async kernel possible.

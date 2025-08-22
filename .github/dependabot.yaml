@@ -9,3 +9,8 @@ updates:
       actions:
         patterns:
           - "*"
+  # https://docs.astral.sh/uv/guides/integration/dependency-bots/#dependabot
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
