@@ -30,7 +30,7 @@ jobs:
 
       - name: Commit
         run: |
-          git checkout main
+          git checkout main -b changelog
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           set +e
@@ -39,6 +39,6 @@ jobs:
 
       - name: Create pull request
         # ref: https://cli.github.com/manual/gh_pr_create
-        run: gh pr create --head --title 'Update changelog' --body 'Created by Github action'
+        run: gh pr create --title "Update changelog" --body "Created by git cliff running in enerate_changelog Github action"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
