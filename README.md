@@ -42,7 +42,5 @@ async-kernel -a async-trio
 
 ## Origin
 
-Async kernel started as a fork ([commit id = `#8322a7684b004ee95f07b2f86f61e28146a5996d`](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)) of [IPyKernel](https://github.com/ipython/ipykernel) with
-the initial idea of running execute requests outside of the message loop.
-
-We thank the original contributors of IPyKernel that made Async kernel possible.
+Async kernel started as a [fork](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)
+of [IPyKernel](https://github.com/ipython/ipykernel). Thank you to the original contributors of IPyKernel that made Async kernel possible.
