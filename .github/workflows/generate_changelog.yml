@@ -1,16 +1,12 @@
 name: Generate changelog
-# Use this workflow to create a PR that is tagged with the new release version.
-# Usage:
-# 1. Actions -> Generate changelog-> Run workflow -> set the version tag.
-# 2. Pull request -> Update changelog
-# This workflow always generates the changelog for the main branch and always force pushes to the changelog branch.
-# If there is an error with tag already exists, confirm the tag is the one you and delete the tag manually and try again.
+# Use this workflow to create a PR that is tagged with the new release version version.
+# See contributing.md for further detail.
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: "Version tag"
-        default: "0.1.0-rc0"
+        default: "v0.1.0-rc0"
 
 jobs:
   changelog:
@@ -38,10 +34,9 @@ jobs:
           git branch -D changelog
           set -e
           git checkout -b changelog
-          git tag ${{ github.event.inputs.tag}}
-          uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }}
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.tag}}
+          git config user.name ${{github.triggering_actor}}
+          git config user.email ''
           git add CHANGELOG.md
           git commit -m "Update changelog"
           git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git changelog -f --tags
