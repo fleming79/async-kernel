@@ -28,7 +28,7 @@ jobs:
         with:
           version: "latest"
 
-      - name: Generate changelog and update template
+      - name: Generate changelog
         timeout-minutes: 5
         run: |
           git checkout -b release-${{ github.event.inputs.release_version}}
