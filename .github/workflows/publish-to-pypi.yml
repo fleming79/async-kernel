@@ -1,11 +1,11 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 # ref: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 on:
+  workflow_dispatch:
   push:
     branches:
-      - main
-  release:
-    types: [published]
+      - "main"
+
 jobs:
   build:
     name: Build distribution 📦
@@ -17,8 +17,7 @@ jobs:
           persist-credentials: false
           # Fetch full history for setuptools-scm
           fetch-depth: 0
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v6
       - name: Build a binary wheel and a source tarball
         run: uv build
       - name: Store the distribution packages
@@ -30,7 +29,7 @@ jobs:
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
-    if: startsWith(github.ref, 'refs/tags/') # only publish to PyPI on tag pushes
+    if: startsWith(github.ref, 'refs/tags/v') # only publish to PyPI on tag pushes
     needs:
       - build
     runs-on: ubuntu-latest
