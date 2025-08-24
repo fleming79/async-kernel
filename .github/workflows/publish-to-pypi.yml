@@ -53,6 +53,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Create release on Github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create ${{needs.build.outputs.tag}} './dist#release' --notes-from-tag
 
   publish-to-testpypi:
