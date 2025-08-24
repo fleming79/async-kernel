@@ -17,6 +17,7 @@ jobs:
           persist-credentials: false
           # Fetch full history for setuptools-scm
           fetch-depth: 0
+          ref: main
       - uses: astral-sh/setup-uv@v6
       - name: Build a binary wheel and a source tarball
         run: uv build
@@ -35,7 +36,7 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
-    if: startsWith(needs.build.outputs.tag, 'v')
+    if: ${{startsWith(needs.build.outputs.tag, 'v')}}
     environment:
       name: pypi
       url: https://pypi.org/p/async-kernel
