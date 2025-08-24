@@ -1,9 +1,7 @@
 name: Sharing envs across jobs
 
 on:
-  push:
-    branches: ['master']
-
+  push
 env:
   one: onevalue
   two: twovalue
