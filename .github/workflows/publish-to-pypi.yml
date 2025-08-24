@@ -5,13 +5,12 @@ on:
   push:
     branches:
       - main
-env:
-  IS_RELEASE: ${{startsWith('$(git tag --points-at HEAD)', 'v')}}
 jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
-
+    outputs:
+      tag: ${{ steps.tag_info.outputs.tag }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -26,14 +25,17 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+      - id: tag_info
+        name: Tag info
+        run: echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
 
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
-    if: ${{github.env.IS_RELEASE}} # only publish to PyPI on tag pushes
     needs:
       - build
     runs-on: ubuntu-latest
+    if: startsWith(needs.build.outputs.tag, 'v')
     environment:
       name: pypi
       url: https://pypi.org/p/async-kernel
@@ -41,8 +43,6 @@ jobs:
       id-token: write # IMPORTANT: mandatory for trusted publishing
 
     steps:
-      - name: Check head has a tag
-        run: git tag --points-at HEAD | grep ^v # The current head must have a tag starting with v
       - name: Download all the dists
         uses: actions/download-artifact@v5
         with:
@@ -52,7 +52,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Create release on Github
-        run: gh release create $(git tag --points-at HEAD) './dist#release' --notes-from-tag
+        run: gh release create ${{needs.build.outputs.tag}} './dist#release' --notes-from-tag
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
