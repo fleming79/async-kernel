@@ -5,9 +5,11 @@ env:
   IS_RELEASE: true
 jobs:
   Explore-GitHub-Actions:
-    if: ${{ github.env.IS_RELEASE == 'true' }}
+    # if: ${{ github.env.IS_RELEASE == 'true' }}
     runs-on: ubuntu-latest
     steps:
+      - run: TEST =  123
+      - run: echo "test is $($TEST)"
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
