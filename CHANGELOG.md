@@ -5,22 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0-rc0] - 2025-08-22
+## [0.1.0-rc0] - 2025-08-24
 
 ### <!-- 1 --> 🚀 Features
+
 - Switch to vcs for versioning. [#2](https://github.com/fleming79/async-kernel/pull/2)
 
 ### <!-- 2 --> 🐛 Fixes
+
 - Use no-local-version in pyproject.toml instead. [#5](https://github.com/fleming79/async-kernel/pull/5)
+
 - Use no-local-version on ci. [#4](https://github.com/fleming79/async-kernel/pull/4)
 
 ### <!-- 5 --> 📝 Documentation
+
+- Revise workflow to work with tags that start with 'v'. No longer sets the tag when writing the changelog. [#16](https://github.com/fleming79/async-kernel/pull/16)
+ 
+
 - Revise changelog template. [#12](https://github.com/fleming79/async-kernel/pull/12)
+
 - Do changelog as PR instead of push to main. [#8](https://github.com/fleming79/async-kernel/pull/8)
+
 - Git cliff [#7](https://github.com/fleming79/async-kernel/pull/7)
+
 - Fix mkdocs publishing [#6](https://github.com/fleming79/async-kernel/pull/6)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+ 
+
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
 
