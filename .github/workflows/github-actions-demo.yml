@@ -5,7 +5,7 @@ env:
   IS_RELEASE: true
 jobs:
   Explore-GitHub-Actions:
-    if: ${{ env.IS_RELEASE == 'true' }}
+    if: ${{ github.env.IS_RELEASE == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -19,4 +19,4 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
-      - run: echo "Env.IS_RELEASE == ${{ env.IS_RELEASE }}.
+      - run: echo "Env.IS_RELEASE == ${{ github.env.IS_RELEASE }}.
