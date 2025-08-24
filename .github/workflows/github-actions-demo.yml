@@ -1,14 +1,13 @@
 name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
-env:
-  IS_RELEASE: true
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "IS_RELEASE=yes" >> $GITHUB_ENV
-      - run: echo "test is ${{ github.ref }}"
+      - run: git tag test
+      - run: echo "IS_RELEASE=startsWith('$(git tag --points-at HEAD)', 't'" >> $GITHUB_ENV
+      - run: echo "IS_RELEASE is ${{ env.IS_RELEASE }}"
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
