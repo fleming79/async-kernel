@@ -1,42 +1,36 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+name: Sharing envs across jobs
+
+on:
+  push:
+    branches: ['master']
+
+env:
+  one: onevalue
+  two: twovalue
+  three: threevalue
+
 jobs:
-  Explore-GitHub-Actions:
+  job0:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
-          # Fetch full history for setuptools-scm
-      - run: git tag v0.1.0-rc1
-      - name: List files in the repository
-        id: test
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
-      - run: env
-      - run: echo "TAG=$(git tag --points-at HEAD)" >> $GITHUB_ENV
-      - run: echo "env.TAG is ${{ env.TAG }}"
-      - run: echo "IS_RELEASE=${{startsWith(env.TAG,  'v')}}"  >> $GITHUB_ENV
-      - run: echo "env.IS_RELEASE is ${{ env.IS_RELEASE }}"
-      - run: echo "Is release=  ${{startsWith( github.env.TAG, 'v' )}}"
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
-  publish-to-pypi:
-    name: >-
-      Publish Python 🐍 distribution 📦 to PyPI
-    needs: Explore-GitHub-Actions
-    if: env.IS_RELEASE  == 'true'
+      - run: |
+          echo "${{ env.one }}"
+          echo "${{ env.two }}"
+          echo "${{ env.three }}"
+
+  job1:
     runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      output1: ${{ steps.step1.outputs.test }}
+      output2: ${{ steps.step2.outputs.test }}
     steps:
-      - run: echo "env.TAG is ${{ env.TAG }}"
+      - id: step1
+        run: echo "test=$(date +"%d-%m-%Y")-asdfads223" >> $GITHUB_OUTPUT
+      - id: step2
+        run: echo "test=world" >> $GITHUB_OUTPUT
+  job2:
+    runs-on: ubuntu-latest
+    needs: job1
+    steps:
+      - run: echo ${{needs.job1.outputs.output1}} ${{needs.job1.outputs.output2}}
