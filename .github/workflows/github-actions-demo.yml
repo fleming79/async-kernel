@@ -35,6 +35,7 @@ jobs:
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
+    needs: Explore-GitHub-Actions
     if: env.IS_RELEASE  == 'true'
     runs-on: ubuntu-latest
     steps:
