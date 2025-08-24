@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+env:
+  IS_RELEASE: ${{startsWith('$(git tag --points-at HEAD)', 'v')}}
 jobs:
   build:
     name: Build distribution 📦
@@ -28,7 +30,7 @@ jobs:
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
-    if: github.event_name == 'workflow_dispatch' # only publish to PyPI on tag pushes
+    if: ${{github.env.IS_RELEASE}} # only publish to PyPI on tag pushes
     needs:
       - build
     runs-on: ubuntu-latest

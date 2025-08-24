@@ -33,18 +33,19 @@ jobs:
         run: |
           git checkout -b release-${{ github.event.inputs.release_version}}
           uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}}
-          uvx git-cliff --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}} --latest >> release_notes_template.md
+          uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}} --latest
 
           git config user.name ${{github.triggering_actor}}
           git config user.email ''
           git add CHANGELOG.md
-          git commit -m "Update changelog for release ${{ github.event.inputs.release_version}}"
+          git commit -m "Release ${{ github.event.inputs.release_version}}"
+          git tag ${{ github.event.inputs.release_version}} -m "Release ${{ github.event.inputs.release_version}}"
 
       - name: Create pull request
         # ref: https://cli.github.com/manual/gh_pr_create
-        run: gh pr create --head changelog --title '${{github.event.inputs.release_version}}' --label release  --body-file release_notes_template.md
+        run: gh pr create --head changelog --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push the changelog
-        run: git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        run: git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git  --tags
