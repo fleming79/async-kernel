@@ -5,7 +5,7 @@ env:
   IS_RELEASE: true
 jobs:
   Explore-GitHub-Actions:
-    # if: ${{ github.env.IS_RELEASE == 'true' }}
+    # if: $IS_RELEASE
     runs-on: ubuntu-latest
     steps:
       - run: TEST =  123
@@ -21,4 +21,4 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
-      - run: echo "Env.IS_RELEASE == ${{ github.env.IS_RELEASE }}.
+      - run: echo Is release $IS_RELEASE.
