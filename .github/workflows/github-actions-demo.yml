@@ -1,8 +1,11 @@
 name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
+env:
+  IS_RELEASE: true
 jobs:
   Explore-GitHub-Actions:
+    if: ${{github.env.IS_RELEASE}}
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -16,3 +19,4 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run: echo "Env.IS_RELEASE == ${{ gitgithub.env.IS_RELEASE }}.
