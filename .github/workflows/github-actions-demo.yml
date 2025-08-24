@@ -10,7 +10,7 @@ jobs:
           persist-credentials: false
           # Fetch full history for setuptools-scm
     
-      - run: git tag test
+      - run: git tag v0.1.0-rc1
       - run: echo "TAG=$(git tag --points-at HEAD)" >> $GITHUB_ENV
       - run: echo "TAG is ${{ env.TAG }}"
       - run: echo "Is release=  ${{startsWith( env.TAG, 'v' )}}"
