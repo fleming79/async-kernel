@@ -32,3 +32,10 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+  publish-to-pypi:
+    name: >-
+      Publish Python 🐍 distribution 📦 to PyPI
+    if: env.IS_RELEASE  == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "env.TAG is ${{ env.TAG }}"
