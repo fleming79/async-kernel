@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "main"
-
+      - main
+env:
+  IS_RELEASE: ${{startsWith('$(git tag --points-at HEAD)', 'v')}}
 jobs:
   build:
     name: Build distribution 📦
@@ -29,7 +30,7 @@ jobs:
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
-    if: startsWith(github.ref, 'refs/tags/v') # only publish to PyPI on tag pushes
+    if: ${{github.env.IS_RELEASE}} # only publish to PyPI on tag pushes
     needs:
       - build
     runs-on: ubuntu-latest
@@ -40,6 +41,8 @@ jobs:
       id-token: write # IMPORTANT: mandatory for trusted publishing
 
     steps:
+      - name: Check head has a tag
+        run: git tag --points-at HEAD | grep ^v # The current head must have a tag starting with v
       - name: Download all the dists
         uses: actions/download-artifact@v5
         with:
@@ -48,8 +51,12 @@ jobs:
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
+      - name: Create release on Github
+        run: gh release create $(git tag --points-at HEAD) './dist#release' --notes-from-tag
+
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
+    if: github.event_name == 'push'
     needs:
       - build
     runs-on: ubuntu-latest
