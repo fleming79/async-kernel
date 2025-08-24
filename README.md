@@ -20,6 +20,8 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
     - code completions
     - history
 
+[![Link to demo](https://github.com/user-attachments/assets/9a4935ba-6af8-4c9f-bc67-b256be368811)](https://fleming79.github.io/async-kernel/simple_example/ "Show demo notebook.")
+
 ## Installation
 
 ```shell
@@ -37,8 +39,6 @@ pip install trio
 ```shell
 async-kernel -a async-trio
 ```
-
-[![Link to demo](https://github.com/user-attachments/assets/9a4935ba-6af8-4c9f-bc67-b256be368811)](https://fleming79.github.io/async-kernel/simple_example/ "Show demo notebook.")
 
 ## Origin
 
