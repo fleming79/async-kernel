@@ -18,8 +18,8 @@ jobs:
       - run: env
       - run: echo "TAG=$(git tag --points-at HEAD)" >> $GITHUB_ENV
       - run: echo "env.TAG is ${{ env.TAG }}"
-      - run: echo "github.env.TAG is ${{ github.env.TAG }}"
-      - run: echo "$TAG is ${{$TAG}}"
+      - run: echo "IS_RELEASE=${{startsWith(env.TAG,  'v')}}"  >> $GITHUB_ENV
+      - run: echo "env.IS_RELEASE is ${{ env.IS_RELEASE }}"
       - run: echo "Is release=  ${{startsWith( github.env.TAG, 'v' )}}"
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
