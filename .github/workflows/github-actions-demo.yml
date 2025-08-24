@@ -11,7 +11,7 @@ jobs:
           # Fetch full history for setuptools-scm
     
       - run: git tag test
-      - run: echo "TAG=git tag --points-at HEAD >> $GITHUB_ENV
+      - run: echo "TAG=git tag --points-at HEAD" >> $GITHUB_ENV
       - run: echo "TAG is ${{ env.TAG }}"
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
