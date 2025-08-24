@@ -19,4 +19,4 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
-      - run: echo "Env.IS_RELEASE == ${{ gitgithub.env.IS_RELEASE }}.
+      - run: echo "Env.IS_RELEASE == ${{ github.env.IS_RELEASE }}.
