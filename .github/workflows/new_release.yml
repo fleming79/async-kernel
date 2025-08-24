@@ -1,0 +1,51 @@
+name: New release
+# Use this workflow to create a PR with updated release notes and labelled accordingly
+# See contributing.md for further detail.
+run-name: ${{ github.actor }} is starting a new release 🚀
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Version"
+        default: "v0.1.0-rc0"
+
+jobs:
+  changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Generate changelog
+        timeout-minutes: 5
+        run: |
+          git checkout -b release-${{ github.event.inputs.release_version}}
+          uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}}
+          uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}} --latest
+
+          git config user.name ${{github.triggering_actor}}
+          git config user.email ''
+          git add CHANGELOG.md
+          git commit -m "Release ${{ github.event.inputs.release_version}}"
+          git tag ${{ github.event.inputs.release_version}} -m "Release ${{ github.event.inputs.release_version}}"
+
+      - name: Create pull request
+        # ref: https://cli.github.com/manual/gh_pr_create
+        run: gh pr create --head changelog --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the changelog
+        run: git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git  --tags
