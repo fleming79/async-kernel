@@ -11,7 +11,7 @@ jobs:
           # Fetch full history for setuptools-scm
     
       - run: git tag test
-      - run: echo "IS_RELEASE=${{startsWith('$(git tag --points-at HEAD)', 't'") >> $GITHUB_ENV
+      - run: echo "IS_RELEASE=${{startsWith('$(git tag --points-at HEAD)'}}, 't'") >> $GITHUB_ENV
       - run: echo "IS_RELEASE is ${{ env.IS_RELEASE }}"
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
