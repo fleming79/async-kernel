@@ -47,7 +47,7 @@ jobs:
         run: |
           echo "## New pull request" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          gh pr create --head changelog --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md --assign ${{github.actor}} >> $GITHUB_STEP_SUMMARY
+          gh pr create --head changelog --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md --assignee ${{github.actor}} >> $GITHUB_STEP_SUMMARY
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
