@@ -47,16 +47,16 @@ uv run pytest -vv --cov
 
 `Async kernel` uses ruff for code formatting. The pre-commit hook should take care of how it should look.
 
-To install `pre-commit`, run the following:
+To install `pre-commit`, run prior commits with the following:
 
 ```shell
 pre-commit install
 ```
 
-You can invoke the pre-commit hook by hand at any time with:
+If you prefer not to install the hook, you can invoke the pre-commit hook by hand at any time with:
 
 ```shell
-pre-commit run
+pre-commit run # append -a to run against all files.
 ```
 
 ### Type checking
@@ -114,18 +114,25 @@ mkdocs gh-deploy --force
 
 ## Releasing Async kernel
 
-Releasing is performed using the Github action [new_release.yml](https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml).
-action creates a new tagged pull request that is assigned to the user who started the workflow.
-The PR is contains the revised changelog and latest change info, both generated using [git-cliff](https://git-cliff.org/).
+To start a new release manually trigger the Github action [new_release.yml](https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml).
+
+The action does the following:
+
+1. Creates a new branch using the version number.
+1. Updates the changelog for the new version using [git-cliff](https://git-cliff.org/).
+1. Commits the revised changelog.
+1. Adds a tag against the commit with the version.
+1. Starts a new PR assigning the actor who triggered the workflow.
+
+Once the new PR is available merge the PR into the main branch.
+Normally this will also trigger publication of the new release.
 
 ### Publish
 
-The workflow that publishes the release is [publish-to-pypi.yml](https://github.com/fleming79/async-kernel/actions/workflows/publish-to-pypi.yml).
-starts on push to the main branch but can also be manually started. If the git head is tagged it will publish to PyPI.
-If the `github.event_name` is push it will publish to TestPyPI.
-
-The changelog is inserted in the tag which is used to generate the Github release notes.
-A corresponding Github release is also created. Manually update the release page as required.
+[publish-to-pypi.yml](https://github.com/fleming79/async-kernel/actions/workflows/publish-to-pypi.yml) is
+the workflow that publishes the release. It starts on a push to the main branch but can also be manually triggered.
+It will always publish to TestPyPI on a push. If the git head has a tag starting with 'v' it will also publish
+to PyPi. If it is published to PyPI successfully, it will also create a Github release.
 
 #### Manual
 
@@ -137,7 +144,8 @@ git tag v0.1.0 -m "v0.1.0"
 git push --tags
 ```
 
-If the publish workflow doesn't start automatically. Run the workflow manually.
+If the publish workflow doesn't start automatically. Run the [publish-to-pypi](https://github.com/fleming79/async-kernel/actions/workflows/publish-to-pypi.yml)
+workflow manually.
 
 !!! note
 
