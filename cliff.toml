@@ -31,7 +31,7 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | upper_first }}
     {%- for commit in commits %} 
-    {% if commit.message is containing("git-cliff") %} {% continue %} {% endif %}
+    {% if commit.message is starting_with("Release ") %} {% continue %} {% endif %}
         - {{ commit.message | split(pat="\n") | first | upper_first | trim }}\
             {% if commit.remote.pr_number %} \
             [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}) \
@@ -92,3 +92,4 @@ topo_order = false
 # Order of commits in each group/release within the changelog.
 # Allowed values: newest, oldest
 sort_commits = "newest"
+tag_pattern = "v[0-9].*"
