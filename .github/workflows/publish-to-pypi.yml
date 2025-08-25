@@ -1,10 +1,11 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 # ref: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       release_version:
-        description: "Manual release (Preferred: New release)"
+        type: string
+
   push:
     branches:
       - main
