@@ -20,4 +20,4 @@ jobs:
       - name: Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run 'publish-to-pypi.yml'
+        run: gh workflow run 'New release'
