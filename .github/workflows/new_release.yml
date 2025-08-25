@@ -41,12 +41,7 @@ jobs:
           git add CHANGELOG.md
           git commit -m "Release ${{ github.event.inputs.release_version}}"
           git tag ${{ github.event.inputs.release_version}} -m "Release ${{ github.event.inputs.release_version}}"
-
-      - name: Push the new branch
-        run: |
-          echo "" >> $GITHUB_STEP_SUMMARY
-          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git  --tags
-          cat release_info.md >> $GITHUB_STEP_SUMMARY
+          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --all --tags
 
       - name: Create pull request
         # ref: https://cli.github.com/manual/gh_pr_create
@@ -54,6 +49,7 @@ jobs:
           echo "## New pull request" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           gh pr create --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md --assignee ${{github.actor}} >> $GITHUB_STEP_SUMMARY
-
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat release_info.md >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
