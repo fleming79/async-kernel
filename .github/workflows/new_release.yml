@@ -66,8 +66,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr merge --squash
 
-      - name: Publish
-        if: ${{ github.event.inputs.publish}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run '${{github.action_path }}/publish-to-pypi.yml' -f 'release_version=${{github.event.inputs.release_version}}'
+  publish:
+    if: ${{ github.event.inputs.publish}}
+    uses: ./.github/workflows/publish-to-pypi.yml
+    secrets: inherit
