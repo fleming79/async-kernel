@@ -5,7 +5,7 @@ env:
   IS_RELEASE: true
 jobs:
   Explore-GitHub-Actions:
-    if: github.workflow.env.IS_RELEASE
+    if: $IS_RELEASE
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
