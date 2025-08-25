@@ -38,7 +38,6 @@ jobs:
         run: |
           git checkout -b ${{steps.branch}}
           uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}}
-          uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}} --latest
 
           git config user.name ${{github.triggering_actor}}
           git config user.email ''
@@ -55,6 +54,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           gh pr create --head ${{steps.branch}} --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md --assignee ${{github.actor}} >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          cat release_info.md >> $GITHUB_STEP_SUMMARY
+          uvx git-cliff --current --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
