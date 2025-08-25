@@ -9,6 +9,10 @@ on:
       release_version:
         description: "Version"
         default: "v0.1.0-rc0"
+      publish:
+        description: "Publish"
+        type: boolean
+        default: true
 
 jobs:
   changelog:
@@ -61,3 +65,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr merge --squash
+
+      - name: Publish
+        if: ${{ github.event.inputs.publish}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run 'publish-to-pypi.yml' -f 'release_version=${{github.event.inputs.release_version}}'
