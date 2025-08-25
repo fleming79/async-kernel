@@ -4,29 +4,31 @@ This project is under active development. Feel free to create an issue to provid
 
 ## Development
 
-## Installation from source
+Development is done using [uv](https://docs.astral.sh/uv/) to provide the virtual environment.
+
+### Installation from source
 
 ```shell
 git clone https://github.com/fleming79/async-kernel.git
 cd async-kernel
-uv venv -p python@311
+uv venv -p python@311 # or whichever environment you are targeting.
 uv sync
 # Activate the environment
 ```
 
-### update packages
+### Update packages
 
 ```shell
 uv lock --upgrade
 ```
 
-## Running tests
+### Running tests
 
 ```shell
 uv run pytest
 ```
 
-## Running tests with coverage
+### Running tests with coverage
 
 We are aiming for 100% code coverage on CI (Linux). Any new code should also update tests to maintain coverage.
 
@@ -34,24 +36,30 @@ We are aiming for 100% code coverage on CI (Linux). Any new code should also upd
 uv run pytest -vv --cov
 ```
 
-## Code Styling
+!!! note
+
+    We are only targeting 100% on linux for >= 3.12 for the following reasons:
+
+    1. `transport` type `ipc` is only supported linux which has special handling.
+    1. Coverage on Python 3.11 doesn't correctly gather data for subprocesses giving invalid coverage reports.
+
+### Code Styling
 
 `Async kernel` uses ruff for code formatting. The pre-commit hook should take care of how it should look.
 
-To install `pre-commit`, run the following:
+To install `pre-commit`, run prior commits with the following:
 
 ```shell
-pip install pre-commit
 pre-commit install
 ```
 
-You can invoke the pre-commit hook by hand at any time with:
+If you prefer not to install the hook, you can invoke the pre-commit hook by hand at any time with:
 
 ```shell
-pre-commit run
+pre-commit run # append -a to run against all files.
 ```
 
-## Type checking
+### Type checking
 
 Type checking is performed using [basedpyright](https://docs.basedpyright.com/).
 
@@ -59,11 +67,11 @@ Type checking is performed using [basedpyright](https://docs.basedpyright.com/).
 basedpyright
 ```
 
-## Documentation
+### Documentation
 
 Documentation is provided my [Material for MkDocs ](https://squidfunk.github.io/mkdocs-material/). To start up a server for editing locally:
 
-### Install
+#### Install
 
 ```shell
 uv sync --group docs
@@ -106,4 +114,39 @@ mkdocs gh-deploy --force
 
 ## Releasing Async kernel
 
-TODO
+To start a new release manually trigger the Github action [new_release.yml](https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml).
+
+The action does the following:
+
+1. Creates a new branch using the version number.
+1. Updates the changelog for the new version using [git-cliff](https://git-cliff.org/).
+1. Commits the revised changelog.
+1. Adds a tag against the commit with the version.
+1. Starts a new PR assigning the actor who triggered the workflow.
+
+Once the new PR is available merge the PR into the main branch.
+Normally this will also trigger publication of the new release.
+
+### Publish
+
+[publish-to-pypi.yml](https://github.com/fleming79/async-kernel/actions/workflows/publish-to-pypi.yml) is
+the workflow that publishes the release. It starts on a push to the main branch but can also be manually triggered.
+It will always publish to TestPyPI on a push. If the git head has a tag starting with 'v' it will also publish
+to PyPi. If it is published to PyPI successfully, it will also create a Github release.
+
+#### Manual
+
+To manually publish create a tag on the head of the main branch and push the tags.
+
+```
+git checkout
+git tag v0.1.0 -m "v0.1.0"
+git push --tags
+```
+
+If the publish workflow doesn't start automatically. Run the [publish-to-pypi](https://github.com/fleming79/async-kernel/actions/workflows/publish-to-pypi.yml)
+workflow manually.
+
+!!! note
+
+    Where possible use the workflows to publish releases.
