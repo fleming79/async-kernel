@@ -67,9 +67,10 @@ jobs:
         run: gh pr merge --squash
 
   publish:
+    needs: changelog
     if: ${{ github.event.inputs.publish}}
-    uses: ./.github/workflows/publish-to-pypi.yml
     secrets: inherit
     permissions:
       contents: write
       id-token: write
+    uses: ./.github/workflows/publish-to-pypi.yml
