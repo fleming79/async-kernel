@@ -9,6 +9,10 @@ on:
       release_version:
         description: "Version"
         default: "v0.1.0-rc0"
+      publish:
+        description: "Publish"
+        type: boolean
+        default: true
 
 jobs:
   changelog:
@@ -42,25 +46,28 @@ jobs:
       - name: Create a new branch with an updated changelog
         timeout-minutes: 5
         run: |
-
           git checkout -b ${{steps.branch}}
           git tag ${{ github.event.inputs.release_version}}
           uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }}
-          uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --current
           git config user.name ${{github.triggering_actor}}
           git config user.email ''
           git add CHANGELOG.md
           git commit -m "Release ${{ github.event.inputs.release_version}}"
-          git tag ${{ github.event.inputs.release_version}} -d
-          git tag ${{ github.event.inputs.release_version}} -f --file release_info.md
           git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git -f
-          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --tags
 
       - name: Create pull request
         # ref: https://cli.github.com/manual/gh_pr_create
-        run: |
-          echo "## New pull request" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          gh pr create --head ${{steps.branch}} --title '${{github.event.inputs.release_version}}' --body 'Release ${{github.event.inputs.release_version}}'  --label release --assignee ${{github.actor}} >> $GITHUB_STEP_SUMMARY
+        id: create_pull_request
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr create --head ${{steps.branch}} --title '${{github.event.inputs.release_version}}' --body 'This PR gets merged automatically'  --label release
+      - name: Merge pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --squash
+
+      - name: Publish
+        if: ${{ github.event.inputs.publish}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run publish-to-pypi.yml -f 'release_version=${{github.event.inputs.release_version}}'
