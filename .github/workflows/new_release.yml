@@ -70,4 +70,4 @@ jobs:
         if: ${{ github.event.inputs.publish}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run 'publish-to-pypi.yml' -f 'release_version=${{github.event.inputs.release_version}}'
+        run: gh workflow run '${{github.action_path }}/publish-to-pypi.yml' -f 'release_version=${{github.event.inputs.release_version}}'
