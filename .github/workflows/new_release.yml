@@ -44,7 +44,7 @@ jobs:
           git add CHANGELOG.md
           git commit -m "Release ${{ github.event.inputs.release_version}}"
           git tag ${{ github.event.inputs.release_version}} -m "Release ${{ github.event.inputs.release_version}}"
-          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git -f
           git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --tags
 
       - name: Create pull request
