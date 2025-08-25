@@ -18,7 +18,6 @@ jobs:
         run: echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
 
       - name: Publish
-        if: ${{ github.event.inputs.publish}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run 'publish-to-pypi.yml' -f 'release_version=${{github.event.inputs.release_version}}'
+        run: gh workflow run 'publish-to-pypi.yml'
