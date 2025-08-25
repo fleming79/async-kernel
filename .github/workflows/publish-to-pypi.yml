@@ -1,10 +1,10 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 # ref: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 on:
-  workflow_dispatch:
-    inputs:
-      release_version:
-        description: "Manual release (Preferred: New release)"
+  workflow_run:
+    workflows: ["New release"]
+    types:
+      - completed
   push:
     branches:
       - main
@@ -16,6 +16,8 @@ jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
+    outputs:
+      release: steps.release
     steps:
       - uses: actions/checkout@v5
         with:
@@ -25,13 +27,18 @@ jobs:
           ref: main
       - uses: astral-sh/setup-uv@v6
 
+      - name: Release version
+        id: release
+        continue-on-error: true
+        run: echo  ${{ github.event.workflow_run.event.inputs.release_version}}
+
       - name: Tag the release
-        if: ${{github.event.inputs.release_version}}
+        if: ${{steps.release}}
         run: |
           uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --current
           git config user.name ${{github.triggering_actor}}
           git config user.email ''
-          git tag ${{ github.event.inputs.release_version}}  --file release_info.md
+          git tag ${{ steps.release}}  --file release_info.md
           git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --tags
 
       - name: Build a binary wheel and a source tarball
@@ -48,7 +55,7 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
-    if: ${{github.event.inputs.release_version}}
+    if: ${{needs.build.outputs.release}}
     environment:
       name: pypi
       url: https://pypi.org/p/async-kernel
@@ -67,7 +74,7 @@ jobs:
       - name: Create release on Github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create  ${{github.event.inputs.release_version}} './dist#release' --notes-from-tag
+        run: gh release create  ${{needs.build.outputs.release}} './dist#release' --notes-from-tag
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
