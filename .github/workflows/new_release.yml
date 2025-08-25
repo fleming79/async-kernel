@@ -47,20 +47,27 @@ jobs:
           git tag ${{ github.event.inputs.release_version}}
           uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }}
           uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --current
+          git tag -d ${{ github.event.inputs.release_version}}
           git config user.name ${{github.triggering_actor}}
           git config user.email ''
           git add CHANGELOG.md
           git commit -m "Release ${{ github.event.inputs.release_version}}"
-          git tag ${{ github.event.inputs.release_version}} -d
-          git tag ${{ github.event.inputs.release_version}} -f --file release_info.md
           git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git -f
-          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --tags
 
       - name: Create pull request
         # ref: https://cli.github.com/manual/gh_pr_create
-        run: |
-          echo "## New pull request" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          gh pr create --head ${{steps.branch}} --title '${{github.event.inputs.release_version}}' --body 'Release ${{github.event.inputs.release_version}}'  --label release --assignee ${{github.actor}} >> $GITHUB_STEP_SUMMARY
+        id: create_pull_request
+        run: gh pr create --head ${{steps.branch}} --title '${{github.event.inputs.release_version}}' --body 'This PR gets merged automatically'  --label release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge pull request
+        run: gh pr merge --squash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set the git tag
+        run: |
+          git branch -D main
+          git checkout -b main
+          git tag ${{ github.event.inputs.release_version}} --file release_info.md
+          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --tags
