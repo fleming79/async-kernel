@@ -2,10 +2,16 @@ name: Demo
 # ref: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 on:
   push:
+  workflow_run:
+      workflows: ["Demo"]
+      types:
+        - completed
+  
 jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
+    
     outputs:
       tag: ${{ steps.tag_info.outputs.tag }}
     steps:
@@ -21,3 +27,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run 'New release'
+
+      - name: Exit
+        if: ${{ github.event_name == 'workflow_run'}}
+        run: stop
