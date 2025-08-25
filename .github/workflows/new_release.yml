@@ -24,6 +24,10 @@ jobs:
           fetch-depth: 0
           ref: main
 
+      - name: Version
+        id: branch
+        run: echo release-${{ github.event.inputs.release_version}}
+
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -32,7 +36,7 @@ jobs:
       - name: Create a new branch with an updated changelog
         timeout-minutes: 5
         run: |
-          git checkout -b release-${{ github.event.inputs.release_version}}
+          git checkout -b ${{steps.branch}}
           uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}}
           uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ github.event.inputs.release_version}} --latest
 
@@ -49,7 +53,7 @@ jobs:
         run: |
           echo "## New pull request" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          gh pr create --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md --assignee ${{github.actor}} >> $GITHUB_STEP_SUMMARY
+          gh pr create --head ${{steps.branch}} --title '${{github.event.inputs.release_version}}' --label release  --body-file release_info.md --assignee ${{github.actor}} >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           cat release_info.md >> $GITHUB_STEP_SUMMARY
         env:
