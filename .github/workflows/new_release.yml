@@ -51,6 +51,7 @@ jobs:
           git config user.email ''
           git add CHANGELOG.md
           git commit -m "Release ${{ github.event.inputs.release_version}}"
+          git tag ${{ github.event.inputs.release_version}} -d
           git tag ${{ github.event.inputs.release_version}} -f --file release_info.md
           git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git -f
           git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --tags
