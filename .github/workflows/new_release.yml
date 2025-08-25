@@ -29,7 +29,7 @@ jobs:
         with:
           version: "latest"
 
-      - name: Generate changelog
+      - name: Create a new branch with an updated changelog
         timeout-minutes: 5
         run: |
           git checkout -b release-${{ github.event.inputs.release_version}}
@@ -42,6 +42,12 @@ jobs:
           git commit -m "Release ${{ github.event.inputs.release_version}}"
           git tag ${{ github.event.inputs.release_version}} -m "Release ${{ github.event.inputs.release_version}}"
 
+      - name: Push the new branch
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git  --tags
+          cat release_info.md >> $GITHUB_STEP_SUMMARY
+
       - name: Create pull request
         # ref: https://cli.github.com/manual/gh_pr_create
         run: |
@@ -51,9 +57,3 @@ jobs:
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push the changelog
-        run: |
-          echo "" >> $GITHUB_STEP_SUMMARY
-          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git  --tags
-          cat release_info.md >> $GITHUB_STEP_SUMMARY
