@@ -4,15 +4,16 @@ on:
   push:
     branches:
       - main
-  release: 
-    types: [created]
-  
+  release:
+    types: [published]
+  workflow_dispatch:
+
 jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.tag_info.outputs.tag }}
+      TAG: ${{ steps.tag_info.outputs.tag }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -38,7 +39,7 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+    if: startsWith(needs.build.outputs.TAG, 'v') # only publish to PyPI when the head has a version tag
     environment:
       name: pypi
       url: https://pypi.org/p/async-kernel
@@ -58,7 +59,7 @@ jobs:
         # ref: https://cli.github.com/manual/gh_pr_create
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{github.ref_name}} ./dist/*
+        run: gh release upload ${{needs.build.outputs.TAG}} ./dist/* --clobber
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
