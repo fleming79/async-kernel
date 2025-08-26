@@ -12,3 +12,4 @@ __pycache__
 data_kernelspec
 .pytest_cache
 _version.py
+release_notes.md
