@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### <!-- 6 --> 🌀 Miscellaneous
 
+- Merge pull request #56 from fleming79/release/v0.1.0-rc1 [#56](https://github.com/fleming79/async-kernel/pull/56)
+
 - Revise new release [#55](https://github.com/fleming79/async-kernel/pull/55)
 
 - New release workflow in one step with publish option. [#51](https://github.com/fleming79/async-kernel/pull/51)
