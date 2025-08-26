@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### <!-- 6 --> 🌀 Miscellaneous
 
+- Release v0.1.0-rc1 [#52](https://github.com/fleming79/async-kernel/pull/52)
+
 - New release workflow in one step with publish option. [#51](https://github.com/fleming79/async-kernel/pull/51)
 
 - Improve release workflow, update documentation and license info. [#29](https://github.com/fleming79/async-kernel/pull/29)
