@@ -10,7 +10,7 @@ authors = [{name = "Alan Fleming", email = "async-python@proton.me"}]
 license = "MIT"
 license-files = ['LICENSE', 'IPYTHON_LICENSE']
 readme = "README.md"
-description = "A python kernel for Jupyter running inside an anyio event loop."
+description = "A concurrent python kernel for Jupyter supporting AnyIO, AsyncIO and Trio."
 keywords = ["Interactive", "Interpreter", "Shell", "Web", "Jupyter"]
 classifiers = [
     "Typing :: Typed",

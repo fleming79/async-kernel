@@ -27,7 +27,7 @@ async-kernel -a async-trio
 
 !!! note
 
-    To modify how the kernel start see the section o [starting a kernel](#start-a-kernel) for configuration options.
+    To modify how the kernel start see the section on [starting a kernel](#start-a-kernel) for configuration options.
 
 ### Configuration
 

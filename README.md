@@ -10,6 +10,8 @@
 
 Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) that runs in an [anyio](https://pypi.org/project/anyio/) event loop.
 
+**[Documentation](https://fleming79.github.io/async-kernel/)**
+
 ## Highlights
 
 - Concurrent message handling
