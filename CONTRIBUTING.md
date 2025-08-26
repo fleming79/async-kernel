@@ -4,12 +4,15 @@ This project is under active development. Feel free to create an issue to provid
 
 ## Development
 
-Development is done using [uv](https://docs.astral.sh/uv/) to provide the virtual environment.
+[uv](https://docs.astral.sh/uv/) is used for development. By default it will install all
+relevant versions of the required packages when it is synchronised.
 
 ### Installation from source
 
+If you are working on a pull request, [make a fork] of the project and install from your fork.
+
 ```shell
-git clone https://github.com/fleming79/async-kernel.git
+git clone <repository>
 cd async-kernel
 uv venv -p python@311 # or whichever environment you are targeting.
 uv sync
@@ -49,7 +52,7 @@ uv run pytest -vv --cov
 
 `Async kernel` uses ruff for code formatting. The pre-commit hook should take care of how it should look.
 
-To install `pre-commit`, run prior commits with the following:
+To install `pre-commit` to run prior commits with the following:
 
 ```shell
 pre-commit install
