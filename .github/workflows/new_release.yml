@@ -1,6 +1,5 @@
 name: New release
 # Use this workflow to create a PR with updated release notes and labelled accordingly
-# A new release is created when it is mereged back in.
 # The tag should be manually deleted if the PR is cancelled.
 run-name: ${{ github.actor }} initiated a new release ${{ github.event.inputs.release_version }}  🚀
 on:
@@ -9,11 +8,12 @@ on:
       release_version:
         description: "Version"
         default: "v0.1.0-rc0"
-      publish:
-        description: "Publish"
+      pre_release:
+        description: "Pre-release"
         type: boolean
         default: true
-
+env:
+  VERSION: ${{ github.event.inputs.release_version}}
 jobs:
   changelog:
     name: Write changelog and merge into main
@@ -27,40 +27,34 @@ jobs:
         with:
           fetch-depth: 0
           ref: main
-
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
           version: "latest"
 
-      - name: Create a new branch with an updated changelog
-        timeout-minutes: 5
+      - name: Create a new branch and generate the changelog
         run: |
-          git checkout -b release-${{ github.event.inputs.release_version}}
-          git tag ${{ github.event.inputs.release_version}}
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git checkout -b release/$VERSION main
+          git tag $VERSION
           uvx git-cliff -o CHANGELOG.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }}
-          git config user.name ${{github.triggering_actor}}
-          git config user.email ''
-          git add CHANGELOG.md
-          git commit -m "Release ${{ github.event.inputs.release_version}}"
-          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --current
+          git tag -d $VERSION
 
-      - name: Create pull request
+      - name: Push the new branch and tag
+        run: |
+          git commit -am "Prepare for release $VERSION"
+          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git release/$VERSION
+
+          git tag $VERSION --file release_info.md
+          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git $VERSION
+
+      - name: Create & merge pull request + Create release
         # ref: https://cli.github.com/manual/gh_pr_create
-        id: create_pull_request
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr create --head release-${{ github.event.inputs.release_version}} --title '${{github.event.inputs.release_version}}' --body 'Changelog for new release'  --label release
-      - name: Merge pull request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr merge --squash
-
-  publish:
-    needs: changelog
-    if: ${{ github.event.inputs.publish}}
-    secrets: inherit
-    permissions:
-      contents: write
-      id-token: write
-    uses: ./.github/workflows/publish-to-pypi.yml
+        run: |
+          gh pr create --head release/$VERSION --title $VERSION --body 'Changelog for new release'  --label release
+          gh pr merge --merge
+          gh release create $VERSION --notes-from-tag  -p ${{github.event.inputs.pre_release}}

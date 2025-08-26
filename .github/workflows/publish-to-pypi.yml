@@ -1,43 +1,26 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 # ref: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 on:
-  workflow_call:
-    inputs:
-      release_version:
-        type: string
-
   push:
     branches:
       - main
-
-concurrency:
-  group: "pypi"
-  cancel-in-progress: true
+  release: 
+    types: [created]
+  
 jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    outputs:
+      tag: ${{ steps.tag_info.outputs.tag }}
     steps:
-      - uses: astral-sh/setup-uv@v6
       - uses: actions/checkout@v5
         with:
+          persist-credentials: false
           # Fetch full history for setuptools-scm
           fetch-depth: 0
           ref: main
-
-      - name: Tag the release
-        if: ${{github.event.inputs.release_version}}
-        run: |
-          git config user.name ${{github.triggering_actor}}
-          git config user.email ''
-          git tag ${{ github.event.inputs.release_version}}
-          uvx git-cliff -o release_info.md --github-repo ${{ github.repository }} --github-token ${{ secrets.GITHUB_TOKEN }} --current
-          git tag -d ${{ github.event.inputs.release_version}}
-          git tag ${{ github.event.inputs.release_version}} --file release_info.md
-          git push  https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git ${{ github.event.inputs.release_version}}
-
+      - uses: astral-sh/setup-uv@v6
       - name: Build a binary wheel and a source tarball
         run: uv build
       - name: Store the distribution packages
@@ -45,6 +28,9 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+      - id: tag_info
+        name: Tag info
+        run: echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
 
   publish-to-pypi:
     name: >-
@@ -52,7 +38,7 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
-    if: ${{github.event.inputs.release_version}}
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     environment:
       name: pypi
       url: https://pypi.org/p/async-kernel
@@ -68,10 +54,11 @@ jobs:
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-      - name: Create release on Github
+      - name: Upload assets to release
+        # ref: https://cli.github.com/manual/gh_pr_create
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create  ${{github.event.inputs.release_version}} './dist#release' --notes-from-tag
+        run: gh release upload ${{github.ref_name}} ./dist/*
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
