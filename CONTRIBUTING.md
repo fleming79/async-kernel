@@ -43,6 +43,8 @@ uv run pytest -vv --cov
     1. `transport` type `ipc` is only supported linux which has special handling.
     1. Coverage on Python 3.11 doesn't correctly gather data for subprocesses giving invalid coverage reports.
 
+![Coverage grid](https://codecov.io/github/fleming79/async-kernel/graphs/tree.svg?token=PX0RWNKT85)
+
 ### Code Styling
 
 `Async kernel` uses ruff for code formatting. The pre-commit hook should take care of how it should look.

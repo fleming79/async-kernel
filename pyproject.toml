@@ -13,6 +13,16 @@ readme = "README.md"
 description = "A python kernel for Jupyter running inside an anyio event loop."
 keywords = ["Interactive", "Interpreter", "Shell", "Web", "Jupyter"]
 classifiers = [
+    "Typing :: Typed",
+    "Development Status :: 4 - Beta",
+    "Framework :: AnyIO",
+    "Framework :: Trio",
+    "Framework :: AsyncIO",
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Framework :: Jupyter :: JupyterLab :: 4",
+    "Framework :: Jupyter :: JupyterLab :: Extensions",
+    "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
     "Intended Audience :: Science/Research",
