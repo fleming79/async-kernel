@@ -34,8 +34,7 @@ jobs:
         run: echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
 
   publish-to-pypi:
-    name: >-
-      Publish Python 🐍 distribution 📦 to PyPI
+    name: Publish Python 🐍 distribution 📦 to PyPI
     needs:
       - build
     runs-on: ubuntu-latest
@@ -55,11 +54,6 @@ jobs:
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-      - name: Upload assets to release
-        # ref: https://cli.github.com/manual/gh_pr_create
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{needs.build.outputs.TAG}} ./dist/* --clobber
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
@@ -85,3 +79,26 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+
+
+  replace-release-files:
+    name: Replace github release files
+    needs:
+      - build
+      - publish-to-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: startsWith(needs.build.outputs.TAG, 'v') # only upload if there is a release
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          # Fetch full history for setuptools-scm
+          fetch-depth: 0
+          ref: main
+      - name: Upload assets to release
+        # ref: https://cli.github.com/manual/gh_release_upload
+        run: gh release upload ${{needs.build.outputs.TAG}} ./dist/* --clobber
