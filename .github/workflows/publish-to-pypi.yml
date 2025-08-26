@@ -1,11 +1,21 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 # ref: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
+# This workflow builds the distribution and uploads it to PyPI and TestPyPI
+# It will only publish to PyPI when the head has a tag starting with 'v'.concurrency:
+# This workflow is configured to start after a 'New release' workflow has been run ('workflow_run').
 on:
   push:
     branches:
       - main
   release:
     types: [published]
+  workflow_run:
+    workflows:
+      - New release
+    branches:
+      - main
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
@@ -54,7 +64,6 @@ jobs:
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
     if: github.event_name == 'push'
@@ -80,7 +89,6 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
 
-
   replace-release-files:
     name: Replace github release files
     needs:
@@ -99,6 +107,11 @@ jobs:
           # Fetch full history for setuptools-scm
           fetch-depth: 0
           ref: main
+      - name: Download all the dists
+        uses: actions/download-artifact@v5
+        with:
+          name: python-package-distributions
+          path: dist/
       - name: Upload assets to release
         # ref: https://cli.github.com/manual/gh_release_upload
         run: gh release upload ${{needs.build.outputs.TAG}} ./dist/* --clobber
