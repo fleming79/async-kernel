@@ -1,6 +1,6 @@
 name: New release
-# Use this workflow to create a new release
-# publish_to_pypi.yml should run automatically on the new release.
+# This workflow starts a new release. Trigger it manually from github ('workflow_dispatch').
+# publish_to_pypi.yml is configured to after this workflow is completed (using 'workflow_run').
 run-name: ${{ github.actor }} initiated a new release ${{ github.event.inputs.release_version }}  🚀
 on:
   workflow_dispatch:
