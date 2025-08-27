@@ -31,6 +31,8 @@ jobs:
 
       - name: Install the project
         run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com        
           uv sync --group docs
           uv run async-kernel -a async-docs --shell.execute_request_timeout 0.1    # The 'async-docs' kernel is specified as the kernel for mkdocs-jupyter
 
