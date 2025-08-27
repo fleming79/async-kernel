@@ -13,7 +13,18 @@ jobs:
     environment: ${{ vars.ENVIRONMENT_STAGE }}
     steps:
     - name: Use variables
+      id: demo
       run: |
+        version=1.2.3
+        echo "version=$version" >> $GITHUB_OUTPUT
+        if [[ $version =~ .*[a-zA-Z] ]]; then
+            echo "options=$version pre-release" >> $GITHUB_OUTPUT
+        elif [[ $version ]]
+            echo "options=$version release" >> $GITHUB_OUTPUT
+        else
+          echo "options=dev" >> $GITHUB_OUTPUT
+        fi
+        echo options: ${{ steps.demo.outpout.options}}
         echo "repository variable : $REPOSITORY_VAR"
         echo "organization variable : $ORGANIZATION_VAR"
         echo "overridden variable : $OVERRIDE_VAR"
