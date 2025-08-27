@@ -32,23 +32,24 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Tag info
-        id: tag_info
-        run: echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
-
       - name: Install the project
         run: |
           uv sync --group docs
           uv run async-kernel -a async-docs --shell.execute_request_timeout 0.1    # The 'async-docs' kernel is specified as the kernel for mkdocs-jupyter
 
-      - name: Deploy with mike 🚀
-        if: ${{steps.tag_info.outputs.tag}}
+      - name: Options
+        id: mike
         run: |
-          uv run mike deploy --push --update-aliases ${{steps.tag_info.outputs.tag}} latest
-          echo "[Latest version of docs updated (${{steps.tag_info.outputs.tag}})](https://fleming79.github.io/async-kernel/latest/" )>> $GITHUB_STEP_SUMMARY
+          version=$(uv run hatch version)
+          if [[ $version =~ ^.*dev ]]; then
+              echo "options=dev"  >> $GITHUB_OUTPUT
+          elif [[ $version =~ .*[a-zA-Z] ]]; then
+              echo "options=$version pre-release" >> $GITHUB_OUTPUT
+          else
+              echo "options=$version release" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Deploy a dev version with mike 🚀
-        if: ${{!steps.tag_info.outputs.tag}}
+      - name: Deploy with mike 🚀
         run: |
-          uv run mike deploy --push dev
-          echo "[Development version of docs ($(hatch version))](https://fleming79.github.io/async-kernel/dev/" )>> $GITHUB_STEP_SUMMARY
+          uv run mike deploy --push --update-aliases ${{steps.mike.outputs.options}}
+          echo "Docs has been updated for version & aliases: ${{steps.mike.outputs.options}} [view here](https://fleming79.github.io/async-kernel/)." >> $GITHUB_STEP_SUMMARY
