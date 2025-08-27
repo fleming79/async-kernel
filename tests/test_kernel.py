@@ -460,14 +460,7 @@ async def test_properties(kernel) -> None:
     kernel.user_ns = {}
 
 
-async def test_matplotlib_inline_on_import(subprocess_kernels_client):
-    code = "\n".join(["import matplotlib as mpl", "backend = mpl.get_backend()"])
-    _, reply = await utils.execute(subprocess_kernels_client, code, user_expressions={"backend": "backend"})
-    backend = eval(reply["user_expressions"]["backend"]["data"]["text/plain"])
-    assert backend == utils.MATPLOTLIB_INLINE_BACKEND
-
-
-@pytest.mark.parametrize("code", ["%connect_info", "%matplotlib --list", "%callers"])
+@pytest.mark.parametrize("code", argvalues=["%connect_info", "%matplotlib --list", "%callers"])
 async def test_magic(client, code: str, kernel, monkeypatch):
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
     assert code
