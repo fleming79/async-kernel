@@ -1,40 +1,48 @@
 name: Publish docs
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-permissions:
-  contents: write
+  pull_request:
+
+permissions: read-all
+
 concurrency:
   group: "pages"
   cancel-in-progress: true
+
 jobs:
   deploy:
+    name: Deploy dev or latest version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - name: Configure Git Credentials
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
           version: "latest"
+
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Tag info
+        id: tag_info
+        run: echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_OUTPUT
 
       - name: Install the project
         run: |
           uv sync --group docs
-          uv run async-kernel -a async-docs --shell.execute_request_timeout 0.1
-          echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-      - uses: actions/cache@v4
-        with:
-          key: mkdocs-material-${{ env.cache_id }} # cach_id is written above
-          path: ~/.cache
-          restore-keys: |
-            mkdocs-material-
-      - run: uv run mkdocs gh-deploy --force
+          uv run async-kernel -a async-docs --shell.execute_request_timeout 0.1    # The 'async-docs' kernel is specified as the kernel for mkdocs-jupyter
+
+      - name: Deploy with mike 🚀
+        if: ${{steps.tag_info.outputs.tag}}
+        run: |
+          uv run mike deploy --push --update-aliases ${{steps.tag_info.outputs.tag}} latest
+          echo "[Latest version of docs updated (${{steps.tag_info.outputs.tag}})](https://fleming79.github.io/async-kernel/latest/" )>> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy a dev version with mike 🚀
+        if: ${{!steps.tag_info.outputs.tag}}
+        run: |
+          uv run mike deploy --push dev
+          echo "[Development version of docs ($(hatch version))](https://fleming79.github.io/async-kernel/dev/" )>> $GITHUB_STEP_SUMMARY
