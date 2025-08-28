@@ -1,4 +1,5 @@
 import contextlib
+import importlib.util
 import inspect
 import threading
 import time
@@ -14,9 +15,10 @@ import zmq
 from anyio.abc import TaskStatus
 
 from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
+from async_kernel.kernelspec import Backend
 
 
-@pytest.fixture(scope="module", params=["asyncio", "trio"])
+@pytest.fixture(scope="module", params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
 def anyio_backend(request):
     return request.param
 

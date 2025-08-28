@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import enum
-import importlib.util
 import json
 import shutil
 import sys
@@ -20,14 +19,12 @@ __all__ = ["Backend", "KernelName", "get_kernel_dir", "make_argv", "write_kernel
 
 class Backend(enum.StrEnum):
     asyncio = "asyncio"
-    if importlib.util.find_spec("trio"):
-        trio = "trio"
+    trio = "trio"
 
 
 class KernelName(enum.StrEnum):
     asyncio = "async"
-    if importlib.util.find_spec("trio"):
-        trio = "async-trio"
+    trio = "async-trio"
 
 
 def make_argv(
