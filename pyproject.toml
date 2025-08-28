@@ -73,6 +73,7 @@ test = ["pre-commit",
     "pytest-retry",
     "pytest>=8.4,<9",
     "trio",
+    "hatch"
     ]
 dev = [
     "basedpyright",
