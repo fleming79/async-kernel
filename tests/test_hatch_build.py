@@ -10,7 +10,7 @@ async def test_hatch_buid_hook(anyio_backend, monkeypatch) -> None:
     shutil.rmtree(spec_folder, ignore_errors=True)
     folder = spec_folder.joinpath("async")
     assert not folder.exists()
-    process = subprocess.Popen(["hatch", "build"])
+    process = subprocess.Popen(["hatch", "build", "--hooks-only"])
     assert process.wait(60) == 0
     assert folder.exists()
     assert {f.name for f in folder.glob("*")} == {"logo-svg.svg", "kernel.json", "logo-32x32.png", "logo-64x64.png"}
