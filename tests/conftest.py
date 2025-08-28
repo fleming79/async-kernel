@@ -16,15 +16,6 @@ from tests import utils
 if TYPE_CHECKING:
     pytest_plugins = ["anyio.pytest_plugin"]
 
-pytestmark = pytest.mark.anyio
-
-if sys.platform.startswith("win"):
-    import asyncio
-
-    # needed for `jupyter_client.AsyncKernelClient` messaging only
-    # ref: https://github.com/zeromq/pyzmq/issues/1423
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # type: ignore[attr-defined]
-
 
 @pytest.hookimpl
 def pytest_configure(config):
