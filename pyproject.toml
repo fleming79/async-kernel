@@ -64,18 +64,22 @@ docs = ["mkdocs-material",
     "ipywidgets",
     "pandas"
 ]
-dev = [
-    "debugpy",
-    "ruff",
-    "hatch",
-    "pre-commit",
+uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32'"
+]
+test = ["pre-commit",
     "pytest-cov",
     "pytest-timeout",
     "pytest-mock",
     "pytest-retry",
     "pytest>=8.4,<9",
     "trio",
-    "basedpyright>=1.31.1",
+    ]
+dev = [
+    "basedpyright",
+    "ruff",
+    "debugpy",
+    {include-group = "uvloop"},
+    {include-group = "test"}
 ]
 cov = [
   "coverage[toml]",

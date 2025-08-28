@@ -17,6 +17,7 @@ import sniffio
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
+import async_kernel
 from async_kernel.kernelspec import Backend
 from async_kernel.typing import NoValue, PosArgsT, T
 from async_kernel.utils import wait_thread_event
@@ -593,19 +594,21 @@ class Caller:
     def start_new(
         cls,
         *,
-        backend: Literal["asyncio", "trio"] | str = "",  # noqa: PYI051
+        backend: Backend | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         log: logging.LoggerAdapter | None = None,
         name: str | None = None,
         protected: bool = False,
+        backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
     ) -> Self:
         """Start a new thread with a new Caller open in the context of anyio event loop.
 
         A new thread and caller is always started and ready to start new jobs as soon as it is returned.
 
         Args:
-            backend: The backend to use for the anyio event loop (anyio.run).
+            backend: The backend to use for the anyio event loop (anyio.run). Defaults to the backend from where it is called.
             log: A logging adapter to use for debug messages.
             protected: When True, the caller will not shutdown unless shutdown is called with `force=True`.
+            backend_options: Backend options for [anyio.run][]. Defaults to `Kernel.backend_options`.
         """
 
         def anyio_run_caller() -> None:
@@ -616,10 +619,12 @@ class Caller:
                     with contextlib.suppress(anyio.get_cancelled_exc_class()):
                         await anyio.sleep_forever()
 
-            anyio.run(caller_context, backend=backend_)
+            anyio.run(caller_context, backend=backend_, backend_options=backend_options)
 
         assert name not in [t.name for t in cls._instances], f"{name=} already exists!"
-        backend_ = backend or sniffio.current_async_library()
+        backend_ = Backend(backend if backend is not NoValue else sniffio.current_async_library())
+        if backend_options is NoValue:
+            backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
         caller = cast("Self", object)
         ready_event = threading.Event()
         thread = threading.Thread(target=anyio_run_caller, name=name, daemon=True)
