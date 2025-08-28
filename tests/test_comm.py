@@ -1,11 +1,4 @@
-import pytest
-
 from async_kernel.comm import Comm, CommManager
-
-
-@pytest.fixture(scope="module", params=["asyncio", "trio"])
-def anyio_backend(request):
-    return request.param
 
 
 async def test_comm(kernel) -> None:
