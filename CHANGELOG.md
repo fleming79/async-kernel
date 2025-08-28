@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2025-08-28
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Caller.queue_call add argument send_nowait  and convert to sync that optionally returns an awaitable. [#71](https://github.com/fleming79/async-kernel/pull/71)
+
+### <!-- 1 --> 🚀 Features
+
+- Add anyio_backend_options and use uvloop by default [#70](https://github.com/fleming79/async-kernel/pull/70)
+
+### <!-- 5 --> 📝 Documentation
+
+- Use mike for documentation versioning. [#67](https://github.com/fleming79/async-kernel/pull/67)
+
+- Update docs, readme and project description. [#66](https://github.com/fleming79/async-kernel/pull/66)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Drop matplotlib dependency. [#69](https://github.com/fleming79/async-kernel/pull/69)
+
 ## [0.1.0-rc3] - 2025-08-26
 
 ### <!-- 1 --> 🚀 Features
@@ -12,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add more classifers and code coverage [#64](https://github.com/fleming79/async-kernel/pull/64)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.1.0-rc3 [#65](https://github.com/fleming79/async-kernel/pull/65)
 
 - Add workflow_run event because the release is not triggered if  the release is created by another workflow. [#62](https://github.com/fleming79/async-kernel/pull/62)
 
@@ -83,6 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.1.0]: https://github.com/fleming79/async-kernel/compare/v0.1.0-rc3..v0.1.0
 [0.1.0-rc3]: https://github.com/fleming79/async-kernel/compare/v0.1.0-rc2..v0.1.0-rc3
 [0.1.0-rc2]: https://github.com/fleming79/async-kernel/compare/v0.1.0-rc1..v0.1.0-rc2
 [0.1.0-rc1]: https://github.com/fleming79/async-kernel/compare/v0.1.0-rc0..v0.1.0-rc1
