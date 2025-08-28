@@ -7,6 +7,7 @@ import contextlib
 import errno
 import functools
 import getpass
+import importlib.util
 import logging
 import math
 import os
@@ -343,7 +344,7 @@ class Kernel(ConnectionFileMixin):
 
     @default("anyio_backend_options")
     def _default_anyio_backend_options(self):
-        return {Backend.asyncio: {"use_uvloop": True}, Backend.trio: None}
+        return {Backend.asyncio: {"use_uvloop": True} if importlib.util.find_spec("uvloop") else {}, Backend.trio: None}
 
     @classmethod
     def stop(cls) -> None:

@@ -624,7 +624,7 @@ class Caller:
         assert name not in [t.name for t in cls._instances], f"{name=} already exists!"
         backend_ = Backend(backend if backend is not NoValue else sniffio.current_async_library())
         if backend_options is NoValue:
-            backend_options = async_kernel.Kernel().anyio_backend_options[backend_]
+            backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
         caller = cast("Self", object)
         ready_event = threading.Event()
         thread = threading.Thread(target=anyio_run_caller, name=name, daemon=True)

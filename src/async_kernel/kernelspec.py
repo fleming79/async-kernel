@@ -26,7 +26,8 @@ class Backend(enum.StrEnum):
 
 class KernelName(enum.StrEnum):
     asyncio = "async"
-    trio = "async-trio"
+    if importlib.util.find_spec("trio"):
+        trio = "async-trio"
 
 
 def make_argv(

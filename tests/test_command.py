@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import shutil
 import signal
@@ -177,6 +178,30 @@ def test_command_line(monkeypatch, kernel_name):
         kernel = async_kernel.Kernel()
         assert kernel.quiet is False
         assert kernel.shell.execute_request_timeout == 0.1
+
+    with pytest.raises(SystemExit):
+        command_line(wait_exit)
+
+
+@pytest.mark.skipif(condition=(sys.platform == "win32") or (sys.version_info >= (3, 14)), reason="uvloop not available")
+@pytest.mark.parametrize("disabled", argvalues=[True, False])
+def test_uv_loop_default(monkeypatch, disabled: bool):
+    # Start a kernel with a uvloop
+    args = ["prog", "-f", ".", "--"]
+    if not disabled:
+        args.extend(("--anyio_backend_options", '{"asyncio":{}}'))
+    monkeypatch.setattr(sys, "argv", args)
+
+    async def wait_exit():
+        # TODO: Adapt this test to handle winloop once it is supported in anyio. https://github.com/agronholm/anyio/pull/960
+        import uvloop  # noqa: PLC0415
+
+        loop = asyncio.get_running_loop()
+        if disabled:
+            assert async_kernel.Kernel().anyio_backend_options == {Backend.asyncio: {}}
+            assert not isinstance(loop, uvloop.Loop)
+        else:
+            assert isinstance(loop, uvloop.Loop)
 
     with pytest.raises(SystemExit):
         command_line(wait_exit)

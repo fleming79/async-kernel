@@ -9,7 +9,7 @@ from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel.utils
 from async_kernel.kernel import Kernel
-from async_kernel.kernelspec import KernelName, make_argv
+from async_kernel.kernelspec import Backend, KernelName, make_argv
 from async_kernel.typing import ExecuteContent, Job, Message, MsgHeader, MsgType, SocketID
 from tests import utils
 
@@ -56,7 +56,7 @@ async def kernel(anyio_backend, transport: str, tmp_path_factory):
 
 @pytest.fixture(scope="module")
 async def client(kernel: Kernel):
-    if kernel.kernel_name is KernelName.trio:
+    if kernel.anyio_backend is Backend.trio:
         pytest.skip("AsyncKernelClient needs asyncio")
     client = AsyncKernelClient()
     client.load_connection_info(kernel.get_connection_info())
