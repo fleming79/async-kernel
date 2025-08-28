@@ -350,20 +350,21 @@ class TestCaller:
             for i in range(4):
                 force = bool(i % 2)
                 results.clear()
-                await caller.queue_call(my_func, 0, 0, 0, max_buffer_size=i)
+                await caller.queue_call(my_func, 0, 0, 0, max_buffer_size=i, send_nowait=False)
                 assert caller.has_execution_queue(my_func)
                 for j in range(1, 20):
-                    await caller.queue_call(my_func, 0, j, j)
+                    await caller.queue_call(my_func, 0, j, j, send_nowait=False)
                 assert await caller.queue_close(my_func, force=force)
                 if force:
                     assert len(results) < 20, "Should exit early"
                 else:
                     assert results == list(range(20)), "Should empty queue prior"
+            assert caller.queue_call(my_func, 0, 0, 0) is None
 
     async def test_call_early(self, anyio_backend) -> None:
         caller = Caller(create=True)
         fut = caller.call_soon(time.sleep, 0.1)
-        await anyio.sleep(0.1)
+        await anyio.sleep(delay=0.1)
         assert not fut.done()
         async with caller:
             await fut
