@@ -93,6 +93,7 @@ plugins:
             - https://docs.python.org/3/objects.inv
             - https://ipython.readthedocs.io/en/stable/objects.inv
             - https://ipykernel.readthedocs.io/en/stable/objects.inv
+            - https://anyio.readthedocs.io/en/stable/objects.inv
           options:
             docstring_options:
               ignore_init_summary: true

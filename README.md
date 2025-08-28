@@ -16,7 +16,10 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
 
 - Concurrent message handling
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
-- Configurable backend - "asyncio" (default) or "trio backend"
+- Configurable backend
+    - Asyncio (default)
+        - [uvloop](https://pypi.org/project/uvloop/) enabled by default
+    - [trio](https://pypi.org/project/trio/) backend
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell) provides:
     - code execution
     - magic

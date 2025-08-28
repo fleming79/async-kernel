@@ -169,17 +169,14 @@ async def test_subprocess_kernels_client(subprocess_kernels_client, kernel_name)
     assert backend in reply["user_expressions"]["backend"]["data"]["text/plain"]
 
 
-def test_command_line(monkeypatch, anyio_backend, kernel_name):
+def test_command_line(monkeypatch, kernel_name):
     # Start & Stop a kernel
     monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--quiet", "False", "shell.execute_request_timeout", "0.1"])
-    started = False
 
     async def wait_exit():
         kernel = async_kernel.Kernel()
         assert kernel.quiet is False
         assert kernel.shell.execute_request_timeout == 0.1
-        nonlocal started
-        started = True
 
     with pytest.raises(SystemExit):
         command_line(wait_exit)

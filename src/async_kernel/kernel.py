@@ -226,6 +226,9 @@ class Kernel(ConnectionFileMixin):
     _execution_count = Int(0)
     anyio_backend = UseEnum(Backend)
     ""
+    anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
+    "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`"
+
     concurrency_mode = UseEnum(KernelConcurrencyMode)
     """The mode to use when getting the run mode for running the handler of a message request.
     
@@ -337,6 +340,10 @@ class Kernel(ConnectionFileMixin):
     @default("shell")
     def _default_shell(self) -> AsyncInteractiveShell:
         return AsyncInteractiveShell.instance(parent=self)
+
+    @default("anyio_backend_options")
+    def _default_anyio_backend_options(self):
+        return {Backend.asyncio: {"use_uvloop": True}, Backend.trio: None}
 
     @classmethod
     def stop(cls) -> None:

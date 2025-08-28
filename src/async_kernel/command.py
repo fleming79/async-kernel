@@ -144,7 +144,7 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
 
         try:
             backend = Backend.trio if "trio" in kernel_name.lower() else Backend.asyncio
-            anyio.run(_start, backend=backend)
+            anyio.run(_start, backend=backend, backend_options=kernel.anyio_backend_options[backend])
         except KeyboardInterrupt:
             pass
         except BaseException as e:
