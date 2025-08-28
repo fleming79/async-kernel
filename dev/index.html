@@ -1175,7 +1175,14 @@ viewing the latest version.
 <ul>
 <li>Concurrent message handling</li>
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
-<li>Configurable backend - "asyncio" (default) or "trio backend"</li>
+<li>Configurable backend<ul>
+<li>Asyncio (default)<ul>
+<li><a href="https://pypi.org/project/uvloop/">uvloop</a> enabled by default</li>
+</ul>
+</li>
+<li><a href="https://pypi.org/project/trio/">trio</a> backend</li>
+</ul>
+</li>
 <li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a> provides:<ul>
 <li>code execution</li>
 <li>magic</li>

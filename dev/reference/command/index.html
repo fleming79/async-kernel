@@ -1331,7 +1331,7 @@ viewing the latest version.
 
 
 <a href="#async_kernel.command.command_line" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">command_line</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="wait_exit_context (async_kernel.command.command_line(wait_exit_context))" href="#async_kernel.command.command_line(wait_exit_context)">wait_exit_context</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="anyio.sleep_forever">sleep_forever</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">command_line</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="wait_exit_context (async_kernel.command.command_line(wait_exit_context))" href="#async_kernel.command.command_line(wait_exit_context)">wait_exit_context</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="anyio.sleep_forever" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.sleep_forever">sleep_forever</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1359,7 +1359,7 @@ context, handling keyboard interrupts and other exceptions.</p>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.command.command_line(wait_exit_context)" class="doc doc-heading doc-heading-parameter">              <b><code>wait_exit_context</code></b>
 <a href="#async_kernel.command.command_line(wait_exit_context)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], <a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a>]</code>, default:
-                  <code><span title="anyio.sleep_forever">sleep_forever</span></code>
+                  <code><a class="autorefs autorefs-external" title="anyio.sleep_forever" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.sleep_forever">sleep_forever</a></code>
 )
           –
           <div class="doc-md-description">
@@ -1590,7 +1590,7 @@ program is interrupted.</p>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span> <span class="k">if</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="n">kernel_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="n">Backend</span><span class="o">.</span><span class="n">asyncio</span>
-            <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">_start</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span>
+            <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">_start</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_options</span><span class="o">=</span><span class="n">kernel</span><span class="o">.</span><span class="n">anyio_backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
