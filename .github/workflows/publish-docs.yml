@@ -50,8 +50,9 @@ jobs:
               if [[ $version =~ .*[0-9].*[a-zA-Z] ]]; then
                   echo "alias=$version pre-release" >> $GITHUB_OUTPUT
               else
-                  echo "alias=release" >> $GITHUB_OUTPUT
+                  echo "alias=latest" >> $GITHUB_OUTPUT
               fi
+            version=cut -d '.' -f 1,2 <<< $version
           else
             echo "version=dev" >> $GITHUB_OUTPUT
           fi
