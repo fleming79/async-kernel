@@ -10,7 +10,7 @@ import time
 import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast, overload
 
 import anyio
 import sniffio
@@ -24,9 +24,11 @@ from async_kernel.utils import wait_thread_event
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from types import CoroutineType
 
     from anyio._core._synchronization import Event
     from anyio.abc import TaskGroup, TaskStatus
+    from anyio.streams.memory import MemoryObjectSendStream
 
     from async_kernel.typing import P
 
@@ -467,13 +469,35 @@ class Caller:
         "Returns True if an execution queue exists for `func`."
         return func in self._executor_queue
 
-    async def queue_call(
+    if TYPE_CHECKING:
+
+        @overload
+        def queue_call(
+            self,
+            func: Callable[[*PosArgsT], Awaitable[Any]],
+            /,
+            *args: *PosArgsT,
+            max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+            send_nowait: Literal[False],
+        ) -> CoroutineType[Any, Any, None]: ...
+        @overload
+        def queue_call(
+            self,
+            func: Callable[[*PosArgsT], Awaitable[Any]],
+            /,
+            *args: *PosArgsT,
+            max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+            send_nowait: Literal[True] | Any = True,
+        ) -> None: ...
+
+    def queue_call(
         self,
         func: Callable[[*PosArgsT], Awaitable[Any]],
         /,
         *args: *PosArgsT,
         max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-    ) -> None:
+        send_nowait: bool = True,
+    ) -> CoroutineType[Any, Any, None] | None:
         """Queue the execution of func in queue specific to the function (not thread-safe).
 
         The args are added to a queue associated with the provided `func`. If queue does not already exist for
@@ -485,6 +509,8 @@ class Caller:
             func: The asynchronous function to execute.
             *args: The arguments to pass to the function.
             max_buffer_size: The maximum buffer size for the queue. If NoValue, defaults to [async_kernel.Caller.MAX_BUFFER_SIZE].
+            send_nowait: Set as False to return a coroutine that is used to send the request.
+                Use this to prevent experiencing exceptions if the buffer is full.
         """
         self._check_in_thread()
         if not self.has_execution_queue(func):
@@ -504,7 +530,8 @@ class Caller:
                     self._executor_queue.pop(execute_loop, None)
 
             self._executor_queue[func] = {"queue": sender, "future": self.call_soon(execute_loop)}
-        await self._executor_queue[func]["queue"].send(args)
+        sender: MemoryObjectSendStream[tuple[*PosArgsT]] = self._executor_queue[func]["queue"]
+        return sender.send_nowait(args) if send_nowait else sender.send(args)
 
     async def queue_close(self, func: Callable, *, force: bool = False) -> bool:
         """Close the execution queue associated with func (not thread-safe).
