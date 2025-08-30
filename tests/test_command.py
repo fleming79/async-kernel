@@ -52,7 +52,7 @@ def test_setattr_nested():
 
 def test_setattr_nested_has_traits():
     class TestObj(HasTraits):
-        k = CInt(load_default=False)
+        k = CInt()
         nested = Instance(HasTraits)
         nested_with_default = Instance(HasTraits)
 
