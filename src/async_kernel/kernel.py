@@ -275,8 +275,8 @@ class Kernel(ConnectionFileMixin):
         """Start the kernel.
 
         - Only one instance can (should) run at a time.
-        - A kernel instance can only be started.
-        - A new instance can be started once the old instance is stopped.
+        - An instance can only be started once.
+        - A new instance can be started after a previous instance has stopped.
 
         Usage:
 
