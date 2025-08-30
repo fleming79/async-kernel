@@ -138,7 +138,7 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
 
         async def _start() -> None:
             print("Starting kernel")
-            async with kernel.start_in_context():
+            async with kernel:
                 with contextlib.suppress(kernel.CancelledError):
                     await wait_exit_context()
 

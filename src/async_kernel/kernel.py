@@ -271,6 +271,29 @@ class Kernel(ConnectionFileMixin):
         if not os.environ.get("MPLBACKEND"):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
 
+    async def __aenter__(self) -> Self:
+        """Start the kernel.
+
+        - Only one instance can (should) run at a time.
+        - A kernel instance can only be started.
+        - A new instance can be started once the old instance is stopped.
+
+        Usage:
+
+            ```python
+            async with Kerne() as kernel:
+                await anyio.sleep_forever()
+            ```
+        """
+        async with contextlib.AsyncExitStack() as stack:
+            self._running = True
+            await stack.enter_async_context(self._start_in_context())
+            self.__stack = stack.pop_all()
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, exc_tb) -> None:
+        await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
+
     @property
     def execution_count(self) -> int:
         "The execution count in context of the current coroutine, else the current value if there isn't one in context."
@@ -348,7 +371,7 @@ class Kernel(ConnectionFileMixin):
 
     @classmethod
     def stop(cls) -> None:
-        """Stop the kernel.
+        """Stop the running kernel.
 
         Once a kernel is stopped; that instance of the kernel cannot be restarted.
         Instead, a new kernel must be started.
@@ -358,7 +381,7 @@ class Kernel(ConnectionFileMixin):
             instance._stop_event.set()
 
     @asynccontextmanager
-    async def start_in_context(self) -> AsyncGenerator[Self, Any]:
+    async def _start_in_context(self) -> AsyncGenerator[Self, Any]:
         """Start the Kernel in an already running anyio event loop."""
         if self._sockets:
             msg = "Already started"
@@ -903,15 +926,12 @@ class Kernel(ConnectionFileMixin):
         detail_level = int(c.get("detail_level", 0))
         omit_sections = set(c.get("omit_sections", []))
         name = token_at_cursor(c["code"], c["cursor_pos"])
-        content: dict[str, Any] = {"status": "ok"}
-        content["data"] = {}
-        content["metadata"] = {}
+        content = {"data": {}, "metadata": {}, "found": True}
         try:
             bundle = self.shell.object_inspect_mime(name, detail_level=detail_level, omit_sections=omit_sections)
-            content["data"].update(bundle)
+            content["data"] = bundle
             if not self.shell.enable_html_pager:
                 content["data"].pop("text/html")
-            content["found"] = True
         except KeyError:
             content["found"] = False
         return content
@@ -963,7 +983,7 @@ class Kernel(ConnectionFileMixin):
         """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
         await self.debugger.disconnect()
         Caller().call_no_context(self.stop)
-        return {"status": "ok", "restart": job["msg"]["content"].get("restart", False)}
+        return {"restart": job["msg"]["content"].get("restart", False)}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only)."""

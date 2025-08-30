@@ -50,7 +50,7 @@ async def kernel(anyio_backend, transport: str, tmp_path_factory):
     kernel.connection_file = str(connection_file.resolve())
     os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
     kernel.transport = transport
-    async with kernel.start_in_context():
+    async with kernel:
         yield kernel
 
 
