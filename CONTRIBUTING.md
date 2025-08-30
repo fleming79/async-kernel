@@ -80,7 +80,7 @@ Documentation is provided my [Material for MkDocs ](https://squidfunk.github.io/
 
 ```shell
 uv sync --group docs
-uv run async-kernel -a async-docs --shell.execute_request_timeout 0.1
+uv run async-kernel -a async-docs --shell.execute_request_timeout=0.1
 ```
 
 ### Serve locally

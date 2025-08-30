@@ -1,18 +1,16 @@
 # Command line
 
-`async-kernel` (and alias `async_kernel`) is provided as a system executable.
-
-**Options:**
+`async-kernel` (and alias `async_kernel`) is provided on the command line. The main options are:
 
 - [Start a kernel](#start-a-kernel)
 - [Add kernel spec](#add-a-kernel-spec)
-- [Remove](#remove-a-kernel-spec)
+- [Remove a kernel spec](#remove-a-kernel-spec)
 
 ## Add a kernel spec
 
 Use the argument `-a` followed by the kernel name to add a new kernel spec.
 Include 'trio' in the kernel name to use a 'trio' backend. Any valid kernel name is
-allowed. Do not include whitespace in the kernel name.
+allowed (whitespace is not allowed).
 
 Recommended kernel names are:
 
@@ -63,7 +61,7 @@ async-kernel -f .
 Additional settings can be passed as arguments.
 
 ```shell
-async-kernel -f . --kernel_name async-trio-custom --display_name 'My custom kernel' --quiet False
+async-kernel -f . --kernel_name=async-trio-custom --display_name='My custom kernel' --quiet=False
 ```
 
 The call above will start a new kernel with a 'trio' backend. The quiet setting is

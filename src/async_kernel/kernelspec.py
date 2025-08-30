@@ -60,7 +60,7 @@ def make_argv(
     python = sys.executable if fullpath else "python"
     argv = [python, "-m", "async_kernel", "-f", connection_file]
     for k, v in ({"kernel_factory": kernel_factory, "kernel_name": kernel_name} | kwargs).items():
-        argv.extend((f"--{k}", str(v)))
+        argv.append(f"--{k}={v}")
     return argv
 
 
@@ -72,6 +72,7 @@ def write_kernel_spec(
     kernel_name: KernelName | str = KernelName.asyncio,
     fullpath=False,
     display_name="",
+    prefix="",
     **kwargs,
 ) -> Path:
     """
@@ -87,6 +88,8 @@ def write_kernel_spec(
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
         display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
+        prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
+            This can be sys.prefix for installation inside virtual or conda envs.
 
     kwargs:
         Additional settings to use on the instance of the Kernel.
@@ -97,7 +100,7 @@ def write_kernel_spec(
         keys that correspond to an attribute on the kernel instance are not used.
     """
     assert _is_valid_kernel_name(kernel_name)
-    path = Path(path) if path else get_kernel_dir() / kernel_name
+    path = Path(path) if path else get_kernel_dir(prefix) / kernel_name
     # stage resources
     path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(RESOURCES, path, dirs_exist_ok=True)
@@ -121,6 +124,10 @@ def write_kernel_spec(
     return path
 
 
-def get_kernel_dir() -> Path:
-    "The path to where kernel specs are stored for Jupyter."
-    return Path(sys.prefix) / "share/jupyter/kernels"
+def get_kernel_dir(prefix="") -> Path:
+    """The path to where kernel specs are stored for Jupyter.
+
+    Args:
+        prefix: Defaults to sys.prefix (installable for a particular environment).
+    """
+    return Path(prefix or sys.prefix) / "share/jupyter/kernels"

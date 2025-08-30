@@ -81,7 +81,7 @@ def test_prints_help_when_no_args(monkeypatch, capsys):
 
 def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
-        sys, "argv", ["prog", "-a", "async-trio", "--display_name", "my kernel", "--kernel_factory", "my.custom.class"]
+        sys, "argv", ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=my.custom.class"]
     )
     command_line()
     out = capsys.readouterr().out
@@ -97,10 +97,8 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "async_kernel",
             "-f",
             "{connection_file}",
-            "--kernel_factory",
-            "my.custom.class",
-            "--kernel_name",
-            "async-trio",
+            "--kernel_factory=my.custom.class",
+            "--kernel_name=async-trio",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -133,7 +131,7 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
 
 
 def test_start_kernel_success(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--kernel_name", "async", "--backend=asyncio"])
+    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--kernel_name=async", "--backend=asyncio"])
     started = False
 
     async def wait_exit():
@@ -172,7 +170,7 @@ async def test_subprocess_kernels_client(subprocess_kernels_client, kernel_name)
 
 def test_command_line(monkeypatch, kernel_name):
     # Start & Stop a kernel
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--quiet", "False", "shell.execute_request_timeout", "0.1"])
+    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--quiet=False", "--shell.execute_request_timeout=0.1"])
 
     async def wait_exit():
         kernel = async_kernel.Kernel()
@@ -189,7 +187,7 @@ def test_uv_loop_default(monkeypatch, disabled: bool):
     # Start a kernel with a uvloop
     args = ["prog", "-f", ".", "--"]
     if not disabled:
-        args.extend(("--anyio_backend_options", '{"asyncio":{}}'))
+        args.append('--anyio_backend_options={"asyncio":{}}')
     monkeypatch.setattr(sys, "argv", args)
 
     async def wait_exit():

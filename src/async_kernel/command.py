@@ -5,7 +5,6 @@ import contextlib
 import shutil
 import sys
 import traceback
-from itertools import pairwise
 from typing import TYPE_CHECKING, Any
 
 import anyio
@@ -74,14 +73,28 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
             `anyio.sleep_forever`, which keeps the kernel running indefinitely
             until an external signal is received.
 
+    Command line arguments (args.argv):
+        Command line arguments
+
+        [argparse.ArgumentParser.parse_known_args][]
+
+        'unknownargs': Additional args provided from the command line are allowed
+            These are any arguments tha
+
     Raises:
         SystemExit: If an error occurs during kernel execution or if the
             program is interrupted.
+
+    ``` warning
+
+        Those familar with Configurable traits should not confuse this system
+        for setting attributes and traits with configurable traits. The difference
+        being that attributes are specified as the object relative to the base (kernel).
     """
     kernel_dir: Path = get_kernel_dir()
     parser = argparse.ArgumentParser(
-        description="Kernel interface to start a kernel or add/remove a kernel spec. "
-        + f"The Jupyter Kernel directory is: f'{kernel_dir}'"
+        description=str(command_line.__doc__),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-f",
@@ -103,11 +116,13 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         dest="remove",
         help=f"remove existing kernel specs. Installed kernels: {kernels}",
     )
-
     args, unknownargs = parser.parse_known_args()
-    for k, v in pairwise(unknownargs):
-        if k.startswith("--"):
-            setattr(args, k.removeprefix("--"), v)
+    for v in (v.lstrip("-") for v in unknownargs):
+        if "=" in v:
+            k, v_ = v.split("=", maxsplit=1)
+            setattr(args, k, v_.strip("'\"").strip())
+        else:
+            setattr(args, v, True)
     if args.add:
         if not hasattr(args, "kernel_name"):
             args.kernel_name = args.add
@@ -123,7 +138,6 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
                 print(f"Removed kernel spec: {name}")
             else:
                 print(f"Kernel spec folder: '{name}' not found!")
-
     elif not args.connection_file:
         parser.print_help()
     else:
@@ -137,7 +151,7 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
             setattr_nested(kernel, k, v)
 
         async def _start() -> None:
-            print("Starting kernel")
+            print(f"Starting kernel: {kernel_name=}")
             async with kernel:
                 with contextlib.suppress(kernel.CancelledError):
                     await wait_exit_context()
