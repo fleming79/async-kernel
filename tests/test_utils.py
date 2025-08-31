@@ -4,6 +4,7 @@ import threading
 from typing import TYPE_CHECKING
 
 import pytest
+from traitlets import CInt, HasTraits, Instance, default
 
 from async_kernel import utils as ak_utils
 
@@ -52,3 +53,42 @@ class TestUtils:
         assert ak_utils.get_execute_request_timeout(job) == 3
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_execute_request_timeout() == 3
+
+    def test_setattr_nested(self):
+        class TestObj:
+            k = None
+            nested: TestObj
+
+        test_obj = TestObj()
+        test_obj.nested = TestObj()
+
+        # Directly set
+        ak_utils.setattr_nested(test_obj, "k", "1")
+        assert test_obj.k == "1"
+        # Nested
+        ak_utils.setattr_nested(test_obj, "nested.k", 2)
+        assert test_obj.nested.k == 2
+        # Does not set a missing attribute
+        ak_utils.setattr_nested(test_obj, "not_an_attribute", None)
+        assert not hasattr(test_obj, "not_an_attribute")
+
+    def test_setattr_nested_has_traits(self):
+        class TestObj(HasTraits):
+            k = CInt()
+            nested = Instance(HasTraits)
+            nested_with_default = Instance(HasTraits)
+
+            @default("nested_with_default")
+            def _default_nested_with_default(self):
+                return TestObj()
+
+        test_obj = TestObj()
+        # Set with cast
+        ak_utils.setattr_nested(test_obj, "k", "1")
+        assert test_obj.k == 1
+        # Handles missing traits
+        ak_utils.setattr_nested(test_obj, "nested.k", "2")
+        assert not test_obj.trait_has_value("nested")
+        # Sets nested trait with a default
+        ak_utils.setattr_nested(test_obj, "nested_with_default.k", "2")
+        assert test_obj.nested_with_default.k == 2

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import anyio
 import anyio.to_thread
+import traitlets
 
 import async_kernel
 from async_kernel.typing import Message, MetadataKeys
@@ -27,6 +28,7 @@ __all__ = [
     "get_parent",
     "get_tags",
     "mark_thread_pydev_do_not_trace",
+    "setattr_nested",
     "wait_thread_event",
 ]
 
@@ -114,3 +116,37 @@ def get_execution_count() -> int:
     "Gets the execution count for the current context, defaults to the current kernel count."
 
     return _execution_count_var.get(None) or async_kernel.Kernel()._execution_count  # pyright: ignore[reportPrivateUsage]
+
+
+def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
+    """Set a nested attribute of an object.
+
+    If the attribute name contains dots, it is interpreted as a nested attribute.
+    For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.
+
+    This is primarily intended for use with [async_kernel.command.command_line][]
+    to set the nesteded attributes on on kernels.
+
+    Args:
+        obj: The object to set the attribute on.
+        name: The name of the attribute to set.
+        value: The value to set the attribute to.
+
+    Returns:
+        The mapping of the name to the set value if the value has been set.
+        An empty dict indicates the value was not set.
+
+    """
+    if len(bits := name.split(".")) > 1:
+        try:
+            obj = getattr(obj, bits[0])
+        except Exception:
+            return {}
+        setattr_nested(obj, ".".join(bits[1:]), value)
+    if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
+        try:
+            setattr(obj, name, value)
+        except Exception:
+            setattr(obj, name, eval(value))
+        return {name: getattr(obj, name)}
+    return {}
