@@ -1277,6 +1277,7 @@ various kernel operations, including:</p>
 <li>Starting a kernel with a specified connection file.</li>
 <li>Adding a new kernel specification.</li>
 <li>Removing an existing kernel specification.</li>
+<li>Print version.</li>
 </ul>
 <p>The function determines the appropriate action based on the provided
 arguments and either starts a kernel, adds a kernel spec, or removes
@@ -1321,8 +1322,7 @@ program is interrupted.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/command.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 21</span>
-<span class="normal"> 22</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 22</span>
 <span class="normal"> 23</span>
 <span class="normal"> 24</span>
 <span class="normal"> 25</span>
@@ -1427,7 +1427,21 @@ program is interrupted.</p>
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
-<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">(</span><span class="n">wait_exit_context</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">(</span><span class="n">wait_exit_context</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses command-line arguments to manage kernel specs and start kernels.</span>
 
 <span class="sd">    This function uses `argparse` to handle command-line arguments for</span>
@@ -1436,6 +1450,7 @@ program is interrupted.</p>
 <span class="sd">    - Starting a kernel with a specified connection file.</span>
 <span class="sd">    - Adding a new kernel specification.</span>
 <span class="sd">    - Removing an existing kernel specification.</span>
+<span class="sd">    - Print version.</span>
 
 <span class="sd">    The function determines the appropriate action based on the provided</span>
 <span class="sd">    arguments and either starts a kernel, adds a kernel spec, or removes</span>
@@ -1473,7 +1488,7 @@ program is interrupted.</p>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--connection_file&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;connection_file&quot;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start a Kernel with a connection file. To start a Kernel without a file use a period `.`.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
@@ -1491,7 +1506,15 @@ program is interrupted.</p>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;remove&quot;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Remove existing kernel specs. Installed kernels: </span><span class="si">{</span><span class="n">kernels</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-v&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print version&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">args</span><span class="p">,</span> <span class="n">unknownargs</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
+    <span class="n">cl_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 
     <span class="c1"># Convert unknownargs from flags to mappings</span>
     <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">unknownargs</span><span class="p">):</span>
@@ -1506,7 +1529,7 @@ program is interrupted.</p>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">add</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_name&quot;</span><span class="p">):</span>
             <span class="n">args</span><span class="o">.</span><span class="n">kernel_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">add</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;remove&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">([</span><span class="s2">&quot;connection_file&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">connection_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">cl_names</span><span class="p">:</span>
             <span class="nb">delattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">write_kernel_spec</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added kernel spec </span><span class="si">{</span><span class="n">path</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1521,11 +1544,15 @@ program is interrupted.</p>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Kernel spec folder: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found!&quot;</span><span class="p">)</span>
 
+    <span class="c1"># Version</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;async-kernel&quot;</span><span class="p">,</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+
     <span class="c1"># Start kernel</span>
     <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">connection_file</span><span class="p">:</span>
         <span class="n">factory</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Kernel</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">import_item</span><span class="p">(</span><span class="n">pth</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">pth</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_factory&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="n">Kernel</span>
         <span class="n">settings</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;remove&quot;</span><span class="p">,</span> <span class="s2">&quot;kernel_factory&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">cl_names</span><span class="o">.</span><span class="n">difference</span><span class="p">([</span><span class="s2">&quot;connection_file&quot;</span><span class="p">]):</span>
             <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">{</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">}:</span>
             <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
