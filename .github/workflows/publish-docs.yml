@@ -52,7 +52,7 @@ jobs:
               else
                   echo "alias=latest" >> $GITHUB_OUTPUT
               fi
-            version=cut -d '.' -f 1,2 <<< $version
+            echo "version=$(cut -d '.' -f 1,2)" <<< $version
           else
             echo "version=dev" >> $GITHUB_OUTPUT
           fi
