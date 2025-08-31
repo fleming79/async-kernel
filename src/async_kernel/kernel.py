@@ -639,9 +639,8 @@ class Kernel(ConnectionFileMixin):
         """Receive shell and control messages over zmq sockets."""
         if (
             sys.platform == "win32"
-            and sniffio.current_async_library() == "asyncio"
-            and (policy := asyncio.get_event_loop_policy())
-            and policy.__class__.__name__ == "WindowsProactorEventLoopPolicy"
+            and self.anyio_backend is Backend.asyncio
+            and isinstance(asyncio.get_running_loop(), asyncio.ProactorEventLoop)
         ):
             from anyio._core._asyncio_selector_thread import get_selector  # noqa: PLC0415
 
