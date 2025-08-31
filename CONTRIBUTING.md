@@ -14,7 +14,7 @@ If you are working on a pull request, [make a fork] of the project and install f
 ```shell
 git clone <repository>
 cd async-kernel
-uv venv -p python@311 # or whichever environment you are targeting.
+uv venv --python 3.11 # or whichever environment you are targeting.
 uv sync
 # Activate the environment
 ```

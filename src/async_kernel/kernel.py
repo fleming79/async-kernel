@@ -292,6 +292,17 @@ class Kernel(ConnectionFileMixin):
     )
     _settings: Dict[str, Any] = Dict()
 
+    # The following are defined in ConnectionFileMixin but are not used by Kernel
+    context = NoValue
+    _random_port_names = NoValue  # pyright: ignore[reportAssignmentType]
+    blocking_class = NoValue
+    blocking_client = NoValue  # pyright: ignore[reportAssignmentType]
+    connect_iopub = NoValue  # pyright: ignore[reportAssignmentType]
+    connect_shell = NoValue  # pyright: ignore[reportAssignmentType]
+    connect_stdin = NoValue  # pyright: ignore[reportAssignmentType]
+    connect_hb = NoValue  # pyright: ignore[reportAssignmentType]
+    connect_control = NoValue  # pyright: ignore[reportAssignmentType]
+
     def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
         #  There is only one instance.
         if not (instance := cls._instance):
