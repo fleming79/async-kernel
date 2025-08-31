@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import anyio
 import traitlets
 
+import async_kernel
 from async_kernel.kernel import Kernel, run_kernel
 from async_kernel.kernelspec import KernelName, get_kernel_dir, write_kernel_spec
 
@@ -27,6 +28,7 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
     - Starting a kernel with a specified connection file.
     - Adding a new kernel specification.
     - Removing an existing kernel specification.
+    - Print version.
 
     The function determines the appropriate action based on the provided
     arguments and either starts a kernel, adds a kernel spec, or removes
@@ -64,7 +66,7 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
     )
     parser.add_argument(
         "-f",
-        "--file",
+        "--connection_file",
         dest="connection_file",
         help="Start a Kernel with a connection file. To start a Kernel without a file use a period `.`.",
     )
@@ -82,7 +84,15 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         dest="remove",
         help=f"Remove existing kernel specs. Installed kernels: {kernels}.",
     )
+    parser.add_argument(
+        "-v",
+        "--version",
+        dest="version",
+        help="Print version",
+        action="store_true",
+    )
     args, unknownargs = parser.parse_known_args()
+    cl_names = set(vars(args))
 
     # Convert unknownargs from flags to mappings
     for v in (v.lstrip("-") for v in unknownargs):
@@ -97,7 +107,7 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
     if args.add:
         if not hasattr(args, "kernel_name"):
             args.kernel_name = args.add
-        for name in ["add", "remove"] + (["connection_file"] if args.connection_file is None else []):
+        for name in cl_names:
             delattr(args, name)
         path = write_kernel_spec(**vars(args))
         print(f"Added kernel spec {path!s}")
@@ -112,11 +122,15 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
             else:
                 print(f"Kernel spec folder: '{name}' not found!")
 
+    # Version
+    elif args.version:
+        print("async-kernel", async_kernel.__version__)
+
     # Start kernel
     elif args.connection_file:
         factory: type[Kernel] = traitlets.import_item(pth) if (pth := getattr(args, "kernel_factory", "")) else Kernel
         settings = vars(args)
-        for k in ["add", "remove", "kernel_factory"]:
+        for k in cl_names.difference(["connection_file"]):
             settings.pop(k, None)
         if settings.get("connection_file") in {None, "", "."}:
             settings.pop("connection_file", None)
