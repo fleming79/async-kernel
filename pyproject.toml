@@ -109,11 +109,6 @@ local_scheme = "no-local-version"
 minversion = "6.0"
 xfail_strict = true
 log_cli_level =  "INFO"
-# pytest-retry options. Ref: https://pypi.org/project/pytest-retry/
-retries = 2
-retry_delay = 0.5
-cumulative_timing = false
-retry_outcome = 'rerun'
 addopts = [
   "-raXs", "--durations=10", "--color=yes", "--doctest-modules",
    "--showlocals", "--strict-markers", "--strict-config",
