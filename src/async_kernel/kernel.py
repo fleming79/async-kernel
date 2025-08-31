@@ -862,7 +862,7 @@ class Kernel(ConnectionFileMixin):
         return (f"kernel.{topic}").encode()
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
-        """Handle a ke[rnel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
+        """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
         return self.kernel_info
 
     async def comm_info_request(self, job: Job[Content], /) -> Content:
