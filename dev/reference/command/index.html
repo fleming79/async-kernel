@@ -666,6 +666,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -830,48 +832,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;setattr_nested
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" setattr_nested">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested(obj)" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;obj
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested(name)" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;name
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested(value)" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;value
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -899,6 +859,29 @@ viewing the latest version.
   
   <span class="md-ellipsis">
     Kernel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kernelspec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Kernelspec
     
   </span>
   
@@ -1190,48 +1173,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;setattr_nested
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" setattr_nested">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested(obj)" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;obj
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested(name)" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;name
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.setattr_nested(value)" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;value
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1296,14 +1237,7 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title="command_line (async_kernel.command.command_line)" href="#async_kernel.command.command_line">command_line</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Parses command-line arguments to manage and start kernels.</p>
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="setattr_nested (async_kernel.command.setattr_nested)" href="#async_kernel.command.setattr_nested">setattr_nested</a></code></b>
-            –
-            <div class="doc-md-description">
-              <p>Set a nested attribute of an object.</p>
+              <p>Parses command-line arguments to manage kernel specs and start kernels.</p>
             </div>
           </li>
     </ul>
@@ -1336,7 +1270,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Parses command-line arguments to manage and start kernels.</p>
+        <p>Parses command-line arguments to manage kernel specs and start kernels.</p>
 <p>This function uses <code>argparse</code> to handle command-line arguments for
 various kernel operations, including:</p>
 <ul>
@@ -1387,7 +1321,37 @@ program is interrupted.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/command.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 51</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
 <span class="normal"> 52</span>
 <span class="normal"> 53</span>
 <span class="normal"> 54</span>
@@ -1463,39 +1427,8 @@ program is interrupted.</p>
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">(</span><span class="n">wait_exit_context</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses command-line arguments to manage and start kernels.</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">(</span><span class="n">wait_exit_context</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses command-line arguments to manage kernel specs and start kernels.</span>
 
 <span class="sd">    This function uses `argparse` to handle command-line arguments for</span>
 <span class="sd">    various kernel operations, including:</span>
@@ -1524,10 +1457,19 @@ program is interrupted.</p>
 <span class="sd">        SystemExit: If an error occurs during kernel execution or if the</span>
 <span class="sd">            program is interrupted.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Async kernel&quot;</span>
     <span class="n">kernel_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">get_kernel_dir</span><span class="p">()</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Kernel interface to start a kernel or add/remove a kernel spec. &quot;</span>
-        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;The Jupyter Kernel directory is: f&#39;</span><span class="si">{</span><span class="n">kernel_dir</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;With the async-kernel command line tool you can:</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;    - Add/remove kernel specs</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;    - start kernels</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;Online help: https://fleming79.github.io/async-kernel/latest/commands/#command-line </span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Jupyter Kernel directory: &#39;</span><span class="si">{</span><span class="n">kernel_dir</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-f&quot;</span><span class="p">,</span>
@@ -1547,13 +1489,20 @@ program is interrupted.</p>
         <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--remove&quot;</span><span class="p">,</span>
         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;remove&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;remove existing kernel specs. Installed kernels: </span><span class="si">{</span><span class="n">kernels</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Remove existing kernel specs. Installed kernels: </span><span class="si">{</span><span class="n">kernels</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-
     <span class="n">args</span><span class="p">,</span> <span class="n">unknownargs</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">unknownargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;--&quot;</span><span class="p">):</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;--&quot;</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="c1"># Convert unknownargs from flags to mappings</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">unknownargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">k</span><span class="p">,</span> <span class="n">v_</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v_</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;no-&quot;</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;no-&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Add kernel spec</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">add</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_name&quot;</span><span class="p">):</span>
             <span class="n">args</span><span class="o">.</span><span class="n">kernel_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">add</span>
@@ -1561,6 +1510,8 @@ program is interrupted.</p>
             <span class="nb">delattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">write_kernel_spec</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added kernel spec </span><span class="si">{</span><span class="n">path</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Remove kernel spec</span>
     <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">remove</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">remove</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
             <span class="n">folder</span> <span class="o">=</span> <span class="n">kernel_dir</span> <span class="o">/</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -1570,144 +1521,19 @@ program is interrupted.</p>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Kernel spec folder: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found!&quot;</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">connection_file</span><span class="p">:</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+    <span class="c1"># Start kernel</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">connection_file</span><span class="p">:</span>
+        <span class="n">factory</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Kernel</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">import_item</span><span class="p">(</span><span class="n">pth</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">pth</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_factory&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="n">Kernel</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;remove&quot;</span><span class="p">,</span> <span class="s2">&quot;kernel_factory&quot;</span><span class="p">]:</span>
+            <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">{</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">}:</span>
+            <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">run_kernel</span><span class="p">(</span><span class="n">factory</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span> <span class="n">wait_exit_context</span><span class="p">)</span>
+
+    <span class="c1"># Default - print help</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">kernel_factory</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_factory&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kernel_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">KernelName</span><span class="o">.</span><span class="n">asyncio</span>
-        <span class="n">factory</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Kernel</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">import_item</span><span class="p">(</span><span class="n">kernel_factory</span><span class="p">)</span> <span class="k">if</span> <span class="n">kernel_factory</span> <span class="k">else</span> <span class="n">Kernel</span>
-        <span class="n">kernel</span> <span class="o">=</span> <span class="n">factory</span><span class="p">(</span><span class="n">kernel_name</span><span class="o">=</span><span class="n">kernel_name</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;connection_file&quot;</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;remove&quot;</span><span class="p">]:</span>
-                <span class="k">continue</span>
-            <span class="n">setattr_nested</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-
-        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_start</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting kernel&quot;</span><span class="p">)</span>
-            <span class="k">async</span> <span class="k">with</span> <span class="n">kernel</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
-                    <span class="k">await</span> <span class="n">wait_exit_context</span><span class="p">()</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span> <span class="k">if</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="n">kernel_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="n">Backend</span><span class="o">.</span><span class="n">asyncio</span>
-            <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">_start</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_options</span><span class="o">=</span><span class="n">kernel</span><span class="o">.</span><span class="n">anyio_backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
-        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
-                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span><span class="p">)</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Kernel stopped: &quot;</span><span class="p">,</span> <span class="n">kernel</span><span class="o">.</span><span class="n">connection_file</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.command.setattr_nested" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">setattr_nested</span>
-
-
-<a href="#async_kernel.command.setattr_nested" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">setattr_nested</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="obj (async_kernel.command.setattr_nested(obj))" href="#async_kernel.command.setattr_nested(obj)">obj</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#object">object</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="name (async_kernel.command.setattr_nested(name))" href="#async_kernel.command.setattr_nested(name)">name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="value (async_kernel.command.setattr_nested(value))" href="#async_kernel.command.setattr_nested(value)">value</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Set a nested attribute of an object.</p>
-<p>If the attribute name contains dots, it is interpreted as a nested attribute.
-For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.</p>
-<p>This is primarily intended for use with <a class="autorefs autorefs-internal" title="command_line" href="#async_kernel.command.command_line">async_kernel.command.command_line</a>
-to set the nesteded attributes on on kernels.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<h4 id="async_kernel.command.setattr_nested(obj)" class="doc doc-heading doc-heading-parameter">              <b><code>obj</code></b>
-<a href="#async_kernel.command.setattr_nested(obj)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#object">object</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The object to set the attribute on.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-<h4 id="async_kernel.command.setattr_nested(name)" class="doc doc-heading doc-heading-parameter">              <b><code>name</code></b>
-<a href="#async_kernel.command.setattr_nested(name)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The name of the attribute to set.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-<h4 id="async_kernel.command.setattr_nested(value)" class="doc doc-heading doc-heading-parameter">              <b><code>value</code></b>
-<a href="#async_kernel.command.setattr_nested(value)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The value to set the attribute to.</p>
-          </div>
-        </li>
-    </ul>
-
-
-            <details class="quote">
-              <summary>Source code in <code>src/async_kernel/command.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a nested attribute of an object.</span>
-
-<span class="sd">    If the attribute name contains dots, it is interpreted as a nested attribute.</span>
-<span class="sd">    For example, if name is &quot;a.b.c&quot;, then the code will attempt to set obj.a.b.c to value.</span>
-
-<span class="sd">    This is primarily intended for use with [async_kernel.command.command_line][]</span>
-<span class="sd">    to set the nesteded attributes on on kernels.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        obj: The object to set the attribute on.</span>
-<span class="sd">        name: The name of the attribute to set.</span>
-<span class="sd">        value: The value to set the attribute to.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span> <span class="o">:=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">value</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">has_trait</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
