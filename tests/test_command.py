@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import shutil
 import signal
 import sys
 import types
@@ -10,12 +9,11 @@ from typing import TYPE_CHECKING
 
 import anyio
 import pytest
-from traitlets import CInt, HasTraits, Instance, default
 
 import async_kernel
-from async_kernel import command as commandline_module
-from async_kernel.command import command_line, setattr_nested
-from async_kernel.kernelspec import Backend, KernelName, make_argv
+from async_kernel import kernel as kernel_module
+from async_kernel.command import command_line
+from async_kernel.kernelspec import Backend, make_argv
 from tests import utils
 
 if TYPE_CHECKING:
@@ -26,50 +24,9 @@ if TYPE_CHECKING:
 def fake_kernel_dir(tmp_path, monkeypatch):
     kernel_dir = tmp_path / "share/jupyter/kernels"
     kernel_dir.mkdir(parents=True)
-    monkeypatch.setattr(commandline_module, "sys", types.SimpleNamespace(prefix=str(tmp_path)))
+    monkeypatch.setattr(kernel_module, "sys", types.SimpleNamespace(prefix=str(tmp_path)))
     monkeypatch.setattr(sys, "prefix", str(tmp_path))
     return kernel_dir
-
-
-def test_setattr_nested():
-    class TestObj:
-        k = None
-        nested: TestObj
-
-    test_obj = TestObj()
-    test_obj.nested = TestObj()
-
-    # Directly set
-    setattr_nested(test_obj, "k", "1")
-    assert test_obj.k == "1"
-    # Nested
-    setattr_nested(test_obj, "nested.k", 2)
-    assert test_obj.nested.k == 2
-    # Does not set a missing attribute
-    setattr_nested(test_obj, "not_an_attribute", None)
-    assert not hasattr(test_obj, "not_an_attribute")
-
-
-def test_setattr_nested_has_traits():
-    class TestObj(HasTraits):
-        k = CInt()
-        nested = Instance(HasTraits)
-        nested_with_default = Instance(HasTraits)
-
-        @default("nested_with_default")
-        def _default_nested_with_default(self):
-            return TestObj()
-
-    test_obj = TestObj()
-    # Set with cast
-    setattr_nested(test_obj, "k", "1")
-    assert test_obj.k == 1
-    # Handles missing traits
-    setattr_nested(test_obj, "nested.k", "2")
-    assert not test_obj.trait_has_value("nested")
-    # Sets nested trait with a default
-    setattr_nested(test_obj, "nested_with_default.k", "2")
-    assert test_obj.nested_with_default.k == 2
 
 
 def test_prints_help_when_no_args(monkeypatch, capsys):
@@ -81,7 +38,7 @@ def test_prints_help_when_no_args(monkeypatch, capsys):
 
 def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
-        sys, "argv", ["prog", "-a", "async-trio", "--display_name", "my kernel", "--kernel_factory", "my.custom.class"]
+        sys, "argv", ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=my.custom.class"]
     )
     command_line()
     out = capsys.readouterr().out
@@ -97,10 +54,8 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "async_kernel",
             "-f",
             "{connection_file}",
-            "--kernel_factory",
-            "my.custom.class",
-            "--kernel_name",
-            "async-trio",
+            "--kernel_factory=my.custom.class",
+            "--kernel_name=async-trio",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -114,8 +69,6 @@ def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys):
     kernel_name = "asyncio"
     (fake_kernel_dir / kernel_name).mkdir()
     monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
-    monkeypatch.setattr(commandline_module, "KernelName", KernelName)
-    monkeypatch.setattr(commandline_module, "shutil", shutil)
     command_line()
     out = capsys.readouterr().out
     assert f"Removed kernel spec: {kernel_name}" in out
@@ -125,15 +78,13 @@ def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys):
 def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     kernel_name = "notfound"
     monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
-    monkeypatch.setattr(commandline_module, "KernelName", KernelName)
-    monkeypatch.setattr(commandline_module, "shutil", shutil)
     command_line()
     out = capsys.readouterr().out
     assert f"Kernel spec folder: '{kernel_name}' not found!" in out
 
 
 def test_start_kernel_success(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--kernel_name", "async", "--backend=asyncio"])
+    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--kernel_name=async", "--backend=asyncio"])
     started = False
 
     async def wait_exit():
@@ -145,7 +96,7 @@ def test_start_kernel_success(monkeypatch, capsys):
     assert e.value.code == 0
     assert started
     out = capsys.readouterr().out
-    assert "Starting kernel" in out
+    assert "Kernel started" in out
     assert "Kernel stopped" in out
 
 
@@ -172,7 +123,7 @@ async def test_subprocess_kernels_client(subprocess_kernels_client, kernel_name)
 
 def test_command_line(monkeypatch, kernel_name):
     # Start & Stop a kernel
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--quiet", "False", "shell.execute_request_timeout", "0.1"])
+    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--quiet=False", "--shell.execute_request_timeout=0.1"])
 
     async def wait_exit():
         kernel = async_kernel.Kernel()
@@ -189,7 +140,7 @@ def test_uv_loop_default(monkeypatch, disabled: bool):
     # Start a kernel with a uvloop
     args = ["prog", "-f", ".", "--"]
     if not disabled:
-        args.extend(("--anyio_backend_options", '{"asyncio":{}}'))
+        args.append('--anyio_backend_options={"asyncio":{}}')
     monkeypatch.setattr(sys, "argv", args)
 
     async def wait_exit():

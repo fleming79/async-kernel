@@ -1,18 +1,16 @@
 # Command line
 
-`async-kernel` (and alias `async_kernel`) is provided as a system executable.
+`async-kernel` (and alias `async_kernel`) is provided on the command line. The main options are:
 
-**Options:**
-
-- [Start a kernel](#start-a-kernel)
 - [Add kernel spec](#add-a-kernel-spec)
-- [Remove](#remove-a-kernel-spec)
+- [Remove a kernel spec](#remove-a-kernel-spec)
+- [Start a kernel](#start-a-kernel)
 
 ## Add a kernel spec
 
 Use the argument `-a` followed by the kernel name to add a new kernel spec.
 Include 'trio' in the kernel name to use a 'trio' backend. Any valid kernel name is
-allowed. Do not include whitespace in the kernel name.
+allowed (whitespace is not allowed).
 
 Recommended kernel names are:
 
@@ -25,20 +23,86 @@ Add a trio kernel spec.
 async-kernel -a async-trio
 ```
 
-!!! note
+### Custom arguments
 
-    To modify how the kernel start see the section on [starting a kernel](#start-a-kernel) for configuration options.
+Additional arguments can be included when defining the kernel spec, these include:
 
-### Configuration
+- Arguments for [async_kernel.kernelspec.write_kernel_spec][]
+    - `--kernel_factory`
+    - `--fullpath=False`
+    - `--display_name`
+    - `--prefix`
+- Nested attributes on the kernel via \`kernel.\<nested.attribute.name>'
 
-Additional configuration of the kernel spec is supported by passing the each parameter
-prefixed with '--' followed by the value.
+Each parameter should be specified as if it were a 'flag' as follows.
 
-The parameters are first used with creating the kernel spec.
+Prefix with "--" and join with the delimiter "=".
+
+```console
+--<PARAMETER or DOTTED.ATTRIBUTE.NAME>=<VALUE>
+```
+
+or, with compact notation to set a Boolean value as a Boolean flag.
+
+```console
+# True
+--<PARAMETER or DOTTED.ATTRIBUTE.NAME>
+
+# False
+--no-<PARAMETER or DOTTED.ATTRIBUTE.NAME>
+```
+
+#### Examples
+
+=== "write_kernel_spec argument"
+
+    **kernel_factory**
+
+    To specify an alternate kernel factory.
+
+    ```console
+    --kernel_factory=my_module.my_kernel_factory
+    ```
+
+    **fullpath (True)**
+
+    ```console
+    --fullpath
+    ```
+
+    **display name**
+
+    To set the kernel display name to `True`.
+
+    ```console
+    "--display_name=My kernel display name"
+    ```
+
+=== "Kernel attribute"
+
+    Set the execute request timeout trait on the kernel shell.
+
+    ```console
+    --shell.execute_request_timeout=0.1
+    ```
+
+=== "Kernel Boolean attribute as a flag"
+
+    Set `kernel.quiet=True`:
+
+    ```console
+    --quiet 
+    ```
+
+    Set `kernel.quiet=False`:
+
+    ```bash
+    --no=quiet 
+    ```
 
 ## Remove a kernel spec
 
-You can remove any kernel spec that is listed. Call `async-kernel` with no arguments to see a list of the installed kernels.
+Use the flag `-r` or `--remove` to remove a kernelspec.
 
 ```shell
 async-kernel
@@ -52,7 +116,8 @@ async-kernel -r async-trio-custom
 
 ## Start a kernel
 
-To start a kernel from the command prompt, use the argument `-f`.
+Use the flag `-f` or `--connection_file` followed by the full path to the connection file.
+To skip providing a connection file
 
 This will start the default kernel (async).
 
@@ -63,7 +128,7 @@ async-kernel -f .
 Additional settings can be passed as arguments.
 
 ```shell
-async-kernel -f . --kernel_name async-trio-custom --display_name 'My custom kernel' --quiet False
+async-kernel -f . --kernel_name=async-trio-custom --display_name='My custom kernel' --quiet=False
 ```
 
 The call above will start a new kernel with a 'trio' backend. The quiet setting is

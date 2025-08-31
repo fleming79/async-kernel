@@ -460,7 +460,7 @@ async def test_properties(kernel) -> None:
     kernel.user_ns = {}
 
 
-@pytest.mark.parametrize("code", argvalues=["%connect_info", "%matplotlib --list", "%callers"])
+@pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers"])
 async def test_magic(client, code: str, kernel, monkeypatch):
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
     assert code

@@ -34,7 +34,8 @@ from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.session import Session
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CaselessStrEnum, CBool, Container, Dict, Instance, Int, Set, Tuple, UseEnum, default
+from traitlets import CaselessStrEnum, CBool, Container, Dict, Instance, Int, Set, Tuple, UseEnum, default, validate
+from typing_extensions import override
 from zmq import Context, Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
@@ -57,7 +58,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Generator, Iterable
+    from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable
     from types import CoroutineType, FrameType
 
     from anyio.abc import TaskStatus
@@ -66,7 +67,7 @@ if TYPE_CHECKING:
     from async_kernel.comm import CommManager
 
 
-__all__ = ["Kernel", "KernelInterruptError"]
+__all__ = ["Kernel", "KernelInterruptError", "run_kernel"]
 
 
 def error_to_content(error: BaseException, /) -> Content:
@@ -162,6 +163,42 @@ def _wrap_handler(
     return wrap_handler
 
 
+def run_kernel(kernel: Kernel, wait_exit_context: Callable[[], Awaitable] = anyio.sleep_forever) -> None:
+    """Runs a kernel using AnyIO, handling exceptions and setting the exit code.
+
+    The kernel is started within an AnyIO context, allowing it to run using either
+    the Trio or Asyncio backend, determined by the kernel's name.  The function
+    handles KeyboardInterrupt exceptions gracefully and prints any other exceptions
+    to both `sys.stderr` and `sys.__stderr__` before exiting with a non-zero code.
+
+    Args:
+        kernel: The kernel to run, which must be an instance of a class implementing the Kernel protocol.
+        wait_exit_context: An optional callable that returns an awaitable. This awaitable
+            is awaited within the kernel's context.  It defaults to `anyio.sleep_forever`,
+            which keeps the kernel running until it is externally interrupted or cancelled.
+    """
+
+    async def _start() -> None:
+        async with kernel:
+            with contextlib.suppress(kernel.CancelledError):
+                await wait_exit_context()
+
+    try:
+        backend: Literal[Backend.trio, Backend.asyncio] = (
+            Backend.trio if "trio" in kernel.kernel_name.lower() else Backend.asyncio
+        )
+        anyio.run(_start, backend=backend, backend_options=kernel.anyio_backend_options.get(backend))
+    except KeyboardInterrupt:
+        pass
+    except BaseException as e:
+        traceback.print_exception(e, file=sys.stderr)
+        if sys.__stderr__ is not sys.stderr:
+            traceback.print_exception(e, file=sys.__stderr__)
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
 class KernelInterruptError(InterruptedError):
     "Raised to interrupt the kernel."
 
@@ -253,23 +290,30 @@ class Kernel(ConnectionFileMixin):
     transport: CaselessStrEnum[str] = CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
     )
+    _settings: Dict[str, Any] = Dict()
 
-    def __new__(cls, **kwargs) -> Self:  # noqa: ARG004
+    def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
         #  There is only one instance.
         if not (instance := cls._instance):
             cls._instance = instance = super().__new__(cls)
         return instance
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, settings: dict | None = None, /) -> None:
         if self._initialised:
             return  # Only initialize once
         self._initialised = True
-        super().__init__(**kwargs)
+        super().__init__()
         sys.excepthook = self.excepthook
         sys.unraisablehook = self.unraisablehook
         signal.signal(signal.SIGINT, self._signal_handler)
         if not os.environ.get("MPLBACKEND"):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+        self._settings = settings or {}
+
+    @override
+    def __repr__(self) -> str:
+        info = [f"{k}={v}" for k, v in self.settings.items()]
+        return f"{self.__class__.__name__}<{', '.join(info)}>"
 
     async def __aenter__(self) -> Self:
         """Start the kernel.
@@ -293,6 +337,17 @@ class Kernel(ConnectionFileMixin):
 
     async def __aexit__(self, exc_type, exc_value, exc_tb) -> None:
         await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
+
+    @validate("_settings")
+    def _validate_settings(self, proposal) -> dict[str, Any]:
+        settings = self._settings or {"kernel_name": self.kernel_name}
+        for k, v in proposal.value.items():
+            settings |= utils.setattr_nested(self, k, v)
+        return settings
+
+    @property
+    def settings(self) -> dict[str, Any]:
+        return {k: getattr(self, k) for k in ("kernel_name", "connection_file")} | self._settings
 
     @property
     def execution_count(self) -> int:
@@ -407,9 +462,7 @@ class Kernel(ConnectionFileMixin):
                     pathlib.Path(self.connection_file).parent.mkdir(parents=True, exist_ok=True)
                     self.write_connection_file()
                     atexit.register(self.cleanup_connection_file)
-                    print(
-                        f"""Kernel started with backend: {self.anyio_backend}. To connect a client use: --existing "{self.connection_file}" """
-                    )
+                    print(f"Kernel started: {self!r}")
                     await tg.start(self._start_iopub)
                     yield self
                 finally:
@@ -417,6 +470,7 @@ class Kernel(ConnectionFileMixin):
         finally:
             AsyncInteractiveShell.clear_instance()
             Context.instance().term()
+            print(f"Kernel stopped: {self!r}")
 
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
         "Handle interrupt signals."
@@ -808,7 +862,7 @@ class Kernel(ConnectionFileMixin):
         return (f"kernel.{topic}").encode()
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
-        """Handle a ke[rnel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
+        """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
         return self.kernel_info
 
     async def comm_info_request(self, job: Job[Content], /) -> Content:

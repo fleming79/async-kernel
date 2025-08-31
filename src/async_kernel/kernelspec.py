@@ -29,75 +29,68 @@ class KernelName(enum.StrEnum):
 
 def make_argv(
     *,
-    connection_file="{connection_file}",
+    connection_file: str = "{connection_file}",
     kernel_name: KernelName | str = KernelName.asyncio,
-    kernel_factory="async_kernel.Kernel",
-    fullpath=True,
+    kernel_factory: str = "async_kernel.Kernel",
+    fullpath: bool = True,
     **kwargs,
 ) -> list[str]:
-    """Constructs the argument vector (argv) for launching a Python kernel module.
+    """Returns an argument vector (argv) that can be used to start a `Kernel`.
 
-    The backend is determined from the kernel_name. If the kernel_name contains 'trio'
-    (case-insensitive)a trio backend will be used otherwise an 'asyncio' backend is used.
+    This function returns a list of arguments can be used directly start a kernel with [subprocess.Popen][].
+    It will always call [async_kernel.command.command_line][] as a python module.
 
     Args:
         connection_file: The path to the connection file.
-        kernel_factory: The string import path to a callable that creates the kernel.
+        kernel_factory: The string import path to a callable that returns a non-started kernel.
+            It must accepts one positional argument the arguments passed as kwgs here.
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
 
     kwargs:
-        Additional settings to use on the instance of the Kernel.
-        kwargs are converted to key/value pairs, keys will be prefixed with '--'.
-        The kwargs should correspond to settings to set prior to starting. kwargs
-        are set on the
-        instance by eval on the value.
-        keys that correspond to an attribute on the kernel instance are not used.
+        Additional settings to pass when creating the kernel passed to `kernel_factory`.
+        When the kernel factThe key should be the dotted path to the attribute. Or if using a
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
-    python = sys.executable if fullpath else "python"
-    argv = [python, "-m", "async_kernel", "-f", connection_file]
+    argv = [(sys.executable if fullpath else "python"), "-m", "async_kernel", "-f", connection_file]
     for k, v in ({"kernel_factory": kernel_factory, "kernel_name": kernel_name} | kwargs).items():
-        argv.extend((f"--{k}", str(v)))
+        argv.append(f"--{k}={v}")
     return argv
 
 
 def write_kernel_spec(
     path: Path | str | None = None,
     *,
-    kernel_factory="async_kernel.Kernel",
-    connection_file="{connection_file}",
+    kernel_factory: str = "async_kernel.Kernel",
     kernel_name: KernelName | str = KernelName.asyncio,
-    fullpath=False,
-    display_name="",
+    fullpath: bool = False,
+    display_name: str = "",
+    connection_file: str = "{connection_file}",
+    prefix: str = "",
     **kwargs,
 ) -> Path:
     """
-    Write a kernel spec directory to `path` for launching a kernel.
-
-    The kernel spec always calls the 'python -m async_kernel' which calls
-    [][async_kernel.command.command_line][] [as a python module](https://docs.python.org/3/using/cmdline.html#command-line)).
-
+    Write a kernel spec for launching a kernel.
 
     Args:
-        connection_file: The path to the connection file.
+        path: The path where to write the spec.
         kernel_factory: The string import path to a callable that creates the Kernel.
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
         display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
+        connection_file: The path to the connection file.
+        prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
+            This can be sys.prefix for installation inside virtual or conda envs.
 
     kwargs:
         Additional settings to use on the instance of the Kernel.
-        kwargs are converted to key/value pairs, keys will be prefixed with '--'.
-        The kwargs should correspond to settings to set prior to starting. kwargs
-        are set on the
-        instance by eval on the value.
-        keys that correspond to an attribute on the kernel instance are not used.
+        kwargs added to [KernelSpec.argv][jupyter_client.kernelspec.KernelSpec.argv]. When
+        The arguments are used as Kernel settings when starting the kernel.
     """
     assert _is_valid_kernel_name(kernel_name)
-    path = Path(path) if path else get_kernel_dir() / kernel_name
+    path = Path(path) if path else (get_kernel_dir(prefix) / kernel_name)
     # stage resources
     path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(RESOURCES, path, dirs_exist_ok=True)
@@ -121,6 +114,10 @@ def write_kernel_spec(
     return path
 
 
-def get_kernel_dir() -> Path:
-    "The path to where kernel specs are stored for Jupyter."
-    return Path(sys.prefix) / "share/jupyter/kernels"
+def get_kernel_dir(prefix: str = "") -> Path:
+    """The path to where kernel specs are stored for Jupyter.
+
+    Args:
+        prefix: Defaults to sys.prefix (installable for a particular environment).
+    """
+    return Path(prefix or sys.prefix) / "share/jupyter/kernels"

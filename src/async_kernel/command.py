@@ -1,55 +1,25 @@
 from __future__ import annotations
 
 import argparse
-import contextlib
 import shutil
-import sys
-import traceback
-from itertools import pairwise
-from typing import TYPE_CHECKING, Any
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import anyio
 import traitlets
 
-from async_kernel.kernel import Kernel
-from async_kernel.kernelspec import Backend, KernelName, get_kernel_dir, write_kernel_spec
+from async_kernel.kernel import Kernel, run_kernel
+from async_kernel.kernelspec import KernelName, get_kernel_dir, write_kernel_spec
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    __all__ = ["command_line", "setattr_nested"]
-
-
-def setattr_nested(obj: object, name: str, value: str | Any) -> None:
-    """Set a nested attribute of an object.
-
-    If the attribute name contains dots, it is interpreted as a nested attribute.
-    For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.
-
-    This is primarily intended for use with [async_kernel.command.command_line][]
-    to set the nesteded attributes on on kernels.
-
-    Args:
-        obj: The object to set the attribute on.
-        name: The name of the attribute to set.
-        value: The value to set the attribute to.
-    """
-    if len(bits := name.split(".")) > 1:
-        try:
-            obj = getattr(obj, bits[0])
-        except Exception:
-            return
-        setattr_nested(obj, ".".join(bits[1:]), value)
-    if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
-        try:
-            setattr(obj, name, value)
-        except Exception:
-            setattr(obj, name, eval(value))
+    __all__ = ["command_line"]
 
 
 def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_forever) -> None:
-    """Parses command-line arguments to manage and start kernels.
+    """Parses command-line arguments to manage kernel specs and start kernels.
 
     This function uses `argparse` to handle command-line arguments for
     various kernel operations, including:
@@ -78,10 +48,19 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         SystemExit: If an error occurs during kernel execution or if the
             program is interrupted.
     """
+    title = "Async kernel"
     kernel_dir: Path = get_kernel_dir()
     parser = argparse.ArgumentParser(
-        description="Kernel interface to start a kernel or add/remove a kernel spec. "
-        + f"The Jupyter Kernel directory is: f'{kernel_dir}'"
+        description="=" * len(title)
+        + f"\n{title}\n"
+        + "=" * len(title)
+        + "\n\n"
+        + "With the async-kernel command line tool you can:\n\n"
+        + "    - Add/remove kernel specs\n"
+        + "    - start kernels\n\n"
+        + "Online help: https://fleming79.github.io/async-kernel/latest/commands/#command-line \n\n"
+        + f"Jupyter Kernel directory: '{kernel_dir}'",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-f",
@@ -101,13 +80,20 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         "-r",
         "--remove",
         dest="remove",
-        help=f"remove existing kernel specs. Installed kernels: {kernels}",
+        help=f"Remove existing kernel specs. Installed kernels: {kernels}.",
     )
-
     args, unknownargs = parser.parse_known_args()
-    for k, v in pairwise(unknownargs):
-        if k.startswith("--"):
-            setattr(args, k.removeprefix("--"), v)
+
+    # Convert unknownargs from flags to mappings
+    for v in (v.lstrip("-") for v in unknownargs):
+        if "=" in v:
+            k, v_ = v.split("=", maxsplit=1)
+            setattr(args, k, v_.strip("'\"").strip())
+        else:
+            # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
+            setattr(args, v.removeprefix("no-"), False) if v.startswith("no-") else setattr(args, v, True)
+
+    # Add kernel spec
     if args.add:
         if not hasattr(args, "kernel_name"):
             args.kernel_name = args.add
@@ -115,6 +101,8 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
             delattr(args, name)
         path = write_kernel_spec(**vars(args))
         print(f"Added kernel spec {path!s}")
+
+    # Remove kernel spec
     elif args.remove:
         for name in args.remove.split(","):
             folder = kernel_dir / str(name)
@@ -124,35 +112,16 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
             else:
                 print(f"Kernel spec folder: '{name}' not found!")
 
-    elif not args.connection_file:
-        parser.print_help()
+    # Start kernel
+    elif args.connection_file:
+        factory: type[Kernel] = traitlets.import_item(pth) if (pth := getattr(args, "kernel_factory", "")) else Kernel
+        settings = vars(args)
+        for k in ["add", "remove", "kernel_factory"]:
+            settings.pop(k, None)
+        if settings.get("connection_file") in {None, "", "."}:
+            settings.pop("connection_file", None)
+        run_kernel(factory(settings), wait_exit_context)
+
+    # Default - print help
     else:
-        kernel_factory = getattr(args, "kernel_factory", None)
-        kernel_name: str = getattr(args, "kernel_name", None) or KernelName.asyncio
-        factory: type[Kernel] = traitlets.import_item(kernel_factory) if kernel_factory else Kernel
-        kernel = factory(kernel_name=kernel_name)
-        for k, v in vars(args).items():
-            if (k == "connection_file" and v == ".") or k in ["add", "remove"]:
-                continue
-            setattr_nested(kernel, k, v)
-
-        async def _start() -> None:
-            print("Starting kernel")
-            async with kernel:
-                with contextlib.suppress(kernel.CancelledError):
-                    await wait_exit_context()
-
-        try:
-            backend = Backend.trio if "trio" in kernel_name.lower() else Backend.asyncio
-            anyio.run(_start, backend=backend, backend_options=kernel.anyio_backend_options.get(backend))
-        except KeyboardInterrupt:
-            pass
-        except BaseException as e:
-            traceback.print_exception(e, file=sys.stderr)
-            if sys.__stderr__ is not sys.stderr:
-                traceback.print_exception(e, file=sys.__stderr__)
-            sys.exit(1)
-        else:
-            sys.exit(0)
-        finally:
-            print("Kernel stopped: ", kernel.connection_file)
+        parser.print_help()

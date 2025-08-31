@@ -31,6 +31,6 @@ async def test_start_kernel_in_context(anyio_backend, kernel_name):
             kernel._bind_socket(SocketID.shell, None),  # pyright: ignore[reportArgumentType, reportPrivateUsage]
         ):
             pass
-    async with Kernel(connection_file=connection_file):
+    async with Kernel({"connection_file": connection_file}):
         # Test we can re-enter the kernel.
         pass
