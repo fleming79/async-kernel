@@ -36,6 +36,13 @@ def test_prints_help_when_no_args(monkeypatch, capsys):
     assert "usage:" in out
 
 
+def test_prints_version_info(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["prog", "-v"])
+    command_line()
+    out = capsys.readouterr().out
+    assert f"async-kernel {async_kernel.__version__}" in out
+
+
 def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
         sys, "argv", ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=my.custom.class"]
