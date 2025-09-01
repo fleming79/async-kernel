@@ -6,7 +6,7 @@ import pathlib
 import sys
 import threading
 import time
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import anyio
 import pytest
@@ -20,6 +20,8 @@ from async_kernel.typing import ExecuteContent, Job, MsgType, RunMode, SocketID,
 from tests import utils
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from async_kernel.kernel import Kernel
 
 
@@ -68,7 +70,7 @@ async def test_iopub(kernel, mode: Literal["direct", "proxy"]):
     n = 10
     socket = kernel._sockets[SocketID.iopub]
     url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
-    assert url.endswith(str(kernel.iopub_port))
+    assert url.endswith(str(kernel._ports[SocketID.iopub]))
     ctx = zmq.Context()
     thread = threading.Thread(target=pubio_subscribe)
     thread.start()
@@ -83,8 +85,15 @@ async def test_iopub(kernel, mode: Literal["direct", "proxy"]):
         ctx.term()
 
 
+async def test_load_connection_info_error(kernel: Kernel, tmp_path):
+    with pytest.raises(RuntimeError):
+        kernel.load_connection_info({})
+
+
 async def test_execute_request_success(client):
-    reply = await utils.send_shell_message(client, MsgType.execute_request, {"code": "1 + 1", "silent": False})
+    reply: dict[Any, Any] | Mapping[str, Mapping[str, Any]] = await utils.send_shell_message(
+        client, MsgType.execute_request, {"code": "1 + 1", "silent": False}
+    )
     assert reply["header"]["msg_type"] == "execute_reply"
     assert reply["content"]["status"] == "ok"
     await utils.clear_iopub(client)

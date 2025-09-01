@@ -8,6 +8,7 @@ import errno
 import functools
 import getpass
 import importlib.util
+import json
 import logging
 import math
 import os
@@ -26,15 +27,32 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 
 import anyio
 import sniffio
+import traitlets
 import zmq
 from IPython.core.completer import provisionalcompleter as _provisionalcompleter
 from IPython.core.completer import rectify_completions as _rectify_completions
 from IPython.core.error import StdinNotImplementedError
 from IPython.utils.tokenutil import token_at_cursor
-from jupyter_client.connect import ConnectionFileMixin
+from jupyter_client import write_connection_file
+from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CaselessStrEnum, CBool, Container, Dict, Instance, Int, Set, Tuple, UseEnum, default, validate
+from traitlets import (
+    Bool,
+    CaselessStrEnum,
+    Container,
+    Dict,
+    HasTraits,
+    Instance,
+    Int,
+    Set,
+    Tuple,
+    Unicode,
+    UseEnum,
+    default,
+    observe,
+    validate,
+)
 from typing_extensions import override
 from zmq import Context, Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -206,7 +224,7 @@ class KernelInterruptError(InterruptedError):
     # Other event loops don't appear to have this issue.
 
 
-class Kernel(ConnectionFileMixin):
+class Kernel(HasTraits):
     """An asynchronous kernel with an anyio backend providing an IPython AsyncInteractiveShell with zmq sockets.
 
     Only one instance will be created/run at a time. The instance can be obtained with `Kernel()`.
@@ -260,7 +278,9 @@ class Kernel(ConnectionFileMixin):
     _stop_event = Instance(threading.Event, ())
     _stop_on_error_time: float = 0
     _interrupts: Container[set[Callable[[], object]]] = Set()
+    _settings: Dict[str, Any] = Dict()
     _sockets: Dict[SocketID, zmq.Socket] = Dict()
+    _ports: Dict[SocketID, int] = Dict()
     _execution_count = Int(0)
     anyio_backend = UseEnum(Backend)
     ""
@@ -275,13 +295,29 @@ class Kernel(ConnectionFileMixin):
     """
     help_links = Tuple()
     ""
-    quiet = CBool(True, help="Only send stdout/stderr to output stream")
-    ""
-    shell = Instance(AsyncInteractiveShell)
-    ""
-    session = Instance(Session)
-    ""
+    quiet = Bool(True)
+    "Only send stdout/stderr to output stream"
+    connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
+    """JSON file in which to store connection info [default: kernel-<pid>.json]
+
+    This file will contain the IP, ports, and authentication key needed to connect
+    clients to this kernel. By default, this file will be created in the security dir
+    of the current profile, but can be specified by absolute path.
+    """
+
+    kernel_name: str | Unicode = Unicode()
+    "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
+
+    ip = Unicode()
+    """The kernel's IP address [default localhost].
+    
+    If the IP address is something other than localhost, then Consoles on other machines 
+    will be able to connect to the Kernel, so be careful!"""
     log = Instance(logging.LoggerAdapter)
+    ""
+    shell = Instance(AsyncInteractiveShell, ())
+    ""
+    session = Instance(Session, ())
     ""
     debugger = Instance(Debugger, ())
     ""
@@ -290,18 +326,80 @@ class Kernel(ConnectionFileMixin):
     transport: CaselessStrEnum[str] = CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
     )
-    _settings: Dict[str, Any] = Dict()
 
-    # The following are defined in ConnectionFileMixin but are not used by Kernel
-    context = NoValue
-    _random_port_names = NoValue  # pyright: ignore[reportAssignmentType]
-    blocking_class = NoValue
-    blocking_client = NoValue  # pyright: ignore[reportAssignmentType]
-    connect_iopub = NoValue  # pyright: ignore[reportAssignmentType]
-    connect_shell = NoValue  # pyright: ignore[reportAssignmentType]
-    connect_stdin = NoValue  # pyright: ignore[reportAssignmentType]
-    connect_hb = NoValue  # pyright: ignore[reportAssignmentType]
-    connect_control = NoValue  # pyright: ignore[reportAssignmentType]
+    @default("ip")
+    def _default_ip(self) -> str:
+        return str(self.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
+
+    @validate("ip")
+    def _validate_ip(self, proposal) -> str:
+        return "0.0.0.0" if (val := proposal["value"]) == "*" else val
+
+    @validate("connection_file")
+    def _validate_connection_file(self, proposal) -> Path:
+        return pathlib.Path(proposal.value)
+
+    @observe("connection_file")
+    def _observe_connection_file(self, change) -> None:
+        if not self._ports and (path := self.connection_file).exists():
+            self.log.debug("Loading connection file %s", path)
+            with path.open("r") as f:
+                self.load_connection_info(json.load(f))
+
+    def _write_connection_file(self) -> None:
+        """Write connection info to JSON dict in self.connection_file."""
+        if not (path := self.connection_file).exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            write_connection_file(
+                str(path),
+                transport=self.transport,
+                ip=self.ip,
+                key=self.session.key,
+                signature_scheme=self.session.signature_scheme,
+                kernel_name=self.kernel_name,
+                **{f"{socket_id}_port": self._ports[socket_id] for socket_id in SocketID},
+            )
+            ip_files: list[pathlib.Path] = []
+            if self.transport == "ipc":
+                for s in self._sockets.values():
+                    f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
+                    assert f.exists()
+                    ip_files.append(f)
+
+            def cleanup_file_files() -> None:
+                path.unlink(missing_ok=True)
+                for f in ip_files:
+                    f.unlink(missing_ok=True)
+
+            atexit.register(cleanup_file_files)
+
+    def load_connection_info(self, info: dict[str, Any]) -> None:
+        """Load connection info from a dict containing connection info.
+
+        Typically this data comes from a connection file
+        and is called by load_connection_file.
+
+        Args:
+            info: Dictionary containing connection_info. See the connection_file spec for details.
+        """
+        if self._ports:
+            msg = "Connection info is already loaded!"
+            raise RuntimeError(msg)
+        self.transport = info.get("transport", self.transport)
+        self.ip = info.get("ip") or self.ip
+        for socket in SocketID:
+            name = f"{socket}_port"
+            if socket not in self._ports and name in info:
+                self._ports[socket] = info[name]
+        if "key" in info:
+            key = info["key"]
+            if isinstance(key, str):
+                key = key.encode()
+            assert isinstance(key, bytes)
+
+            self.session.key = key
+        if "signature_scheme" in info:
+            self.session.signature_scheme = info["signature_scheme"]
 
     def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
         #  There is only one instance.
@@ -416,6 +514,10 @@ class Kernel(ConnectionFileMixin):
             pass
         return KernelName.asyncio
 
+    @default("connection_file")
+    def _default_connection_file(self) -> Path:
+        return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
+
     @default("comm_manager")
     def _default_comm_manager(self) -> CommManager:
         from async_kernel import comm  # noqa: PLC0415
@@ -423,13 +525,9 @@ class Kernel(ConnectionFileMixin):
         comm.set_comm()
         return comm.get_comm_manager()
 
-    @default("session")
-    def _default_session(self) -> Any:
-        return Session(parent=self)
-
     @default("shell")
     def _default_shell(self) -> AsyncInteractiveShell:
-        return AsyncInteractiveShell.instance(parent=self)
+        return AsyncInteractiveShell.instance()
 
     @default("anyio_backend_options")
     def _default_anyio_backend_options(self):
@@ -454,8 +552,6 @@ class Kernel(ConnectionFileMixin):
             raise RuntimeError(msg)
         self.CancelledError = anyio.get_cancelled_exc_class()
         self.anyio_backend = sniffio.current_async_library()
-        if self.connection_file and Path(self.connection_file).exists():
-            self.load_connection_file()
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:
                 tg = caller._taskgroup  # pyright: ignore[reportPrivateUsage]
@@ -468,11 +564,7 @@ class Kernel(ConnectionFileMixin):
                     await tg.start(self._start_control_loop)
                     await tg.start(self._receive_msg_loop, SocketID.shell)
                     assert len(self._sockets) == len(SocketID)
-                    if not self.connection_file:
-                        self.connection_file = str(Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json"))
-                    pathlib.Path(self.connection_file).parent.mkdir(parents=True, exist_ok=True)
-                    self.write_connection_file()
-                    atexit.register(self.cleanup_connection_file)
+                    self._write_connection_file()
                     print(f"Kernel started: {self!r}")
                     await tg.start(self._start_iopub)
                     yield self
@@ -606,12 +698,11 @@ class Kernel(ConnectionFileMixin):
             msg = f"{socket_id=} is already loaded"
             raise RuntimeError(msg)
         socket.linger = 500
-        port_name = f"{socket_id}_port"
         if socket_id is not SocketID.iopub:
             # ref: https://github.com/ipython/ipykernel/issues/270
             socket.router_handover = 1
-        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=getattr(self, port_name))  # pyright: ignore[reportArgumentType]
-        setattr(self, port_name, port)
+        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self._ports.get(socket_id, 0))  # pyright: ignore[reportArgumentType]
+        self._ports[socket_id] = port
         self.log.debug("%s socket on port: %i", socket_id, port)
         self._sockets[socket_id] = socket
         try:
@@ -1009,7 +1100,11 @@ class Kernel(ConnectionFileMixin):
             hist = history_manager.get_tail(c["n"], raw=c.get("raw"), output=c.get("output"), include_latest=True)
         elif c.get("hist_access_type") == "range":
             hist = history_manager.get_range(
-                c.get("session"), c.get("start"), c.get("stop"), raw=c.get("raw"), output=c.get("output")
+                c.get("session"),  # pyright: ignore[reportArgumentType]
+                c.get("start"),  # pyright: ignore[reportArgumentType]
+                c.get("stop"),
+                raw=c.get("raw"),  # pyright: ignore[reportArgumentType]
+                output=c.get("output"),  # pyright: ignore[reportArgumentType]
             )
         elif c.get("hist_access_type") == "search":
             hist = history_manager.search(
@@ -1079,3 +1174,8 @@ class Kernel(ConnectionFileMixin):
     def getpass(self, prompt="") -> Any:
         """Forward getpass to frontends."""
         return self._input_request(prompt, password=True)
+
+    def get_connection_info(self) -> dict[str, Any]:
+        """Return the connection info as a dict."""
+        with self.connection_file.open("r") as f:
+            return json.load(f)

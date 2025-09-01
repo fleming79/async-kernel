@@ -91,4 +91,4 @@ class TestUtils:
         assert not test_obj.trait_has_value("nested")
         # Sets nested trait with a default
         ak_utils.setattr_nested(test_obj, "nested_with_default.k", "2")
-        assert test_obj.nested_with_default.k == 2
+        assert test_obj.nested_with_default.k == 2  # pyright: ignore[reportAttributeAccessIssue]
