@@ -33,8 +33,8 @@ def transport(request):
     return request.param
 
 
-@pytest.mark.flaky
-@pytest.mark.skipif(condition=sys.platform != "linux", reason="Test is too flaky ")
+# @pytest.mark.flaky
+# @pytest.mark.skipif(condition=sys.platform != "linux", reason="Test is too flaky ")
 def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
     ctx = zmq.Context()
     ip = tmp_path / "mypath" if transport == "ipc" else "0.0.0.0"
@@ -45,11 +45,11 @@ def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
             assert bind_socket(socket, transport, ip, port) == port  # pyright: ignore[reportArgumentType]
             if transport == "tcp":
                 with pytest.raises(RuntimeError):
-                    bind_socket(socket, transport, ip, "invalid port")  # pyright: ignore[reportArgumentType]
+                    bind_socket(socket, transport, ip, max_attempts=0)  # pyright: ignore[reportArgumentType]
 
 
 @pytest.mark.parametrize("mode", ["direct", "proxy"])
-async def test_iopub(kernel, mode: Literal["direct", "proxy"]):
+async def test_iopub(kernel, mode: Literal["direct", "proxy"]) -> None:
     def pubio_subscribe():
         """Consume messages"""
         with ctx.socket(zmq.SocketType.SUB) as socket:

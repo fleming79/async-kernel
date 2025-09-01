@@ -113,53 +113,38 @@ def bind_socket(
     max_attempts: The maximum number of attempts to bind the socket. If un-specified,
     defaults to 100 if port missing, else 2 attempts.
     """
-
-    def _try_bind_socket(port: int):
-        if transport == "tcp":
-            if not port:
-                port = socket.bind_to_random_port(f"tcp://{ip}")
-            else:
-                socket.bind(f"tcp://{ip}:{port}")
-        elif transport == "ipc":
-            if not port:
-                port = 1
-                while True:
-                    port = port + 1
-                    path = f"{ip}-{port}"
-                    if not Path(path).exists():
-                        break
-            else:
-                path = f"{ip}-{port}"
-            socket.bind(f"ipc://{path}")
-        return port
-
-    if transport == "ipc":
-        ip = Path(ip).as_posix()
     if socket.TYPE == SocketType.ROUTER:
         # ref: https://github.com/ipython/ipykernel/issues/270
         socket.router_handover = 1
-    try:
-        win_in_use = errno.WSAEADDRINUSE  # type: ignore[attr-defined]
-    except AttributeError:
-        win_in_use = None
-    # Try up to 100 times to bind a port when in conflict to avoid
-    # infinite attempts in bad setups
+    if transport == "ipc":
+        ip = Path(ip).as_posix()
     if max_attempts is NoValue:
         max_attempts = 2 if port else 100
-    e = None
-    for _ in range(max_attempts):
+    for attempt in range(max_attempts):
         try:
-            return _try_bind_socket(port)
-        except ZMQError as e_:
-            # Raise if we have any error not related to socket binding
-            # 135: Protocol not supported
-            if e_.errno in {errno.EADDRINUSE, win_in_use, 135}:
-                e = e_
-                break
-            if port:
-                time.sleep(1)
-    msg = f"Failed to bind {socket} for {transport=}" + (f" to {port=}!" if port else "!")
-    raise RuntimeError(msg) from e
+            if transport == "tcp":
+                if not port:
+                    port = socket.bind_to_random_port(f"tcp://{ip}")
+                else:
+                    socket.bind(f"tcp://{ip}:{port}")
+            elif transport == "ipc":
+                if not port:
+                    port = 1
+                    while Path(f"{ip}-{port}").exists(follow_symlinks=False):
+                        port += 1
+                socket.bind(f"ipc://{ip}-{port}")
+            else:
+                msg = f"Invalid transport: {transport}"  # pyright: ignore[reportUnreachable]
+                raise ValueError(msg)
+        except ZMQError as e:
+            if e.errno not in {errno.EADDRINUSE, 98, 10048, 135}:
+                raise
+            if port and attempt < max_attempts - 1:
+                time.sleep(0.1)
+        else:
+            return port
+    msg = f"Failed to bind {socket} for {transport=} after {max_attempts} attempts."
+    raise RuntimeError(msg)
 
 
 @functools.cache
@@ -698,9 +683,6 @@ class Kernel(HasTraits):
             msg = f"{socket_id=} is already loaded"
             raise RuntimeError(msg)
         socket.linger = 500
-        if socket_id is not SocketID.iopub:
-            # ref: https://github.com/ipython/ipykernel/issues/270
-            socket.router_handover = 1
         port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self._ports.get(socket_id, 0))  # pyright: ignore[reportArgumentType]
         self._ports[socket_id] = port
         self.log.debug("%s socket on port: %i", socket_id, port)
