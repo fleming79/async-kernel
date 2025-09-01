@@ -251,7 +251,7 @@ async def test_stream(client):
 
 
 @pytest.mark.parametrize("clear", [True, False])
-async def test_display_data(client, clear: bool):
+async def test_display_data(kernel, client, clear: bool):
     # kernel.display_formatter
     await utils.clear_iopub(client)
     msg_id, _ = await utils.execute(

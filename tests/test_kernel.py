@@ -6,7 +6,7 @@ import pathlib
 import sys
 import threading
 import time
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import anyio
 import pytest
@@ -20,6 +20,8 @@ from async_kernel.typing import ExecuteContent, Job, MsgType, RunMode, SocketID,
 from tests import utils
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from async_kernel.kernel import Kernel
 
 
@@ -31,8 +33,8 @@ def transport(request):
     return request.param
 
 
-@pytest.mark.flaky
-@pytest.mark.skipif(condition=sys.platform != "linux", reason="Test is too flaky ")
+# @pytest.mark.flaky
+# @pytest.mark.skipif(condition=sys.platform != "linux", reason="Test is too flaky ")
 def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
     ctx = zmq.Context()
     ip = tmp_path / "mypath" if transport == "ipc" else "0.0.0.0"
@@ -43,11 +45,13 @@ def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
             assert bind_socket(socket, transport, ip, port) == port  # pyright: ignore[reportArgumentType]
             if transport == "tcp":
                 with pytest.raises(RuntimeError):
-                    bind_socket(socket, transport, ip, "invalid port")  # pyright: ignore[reportArgumentType]
+                    bind_socket(socket, transport, ip, max_attempts=0)  # pyright: ignore[reportArgumentType]
+                with pytest.raises(ValueError, match="Invalid transport"):
+                    bind_socket(socket, "", ip, max_attempts=1)  # pyright: ignore[reportArgumentType]
 
 
 @pytest.mark.parametrize("mode", ["direct", "proxy"])
-async def test_iopub(kernel, mode: Literal["direct", "proxy"]):
+async def test_iopub(kernel, mode: Literal["direct", "proxy"]) -> None:
     def pubio_subscribe():
         """Consume messages"""
         with ctx.socket(zmq.SocketType.SUB) as socket:
@@ -68,7 +72,7 @@ async def test_iopub(kernel, mode: Literal["direct", "proxy"]):
     n = 10
     socket = kernel._sockets[SocketID.iopub]
     url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
-    assert url.endswith(str(kernel.iopub_port))
+    assert url.endswith(str(kernel._ports[SocketID.iopub]))
     ctx = zmq.Context()
     thread = threading.Thread(target=pubio_subscribe)
     thread.start()
@@ -83,8 +87,15 @@ async def test_iopub(kernel, mode: Literal["direct", "proxy"]):
         ctx.term()
 
 
+async def test_load_connection_info_error(kernel: Kernel, tmp_path):
+    with pytest.raises(RuntimeError):
+        kernel.load_connection_info({})
+
+
 async def test_execute_request_success(client):
-    reply = await utils.send_shell_message(client, MsgType.execute_request, {"code": "1 + 1", "silent": False})
+    reply: dict[Any, Any] | Mapping[str, Mapping[str, Any]] = await utils.send_shell_message(
+        client, MsgType.execute_request, {"code": "1 + 1", "silent": False}
+    )
     assert reply["header"]["msg_type"] == "execute_reply"
     assert reply["content"]["status"] == "ok"
     await utils.clear_iopub(client)

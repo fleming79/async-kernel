@@ -1,7 +1,8 @@
 import os
 import subprocess
 import sys
-from typing import TYPE_CHECKING
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING, Any
 
 import anyio
 import pytest
@@ -14,6 +15,8 @@ from async_kernel.typing import ExecuteContent, Job, Message, MsgHeader, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
+    import pathlib
+
     pytest_plugins = ["anyio.pytest_plugin"]
 
 
@@ -35,10 +38,10 @@ def transport():
 @pytest.fixture(scope="module")
 async def kernel(anyio_backend, transport: str, tmp_path_factory):
     # Set a blank connection_file
-    connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
+    connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
     kernel = Kernel()
-    kernel.connection_file = str(connection_file.resolve())
+    kernel.connection_file = connection_file
     os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
     kernel.transport = transport
     async with kernel:
@@ -46,7 +49,7 @@ async def kernel(anyio_backend, transport: str, tmp_path_factory):
 
 
 @pytest.fixture(scope="module")
-async def client(kernel: Kernel):
+async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
     if kernel.anyio_backend is Backend.trio:
         pytest.skip("AsyncKernelClient needs asyncio")
     client = AsyncKernelClient()
@@ -65,7 +68,7 @@ def kernel_name(request):
 
 
 @pytest.fixture(scope="module")
-async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name: KernelName):
+async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name: KernelName, transport):
     """Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it.
 
     This is primarily provided for testing the debugger making it more convenient
@@ -73,7 +76,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
     """
     assert anyio_backend == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-    command = make_argv(connection_file=connection_file, kernel_name=kernel_name)
+    command = make_argv(connection_file=connection_file, kernel_name=kernel_name, transport=transport)
     process = subprocess.Popen(command)
     try:
         client = AsyncKernelClient()

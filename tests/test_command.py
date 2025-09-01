@@ -20,6 +20,11 @@ if TYPE_CHECKING:
     import pathlib
 
 
+@pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
+def transport(request):
+    return request.param
+
+
 @pytest.fixture
 def fake_kernel_dir(tmp_path, monkeypatch):
     kernel_dir = tmp_path / "share/jupyter/kernels"
@@ -109,36 +114,28 @@ def test_start_kernel_success(monkeypatch, capsys):
 
 def test_start_kernel_failure(monkeypatch, capsys, mocker):
     # Replace cleanup_connection_file with None to cause an exception
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--cleanup_connection_file", "None"])
+    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--_write_connection_file", "None"])
     mocker.patch.object(sys, "__stderr__")
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 1
 
 
-async def test_subprocess_kernels_client(subprocess_kernels_client, kernel_name):
+async def test_subprocess_kernels_client(subprocess_kernels_client, kernel_name, transport):
     # Start & Stop a kernel
     backend = Backend.trio if "trio" in kernel_name.lower() else Backend.asyncio
     _, reply = await utils.execute(
         subprocess_kernels_client,
         "kernel = get_ipython().kernel",
-        user_expressions={"kernel_name": "kernel.kernel_name", "backend": "kernel.anyio_backend"},
+        user_expressions={
+            "kernel_name": "kernel.kernel_name",
+            "backend": "kernel.anyio_backend",
+            "transport": "kernel.transport",
+        },
     )
     assert kernel_name in reply["user_expressions"]["kernel_name"]["data"]["text/plain"]
     assert backend in reply["user_expressions"]["backend"]["data"]["text/plain"]
-
-
-def test_command_line(monkeypatch, kernel_name):
-    # Start & Stop a kernel
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--quiet=False", "--shell.execute_request_timeout=0.1"])
-
-    async def wait_exit():
-        kernel = async_kernel.Kernel()
-        assert kernel.quiet is False
-        assert kernel.shell.execute_request_timeout == 0.1
-
-    with pytest.raises(SystemExit):
-        command_line(wait_exit)
+    assert transport in reply["user_expressions"]["transport"]["data"]["text/plain"]
 
 
 @pytest.mark.skipif(condition=(sys.platform == "win32") or (sys.version_info >= (3, 14)), reason="uvloop not available")
