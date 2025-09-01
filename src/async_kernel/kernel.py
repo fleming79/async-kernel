@@ -37,22 +37,7 @@ from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import (
-    Bool,
-    CaselessStrEnum,
-    Container,
-    Dict,
-    HasTraits,
-    Instance,
-    Int,
-    Set,
-    Tuple,
-    Unicode,
-    UseEnum,
-    default,
-    observe,
-    validate,
-)
+from traitlets import CaselessStrEnum, Dict, HasTraits, Instance, Set, Tuple, Unicode, UseEnum
 from typing_extensions import override
 from zmq import Context, Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -262,11 +247,11 @@ class Kernel(HasTraits):
     _last_interrupt_frame = None
     _stop_event = Instance(threading.Event, ())
     _stop_on_error_time: float = 0
-    _interrupts: Container[set[Callable[[], object]]] = Set()
+    _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
     _settings: Dict[str, Any] = Dict()
     _sockets: Dict[SocketID, zmq.Socket] = Dict()
     _ports: Dict[SocketID, int] = Dict()
-    _execution_count = Int(0)
+    _execution_count = traitlets.Int(0)
     anyio_backend = UseEnum(Backend)
     ""
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
@@ -280,7 +265,7 @@ class Kernel(HasTraits):
     """
     help_links = Tuple()
     ""
-    quiet = Bool(True)
+    quiet = traitlets.Bool(True)
     "Only send stdout/stderr to output stream"
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
     """JSON file in which to store connection info [default: kernel-<pid>.json]
@@ -289,7 +274,6 @@ class Kernel(HasTraits):
     clients to this kernel. By default, this file will be created in the security dir
     of the current profile, but can be specified by absolute path.
     """
-
     kernel_name: str | Unicode = Unicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
@@ -311,52 +295,6 @@ class Kernel(HasTraits):
     transport: CaselessStrEnum[str] = CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
     )
-
-    @default("ip")
-    def _default_ip(self) -> str:
-        return str(self.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
-
-    @validate("ip")
-    def _validate_ip(self, proposal) -> str:
-        return "0.0.0.0" if (val := proposal["value"]) == "*" else val
-
-    @validate("connection_file")
-    def _validate_connection_file(self, proposal) -> Path:
-        return pathlib.Path(proposal.value)
-
-    @observe("connection_file")
-    def _observe_connection_file(self, change) -> None:
-        if not self._ports and (path := self.connection_file).exists():
-            self.log.debug("Loading connection file %s", path)
-            with path.open("r") as f:
-                self.load_connection_info(json.load(f))
-
-    def _write_connection_file(self) -> None:
-        """Write connection info to JSON dict in self.connection_file."""
-        if not (path := self.connection_file).exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            write_connection_file(
-                str(path),
-                transport=self.transport,
-                ip=self.ip,
-                key=self.session.key,
-                signature_scheme=self.session.signature_scheme,
-                kernel_name=self.kernel_name,
-                **{f"{socket_id}_port": self._ports[socket_id] for socket_id in SocketID},
-            )
-            ip_files: list[pathlib.Path] = []
-            if self.transport == "ipc":
-                for s in self._sockets.values():
-                    f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
-                    assert f.exists()
-                    ip_files.append(f)
-
-            def cleanup_file_files() -> None:
-                path.unlink(missing_ok=True)
-                for f in ip_files:
-                    f.unlink(missing_ok=True)
-
-            atexit.register(cleanup_file_files)
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
         """Load connection info from a dict containing connection info.
@@ -432,7 +370,83 @@ class Kernel(HasTraits):
     async def __aexit__(self, exc_type, exc_value, exc_tb) -> None:
         await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
 
-    @validate("_settings")
+    @traitlets.default("log")
+    def _default_log(self) -> LoggerAdapter[Logger]:
+        return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
+
+    @traitlets.default("kernel_name")
+    def _default_kernel_name(self) -> Literal[KernelName.trio, KernelName.asyncio]:
+        try:
+            if sniffio.current_async_library() == "trio":
+                return KernelName.trio
+        except Exception:
+            pass
+        return KernelName.asyncio
+
+    @traitlets.default("connection_file")
+    def _default_connection_file(self) -> Path:
+        return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
+
+    @traitlets.default("comm_manager")
+    def _default_comm_manager(self) -> CommManager:
+        from async_kernel import comm  # noqa: PLC0415
+
+        comm.set_comm()
+        return comm.get_comm_manager()
+
+    @traitlets.default("shell")
+    def _default_shell(self) -> AsyncInteractiveShell:
+        return AsyncInteractiveShell.instance()
+
+    @traitlets.default("anyio_backend_options")
+    def _default_anyio_backend_options(self):
+        return {Backend.asyncio: {"use_uvloop": True} if importlib.util.find_spec("uvloop") else {}, Backend.trio: None}
+
+    @traitlets.default("ip")
+    def _default_ip(self) -> str:
+        return str(self.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
+
+    @traitlets.default("help_links")
+    def _default_help_links(self) -> tuple[dict[str, str], ...]:
+        return (
+            {
+                "text": "Async Kernel Reference ",
+                "url": "TODO",
+            },
+            {
+                "text": "IPython Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/",
+            },
+            {
+                "text": "IPython magic Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
+            },
+            {
+                "text": "Matplotlib ipympl Reference",
+                "url": "https://matplotlib.org/ipympl/",
+            },
+            {
+                "text": "Matplotlib Reference",
+                "url": "https://matplotlib.org/contents.html",
+            },
+        )
+
+    @traitlets.observe("connection_file")
+    def _observe_connection_file(self, change) -> None:
+        if not self._ports and (path := self.connection_file).exists():
+            self.log.debug("Loading connection file %s", path)
+            with path.open("r") as f:
+                self.load_connection_info(json.load(f))
+
+    @traitlets.validate("ip")
+    def _validate_ip(self, proposal) -> str:
+        return "0.0.0.0" if (val := proposal["value"]) == "*" else val
+
+    @traitlets.validate("connection_file")
+    def _validate_connection_file(self, proposal) -> Path:
+        return pathlib.Path(proposal.value)
+
+    @traitlets.validate("_settings")
     def _validate_settings(self, proposal) -> dict[str, Any]:
         settings = self._settings or {"kernel_name": self.kernel_name}
         for k, v in proposal.value.items():
@@ -460,63 +474,6 @@ class Kernel(HasTraits):
             "debugger": not utils.LAUNCHED_BY_DEBUGPY,
             "kernel_name": self.kernel_name,
         }
-
-    @default("help_links")
-    def _default_help_links(self) -> tuple[dict[str, str], ...]:
-        return (
-            {
-                "text": "Async Kernel Reference ",
-                "url": "TODO",
-            },
-            {
-                "text": "IPython Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/",
-            },
-            {
-                "text": "IPython magic Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
-            },
-            {
-                "text": "Matplotlib ipympl Reference",
-                "url": "https://matplotlib.org/ipympl/",
-            },
-            {
-                "text": "Matplotlib Reference",
-                "url": "https://matplotlib.org/contents.html",
-            },
-        )
-
-    @default("log")
-    def _default_log(self) -> LoggerAdapter[Logger]:
-        return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
-
-    @default("kernel_name")
-    def _default_kernel_name(self) -> Literal[KernelName.trio, KernelName.asyncio]:
-        try:
-            if sniffio.current_async_library() == "trio":
-                return KernelName.trio
-        except Exception:
-            pass
-        return KernelName.asyncio
-
-    @default("connection_file")
-    def _default_connection_file(self) -> Path:
-        return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
-
-    @default("comm_manager")
-    def _default_comm_manager(self) -> CommManager:
-        from async_kernel import comm  # noqa: PLC0415
-
-        comm.set_comm()
-        return comm.get_comm_manager()
-
-    @default("shell")
-    def _default_shell(self) -> AsyncInteractiveShell:
-        return AsyncInteractiveShell.instance()
-
-    @default("anyio_backend_options")
-    def _default_anyio_backend_options(self):
-        return {Backend.asyncio: {"use_uvloop": True} if importlib.util.find_spec("uvloop") else {}, Backend.trio: None}
 
     @classmethod
     def stop(cls) -> None:
@@ -692,6 +649,33 @@ class Kernel(HasTraits):
         finally:
             socket.close(linger=500)
             self._sockets.pop(socket_id)
+
+    def _write_connection_file(self) -> None:
+        """Write connection info to JSON dict in self.connection_file."""
+        if not (path := self.connection_file).exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            write_connection_file(
+                str(path),
+                transport=self.transport,
+                ip=self.ip,
+                key=self.session.key,
+                signature_scheme=self.session.signature_scheme,
+                kernel_name=self.kernel_name,
+                **{f"{socket_id}_port": self._ports[socket_id] for socket_id in SocketID},
+            )
+            ip_files: list[pathlib.Path] = []
+            if self.transport == "ipc":
+                for s in self._sockets.values():
+                    f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
+                    assert f.exists()
+                    ip_files.append(f)
+
+            def cleanup_file_files() -> None:
+                path.unlink(missing_ok=True)
+                for f in ip_files:
+                    f.unlink(missing_ok=True)
+
+            atexit.register(cleanup_file_files)
 
     def _input_request(self, prompt: str, *, password=False) -> Any:
         job = utils.get_job()
