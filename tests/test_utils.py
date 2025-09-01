@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import threading
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pytest
-from traitlets import CInt, HasTraits, Instance, default
+from traitlets import HasTraits, Instance, Int, default
 
 from async_kernel import utils as ak_utils
 
@@ -74,9 +74,9 @@ class TestUtils:
 
     def test_setattr_nested_has_traits(self):
         class TestObj(HasTraits):
-            k = CInt()
+            k = Int()
             nested = Instance(HasTraits)
-            nested_with_default = Instance(HasTraits)
+            nested_with_default = Instance(cast("type[TestObj]", HasTraits))
 
             @default("nested_with_default")
             def _default_nested_with_default(self):
@@ -91,4 +91,4 @@ class TestUtils:
         assert not test_obj.trait_has_value("nested")
         # Sets nested trait with a default
         ak_utils.setattr_nested(test_obj, "nested_with_default.k", "2")
-        assert test_obj.nested_with_default.k == 2  # pyright: ignore[reportAttributeAccessIssue]
+        assert test_obj.nested_with_default.k == 2

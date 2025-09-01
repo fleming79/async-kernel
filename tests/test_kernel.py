@@ -46,6 +46,8 @@ def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
             if transport == "tcp":
                 with pytest.raises(RuntimeError):
                     bind_socket(socket, transport, ip, max_attempts=0)  # pyright: ignore[reportArgumentType]
+                with pytest.raises(ValueError, match="Invalid transport"):
+                    bind_socket(socket, "", ip, max_attempts=1)  # pyright: ignore[reportArgumentType]
 
 
 @pytest.mark.parametrize("mode", ["direct", "proxy"])

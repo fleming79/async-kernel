@@ -130,7 +130,7 @@ def bind_socket(
             elif transport == "ipc":
                 if not port:
                     port = 1
-                    while Path(f"{ip}-{port}").exists(follow_symlinks=False):
+                    while Path(f"{ip}-{port}").exists():
                         port += 1
                 socket.bind(f"ipc://{ip}-{port}")
             else:
@@ -1082,11 +1082,11 @@ class Kernel(HasTraits):
             hist = history_manager.get_tail(c["n"], raw=c.get("raw"), output=c.get("output"), include_latest=True)
         elif c.get("hist_access_type") == "range":
             hist = history_manager.get_range(
-                c.get("session"),  # pyright: ignore[reportArgumentType]
-                c.get("start"),  # pyright: ignore[reportArgumentType]
-                c.get("stop"),
-                raw=c.get("raw"),  # pyright: ignore[reportArgumentType]
-                output=c.get("output"),  # pyright: ignore[reportArgumentType]
+                c.get("session", 0),
+                c.get("start", 1),
+                c.get("stop", None),
+                raw=c.get("raw", True),
+                output=c.get("output", False),
             )
         elif c.get("hist_access_type") == "search":
             hist = history_manager.search(
