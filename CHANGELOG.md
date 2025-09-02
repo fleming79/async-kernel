@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2025-09-02
+
+### <!-- 1 --> 🚀 Features
+
+- Add version option to command line. [#82](https://github.com/fleming79/async-kernel/pull/82)
+
+### <!-- 2 --> 🐛 Fixes
+
+- Fix bug setting version for mike. [#80](https://github.com/fleming79/async-kernel/pull/80)
+
+### <!-- 5 --> 📝 Documentation
+
+- Update documentation [#84](https://github.com/fleming79/async-kernel/pull/84)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Minor import changes. [#85](https://github.com/fleming79/async-kernel/pull/85)
+
+- Change base class of Kernel from ConnectionFileMixin to HasTraits [#83](https://github.com/fleming79/async-kernel/pull/83)
+
+- Overwrite subclass properties that should not be available. [#81](https://github.com/fleming79/async-kernel/pull/81)
+
+- CI checks for python 3.14 [#63](https://github.com/fleming79/async-kernel/pull/63)
+
 ## [0.1.2] - 2025-08-31
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -18,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix alias for latest docs and limit release versions. [#75](https://github.com/fleming79/async-kernel/pull/75)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.1.2 [#79](https://github.com/fleming79/async-kernel/pull/79)
 
 - CI and pre-commit maintenance [#76](https://github.com/fleming79/async-kernel/pull/76)
 
@@ -131,6 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.1.3]: https://github.com/fleming79/async-kernel/compare/v0.1.2..v0.1.3
 [0.1.2]: https://github.com/fleming79/async-kernel/compare/v0.1.1..v0.1.2
 [0.1.1]: https://github.com/fleming79/async-kernel/compare/v0.1.0..v0.1.1
 [0.1.0]: https://github.com/fleming79/async-kernel/compare/v0.1.0-rc3..v0.1.0
