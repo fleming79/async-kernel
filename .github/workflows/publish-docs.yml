@@ -42,7 +42,7 @@ jobs:
           uv run async-kernel -a async-docs --shell.execute_request_timeout=0.1    # The 'async-docs' kernel is specified as the kernel for mkdocs-jupyter
 
       - name: Options
-        id: mike
+        id: version
         run: |
           version=$(git tag --points-at HEAD)
           if [[ $version ]]; then
@@ -55,10 +55,18 @@ jobs:
           else
             version=dev
           fi
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "alias=$alias" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT >> $GITHUB_STEP_SUMMARY
+          echo "alias=$alias" >> $GITHUB_OUTPUT >> $GITHUB_STEP_SUMMARY
 
-      - name: Deploy with mike 🚀
+      - name: Deploy dev docs with mike 🚀
+        if: ${{steps.version.outputs.version == 'dev'}}
         run: |
-          uv run mike deploy --push --update-aliases ${{steps.mike.outputs.version}} ${{steps.mike.outputs.alias}}
-          echo "Docs has been updated for version ${{steps.mike.outputs.version}} [view here](https://fleming79.github.io/async-kernel/${{steps.mike.outputs.version}}/)." >> $GITHUB_STEP_SUMMARY
+          uvx git-cliff -o CHANGELOG.md
+          uv run mike deploy --push ${{steps.version.outputs.version}}
+          echo "Dev docs have been updated [view here](https://fleming79.github.io/async-kernel/dev/)." >> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy docs with mike 🚀
+        if: ${{steps.version.outputs.version != 'dev'}}
+        run: |
+          uv run mike deploy --push --update-aliases ${{steps.version.outputs.version}} ${{steps.version.outputs.alias}}
+          echo "Docs has been updated [view here](https://fleming79.github.io/async-kernel/${{steps.version.outputs.version}}/)." >> $GITHUB_STEP_SUMMARY
