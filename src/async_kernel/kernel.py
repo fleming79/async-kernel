@@ -323,10 +323,10 @@ class Kernel(HasTraits):
             self.session.signature_scheme = info["signature_scheme"]
 
     def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
-        #  There is only one instance.
-        if not (instance := cls._instance):
-            cls._instance = instance = super().__new__(cls)
-        return instance
+        #  There is only one instance (including subclasses).
+        if not (instance := Kernel._instance):
+            Kernel._instance = instance = super().__new__(cls)
+        return instance  # pyright: ignore[reportReturnType]
 
     def __init__(self, settings: dict | None = None, /) -> None:
         if self._initialised:
@@ -473,15 +473,15 @@ class Kernel(HasTraits):
             "kernel_name": self.kernel_name,
         }
 
-    @classmethod
-    def stop(cls) -> None:
+    @staticmethod
+    def stop() -> None:
         """Stop the running kernel.
 
         Once a kernel is stopped; that instance of the kernel cannot be restarted.
         Instead, a new kernel must be started.
         """
-        if instance := cls._instance:
-            cls._instance = None
+        if instance := Kernel._instance:
+            Kernel._instance = None
             instance._stop_event.set()
 
     @asynccontextmanager
