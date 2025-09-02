@@ -78,7 +78,7 @@ commit_preprocessors = [
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
 commit_parsers = [
   { field = "github.pr_labels", pattern = "breaking-change", group = "<!-- 0 --> 🏗️ Breaking changes" },
-  { field = "github.pr_labels", pattern = "enhancement", group = "<!-- 1 --> 🚀 Features" },
+  { field = "github.pr_labels", pattern = "enhancement|feature", group = "<!-- 1 --> 🚀 Features" },
   { field = "github.pr_labels", pattern = "bug", group = "<!-- 2 --> 🐛 Fixes" },
   { field = "github.pr_labels", pattern = "update", group = "<!-- 3 --> 🧪 Dependencies" },
   { field = "github.pr_labels", pattern = "refactor", group = "<!-- 4 --> 🏭 Refactor" },

@@ -85,7 +85,7 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         help=f"Remove existing kernel specs. Installed kernels: {kernels}.",
     )
     parser.add_argument(
-        "-v",
+        "-V",
         "--version",
         dest="version",
         help="Print version",
