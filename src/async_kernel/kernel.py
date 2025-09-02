@@ -10,7 +10,6 @@ import getpass
 import importlib.util
 import json
 import logging
-import math
 import os
 import pathlib
 import signal
@@ -26,11 +25,10 @@ from types import CoroutineType
 from typing import TYPE_CHECKING, Any, Literal, Self
 
 import anyio
+import IPython.core.completer
 import sniffio
 import traitlets
 import zmq
-from IPython.core.completer import provisionalcompleter as _provisionalcompleter
-from IPython.core.completer import rectify_completions as _rectify_completions
 from IPython.core.error import StdinNotImplementedError
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client import write_connection_file
@@ -1000,7 +998,7 @@ class Kernel(HasTraits):
             content |= error_to_content(err)
             if (not silent) and c.get("stop_on_error"):
                 try:
-                    self._stop_on_error_time = math.inf
+                    self._stop_on_error_time = float("inf")
                     self.log.info("An error occurred in a non-silent execution request")
                     await anyio.sleep(0)
                 finally:
@@ -1012,8 +1010,9 @@ class Kernel(HasTraits):
         c = job["msg"]["content"]
         code: str = c["code"]
         cursor_pos = c.get("cursor_pos") or len(code)
-        with _provisionalcompleter():
-            completions = list(_rectify_completions(code, self.shell.Completer.completions(code, cursor_pos)))
+        with IPython.core.completer.provisionalcompleter():
+            completions = self.shell.Completer.completions(code, cursor_pos)
+            completions = list(IPython.core.completer.rectify_completions(code, completions))
         comps = [
             {
                 "start": comp.start,
