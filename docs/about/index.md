@@ -7,4 +7,4 @@ icon:
 
 - **[Contributing](../about/contributing.md#contributing)**
 - **[Changelog](../about/changelog.md#changelog)**
-- **[License](../about/license#license)**
+- **[License](../about/license.md#license)**

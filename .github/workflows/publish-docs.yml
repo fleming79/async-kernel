@@ -46,16 +46,17 @@ jobs:
         run: |
           version=$(git tag --points-at HEAD)
           if [[ $version ]]; then
-              echo "version=$version" >> $GITHUB_OUTPUT
-              if [[ $version =~ .*[0-9].*[a-zA-Z] ]]; then
-                  echo "alias=$version pre-release" >> $GITHUB_OUTPUT
-              else
-                  echo "alias=latest" >> $GITHUB_OUTPUT
+            if [[ $version =~ .*[0-9].*[a-zA-Z] ]]; then
+              alias=pre-release
+            else
+              alias=latest
               fi
-            echo "version=$(cut -d '.' -f 1,2)" <<< $version
+            version=$(cut -d '.' -f 1,2 <<< $version)
           else
-            echo "version=dev" >> $GITHUB_OUTPUT
+            version=dev
           fi
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "alias=$alias" >> $GITHUB_OUTPUT
 
       - name: Deploy with mike 🚀
         run: |
