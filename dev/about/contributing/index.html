@@ -1040,15 +1040,6 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#code-styling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Styling
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#pre-commit" class="md-nav__link">
     <span class="md-ellipsis">
       Pre-commit
@@ -1089,15 +1080,6 @@ viewing the latest version.
   <a href="#sync-docs-group" class="md-nav__link">
     <span class="md-ellipsis">
       Sync 'docs' group
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#install-the-async-docs-kernel-spec" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install the 'async-docs' kernel spec
     </span>
   </a>
   
@@ -1188,6 +1170,24 @@ viewing the latest version.
   
     <nav class="md-nav" aria-label="Releasing Async kernel">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new_releaseyml" class="md-nav__link">
+    <span class="md-ellipsis">
+      new_release.yml
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publish-to-pypiyml" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish-to-pypi.yml
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#publish" class="md-nav__link">
@@ -1335,15 +1335,6 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#code-styling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Styling
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#pre-commit" class="md-nav__link">
     <span class="md-ellipsis">
       Pre-commit
@@ -1384,15 +1375,6 @@ viewing the latest version.
   <a href="#sync-docs-group" class="md-nav__link">
     <span class="md-ellipsis">
       Sync 'docs' group
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#install-the-async-docs-kernel-spec" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install the 'async-docs' kernel spec
     </span>
   </a>
   
@@ -1485,6 +1467,24 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#new_releaseyml" class="md-nav__link">
+    <span class="md-ellipsis">
+      new_release.yml
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publish-to-pypiyml" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish-to-pypi.yml
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#publish" class="md-nav__link">
     <span class="md-ellipsis">
       Publish
@@ -1529,14 +1529,19 @@ viewing the latest version.
 <h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h1>
 <p>This project is under active development. Feel free to create an issue to provide feedback.</p>
 <h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">&para;</a></h2>
-<p><a href="https://docs.astral.sh/uv/">uv</a> is used to provide the development environment through <a href="https://docs.astral.sh/uv/concepts/projects/sync/#locking-and-syncing">locking and syncing</a>.</p>
-<p>If you are working on a pull request, <a href="https://github.com/fleming79/async-kernel/fork">make a fork</a> of the project and work on the fork.</p>
+<p>The development environment is provided by <a href="https://docs.astral.sh/uv/">uv</a> using <a href="https://docs.astral.sh/uv/concepts/projects/sync/#locking-and-syncing">locking and syncing</a>.</p>
+<p>If you are working on a pull request <a href="https://github.com/fleming79/async-kernel/fork">make a fork</a> of the project and work on the fork.</p>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>&lt;your<span class="w"> </span>fork<span class="w"> </span>repository&gt;
 <span class="nb">cd</span><span class="w"> </span>async-kernel
-<span class="c1"># Create  the uv virtual environment</span>
-uv<span class="w"> </span>venv<span class="w"> </span>--python<span class="w"> </span><span class="m">3</span>.11<span class="w"> </span><span class="c1"># or whichever environment you are targeting.</span>
+</code></pre></div>
+<p>Synchronise the environment.</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>venv<span class="w"> </span>--python<span class="w"> </span><span class="m">3</span>.11<span class="w"> </span><span class="c1"># or whichever environment you are targeting.</span>
 uv<span class="w"> </span>sync
 <span class="c1"># Activate the environment</span>
+</code></pre></div>
+<p>Additional steps to build documentation (optional):</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
+uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
 </code></pre></div>
 <h3 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest
@@ -1556,12 +1561,9 @@ are generated with <a href="https://about.codecov.io/">Codecov</a>.</p>
 <li>Coverage on Python 3.11 doesn't correctly gather data for subprocesses giving invalid coverage reports.</li>
 </ol>
 </details>
-<h3 id="code-styling">Code Styling<a class="headerlink" href="#code-styling" title="Permanent link">&para;</a></h3>
-<p>We use ruff for code formatting. Run pre-commit to format the code.</p>
 <h3 id="pre-commit">Pre-commit<a class="headerlink" href="#pre-commit" title="Permanent link">&para;</a></h3>
-<p>Pre-commit runs a number of checks on the code which can also automatically re-format your code
-and otherwise bring issues to your attention, such as spelling.</p>
-<p>Pre-commit will run automatically on submission of a PR. You can run it locally as a tool with:</p>
+<p>Pre-commit runs a number of checks on the code and will also re-format it.</p>
+<p>Pre-commit will run automatically on submission of a PR but you can also run it locally as a tool with:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="changed-files" name="__tabbed_1" type="radio" /><input id="all-files" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="changed-files">Changed files</label><label for="all-files">All files</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -1590,20 +1592,19 @@ in the future.</p>
 <p>The 'docs' group specified extra packages are required to build documentation.</p>
 <h4 id="sync-docs-group">Sync 'docs' group<a class="headerlink" href="#sync-docs-group" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
-</code></pre></div>
-<h4 id="install-the-async-docs-kernel-spec">Install the 'async-docs' kernel spec<a class="headerlink" href="#install-the-async-docs-kernel-spec" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
+uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
 </code></pre></div>
 <h4 id="test-the-docs">Test the docs<a class="headerlink" href="#test-the-docs" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>-s
 </code></pre></div>
 <details class="info">
 <summary>Info</summary>
-<p>The second command:</p>
+<p>The command:</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
 </code></pre></div>
-<p>defines a new kernel spec with the name "async-docs" with a shell.execute_request_timeout of 100ms.</p>
-<p>This kernel is used by <a href="#notebooks">mkdocs-jupyter</a> to convert the notebooks.</p>
+<p>defines a new kernel spec with the name "async-docs" that sets the <code>shell.execute_request_timeout</code> to 100ms.</p>
+<p>The "async-docs" named kernel spec is used by <a href="#notebooks">mkdocs-jupyter</a> to convert the notebooks
+for inclusion in the usage section of the documentation.</p>
 </details>
 <h3 id="serve-locally">Serve locally<a class="headerlink" href="#serve-locally" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>serve<span class="w"> </span>
@@ -1639,12 +1640,22 @@ this is due to the timeout but there is no distinction on the type of error.</p>
 <li><a href="https://squidfunk.github.io/mkdocs-material/reference/tooltips/#usage">tooltips</a></li>
 </ul>
 <h2 id="releasing-async-kernel">Releasing Async kernel<a class="headerlink" href="#releasing-async-kernel" title="Permanent link">&para;</a></h2>
-<p>To start a new release, manually run the workflow <a href="https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml">new_release.yml</a>.</p>
-<p>The action does the following:</p>
+<p>To make a new release go to the <a href="https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml">new_release.yml</a> action
+and click 'Run workflow'.</p>
+<h3 id="new_releaseyml">new_release.yml<a class="headerlink" href="#new_releaseyml" title="Permanent link">&para;</a></h3>
+<p>The workflow does the following:</p>
 <ol>
-<li>Creates and merges a PR with the updated changelog generated with <a href="https://git-cliff.org/">git-cliff</a></li>
-<li>Starts a new release which adds a tag to the head of the main branch.</li>
-<li>The publish-to-pypi workflow runs, waiting for</li>
+<li>Creates and merges a PR with the updated changelog generated with <a href="https://git-cliff.org/">git-cliff</a>.</li>
+<li>Starts a new Github release which adds a tag 'v<release version>' to the head of the main branch.</li>
+</ol>
+<h3 id="publish-to-pypiyml">publish-to-pypi.yml<a class="headerlink" href="#publish-to-pypiyml" title="Permanent link">&para;</a></h3>
+<p>The publish-to-pypi<sup id="fnref:test-pypi"><a class="footnote-ref" href="#fn:test-pypi">1</a></sup> workflow will start automatically on completion of the "new_release.yml".
+It performs the following steps.</p>
+<ol>
+<li>Builds the distribution.</li>
+<li>Waits for manual approval to release.</li>
+<li>Uploads the release files to <a href="https://pypi.org/project/async-kernel/">PyPi</a>.</li>
+<li>Uploads the release files to the <a href="https://github.com/fleming79/async-kernel/releases">Github release</a>.</li>
 </ol>
 <p>Once the new PR is available merge the PR into the main branch.
 Normally this will also trigger publication of the new release.</p>
@@ -1664,6 +1675,14 @@ uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </sp
 <p class="admonition-title">Note</p>
 <p>CI checks also run for a matrix of OS's and python versions. So even if all tests pass locally,
 tests can still fail for another os or python version.</p>
+</div>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:test-pypi">
+<p>This workflow also runs on push to the main branch, but will instead publish to <a href="https://test.pypi.org/project/async-kernel/">TestPyPI</a>.&#160;<a class="footnote-backref" href="#fnref:test-pypi" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
 </div>
 
 

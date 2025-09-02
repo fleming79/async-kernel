@@ -1208,7 +1208,7 @@ viewing the latest version.
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
 <li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a><ul>
 <li>Asyncio (default)<ul>
-<li><a href="https://pypi.org/project/uvloop/">uvloop</a> enabled by default</li>
+<li><a href="https://pypi.org/project/uvloop/">uvloop</a> enabled by default<sup id="fnref:uv-loop"><a class="footnote-ref" href="#fn:uv-loop">1</a></sup></li>
 </ul>
 </li>
 <li><a href="https://pypi.org/project/trio/">trio</a> backend</li>
@@ -1234,6 +1234,14 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
 <p>Async kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
 of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to the original contributors of IPyKernel that made Async kernel possible.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:uv-loop">
+<p>Uvloop is not a dependency of async-kernel but will be used if it has been installed.&#160;<a class="footnote-backref" href="#fnref:uv-loop" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 
