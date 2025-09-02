@@ -67,7 +67,7 @@ docs = ["mkdocs-material",
 ]
 uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32'"
 ]
-test = ["pre-commit",
+test = [
     "pytest-cov",
     "pytest-timeout",
     "pytest-mock",

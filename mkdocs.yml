@@ -154,6 +154,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Usage:
+      - usage/index.md
       - Notebooks:
           - notebooks/index.md
           - notebooks/simple_example.ipynb

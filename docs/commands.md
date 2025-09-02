@@ -104,13 +104,13 @@ or, with compact notation to set a Boolean value as a Boolean flag.
 
 Use the flag `-r` or `--remove` to remove a kernelspec.
 
-```shell
+```bash
 async-kernel
 ```
 
 If you added the custom kernel spec above, you can remove it with:
 
-```shell
+```bash
 async-kernel -r async-trio-custom
 ```
 
@@ -121,13 +121,13 @@ To skip providing a connection file
 
 This will start the default kernel (async).
 
-```shell
+```bash
 async-kernel -f .
 ```
 
 Additional settings can be passed as arguments.
 
-```shell
+```bash
 async-kernel -f . --kernel_name=async-trio-custom --display_name='My custom kernel' --quiet=False
 ```
 
