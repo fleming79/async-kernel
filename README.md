@@ -19,7 +19,7 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 - [Configurable backend](https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec)
     - Asyncio (default)
-        - [uvloop](https://pypi.org/project/uvloop/) enabled by default
+        - [uvloop](https://pypi.org/project/uvloop/) enabled by default[^uv-loop]
     - [trio](https://pypi.org/project/trio/) backend
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell) provides:
     - code execution
@@ -48,3 +48,5 @@ async-kernel -a async-trio
 
 Async kernel started as a [fork](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)
 of [IPyKernel](https://github.com/ipython/ipykernel). Thank you to the original contributors of IPyKernel that made Async kernel possible.
+
+[^uv-loop]: Uvloop is not a dependency of async-kernel but will be used if it has been installed.
