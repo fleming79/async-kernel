@@ -2410,7 +2410,7 @@ viewing the latest version.
 
 
   
-      classmethod
+      staticmethod
    (async_kernel.kernel.Kernel.stop)" href="#async_kernel.kernel.Kernel.stop">stop</a></code></b>
             –
             <div class="doc-md-description">
@@ -4665,7 +4665,7 @@ and is called by load_connection_file.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.stop" class="headerlink" title="Permanent link">&para;</a></h4>
@@ -4690,15 +4690,15 @@ Instead, a new kernel must be started.</p>
 <span class="normal">482</span>
 <span class="normal">483</span>
 <span class="normal">484</span>
-<span class="normal">485</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">485</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop the running kernel.</span>
 
 <span class="sd">    Once a kernel is stopped; that instance of the kernel cannot be restarted.</span>
 <span class="sd">    Instead, a new kernel must be started.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">instance</span> <span class="o">:=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="p">:</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">instance</span> <span class="o">:=</span> <span class="n">Kernel</span><span class="o">.</span><span class="n">_instance</span><span class="p">:</span>
+        <span class="n">Kernel</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">instance</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
