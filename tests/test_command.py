@@ -42,7 +42,7 @@ def test_prints_help_when_no_args(monkeypatch, capsys):
 
 
 def test_prints_version_info(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["prog", "-v"])
+    monkeypatch.setattr(sys, "argv", ["prog", "-V"])
     command_line()
     out = capsys.readouterr().out
     assert f"async-kernel {async_kernel.__version__}" in out
