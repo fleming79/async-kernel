@@ -273,15 +273,8 @@ viewing the latest version.
   
     
     
-      
-  
-  
-  
-  
-    
-    
       <li class="md-tabs__item">
-        <a href="../../notebooks/" class="md-tabs__link">
+        <a href="../../usage/" class="md-tabs__link">
           
   
   
@@ -293,9 +286,6 @@ viewing the latest version.
 
         </a>
       </li>
-    
-  
-
     
   
 
@@ -431,6 +421,10 @@ viewing the latest version.
     
       
         
+          
+        
+      
+        
       
         
       
@@ -448,9 +442,12 @@ viewing the latest version.
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../usage/" class="md-nav__link ">
+              
   
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 10h5.5L14 4.5zM5 3h10l6 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2m0 9v2h14v-2zm0 4v2h9v-2z"/></svg>
   
   <span class="md-ellipsis">
     Usage
@@ -458,8 +455,14 @@ viewing the latest version.
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
@@ -467,6 +470,8 @@ viewing the latest version.
             Usage
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -498,7 +503,7 @@ viewing the latest version.
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -517,14 +522,14 @@ viewing the latest version.
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_1">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
             Notebooks
           </label>
@@ -1011,31 +1016,14 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#installation-from-source" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installation from source
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#update-packages" class="md-nav__link">
-    <span class="md-ellipsis">
-      Update packages
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#running-tests" class="md-nav__link">
     <span class="md-ellipsis">
       Running tests
     </span>
   </a>
   
-</li>
+    <nav class="md-nav" aria-label="Running tests">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#running-tests-with-coverage" class="md-nav__link">
@@ -1043,6 +1031,11 @@ viewing the latest version.
       Running tests with coverage
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1056,9 +1049,27 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#pre-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pre-commit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#type-checking" class="md-nav__link">
     <span class="md-ellipsis">
       Type checking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Update packages
     </span>
   </a>
   
@@ -1075,9 +1086,27 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#install" class="md-nav__link">
+  <a href="#sync-docs-group" class="md-nav__link">
     <span class="md-ellipsis">
-      Install
+      Sync 'docs' group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-the-async-docs-kernel-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install the 'async-docs' kernel spec
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-the-docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test the docs
     </span>
   </a>
   
@@ -1145,15 +1174,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#deploy-manually" class="md-nav__link">
-    <span class="md-ellipsis">
-      Deploy manually
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1176,20 +1196,14 @@ viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Publish">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#manual" class="md-nav__link">
-    <span class="md-ellipsis">
-      Manual
-    </span>
-  </a>
-  
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#run-ci-checks-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run ci checks locally
+    </span>
+  </a>
   
 </li>
         
@@ -1297,31 +1311,14 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#installation-from-source" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installation from source
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#update-packages" class="md-nav__link">
-    <span class="md-ellipsis">
-      Update packages
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#running-tests" class="md-nav__link">
     <span class="md-ellipsis">
       Running tests
     </span>
   </a>
   
-</li>
+    <nav class="md-nav" aria-label="Running tests">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#running-tests-with-coverage" class="md-nav__link">
@@ -1329,6 +1326,11 @@ viewing the latest version.
       Running tests with coverage
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1342,9 +1344,27 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#pre-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pre-commit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#type-checking" class="md-nav__link">
     <span class="md-ellipsis">
       Type checking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Update packages
     </span>
   </a>
   
@@ -1361,9 +1381,27 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#install" class="md-nav__link">
+  <a href="#sync-docs-group" class="md-nav__link">
     <span class="md-ellipsis">
-      Install
+      Sync 'docs' group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-the-async-docs-kernel-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install the 'async-docs' kernel spec
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-the-docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test the docs
     </span>
   </a>
   
@@ -1431,15 +1469,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#deploy-manually" class="md-nav__link">
-    <span class="md-ellipsis">
-      Deploy manually
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1462,20 +1491,14 @@ viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Publish">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#manual" class="md-nav__link">
-    <span class="md-ellipsis">
-      Manual
-    </span>
-  </a>
-  
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#run-ci-checks-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run ci checks locally
+    </span>
+  </a>
   
 </li>
         
@@ -1506,53 +1529,82 @@ viewing the latest version.
 <h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h1>
 <p>This project is under active development. Feel free to create an issue to provide feedback.</p>
 <h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">&para;</a></h2>
-<p><a href="https://docs.astral.sh/uv/">uv</a> is used for development. By default it will install all
-relevant versions of the required packages when it is synchronised.</p>
-<h3 id="installation-from-source">Installation from source<a class="headerlink" href="#installation-from-source" title="Permanent link">&para;</a></h3>
-<p>If you are working on a pull request, [make a fork] of the project and install from your fork.</p>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>&lt;repository&gt;
+<p><a href="https://docs.astral.sh/uv/">uv</a> is used to provide the development environment through <a href="https://docs.astral.sh/uv/concepts/projects/sync/#locking-and-syncing">locking and syncing</a>.</p>
+<p>If you are working on a pull request, <a href="https://github.com/fleming79/async-kernel/fork">make a fork</a> of the project and work on the fork.</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>&lt;your<span class="w"> </span>fork<span class="w"> </span>repository&gt;
 <span class="nb">cd</span><span class="w"> </span>async-kernel
+<span class="c1"># Create  the uv virtual environment</span>
 uv<span class="w"> </span>venv<span class="w"> </span>--python<span class="w"> </span><span class="m">3</span>.11<span class="w"> </span><span class="c1"># or whichever environment you are targeting.</span>
 uv<span class="w"> </span>sync
 <span class="c1"># Activate the environment</span>
 </code></pre></div>
-<h3 id="update-packages">Update packages<a class="headerlink" href="#update-packages" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>lock<span class="w"> </span>--upgrade
-</code></pre></div>
 <h3 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest
 </code></pre></div>
-<h3 id="running-tests-with-coverage">Running tests with coverage<a class="headerlink" href="#running-tests-with-coverage" title="Permanent link">&para;</a></h3>
-<p>We are aiming for 100% code coverage on CI (Linux). Any new code should also update tests to maintain coverage.</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-vv<span class="w"> </span>--cov
+<h4 id="running-tests-with-coverage">Running tests with coverage<a class="headerlink" href="#running-tests-with-coverage" title="Permanent link">&para;</a></h4>
+<p>We intend to maintain 100% code coverage on CI (Linux). The <a href="https://app.codecov.io/github/fleming79/async-kernel">coverage report</a>
+and badge <a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a>
+are generated with <a href="https://about.codecov.io/">Codecov</a>.</p>
+<p>You can run tests locally with coverage to see if the test will pass on CI using:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-vv<span class="w"> </span>--cov<span class="w"> </span>--cov-fail-under<span class="o">=</span><span class="m">100</span>
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<details class="info">
+<summary>Info</summary>
 <p>We are only targeting 100% on linux for &gt;= 3.12 for the following reasons:</p>
 <ol>
-<li><code>transport</code> type <code>ipc</code> is only supported linux which has special handling.</li>
+<li>linux is the only platform that reliably supports the <code>transport</code> type <code>ipc</code> for zmq sockets which is supported by async kerenel.</li>
 <li>Coverage on Python 3.11 doesn't correctly gather data for subprocesses giving invalid coverage reports.</li>
 </ol>
-</div>
-<p><img alt="Coverage grid" src="https://codecov.io/github/fleming79/async-kernel/graphs/tree.svg?token=PX0RWNKT85" /></p>
+</details>
 <h3 id="code-styling">Code Styling<a class="headerlink" href="#code-styling" title="Permanent link">&para;</a></h3>
-<p><code>Async kernel</code> uses ruff for code formatting. The pre-commit hook should take care of how it should look.</p>
-<p>To install <code>pre-commit</code> to run prior commits with the following:</p>
-<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>install
+<p>We use ruff for code formatting. Run pre-commit to format the code.</p>
+<h3 id="pre-commit">Pre-commit<a class="headerlink" href="#pre-commit" title="Permanent link">&para;</a></h3>
+<p>Pre-commit runs a number of checks on the code which can also automatically re-format your code
+and otherwise bring issues to your attention, such as spelling.</p>
+<p>Pre-commit will run automatically on submission of a PR. You can run it locally as a tool with:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="changed-files" name="__tabbed_1" type="radio" /><input id="all-files" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="changed-files">Changed files</label><label for="all-files">All files</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>pre-commit<span class="w"> </span>run
 </code></pre></div>
-<p>If you prefer not to install the hook, you can invoke the pre-commit hook by hand at any time with:</p>
-<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>run<span class="w"> </span><span class="c1"># append -a to run against all files.</span>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>-a
 </code></pre></div>
+</div>
+</div>
+</div>
 <h3 id="type-checking">Type checking<a class="headerlink" href="#type-checking" title="Permanent link">&para;</a></h3>
-<p>Type checking is performed using <a href="https://docs.basedpyright.com/">basedpyright</a>.</p>
-<div class="highlight"><pre><span></span><code>basedpyright
+<p>Type checking is performed separately to pre-commit checks. Currently type checking is done
+using <a href="https://docs.basedpyright.com/">basedpyright</a>. Other type checkers might be added
+in the future.</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>basedpyright
+</code></pre></div>
+<h3 id="update-packages">Update packages<a class="headerlink" href="#update-packages" title="Permanent link">&para;</a></h3>
+<p>To upgrade all packages use the command:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>lock<span class="w"> </span>--upgrade
 </code></pre></div>
 <h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
-<p>Documentation is provided my <a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs </a>. To start up a server for editing locally:</p>
-<h4 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h4>
+<p>Documentation is generated from markdown files and the source using <a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs </a> and
+<a href="https://pypi.org/project/mike/">mike</a> for versioning. Publishing of documentation is handled by the automation workflow 'publish-docs.yml'.</p>
+<p>The 'docs' group specified extra packages are required to build documentation.</p>
+<h4 id="sync-docs-group">Sync 'docs' group<a class="headerlink" href="#sync-docs-group" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
-uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
 </code></pre></div>
+<h4 id="install-the-async-docs-kernel-spec">Install the 'async-docs' kernel spec<a class="headerlink" href="#install-the-async-docs-kernel-spec" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
+</code></pre></div>
+<h4 id="test-the-docs">Test the docs<a class="headerlink" href="#test-the-docs" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>-s
+</code></pre></div>
+<details class="info">
+<summary>Info</summary>
+<p>The second command:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
+</code></pre></div>
+<p>defines a new kernel spec with the name "async-docs" with a shell.execute_request_timeout of 100ms.</p>
+<p>This kernel is used by <a href="#notebooks">mkdocs-jupyter</a> to convert the notebooks.</p>
+</details>
 <h3 id="serve-locally">Serve locally<a class="headerlink" href="#serve-locally" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>serve<span class="w"> </span>
 </code></pre></div>
@@ -1565,25 +1617,34 @@ Typing information is included automatically by <a href="https://mkdocstrings.gi
 <li><a href="https://mkdocstrings.github.io/usage/#cross-references">cross-referencing</a></li>
 </ul>
 <h3 id="notebooks">Notebooks<a class="headerlink" href="#notebooks" title="Permanent link">&para;</a></h3>
-<p>Notebooks are included in the documentation with the plugin <a href="https://github.com/danielfrg/mkdocs-jupyter">mkdocs-jupyter</a>.</p>
+<p>Notebooks are included in the documentation by the plugin <a href="https://github.com/danielfrg/mkdocs-jupyter">mkdocs-jupyter</a>.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>We use the kernel spec named 'async-docs' which has a cell execute timeout of 100ms. This is used
+to advance execution through long running cells.</p>
+<p>The <a class="autorefs autorefs-internal" title="suppress_error
+
+
+  
+      class-attribute
+      instance-attribute
+  " href="../../reference/typing/#async_kernel.typing.Tags.suppress_error">suppress-error</a> tag is inserted in code cells to enable
+with generating documentation. The symbol '⚠' is an indicator that the error was suppressed. Normally
+this is due to the timeout but there is no distinction on the type of error.</p>
+</div>
 <h4 id="useful-links">Useful links<a class="headerlink" href="#useful-links" title="Permanent link">&para;</a></h4>
 <p>These links are not relevant for docstrings.</p>
 <ul>
 <li><a href="https://squidfunk.github.io/mkdocs-material/reference/footnotes/#usage">footnotes</a></li>
 <li><a href="https://squidfunk.github.io/mkdocs-material/reference/tooltips/#usage">tooltips</a></li>
 </ul>
-<h3 id="deploy-manually">Deploy manually<a class="headerlink" href="#deploy-manually" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>gh-deploy<span class="w"> </span>--force
-</code></pre></div>
 <h2 id="releasing-async-kernel">Releasing Async kernel<a class="headerlink" href="#releasing-async-kernel" title="Permanent link">&para;</a></h2>
-<p>To start a new release manually trigger the Github action <a href="https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml">new_release.yml</a>.</p>
+<p>To start a new release, manually run the workflow <a href="https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml">new_release.yml</a>.</p>
 <p>The action does the following:</p>
 <ol>
-<li>Creates a new branch using the version number.</li>
-<li>Updates the changelog for the new version using <a href="https://git-cliff.org/">git-cliff</a>.</li>
-<li>Commits the revised changelog.</li>
-<li>Adds a tag against the commit with the version.</li>
-<li>Starts a new PR assigning the actor who triggered the workflow.</li>
+<li>Creates and merges a PR with the updated changelog generated with <a href="https://git-cliff.org/">git-cliff</a></li>
+<li>Starts a new release which adds a tag to the head of the main branch.</li>
+<li>The publish-to-pypi workflow runs, waiting for</li>
 </ol>
 <p>Once the new PR is available merge the PR into the main branch.
 Normally this will also trigger publication of the new release.</p>
@@ -1592,17 +1653,17 @@ Normally this will also trigger publication of the new release.</p>
 the workflow that publishes the release. It starts on a push to the main branch but can also be manually triggered.
 It will always publish to TestPyPI on a push. If the git head has a tag starting with 'v' it will also publish
 to PyPi. If it is published to PyPI successfully, it will also create a Github release.</p>
-<h4 id="manual">Manual<a class="headerlink" href="#manual" title="Permanent link">&para;</a></h4>
-<p>To manually publish create a tag on the head of the main branch and push the tags.</p>
-<div class="highlight"><pre><span></span><code>git checkout
-git tag v0.1.0 -m &quot;v0.1.0&quot;
-git push --tags
+<h3 id="run-ci-checks-locally">Run ci checks locally<a class="headerlink" href="#run-ci-checks-locally" title="Permanent link">&para;</a></h3>
+<p>You can run tests locally to see if there is anything that might be caught by CI.</p>
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>-a
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-vv<span class="w"> </span>--cov<span class="w"> </span>--cov-fail-under<span class="o">=</span><span class="m">100</span>
+uv<span class="w"> </span>run<span class="w"> </span>basedpyright
+uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>-s
 </code></pre></div>
-<p>If the publish workflow doesn't start automatically. Run the <a href="https://github.com/fleming79/async-kernel/actions/workflows/publish-to-pypi.yml">publish-to-pypi</a>
-workflow manually.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Where possible use the workflows to publish releases.</p>
+<p>CI checks also run for a matrix of OS's and python versions. So even if all tests pass locally,
+tests can still fail for another os or python version.</p>
 </div>
 
 

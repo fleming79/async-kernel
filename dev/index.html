@@ -14,7 +14,7 @@
       
       
       
-        <link rel="next" href="notebooks/">
+        <link rel="next" href="usage/">
       
       
       <link rel="icon" href="assets/images/favicon.png">
@@ -273,15 +273,8 @@ viewing the latest version.
   
     
     
-      
-  
-  
-  
-  
-    
-    
       <li class="md-tabs__item">
-        <a href="notebooks/" class="md-tabs__link">
+        <a href="usage/" class="md-tabs__link">
           
   
   
@@ -293,9 +286,6 @@ viewing the latest version.
 
         </a>
       </li>
-    
-  
-
     
   
 
@@ -515,6 +505,10 @@ viewing the latest version.
     
       
         
+          
+        
+      
+        
       
         
       
@@ -532,9 +526,12 @@ viewing the latest version.
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="usage/" class="md-nav__link ">
+              
   
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 10h5.5L14 4.5zM5 3h10l6 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2m0 9v2h14v-2zm0 4v2h9v-2z"/></svg>
   
   <span class="md-ellipsis">
     Usage
@@ -542,8 +539,14 @@ viewing the latest version.
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
@@ -551,6 +554,8 @@ viewing the latest version.
             Usage
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -582,7 +587,7 @@ viewing the latest version.
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -601,14 +606,14 @@ viewing the latest version.
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_1">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
             Notebooks
           </label>
@@ -1187,7 +1192,8 @@ viewing the latest version.
 
 
 <h1 id="async-kernel">Async kernel<a class="headerlink" href="#async-kernel" title="Permanent link">&para;</a></h1>
-<p><a href="https://pypi.python.org/pypi/async-kernel"><img alt="image" src="https://img.shields.io/pypi/pyversions/async-kernel.svg" /></a>
+<p><a href="https://pypi.python.org/pypi/async-kernel"><img alt="pypi" src="https://img.shields.io/pypi/pyversions/async-kernel.svg" /></a>
+<a href="https://pypistats.org/packages/async-kernel"><img alt="downloads" src="https://img.shields.io/pypi/dm/async-kernel?logo=pypi&amp;color=3775A9" /></a>
 <a href="https://github.com/fleming79/async-kernel/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/fleming79/async-kernel/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
 <a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" /></a>
 <a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json" /></a>
@@ -1223,8 +1229,7 @@ viewing the latest version.
 <h3 id="trio">Trio<a class="headerlink" href="#trio" title="Permanent link">&para;</a></h3>
 <p>To add a kernel spec for <code>trio</code>.</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 </code></pre></div>
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
 <p>Async kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
@@ -1297,13 +1302,13 @@ of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to th
         
         
           
-          <a href="notebooks/" class="md-footer__link md-footer__link--next" aria-label="Next: Notebooks">
+          <a href="usage/" class="md-footer__link md-footer__link--next" aria-label="Next: Usage">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Notebooks
+                Usage
               </div>
             </div>
             <div class="md-footer__button md-icon">
