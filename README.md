@@ -1,6 +1,7 @@
 # Async kernel
 
-[![image](https://img.shields.io/pypi/pyversions/async-kernel.svg)](https://pypi.python.org/pypi/async-kernel)
+[![pypi](https://img.shields.io/pypi/pyversions/async-kernel.svg)](https://pypi.python.org/pypi/async-kernel)
+[![downloads](https://img.shields.io/pypi/dm/async-kernel?logo=pypi&color=3775A9)](https://pypistats.org/packages/async-kernel)
 [![CI](https://github.com/fleming79/async-kernel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fleming79/async-kernel/actions/workflows/ci.yml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
@@ -30,7 +31,7 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
 
 ## Installation
 
-```shell
+```bash
 pip install async-kernel
 ```
 
@@ -38,11 +39,8 @@ pip install async-kernel
 
 To add a kernel spec for `trio`.
 
-```shell
+```bash
 pip install trio
-```
-
-```shell
 async-kernel -a async-trio
 ```
 

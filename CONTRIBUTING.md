@@ -4,88 +4,125 @@ This project is under active development. Feel free to create an issue to provid
 
 ## Development
 
-[uv](https://docs.astral.sh/uv/) is used for development. By default it will install all
-relevant versions of the required packages when it is synchronised.
+[uv](https://docs.astral.sh/uv/) is used to provide the development environment through [locking and syncing](https://docs.astral.sh/uv/concepts/projects/sync/#locking-and-syncing).
 
-### Installation from source
+If you are working on a pull request, [make a fork](https://github.com/fleming79/async-kernel/fork) of the project and work on the fork.
 
-If you are working on a pull request, [make a fork] of the project and install from your fork.
-
-```shell
-git clone <repository>
+```bash
+git clone <your fork repository>
 cd async-kernel
+# Create  the uv virtual environment
 uv venv --python 3.11 # or whichever environment you are targeting.
 uv sync
 # Activate the environment
 ```
 
-### Update packages
-
-```shell
-uv lock --upgrade
-```
-
 ### Running tests
 
-```shell
+```bash
 uv run pytest
 ```
 
-### Running tests with coverage
+#### Running tests with coverage
 
-We are aiming for 100% code coverage on CI (Linux). Any new code should also update tests to maintain coverage.
+We intend to maintain 100% code coverage on CI (Linux). The [coverage report](https://app.codecov.io/github/fleming79/async-kernel)
+and badge [![codecov](https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85)](https://codecov.io/github/fleming79/async-kernel)
+are generated with [Codecov](https://about.codecov.io/).
 
-```shell
-uv run pytest -vv --cov
+You can run tests locally with coverage to see if the test will pass on CI using:
+
+```bash
+uv run pytest -vv --cov --cov-fail-under=100
 ```
 
-!!! note
+??? info
 
     We are only targeting 100% on linux for >= 3.12 for the following reasons:
 
-    1. `transport` type `ipc` is only supported linux which has special handling.
+    1. linux is the only platform that reliably supports the `transport` type `ipc` for zmq sockets which is supported by async kerenel.
     1. Coverage on Python 3.11 doesn't correctly gather data for subprocesses giving invalid coverage reports.
-
-![Coverage grid](https://codecov.io/github/fleming79/async-kernel/graphs/tree.svg?token=PX0RWNKT85)
 
 ### Code Styling
 
-`Async kernel` uses ruff for code formatting. The pre-commit hook should take care of how it should look.
+We use ruff for code formatting. Run pre-commit to format the code.
 
-To install `pre-commit` to run prior commits with the following:
+### Pre-commit
 
-```shell
-pre-commit install
-```
+Pre-commit runs a number of checks on the code which can also automatically re-format your code
+and otherwise bring issues to your attention, such as spelling.
 
-If you prefer not to install the hook, you can invoke the pre-commit hook by hand at any time with:
+Pre-commit will run automatically on submission of a PR. You can run it locally as a tool with:
 
-```shell
-pre-commit run # append -a to run against all files.
-```
+=== "Changed files"
+
+    ```bash
+    uvx pre-commit run
+    ```
+
+=== "All files"
+
+    ```bash
+    uvx pre-commit run -a
+    ```
 
 ### Type checking
 
-Type checking is performed using [basedpyright](https://docs.basedpyright.com/).
+Type checking is performed separately to pre-commit checks. Currently type checking is done
+using [basedpyright](https://docs.basedpyright.com/). Other type checkers might be added
+in the future.
 
-```shell
-basedpyright
+```bash
+uv run basedpyright
+```
+
+### Update packages
+
+To upgrade all packages use the command:
+
+```bash
+uv lock --upgrade
 ```
 
 ### Documentation
 
-Documentation is provided my [Material for MkDocs ](https://squidfunk.github.io/mkdocs-material/). To start up a server for editing locally:
+Documentation is generated from markdown files and the source using [Material for MkDocs ](https://squidfunk.github.io/mkdocs-material/) and
+[mike](https://pypi.org/project/mike/) for versioning. Publishing of documentation is handled by the automation workflow 'publish-docs.yml'.
 
-#### Install
+The 'docs' group specified extra packages are required to build documentation.
 
-```shell
+#### Sync 'docs' group
+
+```bash
 uv sync --group docs
+```
+
+#### Install the 'async-docs' kernel spec
+
+```bash
 uv run async-kernel -a async-docs --shell.execute_request_timeout=0.1
 ```
 
+#### Test the docs
+
+```bash
+uv run mkdocs build -s
+```
+
+??? info
+
+    The second command:
+
+    ```bash
+    uv run async-kernel -a async-docs --shell.execute_request_timeout=0.1
+    ```
+
+    defines a new kernel spec with the name "async-docs" with a shell.execute_request_timeout of 100ms.
+
+    This kernel is used by [mkdocs-jupyter](#notebooks) to convert the notebooks.
+
 ### Serve locally
 
-```shell
+```bash
 mkdocs serve 
 ```
 
@@ -102,7 +139,16 @@ Typing information is included automatically by [griff](https://mkdocstrings.git
 
 ### Notebooks
 
-Notebooks are included in the documentation with the plugin [mkdocs-jupyter](https://github.com/danielfrg/mkdocs-jupyter).
+Notebooks are included in the documentation by the plugin [mkdocs-jupyter](https://github.com/danielfrg/mkdocs-jupyter).
+
+!!! info
+
+    We use the kernel spec named 'async-docs' which has a cell execute timeout of 100ms. This is used
+    to advance execution through long running cells.
+
+    The [suppress-error][async_kernel.typing.Tags.suppress_error] tag is inserted in code cells to enable
+    with generating documentation. The symbol '⚠' is an indicator that the error was suppressed. Normally
+    this is due to the timeout but there is no distinction on the type of error.
 
 #### Useful links
 
@@ -111,23 +157,15 @@ These links are not relevant for docstrings.
 - [footnotes](https://squidfunk.github.io/mkdocs-material/reference/footnotes/#usage)
 - [tooltips](https://squidfunk.github.io/mkdocs-material/reference/tooltips/#usage)
 
-### Deploy manually
-
-```shell
-mkdocs gh-deploy --force
-```
-
 ## Releasing Async kernel
 
-To start a new release manually trigger the Github action [new_release.yml](https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml).
+To start a new release, manually run the workflow [new_release.yml](https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml).
 
 The action does the following:
 
-1. Creates a new branch using the version number.
-1. Updates the changelog for the new version using [git-cliff](https://git-cliff.org/).
-1. Commits the revised changelog.
-1. Adds a tag against the commit with the version.
-1. Starts a new PR assigning the actor who triggered the workflow.
+1. Creates and merges a PR with the updated changelog generated with [git-cliff](https://git-cliff.org/)
+1. Starts a new release which adds a tag to the head of the main branch.
+1. The publish-to-pypi workflow runs, waiting for
 
 Once the new PR is available merge the PR into the main branch.
 Normally this will also trigger publication of the new release.
@@ -139,19 +177,18 @@ the workflow that publishes the release. It starts on a push to the main branch 
 It will always publish to TestPyPI on a push. If the git head has a tag starting with 'v' it will also publish
 to PyPi. If it is published to PyPI successfully, it will also create a Github release.
 
-#### Manual
+### Run ci checks locally
 
-To manually publish create a tag on the head of the main branch and push the tags.
+You can run tests locally to see if there is anything that might be caught by CI.
 
+```bash
+uvx pre-commit run -a
+uv run pytest -vv --cov --cov-fail-under=100
+uv run basedpyright
+uv run mkdocs build -s
 ```
-git checkout
-git tag v0.1.0 -m "v0.1.0"
-git push --tags
-```
-
-If the publish workflow doesn't start automatically. Run the [publish-to-pypi](https://github.com/fleming79/async-kernel/actions/workflows/publish-to-pypi.yml)
-workflow manually.
 
 !!! note
 
-    Where possible use the workflows to publish releases.
+    CI checks also run for a matrix of OS's and python versions. So even if all tests pass locally,
+    tests can still fail for another os or python version.
