@@ -138,7 +138,9 @@ def write_kernel_spec(
             return MyKernel(settings)
 
 
-        async_kernel.kernelspec.write_kernel_spec(kernel_name="async-button", kernel_factory=kernel_factory)
+        async_kernel.kernelspec.write_kernel_spec(
+            kernel_name="async-button", kernel_factory=kernel_factory
+        )
         ```
 
         !!! warning
