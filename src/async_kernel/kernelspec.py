@@ -3,16 +3,27 @@
 from __future__ import annotations
 
 import enum
+import inspect
 import json
+import re
 import shutil
 import sys
+import textwrap
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from jupyter_client.kernelspec import KernelSpec, _is_valid_kernel_name  # pyright: ignore[reportPrivateUsage]
+import traitlets
+from jupyter_client.kernelspec import KernelSpec
 
 # path to kernelspec resources
 RESOURCES = Path(__file__).parent.joinpath("resources")
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from async_kernel import Kernel
+
+    KernelFactoryType = Callable[[dict[str, Any]], Kernel]
 
 __all__ = ["Backend", "KernelName", "get_kernel_dir", "make_argv", "write_kernel_spec"]
 
@@ -27,11 +38,14 @@ class KernelName(enum.StrEnum):
     trio = "async-trio"
 
 
+CUSTOM_KERNEL_MARKER = "↤"
+
+
 def make_argv(
     *,
     connection_file: str = "{connection_file}",
     kernel_name: KernelName | str = KernelName.asyncio,
-    kernel_factory: str = "async_kernel.Kernel",
+    kernel_factory: str | KernelFactoryType = "async_kernel.Kernel",
     fullpath: bool = True,
     **kwargs,
 ) -> list[str]:
@@ -42,8 +56,8 @@ def make_argv(
 
     Args:
         connection_file: The path to the connection file.
-        kernel_factory: The string import path to a callable that returns a non-started kernel.
-            It must accepts one positional argument the arguments passed as kwgs here.
+        kernel_factory: Either the kernel factory object itself, or the string import path to a
+            callable that returns a non-started kernel.
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
 
@@ -63,12 +77,12 @@ def make_argv(
 def write_kernel_spec(
     path: Path | str | None = None,
     *,
-    kernel_factory: str = "async_kernel.Kernel",
-    kernel_name: KernelName | str = KernelName.asyncio,
-    fullpath: bool = False,
+    kernel_name: KernelName | str,
     display_name: str = "",
-    connection_file: str = "{connection_file}",
+    fullpath: bool = False,
     prefix: str = "",
+    kernel_factory: str | KernelFactoryType = "async_kernel.Kernel",
+    connection_file: str = "{connection_file}",
     **kwargs,
 ) -> Path:
     """
@@ -76,42 +90,107 @@ def write_kernel_spec(
 
     Args:
         path: The path where to write the spec.
-        kernel_factory: The string import path to a callable that creates the Kernel.
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
         display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
+        kernel_factory: The string import path to a callable that creates the Kernel or,
+            a *self-contained* function that returns an instance of a `Kernel`.
+
         connection_file: The path to the connection file.
         prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
 
     kwargs:
-        Additional settings to use on the instance of the Kernel.
-        kwargs added to [KernelSpec.argv][jupyter_client.kernelspec.KernelSpec.argv]. When
-        The arguments are used as Kernel settings when starting the kernel.
+        Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
+        Each setting should correspond to the dotted path to the attribute in the kernel.
+        For example `kernel.shell.execute_request_timeout` should be passed as `shell.execute_request_timeout`.
+        Unpack from a dict to avoid syntax errors.
+
+        kwargs added to [KernelSpec.argv][jupyter_client.kernelspec.KernelSpec.argv].
+
+    ??? example "Example: Passing a callable kernel_factory."
+
+        When `kernel_factory` is passed as a callable, the callable is stored in the file
+        'kernel_spec.py' inside the kernelspec folder.
+
+        ```python
+        import async_kernel.kernelspec
+
+
+        def kernel_factory(settings):
+            from IPython.display import display
+            import anyio
+            from ipywidgets import Button
+
+            from async_kernel import Caller, Kernel
+
+            class MyKernel(Kernel):
+                async def execute_request(self, job):
+                    event = anyio.Event()
+                    b = Button(description="Continue")
+                    caller = Caller()
+                    b.on_click(lambda _: caller.call_no_context(event.set))
+                    display(b)
+                    await event.wait()
+                    b.close()
+                    return await super().execute_request(job)
+
+            return MyKernel(settings)
+
+
+        async_kernel.kernelspec.write_kernel_spec(
+            kernel_name="async-button", kernel_factory=kernel_factory
+        )
+        ```
+
+        !!! warning
+
+            Moving the spec folder will break the import which is stored as an absolute path.
+
+
     """
-    assert _is_valid_kernel_name(kernel_name)
+    assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), kernel_name)
     path = Path(path) if path else (get_kernel_dir(prefix) / kernel_name)
     # stage resources
-    path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(RESOURCES, path, dirs_exist_ok=True)
-    spec = KernelSpec()
-    spec.argv = make_argv(
-        kernel_factory=kernel_factory,
-        connection_file=connection_file,
-        kernel_name=kernel_name,
-        fullpath=fullpath,
-        **kwargs,
-    )
-    spec.name = kernel_name
-    spec.display_name = display_name or f"Python ({kernel_name})"
-    spec.language = "python"
-    spec.interrupt_mode = "message"
-    spec.metadata = {"debugger": True}
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        if callable(kernel_factory):
+            with path.joinpath("kernel_factory.py").open("w") as f:
+                f.write(textwrap.dedent(inspect.getsource(kernel_factory)))
+            kernel_factory = f"{path}{CUSTOM_KERNEL_MARKER}{kernel_factory.__name__}"
+        # validate
+        if kernel_factory != "async_kernel.Kernel":
+            import_kernel_factory(kernel_factory)
+        shutil.copytree(src=RESOURCES, dst=path, dirs_exist_ok=True)
+        spec = KernelSpec()
+        spec.argv = make_argv(
+            kernel_factory=kernel_factory,
+            connection_file=connection_file,
+            kernel_name=kernel_name,
+            fullpath=fullpath,
+            **kwargs,
+        )
+        spec.name = kernel_name
+        spec.display_name = display_name or f"Python ({kernel_name})"
+        spec.language = "python"
+        spec.interrupt_mode = "message"
+        spec.metadata = {"debugger": True}
+        # write kernel.json
+        with path.joinpath("kernel.json").open("w") as f:
+            json.dump(spec.to_dict(), f, indent=1)
+    except Exception:
+        shutil.rmtree(path, ignore_errors=True)
+        raise
+    else:
+        return path
 
-    # write kernel.json
-    with path.joinpath("kernel.json").open("w") as f:
-        json.dump(spec.to_dict(), f, indent=1)
-    return path
+
+def remove_kernel_spec(kernel_name: str) -> bool:
+    "Remove a kernelspec returning True if it was removed."
+    if (folder := get_kernel_dir().joinpath(kernel_name)).exists():
+        shutil.rmtree(folder, ignore_errors=True)
+        return True
+    return False
 
 
 def get_kernel_dir(prefix: str = "") -> Path:
@@ -121,3 +200,26 @@ def get_kernel_dir(prefix: str = "") -> Path:
         prefix: Defaults to sys.prefix (installable for a particular environment).
     """
     return Path(prefix or sys.prefix) / "share/jupyter/kernels"
+
+
+def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
+    """Import the kernel factory as defined in a kernel spec.
+
+    Args:
+        kernel_factory: The name of the kernel factory.
+
+    Returns:
+        The kernel factory.
+    """
+    if CUSTOM_KERNEL_MARKER in kernel_factory:
+        path, factory_name = kernel_factory.split(CUSTOM_KERNEL_MARKER)
+        try:
+            sys.path.insert(0, path)
+            import kernel_factory as kf  # noqa: PLC0415
+
+            factory = getattr(kf, factory_name)
+            assert len(inspect.signature(factory).parameters) == 1
+            return factory
+        finally:
+            sys.path.remove(path)
+    return traitlets.import_item(kernel_factory or "async_kernel.Kernel")

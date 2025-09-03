@@ -192,7 +192,7 @@ ignore = [
 "*.ipynb" = ["PLC0415"]
 
 [tool.ruff.format]
-docstring-code-format = true
+docstring-code-format = false # Clashes with blacken-docs
 
 [tool.interrogate]
 ignore-init-module=true
@@ -235,3 +235,4 @@ reportUnknownArgumentType = false
 reportImportCycles = false
 reportMissingTypeStubs = false
 reportUnusedParameter = false
+reportUnknownLambdaType = false

@@ -1,20 +1,31 @@
 from __future__ import annotations
 
 import argparse
-import shutil
+import contextlib
+import sys
+import traceback
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import anyio
-import traitlets
 
 import async_kernel
-from async_kernel.kernel import Kernel, run_kernel
-from async_kernel.kernelspec import KernelName, get_kernel_dir, write_kernel_spec
+from async_kernel.kernel import Kernel
+from async_kernel.kernelspec import (
+    Backend,
+    KernelName,
+    get_kernel_dir,
+    import_kernel_factory,
+    remove_kernel_spec,
+    write_kernel_spec,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
+
+    from async_kernel.kernel import Kernel
+    from async_kernel.kernelspec import KernelFactoryType
 
     __all__ = ["command_line"]
 
@@ -115,12 +126,8 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
     # Remove kernel spec
     elif args.remove:
         for name in args.remove.split(","):
-            folder = kernel_dir / str(name)
-            if folder.exists():
-                shutil.rmtree(folder, ignore_errors=True)
-                print(f"Removed kernel spec: {name}")
-            else:
-                print(f"Kernel spec folder: '{name}' not found!")
+            msg = "removed" if remove_kernel_spec(name) else "not found!"
+            print(f"Kernel spec: '{name}' {msg}")
 
     # Version
     elif args.version:
@@ -128,14 +135,32 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
 
     # Start kernel
     elif args.connection_file:
-        factory: type[Kernel] = traitlets.import_item(pth) if (pth := getattr(args, "kernel_factory", "")) else Kernel
         settings = vars(args)
         for k in cl_names.difference(["connection_file"]):
             settings.pop(k, None)
         if settings.get("connection_file") in {None, "", "."}:
             settings.pop("connection_file", None)
-        run_kernel(factory(settings), wait_exit_context)
+        factory: KernelFactoryType = import_kernel_factory(getattr(args, "kernel_factory", ""))
+        kernel: Kernel = factory(settings)
 
-    # Default - print help
+        async def _start() -> None:
+            async with kernel:
+                with contextlib.suppress(kernel.CancelledError):
+                    await wait_exit_context()
+
+        try:
+            backend = Backend.trio if "trio" in kernel.kernel_name.lower() else Backend.asyncio
+            anyio.run(_start, backend=backend, backend_options=kernel.anyio_backend_options.get(backend))
+        except KeyboardInterrupt:
+            pass
+        except BaseException as e:
+            traceback.print_exception(e, file=sys.stderr)
+            if sys.__stderr__ is not sys.stderr:
+                traceback.print_exception(e, file=sys.__stderr__)
+            sys.exit(1)
+        else:
+            sys.exit(0)
+
+    # Print help
     else:
         parser.print_help()
