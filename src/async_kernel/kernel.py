@@ -59,7 +59,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable
+    from collections.abc import AsyncGenerator, Callable, Generator, Iterable
     from types import CoroutineType, FrameType
 
     from anyio.abc import TaskStatus
@@ -68,7 +68,7 @@ if TYPE_CHECKING:
     from async_kernel.comm import CommManager
 
 
-__all__ = ["Kernel", "KernelInterruptError", "run_kernel"]
+__all__ = ["Kernel", "KernelInterruptError"]
 
 
 def error_to_content(error: BaseException, /) -> Content:
@@ -147,42 +147,6 @@ def _wrap_handler(
         await runner(handler, job)
 
     return wrap_handler
-
-
-def run_kernel(kernel: Kernel, wait_exit_context: Callable[[], Awaitable] = anyio.sleep_forever) -> None:
-    """Runs a kernel using AnyIO, handling exceptions and setting the exit code.
-
-    The kernel is started within an AnyIO context, allowing it to run using either
-    the Trio or Asyncio backend, determined by the kernel's name.  The function
-    handles KeyboardInterrupt exceptions gracefully and prints any other exceptions
-    to both `sys.stderr` and `sys.__stderr__` before exiting with a non-zero code.
-
-    Args:
-        kernel: The kernel to run, which must be an instance of a class implementing the Kernel protocol.
-        wait_exit_context: An optional callable that returns an awaitable. This awaitable
-            is awaited within the kernel's context.  It defaults to `anyio.sleep_forever`,
-            which keeps the kernel running until it is externally interrupted or cancelled.
-    """
-
-    async def _start() -> None:
-        async with kernel:
-            with contextlib.suppress(kernel.CancelledError):
-                await wait_exit_context()
-
-    try:
-        backend: Literal[Backend.trio, Backend.asyncio] = (
-            Backend.trio if "trio" in kernel.kernel_name.lower() else Backend.asyncio
-        )
-        anyio.run(_start, backend=backend, backend_options=kernel.anyio_backend_options.get(backend))
-    except KeyboardInterrupt:
-        pass
-    except BaseException as e:
-        traceback.print_exception(e, file=sys.stderr)
-        if sys.__stderr__ is not sys.stderr:
-            traceback.print_exception(e, file=sys.__stderr__)
-        sys.exit(1)
-    else:
-        sys.exit(0)
 
 
 class KernelInterruptError(InterruptedError):

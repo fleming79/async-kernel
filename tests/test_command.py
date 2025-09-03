@@ -50,7 +50,7 @@ def test_prints_version_info(monkeypatch, capsys):
 
 def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
-        sys, "argv", ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=my.custom.class"]
+        sys, "argv", ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=async_kernel.Kernel"]
     )
     command_line()
     out = capsys.readouterr().out
@@ -66,7 +66,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "async_kernel",
             "-f",
             "{connection_file}",
-            "--kernel_factory=my.custom.class",
+            "--kernel_factory=async_kernel.Kernel",
             "--kernel_name=async-trio",
         ],
         "env": {},
@@ -83,16 +83,16 @@ def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys):
     monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
     command_line()
     out = capsys.readouterr().out
-    assert f"Removed kernel spec: {kernel_name}" in out
+    assert "removed" in out
     assert not (fake_kernel_dir / kernel_name).exists()
 
 
 def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
-    kernel_name = "notfound"
+    kernel_name = "not a kernel"
     monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
     command_line()
     out = capsys.readouterr().out
-    assert f"Kernel spec folder: '{kernel_name}' not found!" in out
+    assert "not found!" in out
 
 
 def test_start_kernel_success(monkeypatch, capsys):

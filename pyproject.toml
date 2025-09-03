@@ -235,3 +235,4 @@ reportUnknownArgumentType = false
 reportImportCycles = false
 reportMissingTypeStubs = false
 reportUnusedParameter = false
+reportUnknownLambdaType = false
