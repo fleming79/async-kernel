@@ -45,7 +45,7 @@ class InvalidStateError(RuntimeError):
 
 class Future(Awaitable[T]):
     """
-    A class representing a future result modelled on Asyncio's [`Future`](https://docs.python.org/3/library/asyncio-future.html#futures).
+    A class representing a future result modelled on [asyncio.Future][].
 
     This class provides an anyio compatible Future primitive. It is designed
     to work with `Caller` to enable thread-safe calling, setting and awaiting
@@ -80,52 +80,21 @@ class Future(Awaitable[T]):
 
     @override
     def __await__(self) -> Generator[Any, None, T]:
-        return self.result().__await__()
-
-    async def result(self) -> T:
-        "Wait for the result (thread-safe)."
-        try:
-            if not self._event_done.is_set():
-                if threading.current_thread() is self.thread:
-                    if not self._anyio_event_done:
-                        self._anyio_event_done = anyio.Event()
-                    await self._anyio_event_done.wait()
-                else:
-                    await wait_thread_event(self._event_done)
-        except anyio.get_cancelled_exc_class():
-            self.cancel()
-            raise
-        if self._exception:
-            raise self._exception
-        return self._result
-
-    def wait_sync(self) -> T:
-        "Synchronously wait for the result."
-        if threading.current_thread() is self.thread:
-            raise RuntimeError
-        self._event_done.wait()
-        if self._exception:
-            raise self._exception
-        return self._result
-
-    def set_result(self, value: T) -> None:
-        "Set the result (thread-safe using Caller)."
-        self._set_value("result", value)
-
-    def set_exception(self, exception: BaseException) -> None:
-        "Set the exception (thread-safe using Caller)."
-        self._set_value("exception", exception)
+        return self.wait().__await__()
 
     def _set_value(self, mode: Literal["result", "exception"], value) -> None:
         if self._setting_value:
             raise InvalidStateError
         self._setting_value = True
+        if self._cancelled:
+            mode = "exception"
+            value = self._make_cancelled_error()
 
         def set_value():
             if mode == "exception":
                 self._exception = value
             else:
-                self._result = value
+                self._result = value  # pyright: ignore[reportAttributeAccessIssue]
             self._event_done.set()
             if self._anyio_event_done:
                 self._anyio_event_done.set()
@@ -146,6 +115,38 @@ class Future(Awaitable[T]):
 
     def _make_cancelled_error(self) -> FutureCancelledError:
         return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
+
+    async def wait(self) -> T:
+        "Wait for the result (thread-safe)."
+        try:
+            if not self._event_done.is_set():
+                if threading.current_thread() is self.thread:
+                    if not self._anyio_event_done:
+                        self._anyio_event_done = anyio.Event()
+                    await self._anyio_event_done.wait()
+                else:
+                    await wait_thread_event(self._event_done)
+        except anyio.get_cancelled_exc_class():
+            self.cancel()
+            raise
+        return self.result()
+
+    def wait_sync(self) -> T:
+        "Synchronously wait for the result."
+        if threading.current_thread() is self.thread:
+            raise RuntimeError
+        self._event_done.wait()
+        if self._exception:
+            raise self._exception
+        return self._result
+
+    def set_result(self, value: T) -> None:
+        "Set the result (thread-safe using Caller)."
+        self._set_value("result", value)
+
+    def set_exception(self, exception: BaseException) -> None:
+        "Set the exception (thread-safe using Caller)."
+        self._set_value("exception", exception)
 
     def done(self) -> bool:
         """Return True if the Future is done.
@@ -188,6 +189,20 @@ class Future(Awaitable[T]):
     def cancelled(self) -> bool:
         """Return True if the Future is cancelled."""
         return bool(self._cancelled)
+
+    def result(self) -> T:
+        """
+        Return the result of the Future.
+
+        If the Future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
+
+        If the Future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
+        """
+        if not self.done():
+            raise InvalidStateError
+        if e := self.exception():
+            raise e
+        return self._result
 
     def exception(self) -> BaseException | None:
         """Return the exception that was set on the Future.
@@ -367,7 +382,7 @@ class Caller:
         kwargs: dict,
     ) -> None:
         if fut.cancelled():
-            fut.set_exception(fut._make_cancelled_error())  # pyright: ignore[reportPrivateUsage]
+            fut.set_result(cast("T", None))  # This will cancel
             return
         try:
             with anyio.CancelScope() as scope:
@@ -385,14 +400,13 @@ class Caller:
                         await anyio.sleep(0)
                     self._outstanding -= 1  # update first for _to_thread_on_done
                     fut.set_result(result)
-                except (self._cancelled_exception_class, Exception) as e:
-                    self._outstanding -= 1  # # update first for _to_thread_on_done
-                    if not fut.done():
-                        if isinstance(e, self._cancelled_exception_class):
-                            e = fut._make_cancelled_error()  # pyright: ignore[reportPrivateUsage]
-                        else:
-                            self.log.exception("Exception occurred while running %s", func, exc_info=e)
-                        fut.set_exception(e)
+                except self._cancelled_exception_class:
+                    fut.cancel()
+                    self._outstanding -= 1  # update first for _to_thread_on_done
+                    fut.set_result(cast("T", None))  # This will cancel
+                except Exception as e:
+                    self._outstanding -= 1  # update first for _to_thread_on_done
+                    fut.set_exception(e)
         except Exception as e:
             self.log.exception("Calling func %s failed", func, exc_info=e)
 
