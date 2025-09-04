@@ -3,6 +3,7 @@ import importlib.util
 import inspect
 import threading
 import time
+import weakref
 from contextvars import ContextVar
 from random import random
 from typing import Literal, cast
@@ -30,6 +31,10 @@ def transport(request):
 
 @pytest.mark.anyio
 class TestFuture:
+    def test_weakref(self):
+        f = Future()
+        assert weakref.ref(f)() is f
+
     async def test_set_and_wait_result(self):
         fut = Future[int]()
         assert inspect.isawaitable(fut)
