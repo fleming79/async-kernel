@@ -144,6 +144,9 @@ class Future(Awaitable[T]):
         else:
             set_value()
 
+    def _make_cancelled_error(self) -> FutureCancelledError:
+        return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
+
     def done(self) -> bool:
         """Return True if the Future is done.
 
@@ -163,13 +166,18 @@ class Future(Awaitable[T]):
         else:
             self.get_caller().call_no_context(fn, self)
 
-    def cancel(self) -> bool:
+    def cancel(self, msg: str | None = None) -> bool:
         """Cancel the Future and schedule callbacks (thread-safe using Caller).
+
+        Args:
+            msg: The message to use when raising a FutureCancelledError.
 
         Returns if it has been cancelled.
         """
         if not self.done():
-            self._cancelled = True
+            if msg and isinstance(self._cancelled, str):
+                msg = f"{self._cancelled}\n{msg}"
+            self._cancelled = msg or self._cancelled or True
             if scope := self._cancel_scope:
                 if threading.current_thread() is self.thread:
                     scope.cancel()
@@ -179,7 +187,7 @@ class Future(Awaitable[T]):
 
     def cancelled(self) -> bool:
         """Return True if the Future is cancelled."""
-        return self._cancelled
+        return bool(self._cancelled)
 
     def exception(self) -> BaseException | None:
         """Return the exception that was set on the Future.
@@ -189,7 +197,7 @@ class Future(Awaitable[T]):
         If the Future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
         """
         if self._cancelled:
-            raise FutureCancelledError
+            raise self._make_cancelled_error()
         if not self.done():
             raise InvalidStateError
         return self._exception
@@ -207,8 +215,8 @@ class Future(Awaitable[T]):
 
     def set_cancel_scope(self, scope: anyio.CancelScope) -> None:
         "Provide a cancel scope for cancellation."
-        if self._cancelled:
-            scope.cancel()
+        if self._cancelled or self._cancel_scope:
+            raise InvalidStateError
         self._cancel_scope = scope
 
     def get_caller(self) -> Caller:
@@ -358,6 +366,9 @@ class Caller:
         args: tuple,
         kwargs: dict,
     ) -> None:
+        if fut.cancelled():
+            fut.set_exception(fut._make_cancelled_error())  # pyright: ignore[reportPrivateUsage]
+            return
         try:
             with anyio.CancelScope() as scope:
                 fut.set_cancel_scope(scope)
@@ -378,7 +389,7 @@ class Caller:
                     self._outstanding -= 1  # # update first for _to_thread_on_done
                     if not fut.done():
                         if isinstance(e, self._cancelled_exception_class):
-                            e = FutureCancelledError()
+                            e = fut._make_cancelled_error()  # pyright: ignore[reportPrivateUsage]
                         else:
                             self.log.exception("Exception occurred while running %s", func, exc_info=e)
                         fut.set_exception(e)

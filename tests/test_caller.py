@@ -83,10 +83,17 @@ class TestFuture:
         with pytest.raises(RuntimeError):
             fut.set_result(2)
 
+    async def test_set_cancel_scope_twice_raises(self):
+        fut = Future()
+        with anyio.CancelScope() as cancel_scope:
+            fut.set_cancel_scope(cancel_scope)
+            with pytest.raises(InvalidStateError):
+                fut.set_cancel_scope(cancel_scope)
+
     async def test_set_exception_twice_raises(self):
         fut = Future()
         fut.set_exception(ValueError())
-        with pytest.raises(RuntimeError):
+        with pytest.raises(InvalidStateError):
             fut.set_exception(ValueError())
 
     async def test_set_result_after_exception_raises(self):
@@ -424,13 +431,10 @@ class TestCaller:
 
     @pytest.mark.parametrize("mode", ["async", "blocking"])
     @pytest.mark.parametrize("cancel_mode", ["local", "thread"])
+    @pytest.mark.parametrize("msg", ["msg", None, "twice"])
     async def test_cancel(
-        self, anyio_backend, mode: Literal["async", "blocking"], cancel_mode: Literal["local", "thread"]
+        self, anyio_backend, mode: Literal["async", "blocking"], cancel_mode: Literal["local", "thread"], msg
     ):
-        async def async_func():
-            await anyio.sleep(10)
-            raise RuntimeError
-
         def blocking_func():
             import time  # noqa: PLC0415
 
@@ -439,18 +443,21 @@ class TestCaller:
         my_func = blocking_func
         match mode:
             case "async":
-                my_func = async_func
+                my_func = anyio.sleep_forever
             case "blocking":
                 my_func = blocking_func
 
         async with Caller(create=True) as caller:
             fut = caller.call_soon(my_func)
             if cancel_mode == "local":
-                fut.cancel()
+                fut.cancel(msg)
+                if msg == "twice":
+                    fut.cancel(msg)
+                    msg = f"{msg}(?s:.){msg}"
             else:
-                caller.to_thread(fut.cancel)
+                caller.to_thread(fut.cancel, msg)
 
-            with pytest.raises(anyio.ClosedResourceError):
+            with pytest.raises(FutureCancelledError, match=msg if msg else ""):
                 await fut
 
     async def test_cancelled_waiter(self, anyio_backend):
