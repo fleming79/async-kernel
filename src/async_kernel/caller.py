@@ -53,6 +53,7 @@ class Future(Awaitable[T]):
     """
 
     __slots__ = [
+        "__weakref__",
         "_anyio_event_done",
         "_cancel_scope",
         "_cancelled",
@@ -64,6 +65,8 @@ class Future(Awaitable[T]):
         "thread",
     ]
     _result: T
+    thread: threading.Thread
+    "The thread in which the result is targeted to run."
 
     def __init__(self, thread: threading.Thread | None = None) -> None:
         self._event_done = threading.Event()
