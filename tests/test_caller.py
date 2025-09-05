@@ -122,7 +122,7 @@ class TestFuture:
         fut = Future()
         assert fut.cancel()
         with pytest.raises(FutureCancelledError):
-            fut.exception()
+            fut.result()
 
     def test_result_exception(self):
         fut = Future()

@@ -236,7 +236,7 @@ class Future(Awaitable[T]):
 
         If the Future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
         """
-        if not self.done():
+        if not self.cancelled() and not self.done():
             raise InvalidStateError
         if e := self.exception():
             raise e
