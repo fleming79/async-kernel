@@ -151,6 +151,24 @@ class TestFuture:
         finally:
             caller.stop()
 
+    async def test_wait_cancelled_shield(self, anyio_backend):
+        fut = Future()
+        with pytest.raises(TimeoutError):
+            await fut.wait(timeout=0.001, shield=True)
+        assert not fut.cancelled()
+        with pytest.raises(TimeoutError):
+            await fut.wait(timeout=0.001)
+        assert fut.cancelled()
+
+    async def test_wait_sync_cancelled(self, anyio_backend):
+        fut = Caller.to_thread(anyio.sleep_forever)
+        with pytest.raises(TimeoutError):
+            fut.wait_sync(timeout=0.001, shield=True)
+        assert not fut.cancelled()
+        with pytest.raises(TimeoutError):
+            fut.wait_sync(timeout=0.001)
+        assert fut.cancelled()
+
 
 @pytest.mark.anyio
 class TestCaller:
@@ -297,7 +315,7 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             Caller.get_instance(None, create=False)
 
-    async def test_error_wait_sync(self):
+    async def test_wait_sync_error(self):
         async with Caller(create=True) as caller:
             fut = caller.call_later(anyio.sleep, 0.1, 0.1)
             with pytest.raises(RuntimeError):
