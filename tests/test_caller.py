@@ -441,6 +441,12 @@ class TestCaller:
         val = await fut
         assert val is True
 
+    async def test_current_future(self, anyio_backend):
+        async with Caller(create=True) as caller:
+            fut = caller.call_soon(Caller.current_future)
+            res = await fut
+            assert res is fut
+
     async def test_closed_in_call_soon(self, anyio_backend):
         ready = threading.Event()
         proceed = threading.Event()
