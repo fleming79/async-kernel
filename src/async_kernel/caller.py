@@ -116,29 +116,67 @@ class Future(Awaitable[T]):
     def _make_cancelled_error(self) -> FutureCancelledError:
         return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
 
-    async def wait(self) -> T:
-        "Wait for the result (thread-safe)."
-        try:
-            if not self._event_done.is_set():
-                if threading.current_thread() is self.thread:
-                    if not self._anyio_event_done:
-                        self._anyio_event_done = anyio.Event()
-                    await self._anyio_event_done.wait()
-                else:
-                    await wait_thread_event(self._event_done)
-        except anyio.get_cancelled_exc_class():
-            self.cancel()
-            raise
-        return self.result()
+    if TYPE_CHECKING:
 
-    def wait_sync(self) -> T:
-        "Synchronously wait for the result."
-        if threading.current_thread() is self.thread:
+        @overload
+        async def wait(
+            self, *, timeout: float | None = ..., shield: bool = False | ..., result: Literal[True] = True
+        ) -> T: ...
+
+        @overload
+        async def wait(self, *, timeout: float | None = ..., shield: bool = ..., result: Literal[False]) -> None: ...
+
+    async def wait(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
+        """
+        Wait for future to be done (thread-safe) returning the result if specified.
+
+        Args:
+            timeout: Timeout in seconds.
+            shield: Shield cancellation.
+            result: Whether the result should be returned.
+        """
+        if not self._event_done.is_set():
+            with anyio.fail_after(delay=timeout):
+                try:
+                    if threading.current_thread() is self.thread:
+                        if not self._anyio_event_done:
+                            self._anyio_event_done = anyio.Event()
+                        await self._anyio_event_done.wait()
+                    else:
+                        await wait_thread_event(self._event_done)
+                except BaseException as e:
+                    if not shield:
+                        self.cancel(str(e))
+                    raise
+        return self.result() if result else None
+
+    if TYPE_CHECKING:
+
+        @overload
+        def wait_sync(
+            self, *, timeout: float | None = ..., shield: bool = False | ..., result: Literal[True] = True
+        ) -> T: ...
+
+        @overload
+        def wait_sync(self, *, timeout: float | None = ..., shield: bool = ..., result: Literal[False]) -> None: ...
+
+    def wait_sync(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
+        """
+        Synchronously wait for future to be done (thread-safe) returning the result if specified.
+
+        Args:
+            timeout: Timeout in seconds.
+            shield: Shield cancellation.
+            result: Whether the result should be returned.
+        """
+        if self.thread in {threading.current_thread(), threading.main_thread()}:
             raise RuntimeError
-        self._event_done.wait()
-        if self._exception:
-            raise self._exception
-        return self._result
+        self._event_done.wait(timeout)
+        if not self.done():
+            if not shield:
+                self.cancel("timeout from wait_sync")
+            raise TimeoutError
+        return self.result() if result else None
 
     def set_result(self, value: T) -> None:
         "Set the result (thread-safe using Caller)."
