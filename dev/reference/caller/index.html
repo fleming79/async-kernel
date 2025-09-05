@@ -4625,7 +4625,7 @@ Callbacks are called in the reverse order in which they were added in the owning
 
 <span class="sd">    If the Future isn&#39;t done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">InvalidStateError</span>
     <span class="k">if</span> <span class="n">e</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exception</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">e</span>
