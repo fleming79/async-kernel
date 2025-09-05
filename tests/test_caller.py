@@ -111,6 +111,25 @@ class TestFuture:
         with pytest.raises(RuntimeError):
             fut.set_exception(ValueError())
 
+    def test_result(self):
+        fut = Future()
+        with pytest.raises(InvalidStateError):
+            fut.result()
+        fut.set_result(1)
+        assert fut.result() == 1
+
+    def test_result_cancelled(self):
+        fut = Future()
+        assert fut.cancel()
+        with pytest.raises(FutureCancelledError):
+            fut.exception()
+
+    def test_result_exception(self):
+        fut = Future()
+        fut.set_exception(TypeError("my exception"))
+        with pytest.raises(TypeError, match="my exception"):
+            fut.result()
+
     async def test_cancel(self):
         fut = Future()
         assert fut.cancel()
@@ -251,7 +270,7 @@ class TestCaller:
                 case "main":
                     assert (await fut) == 10
                 case "local":
-                    fut_local = caller.call_soon(fut.result)
+                    fut_local = caller.call_soon(fut.wait)
                     result = await fut_local
                     assert result == 10
                 case "wait_sync":
@@ -457,7 +476,7 @@ class TestCaller:
             else:
                 caller.to_thread(fut.cancel, msg)
 
-            with pytest.raises(FutureCancelledError, match=msg if msg else ""):
+            with pytest.raises(FutureCancelledError, match=msg):
                 await fut
 
     async def test_cancelled_waiter(self, anyio_backend):
@@ -469,7 +488,7 @@ class TestCaller:
         async with Caller(create=True) as caller:
             async with anyio.create_task_group() as tg:
                 fut = caller.call_soon(async_func)
-                tg.start_soon(fut.result)
+                tg.start_soon(fut.wait)
                 await anyio.sleep(0)
                 tg.cancel_scope.cancel()
             await anyio.sleep(0)
