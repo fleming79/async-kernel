@@ -14,7 +14,7 @@ __all__ = ["Comm"]
 
 class Comm(BaseComm):
     """
-    [comm.BaseComms][] with a Kernel.
+    `comm.BaseComms` with a [kernel][async_kernel.kernel.Kernel].
 
     Notes:
     - `kernel` is added/removed by the CommManager.
@@ -75,7 +75,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
     !!! note:
 
         - The `Comm` will only send messages when the kernel is set.
-        - The `kernel` sets [CommManager.kernel][] when its ready the iopub socket is open.
+        - The `kernel` sets `CommManager.kernel` when its ready the iopub socket is open.
     """
 
     _instance = None
@@ -116,8 +116,8 @@ def get_comm_manager():
 
 def set_comm():
     """
-    Set the  comm modules [comm.create_comm][] and [comm.get_com_manager] methods to
-    [async_kernel.comm.Comm][] and [async_kernel.comm.Comm][]  respectively.
+    Set the [comm](https://pypi.org/project/comm/) module's `comm.create_comm` and `comm.get_com_manager` methods to
+    [async_kernel.comm.Comm][] and [async_kernel.comm.Comm][] respectively.
     """
     comm.create_comm = Comm
     comm.get_comm_manager = get_comm_manager
