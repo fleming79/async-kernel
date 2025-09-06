@@ -307,6 +307,7 @@ class Caller:
     _stopped = False
     _protected = False
     _running = False
+    _future_var: contextvars.ContextVar[Future | None] = contextvars.ContextVar("_future_var", default=None)
     thread: threading.Thread
     "The thread in which the caller will run."
     backend: Backend
@@ -419,6 +420,7 @@ class Caller:
         args: tuple,
         kwargs: dict,
     ) -> None:
+        self._future_var.set(fut)
         if fut.cancelled():
             fut.set_result(cast("T", None))  # This will cancel
             return
@@ -429,7 +431,7 @@ class Caller:
                     if (delay_ := delay - time.monotonic() + starttime) > 0:
                         await anyio.sleep(float(delay_))
                     result = func(*args, **kwargs) if callable(func) else func  # pyright: ignore[reportAssignmentType]
-                    if inspect.isawaitable(result):
+                    if inspect.isawaitable(result) and result is not fut:
                         result: T = await result
                     if fut.cancelled() and not scope.cancel_called:
                         scope.cancel()
@@ -725,6 +727,11 @@ class Caller:
         ready_event.wait()
         assert isinstance(caller, cls)
         return caller
+
+    @classmethod
+    def current_future(cls) -> Future[Any] | None:
+        """Return the current future when called from inside a function scheduled by Caller."""
+        return cls._future_var.get()
 
     @classmethod
     async def as_completed(

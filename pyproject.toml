@@ -50,6 +50,8 @@ Homepage = "https://fleming79.github.io/async-kernel"
 Documentation = "https://fleming79.github.io/async-kernel"
 Source = "https://github.com/fleming79/async-kernel"
 Tracker = "https://github.com/fleming79/async-kernel/issues"
+Changelog = "https://fleming79.github.io/async-kernel/latest/about/changelog/"
+
 
 [project.scripts]
 async-kernel = "async_kernel.command:command_line"
