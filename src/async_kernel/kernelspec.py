@@ -129,7 +129,7 @@ def write_kernel_spec(
                     event = anyio.Event()
                     b = Button(description="Continue")
                     caller = Caller()
-                    b.on_click(lambda _: caller.call_no_context(event.set))
+                    b.on_click(lambda _: caller.call_direct(event.set))
                     display(b)
                     await event.wait()
                     b.close()
