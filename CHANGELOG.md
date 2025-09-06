@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-09-06
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Rename Caller.call_no_context to Caller.call_direct. [#100](https://github.com/fleming79/async-kernel/pull/100)
+
+- Future - breaking changes- better compatibility of Future.result [#96](https://github.com/fleming79/async-kernel/pull/96)
+
+### <!-- 1 --> 🚀 Features
+
+- Add the classmethod Caller.current_future. [#99](https://github.com/fleming79/async-kernel/pull/99)
+
+- Add timeout, shield and result optional arguments to Future wait and wait_sync methods: [#97](https://github.com/fleming79/async-kernel/pull/97)
+
+- Add  optional argument 'msg' to Future.cancel method. [#95](https://github.com/fleming79/async-kernel/pull/95)
+
+- Support weakref on the Future class. [#94](https://github.com/fleming79/async-kernel/pull/94)
+
+### <!-- 5 --> 📝 Documentation
+
+- Documentation maintenance. [#101](https://github.com/fleming79/async-kernel/pull/101)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Result should raise cancelled error, but was raising and InvalidStateError. [#98](https://github.com/fleming79/async-kernel/pull/98)
+
 ## [0.1.4] - 2025-09-03
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -22,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Development documentation updates and fixes for publish-docs.yml. [#87](https://github.com/fleming79/async-kernel/pull/87)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.1.4 [#93](https://github.com/fleming79/async-kernel/pull/93)
 
 - Ensure there is only one kernel instance including subclases. [#91](https://github.com/fleming79/async-kernel/pull/91)
 
@@ -179,6 +207,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.2.0]: https://github.com/fleming79/async-kernel/compare/v0.1.4..v0.2.0
 [0.1.4]: https://github.com/fleming79/async-kernel/compare/v0.1.3..v0.1.4
 [0.1.3]: https://github.com/fleming79/async-kernel/compare/v0.1.2..v0.1.3
 [0.1.2]: https://github.com/fleming79/async-kernel/compare/v0.1.1..v0.1.2
