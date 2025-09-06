@@ -164,7 +164,7 @@ class Kernel(HasTraits):
     """
     An asynchronous kernel with an anyio backend providing an IPython AsyncInteractiveShell with zmq sockets.
 
-    Only one instance will be created/run at a time. The instance can be obtained with `Kernel()`.
+    Only one instance will be created/run at a time. The instance can be obtained with `Kernel()` or [async_kernel.utils.get_kernel].
 
     To start the kernel:
 
