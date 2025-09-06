@@ -194,7 +194,8 @@ def remove_kernel_spec(kernel_name: str) -> bool:
 
 
 def get_kernel_dir(prefix: str = "") -> Path:
-    """The path to where kernel specs are stored for Jupyter.
+    """
+    The path to where kernel specs are stored for Jupyter.
 
     Args:
         prefix: Defaults to sys.prefix (installable for a particular environment).
@@ -203,7 +204,8 @@ def get_kernel_dir(prefix: str = "") -> Path:
 
 
 def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
-    """Import the kernel factory as defined in a kernel spec.
+    """
+    Import the kernel factory as defined in a kernel spec.
 
     Args:
         kernel_factory: The name of the kernel factory.

@@ -13,12 +13,14 @@ __all__ = ["Comm"]
 
 
 class Comm(BaseComm):
-    """Comms with a Kernel.
+    """
+    An implementation of `comm.BaseComms` for async-kernel.
 
-    Notes:
-    - `kernel` is added/removed by the CommManager.
-    - `kernel` is added to the CommManager by the kernel once the sockets have been opened.
-    - publish_msg is no-op when kernel is unset.
+    !!! note
+
+        - `kernel` is added/removed by the CommManager.
+        - `kernel` is added to the CommManager by the kernel once the sockets have been opened.
+        - publish_msg is no-op when kernel is unset.
     """
 
     __slots__ = [
@@ -44,7 +46,7 @@ class Comm(BaseComm):
         buffers: BuffersType = None,
         **keys,
     ):
-        """Helper for sending a comm message on IOPub"""
+        """Helper for sending a comm message on IOPub."""
         if (kernel := self.kernel) is None:
             # Only send when the kernel is set
             return
@@ -66,12 +68,14 @@ class Comm(BaseComm):
 
 
 class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[reportUnsafeMultipleInheritance]
-    """A comm manager for Kernel (singleton).
+    """
+    The comm manager for all Comm instances.
 
-    When `kernel` is set the `kernel` on all existing `Comm` instances is also set.
-    Notes:
-    - The `Comm` will only send messages when the kernel is set.
-    - `kernel` is set by the kernel once the sockets are opened.
+    !!! note
+
+        - When the trait `CommManager.kernel` is set the `Comm.kernel` trait is set on all [async_kernel.comm.Comm][] instances.
+        - The `Comm` will only send messages when the kernel is set.
+        - The `kernel` sets `CommManager.kernel` when its ready the iopub socket is open.
     """
 
     _instance = None
@@ -111,6 +115,11 @@ def get_comm_manager():
 
 
 def set_comm():
-    "Set the comm manager"
+    """
+    Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
+
+    1.  `comm.create_comm` to [async_kernel.comm.Comm][].
+    1. `comm.get_com_manager` to [async_kernel.comm.CommManager][].
+    """
     comm.create_comm = Comm
     comm.get_comm_manager = get_comm_manager

@@ -72,7 +72,8 @@ __all__ = ["Kernel", "KernelInterruptError"]
 
 
 def error_to_content(error: BaseException, /) -> Content:
-    """Convert the error to a dict.
+    """
+    Convert the error to a dict.
 
     ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply
     """
@@ -91,7 +92,8 @@ def bind_socket(
     port: int = 0,
     max_attempts: int | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
 ) -> int:
-    """Bind the socket to a port using the settings.
+    """
+    Bind the socket to a port using the settings.
 
     max_attempts: The maximum number of attempts to bind the socket. If un-specified,
     defaults to 100 if port missing, else 2 attempts.
@@ -134,16 +136,18 @@ def bind_socket(
 def _wrap_handler(
     runner: Callable[[HandlerType, Job]], handler: HandlerType
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
+    """
+    A cache of run handlers.
+
+    Args:
+        runner: The function that calls and awaits the  handler
+
+    Required by:
+
+    - call[async_kernel.Caller.queue_call][] : The queue is on per-function (hash) basis.
+    """
+
     async def wrap_handler(job: Job) -> None:
-        """A cache of run handlers.
-
-        Args:
-            runner: The function that calls and awaits the  handler
-
-        Required by:
-
-        - call[async_kernel.Caller.queue_call][] : The queue is on per-function (hash) basis.
-        """
         await runner(handler, job)
 
     return wrap_handler
@@ -157,9 +161,10 @@ class KernelInterruptError(InterruptedError):
 
 
 class Kernel(HasTraits):
-    """An asynchronous kernel with an anyio backend providing an IPython AsyncInteractiveShell with zmq sockets.
+    """
+    An asynchronous kernel with an anyio backend providing an IPython AsyncInteractiveShell with zmq sockets.
 
-    Only one instance will be created/run at a time. The instance can be obtained with `Kernel()`.
+    Only one instance will be created/run at a time. The instance can be obtained with `Kernel()` or [async_kernel.utils.get_kernel].
 
     To start the kernel:
 
@@ -220,7 +225,8 @@ class Kernel(HasTraits):
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`"
 
     concurrency_mode = UseEnum(KernelConcurrencyMode)
-    """The mode to use when getting the run mode for running the handler of a message request.
+    """
+    The mode to use when getting the run mode for running the handler of a message request.
     
     See also:
         - [async_kernel.Kernel.handle_message_request][]
@@ -230,7 +236,8 @@ class Kernel(HasTraits):
     quiet = traitlets.Bool(True)
     "Only send stdout/stderr to output stream"
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
-    """JSON file in which to store connection info [default: kernel-<pid>.json]
+    """
+    JSON file in which to store connection info [default: kernel-<pid>.json]
 
     This file will contain the IP, ports, and authentication key needed to connect
     clients to this kernel. By default, this file will be created in the security dir
@@ -240,7 +247,8 @@ class Kernel(HasTraits):
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
     ip = Unicode()
-    """The kernel's IP address [default localhost].
+    """
+    The kernel's IP address [default localhost].
     
     If the IP address is something other than localhost, then Consoles on other machines 
     will be able to connect to the Kernel, so be careful!"""
@@ -259,7 +267,8 @@ class Kernel(HasTraits):
     )
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
-        """Load connection info from a dict containing connection info.
+        """
+        Load connection info from a dict containing connection info.
 
         Typically this data comes from a connection file
         and is called by load_connection_file.
@@ -310,7 +319,8 @@ class Kernel(HasTraits):
         return f"{self.__class__.__name__}<{', '.join(info)}>"
 
     async def __aenter__(self) -> Self:
-        """Start the kernel.
+        """
+        Start the kernel.
 
         - Only one instance can (should) run at a time.
         - An instance can only be started once.
@@ -439,7 +449,8 @@ class Kernel(HasTraits):
 
     @staticmethod
     def stop() -> None:
-        """Stop the running kernel.
+        """
+        Stop the running kernel.
 
         Once a kernel is stopped; that instance of the kernel cannot be restarted.
         Instead, a new kernel must be started.
@@ -450,7 +461,7 @@ class Kernel(HasTraits):
 
     @asynccontextmanager
     async def _start_in_context(self) -> AsyncGenerator[Self, Any]:
-        """Start the Kernel in an already running anyio event loop."""
+        """Start the kernel in an already running anyio event loop."""
         if self._sockets:
             msg = "Already started"
             raise RuntimeError(msg)
@@ -517,7 +528,7 @@ class Kernel(HasTraits):
             await anyio.sleep_forever()
 
     async def _start_iopub_proxy(self, task_status: TaskStatus[None]) -> None:
-        """Provide an io proxy"""
+        """Provide an io proxy."""
 
         def pub_proxy():
             # We use an internal proxy to collect pub messages for distribution.
@@ -596,7 +607,8 @@ class Kernel(HasTraits):
 
     @contextlib.contextmanager
     def _bind_socket(self, socket_id: SocketID, socket: zmq.Socket) -> Generator[None, Any, None]:
-        """Bind a zmq.Socket storing a reference to the socket and the port
+        """
+        Bind a zmq.Socket storing a reference to the socket and the port
         details and closing the socket on leaving the context."""
         if socket_id in self._sockets:
             msg = f"{socket_id=} is already loaded"
@@ -708,7 +720,8 @@ class Kernel(HasTraits):
                 return
 
     async def handle_message_request(self, job: Job, /) -> None:
-        """The main handler for all shell and control messages.
+        """
+        The main handler for all shell and control messages.
 
         Args:
             job: The packed [message][async_kernel.typing.Message] for handling.
@@ -742,7 +755,8 @@ class Kernel(HasTraits):
         concurrency_mode: KernelConcurrencyMode | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         job: Job | None = None,
     ) -> RunMode:
-        """Determine the run mode for a given channel, message type and concurrency mode.
+        """
+        Determine the run mode for a given channel, message type and concurrency mode.
 
         The run mode determines how the kernel will execute the message.
 
@@ -800,7 +814,8 @@ class Kernel(HasTraits):
         Literal["SocketID", "KernelConcurrencyMode", "MsgType", "RunMode"],
         tuple[SocketID, KernelConcurrencyMode, MsgType, RunMode | None],
     ]:
-        """Generates a dictionary containing all combinations of SocketID, KernelConcurrencyMode, and MsgType,
+        """
+        Generates a dictionary containing all combinations of SocketID, KernelConcurrencyMode, and MsgType,
         along with their corresponding RunMode (if available)."""
         data: list[Any] = []
         for socket_id in socket_ids:
@@ -821,7 +836,8 @@ class Kernel(HasTraits):
         return f  # pyright: ignore[reportReturnType]
 
     async def run_handler(self, handler: HandlerType, job: Job[dict]) -> None:
-        """Runs the handler in the context of the job/message sending the reply content if it is provided.
+        """
+        Runs the handler in the context of the job/message sending the reply content if it is provided.
 
         This method gets called for every valid request with the relevant handler.
         """
@@ -887,7 +903,7 @@ class Kernel(HasTraits):
             )
 
     def topic(self, topic) -> bytes:
-        """prefixed topic for IOPub messages"""
+        """prefixed topic for IOPub messages."""
         return (f"kernel.{topic}").encode()
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
@@ -1092,7 +1108,8 @@ class Kernel(HasTraits):
         self.log.exception(unraisable.err_msg, exc_info=exc_info, extra={"object": unraisable.object})
 
     def raw_input(self, prompt="") -> Any:
-        """Forward raw_input to frontends.
+        """
+        Forward raw_input to frontends.
 
         Raises
         ------

@@ -164,6 +164,7 @@ nav:
   - Reference:
       - reference/index.md
       - reference/caller.md
+      - reference/comm.md
       - reference/command.md
       - reference/kernel.md
       - reference/kernelspec.md

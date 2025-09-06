@@ -42,7 +42,7 @@ _host_port: None | tuple[str, int] = None
 
 
 class _FakeCode:
-    """Fake code class.  Origin: [IPyKernel][ipykernel.debugger._FakeCode]"""
+    """Fake code class.  Origin: [IPyKernel][ipykernel.debugger._FakeCode]."""
 
     def __init__(self, co_filename, co_name):
         """Init."""
@@ -51,7 +51,7 @@ class _FakeCode:
 
 
 class _FakeFrame:
-    """Fake frame class. Origin: [IPyKernel][ipykernel.debugger._FakeFrame]"""
+    """Fake frame class. Origin: [IPyKernel][ipykernel.debugger._FakeFrame]."""
 
     def __init__(self, f_code, f_globals, f_locals):
         """Init."""
@@ -62,7 +62,7 @@ class _FakeFrame:
 
 
 class _DummyPyDB:
-    """Fake PyDb class. Origin: [IPyKernel][ipykernel.debugger._DummyPyDB]"""
+    """Fake PyDb class. Origin: [IPyKernel][ipykernel.debugger._DummyPyDB]."""
 
     def __init__(self):
         """Init."""
@@ -72,7 +72,8 @@ class _DummyPyDB:
 
 
 class VariableExplorer(HasTraits):
-    """A variable explorer.
+    """
+    A variable explorer.
 
     Origin: [IPyKernel][ipykernel.debugger.VariableExplorer]
     """
@@ -115,7 +116,7 @@ class VariableExplorer(HasTraits):
 
 
 class DebugpyClient(HasTraits):
-    """A client for debugpy. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]"""
+    """A client for debugpy. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     HEADER = b"Content-Length: "
     SEPARATOR = b"\r\n\r\n"
@@ -195,7 +196,7 @@ class DebugpyClient(HasTraits):
 
 
 class Debugger(HasTraits):
-    """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]"""
+    """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     _seq = 0
     breakpoint_list = Dict()

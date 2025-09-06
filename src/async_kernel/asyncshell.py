@@ -30,7 +30,8 @@ __all__ = ["AsyncDisplayHook", "AsyncDisplayPublisher", "AsyncInteractiveShell"]
 
 
 class AsyncDisplayHook(DisplayHook):
-    """A displayhook subclass that publishes data using ZeroMQ.
+    """
+    A displayhook subclass that publishes data using ZeroMQ.
 
     This is intended to work with an InteractiveShell instance. It sends a dict of different
     representations of the object."""
@@ -82,7 +83,8 @@ class AsyncDisplayPublisher(DisplayPublisher):
         update: bool = False,
         **kwargs,
     ) -> None:
-        """Publish a display-data message.
+        """
+        Publish a display-data message.
 
         Args:
             data: A mime-bundle dict, keyed by mime-type.
@@ -101,7 +103,8 @@ class AsyncDisplayPublisher(DisplayPublisher):
 
     @override
     def clear_output(self, wait: bool = False) -> None:
-        """Clear output associated with the current execution (cell).
+        """
+        Clear output associated with the current execution (cell).
 
         Args:
             wait: If True, the output will not be cleared immediately,
@@ -112,7 +115,8 @@ class AsyncDisplayPublisher(DisplayPublisher):
 
 
 class AsyncInteractiveShell(InteractiveShell):
-    """An [IPython InteractiveShell][IPython.core.interactiveshell.InteractiveShell] modified to work with [Async kernel][async_kernel.Kernel].
+    """
+    An [IPython InteractiveShell][IPython.core.interactiveshell.InteractiveShell] modified to work with [Async kernel][async_kernel.Kernel].
 
     !!! note "Notable differences"
 
@@ -165,7 +169,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @observe("exit_now")
     def _update_exit_now(self, _) -> None:
-        """stop eventloop when exit_now fires"""
+        """Stop eventloop when `exit_now` fires."""
         if self.exit_now:
             self.kernel.stop()
 
@@ -230,7 +234,8 @@ class AsyncInteractiveShell(InteractiveShell):
         preprocessing_exc_tuple: tuple | None = None,
         cell_id: str | None = None,
     ) -> ExecutionResult:
-        """Run a complete IPython cell asynchronously.
+        """
+        Run a complete IPython cell asynchronously.
 
         This function runs [execute requests][async_kernel.Kernel.execute_request] for the kernel
         wrapping [InteractiveShell][IPython.core.interactiveshell.InteractiveShell.run_cell_async].

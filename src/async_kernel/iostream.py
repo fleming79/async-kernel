@@ -50,7 +50,8 @@ class OutStream(TextIOBase):
 
     @override
     def write(self, string: str) -> int:
-        """Write to current stream after encoding if necessary
+        """
+        Write to current stream after encoding if necessary
 
         Returns: number of items from input parameter written to stream.
         """

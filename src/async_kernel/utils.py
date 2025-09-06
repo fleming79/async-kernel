@@ -59,7 +59,8 @@ def do_not_debug_this_thread(name=""):
 
 
 async def wait_thread_event(event: threading.Event):
-    """Wait for the threading event using an anyio worker thread.
+    """
+    Wait for the threading event using an anyio worker thread.
 
     The event will be set event if the coroutine is cancelled to ensure the thread is cleared.
     """
@@ -119,7 +120,8 @@ def get_execution_count() -> int:
 
 
 def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
-    """Set a nested attribute of an object.
+    """
+    Set a nested attribute of an object.
 
     If the attribute name contains dots, it is interpreted as a nested attribute.
     For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.

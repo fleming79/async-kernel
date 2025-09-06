@@ -12,7 +12,8 @@ __all__ = ["XCachingCompiler", "murmur2_x86"]
 
 
 def murmur2_x86(data, seed):
-    """Get the murmur2 hash.
+    """
+    Get the murmur2 hash.
 
     Origin: [IPyKernel][ipykernel.compiler.murmur2_x86]
     """
@@ -54,7 +55,8 @@ def murmur2_x86(data, seed):
 
 
 class XCachingCompiler(CachingCompiler):
-    """A custom caching compiler that writes the code to a tempfile corresponding to the hash of the code.
+    """
+    A custom caching compiler that writes the code to a tempfile corresponding to the hash of the code.
 
     Origin: [IPyKernel][ipykernel.compiler.XCachingCompiler]
     """

@@ -53,7 +53,7 @@ def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
 @pytest.mark.parametrize("mode", ["direct", "proxy"])
 async def test_iopub(kernel, mode: Literal["direct", "proxy"]) -> None:
     def pubio_subscribe():
-        """Consume messages"""
+        """Consume messages."""
         with ctx.socket(zmq.SocketType.SUB) as socket:
             socket.linger = 0
             socket.connect(url)
@@ -103,7 +103,7 @@ async def test_execute_request_success(client):
 
 @pytest.mark.parametrize("quiet", [True, False])
 async def test_simple_print(kernel, client, quiet: bool):
-    """simple print statement in kernel"""
+    """Simple print statement in kernel."""
     kernel.quiet = quiet
     try:
         client.execute("print('test_simple_print')")

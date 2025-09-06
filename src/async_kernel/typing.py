@@ -49,7 +49,8 @@ class SocketID(enum.StrEnum):
 
 
 class RunMode(enum.StrEnum):
-    """An Enum of the [kernel run modes][async_kernel.Kernel.handle_message_request] available for
+    """
+    An Enum of the [kernel run modes][async_kernel.Kernel.handle_message_request] available for
     altering how message requests are run.
 
     !!! hint "String match options"
@@ -101,7 +102,8 @@ class RunMode(enum.StrEnum):
     "Messages for the [handler][async_kernel.typing.MsgType] are run concurrently in a thread (starting immediately)."
 
     blocking = "blocking"
-    """Run the handler directly as soon as it is received.
+    """
+    Run the handler directly as soon as it is received.
     
     !!! warning 
     
@@ -121,7 +123,8 @@ class KernelConcurrencyMode(enum.StrEnum):
 
 
 class MsgType(enum.StrEnum):
-    """An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).
+    """
+    An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).
 
     Some message types are on the [control channel](https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-control-router-dealer-channel) only.
     """
@@ -168,7 +171,8 @@ class MsgType(enum.StrEnum):
 
 
 class MetadataKeys(enum.StrEnum):
-    """This is an enum of keys for [metadata in kernel messages](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
+    """
+    This is an enum of keys for [metadata in kernel messages](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
     that are used in async_kernel.
 
     !!! Note
@@ -184,18 +188,21 @@ class MetadataKeys(enum.StrEnum):
         return hash(self.name)
 
     tags = "tags"
-    """The `tags` metadata key corresponds to is a list of strings. 
+    """
+    The `tags` metadata key corresponds to is a list of strings. 
     
     The list can be edited by the user in a notebook.
     see also: [Tags][async_kernel.typing.Tags].
     """
     timeout = "timeout"
-    """The `timeout` metadata key is used to specify a timeout for execution of the code.
+    """
+    The `timeout` metadata key is used to specify a timeout for execution of the code.
     
     The value should be a floating point value of the timeout in seconds.
     """
     suppress_error_message = "suppress-error-message"
-    """A message to print when the error has been suppressed using [async_kernel.typing.Tags.suppress_error][]. 
+    """
+    A message to print when the error has been suppressed using [async_kernel.typing.Tags.suppress_error][]. 
     
     ???+ note
 
@@ -204,7 +211,8 @@ class MetadataKeys(enum.StrEnum):
 
 
 class Tags(enum.StrEnum):
-    """Tags recognised by the kernel.
+    """
+    Tags recognised by the kernel.
 
     ??? info
         Tags are can be added per cell.
@@ -222,7 +230,8 @@ class Tags(enum.StrEnum):
         return hash(self.name)
 
     suppress_error = "suppress-error"
-    """Suppress exceptions that occur during execution of the code cell.
+    """
+    Suppress exceptions that occur during execution of the code cell.
     
     !!! note "Warning"
     
