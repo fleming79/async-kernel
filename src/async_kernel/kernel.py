@@ -461,7 +461,7 @@ class Kernel(HasTraits):
 
     @asynccontextmanager
     async def _start_in_context(self) -> AsyncGenerator[Self, Any]:
-        """Start the Kernel in an already running anyio event loop."""
+        """Start the kernel in an already running anyio event loop."""
         if self._sockets:
             msg = "Already started"
             raise RuntimeError(msg)

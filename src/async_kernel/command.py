@@ -73,14 +73,14 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         + "    - Add/remove kernel specs\n"
         + "    - start kernels\n\n"
         + "Online help: https://fleming79.github.io/async-kernel/latest/commands/#command-line \n\n"
-        + f"Jupyter Kernel directory: '{kernel_dir}'",
+        + f"Jupyter kernel directory: '{kernel_dir}'",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-f",
         "--connection_file",
         dest="connection_file",
-        help="Start a Kernel with a connection file. To start a Kernel without a file use a period `.`.",
+        help="Start a kernel with a connection file. To start a kernel without a file use a period `.`.",
     )
     parser.add_argument(
         "-a",
