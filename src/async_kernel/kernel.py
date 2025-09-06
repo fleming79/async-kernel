@@ -876,7 +876,7 @@ class Kernel(HasTraits):
                     "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
                 )
         else:
-            self.control_thread_caller.call_no_context(
+            self.control_thread_caller.call_direct(
                 self.iopub_send,
                 msg_or_type=msg_or_type,
                 content=content,
@@ -1070,7 +1070,7 @@ class Kernel(HasTraits):
     async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
         await self.debugger.disconnect()
-        Caller().call_no_context(self.stop)
+        Caller().call_direct(self.stop)
         return {"restart": job["msg"]["content"].get("restart", False)}
 
     async def debug_request(self, job: Job[Content], /) -> Content:

@@ -106,7 +106,7 @@ class Future(Awaitable[T]):
 
         if threading.current_thread() is not self.thread:
             try:
-                Caller(thread=self.thread).call_no_context(set_value)
+                Caller(thread=self.thread).call_direct(set_value)
             except RuntimeError:
                 msg = f"The current thread is not {self.thread.name} and a `Caller` does not exist for that thread either."
                 raise RuntimeError(msg) from None
@@ -203,7 +203,7 @@ class Future(Awaitable[T]):
         if not self.done():
             self._done_callbacks.append(fn)
         else:
-            self.get_caller().call_no_context(fn, self)
+            self.get_caller().call_direct(fn, self)
 
     def cancel(self, msg: str | None = None) -> bool:
         """Cancel the Future and schedule callbacks (thread-safe using Caller).
@@ -221,7 +221,7 @@ class Future(Awaitable[T]):
                 if threading.current_thread() is self.thread:
                     scope.cancel()
                 else:
-                    Caller(thread=self.thread).call_no_context(self.cancel)
+                    Caller(thread=self.thread).call_direct(self.cancel)
         return self.cancelled()
 
     def cancelled(self) -> bool:
@@ -459,7 +459,7 @@ class Caller:
 
     def _check_in_thread(self):
         if self.thread is not threading.current_thread():
-            msg = "This function must be called from its own thread. Tip: Use `call_no_context` to call this method from another thread."
+            msg = "This function must be called from its own thread. Tip: Use `call_direct` to call this method from another thread."
             raise RuntimeError(msg)
 
     @property
@@ -522,13 +522,20 @@ class Caller:
         """
         return self.call_later(func, 0.0, *args, **kwargs)
 
-    def call_no_context(self, func: Callable[P, Any], /, *args: P.args, **kwargs: P.kwargs) -> None:
-        """Call func in the thread event loop.
+    def call_direct(self, func: Callable[P, Any], /, *args: P.args, **kwargs: P.kwargs) -> None:
+        """
+        Schedule func to be called in caller's event loop directly.
+
+        The call is made without copying the context and does not use a future.
 
         Args:
             func: The function (awaitables permitted, though discouraged).
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
+
+        ??? warning
+
+            **Use this method for lightweight calls only.**
         """
         self._callers.append(functools.partial(func, *args, **kwargs))
         self._callers_added.set()
