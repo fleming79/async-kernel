@@ -132,23 +132,22 @@ class Future(Awaitable[T]):
 
         Args:
             timeout: Timeout in seconds.
-            shield: Shield cancellation.
+            shield: Shield the future from cancellation.
             result: Whether the result should be returned.
         """
-        if not self._event_done.is_set():
-            with anyio.fail_after(delay=timeout):
-                try:
+        try:
+            if not self.done():
+                with anyio.fail_after(timeout):
                     if threading.current_thread() is self.thread:
                         if not self._anyio_event_done:
                             self._anyio_event_done = anyio.Event()
                         await self._anyio_event_done.wait()
                     else:
                         await wait_thread_event(self._event_done)
-                except BaseException as e:
-                    if not shield:
-                        self.cancel(str(e))
-                    raise
-        return self.result() if result else None
+            return self.result() if result else None
+        finally:
+            if not self.done() and not shield:
+                self.cancel("Cancelled with waiter cancellation.")
 
     if TYPE_CHECKING:
 
