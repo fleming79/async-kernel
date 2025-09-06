@@ -673,6 +673,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -732,6 +734,29 @@ viewing the latest version.
   
   <span class="md-ellipsis">
     Caller
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Comm
     
   </span>
   
@@ -1614,8 +1639,10 @@ viewing the latest version.
 <span class="normal">199</span>
 <span class="normal">200</span>
 <span class="normal">201</span>
-<span class="normal">202</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The path to where kernel specs are stored for Jupyter.</span>
+<span class="normal">202</span>
+<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The path to where kernel specs are stored for Jupyter.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        prefix: Defaults to sys.prefix (installable for a particular environment).</span>
@@ -1672,8 +1699,7 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
-<span class="normal">206</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
@@ -1692,8 +1718,11 @@ viewing the latest version.
 <span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
-<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_kernel_factory</span><span class="p">(</span><span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KernelFactoryType</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the kernel factory as defined in a kernel spec.</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_kernel_factory</span><span class="p">(</span><span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KernelFactoryType</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Import the kernel factory as defined in a kernel spec.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        kernel_factory: The name of the kernel factory.</span>

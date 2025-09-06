@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/reference/command/">
+        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/reference/comm/">
       
       
-        <link rel="prev" href="../comm/">
+        <link rel="prev" href="../caller/">
       
       
-        <link rel="next" href="../kernel/">
+        <link rel="next" href="../command/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Command - async-kernel</title>
+        <title>Comm - async-kernel</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#command" class="md-skip">
+        <a href="#comm" class="md-skip">
           Skip to content
         </a>
       
@@ -134,7 +134,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Command
+              Comm
             
           </span>
         </div>
@@ -748,29 +748,6 @@ viewing the latest version.
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../comm/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Comm
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -786,7 +763,7 @@ viewing the latest version.
   
   
   <span class="md-ellipsis">
-    Command
+    Comm
     
   </span>
   
@@ -799,7 +776,7 @@ viewing the latest version.
   
   
   <span class="md-ellipsis">
-    Command
+    Comm
     
   </span>
   
@@ -820,38 +797,47 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#command" class="md-nav__link">
+  <a href="#comm" class="md-nav__link">
     <span class="md-ellipsis">
-      Command
+      Comm
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.command" class="md-nav__link">
+  <a href="#async_kernel.comm" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;command
+      <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;comm
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" command">
+    <nav class="md-nav" aria-label=" comm">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.command.command_line" class="md-nav__link">
+  <a href="#async_kernel.comm.Comm" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;command_line
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Comm
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" command_line">
+    <nav class="md-nav" aria-label=" Comm">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.command.command_line(wait_exit_context)" class="md-nav__link">
+  <a href="#async_kernel.comm.Comm.handle_msg" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;wait_exit_context
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;handle_msg
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.Comm.publish_msg" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;publish_msg
     </span>
   </a>
   
@@ -859,6 +845,39 @@ viewing the latest version.
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.CommManager" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CommManager
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CommManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.CommManager.register_comm" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;register_comm
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.set_comm" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;set_comm
+    </span>
+  </a>
   
 </li>
         
@@ -871,6 +890,29 @@ viewing the latest version.
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Command
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1161,38 +1203,47 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#command" class="md-nav__link">
+  <a href="#comm" class="md-nav__link">
     <span class="md-ellipsis">
-      Command
+      Comm
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.command" class="md-nav__link">
+  <a href="#async_kernel.comm" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;command
+      <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;comm
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" command">
+    <nav class="md-nav" aria-label=" comm">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.command.command_line" class="md-nav__link">
+  <a href="#async_kernel.comm.Comm" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;command_line
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Comm
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" command_line">
+    <nav class="md-nav" aria-label=" Comm">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.command.command_line(wait_exit_context)" class="md-nav__link">
+  <a href="#async_kernel.comm.Comm.handle_msg" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;wait_exit_context
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;handle_msg
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.Comm.publish_msg" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;publish_msg
     </span>
   </a>
   
@@ -1200,6 +1251,39 @@ viewing the latest version.
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.CommManager" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CommManager
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" CommManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.CommManager.register_comm" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;register_comm
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.comm.set_comm" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;set_comm
+    </span>
+  </a>
   
 </li>
         
@@ -1227,26 +1311,21 @@ viewing the latest version.
   
 
 
-  <h1>Command</h1>
+  <h1>Comm</h1>
 
-<h2 id="command">Command<a class="headerlink" href="#command" title="Permanent link">&para;</a></h2>
-<p><code>async-kernel</code> is installed at the command prompt. You can use it to:</p>
-<ul>
-<li>Launch a kernel manually</li>
-<li>Define a new kernel spec</li>
-<li>Remove an existing kernel spec</li>
-</ul>
+<h2 id="comm">Comm<a class="headerlink" href="#comm" title="Permanent link">&para;</a></h2>
+<p>An implementation of <a href="https://pypi.org/project/comm/">Comm</a>.</p>
 
 
 <div class="doc doc-object doc-module">
 
 
 
-<h2 id="async_kernel.command" class="doc doc-heading">
-            <span class="doc doc-object-name doc-module-name">async_kernel.command</span>
+<h2 id="async_kernel.comm" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">async_kernel.comm</span>
 
 
-<a href="#async_kernel.command" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#async_kernel.comm" class="headerlink" title="Permanent link">&para;</a></h2>
 
     <div class="doc doc-contents first">
 
@@ -1259,18 +1338,86 @@ viewing the latest version.
 
 
 
+<p><span class="doc-section-title">Classes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="Comm (async_kernel.comm.Comm)" href="#async_kernel.comm.Comm">Comm</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>An implementation of <code>comm.BaseComms</code> for async-kernel.</p>
+          </div>
+        </li>
+    </ul>
 
 
-<p><span class="doc-section-title">Functions:</span></p>
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="async_kernel.comm.Comm" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">Comm</span>
+
+
+<a href="#async_kernel.comm.Comm" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>An implementation of <code>comm.BaseComms</code> for async-kernel.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li><code>kernel</code> is added/removed by the CommManager.</li>
+<li><code>kernel</code> is added to the CommManager by the kernel once the sockets have been opened.</li>
+<li>publish_msg is no-op when kernel is unset.</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="command_line (async_kernel.command.command_line)" href="#async_kernel.command.command_line">command_line</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="handle_msg (async_kernel.comm.Comm.handle_msg)" href="#async_kernel.comm.Comm.handle_msg">handle_msg</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Parses command-line arguments to manage kernel specs and start kernels.</p>
+              <p>Handle a comm_msg message</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="publish_msg (async_kernel.comm.Comm.publish_msg)" href="#async_kernel.comm.Comm.publish_msg">publish_msg</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Helper for sending a comm message on IOPub.</p>
             </div>
           </li>
     </ul>
+
 
 
 
@@ -1290,153 +1437,254 @@ viewing the latest version.
 <div class="doc doc-object doc-function">
 
 
-<h3 id="async_kernel.command.command_line" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">command_line</span>
+<h4 id="async_kernel.comm.Comm.handle_msg" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">handle_msg</span>
 
 
-<a href="#async_kernel.command.command_line" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">command_line</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="wait_exit_context (async_kernel.command.command_line(wait_exit_context))" href="#async_kernel.command.command_line(wait_exit_context)">wait_exit_context</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="anyio.sleep_forever" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.sleep_forever">sleep_forever</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<a href="#async_kernel.comm.Comm.handle_msg" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">handle_msg</span><span class="p">(</span><span class="n"><span title="async_kernel.comm.Comm.handle_msg(msg)">msg</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.MessageType">MessageType</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Parses command-line arguments to manage kernel specs and start kernels.</p>
-<p>This function uses <code>argparse</code> to handle command-line arguments for
-various kernel operations, including:</p>
-<ul>
-<li>Starting a kernel with a specified connection file.</li>
-<li>Adding a new kernel specification.</li>
-<li>Removing an existing kernel specification.</li>
-<li>Print version.</li>
-</ul>
-<p>The function determines the appropriate action based on the provided
-arguments and either starts a kernel, adds a kernel spec, or removes
-a kernel spec.  If no connection file is provided and no other action
-is specified, it prints the help message.</p>
-<p>When starting a kernel, it imports the specified kernel factory (or uses
-the default <code>Kernel</code> class) and configures the kernel instance with
-the provided arguments. It then starts the kernel within an <code>anyio</code>
-context, handling keyboard interrupts and other exceptions.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<h4 id="async_kernel.command.command_line(wait_exit_context)" class="doc doc-heading doc-heading-parameter">              <b><code>wait_exit_context</code></b>
-<a href="#async_kernel.command.command_line(wait_exit_context)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], <a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a>]</code>, default:
-                  <code><a class="autorefs autorefs-external" title="anyio.sleep_forever" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.sleep_forever">sleep_forever</a></code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An optional asynchronous function or context manager
-that determines how long the kernel should run. Defaults to
-<code>anyio.sleep_forever</code>, which keeps the kernel running indefinitely
-until an external signal is received.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#SystemExit">SystemExit</a></code>
-            –
-          <div class="doc-md-description">
-            <p>If an error occurs during kernel execution or if the
-program is interrupted.</p>
-          </div>
-        </li>
-    </ul>
+        <p>Handle a comm_msg message</p>
 
 
             <details class="quote">
-              <summary>Source code in <code>src/async_kernel/command.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 33</span>
-<span class="normal"> 34</span>
-<span class="normal"> 35</span>
-<span class="normal"> 36</span>
-<span class="normal"> 37</span>
-<span class="normal"> 38</span>
-<span class="normal"> 39</span>
-<span class="normal"> 40</span>
-<span class="normal"> 41</span>
-<span class="normal"> 42</span>
-<span class="normal"> 43</span>
-<span class="normal"> 44</span>
-<span class="normal"> 45</span>
-<span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
-<span class="normal"> 54</span>
-<span class="normal"> 55</span>
-<span class="normal"> 56</span>
-<span class="normal"> 57</span>
-<span class="normal"> 58</span>
-<span class="normal"> 59</span>
-<span class="normal"> 60</span>
-<span class="normal"> 61</span>
-<span class="normal"> 62</span>
-<span class="normal"> 63</span>
-<span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
+              <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">comm</span><span class="o">.</span><span class="n">base_comm</span><span class="o">.</span><span class="n">MessageType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a comm_msg message&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg_callback</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_msg_callback</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="async_kernel.comm.Comm.publish_msg" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">publish_msg</span>
+
+
+<a href="#async_kernel.comm.Comm.publish_msg" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">publish_msg</span><span class="p">(</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(data)">data</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.MaybeDict">MaybeDict</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.MaybeDict">MaybeDict</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(buffers)">buffers</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.BuffersType">BuffersType</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n"><span title="async_kernel.comm.Comm.publish_msg(**keys)">keys</span></span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Helper for sending a comm message on IOPub.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">keys</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for sending a comm message on IOPub.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">kernel</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Only send when the kernel is set</span>
+        <span class="k">return</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;comm_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
+    <span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
+        <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_type</span><span class="p">,</span>
+        <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ident</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">,</span>
+        <span class="n">buffers</span><span class="o">=</span><span class="n">buffers</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="async_kernel.comm.CommManager" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">CommManager</span>
+
+
+<a href="#async_kernel.comm.CommManager" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CommManager</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+        <p>The comm manager for all Comm instances.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li>When the trait <code>CommManager.kernel</code> is set the <code>Comm.kernel</code> trait is set on all <a class="autorefs autorefs-internal" title="Comm" href="#async_kernel.comm.Comm">async_kernel.comm.Comm</a> instances.</li>
+<li>The <code>Comm</code> will only send messages when the kernel is set.</li>
+<li>The <code>kernel</code> sets <code>CommManager.kernel</code> when its ready the iopub socket is open.</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="register_comm (async_kernel.comm.CommManager.register_comm)" href="#async_kernel.comm.CommManager.register_comm">register_comm</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Register a new comm</p>
+            </div>
+          </li>
+    </ul>
+
+
+
+                  <details class="quote">
+                    <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">92</span>
+<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="async_kernel.comm.CommManager.register_comm" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">register_comm</span>
+
+
+<a href="#async_kernel.comm.CommManager.register_comm" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">register_comm</span><span class="p">(</span><span class="n"><span title="async_kernel.comm.CommManager.register_comm(comm)">comm</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.BaseComm">BaseComm</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Register a new comm</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
+<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_comm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comm</span><span class="p">:</span> <span class="n">comm</span><span class="o">.</span><span class="n">base_comm</span><span class="o">.</span><span class="n">BaseComm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a new comm&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comm</span><span class="p">,</span> <span class="n">Comm</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kernel</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">):</span>
+        <span class="n">comm</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">register_comm</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="async_kernel.comm.set_comm" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">set_comm</span>
+
+
+<a href="#async_kernel.comm.set_comm" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_comm</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Monkey patch the <a href="https://pypi.org/project/comm/">comm</a> module's functions to provide iopub comms.</p>
+<ol>
+<li><code>comm.create_comm</code> to <a class="autorefs autorefs-internal" title="Comm" href="#async_kernel.comm.Comm">async_kernel.comm.Comm</a>.</li>
+<li><code>comm.get_com_manager</code> to <a class="autorefs autorefs-internal" title="CommManager" href="#async_kernel.comm.CommManager">async_kernel.comm.CommManager</a>.</li>
+</ol>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">117</span>
 <span class="normal">118</span>
 <span class="normal">119</span>
 <span class="normal">120</span>
@@ -1444,183 +1692,15 @@ program is interrupted.</p>
 <span class="normal">122</span>
 <span class="normal">123</span>
 <span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">(</span><span class="n">wait_exit_context</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">125</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_comm</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Parses command-line arguments to manage kernel specs and start kernels.</span>
+<span class="sd">    Monkey patch the [comm](https://pypi.org/project/comm/) module&#39;s functions to provide iopub comms.</span>
 
-<span class="sd">    This function uses `argparse` to handle command-line arguments for</span>
-<span class="sd">    various kernel operations, including:</span>
-
-<span class="sd">    - Starting a kernel with a specified connection file.</span>
-<span class="sd">    - Adding a new kernel specification.</span>
-<span class="sd">    - Removing an existing kernel specification.</span>
-<span class="sd">    - Print version.</span>
-
-<span class="sd">    The function determines the appropriate action based on the provided</span>
-<span class="sd">    arguments and either starts a kernel, adds a kernel spec, or removes</span>
-<span class="sd">    a kernel spec.  If no connection file is provided and no other action</span>
-<span class="sd">    is specified, it prints the help message.</span>
-
-<span class="sd">    When starting a kernel, it imports the specified kernel factory (or uses</span>
-<span class="sd">    the default `Kernel` class) and configures the kernel instance with</span>
-<span class="sd">    the provided arguments. It then starts the kernel within an `anyio`</span>
-<span class="sd">    context, handling keyboard interrupts and other exceptions.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        wait_exit_context: An optional asynchronous function or context manager</span>
-<span class="sd">            that determines how long the kernel should run. Defaults to</span>
-<span class="sd">            `anyio.sleep_forever`, which keeps the kernel running indefinitely</span>
-<span class="sd">            until an external signal is received.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        SystemExit: If an error occurs during kernel execution or if the</span>
-<span class="sd">            program is interrupted.</span>
+<span class="sd">    1.  `comm.create_comm` to [async_kernel.comm.Comm][].</span>
+<span class="sd">    1. `comm.get_com_manager` to [async_kernel.comm.CommManager][].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Async kernel&quot;</span>
-    <span class="n">kernel_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">get_kernel_dir</span><span class="p">()</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;With the async-kernel command line tool you can:</span><span class="se">\n\n</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;    - Add/remove kernel specs</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;    - start kernels</span><span class="se">\n\n</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;Online help: https://fleming79.github.io/async-kernel/latest/commands/#command-line </span><span class="se">\n\n</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Jupyter kernel directory: &#39;</span><span class="si">{</span><span class="n">kernel_dir</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
-        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--connection_file&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;connection_file&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start a kernel with a connection file. To start a kernel without a file use a period `.`.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-a&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--add&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;add&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Add a kernel spec. Default kernel names are: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">KernelName</span><span class="p">))</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;To specify a &#39;trio&#39; backend, include &#39;trio&#39; in the name. Other options are also permitted. See: `write_kernel_spec` for detail.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">kernels</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">kernel_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">kernel_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()]</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--remove&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;remove&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Remove existing kernel specs. Installed kernels: </span><span class="si">{</span><span class="n">kernels</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-V&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print version&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">args</span><span class="p">,</span> <span class="n">unknownargs</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
-    <span class="n">cl_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
-
-    <span class="c1"># Convert unknownargs from flags to mappings</span>
-    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">unknownargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="n">k</span><span class="p">,</span> <span class="n">v_</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v_</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;no-&quot;</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;no-&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-
-    <span class="c1"># Add kernel spec</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">add</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_name&quot;</span><span class="p">):</span>
-            <span class="n">args</span><span class="o">.</span><span class="n">kernel_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">add</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">cl_names</span><span class="p">:</span>
-            <span class="nb">delattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">write_kernel_spec</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added kernel spec </span><span class="si">{</span><span class="n">path</span><span class="si">!s}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Remove kernel spec</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">remove</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">remove</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;removed&quot;</span> <span class="k">if</span> <span class="n">remove_kernel_spec</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;not found!&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Kernel spec: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Version</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;async-kernel&quot;</span><span class="p">,</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-
-    <span class="c1"># Start kernel</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">connection_file</span><span class="p">:</span>
-        <span class="n">settings</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">cl_names</span><span class="o">.</span><span class="n">difference</span><span class="p">([</span><span class="s2">&quot;connection_file&quot;</span><span class="p">]):</span>
-            <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">{</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">}:</span>
-            <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">factory</span><span class="p">:</span> <span class="n">KernelFactoryType</span> <span class="o">=</span> <span class="n">import_kernel_factory</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_factory&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="n">kernel</span><span class="p">:</span> <span class="n">Kernel</span> <span class="o">=</span> <span class="n">factory</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-
-        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_start</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">with</span> <span class="n">kernel</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
-                    <span class="k">await</span> <span class="n">wait_exit_context</span><span class="p">()</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span> <span class="k">if</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="n">kernel</span><span class="o">.</span><span class="n">kernel_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="n">Backend</span><span class="o">.</span><span class="n">asyncio</span>
-            <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">_start</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_options</span><span class="o">=</span><span class="n">kernel</span><span class="o">.</span><span class="n">anyio_backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
-        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
-                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span><span class="p">)</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="c1"># Print help</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+    <span class="n">comm</span><span class="o">.</span><span class="n">create_comm</span> <span class="o">=</span> <span class="n">Comm</span>
+    <span class="n">comm</span><span class="o">.</span><span class="n">get_comm_manager</span> <span class="o">=</span> <span class="n">get_comm_manager</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1656,7 +1736,7 @@ program is interrupted.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2025 03:03:23 UTC"><span class="timeago" datetime="2025-08-21T03:03:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2025 03:03:23 UTC">2025-08-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 6, 2025 02:20:48 UTC"><span class="timeago" datetime="2025-09-06T02:20:48+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 6, 2025 02:20:48 UTC">2025-09-06</span>
   </span>
 
     
@@ -1666,7 +1746,7 @@ program is interrupted.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2025 03:03:23 UTC"><span class="timeago" datetime="2025-08-21T03:03:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2025 03:03:23 UTC">2025-08-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 6, 2025 02:20:48 UTC"><span class="timeago" datetime="2025-09-06T02:20:48+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 6, 2025 02:20:48 UTC">2025-09-06</span>
   </span>
 
     
@@ -1701,7 +1781,7 @@ program is interrupted.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../comm/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Comm">
+          <a href="../caller/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Caller">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1711,20 +1791,20 @@ program is interrupted.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Comm
+                Caller
               </div>
             </div>
           </a>
         
         
           
-          <a href="../kernel/" class="md-footer__link md-footer__link--next" aria-label="Next: Kernel">
+          <a href="../command/" class="md-footer__link md-footer__link--next" aria-label="Next: Command">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Kernel
+                Command
               </div>
             </div>
             <div class="md-footer__button md-icon">

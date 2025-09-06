@@ -665,6 +665,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -721,6 +723,29 @@ viewing the latest version.
   
   <span class="md-ellipsis">
     Caller
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/comm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Comm
     
   </span>
   
@@ -1551,8 +1576,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p><code>Caller</code> is used by the <a href="#usage-by-the-kernel">kernel</a> internally for running code, but can also be used directly by the user. Each caller starts its own iopub zmq socket.</p>
 <h2 id="threads">Threads<a class="anchor-link" href="#threads">¶</a></h2><p>The caller manages a pool of worker threads (not related to anyio worker threads) or you can specify the name of a new thread which you can manage yourself. Each thread has its own anyio event loop in which the code will be called.</p>
 <p>Most methods that perform execution return an <code>async_kernel.Future</code>.</p>
-<h2 id="usage-by-the-kernel">Usage by the kernel<a class="anchor-link" href="#usage-by-the-kernel">¶</a></h2><p>The Kernel runs two threads; one each for the shell and control. The thread names are 'MainThread' and 'ControlThread' respectively. You can easily get the main thread caller by using the classmethod <code>Caller.get_instance()</code>.</p>
-<p>Kernel uses one of <code>Caller().call_soon</code> <code>Caller.to_thread</code> depending on the <a href="kernel_directive.ipynb#Kernel-directive">header directive</a></p>
+<h2 id="usage-by-the-kernel">Usage by the kernel<a class="anchor-link" href="#usage-by-the-kernel">¶</a></h2><p>The kernel runs two threads; one each for the shell and control. The thread names are 'MainThread' and 'ControlThread' respectively. You can easily get the main thread caller by using the classmethod <code>Caller.get_instance()</code>.</p>
+<p>kernel uses one of <code>Caller().call_soon</code> <code>Caller.to_thread</code> depending on the <a href="kernel_directive.ipynb#Kernel-directive">header directive</a></p>
 <h2 id="caller-of-the-current-thread">Caller of the current thread<a class="anchor-link" href="#caller-of-the-current-thread">¶</a></h2><p>To get the caller for the current thread use Caller(). It will raise a Runtime error if the thread doesn't have a running instance.</p>
 </div>
 </div>
@@ -1773,13 +1798,19 @@ async for fut in Caller.as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>HTML(value='', description='Caller&lt;Thread-5 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>HTML(value='', description='Caller&lt;Thread-3 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;Thread-5 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
+<pre>HTML(value='', description='Caller&lt;Thread-7 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -1797,13 +1828,13 @@ async for fut in Caller.as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;Thread-7 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
+<pre>HTML(value='', description='Caller&lt;Thread-9 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;Thread-9 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
+<pre>HTML(value='', description='Caller&lt;Thread-11 (anyio_run_caller)&gt;', style=HTMLStyle(description_width='220px'))</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2066,7 +2097,7 @@ async for fut in Caller.as_completed(run_forever()):
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2025 03:03:23 UTC"><span class="timeago" datetime="2025-08-21T03:03:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2025 03:03:23 UTC">2025-08-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 6, 2025 02:20:48 UTC"><span class="timeago" datetime="2025-09-06T02:20:48+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 6, 2025 02:20:48 UTC">2025-09-06</span>
   </span>
 
     
