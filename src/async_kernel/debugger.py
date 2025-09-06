@@ -72,7 +72,8 @@ class _DummyPyDB:
 
 
 class VariableExplorer(HasTraits):
-    """A variable explorer.
+    """
+    A variable explorer.
 
     Origin: [IPyKernel][ipykernel.debugger.VariableExplorer]
     """

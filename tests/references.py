@@ -32,7 +32,7 @@ class Reference(HasTraits):
         return str(self.__class__)
 
     def check(self, d):
-        """validate a dict against our traits"""
+        """validate a dict against our traits."""
         for key in self.trait_names():
             if key not in d:
                 msg = f"{key=} is missing for {self} in {d=}"
@@ -205,7 +205,7 @@ class ExecuteInput(Reference):
 
 
 class Error(ExecuteReplyError):
-    """Errors are the same as ExecuteReply, but without status"""
+    """Errors are the same as ExecuteReply, but without status."""
 
     status = None  # type: ignore[assignment]  # no status field
 

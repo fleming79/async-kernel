@@ -187,13 +187,15 @@ class Future(Awaitable[T]):
         self._set_value("exception", exception)
 
     def done(self) -> bool:
-        """Return True if the Future is done.
+        """
+        Returns True if the Future is done.
 
         Done means either that a result / exception is available."""
         return self._event_done.is_set()
 
     def add_done_callback(self, fn: Callable[[Self], object]) -> None:
-        """Add a callback for when the callback is done (not thread-safe).
+        """
+        Add a callback for when the callback is done (not thread-safe).
 
         If the Future is already done it will be scheduled for calling.
 
@@ -206,7 +208,8 @@ class Future(Awaitable[T]):
             self.get_caller().call_direct(fn, self)
 
     def cancel(self, msg: str | None = None) -> bool:
-        """Cancel the Future and schedule callbacks (thread-safe using Caller).
+        """
+        Cancel the Future and schedule callbacks (thread-safe using Caller).
 
         Args:
             msg: The message to use when raising a FutureCancelledError.
@@ -243,7 +246,8 @@ class Future(Awaitable[T]):
         return self._result
 
     def exception(self) -> BaseException | None:
-        """Return the exception that was set on the Future.
+        """
+        Return the exception that was set on the Future.
 
         If the Future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
 
@@ -256,7 +260,8 @@ class Future(Awaitable[T]):
         return self._exception
 
     def remove_done_callback(self, fn: Callable[[Self], object], /) -> int:
-        """Remove all instances of a callback from the callbacks list.
+        """
+        Remove all instances of a callback from the callbacks list.
 
         Returns the number of callbacks removed.
         """
@@ -278,7 +283,8 @@ class Future(Awaitable[T]):
 
 
 class Caller:
-    """A class to enable calling functions and coroutines between anyio event loops.
+    """
+    A class to enable calling functions and coroutines between anyio event loops.
 
     The `Caller` class provides a mechanism to execute functions and coroutines
     in a dedicated thread, leveraging AnyIO for asynchronous task management.
@@ -325,8 +331,9 @@ class Caller:
         create: bool = False,
         protected: bool = False,
     ) -> Self:
-        """Create the `Caller` instance for the current thread or retrieve an existing instance
-            by passing the thread.
+        """
+        Create the `Caller` instance for the current thread or retrieve an existing instance
+        by passing the thread.
 
         The caller provides a way to execute synchronous code in a separate
         thread, and to call asynchronous code from synchronous code.
@@ -478,7 +485,8 @@ class Caller:
         return self._stopped
 
     def stop(self, *, force=False) -> None:
-        """Stop the caller, cancelling all pending tasks and close the thread.
+        """
+        Stop the caller, cancelling all pending tasks and close the thread.
 
         If the instance is protected, this is no-op unless force is used.
         """
@@ -493,7 +501,8 @@ class Caller:
     def call_later(
         self, func: Callable[P, T | Awaitable[T]], delay: float = 0.0, /, *args: P.args, **kwargs: P.kwargs
     ) -> Future[T]:
-        """Schedule func to be called in this instances event loop using the current contextvars context.
+        """
+        Schedule func to be called in caller's event loop copying the current context.
 
         Args:
             func: The function (awaitables permitted, though discouraged).
@@ -513,7 +522,8 @@ class Caller:
         return fut
 
     def call_soon(self, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs) -> Future[T]:
-        """Schedule func to be called in this instances event loop using the current contextvars context.
+        """
+        Schedule func to be called in caller's event loop copying the current context.
 
         Args:
             func: The function (awaitables permitted, though discouraged).
@@ -573,7 +583,8 @@ class Caller:
         max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         send_nowait: bool = True,
     ) -> CoroutineType[Any, Any, None] | None:
-        """Queue the execution of func in queue specific to the function (not thread-safe).
+        """
+        Queue the execution of func in queue specific to the function (not thread-safe).
 
         The args are added to a queue associated with the provided `func`. If queue does not already exist for
         func, a new queue is created with a specified maximum buffer size. The arguments are then sent to the queue,
@@ -609,7 +620,8 @@ class Caller:
         return sender.send_nowait(args) if send_nowait else sender.send(args)
 
     async def queue_close(self, func: Callable, *, force: bool = False) -> bool:
-        """Close the execution queue associated with func (not thread-safe).
+        """
+        Close the execution queue associated with func (not thread-safe).
 
         Args:
             func: The queue of the function to close.
@@ -631,7 +643,8 @@ class Caller:
 
     @classmethod
     def stop_all(cls, *, _stop_protected: bool = False) -> None:
-        """A classmethod to stop all un-protected callers.
+        """
+        A classmethod to stop all un-protected callers.
 
         Args:
             _stop_protected: A private argument to shutdown protected instances.
@@ -641,7 +654,8 @@ class Caller:
 
     @classmethod
     def get_instance(cls, name: str | None = "MainThread", *, create: bool = False) -> Self:
-        """A classmethod that gets an instance by name, possibly starting a new instance.
+        """
+        A classmethod that gets an instance by name, possibly starting a new instance.
 
         Args:
             name: The name to identify the caller.
@@ -664,7 +678,8 @@ class Caller:
     def to_thread_by_name(
         cls, name: str | None, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs
     ) -> Future[T]:
-        """A classmethod to call func in the thread specified by name.
+        """
+        A classmethod to call func in the thread specified by name.
 
         Args:
             name: The name of the `Caller`. A new `Caller` is created if an instance corresponding to name  [^notes].
@@ -702,7 +717,8 @@ class Caller:
         protected: bool = False,
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
     ) -> Self:
-        """Start a new thread with a new Caller open in the context of anyio event loop.
+        """
+        Start a new thread with a new Caller open in the context of anyio event loop.
 
         A new thread and caller is always started and ready to start new jobs as soon as it is returned.
 
@@ -737,7 +753,7 @@ class Caller:
 
     @classmethod
     def current_future(cls) -> Future[Any] | None:
-        """Return the current future when called from inside a function scheduled by Caller."""
+        """A classmethod that returns the current future when called from inside a function scheduled by Caller."""
         return cls._future_var.get()
 
     @classmethod
@@ -747,7 +763,8 @@ class Caller:
         *,
         max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
     ) -> AsyncGenerator[Future[T], Any]:
-        """An iterator to get [Futures][async_kernel.caller.Future] as they complete.
+        """
+        A classmethod iterator to get [Futures][async_kernel.caller.Future] as they complete.
 
         Args:
             items: Either a container with existing futures or generator of Futures.
@@ -817,7 +834,8 @@ class Caller:
 
     @classmethod
     def all_callers(cls, running_only: bool = True) -> list[Caller]:
-        """A classmethod to get a list of the callers.
+        """
+        A classmethod to get a list of the callers.
 
         Args:
             running_only: Restrict the list to callers that are active (running in an async context).

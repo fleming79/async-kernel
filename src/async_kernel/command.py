@@ -31,7 +31,8 @@ if TYPE_CHECKING:
 
 
 def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_forever) -> None:
-    """Parses command-line arguments to manage kernel specs and start kernels.
+    """
+    Parses command-line arguments to manage kernel specs and start kernels.
 
     This function uses `argparse` to handle command-line arguments for
     various kernel operations, including:

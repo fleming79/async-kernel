@@ -49,7 +49,8 @@ async def get_reply(
 
 
 def validate_message(msg: Mapping[str, Any], msg_type="", parent=None):
-    """validate a message.
+    """
+    Validate a message.
 
     If msg_type and/or parent are given, the msg_type and/or parent msg_id
     are compared with the given values.
@@ -99,7 +100,7 @@ async def execute(client: AsyncKernelClient, /, code="", clear_pub=True, metadat
 
 
 async def assemble_output(client: AsyncKernelClient, timeout=TIMEOUT, exit_at_idle=True):
-    """Assemble stdout/err from an execution"""
+    """Assemble stdout/err from an execution."""
     assert isinstance(client, AsyncKernelClient)
     stdout = ""
     stderr = ""

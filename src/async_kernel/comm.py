@@ -13,7 +13,8 @@ __all__ = ["Comm"]
 
 
 class Comm(BaseComm):
-    """Comms with a Kernel.
+    """
+    [comm.BaseComms][] with a Kernel.
 
     Notes:
     - `kernel` is added/removed by the CommManager.
@@ -66,12 +67,15 @@ class Comm(BaseComm):
 
 
 class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[reportUnsafeMultipleInheritance]
-    """A comm manager for Kernel (singleton).
+    """
+    A comm manager for Kernel (singleton).
 
     When `kernel` is set the `kernel` on all existing `Comm` instances is also set.
-    Notes:
-    - The `Comm` will only send messages when the kernel is set.
-    - `kernel` is set by the kernel once the sockets are opened.
+
+    !!! note:
+
+        - The `Comm` will only send messages when the kernel is set.
+        - The `kernel` sets [CommManager.kernel][] when its ready the iopub socket is open.
     """
 
     _instance = None
@@ -111,6 +115,9 @@ def get_comm_manager():
 
 
 def set_comm():
-    "Set the comm manager"
+    """
+    Set the  comm modules [comm.create_comm][] and [comm.get_com_manager] methods to
+    [async_kernel.comm.Comm][] and [async_kernel.comm.Comm][]  respectively.
+    """
     comm.create_comm = Comm
     comm.get_comm_manager = get_comm_manager
