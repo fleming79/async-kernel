@@ -528,7 +528,7 @@ class Kernel(HasTraits):
             await anyio.sleep_forever()
 
     async def _start_iopub_proxy(self, task_status: TaskStatus[None]) -> None:
-        """Provide an io proxy"""
+        """Provide an io proxy."""
 
         def pub_proxy():
             # We use an internal proxy to collect pub messages for distribution.

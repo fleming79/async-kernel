@@ -32,7 +32,7 @@ class Reference(HasTraits):
         return str(self.__class__)
 
     def check(self, d):
-        """validate a dict against our traits."""
+        """Validate a dict against our traits."""
         for key in self.trait_names():
             if key not in d:
                 msg = f"{key=} is missing for {self} in {d=}"

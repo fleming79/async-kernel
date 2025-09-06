@@ -45,7 +45,7 @@ class Comm(BaseComm):
         buffers: BuffersType = None,
         **keys,
     ):
-        """Helper for sending a comm message on IOPub"""
+        """Helper for sending a comm message on IOPub."""
         if (kernel := self.kernel) is None:
             # Only send when the kernel is set
             return

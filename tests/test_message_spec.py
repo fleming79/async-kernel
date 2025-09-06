@@ -54,7 +54,7 @@ async def test_execute_error(client):
 
 
 async def test_execute_inc(client):
-    """execute request should increment execution_count"""
+    """Execute request should increment execution_count."""
 
     _, reply = await utils.execute(client, code="x=1")
     count = reply["execution_count"]
@@ -65,7 +65,7 @@ async def test_execute_inc(client):
 
 
 async def test_execute_stop_on_error(client):
-    """execute request should not abort execution queue with stop_on_error False"""
+    """Execute request should not abort execution queue with stop_on_error False."""
 
     bad_code = "\n".join(
         [
@@ -99,7 +99,7 @@ async def test_execute_stop_on_error(client):
 
 
 async def test_non_execute_stop_on_error(client):
-    """test that non-execute_request's are not aborted after an error"""
+    """Test that non-execute_request's are not aborted after an error."""
 
     execute_id = client.execute("raise ValueError")
     content = await utils.get_shell_message(client, execute_id, "execute_reply")

@@ -169,7 +169,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @observe("exit_now")
     def _update_exit_now(self, _) -> None:
-        """stop eventloop when exit_now fires"""
+        """Stop eventloop when `exit_now` fires."""
         if self.exit_now:
             self.kernel.stop()
 

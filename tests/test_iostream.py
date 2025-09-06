@@ -6,7 +6,7 @@ from async_kernel.iostream import OutStream
 
 
 def test_io_api():
-    """Test that wrapped stdout has the same API as a normal TextIO object"""
+    """Test that wrapped stdout has the same API as a normal TextIO object."""
     output = ""
 
     def flusher(string: str):
