@@ -829,6 +829,7 @@ class Caller:
             if not shield:
                 for fut in futures:
                     fut.cancel("Cancelled  by as_completed")
+
     @classmethod
     def all_callers(cls, running_only: bool = True) -> list[Caller]:
         """
