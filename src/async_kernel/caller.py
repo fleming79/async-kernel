@@ -306,7 +306,7 @@ class Caller:
     _outstanding = 0
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
-    _queue_map: dict
+    _queue_map: dict[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
     _taskgroup: TaskGroup | None = None
     _callers: deque[tuple[contextvars.Context, tuple[Future, float, float, Callable, tuple, dict]] | Callable[[], Any]]
     _callers_added: threading.Event
@@ -489,8 +489,8 @@ class Caller:
         if self._protected and not force:
             return
         self._stopped = True
-        for m in self._queue_map.values():
-            m["sender"].close()
+        for sender in self._queue_map.values():
+            sender.close()
         self._queue_map.clear()
         self._callers_added.set()
         self._instances.pop(self.thread, None)
@@ -604,7 +604,7 @@ class Caller:
             Once the queue is no longer required call 'queue_close' to prevent memory leaks.
         """
         self._check_in_thread()
-        if not self.queue_exists(func):
+        if not (sender := self._queue_map.get(func)):
             max_buffer_size = self.MAX_BUFFER_SIZE if max_buffer_size is NoValue else max_buffer_size
             sender, queue = anyio.create_memory_object_stream[tuple[*PosArgsT]](max_buffer_size=max_buffer_size)
 
@@ -622,8 +622,8 @@ class Caller:
                 finally:
                     self._queue_map.pop(func, None)
 
-            self._queue_map[func] = {"sender": sender, "future": self.call_soon(execute_loop)}
-        sender: MemoryObjectSendStream[tuple[*PosArgsT]] = self._queue_map[func]["sender"]
+            self._queue_map[func] = sender
+            self.call_soon(execute_loop)
         return sender.send(args) if wait else sender.send_nowait(args)
 
     def queue_close(self, func: Callable) -> None:
@@ -633,7 +633,7 @@ class Caller:
         Args:
             func: The queue of the function to close.
         """
-        if sender := queue_map["sender"] if (queue_map := self._queue_map.pop(func, None)) else None:
+        if sender := self._queue_map.pop(func, None):
             self.call_direct(sender.close)
 
     @classmethod
