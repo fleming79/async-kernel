@@ -17,6 +17,7 @@ from anyio.abc import TaskStatus
 
 from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
 from async_kernel.kernelspec import Backend
+from async_kernel.typing import WaitType
 
 
 @pytest.fixture(scope="module", params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
@@ -338,47 +339,52 @@ class TestCaller:
         n = 40
         fut = Caller.to_thread(time.sleep, 0)
         await fut
-        # check can handle completed future okay first
-        async for fut_ in Caller.as_completed([fut]):
-            assert fut_.done()
-        # work directly with iterator
-        n_ = 0
-        max_concurrent = Caller.MAX_IDLE_POOL_INSTANCES if mode == "restricted" else n / 2
-        async for fut in Caller.as_completed((Caller.to_thread(func) for _ in range(n)), max_concurrent=max_concurrent):
-            assert fut.done()
-            n_ += 1
-            thread = await fut
-            threads.add(thread)
-        assert n_ == n
-        if mode == "restricted":
-            assert len(threads) == 2
-        else:
-            assert len(threads) > 2
-        assert len(Caller._to_thread_pool) == 2  # pyright: ignore[reportPrivateUsage]
+        async with Caller(create=True):
+            # check can handle completed future okay first
+            async for fut_ in Caller.as_completed([fut]):
+                assert fut_.done()
+            # work directly with iterator
+            n_ = 0
+            max_concurrent = Caller.MAX_IDLE_POOL_INSTANCES if mode == "restricted" else n / 2
+            async for fut in Caller.as_completed(
+                (Caller.to_thread(func) for _ in range(n)), max_concurrent=max_concurrent
+            ):
+                assert fut.done()
+                n_ += 1
+                thread = await fut
+                threads.add(thread)
+            assert n_ == n
+            if mode == "restricted":
+                assert len(threads) == 2
+            else:
+                assert len(threads) > 2
+            assert len(Caller._to_thread_pool) == 2  # pyright: ignore[reportPrivateUsage]
 
     async def test_as_completed_error(self, anyio_backend):
         def func():
             raise RuntimeError()
 
-        async for fut in Caller.as_completed((Caller.to_thread(func) for _ in range(6)), max_concurrent=4):
-            with pytest.raises(RuntimeError):
-                await fut
+        async with Caller(create=True):
+            async for fut in Caller.as_completed((Caller.to_thread(func) for _ in range(6)), max_concurrent=4):
+                with pytest.raises(RuntimeError):
+                    await fut
 
     async def test_as_completed_cancelled(self, anyio_backend):
         items = {Caller.to_thread(anyio.sleep, 100) for _ in range(4)}
+        async with Caller(create=True):
 
-        async def cancelled(task_status: TaskStatus[None]):
-            with pytest.raises(anyio.get_cancelled_exc_class()):  # noqa: PT012
-                task_status.started()
-                async for _ in Caller.as_completed(items):
-                    pass
+            async def cancelled(task_status: TaskStatus[None]):
+                with pytest.raises(anyio.get_cancelled_exc_class()):  # noqa: PT012
+                    task_status.started()
+                    async for _ in Caller.as_completed(items):
+                        pass
 
-        async with anyio.create_task_group() as tg:
-            await tg.start(cancelled)
-            tg.cancel_scope.cancel()
-        for item in items:
-            with pytest.raises(FutureCancelledError):
-                await item
+            async with anyio.create_task_group() as tg:
+                await tg.start(cancelled)
+                tg.cancel_scope.cancel()
+            for item in items:
+                with pytest.raises(FutureCancelledError):
+                    await item
 
     async def test__check_in_thread(self, anyio_backend):
         Caller.to_thread(anyio.sleep, 0.1)
@@ -541,3 +547,24 @@ class TestCaller:
             await anyio.sleep(0)
             with pytest.raises(FutureCancelledError):
                 fut.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    @pytest.mark.parametrize("return_when", WaitType)
+    async def test_wait(self, anyio_backend, return_when: WaitType):
+        def f(i: int):
+            if i == 1:
+                raise RuntimeError
+
+        async with Caller(create=True) as caller:
+            items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
+            done, pending = await Caller.wait(items, return_when=return_when)
+            match return_when:
+                case WaitType.FIRST_COMPLETED:
+                    assert done == set(items[0:1])
+                    assert pending == set(items[1:])
+                case WaitType.FIRST_EXCEPTION:
+                    assert done == set(items[0:2])
+                    assert pending == set(items[2:])
+                case WaitType.ALL_COMPLETED:
+                    assert done == set(items)
+                    assert not pending
+            caller.queue_close(f)

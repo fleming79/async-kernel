@@ -20,7 +20,7 @@ from zmq import Context, Socket, SocketType
 
 import async_kernel
 from async_kernel.kernelspec import Backend
-from async_kernel.typing import NoValue, PosArgsT, T
+from async_kernel.typing import NoValue, PosArgsT, T, WaitType
 from async_kernel.utils import wait_thread_event
 
 if TYPE_CHECKING:
@@ -599,9 +599,8 @@ class Caller:
 
         !!! warning
 
-            **This method keeps a strong ref to `func`. **
-
-            Once the queue is no longer required call 'queue_close' to prevent memory leaks.
+            - A strong reference is kept to `func` to keep the queue 'alive'.
+            - When the queue is no longer required call [async_kernel.caller.Caller.queue_close][] to remove the strong reference.
         """
         self._check_in_thread()
         if not (sender := self._queue_map.get(func)):
@@ -752,6 +751,16 @@ class Caller:
         return cls._future_var.get()
 
     @classmethod
+    def all_callers(cls, running_only: bool = True) -> list[Caller]:
+        """
+        A classmethod to get a list of the callers.
+
+        Args:
+            running_only: Restrict the list to callers that are active (running in an async context).
+        """
+        return [caller for caller in Caller._instances.values() if caller._running or not running_only]
+
+    @classmethod
     async def as_completed(
         cls,
         items: Iterable[Future[T]] | AsyncGenerator[Future[T]],
@@ -779,63 +788,88 @@ class Caller:
         futures: set[Future[T]] = set()
         done = False
         resume: Event | None = cast("anyio.Event | None", None)
+        current_future = cls.current_future()
+        if isinstance(items, set | list | tuple):
+            max_concurrent_ = 0
+        else:
+            max_concurrent_ = cls.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
 
         def _on_done(fut: Future[T]) -> None:
             has_result.append(fut)
             event_future_ready.set()
 
-        async def iter_items(task_status: TaskStatus[None]):
+        async def iter_items():
             nonlocal done, resume
-            if isinstance(items, set | list | tuple):
-                max_concurrent_ = 0
-            else:
-                max_concurrent_ = cls.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
-
             gen = items if isinstance(items, AsyncGenerator) else iter(items)
-            task_status.started()
             try:
                 while True:
                     fut = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
-                    futures.add(fut)
-                    if fut.done():
-                        has_result.append(fut)
-                        event_future_ready.set()
-                    else:
-                        fut.add_done_callback(_on_done)
-                    if max_concurrent_ and len(futures) == max_concurrent_:
-                        resume = anyio.Event()
-                        await resume.wait()
+                    if fut is not current_future:
+                        futures.add(fut)
+                        if fut.done():
+                            has_result.append(fut)
+                            event_future_ready.set()
+                        else:
+                            fut.add_done_callback(_on_done)
+                        if max_concurrent_ and len(futures) == max_concurrent_:
+                            resume = anyio.Event()
+                            await resume.wait()
             except (StopAsyncIteration, StopIteration):
                 return
             finally:
                 done = True
                 event_future_ready.set()
 
+        fut = cls().call_soon(iter_items)
         try:
-            async with anyio.create_task_group() as tg:
-                await tg.start(iter_items)
-                while futures or not done:
-                    if has_result:
-                        event_future_ready.clear()
-                        fut = has_result.popleft()
-                        futures.discard(fut)
-                        yield fut
-                        if resume:
-                            resume.set()
-                        continue
-                    if not has_result:
-                        await wait_thread_event(event_future_ready)
+            while futures or not done:
+                if has_result:
+                    event_future_ready.clear()
+                    fut = has_result.popleft()
+                    futures.discard(fut)
+                    yield fut
+                    if resume:
+                        resume.set()
+                    continue
+                if not has_result:
+                    await wait_thread_event(event_future_ready)
         finally:
+            fut.cancel()
             if not shield:
                 for fut in futures:
                     fut.cancel("Cancelled  by as_completed")
 
     @classmethod
-    def all_callers(cls, running_only: bool = True) -> list[Caller]:
+    async def wait(
+        cls,
+        items: Iterable[Future[T]],
+        *,
+        timeout: float | None = None,
+        return_when=WaitType.ALL_COMPLETED,
+    ) -> tuple[set[T], set[Future[T]]]:
         """
-        A classmethod to get a list of the callers.
+        A classmethod to wait for the futures given by items to complete.
 
-        Args:
-            running_only: Restrict the list to callers that are active (running in an async context).
+        Returns two sets of the futures: (done, pending).
+
+        Usage:
+
+            ```python
+            done, pending = await asyncio.wait(fs)
+            ```
+
+        !!! info
+
+            - This does not raise a TimeoutError!
+            - Futures that aren't done when the timeout occurs are returned in the second set.
         """
-        return [caller for caller in Caller._instances.values() if caller._running or not running_only]
+        done, pending = set(), set(items)
+        with anyio.move_on_after(timeout):
+            async for fut in cls.as_completed(items, shield=True):
+                pending.discard(fut)
+                done.add(fut)
+                if return_when == WaitType.FIRST_COMPLETED:
+                    break
+                if return_when == WaitType.FIRST_EXCEPTION and (fut.cancelled() or fut.exception()):
+                    break
+        return done, pending
