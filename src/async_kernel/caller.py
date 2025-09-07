@@ -498,7 +498,7 @@ class Caller:
             self._to_thread_pool.remove(self)
 
     def call_later(
-        self, func: Callable[P, T | Awaitable[T]], delay: float = 0.0, /, *args: P.args, **kwargs: P.kwargs
+        self, delay: float, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs
     ) -> Future[T]:
         """
         Schedule func to be called in caller's event loop copying the current context.
@@ -529,7 +529,7 @@ class Caller:
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
         """
-        return self.call_later(func, 0.0, *args, **kwargs)
+        return self.call_later(0, func, *args, **kwargs)
 
     def call_direct(self, func: Callable[P, Any], /, *args: P.args, **kwargs: P.kwargs) -> None:
         """

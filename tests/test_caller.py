@@ -181,7 +181,7 @@ class TestCaller:
     async def test_sync(self):
         async with Caller(create=True) as caller:
             is_called = anyio.Event()
-            caller.call_later(is_called.set)
+            caller.call_later(0.01, is_called.set)
             await is_called.wait()
 
     def test_no_thread(self):
@@ -210,7 +210,7 @@ class TestCaller:
 
         async with Caller(create=True) as caller:
             is_called = anyio.Event()
-            fut = caller.call_later(my_func, 0.2, is_called, *args_kwargs[0], **args_kwargs[1])
+            fut = caller.call_later(0.1, my_func, is_called, *args_kwargs[0], **args_kwargs[1])
             await is_called.wait()
             assert val == args_kwargs
             assert (await fut) == args_kwargs
@@ -249,7 +249,7 @@ class TestCaller:
                     is_cancelled = True
 
             started = anyio.Event()
-            caller.call_later(my_test)
+            caller.call_later(0.01, my_test)
             await started.wait()
         assert is_cancelled
 
@@ -282,7 +282,7 @@ class TestCaller:
         else:
             expr = "invalid call"
             context = pytest.raises(SyntaxError)
-        fut = caller.call_later(eval, 0.2, expr)
+        fut = caller.call_later(0.01, eval, expr)
         with context:
             match check_mode:
                 case "main":
@@ -317,7 +317,7 @@ class TestCaller:
 
     async def test_wait_sync_error(self):
         async with Caller(create=True) as caller:
-            fut = caller.call_later(anyio.sleep, 0.1, 0.1)
+            fut = caller.call_later(0, anyio.sleep, 0.1)
             with pytest.raises(RuntimeError):
                 fut.wait_sync()
 
@@ -484,7 +484,7 @@ class TestCaller:
         fut = Caller.to_thread(close_tsc)
         caller = Caller.get_instance(fut.thread.name)
         ready.wait()
-        never_called_future = caller.call_later(str, 10)
+        never_called_future = caller.call_later(10, str)
         proceed.set()
         with pytest.raises(FutureCancelledError):
             await fut
