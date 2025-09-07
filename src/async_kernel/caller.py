@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast, overload
 
 import anyio
 import sniffio
+from anyio.streams.memory import MemoryObjectSendStream
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
@@ -305,7 +306,7 @@ class Caller:
     _outstanding = 0
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
-    _executor_queue: dict
+    _queue_map: dict
     _taskgroup: TaskGroup | None = None
     _callers: deque[tuple[contextvars.Context, tuple[Future, float, float, Callable, tuple, dict]] | Callable[[], Any]]
     _callers_added: threading.Event
@@ -366,7 +367,7 @@ class Caller:
             inst._callers = deque()
             inst._callers_added = threading.Event()
             inst._protected = protected
-            inst._executor_queue = {}
+            inst._queue_map = {}
             cls._instances[thread] = inst
         return inst
 
@@ -385,7 +386,7 @@ class Caller:
 
     async def __aexit__(self, exc_type, exc_value, exc_tb) -> None:
         if self.__stack is not None:
-            self.stop()
+            self.stop(force=True)
             await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
 
     async def _server_loop(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
@@ -492,6 +493,9 @@ class Caller:
         if self._protected and not force:
             return
         self._stopped = True
+        for m in self._queue_map.values():
+            m["sender"].close()
+        self._queue_map.clear()
         self._callers_added.set()
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
@@ -549,9 +553,9 @@ class Caller:
         self._callers.append(functools.partial(func, *args, **kwargs))
         self._callers_added.set()
 
-    def has_execution_queue(self, func: Callable) -> bool:
+    def queue_exists(self, func: Callable) -> bool:
         "Returns True if an execution queue exists for `func`."
-        return func in self._executor_queue
+        return func in self._queue_map
 
     if TYPE_CHECKING:
 
@@ -562,7 +566,7 @@ class Caller:
             /,
             *args: *PosArgsT,
             max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-            send_nowait: Literal[False],
+            wait: Literal[True],
         ) -> CoroutineType[Any, Any, None]: ...
         @overload
         def queue_call(
@@ -571,7 +575,7 @@ class Caller:
             /,
             *args: *PosArgsT,
             max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-            send_nowait: Literal[True] | Any = True,
+            wait: Literal[False] | Any = False,
         ) -> None: ...
 
     def queue_call(
@@ -580,7 +584,7 @@ class Caller:
         /,
         *args: *PosArgsT,
         max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        send_nowait: bool = True,
+        wait: bool = False,
     ) -> CoroutineType[Any, Any, None] | None:
         """
         Queue the execution of func in queue specific to the function (not thread-safe).
@@ -594,11 +598,17 @@ class Caller:
             func: The asynchronous function to execute.
             *args: The arguments to pass to the function.
             max_buffer_size: The maximum buffer size for the queue. If NoValue, defaults to [async_kernel.Caller.MAX_BUFFER_SIZE].
-            send_nowait: Set as False to return a coroutine that is used to send the request.
+            wait: Set as True to return a coroutine that will return once the request is sent.
                 Use this to prevent experiencing exceptions if the buffer is full.
+
+        !!! warning
+
+            **This method keeps a strong ref to `func`. **
+
+            Once the queue is no longer required call 'queue_close' to prevent memory leaks.
         """
         self._check_in_thread()
-        if not self.has_execution_queue(func):
+        if not self.queue_exists(func):
             max_buffer_size = self.MAX_BUFFER_SIZE if max_buffer_size is NoValue else max_buffer_size
             sender, queue = anyio.create_memory_object_stream[tuple[*PosArgsT]](max_buffer_size=max_buffer_size)
 
@@ -607,38 +617,28 @@ class Caller:
                     with contextlib.suppress(anyio.get_cancelled_exc_class()):
                         async with queue as receive_stream:
                             async for args in receive_stream:
+                                if func not in self._queue_map:
+                                    break
                                 try:
                                     await func(*args)
                                 except Exception as e:
                                     self.log.exception("Execution %f failed", func, exc_info=e)
                 finally:
-                    self._executor_queue.pop(execute_loop, None)
+                    self._queue_map.pop(func, None)
 
-            self._executor_queue[func] = {"queue": sender, "future": self.call_soon(execute_loop)}
-        sender: MemoryObjectSendStream[tuple[*PosArgsT]] = self._executor_queue[func]["queue"]
-        return sender.send_nowait(args) if send_nowait else sender.send(args)
+            self._queue_map[func] = {"sender": sender, "future": self.call_soon(execute_loop)}
+        sender: MemoryObjectSendStream[tuple[*PosArgsT]] = self._queue_map[func]["sender"]
+        return sender.send(args) if wait else sender.send_nowait(args)
 
-    async def queue_close(self, func: Callable, *, force: bool = False) -> bool:
+    def queue_close(self, func: Callable) -> None:
         """
-        Close the execution queue associated with func (not thread-safe).
+        Close the execution queue associated with func (thread-safe).
 
         Args:
             func: The queue of the function to close.
-            force: Shutdown without waiting pending tasks to complete.
-
-        Returns:
-            True if a queue was closed.
         """
-        self._check_in_thread()
-        if queue_map := self._executor_queue.pop(func, None):
-            if force:
-                queue_map["future"].cancel()
-            else:
-                await queue_map["queue"].aclose()
-            with contextlib.suppress(FutureCancelledError):
-                await queue_map["future"]
-            return True
-        return False
+        if sender := queue_map["sender"] if (queue_map := self._queue_map.pop(func, None)) else None:
+            self.call_direct(sender.close)
 
     @classmethod
     def stop_all(cls, *, _stop_protected: bool = False) -> None:
@@ -833,6 +833,7 @@ class Caller:
             if not shield:
                 for fut in futures:
                     fut.cancel("Cancelled  by as_completed")
+
     @classmethod
     def all_callers(cls, running_only: bool = True) -> list[Caller]:
         """
