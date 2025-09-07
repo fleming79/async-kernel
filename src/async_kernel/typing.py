@@ -22,6 +22,7 @@ __all__ = [
     "RunMode",
     "SocketID",
     "Tags",
+    "WaitType",
 ]
 
 NoValue = Sentinel("NoValue")
@@ -110,7 +111,7 @@ class RunMode(enum.StrEnum):
         **This mode blocks the message loop.** 
         
         Use this for short running messages that should be processed as soon as it is received.
-        """
+    """
 
 
 class KernelConcurrencyMode(enum.StrEnum):
@@ -175,7 +176,8 @@ class MetadataKeys(enum.StrEnum):
     This is an enum of keys for [metadata in kernel messages](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
     that are used in async_kernel.
 
-    !!! Note
+    !!! note
+
         Metadata can be edited in Jupyter lab "Advanced tools" and Tags can be added using "common tools" in the [right side bar](https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar).
     """
 
@@ -237,6 +239,14 @@ class Tags(enum.StrEnum):
     
         The code block will return as 'ok' and there will be no message recorded.
     """
+
+
+class WaitType(enum.StrEnum):
+    "An enumeration of the 'wait_type' allowed for [async_kernel.caller.Caller.wait][]."
+
+    FIRST_COMPLETED = "FIRST_COMPLETED"
+    FIRST_EXCEPTION = "FIRST_EXCEPTION"
+    ALL_COMPLETED = "ALL_COMPLETED"
 
 
 class MsgHeader(TypedDict):
