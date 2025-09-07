@@ -22,7 +22,6 @@ __all__ = [
     "RunMode",
     "SocketID",
     "Tags",
-    "WaitType",
 ]
 
 NoValue = Sentinel("NoValue")
@@ -239,14 +238,6 @@ class Tags(enum.StrEnum):
     
         The code block will return as 'ok' and there will be no message recorded.
     """
-
-
-class WaitType(enum.StrEnum):
-    "An enumeration of the 'wait_type' allowed for [async_kernel.caller.Caller.wait][]."
-
-    FIRST_COMPLETED = "FIRST_COMPLETED"
-    FIRST_EXCEPTION = "FIRST_EXCEPTION"
-    ALL_COMPLETED = "ALL_COMPLETED"
 
 
 class MsgHeader(TypedDict):

@@ -17,7 +17,6 @@ from anyio.abc import TaskStatus
 
 from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
 from async_kernel.kernelspec import Backend
-from async_kernel.typing import WaitType
 
 
 @pytest.fixture(scope="module", params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
@@ -546,8 +545,8 @@ class TestCaller:
             with pytest.raises(FutureCancelledError):
                 fut.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
 
-    @pytest.mark.parametrize("return_when", WaitType)
-    async def test_wait(self, anyio_backend, return_when: WaitType):
+    @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
+    async def test_wait(self, anyio_backend, return_when):
         waiters = [anyio.Event() for _ in range(4)]
         waiters[0].set()
 
@@ -563,10 +562,10 @@ class TestCaller:
             items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
             done, pending = await Caller.wait(items, return_when=return_when)
             match return_when:
-                case WaitType.FIRST_COMPLETED:
+                case "FIRST_COMPLETED":
                     assert items[0] in done
-                case WaitType.FIRST_EXCEPTION:
+                case "FIRST_EXCEPTION":
                     assert items[1] in done
-                case WaitType.ALL_COMPLETED:
+                case _:
                     assert done == set(items)
                     assert not pending

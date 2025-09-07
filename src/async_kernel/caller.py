@@ -20,7 +20,7 @@ from zmq import Context, Socket, SocketType
 
 import async_kernel
 from async_kernel.kernelspec import Backend
-from async_kernel.typing import NoValue, PosArgsT, T, WaitType
+from async_kernel.typing import NoValue, PosArgsT, T
 from async_kernel.utils import wait_thread_event
 
 if TYPE_CHECKING:
@@ -848,7 +848,7 @@ class Caller:
         items: Iterable[Future[T]],
         *,
         timeout: float | None = None,
-        return_when=WaitType.ALL_COMPLETED,
+        return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
     ) -> tuple[set[T], set[Future[T]]]:
         """
         A classmethod to wait for the futures given by items to complete.
@@ -871,8 +871,8 @@ class Caller:
             async for fut in cls.as_completed(items, shield=True):
                 pending.discard(fut)
                 done.add(fut)
-                if return_when == WaitType.FIRST_COMPLETED:
+                if return_when == "FIRST_COMPLETED":
                     break
-                if return_when == WaitType.FIRST_EXCEPTION and (fut.cancelled() or fut.exception()):
+                if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
                     break
         return done, pending
