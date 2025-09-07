@@ -761,6 +761,7 @@ class Caller:
         items: Iterable[Future[T]] | AsyncGenerator[Future[T]],
         *,
         max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        shield: bool = False,
     ) -> AsyncGenerator[Future[T], Any]:
         """
         A classmethod iterator to get [Futures][async_kernel.caller.Future] as they complete.
@@ -770,6 +771,7 @@ class Caller:
             max_concurrent: The maximum number of concurrent futures to monitor at a time.
                 This is useful when `items` is a generator utilising Caller.to_thread.
                 By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
+            shield: Shield existing items from cancellation.
 
         !!! tip
 
@@ -828,8 +830,9 @@ class Caller:
                     if not has_result:
                         await wait_thread_event(event_future_ready)
         finally:
-            for fut in futures:
-                fut.cancel()
+            if not shield:
+                for fut in futures:
+                    fut.cancel("Cancelled  by as_completed")
 
     @classmethod
     def all_callers(cls, running_only: bool = True) -> list[Caller]:
