@@ -388,29 +388,52 @@ class TestCaller:
             worker._check_in_thread()  # pyright: ignore[reportPrivateUsage]
 
     async def test_execution_queue(self, anyio_backend):
-        results = []
-
-        async def my_func(a, b, c):
-            await anyio.sleep(0.01)
-            assert c == a + b
-            results.append(c)
-
+        delay = 0.01
+        N = 10
         async with Caller(create=True) as caller:
-            assert not caller.has_execution_queue(my_func)
-            assert not await caller.queue_close(my_func)
-            for i in range(4):
-                force = bool(i % 2)
-                results.clear()
-                await caller.queue_call(my_func, 0, 0, 0, max_buffer_size=i, send_nowait=False)
-                assert caller.has_execution_queue(my_func)
-                for j in range(1, 20):
-                    await caller.queue_call(my_func, 0, j, j, send_nowait=False)
-                assert await caller.queue_close(my_func, force=force)
-                if force:
-                    assert len(results) < 20, "Should exit early"
-                else:
-                    assert results == list(range(20)), "Should empty queue prior"
-            assert caller.queue_call(my_func, 0, 0, 0) is None
+            pool = list(range(N))
+            results = []
+
+            async def my_func(a, b, results=results):
+                await anyio.sleep(delay)
+                results.append(b)
+
+            for i in range(3):
+                for j in pool:
+                    buff = i * N + 1
+                    if waiter := caller.queue_call(my_func, 0, j, wait=j >= buff, max_buffer_size=buff):
+                        await waiter  # pyright: ignore[reportGeneralTypeIssues]
+
+                assert caller.queue_exists(my_func)
+                assert results != pool
+                caller.queue_close(my_func)
+
+    async def test_gc(self, anyio_backend):
+        event_finalize_called = anyio.Event()
+        async with Caller(create=True) as caller:
+            weakref.finalize(caller, event_finalize_called.set)
+            del caller
+        await event_finalize_called.wait()
+
+    async def test_execution_queue_gc(self, anyio_backend):
+        event_finalize_called = anyio.Event()
+        my_method_called = anyio.Event()
+        async with Caller(create=True) as caller:
+
+            class MyObj:
+                async def method(self):
+                    my_method_called.set()
+
+            my_obj = MyObj()
+            weakref.finalize(my_obj, event_finalize_called.set)
+            # caller.queue_call(my_obj.do_nothing)
+            caller.queue_call(my_obj.method)
+            ref = weakref.ref(my_obj)  # retained for debugging  # noqa: F841  # pyright: ignore[reportUnusedVariable]
+            await my_method_called.wait()
+            caller.queue_close(my_obj.method)
+            del my_obj
+        await anyio.sleep(0.1)
+        await event_finalize_called.wait()
 
     async def test_call_early(self, anyio_backend) -> None:
         caller = Caller(create=True)
