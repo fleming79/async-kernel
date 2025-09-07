@@ -306,7 +306,7 @@ class Caller:
     _outstanding = 0
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
-    _queue_map: dict[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
+    _queue_map: weakref.WeakKeyDictionary[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
     _taskgroup: TaskGroup | None = None
     _callers: deque[tuple[contextvars.Context, tuple[Future, float, float, Callable, tuple, dict]] | Callable[[], Any]]
     _callers_added: threading.Event
@@ -367,7 +367,7 @@ class Caller:
             inst._callers = deque()
             inst._callers_added = threading.Event()
             inst._protected = protected
-            inst._queue_map = {}
+            inst._queue_map = weakref.WeakKeyDictionary()
             cls._instances[thread] = inst
         return inst
 
@@ -583,7 +583,7 @@ class Caller:
         wait: bool = False,
     ) -> CoroutineType[Any, Any, None] | None:
         """
-        Queue the execution of func in queue specific to the function (not thread-safe).
+        Queue the execution of `func` with the arguments `*args` in a queue unique to it (not thread-safe).
 
         The args are added to a queue associated with the provided `func`. If queue does not already exist for
         func, a new queue is created with a specified maximum buffer size. The arguments are then sent to the queue,
@@ -597,10 +597,13 @@ class Caller:
             wait: Set as True to return a coroutine that will return once the request is sent.
                 Use this to prevent experiencing exceptions if the buffer is full.
 
-        !!! warning
+        !!! info
 
-            - A strong reference is kept to `func` to keep the queue 'alive'.
-            - When the queue is no longer required call [async_kernel.caller.Caller.queue_close][] to remove the strong reference.
+            The queue will stay open until one of the following occurs.
+
+            1. It explicitly closed with the method `queue_close`.
+            1. All strong references are lost the function/method.
+
         """
         self._check_in_thread()
         if not (sender := self._queue_map.get(func)):
