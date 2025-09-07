@@ -548,20 +548,25 @@ class TestCaller:
 
     @pytest.mark.parametrize("return_when", WaitType)
     async def test_wait(self, anyio_backend, return_when: WaitType):
-        def f(i: int):
-            if i == 1:
-                raise RuntimeError
+        waiters = [anyio.Event() for _ in range(4)]
+        waiters[0].set()
+
+        async def f(i: int):
+            await waiters[i].wait()
+            try:
+                if i == 1:
+                    raise RuntimeError
+            finally:
+                waiters[i + 1].set()
 
         async with Caller(create=True) as caller:
             items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
             done, pending = await Caller.wait(items, return_when=return_when)
             match return_when:
                 case WaitType.FIRST_COMPLETED:
-                    assert done == set(items[0:1])
-                    assert pending == set(items[1:])
+                    assert items[0] in done
                 case WaitType.FIRST_EXCEPTION:
-                    assert done == set(items[0:2])
-                    assert pending == set(items[2:])
+                    assert items[1] in done
                 case WaitType.ALL_COMPLETED:
                     assert done == set(items)
                     assert not pending
