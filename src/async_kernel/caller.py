@@ -376,7 +376,6 @@ class Caller:
         return f"Caller<{self.thread.name}>"
 
     async def __aenter__(self) -> Self:
-        self._cancelled_exception_class = anyio.get_cancelled_exc_class()
         async with contextlib.AsyncExitStack() as stack:
             self._running = True
             self._taskgroup = tg = await stack.enter_async_context(anyio.create_task_group())
@@ -442,12 +441,9 @@ class Caller:
                         result: T = await result
                     if fut.cancelled() and not scope.cancel_called:
                         scope.cancel()
-                    if scope.cancel_called:
-                        # await here to allow the cancel scope to be raised/caught.
-                        await anyio.sleep(0)
                     self._outstanding -= 1  # update first for _to_thread_on_done
                     fut.set_result(result)
-                except self._cancelled_exception_class:
+                except anyio.get_cancelled_exc_class():
                     fut.cancel()
                     self._outstanding -= 1  # update first for _to_thread_on_done
                     fut.set_result(cast("T", None))  # This will cancel
