@@ -310,6 +310,7 @@ class Caller:
     _taskgroup: TaskGroup | None = None
     _callers: deque[tuple[contextvars.Context, tuple[Future, float, float, Callable, tuple, dict]] | Callable[[], Any]]
     _callers_added: threading.Event
+    _stopped_event: threading.Event
     _stopped = False
     _protected = False
     _running = False
@@ -378,6 +379,7 @@ class Caller:
     async def __aenter__(self) -> Self:
         async with contextlib.AsyncExitStack() as stack:
             self._running = True
+            self._stopped_event = threading.Event()
             self._taskgroup = tg = await stack.enter_async_context(anyio.create_task_group())
             await tg.start(self._server_loop, tg)
             self.__stack = stack.pop_all()
@@ -415,6 +417,7 @@ class Caller:
                     job[1][0].set_exception(FutureCancelledError())
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
+            self._stopped_event.set()
             tg.cancel_scope.cancel()
 
     async def _wrap_call(
@@ -496,6 +499,8 @@ class Caller:
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
+        if self.thread is not threading.current_thread():
+            self._stopped_event.wait()
 
     def call_later(
         self, delay: float, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs
