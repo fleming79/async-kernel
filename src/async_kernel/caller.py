@@ -838,9 +838,10 @@ class Caller:
                     await wait_thread_event(event_future_ready)
         finally:
             fut.cancel()
-            if not shield:
-                for fut in futures:
-                    fut.cancel("Cancelled  by as_completed")
+            for fut in futures:
+                fut.remove_done_callback(_on_done)
+                if not shield:
+                    fut.cancel("Cancelled by as_completed")
 
     @classmethod
     async def wait(
@@ -866,13 +867,14 @@ class Caller:
             - This does not raise a TimeoutError!
             - Futures that aren't done when the timeout occurs are returned in the second set.
         """
-        done, pending = set(), set(items)
-        with anyio.move_on_after(timeout):
-            async for fut in cls.as_completed(items, shield=True):
-                pending.discard(fut)
-                done.add(fut)
-                if return_when == "FIRST_COMPLETED":
-                    break
-                if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
-                    break
+        done = set()
+        if pending := set(items):
+            with anyio.move_on_after(timeout):
+                async for fut in cls.as_completed(items, shield=True):
+                    pending.discard(fut)
+                    done.add(fut)
+                    if return_when == "FIRST_COMPLETED":
+                        break
+                    if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
+                        break
         return done, pending
