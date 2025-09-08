@@ -33,8 +33,6 @@ def transport(request):
     return request.param
 
 
-# @pytest.mark.flaky
-# @pytest.mark.skipif(condition=sys.platform != "linux", reason="Test is too flaky ")
 def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
     ctx = zmq.Context()
     ip = tmp_path / "mypath" if transport == "ipc" else "0.0.0.0"
@@ -362,16 +360,17 @@ async def test_interrupt_request(client, kernel):
 
 async def test_interrupt_request_async_request(subprocess_kernels_client):
     client = subprocess_kernels_client
-    msg_id = client.execute("await anyio.sleep(100)")
+    msg_id = client.execute(f"await anyio.sleep({utils.TIMEOUT * 2})")
     await anyio.sleep(0.1)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
 
 
+@pytest.mark.flaky
 async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
     client = subprocess_kernels_client
-    msg_id = client.execute("import time;time.sleep(100)")
+    msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 2})")
     await anyio.sleep(0.1)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
@@ -380,10 +379,10 @@ async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client
 
 
 async def test_interrupt_request_blocking_task(subprocess_kernels_client):
-    code = """
+    code = f"""
     import time
     from async_kernel import Caller
-    await Caller().call_soon(time.sleep, 100)
+    await Caller().call_soon(time.sleep, {utils.TIMEOUT * 2})
     """
     client = subprocess_kernels_client
     msg_id = client.execute(code, reply=False)
