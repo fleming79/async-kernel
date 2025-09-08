@@ -838,9 +838,10 @@ class Caller:
                     await wait_thread_event(event_future_ready)
         finally:
             fut.cancel()
-            if not shield:
-                for fut in futures:
-                    fut.cancel("Cancelled  by as_completed")
+            for fut in futures:
+                fut.remove_done_callback(_on_done)
+                if not shield:
+                    fut.cancel("Cancelled by as_completed")
 
     @classmethod
     async def wait(
