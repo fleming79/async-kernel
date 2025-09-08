@@ -613,27 +613,35 @@ class TestLock:
             await Caller.wait(futures)
             assert count == 3
 
-    async def test_basic_reentran_release(self, caller: Caller):
+    async def test_nested_reentran_release(self, caller: Caller):
         lock = Lock(reentrant=True)
         futures = set()
+        count = 0
+
+        async def nested(lock: Lock):
+            nonlocal count
+            async with lock:
+                count += 1
 
         async def using_lock(haslock: anyio.Event, release: anyio.Event):
+            nonlocal count
             async with lock:
-                if len(futures) < 10:
-                    futures.add(caller.call_soon(using_lock, haslock, release))
-                await anyio.sleep(0.1)
+                futures.add(caller.call_soon(nested, lock))
+                await anyio.sleep(0)
                 haslock.set()
                 await release.wait()
+                count += 1
+            futures.add(caller.call_soon(nested, lock))
 
         l1, r1 = anyio.Event(), anyio.Event()
         l2, r2 = anyio.Event(), anyio.Event()
 
-        caller.call_soon(using_lock, l1, r1)
-        caller.call_soon(using_lock, l2, r2)
+        futures.add(caller.call_soon(using_lock, l1, r1))
+        futures.add(caller.call_soon(using_lock, l2, r2))
         await l1.wait()
         assert not l2.is_set()
         r1.set()
         await l2.wait()
         r2.set()
-        _, pend = await Caller.wait(futures, timeout=0.1)
-        assert len(pend) == 0
+        await Caller.wait(futures, timeout=0.1)  # Timeout avoids fulltest suite from locking.
+        assert count == len(futures)

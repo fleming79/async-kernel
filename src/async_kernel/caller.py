@@ -882,7 +882,7 @@ class Caller:
 
 class Lock:
     """
-    An asynchronous reentrant capable lock to use exclusively with [async_kernel.caller.Caller][].
+    An asynchronous context reentrant capable lock.
 
     !!! example
 
@@ -896,45 +896,52 @@ class Lock:
 
     !!! note
 
-        Reentrant is defined here as: *reentrant* within the scope of the calling [context][contextvars.ContextVar] meaning
-        the lock is shared in the async context ([async_kernel.caller.Caller.call_soon][], [async_kernel.caller.Caller.call_later][])
-        and threads ([async_kernel.caller.Caller.to_thread][]).
+        - Reentrant is defined here as: *reentrant* within the scope of the calling [context][contextvars.ContextVar] meaning
+            the lock is shared in the async context ([async_kernel.caller.Caller.call_soon][], [async_kernel.caller.Caller.call_later][])
+            and threads ([async_kernel.caller.Caller.to_thread][]).
+        - There is no requirement to exit the context in the order of entry.
+
     """
 
-    __slots__ = ["_count", "_haslock", "_queue", "_reentrant"]
+    __slots__ = ["_count", "_ctx", "_ctx_count", "_ctx_lock", "_queue", "_reentrant"]
 
     def __init__(self, *, reentrant=False):
-        self._reentrant = reentrant
-        self._haslock: contextvars.ContextVar[bool] = contextvars.ContextVar(f"Lock:{id(self)}", default=False)
         self._count = 0
-        self._queue: deque[Future] = deque()
+        self._ctx: contextvars.ContextVar[int] = contextvars.ContextVar(f"Lock:{id(self)}", default=0)
+        self._ctx_count = 0
+        self._ctx_lock = 0
+        self._queue: deque[tuple[int, Future]] = deque()
+        self._reentrant = reentrant
 
     async def __aenter__(self) -> Self:
-        if not self._count or (self._reentrant and self._haslock.get()):
+        if not (ctx := self._ctx.get()):
+            self._ctx_count = ctx = self._ctx_count + 1
+            self._ctx.set(ctx)
+        if not self._count or (self._reentrant and ctx == self._ctx_lock):
+            self._ctx_lock = ctx
             self._count += 1
-            self._haslock.set(True)
             return self
-        nextlock = Future()
-        self._queue.append(nextlock)
+        fut: Future[Any] = Future()
+        self._queue.append((ctx, fut))
         try:
-            await nextlock
-            self._haslock.set(True)
+            await fut
             self._count += 1
+            return self
         finally:
-            self._queue.remove(nextlock)
-        return self
+            self._queue.remove((ctx, fut))
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
-        if self.has_lock():
-            self._count -= 1
-            if self._count == 0 and self._queue:
-                self._haslock.set(False)
-                nextlock = self._queue.popleft()
-                nextlock.set_result(None)
-
-    def has_lock(self) -> bool:
-        "Returns True when is lock in the current context."
-        return self._haslock.get()
+        self._count -= 1
+        if self._count == 0:
+            ctx = 0
+            for ctx_, fut in tuple(self._queue):
+                if not fut.done():
+                    if ctx == 0:
+                        self._ctx_lock = ctx = ctx_
+                    if ctx_ == ctx:
+                        fut.set_result(None)
+                        if not self._reentrant:
+                            break
 
     def locked(self) -> bool:
         "Returns True when locked."
