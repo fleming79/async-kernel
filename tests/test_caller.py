@@ -614,38 +614,35 @@ class TestLock:
             assert count == 3
 
     async def test_nested_reentran_release(self, caller: Caller):
-        lock = Lock(reentrant=True)
-        futures = set()
         count = 0
+        lock = Lock(reentrant=True)
 
         async def nested(lock: Lock):
             nonlocal count
+            await anyio.sleep(0)
             async with lock:
                 count += 1
 
-        async def using_lock(haslock: anyio.Event, release: anyio.Event):
+        async def using_lock():
             nonlocal count
+            count += 1
             async with lock:
-                count += 1
-                fut = caller.call_soon(nested, lock)
-                futures.add(fut)
-                await fut
-                haslock.set()
-                await release.wait()
-            futures.add(caller.call_soon(nested, lock))
+                while count < 2:
+                    await anyio.sleep(0.01)
+                await caller.call_soon(nested, lock)
+            caller.call_soon(nested, lock)
 
-        l1, r1 = anyio.Event(), anyio.Event()
-        l2, r2 = anyio.Event(), anyio.Event()
-
-        futures.add(caller.call_soon(using_lock, l1, r1))
-        await anyio.sleep(0.1)  # Trio needs this call to ensure the order is respected
-        futures.add(caller.call_soon(using_lock, l2, r2))
-        await l1.wait()
-        assert count == 2
-        assert not l2.is_set()
-        r1.set()
-        await l2.wait()
-        assert count == 4
-        r2.set()
-        await Caller.wait(futures)  # Timeout avoids fulltest suite from locking.
-        assert count == len(futures)
+        caller.to_thread(using_lock)
+        while not count:
+            await anyio.sleep(0.01)
+        caller.call_soon(using_lock)
+        for _ in range(4):
+            caller.to_thread(using_lock)
+            caller.call_soon(using_lock)
+        assert lock.locked()
+        n = (1 + 4) * 2  # number of times using_lock is called
+        while count < n * 3:
+            await anyio.sleep(0.01)
+        assert not lock.locked()
+        assert lock._ctx_count == n  # pyright: ignore[reportPrivateUsage]
+        assert not lock._queue  # pyright: ignore[reportPrivateUsage]
