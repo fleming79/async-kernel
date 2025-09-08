@@ -866,13 +866,14 @@ class Caller:
             - This does not raise a TimeoutError!
             - Futures that aren't done when the timeout occurs are returned in the second set.
         """
-        done, pending = set(), set(items)
-        with anyio.move_on_after(timeout):
-            async for fut in cls.as_completed(items, shield=True):
-                pending.discard(fut)
-                done.add(fut)
-                if return_when == "FIRST_COMPLETED":
-                    break
-                if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
-                    break
+        done = set()
+        if pending := set(items):
+            with anyio.move_on_after(timeout):
+                async for fut in cls.as_completed(items, shield=True):
+                    pending.discard(fut)
+                    done.add(fut)
+                    if return_when == "FIRST_COMPLETED":
+                        break
+                    if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
+                        break
         return done, pending
