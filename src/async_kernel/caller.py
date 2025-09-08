@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError"]
+__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError", "Lock"]
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
@@ -856,10 +856,10 @@ class Caller:
 
         Returns two sets of the futures: (done, pending).
 
-        Usage:
+        !!! example
 
             ```python
-            done, pending = await asyncio.wait(fs)
+            done, pending = await asyncio.wait(items)
             ```
 
         !!! info
@@ -878,3 +878,64 @@ class Caller:
                     if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
                         break
         return done, pending
+
+
+class Lock:
+    """
+    An asynchronous reentrant capable lock to use exclusively with [async_kernel.caller.Caller][].
+
+    !!! example
+
+        ```python
+        # Inside a coroutine running inside a Caller thread.
+
+        lock = Lock(reentrant=True)  # a reentrant lock
+        async with lock:
+            pass
+        ```
+
+    !!! note
+
+        Reentrant is defined here as: *reentrant* within the scope of the calling [context][contextvars.ContextVar] meaning
+        the lock is shared in the async context ([async_kernel.caller.Caller.call_soon][], [async_kernel.caller.Caller.call_later][])
+        and threads ([async_kernel.caller.Caller.to_thread][]).
+    """
+
+    __slots__ = ["_count", "_haslock", "_queue", "_reentrant"]
+
+    def __init__(self, *, reentrant=False):
+        self._reentrant = reentrant
+        self._haslock: contextvars.ContextVar[bool] = contextvars.ContextVar(f"Lock:{id(self)}", default=False)
+        self._count = 0
+        self._queue: deque[Future] = deque()
+
+    async def __aenter__(self) -> Self:
+        if not self._count or (self._reentrant and self._haslock.get()):
+            self._count += 1
+            self._haslock.set(True)
+            return self
+        nextlock = Future()
+        self._queue.append(nextlock)
+        try:
+            await nextlock
+            self._haslock.set(True)
+            self._count += 1
+        finally:
+            self._queue.remove(nextlock)
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        if self.has_lock():
+            self._count -= 1
+            if self._count == 0 and self._queue:
+                self._haslock.set(False)
+                nextlock = self._queue.popleft()
+                nextlock.set_result(None)
+
+    def has_lock(self) -> bool:
+        "Returns True when is lock in the current context."
+        return self._haslock.get()
+
+    def locked(self) -> bool:
+        "Returns True when locked."
+        return bool(self._count)

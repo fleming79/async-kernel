@@ -12,21 +12,26 @@ import anyio
 import anyio.to_thread
 import pytest
 import sniffio
-import zmq
 from anyio.abc import TaskStatus
 
-from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
+from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError, Lock
 from async_kernel.kernelspec import Backend
 
 
-@pytest.fixture(scope="module", params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
+@pytest.fixture(params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
 def anyio_backend(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=["tcp", "ipc"] if zmq.has("ipc") else ["tcp"])
-def transport(request):
-    return request.param
+
+
+@pytest.fixture
+async def caller(anyio_backend: Backend):
+    try:
+        async with Caller(create=True) as caller:
+            yield caller
+    finally:
+        Caller.stop_all()
 
 
 @pytest.mark.anyio
@@ -558,14 +563,47 @@ class TestCaller:
             finally:
                 waiters[i + 1].set()
 
-        async with Caller(create=True) as caller:
-            items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
-            done, pending = await Caller.wait(items, return_when=return_when)
-            match return_when:
-                case "FIRST_COMPLETED":
-                    assert items[0] in done
-                case "FIRST_EXCEPTION":
-                    assert items[1] in done
-                case _:
-                    assert done == set(items)
-                    assert not pending
+        items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
+        done, pending = await Caller.wait(items, return_when=return_when)
+        match return_when:
+            case "FIRST_COMPLETED":
+                assert items[0] in done
+            case "FIRST_EXCEPTION":
+                assert items[1] in done
+            case _:
+                assert done == set(items)
+                assert not pending
+
+
+class TestLock:
+    async def test_basic_non_reentrant(self, caller: Caller):
+        async with Lock() as lock:
+            with anyio.move_on_after(0.01):
+                async with lock:
+                    raise RuntimeError
+            assert lock.locked()
+        assert not lock.locked()
+
+    async def test_basic_reentrant(self, caller: Caller):
+        async with Lock(reentrant=True) as lock:
+            assert lock.locked()
+            async with lock:
+                assert lock.locked()
+                assert lock._count == 2  # pyright: ignore[reportPrivateUsage]
+        assert lock._count == 0  # pyright: ignore[reportPrivateUsage]
+        assert not lock.locked()
+
+    async def test_reentrant_thread(self, caller: Caller):
+        lock = Lock(reentrant=True)
+        count = 0
+
+        async def tester_async():
+            nonlocal count
+            async with lock:
+                count += 1
+
+        async with lock:
+            futures = [caller.call_soon(tester_async), caller.to_thread(tester_async)]
+            await tester_async()
+            await Caller.wait(futures)
+            assert count == 3
