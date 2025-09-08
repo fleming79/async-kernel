@@ -613,7 +613,7 @@ class TestLock:
             await Caller.wait(futures)
             assert count == 3
 
-    async def test_nested_reentran_release(self, caller: Caller):
+    async def test_nested_reentran(self, caller: Caller):
         count = 0
         lock = Lock(reentrant=True)
 
