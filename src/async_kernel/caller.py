@@ -398,7 +398,12 @@ class Caller:
             self.iopub_sockets[self.thread] = socket
             task_status.started()
             while not self._stopped:
-                while len(self._callers):
+                if not self._callers:
+                    self._callers_added.clear()
+                await wait_thread_event(self._callers_added)
+                while self._callers:
+                    if self._stopped:
+                        return
                     job = self._callers.popleft()
                     if isinstance(job, Callable):
                         try:
@@ -408,8 +413,6 @@ class Caller:
                     else:
                         context, args = job
                         context.run(tg.start_soon, self._wrap_call, *args)
-                    self._callers_added.clear()
-                await wait_thread_event(self._callers_added)
         finally:
             self._running = False
             for job in self._callers:
@@ -838,8 +841,7 @@ class Caller:
                     yield fut
                     if resume:
                         resume.set()
-                    continue
-                if not has_result:
+                else:
                     await wait_thread_event(event_future_ready)
         finally:
             fut.cancel()
