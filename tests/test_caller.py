@@ -638,7 +638,7 @@ class TestLock:
         l2, r2 = anyio.Event(), anyio.Event()
 
         futures.add(caller.call_soon(using_lock, l1, r1))
-        await anyio.sleep(0)  # Trio needs this call to ensure the order is respected
+        await anyio.sleep(0.1)  # Trio needs this call to ensure the order is respected
         futures.add(caller.call_soon(using_lock, l2, r2))
         await l1.wait()
         assert count == 2
