@@ -2949,7 +2949,8 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="normal">840</span>
 <span class="normal">841</span>
 <span class="normal">842</span>
-<span class="normal">843</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">843</span>
+<span class="normal">844</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
@@ -3024,9 +3025,10 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
                 <span class="k">await</span> <span class="n">wait_thread_event</span><span class="p">(</span><span class="n">event_future_ready</span><span class="p">)</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">fut</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">shield</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">fut</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
-                <span class="n">fut</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Cancelled  by as_completed&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fut</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
+            <span class="n">fut</span><span class="o">.</span><span class="n">remove_done_callback</span><span class="p">(</span><span class="n">_on_done</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">shield</span><span class="p">:</span>
+                <span class="n">fut</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Cancelled by as_completed&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4254,8 +4256,7 @@ done, pending = await asyncio.wait(fs)
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">845</span>
-<span class="normal">846</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">846</span>
 <span class="normal">847</span>
 <span class="normal">848</span>
 <span class="normal">849</span>
@@ -4287,7 +4288,9 @@ done, pending = await asyncio.wait(fs)
 <span class="normal">875</span>
 <span class="normal">876</span>
 <span class="normal">877</span>
-<span class="normal">878</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">878</span>
+<span class="normal">879</span>
+<span class="normal">880</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
@@ -4311,15 +4314,16 @@ done, pending = await asyncio.wait(fs)
 <span class="sd">        - This does not raise a TimeoutError!</span>
 <span class="sd">        - Futures that aren&#39;t done when the timeout occurs are returned in the second set.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">done</span><span class="p">,</span> <span class="n">pending</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">move_on_after</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">fut</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-            <span class="n">pending</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
-            <span class="n">done</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">return_when</span> <span class="o">==</span> <span class="s2">&quot;FIRST_COMPLETED&quot;</span><span class="p">:</span>
-                <span class="k">break</span>
-            <span class="k">if</span> <span class="n">return_when</span> <span class="o">==</span> <span class="s2">&quot;FIRST_EXCEPTION&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fut</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span> <span class="ow">or</span> <span class="n">fut</span><span class="o">.</span><span class="n">exception</span><span class="p">()):</span>
-                <span class="k">break</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">pending</span> <span class="o">:=</span> <span class="nb">set</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">move_on_after</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">fut</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">pending</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
+                <span class="n">done</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">return_when</span> <span class="o">==</span> <span class="s2">&quot;FIRST_COMPLETED&quot;</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">return_when</span> <span class="o">==</span> <span class="s2">&quot;FIRST_EXCEPTION&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fut</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span> <span class="ow">or</span> <span class="n">fut</span><span class="o">.</span><span class="n">exception</span><span class="p">()):</span>
+                    <span class="k">break</span>
     <span class="k">return</span> <span class="n">done</span><span class="p">,</span> <span class="n">pending</span>
 </code></pre></div></td></tr></table></div>
             </details>
