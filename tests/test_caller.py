@@ -12,21 +12,24 @@ import anyio
 import anyio.to_thread
 import pytest
 import sniffio
-import zmq
 from anyio.abc import TaskStatus
 
-from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
+from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError, Lock
 from async_kernel.kernelspec import Backend
 
 
-@pytest.fixture(scope="module", params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
+@pytest.fixture(params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
 def anyio_backend(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=["tcp", "ipc"] if zmq.has("ipc") else ["tcp"])
-def transport(request):
-    return request.param
+@pytest.fixture
+async def caller(anyio_backend: Backend):
+    try:
+        async with Caller(create=True) as caller:
+            yield caller
+    finally:
+        Caller.stop_all()
 
 
 @pytest.mark.anyio
@@ -315,11 +318,10 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             Caller.get_instance(None, create=False)
 
-    async def test_wait_sync_error(self):
-        async with Caller(create=True) as caller:
-            fut = caller.call_later(0, anyio.sleep, 0.1)
-            with pytest.raises(RuntimeError):
-                fut.wait_sync()
+    async def test_wait_sync_error(self, caller: Caller):
+        fut = caller.call_later(0, anyio.sleep, 0.1)
+        with pytest.raises(RuntimeError):
+            fut.wait_sync()
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend, mode: Literal["restricted", "surge"], mocker):
@@ -359,14 +361,13 @@ class TestCaller:
                 assert len(threads) > 2
             assert len(Caller._to_thread_pool) == 2  # pyright: ignore[reportPrivateUsage]
 
-    async def test_as_completed_error(self, anyio_backend):
+    async def test_as_completed_error(self, caller: Caller):
         def func():
             raise RuntimeError()
 
-        async with Caller(create=True):
-            async for fut in Caller.as_completed((Caller.to_thread(func) for _ in range(6)), max_concurrent=4):
-                with pytest.raises(RuntimeError):
-                    await fut
+        async for fut in Caller.as_completed((Caller.to_thread(func) for _ in range(6)), max_concurrent=4):
+            with pytest.raises(RuntimeError):
+                await fut
 
     async def test_as_completed_cancelled(self, anyio_backend):
         items = {Caller.to_thread(anyio.sleep, 100) for _ in range(4)}
@@ -392,26 +393,26 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             worker._check_in_thread()  # pyright: ignore[reportPrivateUsage]
 
-    async def test_execution_queue(self, anyio_backend):
+    async def test_execution_queue(self, caller: Caller):
         delay = 0.01
         N = 10
-        async with Caller(create=True) as caller:
-            pool = list(range(N))
-            results = []
 
-            async def func(a, b, results=results):
-                await anyio.sleep(delay)
-                results.append(b)
+        pool = list(range(N))
+        results = []
 
-            for i in range(3):
-                for j in pool:
-                    buff = i * N + 1
-                    if waiter := caller.queue_call(func, 0, j, wait=j >= buff, max_buffer_size=buff):
-                        await waiter  # pyright: ignore[reportGeneralTypeIssues]
-                assert caller.queue_exists(func)
-                assert results != pool
-                caller.queue_close(func)
-                assert not caller.queue_exists(func)
+        async def func(a, b, results=results):
+            await anyio.sleep(delay)
+            results.append(b)
+
+        for i in range(3):
+            for j in pool:
+                buff = i * N + 1
+                if waiter := caller.queue_call(func, 0, j, wait=j >= buff, max_buffer_size=buff):
+                    await waiter  # pyright: ignore[reportGeneralTypeIssues]
+            assert caller.queue_exists(func)
+            assert results != pool
+            caller.queue_close(func)
+            assert not caller.queue_exists(func)
 
     async def test_gc(self, anyio_backend):
         event_finalize_called = anyio.Event()
@@ -440,13 +441,14 @@ class TestCaller:
 
     async def test_call_early(self, anyio_backend) -> None:
         caller = Caller(create=True)
+        assert not caller.running
         fut = caller.call_soon(time.sleep, 0.1)
         await anyio.sleep(delay=0.1)
         assert not fut.done()
         async with caller:
             await fut
 
-    async def test_call_coroutine(self, anyio_backend):
+    async def test_call_coroutine(self, caller: Caller):
         # Test we can await a coroutine, note that it is not permitted with the type hints,
         # but should probably be discouraged anyway since there is no way of knowing
         # (with type hints) if a coroutine has already been awaited.
@@ -473,7 +475,7 @@ class TestCaller:
             res = await fut
             assert res is fut
 
-    async def test_closed_in_call_soon(self, anyio_backend):
+    async def test_closed_in_call_soon(self, caller: Caller):
         ready = threading.Event()
         proceed = threading.Event()
 
@@ -502,12 +504,12 @@ class TestCaller:
     @pytest.mark.parametrize("cancel_mode", ["local", "thread"])
     @pytest.mark.parametrize("msg", ["msg", None, "twice"])
     async def test_cancel(
-        self, anyio_backend, mode: Literal["async", "blocking"], cancel_mode: Literal["local", "thread"], msg
+        self, caller: Caller, mode: Literal["async", "blocking"], cancel_mode: Literal["local", "thread"], msg
     ):
         def blocking_func():
             import time  # noqa: PLC0415
 
-            time.sleep(0.5)
+            time.sleep(0.1)
 
         my_func = blocking_func
         match mode:
@@ -516,37 +518,35 @@ class TestCaller:
             case "blocking":
                 my_func = blocking_func
 
-        async with Caller(create=True) as caller:
-            fut = caller.call_soon(my_func)
-            if cancel_mode == "local":
+        fut = caller.call_soon(my_func)
+        if cancel_mode == "local":
+            fut.cancel(msg)
+            if msg == "twice":
                 fut.cancel(msg)
-                if msg == "twice":
-                    fut.cancel(msg)
-                    msg = f"{msg}(?s:.){msg}"
-            else:
-                caller.to_thread(fut.cancel, msg)
+                msg = f"{msg}(?s:.){msg}"
+        else:
+            caller.to_thread(fut.cancel, msg)
 
-            with pytest.raises(FutureCancelledError, match=msg):
-                await fut
+        with pytest.raises(FutureCancelledError, match=msg):
+            await fut
 
-    async def test_cancelled_waiter(self, anyio_backend):
+    async def test_cancelled_waiter(self, caller: Caller):
         # Cancelling the waiter should also cancel call soon operation.
         async def async_func():
             await anyio.sleep(10)
             raise RuntimeError
 
-        async with Caller(create=True) as caller:
-            async with anyio.create_task_group() as tg:
-                fut = caller.call_soon(async_func)
-                tg.start_soon(fut.wait)
-                await anyio.sleep(0)
-                tg.cancel_scope.cancel()
+        async with anyio.create_task_group() as tg:
+            fut = caller.call_soon(async_func)
+            tg.start_soon(fut.wait)
             await anyio.sleep(0)
-            with pytest.raises(FutureCancelledError):
-                fut.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
+            tg.cancel_scope.cancel()
+        await anyio.sleep(0)
+        with pytest.raises(FutureCancelledError):
+            fut.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
-    async def test_wait(self, anyio_backend, return_when):
+    async def test_wait(self, caller: Caller, return_when):
         waiters = [anyio.Event() for _ in range(4)]
         waiters[0].set()
 
@@ -558,14 +558,89 @@ class TestCaller:
             finally:
                 waiters[i + 1].set()
 
-        async with Caller(create=True) as caller:
-            items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
-            done, pending = await Caller.wait(items, return_when=return_when)
-            match return_when:
-                case "FIRST_COMPLETED":
-                    assert items[0] in done
-                case "FIRST_EXCEPTION":
-                    assert items[1] in done
-                case _:
-                    assert done == set(items)
-                    assert not pending
+        items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
+        done, pending = await Caller.wait(items, return_when=return_when)
+        match return_when:
+            case "FIRST_COMPLETED":
+                assert items[0] in done
+            case "FIRST_EXCEPTION":
+                assert items[1] in done
+            case _:
+                assert done == set(items)
+                assert not pending
+
+
+class TestLock:
+    async def test_basic_non_reentrant(self, caller: Caller):
+        lock = Lock()
+
+        async def func():
+            assert lock.locked()
+            async with lock:
+                assert lock._count == 1  # pyright: ignore[reportPrivateUsage]
+                return True
+
+        async with lock:
+            assert lock.locked()
+            fut = caller.call_soon(func)
+            with anyio.move_on_after(0.01):
+                async with lock:
+                    raise RuntimeError
+        assert await fut
+        assert not lock.locked()
+
+    async def test_basic_reentrant(self, caller: Caller):
+        async with Lock(reentrant=True) as lock:
+            assert lock.locked()
+            async with lock:
+                assert lock.locked()
+                assert lock._count == 2  # pyright: ignore[reportPrivateUsage]
+        assert lock._count == 0  # pyright: ignore[reportPrivateUsage]
+        assert not lock.locked()
+
+    async def test_reentrant_thread(self, caller: Caller):
+        lock = Lock(reentrant=True)
+        count = 0
+
+        async def tester_async():
+            nonlocal count
+            async with lock:
+                count += 1
+
+        async with lock:
+            futures = [caller.call_soon(tester_async), caller.to_thread(tester_async)]
+            await tester_async()
+            await Caller.wait(futures)
+            assert count == 3
+
+    async def test_nested_reentran(self, caller: Caller):
+        count = 0
+        lock = Lock(reentrant=True)
+
+        async def nested(lock: Lock):
+            nonlocal count
+            await anyio.sleep(0)
+            async with lock:
+                count += 1
+
+        async def using_lock():
+            nonlocal count
+            count += 1
+            async with lock:
+                while count < 2:
+                    await anyio.sleep(0.01)
+                await caller.call_soon(nested, lock)
+            caller.call_soon(nested, lock)
+
+        caller.call_soon(using_lock)
+        while not count:
+            await anyio.sleep(0.01)
+        for _ in range(4):
+            caller.call_soon(using_lock)
+        assert lock.locked()
+        n = 1 + 4  # number of times using_lock is called
+        while count < n * 3:
+            await anyio.sleep(0.01)
+        assert not lock.locked()
+        assert lock._ctx_count == n  # pyright: ignore[reportPrivateUsage]
+        assert not lock._queue  # pyright: ignore[reportPrivateUsage]

@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError"]
+__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError", "Lock"]
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
@@ -310,6 +310,7 @@ class Caller:
     _taskgroup: TaskGroup | None = None
     _callers: deque[tuple[contextvars.Context, tuple[Future, float, float, Callable, tuple, dict]] | Callable[[], Any]]
     _callers_added: threading.Event
+    _stopped_event: threading.Event
     _stopped = False
     _protected = False
     _running = False
@@ -378,6 +379,7 @@ class Caller:
     async def __aenter__(self) -> Self:
         async with contextlib.AsyncExitStack() as stack:
             self._running = True
+            self._stopped_event = threading.Event()
             self._taskgroup = tg = await stack.enter_async_context(anyio.create_task_group())
             await tg.start(self._server_loop, tg)
             self.__stack = stack.pop_all()
@@ -396,7 +398,12 @@ class Caller:
             self.iopub_sockets[self.thread] = socket
             task_status.started()
             while not self._stopped:
-                while len(self._callers):
+                if not self._callers:
+                    self._callers_added.clear()
+                await wait_thread_event(self._callers_added)
+                while self._callers:
+                    if self._stopped:
+                        return
                     job = self._callers.popleft()
                     if isinstance(job, Callable):
                         try:
@@ -406,8 +413,6 @@ class Caller:
                     else:
                         context, args = job
                         context.run(tg.start_soon, self._wrap_call, *args)
-                    self._callers_added.clear()
-                await wait_thread_event(self._callers_added)
         finally:
             self._running = False
             for job in self._callers:
@@ -415,6 +420,7 @@ class Caller:
                     job[1][0].set_exception(FutureCancelledError())
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
+            self._stopped_event.set()
             tg.cancel_scope.cancel()
 
     async def _wrap_call(
@@ -496,6 +502,8 @@ class Caller:
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
+        if self.thread is not threading.current_thread():
+            self._stopped_event.wait()
 
     def call_later(
         self, delay: float, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs
@@ -833,8 +841,7 @@ class Caller:
                     yield fut
                     if resume:
                         resume.set()
-                    continue
-                if not has_result:
+                else:
                     await wait_thread_event(event_future_ready)
         finally:
             fut.cancel()
@@ -856,10 +863,10 @@ class Caller:
 
         Returns two sets of the futures: (done, pending).
 
-        Usage:
+        !!! example
 
             ```python
-            done, pending = await asyncio.wait(fs)
+            done, pending = await asyncio.wait(items)
             ```
 
         !!! info
@@ -878,3 +885,71 @@ class Caller:
                     if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
                         break
         return done, pending
+
+
+class Lock:
+    """
+    An asynchronous context reentrant capable lock.
+
+    !!! example
+
+        ```python
+        # Inside a coroutine running inside a Caller thread.
+
+        lock = Lock(reentrant=True)  # a reentrant lock
+        async with lock:
+            pass
+        ```
+
+    !!! note
+
+        - Reentrant is defined here as: *reentrant* within the scope of the calling [context][contextvars.ContextVar] meaning
+            the lock is shared in the async context ([async_kernel.caller.Caller.call_soon][], [async_kernel.caller.Caller.call_later][])
+            and threads ([async_kernel.caller.Caller.to_thread][]).
+        - There is no requirement to exit the context in the order of entry.
+
+    """
+
+    __slots__ = ["_count", "_ctx", "_ctx_count", "_ctx_lock", "_queue", "_reentrant"]
+
+    def __init__(self, *, reentrant=False):
+        self._count = 0
+        self._ctx: contextvars.ContextVar[int] = contextvars.ContextVar(f"Lock:{id(self)}", default=0)
+        self._ctx_count = 0
+        self._ctx_lock = 0
+        self._queue: deque[tuple[int, Future]] = deque()
+        self._reentrant = reentrant
+
+    async def __aenter__(self) -> Self:
+        if not (ctx := self._ctx.get()):
+            self._ctx_count = ctx = self._ctx_count + 1
+            self._ctx.set(ctx)
+        if not self._count or (self._reentrant and ctx == self._ctx_lock):
+            self._ctx_lock = ctx
+            self._count += 1
+            return self
+        fut: Future[Any] = Future()
+        self._queue.append((ctx, fut))
+        try:
+            await fut
+            self._count += 1
+            return self
+        finally:
+            self._queue.remove((ctx, fut))
+
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        self._count -= 1
+        if self._count == 0:
+            ctx = 0
+            for ctx_, fut in tuple(self._queue):
+                if not fut.done():
+                    if ctx == 0:
+                        self._ctx_lock = ctx = ctx_
+                    if ctx_ == ctx:
+                        fut.set_result(None)
+                        if not self._reentrant:
+                            break
+
+    def locked(self) -> bool:
+        "Returns True when locked."
+        return bool(self._count)

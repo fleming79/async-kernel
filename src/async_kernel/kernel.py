@@ -182,7 +182,8 @@ class Kernel(HasTraits):
         -
 
     === "Normal"
-        ``` python
+
+        ```python
         from async_kernel.__main__ import main
 
         main()
@@ -190,17 +191,18 @@ class Kernel(HasTraits):
 
     === "start (`classmethod`)"
 
-        ``` python
+        ```python
         Kernel.start()
         ```
 
     === "Asynchronously inside anyio event loop"
 
-        ``` python
+        ```python
         kernel = Kernel()
         async with kernel.start_in_context():
             await anyio.sleep_forever()
         ```
+
         ???+ tip
 
             This is a convenient way to start a kernel for debugging.
@@ -326,7 +328,7 @@ class Kernel(HasTraits):
         - An instance can only be started once.
         - A new instance can be started after a previous instance has stopped.
 
-        Usage:
+        !!! example
 
             ```python
             async with Kerne() as kernel:

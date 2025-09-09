@@ -62,8 +62,13 @@ async def wait_thread_event(event: threading.Event):
     """
     Wait for the threading event using an anyio worker thread.
 
-    The event will be set event if the coroutine is cancelled to ensure the thread is cleared.
+    - If the event is already set anyio.sleep(0) is used instead.
+    - On external cancellation the event will be set enable the thread to exit.
     """
+    if event.is_set():
+        # Required  - allow other tasks to run.
+        await anyio.sleep(0)
+        return
 
     def _in_thread_call():
         with do_not_debug_this_thread():
