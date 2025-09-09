@@ -889,67 +889,121 @@ class Caller:
 
 class Lock:
     """
-    An asynchronous context reentrant capable lock.
+    Implements a hybrid asynchronous lock that can be configured as either mutex (default) or reentrant.
+
+    - mutex: `Lock() or Lock(reentrant=False)`
+    - reentrant: `Lock(reentrant=True)`
+
 
     !!! example
 
         ```python
-        # Inside a coroutine running inside a Caller thread.
+        # Inside a coroutine running inside a thread where a [asyncio.caller.Caller][] instance is running.
 
         lock = Lock(reentrant=True)  # a reentrant lock
         async with lock:
-            pass
+            async with lock:
+                Caller().to_thread(...)  # The lock is shared with the thread.
         ```
 
     !!! note
 
-        - Reentrant is defined here as: *reentrant* within the scope of the calling [context][contextvars.ContextVar] meaning
-            the lock is shared in the async context ([async_kernel.caller.Caller.call_soon][], [async_kernel.caller.Caller.call_later][])
-            and threads ([async_kernel.caller.Caller.to_thread][]).
-        - There is no requirement to exit the context in the order of entry.
-
+        - Attempting to lock a 'mutuex' configured lock that is *locked* will raise a [RuntimeError][].
+        - The lock context can be exitied in any order.
+        - A 'reentrant' lock can 'handover' control to another context if the lock is released.
     """
-
-    __slots__ = ["_count", "_ctx", "_ctx_count", "_ctx_lock", "_queue", "_reentrant"]
 
     def __init__(self, *, reentrant=False):
         self._count = 0
-        self._ctx: contextvars.ContextVar[int] = contextvars.ContextVar(f"Lock:{id(self)}", default=0)
+        self._ctx_var: contextvars.ContextVar[int] = contextvars.ContextVar(f"Lock:{id(self)}", default=0)
         self._ctx_count = 0
-        self._ctx_lock = 0
-        self._queue: deque[tuple[int, Future]] = deque()
+        self._ctx_current = 0
+        self._queue: deque[tuple[int, Future[Future | None]]] = deque()
         self._reentrant = reentrant
+        self._releasing = False
+
+    @override
+    def __repr__(self) -> str:
+        info = f"🔒{self.count}" if self.count else "🔓"
+        return f"Lock< {'reentrant' if self.reentrant else 'mutex'} ({info})>"
 
     async def __aenter__(self) -> Self:
-        if not (ctx := self._ctx.get()):
-            self._ctx_count = ctx = self._ctx_count + 1
-            self._ctx.set(ctx)
-        if not self._count or (self._reentrant and ctx == self._ctx_lock):
-            self._ctx_lock = ctx
-            self._count += 1
-            return self
-        fut: Future[Any] = Future()
-        self._queue.append((ctx, fut))
-        try:
-            await fut
-            self._count += 1
-            return self
-        finally:
-            self._queue.remove((ctx, fut))
+        return await self.acquire()
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
-        self._count -= 1
-        if self._count == 0:
-            ctx = 0
-            for ctx_, fut in tuple(self._queue):
-                if not fut.done():
-                    if ctx == 0:
-                        self._ctx_lock = ctx = ctx_
-                    if ctx_ == ctx:
-                        fut.set_result(None)
-                        if not self._reentrant:
-                            break
+        await self.release()
 
-    def locked(self) -> bool:
-        "Returns True when locked."
-        return bool(self._count)
+    @property
+    def reentrant(self) -> bool:
+        "Indicates if the lock is reentrant."
+        return self._reentrant
+
+    @property
+    def count(self) -> int:
+        "Returns the number of times the locked context has been entered."
+        return self._count
+
+    async def acquire(self) -> Self:
+        """
+        Acquire a lock.
+
+        If the lock is reentrant the internal counter increments to share the lock.
+        """
+        if not self.reentrant and self.is_in_context():
+            msg = "Already locked and not reentrant!"
+            raise RuntimeError(msg)
+        # Get the context.
+        if not self.reentrant or not (ctx := self._ctx_var.get()):
+            self._ctx_count = ctx = self._ctx_count + 1
+            self._ctx_var.set(ctx)
+        # Check if we can lock or re-enter an active lock.
+        if (not self._releasing) and ((not self.count) or (self.reentrant and self.is_in_context())):
+            self._count += 1
+            self._ctx_current = ctx
+            return self
+        # Join the queue.
+        k: tuple[int, Future[None | Future[Future[None] | None]]] = ctx, Future()
+        self._queue.append(k)
+        try:
+            fut = await k[1]
+        finally:
+            if k in self._queue:
+                self._queue.remove(k)
+        if fut:
+            self._ctx_current = ctx
+            fut.set_result(None)
+            if self.reentrant:
+                for k in tuple(self._queue):
+                    if k[0] == ctx:
+                        self._queue.remove(k)
+                        k[1].set_result(None)
+                        self._count += 1
+            self._releasing = False
+        return self
+
+    async def release(self) -> None:
+        """
+        Decrement the internal counter.
+
+        If the current depth==1 the lock will be passed to the next queued or released if there isn't one.
+        """
+        if not self.is_in_context():
+            raise InvalidStateError
+        if self._count == 1 and self._queue and not self._releasing:
+            self._releasing = True
+            self._ctx_var.set(0)
+            try:
+                fut = Future()
+                k = self._queue.popleft()
+                k[1].set_result(fut)
+                await k[1]
+            except Exception:
+                self._releasing = False
+        else:
+            self._count -= 1
+        if self._count == 0:
+            self._ctx_current = 0
+
+    def is_in_context(self) -> bool:
+        "Returns `True` if the current context has the lock."
+        return bool(self._count and self._ctx_current and (self._ctx_var.get() == self._ctx_current))
