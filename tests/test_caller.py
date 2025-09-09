@@ -571,34 +571,112 @@ class TestCaller:
 
 
 class TestLock:
-    async def test_basic_non_reentrant(self, caller: Caller):
+    async def test_basic(self, caller: Caller):
         lock = Lock()
+        count = 0
+
+        async def get_lock():
+            nonlocal count
+            count += 1
+            while count < 3:
+                await anyio.sleep(0.01)
+            for _ in range(2):
+                assert not lock.is_in_context()
+                async with lock:
+                    await anyio.sleep(0.02)
+                    assert lock.is_in_context()
+                    assert lock.count == 1
+                    with pytest.raises(RuntimeError, match="Already locked and not reentrant!"):
+                        async with lock:
+                            pass
+            count += 1
+
+        async for fut in Caller.as_completed([caller.call_soon(get_lock) for _ in range(3)]):
+            await fut
+        assert lock.count == 0
+        assert count == 6
+
+    async def test_pops_on_error(self, caller: Caller):
+        lock = Lock()
+        locked = anyio.Event()
+        unlock = anyio.Event()
+
+        async def _locked():
+            async with lock:
+                locked.set()
+                await unlock.wait()
+
+        caller.call_soon(_locked)
+        await locked.wait()
+        with anyio.move_on_after(0):
+            await lock.acquire()
+            raise RuntimeError
+        unlock.set()
+        assert not lock._queue  # pyright: ignore[reportPrivateUsage]
+
+    async def test_invald_release(self, caller):
+        lock = Lock()
+        with pytest.raises(InvalidStateError):
+            await lock.release()
+
+    async def test_reentrant(self, caller: Caller):
+        lock = Lock(reentrant=True)
 
         async def func():
-            assert lock.locked()
+            assert lock.count == 2
             async with lock:
-                assert lock._count == 1  # pyright: ignore[reportPrivateUsage]
-                return True
+                assert lock.is_in_context()
+                assert lock.count == 3
+            return True
 
         async with lock:
-            assert lock.locked()
-            fut = caller.call_soon(func)
-            with anyio.move_on_after(0.01):
-                async with lock:
-                    raise RuntimeError
-        assert await fut
-        assert not lock.locked()
-
-    async def test_basic_reentrant(self, caller: Caller):
-        async with Lock(reentrant=True) as lock:
-            assert lock.locked()
+            assert lock.is_in_context()
+            assert lock.count == 1
             async with lock:
-                assert lock.locked()
-                assert lock._count == 2  # pyright: ignore[reportPrivateUsage]
-        assert lock._count == 0  # pyright: ignore[reportPrivateUsage]
-        assert not lock.locked()
+                await caller.call_soon(func)
+        assert lock.count == 0
+        assert not lock.is_in_context()
 
-    async def test_reentrant_thread(self, caller: Caller):
+    async def test_reentrant_outside(self, caller: Caller):
+        # We need to test the case where a lock is released with a common context
+        # It would be better practice maintain the lock, but it shows the lock can be reacquired.
+        lock = Lock(reentrant=True)
+        begin = anyio.Event()
+        n = 10
+        ctx_ids = set()
+
+        async def do_lock():
+            futures = set()
+            async with lock:
+                for _ in range(n):
+                    ready = anyio.Event()
+                    futures.add(caller.call_later(0.1, isolated_lock, ready))
+                    await ready.wait()
+            lock._count = 1  # pyright: ignore[reportPrivateUsage]
+            return futures
+
+        async def isolated_lock(ready: anyio.Event):
+            if ready:
+                ready.set()
+                await begin.wait()
+            assert lock.count == 1
+            async with lock:
+                ctx_ids.add(lock._ctx_var.get())  # pyright: ignore[reportPrivateUsage]
+
+        futures = await caller.call_soon(do_lock)
+        begin.set()
+        while len(lock._queue) < n:  # pyright: ignore[reportPrivateUsage]
+            await anyio.sleep(0.01)
+        # Release the lock
+        lock._count = 0  # pyright: ignore[reportPrivateUsage]
+        async with lock:
+            await anyio.sleep(0.01)
+        # Wait for restoration
+        async for fut in Caller.as_completed(futures):
+            assert fut
+        assert len(ctx_ids) == 1
+
+    async def test_reentrant_thread(self, caller: Caller) -> None:
         lock = Lock(reentrant=True)
         count = 0
 
@@ -613,34 +691,30 @@ class TestLock:
             await Caller.wait(futures)
             assert count == 3
 
-    async def test_nested_reentran(self, caller: Caller):
+    async def test_nested_reentrant(self, caller: Caller):
         count = 0
         lock = Lock(reentrant=True)
-
-        async def nested(lock: Lock):
-            nonlocal count
-            await anyio.sleep(0)
-            async with lock:
-                count += 1
+        n = 3
 
         async def using_lock():
             nonlocal count
             count += 1
             async with lock:
-                while count < 2:
+                while count < n:
                     await anyio.sleep(0.01)
-                await caller.call_soon(nested, lock)
-            caller.call_soon(nested, lock)
+                assert lock.count == 1
+                await caller.call_soon(nested)
 
-        caller.call_soon(using_lock)
-        while not count:
+        async def nested():
+            nonlocal count
             await anyio.sleep(0.01)
-        for _ in range(4):
-            caller.call_soon(using_lock)
-        assert lock.locked()
-        n = 1 + 4  # number of times using_lock is called
-        while count < n * 3:
-            await anyio.sleep(0.01)
-        assert not lock.locked()
-        assert lock._ctx_count == n  # pyright: ignore[reportPrivateUsage]
+            assert lock.count == 1
+            async with lock:
+                count += 1
+                assert lock.count == 2
+            assert lock.count == 1
+
+        async for fut in Caller.as_completed([caller.call_soon(using_lock) for _ in range(n)]):
+            await fut
+        assert not lock.count
         assert not lock._queue  # pyright: ignore[reportPrivateUsage]
