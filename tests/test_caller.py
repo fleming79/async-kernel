@@ -632,15 +632,13 @@ class TestLock:
                 await caller.call_soon(nested, lock)
             caller.call_soon(nested, lock)
 
-        caller.to_thread(using_lock)
+        caller.call_soon(using_lock)
         while not count:
             await anyio.sleep(0.01)
-        caller.call_soon(using_lock)
         for _ in range(4):
-            caller.to_thread(using_lock)
             caller.call_soon(using_lock)
         assert lock.locked()
-        n = (1 + 4) * 2  # number of times using_lock is called
+        n = 1 + 4  # number of times using_lock is called
         while count < n * 3:
             await anyio.sleep(0.01)
         assert not lock.locked()

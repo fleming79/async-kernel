@@ -367,7 +367,7 @@ async def test_interrupt_request_async_request(subprocess_kernels_client):
     assert reply["content"]["status"] == "error"
 
 
-@pytest.mark.flaky
+# @pytest.mark.flaky
 async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
     client = subprocess_kernels_client
     msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 2})")
