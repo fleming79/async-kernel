@@ -14,7 +14,7 @@ import pytest
 import sniffio
 from anyio.abc import TaskStatus
 
-from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError, Lock
+from async_kernel.caller import AsyncLock, Caller, Future, FutureCancelledError, InvalidStateError, ReentrantAsyncLock
 from async_kernel.kernelspec import Backend
 
 
@@ -572,7 +572,7 @@ class TestCaller:
 
 class TestLock:
     async def test_basic(self, caller: Caller):
-        lock = Lock()
+        lock = AsyncLock()
         count = 0
 
         async def get_lock():
@@ -597,7 +597,7 @@ class TestLock:
         assert count == 6
 
     async def test_pops_on_error(self, caller: Caller):
-        lock = Lock()
+        lock = AsyncLock()
         locked = anyio.Event()
         unlock = anyio.Event()
 
@@ -615,12 +615,12 @@ class TestLock:
         assert not lock._queue  # pyright: ignore[reportPrivateUsage]
 
     async def test_invald_release(self, caller):
-        lock = Lock()
+        lock = AsyncLock()
         with pytest.raises(InvalidStateError):
             await lock.release()
 
     async def test_reentrant(self, caller: Caller):
-        lock = Lock(reentrant=True)
+        lock = ReentrantAsyncLock()
 
         async def func():
             assert lock.count == 2
@@ -640,7 +640,7 @@ class TestLock:
     async def test_reentrant_outside(self, caller: Caller):
         # We need to test the case where a lock is released with a common context
         # It would be better practice maintain the lock, but it shows the lock can be reacquired.
-        lock = Lock(reentrant=True)
+        lock = ReentrantAsyncLock()
         begin = anyio.Event()
         n = 10
         ctx_ids = set()
@@ -677,7 +677,7 @@ class TestLock:
         assert len(ctx_ids) == 1
 
     async def test_reentrant_thread(self, caller: Caller) -> None:
-        lock = Lock(reentrant=True)
+        lock = ReentrantAsyncLock()
         count = 0
 
         async def tester_async():
@@ -693,7 +693,7 @@ class TestLock:
 
     async def test_nested_reentrant(self, caller: Caller):
         count = 0
-        lock = Lock(reentrant=True)
+        lock = ReentrantAsyncLock()
         n = 3
 
         async def using_lock():

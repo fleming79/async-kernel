@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError", "Lock"]
+__all__ = ["AsyncLock", "Caller", "Future", "FutureCancelledError", "InvalidStateError", "ReentrantAsyncLock"]
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
@@ -887,56 +887,35 @@ class Caller:
         return done, pending
 
 
-class Lock:
+class AsyncLock:
     """
-    Implements a hybrid asynchronous lock that can be configured as either mutex (default) or reentrant.
-
-    - mutex: `Lock() or Lock(reentrant=False)`
-    - reentrant: `Lock(reentrant=True)`
-
-
-    !!! example
-
-        ```python
-        # Inside a coroutine running inside a thread where a [asyncio.caller.Caller][] instance is running.
-
-        lock = Lock(reentrant=True)  # a reentrant lock
-        async with lock:
-            async with lock:
-                Caller().to_thread(...)  # The lock is shared with the thread.
-        ```
+    Implements a mutex asynchronous lock that is compatible with [async_kernel.caller.Caller][].
 
     !!! note
 
         - Attempting to lock a 'mutuex' configured lock that is *locked* will raise a [RuntimeError][].
-        - The lock context can be exitied in any order.
-        - A 'reentrant' lock can 'handover' control to another context if the lock is released.
     """
 
-    def __init__(self, *, reentrant=False):
-        self._count = 0
+    _reentrant: ClassVar[bool] = False
+    _count: int = 0
+    _ctx_count: int = 0
+    _ctx_current: int = 0
+    _releasing: bool = False
+
+    def __init__(self):
         self._ctx_var: contextvars.ContextVar[int] = contextvars.ContextVar(f"Lock:{id(self)}", default=0)
-        self._ctx_count = 0
-        self._ctx_current = 0
         self._queue: deque[tuple[int, Future[Future | None]]] = deque()
-        self._reentrant = reentrant
-        self._releasing = False
 
     @override
     def __repr__(self) -> str:
         info = f"🔒{self.count}" if self.count else "🔓"
-        return f"Lock< {'reentrant' if self.reentrant else 'mutex'} ({info})>"
+        return f"{self.__class__.__name__}({info})"
 
     async def __aenter__(self) -> Self:
         return await self.acquire()
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
         await self.release()
-
-    @property
-    def reentrant(self) -> bool:
-        "Indicates if the lock is reentrant."
-        return self._reentrant
 
     @property
     def count(self) -> int:
@@ -949,15 +928,15 @@ class Lock:
 
         If the lock is reentrant the internal counter increments to share the lock.
         """
-        if not self.reentrant and self.is_in_context():
+        if not self._reentrant and self.is_in_context():
             msg = "Already locked and not reentrant!"
             raise RuntimeError(msg)
         # Get the context.
-        if not self.reentrant or not (ctx := self._ctx_var.get()):
+        if not self._reentrant or not (ctx := self._ctx_var.get()):
             self._ctx_count = ctx = self._ctx_count + 1
             self._ctx_var.set(ctx)
         # Check if we can lock or re-enter an active lock.
-        if (not self._releasing) and ((not self.count) or (self.reentrant and self.is_in_context())):
+        if (not self._releasing) and ((not self.count) or (self._reentrant and self.is_in_context())):
             self._count += 1
             self._ctx_current = ctx
             return self
@@ -972,7 +951,7 @@ class Lock:
         if fut:
             self._ctx_current = ctx
             fut.set_result(None)
-            if self.reentrant:
+            if self._reentrant:
                 for k in tuple(self._queue):
                     if k[0] == ctx:
                         self._queue.remove(k)
@@ -1007,3 +986,29 @@ class Lock:
     def is_in_context(self) -> bool:
         "Returns `True` if the current context has the lock."
         return bool(self._count and self._ctx_current and (self._ctx_var.get() == self._ctx_current))
+
+
+class ReentrantAsyncLock(AsyncLock):
+    """
+    Implements a Reentrant asynchronous lock compatible with [async_kernel.caller.Caller][].
+
+
+    !!! example
+
+        ```python
+        # Inside a coroutine running inside a thread where a [asyncio.caller.Caller][] instance is running.
+
+        lock = ReentrantAsyncLock(reentrant=True)  # a reentrant lock
+        async with lock:
+            async with lock:
+                Caller().to_thread(...)  # The lock is shared with the thread.
+        ```
+
+    !!! note
+
+        - The lock context can be exitied in any order.
+        - A 'reentrant' lock can *release* control to another context and then re-enter later for
+            tasks or threads called from a locked thread maintaining the same reentrant context.
+    """
+
+    _reentrant: ClassVar[bool] = True
