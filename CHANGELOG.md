@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2025-09-10
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Maintenance [#105](https://github.com/fleming79/async-kernel/pull/105)
+
+### <!-- 1 --> 🚀 Features
+
+- Divide Lock into AsyncLock and ReentrantAsyncLock [#113](https://github.com/fleming79/async-kernel/pull/113)
+
+- Improve Lock class [#112](https://github.com/fleming79/async-kernel/pull/112)
+
+- Add a context based Lock [#111](https://github.com/fleming79/async-kernel/pull/111)
+
+- Add classmethod  Caller.wait [#106](https://github.com/fleming79/async-kernel/pull/106)
+
+- Add 'shield' option to Caller.as_completed. [#104](https://github.com/fleming79/async-kernel/pull/104)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump actions/setup-python from 5 to 6 in the actions group [#110](https://github.com/fleming79/async-kernel/pull/110)
+
+- Maintenance - Caller refactoring [#109](https://github.com/fleming79/async-kernel/pull/109)
+
+- Drop WaitType for Literals directly in Caller.wait. [#108](https://github.com/fleming79/async-kernel/pull/108)
+
+- Change Caller._queue_map to a WeakKeyDictionary. [#107](https://github.com/fleming79/async-kernel/pull/107)
+
+- Refactor Caller.wait to avoid catching  exceptions. [#103](https://github.com/fleming79/async-kernel/pull/103)
+
 ## [0.2.0] - 2025-09-06
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -28,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation maintenance. [#101](https://github.com/fleming79/async-kernel/pull/101)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.2.0 [#102](https://github.com/fleming79/async-kernel/pull/102)
 
 - Result should raise cancelled error, but was raising and InvalidStateError. [#98](https://github.com/fleming79/async-kernel/pull/98)
 
@@ -207,6 +239,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.2.1]: https://github.com/fleming79/async-kernel/compare/v0.2.0..v0.2.1
 [0.2.0]: https://github.com/fleming79/async-kernel/compare/v0.1.4..v0.2.0
 [0.1.4]: https://github.com/fleming79/async-kernel/compare/v0.1.3..v0.1.4
 [0.1.3]: https://github.com/fleming79/async-kernel/compare/v0.1.2..v0.1.3
