@@ -55,29 +55,34 @@ class Future(Awaitable[T]):
 
     __slots__ = [
         "__weakref__",
-        "_anyio_event_done",
         "_cancel_scope",
         "_cancelled",
+        "_done",
         "_done_callbacks",
-        "_event_done",
+        "_done_event_anyio",
+        "_done_event_thread",
         "_exception",
         "_result",
         "_setting_value",
         "thread",
     ]
     _result: T
+    _done: bool
+    _done_event_thread: anyio.Event | None
+    _done_event_anyio: threading.Event | None
     thread: threading.Thread
     "The thread in which the result is targeted to run."
 
     def __init__(self, thread: threading.Thread | None = None) -> None:
-        self._event_done = threading.Event()
-        self._exception = None
-        self._anyio_event_done = None
-        self.thread = thread or threading.current_thread()
-        self._done_callbacks = []
-        self._cancelled = False
         self._cancel_scope: anyio.CancelScope | None = None
+        self._cancelled = False
+        self._done = False
+        self._done_event_thread = None
+        self._done_callbacks = []
+        self._done_event_anyio = None
+        self._exception = None
         self._setting_value = False
+        self.thread = thread or threading.current_thread()
 
     @override
     def __await__(self) -> Generator[Any, None, T]:
@@ -96,9 +101,10 @@ class Future(Awaitable[T]):
                 self._exception = value
             else:
                 self._result = value  # pyright: ignore[reportAttributeAccessIssue]
-            self._event_done.set()
-            if self._anyio_event_done:
-                self._anyio_event_done.set()
+            self._done = True
+            for event in (self._done_event_thread, self._done_event_anyio):
+                if event:
+                    event.set()
             for cb in reversed(self._done_callbacks):
                 try:
                     cb(self)
@@ -137,17 +143,23 @@ class Future(Awaitable[T]):
             result: Whether the result should be returned.
         """
         try:
-            if not self.done():
+            if not self._done:
                 with anyio.fail_after(timeout):
                     if threading.current_thread() is self.thread:
-                        if not self._anyio_event_done:
-                            self._anyio_event_done = anyio.Event()
-                        await self._anyio_event_done.wait()
+                        if not self._done_event_thread:
+                            self._done_event_thread = anyio.Event()
+                        waiter = self._done_event_thread.wait()
                     else:
-                        await wait_thread_event(self._event_done)
+                        if not self._done_event_anyio:
+                            event = threading.Event()
+                            if not self._done_event_anyio:
+                                self._done_event_anyio = event
+                        waiter = wait_thread_event(self._done_event_anyio)
+                    if not self._done:
+                        await waiter
             return self.result() if result else None
         finally:
-            if not self.done() and not shield:
+            if not self._done and not shield:
                 self.cancel("Cancelled with waiter cancellation.")
 
     if TYPE_CHECKING:
@@ -171,7 +183,11 @@ class Future(Awaitable[T]):
         """
         if self.thread in {threading.current_thread(), threading.main_thread()}:
             raise RuntimeError
-        self._event_done.wait(timeout)
+        if not self._done_event_anyio:
+            event = threading.Event()
+            if not self._done_event_anyio:
+                self._done_event_anyio = event
+        self._done_event_anyio.wait(timeout)
         if not self.done():
             if not shield:
                 self.cancel("timeout from wait_sync")
@@ -191,7 +207,7 @@ class Future(Awaitable[T]):
         Returns True if the Future is done.
 
         Done means either that a result / exception is available."""
-        return self._event_done.is_set()
+        return self._done
 
     def add_done_callback(self, fn: Callable[[Self], object]) -> None:
         """
@@ -202,7 +218,7 @@ class Future(Awaitable[T]):
         The result of the future and done callbacks are always called for the futures thread.
         Callbacks are called in the reverse order in which they were added in the owning thread.
         """
-        if not self.done():
+        if not self._done:
             self._done_callbacks.append(fn)
         else:
             self.get_caller().call_direct(fn, self)
@@ -216,7 +232,7 @@ class Future(Awaitable[T]):
 
         Returns if it has been cancelled.
         """
-        if not self.done():
+        if not self._done:
             if msg and isinstance(self._cancelled, str):
                 msg = f"{self._cancelled}\n{msg}"
             self._cancelled = msg or self._cancelled or True
@@ -239,7 +255,7 @@ class Future(Awaitable[T]):
 
         If the Future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
         """
-        if not self.cancelled() and not self.done():
+        if not self.cancelled() and not self._done:
             raise InvalidStateError
         if e := self.exception():
             raise e
@@ -255,7 +271,7 @@ class Future(Awaitable[T]):
         """
         if self._cancelled:
             raise self._make_cancelled_error()
-        if not self.done():
+        if not self._done:
             raise InvalidStateError
         return self._exception
 
