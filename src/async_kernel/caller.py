@@ -62,18 +62,19 @@ class Future(Awaitable[T]):
         "_done_event_anyio",
         "_done_event_thread",
         "_exception",
+        "_metadata",
         "_result",
         "_setting_value",
-        "thread",
+        "_thread",
     ]
     _result: T
     _done: bool
     _done_event_thread: anyio.Event | None
     _done_event_anyio: threading.Event | None
-    thread: threading.Thread
+    _thread: threading.Thread
     "The thread in which the result is targeted to run."
 
-    def __init__(self, thread: threading.Thread | None = None) -> None:
+    def __init__(self, thread: threading.Thread | None = None, /, **metadata) -> None:
         self._cancel_scope: anyio.CancelScope | None = None
         self._cancelled = False
         self._done = False
@@ -82,7 +83,13 @@ class Future(Awaitable[T]):
         self._done_event_anyio = None
         self._exception = None
         self._setting_value = False
-        self.thread = thread or threading.current_thread()
+        self._metadata = metadata
+        self._thread = thread or threading.current_thread()
+
+    @override
+    def __repr__(self) -> str:
+        metadata = " ".join(f"{k}:{v!r}" for k, v in self.metadata.items())
+        return f"Future<thread:{self._thread.name!r} {metadata}>"
 
     @override
     def __await__(self) -> Generator[Any, None, T]:
@@ -111,17 +118,48 @@ class Future(Awaitable[T]):
                 except Exception:
                     pass
 
-        if threading.current_thread() is not self.thread:
+        if threading.current_thread() is not self._thread:
             try:
-                Caller(thread=self.thread).call_direct(set_value)
+                Caller(thread=self._thread).call_direct(set_value)
             except RuntimeError:
-                msg = f"The current thread is not {self.thread.name} and a `Caller` does not exist for that thread either."
+                msg = f"The current thread is not {self._thread.name} and a `Caller` does not exist for that thread either."
                 raise RuntimeError(msg) from None
         else:
             set_value()
 
     def _make_cancelled_error(self) -> FutureCancelledError:
         return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        """
+        A dict provided to store metadata with the future.
+
+        !!! info
+
+            The metadata is used when forming the representation of the future.
+
+        !!! example
+
+            === "At init"
+
+                ```python
+                fut = Future(name="My future")
+                ```
+
+            === "On the instance"
+
+                ```python
+                fut = Caller().call_soon(anyio.sleep, 0)
+                fut.metadata.update(name="My future")
+                ```
+        """
+        return self._metadata
+
+    @property
+    def thread(self) -> threading.Thread:
+        "The thread to which the future is associated."
+        return self._thread
 
     if TYPE_CHECKING:
 
@@ -145,7 +183,7 @@ class Future(Awaitable[T]):
         try:
             if not self._done:
                 with anyio.fail_after(timeout):
-                    if threading.current_thread() is self.thread:
+                    if threading.current_thread() is self._thread:
                         if not self._done_event_thread:
                             self._done_event_thread = anyio.Event()
                         waiter = self._done_event_thread.wait()
@@ -181,7 +219,7 @@ class Future(Awaitable[T]):
             shield: Shield cancellation.
             result: Whether the result should be returned.
         """
-        if self.thread in {threading.current_thread(), threading.main_thread()}:
+        if self._thread in {threading.current_thread(), threading.main_thread()}:
             raise RuntimeError
         if not self._done_event_anyio:
             event = threading.Event()
@@ -237,10 +275,10 @@ class Future(Awaitable[T]):
                 msg = f"{self._cancelled}\n{msg}"
             self._cancelled = msg or self._cancelled or True
             if scope := self._cancel_scope:
-                if threading.current_thread() is self.thread:
+                if threading.current_thread() is self._thread:
                     scope.cancel()
                 else:
-                    Caller(thread=self.thread).call_direct(self.cancel)
+                    Caller(thread=self._thread).call_direct(self.cancel)
         return self.cancelled()
 
     def cancelled(self) -> bool:
@@ -295,7 +333,7 @@ class Future(Awaitable[T]):
 
     def get_caller(self) -> Caller:
         "The the Caller the Future's thread corresponds."
-        return Caller(thread=self.thread)
+        return Caller(thread=self._thread)
 
 
 class Caller:
@@ -535,7 +573,7 @@ class Caller:
         """
         if self._stopped:
             raise anyio.ClosedResourceError
-        fut: Future[T] = Future(thread=self.thread)
+        fut: Future[T] = Future(self.thread)
         if threading.current_thread() is self.thread and (tg := self._taskgroup):
             tg.start_soon(self._wrap_call, fut, time.monotonic(), delay, func, args, kwargs)
         else:
