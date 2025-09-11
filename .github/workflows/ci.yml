@@ -41,7 +41,7 @@ jobs:
 
       - name: Run tests
         timeout-minutes: 5
-        run: uv run pytest -vvl
+        run: uv run pytest --reruns 3 --reruns-delay 1 --rerun-except AssertionError -vvl
 
       - name: Type checking with basedpyright
         run: uv run basedpyright
@@ -60,7 +60,7 @@ jobs:
 
       - name: Run tests with coverage
         timeout-minutes: 5
-        run: uv run pytest --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy  --cov-fail-under=100
+        run: uv run pytest --reruns 2 --rerun-except AssertionError --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy  --cov-fail-under=100
 
       - name: Upload coverage reports to Codecov
         if: ${{ !cancelled() }}

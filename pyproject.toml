@@ -73,7 +73,7 @@ test = [
     "pytest-cov",
     "pytest-timeout",
     "pytest-mock",
-    "pytest-retry",
+    "pytest-rerunfailures",
     "pytest>=8.4,<9",
     "trio",
     "hatch"
