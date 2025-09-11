@@ -140,14 +140,14 @@ class TestFuture:
             fut.exception()
 
     def test_error_from_non_thread(self):
-        fut = Future(thread=threading.Thread())
+        fut = Future(threading.Thread())
         with pytest.raises(RuntimeError):
             fut.set_result(None)
 
     async def test_set_from_non_thread(self, anyio_backend):
         caller = Caller.start_new(backend=anyio_backend)
         try:
-            fut = Future(thread=caller.thread)
+            fut = Future(caller.thread)
             assert fut.thread is not threading.current_thread()
             fut.set_result(value=123)
             assert (await fut) == 123
@@ -171,6 +171,10 @@ class TestFuture:
         with pytest.raises(TimeoutError):
             fut.wait_sync(timeout=0.001)
         assert fut.cancelled()
+
+    def test_metadata(self):
+        fut = Future(name="test")
+        assert repr(fut) == "Future<thread:'MainThread' name:'test'>"
 
 
 @pytest.mark.anyio
