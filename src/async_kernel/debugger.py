@@ -12,7 +12,7 @@ import anyio.abc
 from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
-from async_kernel import Future, utils
+from async_kernel import AsyncEvent, Future, utils
 
 if TYPE_CHECKING:
     from anyio.abc import TaskGroup
@@ -167,7 +167,7 @@ class DebugpyClient(HasTraits):
                     future.set_result(msg)
             self.tcp_buffer = b""
 
-    async def connect_tcp_socket(self, ready: anyio.Event):
+    async def connect_tcp_socket(self, ready: AsyncEvent):
         """Connect to the tcp socket."""
         global _host_port  # noqa: PLW0603
         if not _host_port:
@@ -209,7 +209,7 @@ class Debugger(HasTraits):
     log = Instance(logging.LoggerAdapter)
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
     taskgroup: TaskGroup | None = None
-    init_event = Instance(anyio.Event, ())
+    init_event = Instance(AsyncEvent, ())
 
     @default("log")
     def _default_log(self):
@@ -314,7 +314,7 @@ class Debugger(HasTraits):
     async def do_initialize(self, msg: DebugMessage, /):
         "Initialize debugpy server starting as required."
         if not self.debugpy_client.connected:
-            ready = anyio.Event()
+            ready = AsyncEvent()
             self.kernel.control_thread_caller.call_soon(self.debugpy_client.connect_tcp_socket, ready)
             await ready.wait()
             # Don't remove leading empty lines when debugging so the breakpoints are correctly positioned
@@ -567,7 +567,7 @@ class Debugger(HasTraits):
         for index in sorted(self._removed_cleanup):
             func = self._removed_cleanup.pop(index)
             cleanup_transforms.insert(index, func)
-        self.init_event = anyio.Event()
+        self.init_event = AsyncEvent()
         self.breakpoint_list = {}
         return response
 

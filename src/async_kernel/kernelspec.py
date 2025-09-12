@@ -122,14 +122,13 @@ def write_kernel_spec(
             import anyio
             from ipywidgets import Button
 
-            from async_kernel import Caller, Kernel
+            from async_kernel import AsyncEvent, Kernel
 
             class MyKernel(Kernel):
                 async def execute_request(self, job):
-                    event = anyio.Event()
+                    event = AsyncEvent()
                     b = Button(description="Continue")
-                    caller = Caller()
-                    b.on_click(lambda _: caller.call_direct(event.set))
+                    b.on_click(lambda _: event.set())
                     display(b)
                     await event.wait()
                     b.close()

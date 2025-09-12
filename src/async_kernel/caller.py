@@ -50,8 +50,9 @@ class FutureCancelledError(anyio.ClosedResourceError):
 class InvalidStateError(RuntimeError):
     "An invalid state of a [Future][async_kernel.caller.Future]."
 
+
 class AsyncEvent:
-    "An Asynchronous event that works across anyio threads."
+    "An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."
 
     __slots__ = ["_anyio_event", "_flag", "_thread", "_thread_event"]
 
@@ -66,7 +67,6 @@ class AsyncEvent:
         Wait until the flag has been set.
 
         If the flag has already been set when this method is called, it returns immediately.
-
         """
         if self._flag:
             return
@@ -75,13 +75,14 @@ class AsyncEvent:
                 self._anyio_event = anyio.Event()
             await self._anyio_event.wait()
         else:
-            self._thread_event = threading.Event()
-            if self._flag:
-                self._thread_event.set()
-            await wait_thread_event(self._thread_event)
+            if self._thread_event:
+                await wait_thread_event(self._thread_event)
+            else:
+                self._thread_event = threading.Event()
+                await self.wait()
 
     def set(self) -> None:
-        "Set the internal flag to `True`."
+        "Set the internal flag to `True` and trigger notification."
         self._flag = True
         if self._thread_event:
             self._thread_event.set()
@@ -93,7 +94,7 @@ class AsyncEvent:
         return self._flag
 
     def get_caller(self) -> Caller:
-        "The the Caller the Future's thread corresponds."
+        "The [async_kernel.caller.Caller][] that is running for this *events* thread."
         return Caller(thread=self._thread)
 
 
@@ -332,7 +333,7 @@ class Future(Awaitable[T]):
         self._cancel_scope = scope
 
     def get_caller(self) -> Caller:
-        "The the Caller the Future's thread corresponds."
+        "The [async_kernel.caller.Caller][] that is running for this *futures* thread."
         return Caller(thread=self._thread)
 
 

@@ -269,7 +269,7 @@ class Kernel(HasTraits):
     event_started = Instance(AsyncEvent, (), read_only=True)
     "An event that occurs when the kernel is started."
     event_stopped = Instance(AsyncEvent, (), read_only=True)
-    "An event that occurs whne the kernel is stopped."
+    "An event that occurs when the kernel is stopped."
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
         """

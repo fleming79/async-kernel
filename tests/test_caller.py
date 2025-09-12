@@ -14,7 +14,15 @@ import pytest
 import sniffio
 from anyio.abc import TaskStatus
 
-from async_kernel.caller import AsyncLock, Caller, Future, FutureCancelledError, InvalidStateError, ReentrantAsyncLock
+from async_kernel.caller import (
+    AsyncEvent,
+    AsyncLock,
+    Caller,
+    Future,
+    FutureCancelledError,
+    InvalidStateError,
+    ReentrantAsyncLock,
+)
 from async_kernel.kernelspec import Backend
 
 
@@ -42,7 +50,7 @@ class TestFuture:
         fut = Future[int]()
         assert inspect.isawaitable(fut)
         done_called = False
-        after_done = anyio.Event()
+        after_done = AsyncEvent()
 
         def callback(obj):
             nonlocal done_called
@@ -178,7 +186,7 @@ class TestCaller:
 
     async def test_sync(self):
         async with Caller(create=True) as caller:
-            is_called = anyio.Event()
+            is_called = AsyncEvent()
             caller.call_later(0.01, is_called.set)
             await is_called.wait()
 
@@ -200,14 +208,14 @@ class TestCaller:
     async def test_async(self, args_kwargs: tuple[tuple, dict]):
         val = None
 
-        async def my_func(is_called: anyio.Event, *args, **kwargs):
+        async def my_func(is_called: AsyncEvent, *args, **kwargs):
             nonlocal val
             val = args, kwargs
             is_called.set()
             return args, kwargs
 
         async with Caller(create=True) as caller:
-            is_called = anyio.Event()
+            is_called = AsyncEvent()
             fut = caller.call_later(0.1, my_func, is_called, *args_kwargs[0], **args_kwargs[1])
             await is_called.wait()
             assert val == args_kwargs
@@ -246,7 +254,7 @@ class TestCaller:
                 except exception_:
                     is_cancelled = True
 
-            started = anyio.Event()
+            started = AsyncEvent()
             caller.call_later(0.01, my_test)
             await started.wait()
         assert is_cancelled
@@ -254,13 +262,13 @@ class TestCaller:
     @pytest.mark.parametrize("check_result", ["result", "exception"])
     @pytest.mark.parametrize("check_mode", ["main", "local", "asyncio", "trio"])
     async def test_wait_from_threads(self, anyio_backend, check_mode: str, check_result: str):
-        finished_event = cast("anyio.Event", object)
+        finished_event = cast("AsyncEvent", object)
         ready = threading.Event()
 
         def _thread_task():
             nonlocal the_thread
             nonlocal finished_event
-            finished_event = anyio.Event()
+            finished_event = AsyncEvent()
 
             async def _run():
                 async with Caller(create=True):
@@ -272,7 +280,7 @@ class TestCaller:
         the_thread = threading.Thread(target=_thread_task, daemon=True)
         the_thread.start()
         ready.wait()
-        assert isinstance(finished_event, anyio.Event)
+        assert isinstance(finished_event, AsyncEvent)
         caller = Caller.get_instance(the_thread.name)
         if check_result == "result":
             expr = "10"
@@ -403,7 +411,7 @@ class TestCaller:
             assert not caller.queue_exists(func)
 
     async def test_gc(self, anyio_backend):
-        event_finalize_called = anyio.Event()
+        event_finalize_called = AsyncEvent()
         async with Caller(create=True) as caller:
             weakref.finalize(caller, event_finalize_called.set)
             del caller
@@ -414,8 +422,8 @@ class TestCaller:
             async def method(self):
                 method_called.set()
 
-        obj_finalized = anyio.Event()
-        method_called = anyio.Event()
+        obj_finalized = AsyncEvent()
+        method_called = AsyncEvent()
         async with Caller(create=True) as caller:
             obj = MyObj()
             weakref.finalize(obj, obj_finalized.set)
@@ -535,7 +543,7 @@ class TestCaller:
 
     @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
     async def test_wait(self, caller: Caller, return_when):
-        waiters = [anyio.Event() for _ in range(4)]
+        waiters = [AsyncEvent() for _ in range(4)]
         waiters[0].set()
 
         async def f(i: int):
@@ -586,8 +594,8 @@ class TestLock:
 
     async def test_pops_on_error(self, caller: Caller):
         lock = AsyncLock()
-        locked = anyio.Event()
-        unlock = anyio.Event()
+        locked = AsyncEvent()
+        unlock = AsyncEvent()
 
         async def _locked():
             async with lock:
@@ -629,7 +637,7 @@ class TestLock:
         # We need to test the case where a lock is released with a common context
         # It would be better practice maintain the lock, but it shows the lock can be reacquired.
         lock = ReentrantAsyncLock()
-        begin = anyio.Event()
+        begin = AsyncEvent()
         n = 10
         ctx_ids = set()
 
@@ -637,13 +645,13 @@ class TestLock:
             futures = set()
             async with lock:
                 for _ in range(n):
-                    ready = anyio.Event()
+                    ready = AsyncEvent()
                     futures.add(caller.call_later(0.1, isolated_lock, ready))
                     await ready.wait()
             lock._count = 1  # pyright: ignore[reportPrivateUsage]
             return futures
 
-        async def isolated_lock(ready: anyio.Event):
+        async def isolated_lock(ready: AsyncEvent):
             if ready:
                 ready.set()
                 await begin.wait()
@@ -706,3 +714,20 @@ class TestLock:
             await fut
         assert not lock.count
         assert not lock._queue  # pyright: ignore[reportPrivateUsage]
+
+
+class TestAsyncEvent:
+    async def test_current_thread(self, caller):
+        event = AsyncEvent()
+        futures = {Caller.to_thread(event.wait), caller.call_soon(event.wait)}
+        caller.call_later(0.1, event.set)
+        await Caller.wait(futures)
+        # Test again for  an already set event
+        futures = {Caller.to_thread(event.wait), caller.call_soon(event.wait)}
+        await Caller.wait(futures)
+
+    async def test_another_thread(self, caller):
+        ct = Caller.start_new(name="test")
+        event = AsyncEvent(ct.thread)
+        caller.call_later(0.1, event.set)
+        await event.wait()
