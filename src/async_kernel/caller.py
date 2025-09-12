@@ -118,7 +118,7 @@ class Future(Awaitable[T]):
     _exception = None
     _setting_value = False
     _result: T
-    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs", "start_time", "delay"}
+    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
     def __init__(self, thread: threading.Thread | None = None, /, **metadata) -> None:
         self._done_callbacks = []
@@ -130,7 +130,7 @@ class Future(Awaitable[T]):
     def __repr__(self) -> str:
         md = self.metadata
         if "func" in md:
-            items = [truncated_rep.repr(v) for k, v in md.items() if k not in self.REPR_OMIT]
+            items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
             rep = f"| {md['func']} {' | '.join(items) if items else ''}"
         else:
             rep = f"{truncated_rep.repr(md)}" if md else ""
@@ -476,6 +476,18 @@ class Caller:
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
+    def _schedule_wrapped_call(self, func: Callable, /, args: tuple, kwargs: dict, **extra) -> Future:
+        if self._stopped:
+            raise anyio.ClosedResourceError
+        fut = Future(self.thread, func=func, args=args, kwargs=kwargs, **extra)
+        if threading.current_thread() is self.thread and (tg := self._taskgroup):
+            tg.start_soon(self._wrap_call, fut)
+        else:
+            self._callers.append((contextvars.copy_context(), fut))
+            self._callers_added.set()
+        self._outstanding += 1
+        return fut
+
     async def _wrap_call(self, fut: Future[T]) -> None:
         self._future_var.set(fut)
         if fut.cancelled():
@@ -487,8 +499,8 @@ class Caller:
             with anyio.CancelScope() as scope:
                 fut.set_cancel_scope(scope)
                 try:
-                    if (delay_ := md["delay"] - time.monotonic() + md["start_time"]) > 0:
-                        await anyio.sleep(float(delay_))
+                    if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
+                        await anyio.sleep(float(delay))
                     result = func(*md["args"], **md["kwargs"]) if callable(func) else func  # pyright: ignore[reportAssignmentType]
                     if inspect.isawaitable(result) and result is not fut:
                         result: T = await result
@@ -564,17 +576,7 @@ class Caller:
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
         """
-        if self._stopped:
-            raise anyio.ClosedResourceError
-        fut: Future[T] = Future(self.thread)
-        fut.metadata.update(start_time=time.monotonic(), delay=delay, func=func, args=args, kwargs=kwargs)
-        if threading.current_thread() is self.thread and (tg := self._taskgroup):
-            tg.start_soon(self._wrap_call, fut)
-        else:
-            self._callers.append((contextvars.copy_context(), fut))
-            self._callers_added.set()
-        self._outstanding += 1
-        return fut
+        return self._schedule_wrapped_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
 
     def call_soon(self, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs) -> Future[T]:
         """
@@ -585,7 +587,7 @@ class Caller:
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
         """
-        return self.call_later(0, func, *args, **kwargs)
+        return self._schedule_wrapped_call(func, args, kwargs)
 
     def call_direct(self, func: Callable[P, Any], /, *args: P.args, **kwargs: P.kwargs) -> None:
         """
