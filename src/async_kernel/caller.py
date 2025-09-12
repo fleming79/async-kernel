@@ -110,32 +110,18 @@ class Future(Awaitable[T]):
     execution results.
     """
 
-    __slots__ = [
-        "__weakref__",
-        "_cancel_scope",
-        "_cancelled",
-        "_done",
-        "_done_callbacks",
-        "_exception",
-        "_metadata",
-        "_result",
-        "_setting_value",
-        "_thread",
-    ]
+    _cancelled = False
+    _cancel_scope: anyio.CancelScope | None = None
+    _exception = None
+    _setting_value = False
     _result: T
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs", "start_time", "delay"}
 
-    "The thread in which the result is targeted to run."
-
     def __init__(self, thread: threading.Thread | None = None, /, **metadata) -> None:
-        self._cancel_scope: anyio.CancelScope | None = None
-        self._cancelled = False
-        self._done = AsyncEvent(thread)
         self._done_callbacks = []
-        self._exception = None
         self._metadata = metadata
-        self._setting_value = False
-        self._thread = thread or threading.current_thread()
+        self._thread = thread = thread or threading.current_thread()
+        self._done = AsyncEvent(thread)
 
     @override
     def __repr__(self) -> str:
