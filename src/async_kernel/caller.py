@@ -5,6 +5,7 @@ import contextvars
 import functools
 import inspect
 import logging
+import reprlib
 import threading
 import time
 import weakref
@@ -41,6 +42,8 @@ __all__ = [
     "InvalidStateError",
     "ReentrantAsyncLock",
 ]
+
+truncated_rep = reprlib.Repr(maxlevel=1, maxstring=30, maxother=100, fillvalue="…")
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
@@ -120,6 +123,7 @@ class Future(Awaitable[T]):
         "_thread",
     ]
     _result: T
+    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs", "start_time", "delay"}
 
     "The thread in which the result is targeted to run."
 
@@ -135,8 +139,13 @@ class Future(Awaitable[T]):
 
     @override
     def __repr__(self) -> str:
-        metadata = " ".join(f"{k}:{v!r}" for k, v in self.metadata.items())
-        return f"Future<thread:{self._thread.name!r} {metadata}>"
+        md = self.metadata
+        if "func" in md:
+            items = [truncated_rep.repr(v) for k, v in md.items() if k not in self.REPR_OMIT]
+            rep = f"| {md['func']} {' | '.join(items) if items else ''}"
+        else:
+            rep = f"{truncated_rep.repr(md)}" if md else ""
+        return f"Future< {self._thread.name} {rep}>"
 
     @override
     def __await__(self) -> Generator[Any, None, T]:

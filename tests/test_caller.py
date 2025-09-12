@@ -171,9 +171,9 @@ class TestFuture:
             await fut.wait(timeout=0.001)
         assert fut.cancelled()
 
-    def test_metadata(self):
-        fut = Future(name="test")
-        assert repr(fut) == "Future<thread:'MainThread' name:'test'>"
+    def test_repr(self):
+        fut = Future(name="test", mydict={"test": "a long string" * 100})
+        assert repr(fut) == "Future< MainThread {'mydict': {…}, 'name': 'test'}>"
 
 
 @pytest.mark.anyio
@@ -189,6 +189,18 @@ class TestCaller:
             is_called = AsyncEvent()
             caller.call_later(0.01, is_called.set)
             await is_called.wait()
+
+    async def test_repr(self, caller):
+        async def test_func(a, b, c):
+            pass
+
+        a = "long string" * 100
+        b = {f"name {i}": "long_string" * 100 for i in range(100)}
+        c = Future()
+        c.metadata.update(a=a, b=b)
+        assert repr(c) == "Future< MainThread {'a': 'long stringl…nglong string', 'b': {…}}>"
+        fut = caller.call_soon(test_func, a, b, c)
+        assert repr(fut).startswith("Future< MainThread | <function TestCaller.test_repr.<locals>.test_func at")
 
     def test_no_thread(self):
         with pytest.raises(RuntimeError):
