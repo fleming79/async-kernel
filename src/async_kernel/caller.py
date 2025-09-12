@@ -32,7 +32,15 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["AsyncLock", "Caller", "Event", "Future", "FutureCancelledError", "InvalidStateError", "ReentrantAsyncLock"]
+__all__ = [
+    "AsyncEvent",
+    "AsyncLock",
+    "Caller",
+    "Future",
+    "FutureCancelledError",
+    "InvalidStateError",
+    "ReentrantAsyncLock",
+]
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
@@ -42,7 +50,7 @@ class FutureCancelledError(anyio.ClosedResourceError):
 class InvalidStateError(RuntimeError):
     "An invalid state of a [Future][async_kernel.caller.Future]."
 
-class Event:
+class AsyncEvent:
     "An Asynchronous event that works across anyio threads."
 
     __slots__ = ["_anyio_event", "_flag", "_thread", "_thread_event"]
@@ -78,11 +86,15 @@ class Event:
         if self._thread_event:
             self._thread_event.set()
         if self._anyio_event:
-            self._anyio_event.set()
+            self.get_caller().call_direct(self._anyio_event.set)
 
     def is_set(self) -> bool:
         "Return `True` if the flag is set, `False` if not."
         return self._flag
+
+    def get_caller(self) -> Caller:
+        "The the Caller the Future's thread corresponds."
+        return Caller(thread=self._thread)
 
 
 class Future(Awaitable[T]):
@@ -113,7 +125,7 @@ class Future(Awaitable[T]):
     def __init__(self, thread: threading.Thread | None = None, /, **metadata) -> None:
         self._cancel_scope: anyio.CancelScope | None = None
         self._cancelled = False
-        self._done = Event(thread)
+        self._done = AsyncEvent(thread)
         self._done_callbacks = []
         self._exception = None
         self._metadata = metadata
@@ -840,7 +852,7 @@ class Caller:
         has_result: deque[Future[T]] = deque()
         futures: set[Future[T]] = set()
         done = False
-        resume: Event | None = cast("Event | None", None)
+        resume: AsyncEvent | None = cast("AsyncEvent | None", None)
         current_future = cls.current_future()
         if isinstance(items, set | list | tuple):
             max_concurrent_ = 0
@@ -865,7 +877,7 @@ class Caller:
                         else:
                             fut.add_done_callback(_on_done)
                         if max_concurrent_ and len(futures) == max_concurrent_:
-                            resume = Event()
+                            resume = AsyncEvent()
                             await resume.wait()
             except (StopAsyncIteration, StopIteration):
                 return
