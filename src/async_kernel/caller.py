@@ -43,7 +43,10 @@ __all__ = [
     "ReentrantAsyncLock",
 ]
 
-truncated_rep = reprlib.Repr(maxlevel=1, maxstring=30, maxother=100, fillvalue="…")
+truncated_rep = reprlib.Repr()
+truncated_rep.maxlevel = 1
+truncated_rep.maxother = 100
+truncated_rep.fillvalue = "…"
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
