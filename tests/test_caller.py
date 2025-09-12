@@ -163,15 +163,6 @@ class TestFuture:
             await fut.wait(timeout=0.001)
         assert fut.cancelled()
 
-    async def test_wait_sync_cancelled(self, anyio_backend):
-        fut = Caller.to_thread(anyio.sleep_forever)
-        with pytest.raises(TimeoutError):
-            fut.wait_sync(timeout=0.001, shield=True)
-        assert not fut.cancelled()
-        with pytest.raises(TimeoutError):
-            fut.wait_sync(timeout=0.001)
-        assert fut.cancelled()
-
     def test_metadata(self):
         fut = Future(name="test")
         assert repr(fut) == "Future<thread:'MainThread' name:'test'>"
@@ -261,7 +252,7 @@ class TestCaller:
         assert is_cancelled
 
     @pytest.mark.parametrize("check_result", ["result", "exception"])
-    @pytest.mark.parametrize("check_mode", ["main", "local", "asyncio", "trio", "wait_sync"])
+    @pytest.mark.parametrize("check_mode", ["main", "local", "asyncio", "trio"])
     async def test_wait_from_threads(self, anyio_backend, check_mode: str, check_result: str):
         finished_event = cast("anyio.Event", object)
         ready = threading.Event()
@@ -298,8 +289,6 @@ class TestCaller:
                     fut_local = caller.call_soon(fut.wait)
                     result = await fut_local
                     assert result == 10
-                case "wait_sync":
-                    assert fut.wait_sync() == 10
                 case "asyncio" | "trio":
 
                     def another_thread():
@@ -321,11 +310,6 @@ class TestCaller:
     async def test_get_instance_no_instance(self, anyio_backend):
         with pytest.raises(RuntimeError):
             Caller.get_instance(None, create=False)
-
-    async def test_wait_sync_error(self, caller: Caller):
-        fut = caller.call_later(0, anyio.sleep, 0.1)
-        with pytest.raises(RuntimeError):
-            fut.wait_sync()
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend, mode: Literal["restricted", "surge"], mocker):
