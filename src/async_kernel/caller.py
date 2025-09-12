@@ -363,7 +363,7 @@ class Caller:
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _queue_map: weakref.WeakKeyDictionary[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
     _taskgroup: TaskGroup | None = None
-    _callers: deque[tuple[contextvars.Context, tuple[Future, float, float, Callable, tuple, dict]] | Callable[[], Any]]
+    _callers: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _callers_added: threading.Event
     _stopped_event: threading.Event
     _stopped = False
@@ -466,38 +466,32 @@ class Caller:
                         except Exception as e:
                             self.log.exception("Simple call failed", exc_info=e)
                     else:
-                        context, args = job
-                        context.run(tg.start_soon, self._wrap_call, *args)
+                        context, fut = job
+                        context.run(tg.start_soon, self._wrap_call, fut)
         finally:
             self._running = False
             for job in self._callers:
-                if not callable(job):
-                    job[1][0].set_exception(FutureCancelledError())
+                if isinstance(job, tuple):
+                    job[1].set_exception(FutureCancelledError())
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
-    async def _wrap_call(
-        self,
-        fut: Future[T],
-        starttime: float,
-        delay: float,
-        func: Callable[..., T | Awaitable[T]],
-        args: tuple,
-        kwargs: dict,
-    ) -> None:
+    async def _wrap_call(self, fut: Future[T]) -> None:
         self._future_var.set(fut)
         if fut.cancelled():
             fut.set_result(cast("T", None))  # This will cancel
             return
+        md = fut.metadata
+        func = md["func"]
         try:
             with anyio.CancelScope() as scope:
                 fut.set_cancel_scope(scope)
                 try:
-                    if (delay_ := delay - time.monotonic() + starttime) > 0:
+                    if (delay_ := md["delay"] - time.monotonic() + md["start_time"]) > 0:
                         await anyio.sleep(float(delay_))
-                    result = func(*args, **kwargs) if callable(func) else func  # pyright: ignore[reportAssignmentType]
+                    result = func(*md["args"], **md["kwargs"]) if callable(func) else func  # pyright: ignore[reportAssignmentType]
                     if inspect.isawaitable(result) and result is not fut:
                         result: T = await result
                     if fut.cancelled() and not scope.cancel_called:
@@ -575,10 +569,11 @@ class Caller:
         if self._stopped:
             raise anyio.ClosedResourceError
         fut: Future[T] = Future(self.thread)
+        fut.metadata.update(start_time=time.monotonic(), delay=delay, func=func, args=args, kwargs=kwargs)
         if threading.current_thread() is self.thread and (tg := self._taskgroup):
-            tg.start_soon(self._wrap_call, fut, time.monotonic(), delay, func, args, kwargs)
+            tg.start_soon(self._wrap_call, fut)
         else:
-            self._callers.append((contextvars.copy_context(), (fut, time.monotonic(), delay, func, args, kwargs)))
+            self._callers.append((contextvars.copy_context(), fut))
             self._callers_added.set()
         self._outstanding += 1
         return fut
@@ -596,9 +591,10 @@ class Caller:
 
     def call_direct(self, func: Callable[P, Any], /, *args: P.args, **kwargs: P.kwargs) -> None:
         """
-        Schedule func to be called in caller's event loop directly.
+        Schedule `func` to be called in caller's event loop directly.
 
-        The call is made without copying the context and does not use a future.
+        This method is provided to facilitate lightweight *thread-safe* function calls that
+        need to be done from within the callers event loop.
 
         Args:
             func: The function (awaitables permitted, though discouraged).
@@ -607,7 +603,8 @@ class Caller:
 
         ??? warning
 
-            **Use this method for lightweight calls only.**
+            - Use this method for lightweight calls only.
+            - Corroutines will **not** be awaited.
         """
         self._callers.append(functools.partial(func, *args, **kwargs))
         self._callers_added.set()
@@ -917,6 +914,11 @@ class Caller:
         A classmethod to wait for the futures given by items to complete.
 
         Returns two sets of the futures: (done, pending).
+
+        Args:
+            items: An iterable of futures to wait for.
+            timeout: The maximum time before returning.
+            return_when: The same options as available for [asyncio.wait][].
 
         !!! example
 
