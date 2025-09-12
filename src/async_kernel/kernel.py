@@ -40,7 +40,7 @@ from typing_extensions import override
 from zmq import Context, Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
-from async_kernel import Caller, utils
+from async_kernel import AsyncEvent, Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell
 from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
@@ -214,7 +214,6 @@ class Kernel(HasTraits):
     _initialised = False
     _interrupt_requested = False
     _last_interrupt_frame = None
-    _stop_event = Instance(threading.Event, ())
     _stop_on_error_time: float = 0
     _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
     _settings: Dict[str, Any] = Dict()
@@ -267,6 +266,10 @@ class Kernel(HasTraits):
     transport: CaselessStrEnum[str] = CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
     )
+    event_started = Instance(AsyncEvent, (), read_only=True)
+    "An event that occurs when the kernel is started."
+    event_stopped = Instance(AsyncEvent, (), read_only=True)
+    "An event that occurs when the kernel is stopped."
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
         """
@@ -459,7 +462,7 @@ class Kernel(HasTraits):
         """
         if instance := Kernel._instance:
             Kernel._instance = None
-            instance._stop_event.set()
+            instance.event_stopped.set()
 
     @asynccontextmanager
     async def _start_in_context(self) -> AsyncGenerator[Self, Any]:
@@ -484,6 +487,7 @@ class Kernel(HasTraits):
                     self._write_connection_file()
                     print(f"Kernel started: {self!r}")
                     await tg.start(self._start_iopub)
+                    self.event_started.set()
                     yield self
                 finally:
                     self.stop()
@@ -517,10 +521,10 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     return
 
-        ready_event = threading.Event()
+        ready_event = AsyncEvent()
         heartbeat_thread = threading.Thread(target=heartbeat, daemon=True)
         heartbeat_thread.start()
-        ready_event.wait(10)
+        await ready_event.wait()
         task_status.started()
 
     async def _start_stdin(self, task_status: TaskStatus[None]) -> None:
@@ -547,10 +551,10 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        ready_event = threading.Event()
+        ready_event = AsyncEvent()
         iopub_thread = threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True)
         iopub_thread.start()
-        ready_event.wait(10)
+        await ready_event.wait()
         task_status.started()
 
     async def _start_iopub(self, task_status: TaskStatus[None]) -> None:
@@ -594,15 +598,16 @@ class Kernel(HasTraits):
         self.control_thread_caller = caller = Caller.start_new(
             backend=self.anyio_backend, name="ControlThread", protected=True
         )
-        ready_event = threading.Event()
+        ready_event = AsyncEvent()
         caller.call_soon(run_in_control_event_loop)
-        ready_event.wait(10)
+        await ready_event.wait()
         task_status.started()
 
     async def _wait_stopped(self, task_status: TaskStatus[None]) -> None:
         task_status.started()
         try:
-            await utils.wait_thread_event(self._stop_event)
+            await self.event_stopped.wait()
+            await self.debugger.disconnect()
         except BaseException:
             pass
         Caller.stop_all(_stop_protected=True)
@@ -1087,8 +1092,7 @@ class Kernel(HasTraits):
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
-        await self.debugger.disconnect()
-        Caller().call_direct(self.stop)
+        self.stop()
         return {"restart": job["msg"]["content"].get("restart", False)}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
