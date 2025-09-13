@@ -137,12 +137,13 @@ class Future(Awaitable[T]):
     @override
     def __repr__(self) -> str:
         md = self.metadata
+        rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else "")
         if "func" in md:
             items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
-            rep = f"| {md['func']} {' | '.join(items) if items else ''}"
+            rep += f" | {md['func']} {' | '.join(items) if items else ''}"
         else:
-            rep = f"{truncated_rep.repr(md)}" if md else ""
-        return f"Future< {self._thread.name} {rep}>"
+            rep += f" {truncated_rep.repr(md)}" if md else ""
+        return rep + " >"
 
     @override
     def __await__(self) -> Generator[Any, None, T]:
@@ -371,9 +372,9 @@ class Caller:
     _backend: Backend
     _queue_map: weakref.WeakKeyDictionary[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
     _taskgroup: TaskGroup | None = None
-    _callers: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
+    _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
-    _callers_added: threading.Event
+    _job_added: threading.Event
     _stopped_event: threading.Event
     _stopped = False
     _protected = False
@@ -428,8 +429,8 @@ class Caller:
             inst._backend = Backend(sniffio.current_async_library())
             inst._thread = thread
             inst.log = log or logging.LoggerAdapter(logging.getLogger())
-            inst._callers = deque()
-            inst._callers_added = threading.Event()
+            inst._jobs = deque()
+            inst._job_added = threading.Event()
             inst._protected = protected
             inst._queue_map = weakref.WeakKeyDictionary()
             cls._instances[thread] = inst
@@ -461,16 +462,18 @@ class Caller:
             self.iopub_sockets[self.thread] = socket
             task_status.started()
             while not self._stopped:
-                if not self._callers:
-                    self._callers_added.clear()
-                await wait_thread_event(self._callers_added)
-                while self._callers:
+                if not self._jobs:
+                    self._job_added.clear()
+                await wait_thread_event(self._job_added)
+                while self._jobs:
                     if self._stopped:
                         return
-                    job = self._callers.popleft()
+                    job = self._jobs.popleft()
                     if isinstance(job, Callable):
                         try:
-                            job()
+                            result = job()
+                            if inspect.iscoroutine(result):
+                                await result
                         except Exception as e:
                             self.log.exception("Simple call failed", exc_info=e)
                     else:
@@ -478,7 +481,7 @@ class Caller:
                         context.run(tg.start_soon, self._wrap_call, fut)
         finally:
             self._running = False
-            for job in self._callers:
+            for job in self._jobs:
                 if isinstance(job, tuple):
                     job[1].set_exception(FutureCancelledError())
             socket.close()
@@ -490,11 +493,8 @@ class Caller:
         if self._stopped:
             raise anyio.ClosedResourceError
         fut = Future(self.thread, func=func, args=args, kwargs=kwargs, **extra)
-        if threading.current_thread() is self.thread and (tg := self._taskgroup):
-            tg.start_soon(self._wrap_call, fut)
-        else:
-            self._callers.append((contextvars.copy_context(), fut))
-            self._callers_added.set()
+        self._jobs.append((contextvars.copy_context(), fut))
+        self._job_added.set()
         return fut
 
     async def _wrap_call(self, fut: Future) -> None:
@@ -510,9 +510,11 @@ class Caller:
                 try:
                     if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
                         await anyio.sleep(delay)
-                    result = func(*md["args"], **md["kwargs"]) if callable(func) else func
-                    if inspect.isawaitable(result) and result is not fut:
+                    # Evaluate
+                    result = func(*md["args"], **md["kwargs"])
+                    if inspect.iscoroutine(result):
                         result = await result
+                    # Cancellation
                     if fut.cancelled() and not scope.cancel_called:
                         scope.cancel()
                     fut.set_result(result)
@@ -566,7 +568,7 @@ class Caller:
         for sender in self._queue_map.values():
             sender.close()
         self._queue_map.clear()
-        self._callers_added.set()
+        self._job_added.set()
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
@@ -574,7 +576,12 @@ class Caller:
             self._stopped_event.wait()
 
     def call_later(
-        self, delay: float, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs
+        self,
+        delay: float,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
     ) -> Future[T]:
         """
         Schedule func to be called in caller's event loop copying the current context.
@@ -587,7 +594,13 @@ class Caller:
         """
         return self._schedule_wrapped_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
 
-    def call_soon(self, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs) -> Future[T]:
+    def call_soon(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Future[T]:
         """
         Schedule func to be called in caller's event loop copying the current context.
 
@@ -598,12 +611,18 @@ class Caller:
         """
         return self._schedule_wrapped_call(func, args, kwargs)
 
-    def call_direct(self, func: Callable[P, Any], /, *args: P.args, **kwargs: P.kwargs) -> None:
+    def call_direct(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
         """
         Schedule `func` to be called in caller's event loop directly.
 
         This method is provided to facilitate lightweight *thread-safe* function calls that
-        need to be done from within the callers event loop.
+        need to be performed from within the callers event loop/taskgroup.
 
         Args:
             func: The function (awaitables permitted, though discouraged).
@@ -612,11 +631,11 @@ class Caller:
 
         ??? warning
 
-            - Use this method for lightweight calls only.
-            - Corroutines will **not** be awaited.
+            **Use this method for lightweight calls only!**
+
         """
-        self._callers.append(functools.partial(func, *args, **kwargs))
-        self._callers_added.set()
+        self._jobs.append(functools.partial(func, *args, **kwargs))
+        self._job_added.set()
 
     def queue_exists(self, func: Callable) -> bool:
         "Returns True if an execution queue exists for `func`."
@@ -684,8 +703,6 @@ class Caller:
                     with contextlib.suppress(anyio.get_cancelled_exc_class()):
                         async with queue as receive_stream:
                             async for args in receive_stream:
-                                if func not in self._queue_map:
-                                    break
                                 try:
                                     await func(*args)
                                 except Exception as e:
@@ -736,13 +753,24 @@ class Caller:
         raise RuntimeError(msg)
 
     @classmethod
-    def to_thread(cls, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs) -> Future[T]:
+    def to_thread(
+        cls,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Future[T]:
         """A classmethod to call func in a separate thread see also [to_thread_by_name][async_kernel.Caller.to_thread_by_name]."""
         return cls.to_thread_by_name(None, func, *args, **kwargs)
 
     @classmethod
     def to_thread_by_name(
-        cls, name: str | None, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs
+        cls,
+        name: str | None,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
     ) -> Future[T]:
         """
         A classmethod to call func in the thread specified by name.
