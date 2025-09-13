@@ -4,7 +4,6 @@ import inspect
 import threading
 import time
 import weakref
-from contextvars import ContextVar
 from random import random
 from typing import Literal, cast
 
@@ -190,6 +189,11 @@ class TestCaller:
             caller.call_later(0.01, is_called.set)
             await is_called.wait()
 
+    async def test_call_returns_future(self, caller: Caller):
+        fut = Future()
+        caller.call_direct(lambda: fut)
+        assert await caller.call_soon(lambda: fut) is fut
+
     async def test_repr(self, caller):
         async def test_func(a, b, c):
             pass
@@ -252,6 +256,16 @@ class TestCaller:
 
             await anyio.to_thread.run_sync(_in_thread)
         assert caller not in Caller.all_callers()
+
+    async def test_direct_async(self, caller: Caller):
+        event = AsyncEvent()
+
+        async def set_event():
+            event.set()
+
+        caller.call_direct(set_event)
+        with anyio.fail_after(1):
+            await event.wait()
 
     async def test_cancels_on_exit(self):
         is_cancelled = False
@@ -456,27 +470,6 @@ class TestCaller:
         assert not fut.done()
         async with caller:
             await fut
-
-    async def test_call_coroutine(self, caller: Caller):
-        # Test we can await a coroutine, note that it is not permitted with the type hints,
-        # but should probably be discouraged anyway since there is no way of knowing
-        # (with type hints) if a coroutine has already been awaited.
-        my_contextvar = ContextVar[int]("my_contextvar")
-        my_contextvar.set(1)
-
-        async def my_func():
-            await anyio.sleep(0)
-            assert my_contextvar.get() == 1
-            return True
-
-        # Discouraged
-        fut = Caller.to_thread(my_func())  # pyright: ignore[reportCallIssue, reportArgumentType]
-        val = await fut
-        assert val is True
-        # This the preferred way of calling.
-        fut = Caller.to_thread(my_func)
-        val = await fut
-        assert val is True
 
     async def test_current_future(self, anyio_backend):
         async with Caller(create=True) as caller:
