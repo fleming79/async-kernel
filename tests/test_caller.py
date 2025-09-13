@@ -172,7 +172,7 @@ class TestFuture:
 
     def test_repr(self):
         fut = Future(name="test", mydict={"test": "a long string" * 100})
-        assert repr(fut) == "Future< MainThread {'mydict': {…}, 'name': 'test'}>"
+        assert repr(fut) == "Future< MainThread {'mydict': {…}, 'name': 'test'} >"
 
 
 @pytest.mark.anyio
@@ -202,9 +202,13 @@ class TestCaller:
         b = {f"name {i}": "long_string" * 100 for i in range(100)}
         c = Future()
         c.metadata.update(a=a, b=b)
-        assert repr(c) == "Future< MainThread {'a': 'long stringl…nglong string', 'b': {…}}>"
+        assert repr(c) == "Future< MainThread {'a': 'long stringl…nglong string', 'b': {…}} >"
         fut = caller.call_soon(test_func, a, b, c)
-        assert repr(fut).startswith("Future< MainThread | <function TestCaller.test_repr.<locals>.test_func at")
+        assert repr(fut).startswith("Future< MainThread | <function")
+        await fut
+        assert repr(fut).startswith("Future< MainThread 🏁 | <function")
+        c.cancel()
+        assert repr(c) == "Future< MainThread ⛔ {'a': 'long stringl…nglong string', 'b': {…}} >"
 
     def test_no_thread(self):
         with pytest.raises(RuntimeError):
@@ -392,22 +396,16 @@ class TestCaller:
             with pytest.raises(RuntimeError):
                 await fut
 
-    async def test_as_completed_cancelled(self, anyio_backend):
+    async def test_as_completed_cancelled(self, caller):
         items = {Caller.to_thread(anyio.sleep, 100) for _ in range(4)}
-        async with Caller(create=True):
-
-            async def cancelled(task_status: TaskStatus[None]):
-                with pytest.raises(anyio.get_cancelled_exc_class()):  # noqa: PT012
-                    task_status.started()
-                    async for _ in Caller.as_completed(items):
-                        pass
-
-            async with anyio.create_task_group() as tg:
-                await tg.start(cancelled)
-                tg.cancel_scope.cancel()
-            for item in items:
-                with pytest.raises(FutureCancelledError):
-                    await item
+        with anyio.move_on_after(0.1):
+            with pytest.raises(anyio.get_cancelled_exc_class()):
+                async for _ in Caller.as_completed(items):
+                    pass
+        for item in items:
+            assert item.cancelled()
+            with pytest.raises(FutureCancelledError):
+                await item
 
     async def test__check_in_thread(self, anyio_backend):
         Caller.to_thread(anyio.sleep, 0.1)
@@ -438,7 +436,7 @@ class TestCaller:
             assert not caller.queue_exists(func)
 
     async def test_gc(self, anyio_backend):
-        event_finalize_called = AsyncEvent()
+        event_finalize_called = anyio.Event()
         async with Caller(create=True) as caller:
             weakref.finalize(caller, event_finalize_called.set)
             del caller
@@ -538,14 +536,11 @@ class TestCaller:
             await anyio.sleep(10)
             raise RuntimeError
 
-        async with anyio.create_task_group() as tg:
-            fut = caller.call_soon(async_func)
-            tg.start_soon(fut.wait)
-            await anyio.sleep(0)
-            tg.cancel_scope.cancel()
-        await anyio.sleep(0)
+        fut = caller.call_soon(async_func)
+        with anyio.move_on_after(0.1):
+            await fut
         with pytest.raises(FutureCancelledError):
-            fut.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
+            fut.exception()
 
     @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
     async def test_wait(self, caller: Caller, return_when):

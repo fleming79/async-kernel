@@ -137,12 +137,13 @@ class Future(Awaitable[T]):
     @override
     def __repr__(self) -> str:
         md = self.metadata
+        rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else "")
         if "func" in md:
             items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
-            rep = f"| {md['func']} {' | '.join(items) if items else ''}"
+            rep += f" | {md['func']} {' | '.join(items) if items else ''}"
         else:
-            rep = f"{truncated_rep.repr(md)}" if md else ""
-        return f"Future< {self._thread.name} {rep}>"
+            rep += f" {truncated_rep.repr(md)}" if md else ""
+        return rep + " >"
 
     @override
     def __await__(self) -> Generator[Any, None, T]:
@@ -492,11 +493,8 @@ class Caller:
         if self._stopped:
             raise anyio.ClosedResourceError
         fut = Future(self.thread, func=func, args=args, kwargs=kwargs, **extra)
-        if threading.current_thread() is self.thread and (tg := self._taskgroup):
-            tg.start_soon(self._wrap_call, fut)
-        else:
-            self._jobs.append((contextvars.copy_context(), fut))
-            self._job_added.set()
+        self._jobs.append((contextvars.copy_context(), fut))
+        self._job_added.set()
         return fut
 
     async def _wrap_call(self, fut: Future) -> None:
@@ -705,8 +703,6 @@ class Caller:
                     with contextlib.suppress(anyio.get_cancelled_exc_class()):
                         async with queue as receive_stream:
                             async for args in receive_stream:
-                                if func not in self._queue_map:
-                                    break
                                 try:
                                     await func(*args)
                                 except Exception as e:
