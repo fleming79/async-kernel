@@ -162,7 +162,7 @@ class TestFuture:
         finally:
             caller.stop()
 
-    async def test_wait_cancelled_shield(self, anyio_backend):
+    async def test_wait_cancelled_shield(self, caller: Caller):
         fut = Future()
         with pytest.raises(TimeoutError):
             await fut.wait(timeout=0.001, shield=True)
@@ -212,11 +212,11 @@ class TestCaller:
         assert not caller.stopped
         caller.stop(force=True)
 
-    def test_no_backend_error(self, anyio_backend):
+    def test_no_backend_error(self):
         with pytest.raises(RuntimeError):
             Caller(create=True)
 
-    @pytest.mark.parametrize("args_kwargs", [((), {}), ((1, 2, 3), {"a": 10})])
+    @pytest.mark.parametrize("args_kwargs", argvalues=[((), {}), ((1, 2, 3), {"a": 10})])
     async def test_async(self, args_kwargs: tuple[tuple, dict]):
         val = None
 
@@ -233,7 +233,7 @@ class TestCaller:
             assert val == args_kwargs
             assert (await fut) == args_kwargs
 
-    async def test_anyio_to_thread(self):
+    async def test_anyio_to_thread(self, anyio_backend):
         # Test the call works from an anyio thread
         async with Caller(create=True) as caller:
             assert caller.running
@@ -283,7 +283,8 @@ class TestCaller:
             finished_event = AsyncEvent()
 
             async def _run():
-                async with Caller(create=True):
+                async with Caller(create=True) as caller:
+                    assert caller.backend == anyio_backend
                     ready.set()
                     await finished_event.wait()
 

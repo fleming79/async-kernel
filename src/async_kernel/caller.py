@@ -58,14 +58,13 @@ class InvalidStateError(RuntimeError):
 
 
 class AsyncEvent:
-    "An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."
+    """An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."""
 
-    __slots__ = ["_anyio_event", "_flag", "_thread", "_thread_event"]
+    __slots__ = ["_events", "_flag", "_thread"]
 
     def __init__(self, thread: threading.Thread | None = None) -> None:
         self._thread = thread or threading.current_thread()
-        self._anyio_event = None
-        self._thread_event = None
+        self._events = set()
         self._flag = False
 
     async def wait(self) -> None:
@@ -73,35 +72,44 @@ class AsyncEvent:
         Wait until the flag has been set.
 
         If the flag has already been set when this method is called, it returns immediately.
+
+        !!! warning
+
+            This method requires that a [async_kernel.caller.Caller][] for its target thread.
+            ```
         """
-        if self._flag:
-            return
-        if self._thread is threading.current_thread():
-            if not self._anyio_event:
-                self._anyio_event = anyio.Event()
-            await self._anyio_event.wait()
-        else:
-            if self._thread_event:
-                await wait_thread_event(self._thread_event)
+        if not self._flag:
+
+            def _get_event(event_type: type[T]) -> T | None:
+                for event in self._events:
+                    if isinstance(event, event_type):
+                        return event if not self._flag else None
+                event = event_type()
+                self._events.add(event)
+                return event if not self._flag else None
+
+            if self._thread is threading.current_thread():
+                Caller(thread=self._thread)
+                if event := _get_event(anyio.Event):
+                    await event.wait()
             else:
-                self._thread_event = threading.Event()
-                await self.wait()
+                if event := _get_event(threading.Event):
+                    await wait_thread_event(event)
+        self.set()
 
     def set(self) -> None:
         "Set the internal flag to `True` and trigger notification."
         self._flag = True
-        if self._thread_event:
-            self._thread_event.set()
-        if self._anyio_event:
-            self.get_caller().call_direct(self._anyio_event.set)
+        while self._events:
+            event = self._events.pop()
+            if isinstance(event, anyio.Event):
+                Caller(thread=self._thread).call_direct(event.set)
+            else:
+                event.set()
 
     def is_set(self) -> bool:
         "Return `True` if the flag is set, `False` if not."
         return self._flag
-
-    def get_caller(self) -> Caller:
-        "The [async_kernel.caller.Caller][] that is running for this *events* thread."
-        return Caller(thread=self._thread)
 
 
 class Future(Awaitable[T]):
@@ -118,7 +126,7 @@ class Future(Awaitable[T]):
     _exception = None
     _setting_value = False
     _result: T
-    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs", "start_time", "delay"}
+    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
     def __init__(self, thread: threading.Thread | None = None, /, **metadata) -> None:
         self._done_callbacks = []
@@ -130,7 +138,7 @@ class Future(Awaitable[T]):
     def __repr__(self) -> str:
         md = self.metadata
         if "func" in md:
-            items = [truncated_rep.repr(v) for k, v in md.items() if k not in self.REPR_OMIT]
+            items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
             rep = f"| {md['func']} {' | '.join(items) if items else ''}"
         else:
             rep = f"{truncated_rep.repr(md)}" if md else ""
@@ -246,7 +254,7 @@ class Future(Awaitable[T]):
         Done means either that a result / exception is available."""
         return self._done.is_set()
 
-    def add_done_callback(self, fn: Callable[[Self], object]) -> None:
+    def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
         """
         Add a callback for when the callback is done (not thread-safe).
 
@@ -354,28 +362,30 @@ class Caller:
     "The number of `pool` instances to leave idle (See also[to_thread][async_kernel.Caller.to_thread])."
     MAX_BUFFER_SIZE = 1000
     "The default  maximum_buffer_size used in [queue_call][async_kernel.Caller.queue_call]."
-    _instances: ClassVar[dict[threading.Thread, Self]] = {}
+
     __stack = None
-    _outstanding = 0
+    _instances: ClassVar[dict[threading.Thread, Self]] = {}
+    _busy_worker_threads: ClassVar[int] = 0
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
+    _backend: Backend
     _queue_map: weakref.WeakKeyDictionary[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
     _taskgroup: TaskGroup | None = None
     _callers: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
+    _thread: threading.Thread
     _callers_added: threading.Event
     _stopped_event: threading.Event
     _stopped = False
     _protected = False
     _running = False
     _future_var: contextvars.ContextVar[Future | None] = contextvars.ContextVar("_future_var", default=None)
-    thread: threading.Thread
-    "The thread in which the caller will run."
-    backend: Backend
-    "The `anyio` backend the caller is running in."
+
     log: logging.LoggerAdapter[Any]
     ""
     iopub_sockets: ClassVar[weakref.WeakKeyDictionary[threading.Thread, Socket]] = weakref.WeakKeyDictionary()
+    ""
     iopub_url: ClassVar = "inproc://iopub"
+    ""
 
     def __new__(
         cls,
@@ -415,8 +425,8 @@ class Caller:
                 msg = f"A caller is not provided for {thread=}"
                 raise RuntimeError(msg)
             inst = super().__new__(cls)
-            inst.backend = Backend(sniffio.current_async_library())
-            inst.thread = thread
+            inst._backend = Backend(sniffio.current_async_library())
+            inst._thread = thread
             inst.log = log or logging.LoggerAdapter(logging.getLogger())
             inst._callers = deque()
             inst._callers_added = threading.Event()
@@ -476,10 +486,21 @@ class Caller:
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
-    async def _wrap_call(self, fut: Future[T]) -> None:
+    def _schedule_wrapped_call(self, func: Callable, /, args: tuple, kwargs: dict, **extra) -> Future:
+        if self._stopped:
+            raise anyio.ClosedResourceError
+        fut = Future(self.thread, func=func, args=args, kwargs=kwargs, **extra)
+        if threading.current_thread() is self.thread and (tg := self._taskgroup):
+            tg.start_soon(self._wrap_call, fut)
+        else:
+            self._callers.append((contextvars.copy_context(), fut))
+            self._callers_added.set()
+        return fut
+
+    async def _wrap_call(self, fut: Future) -> None:
         self._future_var.set(fut)
         if fut.cancelled():
-            fut.set_result(cast("T", None))  # This will cancel
+            fut.set_result(None)  # This will cancel
             return
         md = fut.metadata
         func = md["func"]
@@ -487,36 +508,36 @@ class Caller:
             with anyio.CancelScope() as scope:
                 fut.set_cancel_scope(scope)
                 try:
-                    if (delay_ := md["delay"] - time.monotonic() + md["start_time"]) > 0:
-                        await anyio.sleep(float(delay_))
-                    result = func(*md["args"], **md["kwargs"]) if callable(func) else func  # pyright: ignore[reportAssignmentType]
+                    if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
+                        await anyio.sleep(delay)
+                    result = func(*md["args"], **md["kwargs"]) if callable(func) else func
                     if inspect.isawaitable(result) and result is not fut:
-                        result: T = await result
+                        result = await result
                     if fut.cancelled() and not scope.cancel_called:
                         scope.cancel()
-                    self._outstanding -= 1  # update first for _to_thread_on_done
                     fut.set_result(result)
                 except anyio.get_cancelled_exc_class():
                     fut.cancel()
-                    self._outstanding -= 1  # update first for _to_thread_on_done
-                    fut.set_result(cast("T", None))  # This will cancel
+                    fut.set_result(None)  # This will cancel
                 except Exception as e:
-                    self._outstanding -= 1  # update first for _to_thread_on_done
                     fut.set_exception(e)
         except Exception as e:
             self.log.exception("Calling func %s failed", func, exc_info=e)
-
-    def _to_thread_on_done(self, _) -> None:
-        if not self._stopped:
-            if (len(self._to_thread_pool) < self.MAX_IDLE_POOL_INSTANCES) or self._outstanding:
-                self._to_thread_pool.append(self)
-            else:
-                self.stop()
 
     def _check_in_thread(self):
         if self.thread is not threading.current_thread():
             msg = "This function must be called from its own thread. Tip: Use `call_direct` to call this method from another thread."
             raise RuntimeError(msg)
+
+    @property
+    def thread(self) -> threading.Thread:
+        "The thread in which the caller will run."
+        return self._thread
+
+    @property
+    def backend(self) -> Backend:
+        "The `anyio` backend the caller is running in."
+        return self._backend
 
     @property
     def protected(self) -> bool:
@@ -564,17 +585,7 @@ class Caller:
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
         """
-        if self._stopped:
-            raise anyio.ClosedResourceError
-        fut: Future[T] = Future(self.thread)
-        fut.metadata.update(start_time=time.monotonic(), delay=delay, func=func, args=args, kwargs=kwargs)
-        if threading.current_thread() is self.thread and (tg := self._taskgroup):
-            tg.start_soon(self._wrap_call, fut)
-        else:
-            self._callers.append((contextvars.copy_context(), fut))
-            self._callers_added.set()
-        self._outstanding += 1
-        return fut
+        return self._schedule_wrapped_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
 
     def call_soon(self, func: Callable[P, T | Awaitable[T]], /, *args: P.args, **kwargs: P.kwargs) -> Future[T]:
         """
@@ -585,7 +596,7 @@ class Caller:
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
         """
-        return self.call_later(0, func, *args, **kwargs)
+        return self._schedule_wrapped_call(func, args, kwargs)
 
     def call_direct(self, func: Callable[P, Any], /, *args: P.args, **kwargs: P.kwargs) -> None:
         """
@@ -742,9 +753,7 @@ class Caller:
                 [^notes]:  'MainThread' is special name corresponding to the main thread.
                     A `RuntimeError` will be raised if a Caller does not exist for the main thread.
 
-            func: The function to call. If it returns an awaitable, the awaitable will be awaited.
-                Passing a coroutine as `func` discourage, but will be awaited.
-
+            func: The function (awaitables permitted, though discouraged).
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
 
@@ -759,7 +768,17 @@ class Caller:
         fut = caller.call_soon(func, *args, **kwargs)
         if not name:
             cls._pool_instances.add(caller)
-            fut.add_done_callback(caller._to_thread_on_done)
+            cls._busy_worker_threads += 1
+
+            def _to_thread_by_name_on_done(_) -> None:
+                cls._busy_worker_threads -= 1
+                if not caller._stopped:
+                    if len(caller._to_thread_pool) + cls._busy_worker_threads < caller.MAX_IDLE_POOL_INSTANCES:
+                        caller._to_thread_pool.append(caller)
+                    else:
+                        caller.stop()
+
+            fut.add_done_callback(_to_thread_by_name_on_done)
         return fut
 
     @classmethod
