@@ -11,7 +11,6 @@ import anyio
 import anyio.to_thread
 import pytest
 import sniffio
-from anyio.abc import TaskStatus
 
 from async_kernel.caller import (
     AsyncEvent,
