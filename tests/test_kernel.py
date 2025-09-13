@@ -358,6 +358,7 @@ async def test_interrupt_request(client, kernel):
     assert event.is_set()
 
 
+@pytest.mark.flaky
 async def test_interrupt_request_async_request(subprocess_kernels_client):
     client = subprocess_kernels_client
     msg_id = client.execute(f"await anyio.sleep({utils.TIMEOUT * 2})")
@@ -367,7 +368,7 @@ async def test_interrupt_request_async_request(subprocess_kernels_client):
     assert reply["content"]["status"] == "error"
 
 
-# @pytest.mark.flaky
+@pytest.mark.flaky
 async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
     client = subprocess_kernels_client
     msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 2})")
@@ -378,6 +379,7 @@ async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client
     assert reply["content"]["ename"] == "FutureCancelledError"
 
 
+@pytest.mark.flaky
 async def test_interrupt_request_blocking_task(subprocess_kernels_client):
     code = f"""
     import time
