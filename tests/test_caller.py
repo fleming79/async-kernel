@@ -162,7 +162,7 @@ class TestFuture:
         finally:
             caller.stop()
 
-    async def test_wait_cancelled_shield(self, anyio_backend):
+    async def test_wait_cancelled_shield(self, caller: Caller):
         fut = Future()
         with pytest.raises(TimeoutError):
             await fut.wait(timeout=0.001, shield=True)

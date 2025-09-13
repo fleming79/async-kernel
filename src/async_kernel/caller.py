@@ -58,14 +58,13 @@ class InvalidStateError(RuntimeError):
 
 
 class AsyncEvent:
-    "An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."
+    """An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."""
 
-    __slots__ = ["_anyio_event", "_flag", "_thread", "_thread_event"]
+    __slots__ = ["_events", "_flag", "_thread"]
 
     def __init__(self, thread: threading.Thread | None = None) -> None:
         self._thread = thread or threading.current_thread()
-        self._anyio_event = None
-        self._thread_event = None
+        self._events = set()
         self._flag = False
 
     async def wait(self) -> None:
@@ -73,35 +72,44 @@ class AsyncEvent:
         Wait until the flag has been set.
 
         If the flag has already been set when this method is called, it returns immediately.
+
+        !!! warning
+
+            This method requires that a [async_kernel.caller.Caller][] for its target thread.
+            ```
         """
-        if self._flag:
-            return
-        if self._thread is threading.current_thread():
-            if not self._anyio_event:
-                self._anyio_event = anyio.Event()
-            await self._anyio_event.wait()
-        else:
-            if self._thread_event:
-                await wait_thread_event(self._thread_event)
+        if not self._flag:
+
+            def _get_event(event_type: type[T]) -> T | None:
+                for event in self._events:
+                    if isinstance(event, event_type):
+                        return event if not self._flag else None
+                event = event_type()
+                self._events.add(event)
+                return event if not self._flag else None
+
+            if self._thread is threading.current_thread():
+                Caller(thread=self._thread)
+                if event := _get_event(anyio.Event):
+                    await event.wait()
             else:
-                self._thread_event = threading.Event()
-                await self.wait()
+                if event := _get_event(threading.Event):
+                    await wait_thread_event(event)
+        self.set()
 
     def set(self) -> None:
         "Set the internal flag to `True` and trigger notification."
         self._flag = True
-        if self._thread_event:
-            self._thread_event.set()
-        if self._anyio_event:
-            self.get_caller().call_direct(self._anyio_event.set)
+        while self._events:
+            event = self._events.pop()
+            if isinstance(event, anyio.Event):
+                Caller(thread=self._thread).call_direct(event.set)
+            else:
+                event.set()
 
     def is_set(self) -> bool:
         "Return `True` if the flag is set, `False` if not."
         return self._flag
-
-    def get_caller(self) -> Caller:
-        "The [async_kernel.caller.Caller][] that is running for this *events* thread."
-        return Caller(thread=self._thread)
 
 
 class Future(Awaitable[T]):
