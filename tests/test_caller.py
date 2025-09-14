@@ -414,21 +414,19 @@ class TestCaller:
             worker._check_in_thread()  # pyright: ignore[reportPrivateUsage]
 
     async def test_execution_queue(self, caller: Caller):
-        delay = 0.01
-        N = 10
+        N = 5
 
         pool = list(range(N))
-        results = []
 
-        async def func(a, b, results=results):
+        async def func(a, b, /, delay, *, results):
             await anyio.sleep(delay)
             results.append(b)
 
-        for i in range(3):
+        caller.queue_get_sender(func, max_buffer_size=2)
+        for _ in range(2):
+            results = []
             for j in pool:
-                buff = i * N + 1
-                if waiter := caller.queue_call(func, 0, j, wait=j >= buff, max_buffer_size=buff):
-                    await waiter  # pyright: ignore[reportGeneralTypeIssues]
+                await caller.queue_call(func, 0, j, delay=0.05 * j, results=results)
             assert caller.queue_exists(func)
             assert results != pool
             caller.queue_close(func)
@@ -451,7 +449,7 @@ class TestCaller:
         async with Caller(create=True) as caller:
             obj = MyObj()
             weakref.finalize(obj, obj_finalized.set)
-            caller.queue_call(obj.method)
+            caller.queue_call_no_wait(obj.method)
             await method_called.wait()
             assert caller.queue_exists(obj.method), "A ref should be retained unless it is explicitly removed"
             del obj
