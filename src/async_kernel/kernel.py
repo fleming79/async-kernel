@@ -746,7 +746,7 @@ class Kernel(HasTraits):
         runner = _wrap_handler(self.run_handler, handler)
         match run_mode:
             case RunMode.queue:
-                await Caller().queue_call(runner, job, wait=True)
+                await Caller().queue_call(runner, job)
             case RunMode.thread:
                 Caller.to_thread(runner, job)
             case RunMode.task:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, ParamSpec, TypedDict, TypeVar, TypeVarTuple
+from typing import TYPE_CHECKING, Any, Generic, Literal, ParamSpec, TypedDict, TypeVar
 
 from typing_extensions import Sentinel, override
 
@@ -30,7 +30,6 @@ NoValue = Sentinel("NoValue")
 T = TypeVar("T")
 D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
-PosArgsT = TypeVarTuple("PosArgsT")
 
 
 class SocketID(enum.StrEnum):

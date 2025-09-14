@@ -21,7 +21,7 @@ from zmq import Context, Socket, SocketType
 
 import async_kernel
 from async_kernel.kernelspec import Backend
-from async_kernel.typing import NoValue, PosArgsT, T
+from async_kernel.typing import NoValue, T
 from async_kernel.utils import wait_thread_event
 
 if TYPE_CHECKING:
@@ -587,7 +587,7 @@ class Caller:
         Schedule func to be called in caller's event loop copying the current context.
 
         Args:
-            func: The function (awaitables permitted, though discouraged).
+            func: The function.
             delay: The minimum delay to add between submission and execution.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
@@ -605,7 +605,7 @@ class Caller:
         Schedule func to be called in caller's event loop copying the current context.
 
         Args:
-            func: The function (awaitables permitted, though discouraged).
+            func: The function.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
         """
@@ -625,7 +625,7 @@ class Caller:
         need to be performed from within the callers event loop/taskgroup.
 
         Args:
-            func: The function (awaitables permitted, though discouraged).
+            func: The function.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
 
@@ -641,49 +641,15 @@ class Caller:
         "Returns True if an execution queue exists for `func`."
         return func in self._queue_map
 
-    if TYPE_CHECKING:
-
-        @overload
-        def queue_call(
-            self,
-            func: Callable[[*PosArgsT], Awaitable[Any]],
-            /,
-            *args: *PosArgsT,
-            max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-            wait: Literal[True],
-        ) -> CoroutineType[Any, Any, None]: ...
-        @overload
-        def queue_call(
-            self,
-            func: Callable[[*PosArgsT], Awaitable[Any]],
-            /,
-            *args: *PosArgsT,
-            max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-            wait: Literal[False] | Any = False,
-        ) -> None: ...
-
-    def queue_call(
-        self,
-        func: Callable[[*PosArgsT], Awaitable[Any]],
-        /,
-        *args: *PosArgsT,
-        max_buffer_size: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        wait: bool = False,
-    ) -> CoroutineType[Any, Any, None] | None:
+    def queue_get_sender(
+        self, func: Callable, max_buffer_size: None | int = None
+    ) -> MemoryObjectSendStream[tuple[contextvars.Context, tuple, dict]]:
         """
-        Queue the execution of `func` with the arguments `*args` in a queue unique to it (not thread-safe).
+        Get or create a new queue unique to func in this caller.
 
-        The args are added to a queue associated with the provided `func`. If queue does not already exist for
-        func, a new queue is created with a specified maximum buffer size. The arguments are then sent to the queue,
-        and an `execute_loop` coroutine is started to consume the queue and execute the function with the received
-        arguments.  Exceptions during execution are caught and logged.
-
-        Args:
-            func: The asynchronous function to execute.
-            *args: The arguments to pass to the function.
-            max_buffer_size: The maximum buffer size for the queue. If NoValue, defaults to [async_kernel.Caller.MAX_BUFFER_SIZE].
-            wait: Set as True to return a coroutine that will return once the request is sent.
-                Use this to prevent experiencing exceptions if the buffer is full.
+        This method can be used to configure the buffer size of the queue for the methods
+        - `queue_call`
+        - `queue_call_no_wait`
 
         !!! info
 
@@ -691,20 +657,21 @@ class Caller:
 
             1. It explicitly closed with the method `queue_close`.
             1. All strong references are lost the function/method.
-
         """
         self._check_in_thread()
+        max_buffer_size = max_buffer_size or self.MAX_BUFFER_SIZE
         if not (sender := self._queue_map.get(func)):
-            max_buffer_size = self.MAX_BUFFER_SIZE if max_buffer_size is NoValue else max_buffer_size
-            sender, queue = anyio.create_memory_object_stream[tuple[*PosArgsT]](max_buffer_size=max_buffer_size)
+            sender, queue = anyio.create_memory_object_stream[tuple[contextvars.Context, tuple, dict]](max_buffer_size)
 
             async def execute_loop():
                 try:
                     with contextlib.suppress(anyio.get_cancelled_exc_class()):
                         async with queue as receive_stream:
-                            async for args in receive_stream:
+                            async for context, args, kwargs in receive_stream:
                                 try:
-                                    await func(*args)
+                                    result = context.run(func, *args, **kwargs)
+                                    if inspect.iscoroutine(result):
+                                        await result
                                 except Exception as e:
                                     self.log.exception("Execution %f failed", func, exc_info=e)
                 finally:
@@ -712,7 +679,44 @@ class Caller:
 
             self._queue_map[func] = sender
             self.call_soon(execute_loop)
-        return sender.send(args) if wait else sender.send_nowait(args)
+        return sender
+
+    async def queue_call(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
+        """
+        Queue the execution of `func` in a queue unique to it and this caller (not thread-safe).
+
+        Args:
+            func: The function.
+            *args: Arguments to use with func.
+            **kwargs: Keyword arguments to use with func.
+        """
+        sender = self.queue_get_sender(func)
+        await sender.send((contextvars.copy_context(), args, kwargs))
+
+    def queue_call_no_wait(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
+        """
+        Queue the execution of `func` in a queue unique to it and this caller (not thread-safe).
+
+        Args:
+            func: The function.
+            *args: Arguments to use with func.
+            **kwargs: Keyword arguments to use with func.
+        """
+
+        sender = self.queue_get_sender(func)
+        sender.send_nowait((contextvars.copy_context(), args, kwargs))
 
     def queue_close(self, func: Callable) -> None:
         """
@@ -781,7 +785,7 @@ class Caller:
                 [^notes]:  'MainThread' is special name corresponding to the main thread.
                     A `RuntimeError` will be raised if a Caller does not exist for the main thread.
 
-            func: The function (awaitables permitted, though discouraged).
+            func: The function.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
 
