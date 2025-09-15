@@ -89,7 +89,6 @@ class AsyncEvent:
                 return event if not self._flag else None
 
             if self._thread is threading.current_thread():
-                Caller(thread=self._thread)
                 if event := _get_event(anyio.Event):
                     await event.wait()
             else:
