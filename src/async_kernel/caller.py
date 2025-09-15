@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import contextvars
 import functools
@@ -11,6 +12,7 @@ import time
 import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
+from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast, overload
 
 import anyio
@@ -556,6 +558,22 @@ class Caller:
         "Returns  `True` if the caller is stopped."
         return self._stopped
 
+    def get_runner(self, *, started: Callable[[], None] | None = None) -> CoroutineType[Any, Any, None]:
+        """A convenience method to run the caller.
+
+        !!! tip
+
+            See [async_kernel.caller.Caller.get_instance][] for a usage example.
+        """
+        if self.running or self.stopped:
+            raise RuntimeError
+
+        async def runner() -> None:
+            async with self:
+                await anyio.sleep_forever()
+
+        return runner()
+
     def stop(self, *, force=False) -> None:
         """
         Stop the caller, cancelling all pending tasks and close the thread.
@@ -751,8 +769,17 @@ class Caller:
         for thread in cls._instances:
             if thread.name == name:
                 return cls._instances[thread]
-        if create:
-            return cls.start_new(name=name)
+        if name == "MainThread":
+            if threading.current_thread() is threading.main_thread():
+                if (backend := sniffio.current_async_library()) == Backend.asyncio:
+                    inst = cls(create=True)
+                    inst._task = asyncio.create_task(inst.get_runner())  # pyright: ignore[reportAttributeAccessIssue]
+                    return inst
+                msg = f"Starting a caller for the MainThread is not supported for {backend=}"
+                raise RuntimeError(msg)
+        else:
+            if create is True:
+                return cls.start_new(name=name)
         msg = f"A Caller was not found for {name=}."
         raise RuntimeError(msg)
 
