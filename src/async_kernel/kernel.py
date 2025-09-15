@@ -199,7 +199,7 @@ class Kernel(HasTraits):
 
         ```python
         kernel = Kernel()
-        async with kernel.start_in_context():
+        async with kernel:
             await anyio.sleep_forever()
         ```
 
@@ -478,10 +478,10 @@ class Kernel(HasTraits):
                 assert tg
                 await tg.start(self._wait_stopped)
                 try:
-                    await tg.start(self._start_heartbeat)
+                    await self._start_heartbeat()
+                    await self._start_iopub_proxy()
+                    await self._start_control_loop()
                     await tg.start(self._start_stdin)
-                    await tg.start(self._start_iopub_proxy)
-                    await tg.start(self._start_control_loop)
                     await tg.start(self._receive_msg_loop, SocketID.shell)
                     assert len(self._sockets) == len(SocketID)
                     self._write_connection_file()
@@ -509,7 +509,7 @@ class Kernel(HasTraits):
         else:
             signal.default_int_handler(signum, frame)
 
-    async def _start_heartbeat(self, task_status: TaskStatus[None]) -> None:
+    async def _start_heartbeat(self) -> None:
         # Reference: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
 
         def heartbeat():
@@ -525,7 +525,6 @@ class Kernel(HasTraits):
         heartbeat_thread = threading.Thread(target=heartbeat, daemon=True)
         heartbeat_thread.start()
         await ready_event.wait()
-        task_status.started()
 
     async def _start_stdin(self, task_status: TaskStatus[None]) -> None:
         socket = Context.instance().socket(SocketType.ROUTER)
@@ -533,7 +532,7 @@ class Kernel(HasTraits):
             task_status.started()
             await anyio.sleep_forever()
 
-    async def _start_iopub_proxy(self, task_status: TaskStatus[None]) -> None:
+    async def _start_iopub_proxy(self) -> None:
         """Provide an io proxy."""
 
         def pub_proxy():
@@ -555,7 +554,6 @@ class Kernel(HasTraits):
         iopub_thread = threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True)
         iopub_thread.start()
         await ready_event.wait()
-        task_status.started()
 
     async def _start_iopub(self, task_status: TaskStatus[None]) -> None:
         # Save IO
@@ -589,7 +587,7 @@ class Kernel(HasTraits):
             # Reset IO
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
 
-    async def _start_control_loop(self, task_status: TaskStatus[None]) -> None:
+    async def _start_control_loop(self) -> None:
         async def run_in_control_event_loop():
             assert caller._taskgroup  # pyright: ignore[reportPrivateUsage]
             await caller._taskgroup.start(self._receive_msg_loop, SocketID.control)  # pyright: ignore[reportPrivateUsage]
@@ -601,7 +599,6 @@ class Kernel(HasTraits):
         ready_event = AsyncEvent()
         caller.call_soon(run_in_control_event_loop)
         await ready_event.wait()
-        task_status.started()
 
     async def _wait_stopped(self, task_status: TaskStatus[None]) -> None:
         task_status.started()
