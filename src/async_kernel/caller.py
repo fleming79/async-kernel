@@ -91,7 +91,6 @@ class AsyncEvent:
                 return event if not self._flag else None
 
             if self._thread is threading.current_thread():
-                Caller(thread=self._thread)
                 if event := _get_event(anyio.Event):
                     await event.wait()
             else:
@@ -138,13 +137,14 @@ class Future(Awaitable[T]):
 
     @override
     def __repr__(self) -> str:
-        md = self.metadata
-        rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else "")
-        if "func" in md:
-            items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
-            rep += f" | {md['func']} {' | '.join(items) if items else ''}"
-        else:
-            rep += f" {truncated_rep.repr(md)}" if md else ""
+        rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else " 🏃")
+        with contextlib.suppress(Exception):
+            md = self.metadata
+            if "func" in md:
+                items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
+                rep += f" | {md['func']} {' | '.join(items) if items else ''}"
+            else:
+                rep += f" {truncated_rep.repr(md)}" if md else ""
         return rep + " >"
 
     @override
@@ -399,27 +399,19 @@ class Caller:
         protected: bool = False,
     ) -> Self:
         """
-        Create the `Caller` instance for the current thread or retrieve an existing instance
-        by passing the thread.
-
-        The caller provides a way to execute synchronous code in a separate
-        thread, and to call asynchronous code from synchronous code.
+        Create or retrieve the `Caller` instance for the specified thread.
 
         Args:
-            thread:
+            thread: The thread where the caller is based. There is only one instance per thread.
             log: Logger to use for logging messages.
             create: Whether to create a new instance if one does not exist for the current thread.
-            protected : Whether the caller is protected from having its event loop closed.
+            protected: Whether the caller is protected from having its event loop closed.
 
-        Returns
-        -------
-        Caller
-            The `Caller` instance for the current thread.
+        Returns:
+            Caller: The `Caller` instance for the current thread.
 
-        Raises
-        ------
-        RuntimeError
-            If `create` is False and a `Caller` instance does not exist.
+        Raises:
+            RuntimeError: If `create` is `False` and a `Caller` instance does not exist.
         """
 
         thread = thread or threading.current_thread()

@@ -70,7 +70,7 @@ docs = ["mkdocs-material",
 uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32'"
 ]
 test = [
-    "pytest-cov",
+    "pytest-cov>=7.0.0",
     "pytest-timeout",
     "pytest-mock",
     "pytest-rerunfailures",
@@ -127,13 +127,13 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
   "class .*\bProtocol\\):",
-  "@(abc\\.)?abstractmethod",
   "except .*",
   "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
   ".*sys.platform == \"win32\".*"
 ]
 
 [tool.coverage.run]
+patch = ['subprocess']
 parallel = true
 relative_files = true
 source = ["async_kernel"]
