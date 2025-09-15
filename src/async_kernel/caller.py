@@ -136,7 +136,7 @@ class Future(Awaitable[T]):
 
     @override
     def __repr__(self) -> str:
-        rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else "")
+        rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else " 🏃")
         with contextlib.suppress(Exception):
             md = self.metadata
             if "func" in md:
