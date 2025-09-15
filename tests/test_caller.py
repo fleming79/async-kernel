@@ -349,6 +349,23 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             Caller.get_instance(None, create=False)
 
+    async def test_get_instance_get_runner(self, anyio_backend):
+        if anyio_backend == Backend.trio:
+            with pytest.raises(RuntimeError):
+                Caller.get_instance()
+            return
+        caller = Caller.get_instance()
+        try:
+            await caller.call_soon(anyio.sleep, 0.01)
+        finally:
+            caller.stop()
+
+    async def test_get_runner_error(self):
+        caller = Caller(create=True)
+        caller.stop()
+        with pytest.raises(RuntimeError):
+            caller.get_runner()  # pyright: ignore[reportUnusedCoroutine]
+
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend, mode: Literal["restricted", "surge"], mocker):
         mocker.patch.object(Caller, "MAX_IDLE_POOL_INSTANCES", new=2)
