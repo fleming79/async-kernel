@@ -136,13 +136,14 @@ class Future(Awaitable[T]):
 
     @override
     def __repr__(self) -> str:
-        md = self.metadata
         rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else "")
-        if "func" in md:
-            items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
-            rep += f" | {md['func']} {' | '.join(items) if items else ''}"
-        else:
-            rep += f" {truncated_rep.repr(md)}" if md else ""
+        with contextlib.suppress(Exception):
+            md = self.metadata
+            if "func" in md:
+                items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
+                rep += f" | {md['func']} {' | '.join(items) if items else ''}"
+            else:
+                rep += f" {truncated_rep.repr(md)}" if md else ""
         return rep + " >"
 
     @override
