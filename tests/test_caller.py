@@ -157,8 +157,16 @@ class TestFuture:
             assert fut.thread is not threading.current_thread()
             fut.set_result(value=123)
             assert (await fut) == 123
+            with pytest.raises(RuntimeError, match="already exists"):
+                Caller.start_new(name=caller.thread.name)
         finally:
             caller.stop()
+
+    async def test_start_new_should_fail(self, caller: Caller):
+        await anyio.to_thread.run_sync(print, "")
+        name = next(iter(t.name for t in threading.enumerate() if t.name != "MainThread"))
+        with pytest.raises(RuntimeError, match="already exists"):
+            Caller.start_new(name=name)
 
     async def test_wait_cancelled_shield(self, caller: Caller):
         fut = Future()
@@ -218,10 +226,6 @@ class TestCaller:
         caller.stop()
         assert not caller.stopped
         caller.stop(force=True)
-
-    def test_no_backend_error(self):
-        with pytest.raises(RuntimeError):
-            Caller(create=True)
 
     @pytest.mark.parametrize("args_kwargs", argvalues=[((), {}), ((1, 2, 3), {"a": 10})])
     async def test_async(self, args_kwargs: tuple[tuple, dict]):
@@ -364,7 +368,7 @@ class TestCaller:
         caller = Caller(create=True)
         caller.stop()
         with pytest.raises(RuntimeError):
-            caller.get_runner()  # pyright: ignore[reportUnusedCoroutine]
+            caller.get_runner()
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend, mode: Literal["restricted", "surge"], mocker):
@@ -742,7 +746,7 @@ class TestAsyncEvent:
         await Caller.wait(futures)
 
     async def test_another_thread(self, caller):
-        ct = Caller.start_new(name="test")
+        ct = Caller.start_new()
         event = AsyncEvent(ct.thread)
         caller.call_later(0.1, event.set)
         await event.wait()

@@ -514,7 +514,7 @@ class Kernel(HasTraits):
 
         def heartbeat():
             socket: Socket = Context.instance().socket(zmq.ROUTER)
-            with utils.do_not_debug_this_thread("heartbeat"), self._bind_socket(SocketID.heartbeat, socket):
+            with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.heartbeat, socket):
                 ready_event.set()
                 try:
                     zmq.proxy(socket, socket)
@@ -522,7 +522,7 @@ class Kernel(HasTraits):
                     return
 
         ready_event = AsyncEvent()
-        heartbeat_thread = threading.Thread(target=heartbeat, daemon=True)
+        heartbeat_thread = threading.Thread(target=heartbeat, name="heartbeat", daemon=True)
         heartbeat_thread.start()
         await ready_event.wait()
 
@@ -543,7 +543,7 @@ class Kernel(HasTraits):
             frontend: zmq.Socket = Context.instance().socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
             iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
-            with utils.do_not_debug_this_thread("iopub"), self._bind_socket(SocketID.iopub, iopub_socket):
+            with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.iopub, iopub_socket):
                 ready_event.set()
                 try:
                     zmq.proxy(frontend, iopub_socket)
@@ -860,7 +860,7 @@ class Kernel(HasTraits):
             if msg:
                 self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
-        utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
             self.iopub_send(msg_or_type="status", content={"execution_state": "busy"}, ident=self.topic("status"))
             if (content := await handler(job)) is not None:
@@ -869,7 +869,10 @@ class Kernel(HasTraits):
             _send_reply(error_to_content(e))
             self.log.exception("Exception in message handler:", exc_info=e)
         finally:
-            self.iopub_send(msg_or_type="status", content={"execution_state": "idle"}, ident=self.topic("status"))
+            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
+            self.iopub_send(
+                msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
+            )
 
     def iopub_send(
         self,

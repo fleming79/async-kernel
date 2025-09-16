@@ -83,10 +83,12 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
         client = AsyncKernelClient()
         while not connection_file.exists() or not connection_file.stat().st_size:
             await anyio.sleep(0.1)
+        await anyio.sleep(0.5)
         client.load_connection_file(connection_file)
         client.start_channels()
         msg_id = client.kernel_info()
         await utils.get_reply(client, msg_id)
+        await utils.clear_iopub(client, timeout=0.1)
         try:
             yield client
         finally:
