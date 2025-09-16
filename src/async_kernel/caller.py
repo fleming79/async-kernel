@@ -590,27 +590,30 @@ class Caller:
 
     def schedule_call(
         self,
-        func: Callable,
+        func: Callable[..., CoroutineType[Any, Any, T] | T],
         /,
         args: tuple,
         kwargs: dict,
         context: contextvars.Context | None = None,
-        **metadata,
-    ) -> Future:
+        **metadata: Any,
+    ) -> Future[T]:
         """
-        Schedule func to be called inside a task running in the callers thread.
+        Schedule `func` to be called inside a task running in the callers thread (thread-safe).
+
+        The methods [call_soon][async_kernel.caller.Caller.call_soon] and [call_later][async_kernel.caller.Caller.call_later]
+        use this method in the background,  they should be used in preference to this method since they provide type hinting for the arguments.
 
         Args:
             func: The function to be called. If it returns a coroutine, it will be awaited and its result will be returned.
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
-            **metadata: Additional metadata to store in the future.
+            metadata: Additional metadata to store in the future.
 
-        !!!  note
+        !!! note
 
-            All arguments are stored in the futures metadata. The futures metadata is cleared
-            once the futures result is set. This is to avoid memory issues
+            All arguments are stored in the future's metadata. When the call is done the
+            metadata is cleared to avoid memory leaks.
         """
         if self._stopped:
             raise anyio.ClosedResourceError
