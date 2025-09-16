@@ -484,7 +484,6 @@ class Caller:
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
-
     async def _wrap_call(self, fut: Future) -> None:
         if fut.cancelled():
             fut.set_result(None)  # This will cancel
@@ -625,7 +624,6 @@ class Caller:
     def _on_call_done(fut: Future):
         #  Avoid memory leaks
         fut.metadata.clear()
-
 
     def call_later(
         self,
