@@ -560,7 +560,7 @@ class Caller:
         return self._stopped
 
     def get_runner(self, *, started: Callable[[], None] | None = None):
-        """A convenience method to run the caller.
+        """The preferred way to run the caller loop.
 
         !!! tip
 
@@ -569,13 +569,14 @@ class Caller:
         if self.running or self.stopped:
             raise RuntimeError
 
-        async def runner() -> None:
-            async with self:
-                if started:
-                    started()
-                await anyio.sleep_forever()
+        async def run_caller_in_context() -> None:
+            with contextlib.suppress(anyio.get_cancelled_exc_class()):
+                async with self:
+                    if started:
+                        started()
+                    await anyio.sleep_forever()
 
-        return runner
+        return run_caller_in_context
 
     def stop(self, *, force=False) -> None:
         """
