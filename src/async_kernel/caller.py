@@ -158,27 +158,26 @@ class Future(Awaitable[T]):
         if self._cancelled:
             mode = "exception"
             value = self._make_cancelled_error()
-
-        def set_value():
-            if mode == "exception":
-                self._exception = value
-            else:
-                self._result = value  # pyright: ignore[reportAttributeAccessIssue]
-            self._done.set()
-            for cb in reversed(self._done_callbacks):
-                try:
-                    cb(self)
-                except Exception:
-                    pass
-
         if threading.current_thread() is not self._thread:
             try:
-                Caller(thread=self._thread).call_direct(set_value)
+                Caller(thread=self._thread).call_direct(self.__set_value, mode, value)
             except RuntimeError:
                 msg = f"The current thread is not {self._thread.name} and a `Caller` does not exist for that thread either."
                 raise RuntimeError(msg) from None
         else:
-            set_value()
+            self.__set_value(mode, value)
+
+    def __set_value(self, mode: Literal["result", "exception"], value):
+        if mode == "exception":
+            self._exception = value
+        else:
+            self._result = value
+        self._done.set()
+        for cb in reversed(self._done_callbacks):
+            try:
+                cb(self)
+            except Exception:
+                pass
 
     def _make_cancelled_error(self) -> FutureCancelledError:
         return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
@@ -485,14 +484,6 @@ class Caller:
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
-    def _schedule_wrapped_call(self, func: Callable, /, args: tuple, kwargs: dict, **extra) -> Future:
-        if self._stopped:
-            raise anyio.ClosedResourceError
-        fut = Future(self.thread, func=func, args=args, kwargs=kwargs, **extra)
-        self._jobs.append((contextvars.copy_context(), fut))
-        self._job_added.set()
-        return fut
-
     async def _wrap_call(self, fut: Future) -> None:
         if fut.cancelled():
             fut.set_result(None)  # This will cancel
@@ -597,6 +588,46 @@ class Caller:
         if self.thread is not threading.current_thread():
             self._stopped_event.wait()
 
+    def schedule_call(
+        self,
+        func: Callable[..., CoroutineType[Any, Any, T] | T],
+        /,
+        args: tuple,
+        kwargs: dict,
+        context: contextvars.Context | None = None,
+        **metadata: Any,
+    ) -> Future[T]:
+        """
+        Schedule `func` to be called inside a task running in the callers thread (thread-safe).
+
+        The methods [call_soon][async_kernel.caller.Caller.call_soon] and [call_later][async_kernel.caller.Caller.call_later]
+        use this method in the background,  they should be used in preference to this method since they provide type hinting for the arguments.
+
+        Args:
+            func: The function to be called. If it returns a coroutine, it will be awaited and its result will be returned.
+            args: Arguments corresponding to in the call to  `func`.
+            kwargs: Keyword arguments to use with in the call to `func`.
+            context: The context to use, if not provided the current context is used.
+            metadata: Additional metadata to store in the future.
+
+        !!! note
+
+            All arguments are stored in the future's metadata. When the call is done the
+            metadata is cleared to avoid memory leaks.
+        """
+        if self._stopped:
+            raise anyio.ClosedResourceError
+        fut = Future(self.thread, func=func, args=args, kwargs=kwargs, **metadata)
+        fut.add_done_callback(self._on_call_done)
+        self._jobs.append((context or contextvars.copy_context(), fut))
+        self._job_added.set()
+        return fut
+
+    @staticmethod
+    def _on_call_done(fut: Future):
+        #  Avoid memory leaks
+        fut.metadata.clear()
+
     def call_later(
         self,
         delay: float,
@@ -613,8 +644,13 @@ class Caller:
             delay: The minimum delay to add between submission and execution.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
+
+        !!! info
+
+            All call arguments are packed into the Futures metadata. The future metadata
+            is cleared when futures result is set.
         """
-        return self._schedule_wrapped_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
+        return self.schedule_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
 
     def call_soon(
         self,
@@ -631,7 +667,7 @@ class Caller:
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
         """
-        return self._schedule_wrapped_call(func, args, kwargs)
+        return self.schedule_call(func, args, kwargs)
 
     def call_direct(
         self,

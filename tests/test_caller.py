@@ -181,6 +181,25 @@ class TestFuture:
         fut = Future(name="test", mydict={"test": "a long string" * 100})
         assert repr(fut) == "Future< MainThread 🏃 {'mydict': {…}, 'name': 'test'} >"
 
+    async def test_gc(self, caller: Caller):
+        finalized = anyio.Event()
+        ok = False
+
+        class Cls:
+            def func(self):
+                assert Caller.current_future()
+                nonlocal ok
+                ok = True
+
+        t = Cls()
+        weakref.finalize(t, finalized.set)
+        fut = caller.call_soon(t.func)
+        assert hash(fut.metadata["func"]) == hash(t.func)
+        del fut
+        del t
+        await finalized.wait()
+        assert ok
+
 
 @pytest.mark.anyio
 class TestCaller:
@@ -213,9 +232,11 @@ class TestCaller:
         fut = caller.call_soon(test_func, a, b, c)
         assert repr(fut).startswith("Future< MainThread 🏃 | <function")
         await fut
-        assert repr(fut).startswith("Future< MainThread 🏁 | <function")
+        assert repr(fut) == "Future< MainThread 🏁 >"
         c.cancel()
         assert repr(c) == "Future< MainThread ⛔ 🏃 {'a': 'long stringl…nglong string', 'b': {…}} >"
+        c.set_result(None)
+        assert repr(c) == "Future< MainThread ⛔ 🏁 {'a': 'long stringl…nglong string', 'b': {…}} >"
 
     def test_no_thread(self):
         with pytest.raises(RuntimeError):
