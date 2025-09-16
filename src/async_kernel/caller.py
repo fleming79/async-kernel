@@ -776,7 +776,7 @@ class Caller:
             create: Create a new instance if one with the corresponding name does not already exist.
         """
         for caller in cls._instances.values():
-            if caller._name == name:
+            if caller.name == name:
                 return caller
         if create is True or name == "MainThread":
             return cls.start_new(name=name)
