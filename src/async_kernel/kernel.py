@@ -846,7 +846,21 @@ class Kernel(HasTraits):
         This method gets called for every valid request with the relevant handler.
         """
 
-        def _send_reply(content: dict, /) -> None:
+        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        try:
+            self.iopub_send(msg_or_type="status", content={"execution_state": "busy"}, ident=self.topic("status"))
+            if (content := await handler(job)) is not None:
+                self._send_reply(job, content)
+        except Exception as e:
+            self._send_reply(job, error_to_content(e))
+            self.log.exception("Exception in message handler:", exc_info=e)
+        finally:
+            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
+            self.iopub_send(
+                msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
+            )
+
+    def _send_reply(self, job:Job[dict], content: dict, /) -> None:
             """Send a reply to the job with the specified content."""
             if "status" not in content:
                 content["status"] = "ok"
@@ -860,19 +874,6 @@ class Kernel(HasTraits):
             if msg:
                 self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
-        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        try:
-            self.iopub_send(msg_or_type="status", content={"execution_state": "busy"}, ident=self.topic("status"))
-            if (content := await handler(job)) is not None:
-                _send_reply(content)
-        except Exception as e:
-            _send_reply(error_to_content(e))
-            self.log.exception("Exception in message handler:", exc_info=e)
-        finally:
-            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
-            self.iopub_send(
-                msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
-            )
 
     def iopub_send(
         self,
