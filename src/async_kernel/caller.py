@@ -6,6 +6,7 @@ import contextvars
 import functools
 import inspect
 import logging
+import math
 import reprlib
 import threading
 import time
@@ -362,8 +363,6 @@ class Caller:
 
     MAX_IDLE_POOL_INSTANCES = 10
     "The number of `pool` instances to leave idle (See also[to_thread][async_kernel.Caller.to_thread])."
-    MAX_BUFFER_SIZE = 1000
-    "The default  maximum_buffer_size used in [queue_call][async_kernel.Caller.queue_call]."
 
     __stack = None
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
@@ -700,7 +699,7 @@ class Caller:
         return func in self._queue_map
 
     def queue_get_sender(
-        self, func: Callable, max_buffer_size: None | int = None
+        self, func: Callable, max_buffer_size:  float = math.inf
     ) -> MemoryObjectSendStream[tuple[contextvars.Context, tuple, dict]]:
         """
         Get or create a new queue unique to func in this caller.
@@ -708,6 +707,10 @@ class Caller:
         This method can be used to configure the buffer size of the queue for the methods
         - `queue_call`
         - `queue_call_no_wait`
+
+        Args:
+            func: The function to which the queue is associated with this caller.
+            max_buffer_size: The maximum allowed queued messages, see [anyio.create_memory_object_stream][] for further details.
 
         !!! info
 
@@ -717,7 +720,6 @@ class Caller:
             1. All strong references are lost the function/method.
         """
         self._check_in_thread()
-        max_buffer_size = max_buffer_size or self.MAX_BUFFER_SIZE
         if not (sender := self._queue_map.get(func)):
             sender, queue = anyio.create_memory_object_stream[tuple[contextvars.Context, tuple, dict]](max_buffer_size)
 
