@@ -492,12 +492,12 @@ class Caller:
         return fut
 
     async def _wrap_call(self, fut: Future) -> None:
-        self._future_var.set(fut)
         if fut.cancelled():
             fut.set_result(None)  # This will cancel
             return
         md = fut.metadata
         func = md["func"]
+        token = self._future_var.set(fut)
         try:
             with anyio.CancelScope() as scope:
                 fut.set_cancel_scope(scope)
@@ -519,6 +519,8 @@ class Caller:
                     fut.set_exception(e)
         except Exception as e:
             self.log.exception("Calling func %s failed", func, exc_info=e)
+        finally:
+            self._future_var.reset(token)
 
     def _check_in_thread(self):
         if self.thread is not threading.current_thread():

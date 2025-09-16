@@ -860,7 +860,7 @@ class Kernel(HasTraits):
             if msg:
                 self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
-        utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
             self.iopub_send(msg_or_type="status", content={"execution_state": "busy"}, ident=self.topic("status"))
             if (content := await handler(job)) is not None:
@@ -869,7 +869,10 @@ class Kernel(HasTraits):
             _send_reply(error_to_content(e))
             self.log.exception("Exception in message handler:", exc_info=e)
         finally:
-            self.iopub_send(msg_or_type="status", content={"execution_state": "idle"}, ident=self.topic("status"))
+            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
+            self.iopub_send(
+                msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
+            )
 
     def iopub_send(
         self,
