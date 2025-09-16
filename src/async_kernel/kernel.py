@@ -10,6 +10,7 @@ import getpass
 import importlib.util
 import json
 import logging
+import math
 import os
 import pathlib
 import signal
@@ -699,21 +700,20 @@ class Kernel(HasTraits):
                     while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
                         try:
                             ident, msg = self.session.recv(socket, copy=False)
-                            assert ident
-                            assert msg
-                            if socket_id == SocketID.shell:
-                                # Reset the frame to show the main thread is not blocked.
-                                self._last_interrupt_frame = None
-                            self.log.debug("*** _receive_msg_loop %s*** %s", socket_id, msg)
-                            await self.handle_message_request(
-                                Job(
-                                    socket_id=socket_id,
-                                    socket=socket,
-                                    ident=ident,
-                                    msg=msg,  # pyright: ignore[reportArgumentType]
-                                    received_time=time.monotonic(),
-                                    run_mode=None,  #  pyright: ignore[reportArgumentType]. This value is set by `get_handler_and_run_mode`.
-                                )
+                            if ident and msg:
+                                if socket_id == SocketID.shell:
+                                    # Reset the frame to show the main thread is not blocked.
+                                    self._last_interrupt_frame = None
+                                self.log.debug("*** _receive_msg_loop %s*** %s", socket_id, msg)
+                                await self.handle_message_request(
+                                    Job(
+                                        socket_id=socket_id,
+                                        socket=socket,
+                                        ident=ident,
+                                        msg=msg,  # pyright: ignore[reportArgumentType]
+                                        received_time=time.monotonic(),
+                                        run_mode=None,  #  pyright: ignore[reportArgumentType]. This value is set by `get_handler_and_run_mode`.
+                                    )
                             )
                         except Exception as e:
                             self.log.debug("Bad message on %s: %s", socket_id, e)
@@ -805,6 +805,8 @@ class Kernel(HasTraits):
                 return RunMode.thread
             case _, _, MsgType.history_request:
                 return RunMode.thread
+            case _, _,   MsgType.comm_msg:
+                return RunMode.queue
             case _, _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
                 return RunMode.blocking
             case _:
@@ -861,18 +863,18 @@ class Kernel(HasTraits):
             )
 
     def _send_reply(self, job:Job[dict], content: dict, /) -> None:
-            """Send a reply to the job with the specified content."""
-            if "status" not in content:
-                content["status"] = "ok"
-            msg = self.session.send(
-                stream=job["socket"],
-                msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
-                content=content,
-                parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
-                ident=job["ident"],
-            )
-            if msg:
-                self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
+        """Send a reply to the job with the specified content."""
+        if "status" not in content:
+            content["status"] = "ok"
+        msg = self.session.send(
+            stream=job["socket"],
+            msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
+            content=content,
+            parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
+            ident=job["ident"],
+        )
+        if msg:
+            self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
 
     def iopub_send(
@@ -986,7 +988,7 @@ class Kernel(HasTraits):
             content |= error_to_content(err)
             if (not silent) and c.get("stop_on_error"):
                 try:
-                    self._stop_on_error_time = float("inf")
+                    self._stop_on_error_time = math.inf
                     self.log.info("An error occurred in a non-silent execution request")
                     await anyio.sleep(0)
                 finally:

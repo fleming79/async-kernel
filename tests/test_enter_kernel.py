@@ -27,7 +27,7 @@ async def test_start_kernel_in_context(anyio_backend, kernel_name):
                 pass
         # Test prevents binding socket more than once.
         with (
-            pytest.raises(RuntimeError, match=".*is already loaded"),
+            pytest.raises(RuntimeError, match="is already loaded"),
             kernel._bind_socket(SocketID.shell, None),  # pyright: ignore[reportArgumentType, reportPrivateUsage]
         ):
             pass
