@@ -746,7 +746,7 @@ class TestAsyncEvent:
         await Caller.wait(futures)
 
     async def test_another_thread(self, caller):
-        ct = Caller.start_new(name="test")
+        ct = Caller.start_new()
         event = AsyncEvent(ct.thread)
         caller.call_later(0.1, event.set)
         await event.wait()
