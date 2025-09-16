@@ -87,6 +87,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
         client.start_channels()
         msg_id = client.kernel_info()
         await utils.get_reply(client, msg_id)
+        await utils.clear_iopub(client, timeout=0.1)
         try:
             yield client
         finally:
