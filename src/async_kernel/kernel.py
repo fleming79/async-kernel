@@ -514,7 +514,7 @@ class Kernel(HasTraits):
 
         def heartbeat():
             socket: Socket = Context.instance().socket(zmq.ROUTER)
-            with utils.do_not_debug_this_thread("heartbeat"), self._bind_socket(SocketID.heartbeat, socket):
+            with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.heartbeat, socket):
                 ready_event.set()
                 try:
                     zmq.proxy(socket, socket)
@@ -522,7 +522,7 @@ class Kernel(HasTraits):
                     return
 
         ready_event = AsyncEvent()
-        heartbeat_thread = threading.Thread(target=heartbeat, daemon=True)
+        heartbeat_thread = threading.Thread(target=heartbeat, name="heartbeat", daemon=True)
         heartbeat_thread.start()
         await ready_event.wait()
 
@@ -543,7 +543,7 @@ class Kernel(HasTraits):
             frontend: zmq.Socket = Context.instance().socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
             iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
-            with utils.do_not_debug_this_thread("iopub"), self._bind_socket(SocketID.iopub, iopub_socket):
+            with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.iopub, iopub_socket):
                 ready_event.set()
                 try:
                     zmq.proxy(frontend, iopub_socket)

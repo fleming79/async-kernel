@@ -368,7 +368,7 @@ class TestCaller:
         caller = Caller(create=True)
         caller.stop()
         with pytest.raises(RuntimeError):
-            caller.get_runner()  # pyright: ignore[reportUnusedCoroutine]
+            caller.get_runner()
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend, mode: Literal["restricted", "surge"], mocker):

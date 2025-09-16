@@ -850,18 +850,27 @@ class Caller:
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
     ) -> Self:
         """
-        Create an caller instance.
+        Create a new caller instance with the thread determined according to the provided `name`.
 
-        When name is provided and the name matches the current thread, an instance will be created
-        for the current thread.
-        Otherwise a new thread.
-        A new thread and caller is always started and ready to start new jobs as soon as it is returned.
+        When `name` equals the current threads it will use the current thread providing the backend is 'asyncio' and
+        there is a running event loop available.
+
+        When the name does not match the current thread name, a new thread will be started provided
+        that the name provided is not the name does not overlap with any existing threads. When no
+        name is provided, a new thread can always be started.
 
         Args:
             backend: The backend to use for the anyio event loop (anyio.run). Defaults to the backend from where it is called.
             log: A logging adapter to use for debug messages.
             protected: When True, the caller will not shutdown unless shutdown is called with `force=True`.
             backend_options: Backend options for [anyio.run][]. Defaults to `Kernel.backend_options`.
+
+        Returns:
+            Caller: The newly created caller.
+
+        Raises:
+            RuntimeError: If a caller already exists or when the caller can't be started.
+
         """
         if name and name in [t.name for t in cls._instances]:
             msg = f"A caller already exists with {name=}!"

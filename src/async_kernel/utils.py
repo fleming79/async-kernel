@@ -39,18 +39,16 @@ _execution_count_var: ContextVar[int] = ContextVar("execution_count")
 _execute_request_timeout: ContextVar[float | None] = ContextVar("execute_request_timeout", default=None)
 
 
-def mark_thread_pydev_do_not_trace(thread: threading.Thread, name="", *, remove=False):
+def mark_thread_pydev_do_not_trace(thread: threading.Thread, *, remove=False):
     """Modifies the given thread's attributes to hide or unhide it from the debugger (e.g., debugpy)."""
     thread.pydev_do_not_trace = not remove  # pyright: ignore[reportAttributeAccessIssue]
-    if name:
-        thread.name = name
 
 
 @contextlib.contextmanager
-def do_not_debug_this_thread(name=""):
+def do_not_debug_this_thread():
     "A context to mark the thread for debugpy to not debug."
     if not LAUNCHED_BY_DEBUGPY:
-        mark_thread_pydev_do_not_trace(threading.current_thread(), name)
+        mark_thread_pydev_do_not_trace(threading.current_thread())
     try:
         yield
     finally:
