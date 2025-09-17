@@ -605,7 +605,8 @@ class Kernel(HasTraits):
         task_status.started()
         try:
             await self.event_stopped.wait()
-            await self.debugger.disconnect()
+            if self.debugger.debugpy_client.connected:
+                await self.control_thread_caller.call_soon(self.debugger.disconnect)
         except BaseException:
             pass
         Caller.stop_all(_stop_protected=True)
