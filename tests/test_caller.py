@@ -771,3 +771,9 @@ class TestAsyncEvent:
         event = AsyncEvent(ct.thread)
         caller.call_later(0.1, event.set)
         await event.wait()
+
+    def test_repr(self):
+        event = AsyncEvent()
+        assert repr(event) == "<AsyncEvent 🏃>"
+        event.set()
+        assert repr(event) == "<AsyncEvent 🏁>"

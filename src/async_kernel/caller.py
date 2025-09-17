@@ -70,6 +70,10 @@ class AsyncEvent:
         self._events = set()
         self._flag = False
 
+    @override
+    def __repr__(self) -> str:
+        return f"<AsyncEvent {'🏁' if self._flag else '🏃'}>"
+
     async def wait(self) -> None:
         """
         Wait until the flag has been set.
