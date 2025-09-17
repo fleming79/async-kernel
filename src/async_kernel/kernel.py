@@ -605,7 +605,8 @@ class Kernel(HasTraits):
         task_status.started()
         try:
             await self.event_stopped.wait()
-            await self.debugger.disconnect()
+            if self.debugger.debugpy_client.connected:
+                await self.control_thread_caller.call_soon(self.debugger.disconnect)
         except BaseException:
             pass
         Caller.stop_all(_stop_protected=True)
@@ -848,33 +849,32 @@ class Kernel(HasTraits):
         This method gets called for every valid request with the relevant handler.
         """
 
+        def send_reply(job: Job[dict], content: dict, /) -> None:
+            if "status" not in content:
+                content["status"] = "ok"
+            msg = self.session.send(
+                stream=job["socket"],
+                msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
+                content=content,
+                parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
+                ident=job["ident"],
+            )
+            if msg:
+                self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
+
         token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
             self.iopub_send(msg_or_type="status", content={"execution_state": "busy"}, ident=self.topic("status"))
             if (content := await handler(job)) is not None:
-                self._send_reply(job, content)
+                send_reply(job, content)
         except Exception as e:
-            self._send_reply(job, error_to_content(e))
+            send_reply(job, error_to_content(e))
             self.log.exception("Exception in message handler:", exc_info=e)
         finally:
             utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
             self.iopub_send(
                 msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
             )
-
-    def _send_reply(self, job: Job[dict], content: dict, /) -> None:
-        """Send a reply to the job with the specified content."""
-        if "status" not in content:
-            content["status"] = "ok"
-        msg = self.session.send(
-            stream=job["socket"],
-            msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
-            content=content,
-            parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
-            ident=job["ident"],
-        )
-        if msg:
-            self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
     def iopub_send(
         self,

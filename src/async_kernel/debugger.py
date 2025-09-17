@@ -578,8 +578,10 @@ class Debugger(HasTraits):
                     "type": "request",
                     "command": "disconnect",
                     "seq": self.next_seq(),
-                    "restart": False,
-                    "terminateDebuggee": False,
-                    "suspendDebuggee": False,
+                    "arguments": {
+                        "restart": False,
+                        "terminateDebuggee": False,
+                        "suspendDebuggee": False,
+                    },
                 }
             )
