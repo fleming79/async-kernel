@@ -179,7 +179,7 @@ class TestFuture:
 
     def test_repr(self):
         fut = Future(name="test", mydict={"test": "a long string" * 100})
-        assert repr(fut) == "Future< MainThread 🏃 {'mydict': {…}, 'name': 'test'} >"
+        assert repr(fut) == "<Future MainThread 🏃 {'mydict': {…}, 'name': 'test'} >"
 
     async def test_gc(self, caller: Caller):
         finalized = anyio.Event()
@@ -228,15 +228,15 @@ class TestCaller:
         b = {f"name {i}": "long_string" * 100 for i in range(100)}
         c = Future()
         c.metadata.update(a=a, b=b)
-        assert repr(c) == "Future< MainThread 🏃 {'a': 'long stringl…nglong string', 'b': {…}} >"
+        assert repr(c) == "<Future MainThread 🏃 {'a': 'long stringl…nglong string', 'b': {…}} >"
         fut = caller.call_soon(test_func, a, b, c)
-        assert repr(fut).startswith("Future< MainThread 🏃 | <function")
+        assert repr(fut).startswith("<Future MainThread 🏃 | <function")
         await fut
-        assert repr(fut) == "Future< MainThread 🏁 >"
+        assert repr(fut) == "<Future MainThread 🏁 >"
         c.cancel()
-        assert repr(c) == "Future< MainThread ⛔ 🏃 {'a': 'long stringl…nglong string', 'b': {…}} >"
+        assert repr(c) == "<Future MainThread ⛔ 🏃 {'a': 'long stringl…nglong string', 'b': {…}} >"
         c.set_result(None)
-        assert repr(c) == "Future< MainThread ⛔ 🏁 {'a': 'long stringl…nglong string', 'b': {…}} >"
+        assert repr(c) == "<Future MainThread ⛔ 🏁 {'a': 'long stringl…nglong string', 'b': {…}} >"
 
     def test_no_thread(self):
         with pytest.raises(RuntimeError):
