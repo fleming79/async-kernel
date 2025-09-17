@@ -699,7 +699,7 @@ class Caller:
         return func in self._queue_map
 
     def queue_get_sender(
-        self, func: Callable, max_buffer_size:  float = math.inf
+        self, func: Callable, max_buffer_size: float = math.inf
     ) -> MemoryObjectSendStream[tuple[contextvars.Context, tuple, dict]]:
         """
         Get or create a new queue unique to func in this caller.

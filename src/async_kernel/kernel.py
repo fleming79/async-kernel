@@ -714,7 +714,7 @@ class Kernel(HasTraits):
                                         received_time=time.monotonic(),
                                         run_mode=None,  #  pyright: ignore[reportArgumentType]. This value is set by `get_handler_and_run_mode`.
                                     )
-                            )
+                                )
                         except Exception as e:
                             self.log.debug("Bad message on %s: %s", socket_id, e)
                             continue
@@ -805,7 +805,7 @@ class Kernel(HasTraits):
                 return RunMode.thread
             case _, _, MsgType.history_request:
                 return RunMode.thread
-            case _, _,   MsgType.comm_msg:
+            case _, _, MsgType.comm_msg:
                 return RunMode.queue
             case _, _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
                 return RunMode.blocking
@@ -862,7 +862,7 @@ class Kernel(HasTraits):
                 msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
             )
 
-    def _send_reply(self, job:Job[dict], content: dict, /) -> None:
+    def _send_reply(self, job: Job[dict], content: dict, /) -> None:
         """Send a reply to the job with the specified content."""
         if "status" not in content:
             content["status"] = "ok"
@@ -875,7 +875,6 @@ class Kernel(HasTraits):
         )
         if msg:
             self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
-
 
     def iopub_send(
         self,
