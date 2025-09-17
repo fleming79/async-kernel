@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
 
 import anyio
+import pytest
 
 from async_kernel.typing import MsgType
 from tests import utils
@@ -57,6 +59,10 @@ async def send_debug_request(client: AsyncKernelClient, command: str, arguments:
     return reply["content"]
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="The Jupyter clients async client uses asyncio zmq sockets which on windows need tornado that gets blocked by the debugger.",
+)
 async def test_debugger(subprocess_kernels_client):
     client = subprocess_kernels_client
     reply = await send_debug_request(client=client, command="initialize", arguments=initialize_args)
