@@ -474,6 +474,11 @@ class TestCaller:
             caller.queue_close(func)
             assert not caller.queue_exists(func)
 
+    async def test_execution_queue_from_thread(self, caller: Caller):
+        event = AsyncEvent()
+        caller.to_thread(caller.queue_call, event.set)
+        await event.wait()
+
     async def test_gc(self, anyio_backend):
         event_finalize_called = anyio.Event()
         async with Caller(create=True) as caller:
