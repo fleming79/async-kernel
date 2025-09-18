@@ -70,6 +70,10 @@ class AsyncEvent:
         self._events = set()
         self._flag = False
 
+    @override
+    def __repr__(self) -> str:
+        return f"<AsyncEvent {'🏁' if self._flag else '🏃'}>"
+
     async def wait(self) -> None:
         """
         Wait until the flag has been set.
@@ -138,7 +142,7 @@ class Future(Awaitable[T]):
 
     @override
     def __repr__(self) -> str:
-        rep = f"Future< {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else " 🏃")
+        rep = f"<Future {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else " 🏃")
         with contextlib.suppress(Exception):
             md = self.metadata
             if "func" in md:
@@ -749,15 +753,21 @@ class Caller:
         **kwargs: P.kwargs,
     ) -> None:
         """
-        Queue the execution of `func` in a queue unique to it and this caller (not thread-safe).
+        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
+
+        This is the async version that will wait until the call is added to the queue. This
+        is the preferred way to queue calls, with the optimal pathway being in the current thread.
 
         Args:
             func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
         """
-        sender = self.queue_get_sender(func)
-        await sender.send((contextvars.copy_context(), args, kwargs))
+        if self._thread is not threading.current_thread():
+            await self.call_soon(self.queue_call, func, *args, **kwargs)
+        else:
+            sender = self.queue_get_sender(func)
+            await sender.send((contextvars.copy_context(), args, kwargs))
 
     def queue_call_no_wait(
         self,
@@ -767,20 +777,20 @@ class Caller:
         **kwargs: P.kwargs,
     ) -> None:
         """
-        Queue the execution of `func` in a queue unique to it and this caller (not thread-safe).
+        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
+
+        This is a convenience method that calls `queue_call` as a task.
 
         Args:
             func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
         """
-
-        sender = self.queue_get_sender(func)
-        sender.send_nowait((contextvars.copy_context(), args, kwargs))
+        self.call_soon(self.queue_call, func, *args, **kwargs)
 
     def queue_close(self, func: Callable) -> None:
         """
-        Close the execution queue associated with func (thread-safe).
+        Close the execution queue associated with `func` (thread-safe).
 
         Args:
             func: The queue of the function to close.
