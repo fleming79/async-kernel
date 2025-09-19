@@ -58,6 +58,7 @@ async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
     try:
         yield client
     finally:
+        await utils.clear_iopub(client)
         client.stop_channels()
         await anyio.sleep(0)
 

@@ -116,6 +116,7 @@ async def test_simple_print(kernel, client, quiet: bool):
 
 @pytest.mark.parametrize("mode", ["kernel_timeout", "metadata"])
 async def test_execute_kernel_timeout(client, kernel: Kernel, mode: str):
+    await utils.clear_iopub(client)
     kernel.shell.execute_request_timeout = 0.1 if "kernel" in mode else None
     last_stop_time = kernel._stop_on_error_time  # pyright: ignore[reportPrivateUsage]
     metadata: dict[str, float | list] = {"timeout": 0.1}
@@ -385,6 +386,7 @@ async def test_interrupt_request_blocking_task(subprocess_kernels_client):
     await Caller().call_soon(time.sleep, {utils.TIMEOUT * 2})
     """
     client = subprocess_kernels_client
+    await utils.clear_iopub(client)
     msg_id = client.execute(code, reply=False)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")

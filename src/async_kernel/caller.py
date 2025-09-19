@@ -509,7 +509,8 @@ class Caller:
                         scope.cancel()
                     fut.set_result(result)
                 except anyio.get_cancelled_exc_class():
-                    fut.cancel()
+                    with contextlib.suppress(anyio.get_cancelled_exc_class()):
+                        fut.cancel()
                     fut.set_result(None)  # This will cancel
                 except Exception as e:
                     fut.set_exception(e)
