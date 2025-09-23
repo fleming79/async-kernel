@@ -486,6 +486,18 @@ class TestCaller:
         await anyio.sleep(0.1)
         await event_finalize_called.wait()
 
+    async def test_queue_cancel(self, caller:Caller):
+        started =  AsyncEvent()
+        async def test_func():
+            started.set()
+            await  anyio.sleep_forever()
+        caller.queue_call(test_func)
+        fut = caller.queue_get(test_func)
+        assert fut
+        await started.wait()
+        fut.cancel()
+        await fut.wait(result=False)
+
     async def test_execution_queue_gc(self, caller: Caller):
         class MyObj:
             async def method(self):

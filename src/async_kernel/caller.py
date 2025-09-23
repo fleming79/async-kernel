@@ -371,7 +371,7 @@ class Caller:
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
-    _queue_map: dict[int, Future[Never]]
+    _queue_map: dict[int, Future]
     _taskgroup: TaskGroup | None = None
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
@@ -707,7 +707,7 @@ class Caller:
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Future[Never]:
+    ) -> None:
         """
         Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
 
@@ -728,7 +728,9 @@ class Caller:
                 queue.append(args)
                 event_added.set()
 
-            async def execute_loop(sender, queue: deque, event_added=event_added) -> Never:
+            async def execute_loop(sender, queue: deque, event_added=event_added) -> None:
+                fut = self.current_future()
+                assert fut
                 try:
                     while True:
                         event_added.clear()
@@ -738,9 +740,9 @@ class Caller:
                                 result = context.run(func_, *args, **kwargs)
                                 if inspect.iscoroutine(object=result):
                                     await result
-                            except anyio.get_cancelled_exc_class():
-                                pass
-                            except Exception as e:
+                            except  ( anyio.get_cancelled_exc_class(), Exception) as e:
+                                if fut.cancelled():
+                                    break
                                 self.log.exception("Execution %f failed", func_, exc_info=e)
                             finally:
                                 func_ = None
@@ -749,11 +751,10 @@ class Caller:
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = fut = self.call_soon(  # pyright: ignore[reportArgumentType]
+            self._queue_map[key] = fut = self.call_soon(
                 execute_loop, sender=sender, queue=queue, event_added=event_added
             )
         fut.metadata["kwargs"]["sender"]((contextvars.copy_context(), func, args, kwargs))
-        return fut  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
         """
@@ -764,7 +765,8 @@ class Caller:
         """
         key = func if isinstance(func, int) else hash(func)
         if fut := self._queue_map.pop(key, None):
-            fut.metadata["kwargs"]["event_added"].set()
+            if (kwargs := fut.metadata.get("kwargs")) and (event := kwargs.get("event_added")):
+                event.set()
             fut.cancel()
 
     @classmethod
