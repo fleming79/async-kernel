@@ -1,5 +1,4 @@
 import contextlib
-import gc
 import importlib.util
 import inspect
 import threading
@@ -464,31 +463,45 @@ class TestCaller:
         async def func(a, b, /, delay, *, results):
             await anyio.sleep(delay)
             results.append(b)
+
         for _ in range(2):
             results = []
             for j in pool:
                 caller.queue_call(func, 0, j, delay=0.05 * j, results=results)
-            assert caller.queue_exists(func)
+            assert caller.queue_get(func)
             assert results != pool
             caller.queue_close(func)
-            assert not caller.queue_exists(func)
+            assert not caller.queue_get(func)
 
     async def test_execution_queue_from_thread(self, caller: Caller):
         event = AsyncEvent()
         caller.to_thread(caller.queue_call, event.set)
         await event.wait()
-        pass
 
     async def test_gc(self, anyio_backend):
         event_finalize_called = anyio.Event()
         async with Caller(create=True) as caller:
             weakref.finalize(caller, event_finalize_called.set)
-            ref =  weakref.ref(caller)
             del caller
         await anyio.sleep(0.1)
-        gc.collect()
         await event_finalize_called.wait()
-        pass
+
+    async def test_execution_queue_gc(self, caller: Caller):
+        class MyObj:
+            async def method(self):
+                method_called.set()
+
+        obj_finalized = AsyncEvent()
+        method_called = AsyncEvent()
+        obj = MyObj()
+        weakref.finalize(obj, obj_finalized.set)
+        caller.queue_call(obj.method)
+        await method_called.wait()
+        assert caller.queue_get(obj.method), "A ref should be retained unless it is explicitly removed"
+        del obj
+
+        await obj_finalized.wait()
+        assert not any(caller._queue_map)  # pyright: ignore[reportPrivateUsage]
 
     async def test_call_early(self, anyio_backend) -> None:
         caller = Caller(create=True)

@@ -13,7 +13,7 @@ import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, cast, overload
 
 import anyio
 import sniffio
@@ -371,7 +371,7 @@ class Caller:
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
-    _queue_map: dict[Callable, Future]
+    _queue_map: dict[int, Future[Never]]
     _taskgroup: TaskGroup | None = None
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
@@ -697,9 +697,9 @@ class Caller:
         self._jobs.append(functools.partial(func, *args, **kwargs))
         self._job_added.set()
 
-    def queue_exists(self, func: Callable) -> bool:
-        "Returns True if an execution queue exists for `func`."
-        return func in self._queue_map
+    def queue_get(self, func: Callable) -> Future[Never] | None:
+        "Returns Future for `func` where the queue is running if there is one."
+        return self._queue_map.get(hash(func))
 
     def queue_call(
         self,
@@ -707,7 +707,7 @@ class Caller:
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> None:
+    ) -> Future[Never]:
         """
         Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
 
@@ -716,15 +716,19 @@ class Caller:
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
         """
-        if not (fut := self._queue_map.get(func)):
+        key = hash(func)
+        if not (fut := self._queue_map.get(key)):
             queue = deque()
             event_added = threading.Event()
+
+            with contextlib.suppress(TypeError):
+                weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
             def sender(args):
                 queue.append(args)
                 event_added.set()
 
-            async def execute_loop(sender, queue: deque, event_added=event_added):
+            async def execute_loop(sender, queue: deque, event_added=event_added) -> Never:
                 try:
                     while True:
                         event_added.clear()
@@ -743,20 +747,24 @@ class Caller:
                         else:
                             await wait_thread_event(event_added)
                 finally:
-                    self._queue_map.pop(func)
+                    self._queue_map.pop(key)
 
-            self._queue_map[func] = fut = self.call_soon(execute_loop, sender=sender, queue=queue, event_added=event_added)
+            self._queue_map[key] = fut = self.call_soon(  # pyright: ignore[reportArgumentType]
+                execute_loop, sender=sender, queue=queue, event_added=event_added
+            )
         fut.metadata["kwargs"]["sender"]((contextvars.copy_context(), func, args, kwargs))
+        return fut  # pyright: ignore[reportReturnType]
 
-    def queue_close(self, func: Callable) -> None:
+    def queue_close(self, func: Callable | int) -> None:
         """
         Close the execution queue associated with `func` (thread-safe).
 
         Args:
             func: The queue of the function to close.
         """
-        if fut := self._queue_map.pop(func, None):
-            fut.metadata['kwargs']['event_added'].set()
+        key = func if isinstance(func, int) else hash(func)
+        if fut := self._queue_map.pop(key, None):
+            fut.metadata["kwargs"]["event_added"].set()
             fut.cancel()
 
     @classmethod
