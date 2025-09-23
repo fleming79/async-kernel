@@ -63,7 +63,7 @@ class InvalidStateError(RuntimeError):
 class AsyncEvent:
     """An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."""
 
-    __slots__ = ["_events", "_flag", "_thread"]
+    __slots__ = ["__weakref__",  "_events", "_flag", "_thread"]
 
     def __init__(self, thread: threading.Thread | None = None) -> None:
         self._thread = thread or threading.current_thread()
