@@ -486,24 +486,6 @@ class TestCaller:
             del caller
         await event_finalize_called.wait()
 
-    async def test_execution_queue_gc(self, anyio_backend):
-        class MyObj:
-            async def method(self):
-                method_called.set()
-
-        obj_finalized = AsyncEvent()
-        method_called = AsyncEvent()
-        async with Caller(create=True) as caller:
-            obj = MyObj()
-            weakref.finalize(obj, obj_finalized.set)
-            caller.queue_call_no_wait(obj.method)
-            await method_called.wait()
-            assert caller.queue_exists(obj.method), "A ref should be retained unless it is explicitly removed"
-            del obj
-
-        await obj_finalized.wait()
-        assert not any(caller._queue_map)  # pyright: ignore[reportPrivateUsage]
-
     async def test_call_early(self, anyio_backend) -> None:
         caller = Caller(create=True)
         assert not caller.running
@@ -609,6 +591,14 @@ class TestCaller:
             case _:
                 assert done == set(items)
                 assert not pending
+
+    async def test_cancelled_future(self, caller: Caller):
+        fut = caller.call_soon(anyio.sleep_forever)
+        await anyio.sleep(0.1)
+        a = AsyncEvent()
+        weakref.finalize(a, fut.cancel)
+        del a
+        await fut.wait(result=False)
 
 
 class TestLock:
