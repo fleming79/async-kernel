@@ -6,7 +6,6 @@ import contextvars
 import functools
 import inspect
 import logging
-import math
 import reprlib
 import threading
 import time
@@ -18,7 +17,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast, overload
 
 import anyio
 import sniffio
-from anyio.streams.memory import MemoryObjectSendStream
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
@@ -32,7 +30,6 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     from anyio.abc import TaskGroup, TaskStatus
-    from anyio.streams.memory import MemoryObjectSendStream
 
     from async_kernel.typing import P
 
@@ -374,7 +371,7 @@ class Caller:
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
-    _queue_map: weakref.WeakKeyDictionary[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
+    _queue_map: dict[Callable, Future]
     _taskgroup: TaskGroup | None = None
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
@@ -429,7 +426,7 @@ class Caller:
             inst._jobs = deque()
             inst._job_added = threading.Event()
             inst._protected = protected
-            inst._queue_map = weakref.WeakKeyDictionary()
+            inst._queue_map = {}
             cls._instances[thread] = inst
         return inst
 
@@ -513,6 +510,7 @@ class Caller:
                         with contextlib.suppress(anyio.get_cancelled_exc_class()):
                             fut.cancel()
                     fut.set_result(None)  # This will cancel
+                    raise
                 except Exception as e:
                     fut.set_exception(e)
         except Exception as e:
@@ -583,9 +581,8 @@ class Caller:
         if self._protected and not force:
             return
         self._stopped = True
-        for sender in self._queue_map.values():
-            sender.close()
-        self._queue_map.clear()
+        for func in tuple(self._queue_map):
+            self.queue_close(func)
         self._job_added.set()
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
@@ -704,91 +701,52 @@ class Caller:
         "Returns True if an execution queue exists for `func`."
         return func in self._queue_map
 
-    def queue_get_sender(
-        self, func: Callable, max_buffer_size: float = math.inf
-    ) -> MemoryObjectSendStream[tuple[contextvars.Context, tuple, dict]]:
+    def queue_call(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
         """
-        Get or create a new queue unique to func in this caller.
-
-        This method can be used to configure the buffer size of the queue for the methods
-        - `queue_call`
-        - `queue_call_no_wait`
+        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
 
         Args:
-            func: The function to which the queue is associated with this caller.
-            max_buffer_size: The maximum allowed queued messages, see [anyio.create_memory_object_stream][] for further details.
-
-        !!! info
-
-            The queue will stay open until one of the following occurs.
-
-            1. It explicitly closed with the method `queue_close`.
-            1. All strong references are lost the function/method.
+            func: The function.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
         """
-        self._check_in_thread()
-        if not (sender := self._queue_map.get(func)):
-            sender, queue = anyio.create_memory_object_stream[tuple[contextvars.Context, tuple, dict]](max_buffer_size)
+        if not (fut := self._queue_map.get(func)):
+            queue = deque()
+            event_added = threading.Event()
 
-            async def execute_loop():
+            def sender(args):
+                queue.append(args)
+                event_added.set()
+
+            async def execute_loop(sender, queue: deque, event_added=event_added):
                 try:
-                    with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                        async with queue as receive_stream:
-                            async for context, args, kwargs in receive_stream:
-                                try:
-                                    result = context.run(func, *args, **kwargs)
-                                    if inspect.iscoroutine(result):
-                                        await result
-                                except Exception as e:
-                                    self.log.exception("Execution %f failed", func, exc_info=e)
+                    while True:
+                        event_added.clear()
+                        if queue:
+                            context, func_, args, kwargs = queue.popleft()
+                            try:
+                                result = context.run(func_, *args, **kwargs)
+                                if inspect.iscoroutine(object=result):
+                                    await result
+                            except anyio.get_cancelled_exc_class():
+                                pass
+                            except Exception as e:
+                                self.log.exception("Execution %f failed", func_, exc_info=e)
+                            finally:
+                                func_ = None
+                        else:
+                            await wait_thread_event(event_added)
                 finally:
-                    self._queue_map.pop(func, None)
+                    self._queue_map.pop(func)
 
-            self._queue_map[func] = sender
-            self.call_soon(execute_loop)
-        return sender
-
-    async def queue_call(
-        self,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> None:
-        """
-        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
-
-        This is the async version that will wait until the call is added to the queue. This
-        is the preferred way to queue calls, with the optimal pathway being in the current thread.
-
-        Args:
-            func: The function.
-            *args: Arguments to use with `func`.
-            **kwargs: Keyword arguments to use with `func`.
-        """
-        if self._thread is not threading.current_thread():
-            await self.call_soon(self.queue_call, func, *args, **kwargs)
-        else:
-            sender = self.queue_get_sender(func)
-            await sender.send((contextvars.copy_context(), args, kwargs))
-
-    def queue_call_no_wait(
-        self,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> None:
-        """
-        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
-
-        This is a convenience method that calls `queue_call` as a task.
-
-        Args:
-            func: The function.
-            *args: Arguments to use with `func`.
-            **kwargs: Keyword arguments to use with `func`.
-        """
-        self.call_soon(self.queue_call, func, *args, **kwargs)
+            self._queue_map[func] = fut = self.call_soon(execute_loop, sender=sender, queue=queue, event_added=event_added)
+        fut.metadata["kwargs"]["sender"]((contextvars.copy_context(), func, args, kwargs))
 
     def queue_close(self, func: Callable) -> None:
         """
@@ -797,8 +755,9 @@ class Caller:
         Args:
             func: The queue of the function to close.
         """
-        if sender := self._queue_map.pop(func, None):
-            self.call_direct(sender.close)
+        if fut := self._queue_map.pop(func, None):
+            fut.metadata['kwargs']['event_added'].set()
+            fut.cancel()
 
     @classmethod
     def stop_all(cls, *, _stop_protected: bool = False) -> None:

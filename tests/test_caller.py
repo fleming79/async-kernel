@@ -1,4 +1,5 @@
 import contextlib
+import gc
 import importlib.util
 import inspect
 import threading
@@ -463,12 +464,10 @@ class TestCaller:
         async def func(a, b, /, delay, *, results):
             await anyio.sleep(delay)
             results.append(b)
-
-        caller.queue_get_sender(func, max_buffer_size=2)
         for _ in range(2):
             results = []
             for j in pool:
-                await caller.queue_call(func, 0, j, delay=0.05 * j, results=results)
+                caller.queue_call(func, 0, j, delay=0.05 * j, results=results)
             assert caller.queue_exists(func)
             assert results != pool
             caller.queue_close(func)
@@ -478,13 +477,18 @@ class TestCaller:
         event = AsyncEvent()
         caller.to_thread(caller.queue_call, event.set)
         await event.wait()
+        pass
 
     async def test_gc(self, anyio_backend):
         event_finalize_called = anyio.Event()
         async with Caller(create=True) as caller:
             weakref.finalize(caller, event_finalize_called.set)
+            ref =  weakref.ref(caller)
             del caller
+        await anyio.sleep(0.1)
+        gc.collect()
         await event_finalize_called.wait()
+        pass
 
     async def test_call_early(self, anyio_backend) -> None:
         caller = Caller(create=True)
