@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-09-19
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Revise message handling for comm_msg [#129](https://github.com/fleming79/async-kernel/pull/129)
+
+- Improve Calller.get_instance to start a caller for the main thread if there isn't one running. [#127](https://github.com/fleming79/async-kernel/pull/127)
+
+### <!-- 1 --> 🚀 Features
+
+- Make Caller.queue_call and Caller.queue_call_no_wait thread safe [#131](https://github.com/fleming79/async-kernel/pull/131)
+
+- Add  Caller.get_runner. [#126](https://github.com/fleming79/async-kernel/pull/126)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Maintenance [#132](https://github.com/fleming79/async-kernel/pull/132)
+
+- Put _send_reply back inside run_handler. [#130](https://github.com/fleming79/async-kernel/pull/130)
+
+- Prevent memory leaks in caller scheduled futures [#128](https://github.com/fleming79/async-kernel/pull/128)
+
+- Housekeeping [#125](https://github.com/fleming79/async-kernel/pull/125)
+
 ## [0.3.0] - 2025-09-14
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -22,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add metadata to Future. [#116](https://github.com/fleming79/async-kernel/pull/116)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.3.0 [#124](https://github.com/fleming79/async-kernel/pull/124)
 
 - AsyncEvent maintenance - make more robust [#120](https://github.com/fleming79/async-kernel/pull/120)
 
@@ -265,6 +291,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.4.0]: https://github.com/fleming79/async-kernel/compare/v0.3.0..v0.4.0
 [0.3.0]: https://github.com/fleming79/async-kernel/compare/v0.2.1..v0.3.0
 [0.2.1]: https://github.com/fleming79/async-kernel/compare/v0.2.0..v0.2.1
 [0.2.0]: https://github.com/fleming79/async-kernel/compare/v0.1.4..v0.2.0
