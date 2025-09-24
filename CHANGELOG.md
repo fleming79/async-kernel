@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - 2025-09-19
+## [0.5.0] - 2025-09-24
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Simplify queue with breaking changes [#134](https://github.com/fleming79/async-kernel/pull/134)
+
+## [0.4.0] - 2025-09-23
 
 ### <!-- 0 --> 🏗️ Breaking changes
 
@@ -20,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add  Caller.get_runner. [#126](https://github.com/fleming79/async-kernel/pull/126)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.4.0 [#133](https://github.com/fleming79/async-kernel/pull/133)
 
 - Maintenance [#132](https://github.com/fleming79/async-kernel/pull/132)
 
@@ -291,6 +299,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.5.0]: https://github.com/fleming79/async-kernel/compare/v0.4.0..v0.5.0
 [0.4.0]: https://github.com/fleming79/async-kernel/compare/v0.3.0..v0.4.0
 [0.3.0]: https://github.com/fleming79/async-kernel/compare/v0.2.1..v0.3.0
 [0.2.1]: https://github.com/fleming79/async-kernel/compare/v0.2.0..v0.2.1
