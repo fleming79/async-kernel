@@ -6,7 +6,6 @@ import contextvars
 import functools
 import inspect
 import logging
-import math
 import reprlib
 import threading
 import time
@@ -14,11 +13,10 @@ import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, cast, overload
 
 import anyio
 import sniffio
-from anyio.streams.memory import MemoryObjectSendStream
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
@@ -32,7 +30,6 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     from anyio.abc import TaskGroup, TaskStatus
-    from anyio.streams.memory import MemoryObjectSendStream
 
     from async_kernel.typing import P
 
@@ -63,7 +60,7 @@ class InvalidStateError(RuntimeError):
 class AsyncEvent:
     """An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."""
 
-    __slots__ = ["_events", "_flag", "_thread"]
+    __slots__ = ["__weakref__", "_events", "_flag", "_thread"]
 
     def __init__(self, thread: threading.Thread | None = None) -> None:
         self._thread = thread or threading.current_thread()
@@ -128,7 +125,7 @@ class Future(Awaitable[T]):
     """
 
     _cancelled = False
-    _cancel_scope: anyio.CancelScope | None = None
+    _canceller: Callable[[str | None], Any] | None = None
     _exception = None
     _setting_value = False
     _result: T
@@ -277,10 +274,17 @@ class Future(Awaitable[T]):
 
     def cancel(self, msg: str | None = None) -> bool:
         """
-        Cancel the Future and schedule callbacks (thread-safe using Caller).
+        Cancel the Future (thread-safe using Caller).
+
+        !!! note
+
+            - Cancellation cannot be undone.
+            - The future will not be done until set_result or set_excetion is called
+                in both cases the value is ignore and replaced with a [FutureCancelledError][async_kernel.caller.FutureCancelledError]
+                and the result is inaccessible.
 
         Args:
-            msg: The message to use when raising a FutureCancelledError.
+            msg: The message to use when cancelling.
 
         Returns if it has been cancelled.
         """
@@ -288,9 +292,9 @@ class Future(Awaitable[T]):
             if msg and isinstance(self._cancelled, str):
                 msg = f"{self._cancelled}\n{msg}"
             self._cancelled = msg or self._cancelled or True
-            if scope := self._cancel_scope:
+            if canceller := self._canceller:
                 if threading.current_thread() is self._thread:
-                    scope.cancel()
+                    canceller(msg)
                 else:
                     Caller(thread=self._thread).call_direct(self.cancel)
         return self.cancelled()
@@ -339,11 +343,20 @@ class Future(Awaitable[T]):
             self._done_callbacks.remove(fn)
         return n
 
-    def set_cancel_scope(self, scope: anyio.CancelScope) -> None:
-        "Provide a cancel scope for cancellation."
-        if self._cancelled or self._cancel_scope:
+    def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
+        """
+        Set a callback to handle cancellation.
+
+        !!! note
+
+            `set_result` must still be called to mark the future as completed. You can pass any
+            value as it will be replaced with a [async_kernel.caller.FutureCancelledError][].
+        """
+        if self.done() or self._canceller:
             raise InvalidStateError
-        self._cancel_scope = scope
+        self._canceller = canceller
+        if self.cancelled():
+            self.cancel()
 
     def get_caller(self) -> Caller:
         "The [async_kernel.caller.Caller][] that is running for this *futures* thread."
@@ -374,7 +387,7 @@ class Caller:
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
-    _queue_map: weakref.WeakKeyDictionary[Callable[..., Awaitable[Any]], MemoryObjectSendStream[tuple]]
+    _queue_map: dict[int, Future]
     _taskgroup: TaskGroup | None = None
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
@@ -429,7 +442,7 @@ class Caller:
             inst._jobs = deque()
             inst._job_added = threading.Event()
             inst._protected = protected
-            inst._queue_map = weakref.WeakKeyDictionary()
+            inst._queue_map = {}
             cls._instances[thread] = inst
         return inst
 
@@ -489,14 +502,15 @@ class Caller:
 
     async def _wrap_call(self, fut: Future) -> None:
         if fut.cancelled():
-            fut.set_result(None)  # This will cancel
+            if not fut.done():
+                fut.set_result(None)  # This will cancel
             return
         md = fut.metadata
         func = md["func"]
         token = self._future_var.set(fut)
         try:
             with anyio.CancelScope() as scope:
-                fut.set_cancel_scope(scope)
+                fut.set_canceller(scope.cancel)
                 try:
                     if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
                         await anyio.sleep(delay)
@@ -504,14 +518,13 @@ class Caller:
                     result = func(*md["args"], **md["kwargs"])
                     if inspect.iscoroutine(result):
                         result = await result
-                    # Cancellation
-                    if fut.cancelled() and not scope.cancel_called:
-                        scope.cancel()
                     fut.set_result(result)
                 except anyio.get_cancelled_exc_class():
-                    with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                        fut.cancel()
+                    if not fut.cancelled():
+                        with contextlib.suppress(anyio.get_cancelled_exc_class()):
+                            fut.cancel()
                     fut.set_result(None)  # This will cancel
+                    raise
                 except Exception as e:
                     fut.set_exception(e)
         except Exception as e:
@@ -582,9 +595,8 @@ class Caller:
         if self._protected and not force:
             return
         self._stopped = True
-        for sender in self._queue_map.values():
-            sender.close()
-        self._queue_map.clear()
+        for func in tuple(self._queue_map):
+            self.queue_close(func)
         self._job_added.set()
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
@@ -699,105 +711,83 @@ class Caller:
         self._jobs.append(functools.partial(func, *args, **kwargs))
         self._job_added.set()
 
-    def queue_exists(self, func: Callable) -> bool:
-        "Returns True if an execution queue exists for `func`."
-        return func in self._queue_map
+    def queue_get(self, func: Callable) -> Future[Never] | None:
+        """Returns Future for `func` where the queue is running.
 
-    def queue_get_sender(
-        self, func: Callable, max_buffer_size: float = math.inf
-    ) -> MemoryObjectSendStream[tuple[contextvars.Context, tuple, dict]]:
+        !!! warning
+
+            - This future loops forever until the  loop is closed or func no longer exists.
+            - `queue_close` is the preferred means to shutdown the queue.
         """
-        Get or create a new queue unique to func in this caller.
+        return self._queue_map.get(hash(func))
 
-        This method can be used to configure the buffer size of the queue for the methods
-        - `queue_call`
-        - `queue_call_no_wait`
+    def queue_call(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
+        """
+        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
 
         Args:
-            func: The function to which the queue is associated with this caller.
-            max_buffer_size: The maximum allowed queued messages, see [anyio.create_memory_object_stream][] for further details.
-
-        !!! info
-
-            The queue will stay open until one of the following occurs.
-
-            1. It explicitly closed with the method `queue_close`.
-            1. All strong references are lost the function/method.
+            func: The function.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
         """
-        self._check_in_thread()
-        if not (sender := self._queue_map.get(func)):
-            sender, queue = anyio.create_memory_object_stream[tuple[contextvars.Context, tuple, dict]](max_buffer_size)
+        key = hash(func)
+        if not (fut := self._queue_map.get(key)):
+            queue = deque()
+            event_added = threading.Event()
 
-            async def execute_loop():
+            with contextlib.suppress(TypeError):
+                weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
+
+            def sender(args):
+                queue.append(args)
+                event_added.set()
+
+            async def execute_loop(sender, queue: deque, event_added=event_added) -> None:
+                fut = self.current_future()
+                assert fut
                 try:
-                    with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                        async with queue as receive_stream:
-                            async for context, args, kwargs in receive_stream:
-                                try:
-                                    result = context.run(func, *args, **kwargs)
-                                    if inspect.iscoroutine(result):
-                                        await result
-                                except Exception as e:
-                                    self.log.exception("Execution %f failed", func, exc_info=e)
+                    while True:
+                        event_added.clear()
+                        if queue:
+                            context, func_, args, kwargs = queue.popleft()
+                            try:
+                                result = context.run(func_, *args, **kwargs)
+                                if inspect.iscoroutine(object=result):
+                                    await result
+                            except (anyio.get_cancelled_exc_class(), Exception) as e:
+                                if fut.cancelled():
+                                    break
+                                self.log.exception("Execution %f failed", func_, exc_info=e)
+                            finally:
+                                func_ = None
+                        else:
+                            await wait_thread_event(event_added)
                 finally:
-                    self._queue_map.pop(func, None)
+                    self._queue_map.pop(key)
 
-            self._queue_map[func] = sender
-            self.call_soon(execute_loop)
-        return sender
+            self._queue_map[key] = fut = self.call_soon(
+                execute_loop, sender=sender, queue=queue, event_added=event_added
+            )
+        fut.metadata["kwargs"]["sender"]((contextvars.copy_context(), func, args, kwargs))
 
-    async def queue_call(
-        self,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> None:
-        """
-        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
-
-        This is the async version that will wait until the call is added to the queue. This
-        is the preferred way to queue calls, with the optimal pathway being in the current thread.
-
-        Args:
-            func: The function.
-            *args: Arguments to use with `func`.
-            **kwargs: Keyword arguments to use with `func`.
-        """
-        if self._thread is not threading.current_thread():
-            await self.call_soon(self.queue_call, func, *args, **kwargs)
-        else:
-            sender = self.queue_get_sender(func)
-            await sender.send((contextvars.copy_context(), args, kwargs))
-
-    def queue_call_no_wait(
-        self,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> None:
-        """
-        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
-
-        This is a convenience method that calls `queue_call` as a task.
-
-        Args:
-            func: The function.
-            *args: Arguments to use with `func`.
-            **kwargs: Keyword arguments to use with `func`.
-        """
-        self.call_soon(self.queue_call, func, *args, **kwargs)
-
-    def queue_close(self, func: Callable) -> None:
+    def queue_close(self, func: Callable | int) -> None:
         """
         Close the execution queue associated with `func` (thread-safe).
 
         Args:
             func: The queue of the function to close.
         """
-        if sender := self._queue_map.pop(func, None):
-            self.call_direct(sender.close)
+        key = func if isinstance(func, int) else hash(func)
+        if fut := self._queue_map.pop(key, None):
+            if (kwargs := fut.metadata.get("kwargs")) and (event := kwargs.get("event_added")):
+                event.set()
+            fut.cancel()
 
     @classmethod
     def stop_all(cls, *, _stop_protected: bool = False) -> None:
