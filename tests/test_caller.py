@@ -92,12 +92,19 @@ class TestFuture:
         with pytest.raises(RuntimeError):
             fut.set_result(2)
 
-    async def test_set_cancel_scope_twice_raises(self):
+    async def test_set_canceller_twice_raises(self):
         fut = Future()
         with anyio.CancelScope() as cancel_scope:
-            fut.set_cancel_scope(cancel_scope)
+            fut.set_canceller(cancel_scope.cancel)
             with pytest.raises(InvalidStateError):
-                fut.set_cancel_scope(cancel_scope)
+                fut.set_canceller(cancel_scope.cancel)
+
+    async def test_set_canceller_after_cancelled(self):
+        fut = Future()
+        fut.cancel()
+        with anyio.CancelScope() as cancel_scope:
+            fut.set_canceller(cancel_scope.cancel)
+            assert cancel_scope.cancel_called
 
     async def test_set_exception_twice_raises(self):
         fut = Future()
@@ -285,8 +292,13 @@ class TestCaller:
             await anyio.to_thread.run_sync(_in_thread)
         assert caller not in Caller.all_callers()
 
+    async def test_call_soon_cancelled_early(self, caller: Caller):
+        fut = caller.call_soon(anyio.sleep_forever)
+        fut.cancel()
+        await fut.wait(result=False)
+
     async def test_direct_async(self, caller: Caller):
-        event = AsyncEvent()
+        event: AsyncEvent = AsyncEvent()
 
         async def set_event():
             event.set()
@@ -456,20 +468,26 @@ class TestCaller:
             worker._check_in_thread()  # pyright: ignore[reportPrivateUsage]
 
     async def test_execution_queue(self, caller: Caller):
-        N = 5
+        N = 10
 
         pool = list(range(N))
-
-        async def func(a, b, /, delay, *, results):
-            await anyio.sleep(delay)
-            results.append(b)
-
         for _ in range(2):
+            firstcall = AsyncEvent()
+
+            async def func(a, b, /, *, results, firstcall=firstcall):
+                firstcall.set()
+                if b:
+                    await anyio.sleep_forever()
+                results.append(b)
+
             results = []
             for j in pool:
-                caller.queue_call(func, 0, j, delay=0.05 * j, results=results)
-            assert caller.queue_get(func)
+                caller.queue_call(func, 0, j, results=results)
+            fut = caller.queue_get(func)
+            assert fut
             assert results != pool
+            await firstcall.wait()
+            assert results == [0]
             caller.queue_close(func)
             assert not caller.queue_get(func)
 
@@ -486,11 +504,13 @@ class TestCaller:
         await anyio.sleep(0.1)
         await event_finalize_called.wait()
 
-    async def test_queue_cancel(self, caller:Caller):
-        started =  AsyncEvent()
+    async def test_queue_cancel(self, caller: Caller):
+        started = AsyncEvent()
+
         async def test_func():
             started.set()
-            await  anyio.sleep_forever()
+            await anyio.sleep_forever()
+
         caller.queue_call(test_func)
         fut = caller.queue_get(test_func)
         assert fut
@@ -561,26 +581,36 @@ class TestCaller:
     async def test_cancel(
         self, caller: Caller, mode: Literal["async", "blocking"], cancel_mode: Literal["local", "thread"], msg
     ):
-        def blocking_func():
-            import time  # noqa: PLC0415
+        ready = AsyncEvent()
+        proceed = AsyncEvent()
 
+        async def blocking_func():
+            ready.set()
+            await proceed.wait()
             time.sleep(0.1)
 
-        my_func = blocking_func
-        match mode:
-            case "async":
-                my_func = anyio.sleep_forever
-            case "blocking":
-                my_func = blocking_func
+        async def non_blocking_func():
+            ready.set()
+            await anyio.sleep_forever()
+
+        my_func = blocking_func if mode == "blocking" else non_blocking_func
 
         fut = caller.call_soon(my_func)
+        await ready.wait()
+        proceed.set()
         if cancel_mode == "local":
             fut.cancel(msg)
             if msg == "twice":
                 fut.cancel(msg)
                 msg = f"{msg}(?s:.){msg}"
         else:
-            caller.to_thread(fut.cancel, msg)
+
+            def in_thread():
+                proceed.set()
+                time.sleep(0.01)
+                fut.cancel(msg)
+
+            caller.to_thread(in_thread)
 
         with pytest.raises(FutureCancelledError, match=msg):
             await fut

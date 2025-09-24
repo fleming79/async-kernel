@@ -125,7 +125,7 @@ class Future(Awaitable[T]):
     """
 
     _cancelled = False
-    _cancel_scope: anyio.CancelScope | None = None
+    _canceller: Callable[[str | None], Any] | None = None
     _exception = None
     _setting_value = False
     _result: T
@@ -274,10 +274,17 @@ class Future(Awaitable[T]):
 
     def cancel(self, msg: str | None = None) -> bool:
         """
-        Cancel the Future and schedule callbacks (thread-safe using Caller).
+        Cancel the Future (thread-safe using Caller).
+
+        !!! note
+
+            - Cancellation cannot be undone.
+            - The future will not be done until set_result or set_excetion is called
+                in both cases the value is ignore and replaced with a [FutureCancelledError][async_kernel.caller.FutureCancelledError]
+                and the result is inaccessible.
 
         Args:
-            msg: The message to use when raising a FutureCancelledError.
+            msg: The message to use when cancelling.
 
         Returns if it has been cancelled.
         """
@@ -285,9 +292,9 @@ class Future(Awaitable[T]):
             if msg and isinstance(self._cancelled, str):
                 msg = f"{self._cancelled}\n{msg}"
             self._cancelled = msg or self._cancelled or True
-            if scope := self._cancel_scope:
+            if canceller := self._canceller:
                 if threading.current_thread() is self._thread:
-                    scope.cancel()
+                    canceller(msg)
                 else:
                     Caller(thread=self._thread).call_direct(self.cancel)
         return self.cancelled()
@@ -336,11 +343,20 @@ class Future(Awaitable[T]):
             self._done_callbacks.remove(fn)
         return n
 
-    def set_cancel_scope(self, scope: anyio.CancelScope) -> None:
-        "Provide a cancel scope for cancellation."
-        if self._cancelled or self._cancel_scope:
+    def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
+        """
+        Set a callback to handle cancellation.
+
+        !!! note
+
+            `set_result` must still be called to mark the future as completed. You can pass any
+            value as it will be replaced with a [async_kernel.caller.FutureCancelledError][].
+        """
+        if self.done() or self._canceller:
             raise InvalidStateError
-        self._cancel_scope = scope
+        self._canceller = canceller
+        if self.cancelled():
+            self.cancel()
 
     def get_caller(self) -> Caller:
         "The [async_kernel.caller.Caller][] that is running for this *futures* thread."
@@ -486,14 +502,15 @@ class Caller:
 
     async def _wrap_call(self, fut: Future) -> None:
         if fut.cancelled():
-            fut.set_result(None)  # This will cancel
+            if not fut.done():
+                fut.set_result(None)  # This will cancel
             return
         md = fut.metadata
         func = md["func"]
         token = self._future_var.set(fut)
         try:
             with anyio.CancelScope() as scope:
-                fut.set_cancel_scope(scope)
+                fut.set_canceller(scope.cancel)
                 try:
                     if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
                         await anyio.sleep(delay)
@@ -501,9 +518,6 @@ class Caller:
                     result = func(*md["args"], **md["kwargs"])
                     if inspect.iscoroutine(result):
                         result = await result
-                    # Cancellation
-                    if fut.cancelled() and not scope.cancel_called:
-                        scope.cancel()
                     fut.set_result(result)
                 except anyio.get_cancelled_exc_class():
                     if not fut.cancelled():
@@ -698,7 +712,13 @@ class Caller:
         self._job_added.set()
 
     def queue_get(self, func: Callable) -> Future[Never] | None:
-        "Returns Future for `func` where the queue is running if there is one."
+        """Returns Future for `func` where the queue is running.
+
+        !!! warning
+
+            - This future loops forever until the  loop is closed or func no longer exists.
+            - `queue_close` is the preferred means to shutdown the queue.
+        """
         return self._queue_map.get(hash(func))
 
     def queue_call(
@@ -740,7 +760,7 @@ class Caller:
                                 result = context.run(func_, *args, **kwargs)
                                 if inspect.iscoroutine(object=result):
                                     await result
-                            except  ( anyio.get_cancelled_exc_class(), Exception) as e:
+                            except (anyio.get_cancelled_exc_class(), Exception) as e:
                                 if fut.cancelled():
                                     break
                                 self.log.exception("Execution %f failed", func_, exc_info=e)
