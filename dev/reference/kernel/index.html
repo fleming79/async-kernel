@@ -4108,7 +4108,7 @@ along with their corresponding RunMode (if available).</p>
     <span class="n">runner</span> <span class="o">=</span> <span class="n">_wrap_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_handler</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
     <span class="k">match</span> <span class="n">run_mode</span><span class="p">:</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+            <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
             <span class="n">Caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">task</span><span class="p">:</span>
