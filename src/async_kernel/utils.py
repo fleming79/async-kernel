@@ -63,12 +63,11 @@ async def wait_thread_event(thread_event: threading.Event, /):
 
     !!! info
 
-        - If `thread_event` is already set anyio.sleep(0) is used instead.
+        - This will always
         - On external cancellation the `event` is set here to prevent the thread from waiting forever.
     """
+    await anyio.sleep(0)
     if thread_event.is_set():
-        # Required  - allow other tasks to run.
-        await anyio.sleep(0)
         return
 
     def _wait_thread_event(thread_event: threading.Event, event: anyio.Event, token):

@@ -473,9 +473,9 @@ class Caller:
             self.iopub_sockets[self.thread] = socket
             task_status.started()
             while not self._stopped:
+                self._job_added.clear()
                 if not self._jobs:
-                    self._job_added.clear()
-                await wait_thread_event(self._job_added)
+                    await wait_thread_event(self._job_added)
                 while self._jobs:
                     if self._stopped:
                         return
