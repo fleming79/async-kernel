@@ -33,7 +33,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-          version: "latest"
+          version: "0.8.22"
           python-version: ${{ matrix.python-version }}
 
       - name: Install the project
@@ -56,7 +56,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          version: "latest"
+          enable-cache: true
+          version: "0.8.22"
 
       - name: Run tests with coverage
         timeout-minutes: 5
@@ -83,7 +84,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          version: "latest"
+          enable-cache: true
+          version: "0.8.22"
 
       - name: Docs build strict
         timeout-minutes: 5

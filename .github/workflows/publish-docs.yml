@@ -29,7 +29,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          version: "latest"
+          enable-cache: true
+          version: "0.8.22"
 
       - name: Checkout
         uses: actions/checkout@v5
