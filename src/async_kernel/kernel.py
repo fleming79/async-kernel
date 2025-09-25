@@ -316,6 +316,7 @@ class Kernel(HasTraits):
         signal.signal(signal.SIGINT, self._signal_handler)
         if not os.environ.get("MPLBACKEND"):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+        # setting get loaded in `_validate_settings`
         self._settings = settings or {}
 
     @override
@@ -508,6 +509,85 @@ class Kernel(HasTraits):
         else:
             signal.default_int_handler(signum, frame)
 
+    @contextlib.contextmanager
+    def _bind_socket(self, socket_id: SocketID, socket: zmq.Socket) -> Generator[None, Any, None]:
+        """
+        Bind a zmq.Socket storing a reference to the socket and the port
+        details and closing the socket on leaving the context."""
+        if socket_id in self._sockets:
+            msg = f"{socket_id=} is already loaded"
+            raise RuntimeError(msg)
+        socket.linger = 500
+        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self._ports.get(socket_id, 0))  # pyright: ignore[reportArgumentType]
+        self._ports[socket_id] = port
+        self.log.debug("%s socket on port: %i", socket_id, port)
+        self._sockets[socket_id] = socket
+        try:
+            yield
+        finally:
+            socket.close(linger=500)
+            self._sockets.pop(socket_id)
+
+    def _write_connection_file(self) -> None:
+        """Write connection info to JSON dict in self.connection_file."""
+        if not (path := self.connection_file).exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            write_connection_file(
+                str(path),
+                transport=self.transport,
+                ip=self.ip,
+                key=self.session.key,
+                signature_scheme=self.session.signature_scheme,
+                kernel_name=self.kernel_name,
+                **{f"{socket_id}_port": self._ports[socket_id] for socket_id in SocketID},
+            )
+            ip_files: list[pathlib.Path] = []
+            if self.transport == "ipc":
+                for s in self._sockets.values():
+                    f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
+                    assert f.exists()
+                    ip_files.append(f)
+
+            def cleanup_file_files() -> None:
+                path.unlink(missing_ok=True)
+                for f in ip_files:
+                    f.unlink(missing_ok=True)
+
+            atexit.register(cleanup_file_files)
+
+    def _input_request(self, prompt: str, *, password=False) -> Any:
+        job = utils.get_job()
+        if not job["msg"].get("content", {}).get("allow_stdin", False):
+            msg = "Stdin is not allowed in this context!"
+            raise StdinNotImplementedError(msg)
+        socket = self._sockets[SocketID.stdin]
+        # Clear messages on the stdin socket
+        while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
+            socket.recv_multipart(flags=Flag.DONTWAIT, copy=False)
+        # Send the input request.
+        assert self is not None
+        self.session.send(
+            stream=socket,
+            msg_or_type="input_request",
+            content={"prompt": prompt, "password": password},
+            parent=job["msg"],  # pyright: ignore[reportArgumentType]
+            ident=job["ident"],
+        )
+        # Poll for a reply.
+        while not (socket.poll(100) & PollEvent.POLLIN):
+            if self._last_interrupt_frame:
+                raise KernelInterruptError
+        return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
+
+    async def _wait_stopped(self) -> None:
+        try:
+            await self.event_stopped.wait()
+            if self.debugger.debugpy_client.connected:
+                await self.control_thread_caller.call_soon(self.debugger.disconnect)
+        except BaseException:
+            pass
+        Caller.stop_all(_stop_protected=True)
+
     async def _start_heartbeat(self) -> None:
         # Reference: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
 
@@ -591,85 +671,6 @@ class Kernel(HasTraits):
         ready = AsyncEvent()
         Caller.get_instance().call_soon(run_in_main_event_loop)
         await ready.wait()
-
-    async def _wait_stopped(self) -> None:
-        try:
-            await self.event_stopped.wait()
-            if self.debugger.debugpy_client.connected:
-                await self.control_thread_caller.call_soon(self.debugger.disconnect)
-        except BaseException:
-            pass
-        Caller.stop_all(_stop_protected=True)
-
-    @contextlib.contextmanager
-    def _bind_socket(self, socket_id: SocketID, socket: zmq.Socket) -> Generator[None, Any, None]:
-        """
-        Bind a zmq.Socket storing a reference to the socket and the port
-        details and closing the socket on leaving the context."""
-        if socket_id in self._sockets:
-            msg = f"{socket_id=} is already loaded"
-            raise RuntimeError(msg)
-        socket.linger = 500
-        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self._ports.get(socket_id, 0))  # pyright: ignore[reportArgumentType]
-        self._ports[socket_id] = port
-        self.log.debug("%s socket on port: %i", socket_id, port)
-        self._sockets[socket_id] = socket
-        try:
-            yield
-        finally:
-            socket.close(linger=500)
-            self._sockets.pop(socket_id)
-
-    def _write_connection_file(self) -> None:
-        """Write connection info to JSON dict in self.connection_file."""
-        if not (path := self.connection_file).exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            write_connection_file(
-                str(path),
-                transport=self.transport,
-                ip=self.ip,
-                key=self.session.key,
-                signature_scheme=self.session.signature_scheme,
-                kernel_name=self.kernel_name,
-                **{f"{socket_id}_port": self._ports[socket_id] for socket_id in SocketID},
-            )
-            ip_files: list[pathlib.Path] = []
-            if self.transport == "ipc":
-                for s in self._sockets.values():
-                    f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
-                    assert f.exists()
-                    ip_files.append(f)
-
-            def cleanup_file_files() -> None:
-                path.unlink(missing_ok=True)
-                for f in ip_files:
-                    f.unlink(missing_ok=True)
-
-            atexit.register(cleanup_file_files)
-
-    def _input_request(self, prompt: str, *, password=False) -> Any:
-        job = utils.get_job()
-        if not job["msg"].get("content", {}).get("allow_stdin", False):
-            msg = "Stdin is not allowed in this context!"
-            raise StdinNotImplementedError(msg)
-        socket = self._sockets[SocketID.stdin]
-        # Clear messages on the stdin socket
-        while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
-            socket.recv_multipart(flags=Flag.DONTWAIT, copy=False)
-        # Send the input request.
-        assert self is not None
-        self.session.send(
-            stream=socket,
-            msg_or_type="input_request",
-            content={"prompt": prompt, "password": password},
-            parent=job["msg"],  # pyright: ignore[reportArgumentType]
-            ident=job["ident"],
-        )
-        # Poll for a reply.
-        while not (socket.poll(100) & PollEvent.POLLIN):
-            if self._last_interrupt_frame:
-                raise KernelInterruptError
-        return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 
     async def _receive_msg_loop(
         self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]
