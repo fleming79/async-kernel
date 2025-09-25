@@ -96,7 +96,6 @@ async def test_execute_request_success(client):
     )
     assert reply["header"]["msg_type"] == "execute_reply"
     assert reply["content"]["status"] == "ok"
-    await utils.clear_iopub(client)
 
 
 @pytest.mark.parametrize("quiet", [True, False])
@@ -108,15 +107,12 @@ async def test_simple_print(kernel, client, quiet: bool):
         stdout, stderr = await utils.assemble_output(client)
         assert stdout == "test_simple_print\n"
         assert stderr == ""
-        await utils.clear_iopub(client)
     finally:
         kernel.quiet = True
-        await utils.clear_iopub(client)
 
 
 @pytest.mark.parametrize("mode", ["kernel_timeout", "metadata"])
 async def test_execute_kernel_timeout(client, kernel: Kernel, mode: str):
-    await utils.clear_iopub(client)
     kernel.shell.execute_request_timeout = 0.1 if "kernel" in mode else None
     last_stop_time = kernel._stop_on_error_time  # pyright: ignore[reportPrivateUsage]
     metadata: dict[str, float | list] = {"timeout": 0.1}
@@ -210,7 +206,6 @@ async def test_save_history(client, tmp_path):
         content = f.read()
     assert "a=1" in content
     assert 'b="abcþ"' in content
-    await utils.clear_iopub(client)
 
 
 @pytest.mark.parametrize(
@@ -228,7 +223,6 @@ async def test_is_complete(client, code: str, status: str):
     client.is_complete(code)
     reply = await client.get_shell_msg()
     assert reply["content"]["status"] == status
-    await utils.clear_iopub(client)
 
 
 async def test_message_order(client):
@@ -245,7 +239,6 @@ async def test_message_order(client):
         reply = await client.get_shell_msg()
         assert reply["content"]["execution_count"] == i
         assert reply["parent_header"]["msg_id"] == msg_id
-    await utils.clear_iopub(client, timeout=0.2)
 
 
 async def test_execute_request_error_tag_ignore_error(client):
@@ -253,7 +246,6 @@ async def test_execute_request_error_tag_ignore_error(client):
     await utils.execute(client, "stop - suppress me", metadata=metadata, clear_pub=False)
     stdout, _ = await utils.assemble_output(client)
     assert "⚠" in stdout
-    await utils.clear_iopub(client, timeout=0.1)
 
 
 @pytest.mark.parametrize("run_mode", RunMode)
@@ -272,7 +264,6 @@ async def test_execute_request_error(client, code: str, run_mode: RunMode):
     reply = await utils.send_shell_message(client, MsgType.execute_request, {"code": code, "silent": False})
     assert reply["header"]["msg_type"] == "execute_reply"
     assert reply["content"]["status"] == "error"
-    await utils.clear_iopub(client)
 
 
 async def test_execute_request_stop_on_error(client):
@@ -361,8 +352,10 @@ async def test_interrupt_request(client, kernel):
 
 async def test_interrupt_request_async_request(subprocess_kernels_client):
     client = subprocess_kernels_client
-    msg_id = client.execute(f"await anyio.sleep({utils.TIMEOUT * 2})")
-    await anyio.sleep(0.1)
+    timeout = 100 if async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1
+    msg_id = client.execute(f"await anyio.sleep({timeout * 4})")
+    await utils.check_pub_message(client, msg_id, execution_state="busy")
+    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
@@ -371,10 +364,13 @@ async def test_interrupt_request_async_request(subprocess_kernels_client):
 # @pytest.mark.flaky
 async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
     client = subprocess_kernels_client
-    msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 2})")
-    await anyio.sleep(0.1)
+    timeout = 100 if async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1
+    msg_id = client.execute(f"import time;time.sleep({timeout * 4})")
+    await utils.check_pub_message(client, msg_id, execution_state="busy")
+    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
-    reply = await utils.get_reply(client, msg_id)
+    with anyio.fail_after(timeout):
+        reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
     assert reply["content"]["ename"] == "FutureCancelledError"
 
@@ -386,7 +382,6 @@ async def test_interrupt_request_blocking_task(subprocess_kernels_client):
     await Caller().call_soon(time.sleep, {utils.TIMEOUT * 2})
     """
     client = subprocess_kernels_client
-    await utils.clear_iopub(client)
     msg_id = client.execute(code, reply=False)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
@@ -480,7 +475,6 @@ async def test_magic(client, code: str, kernel, monkeypatch):
     assert reply["status"] == "ok"
     stdout, _ = await utils.assemble_output(client)
     assert stdout
-    await utils.clear_iopub(client)
 
 
 async def test_shell_required_properites(kernel):
@@ -507,7 +501,6 @@ print("{mode.name}")
     assert reply["status"] == "ok"
     stdout, _ = await utils.assemble_output(client)
     assert mode.name in stdout
-    await utils.clear_iopub(client)
     Caller.stop_all()
 
 
@@ -523,7 +516,6 @@ async def test_namespace_default(client, code: str):
     _, reply = await utils.execute(client, code)
     assert reply["status"] == "ok"
     await anyio.sleep(0.02)
-    await utils.clear_iopub(client)
 
 
 @pytest.mark.parametrize("channel", ["shell", "control"])
@@ -533,7 +525,6 @@ async def test_invalid_message(client, channel):
     with anyio.move_on_after(0.1):
         response = await f(client, "test_invalid_message")  # pyright: ignore[reportArgumentType]
     assert response is None
-    await utils.clear_iopub(client)
 
 
 async def test_kernel_get_handler(kernel: Kernel):

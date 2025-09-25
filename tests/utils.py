@@ -162,7 +162,7 @@ async def send_control_message(
     return await get_reply(client, msg["header"]["msg_id"], channel="control", clear_pub=clear_pub)
 
 
-async def check_pub_message(client: AsyncKernelClient, msg_id: str = "", *, msg_type="status", **content_checks):
+async def check_pub_message(client: AsyncKernelClient, msg_id: str, /, *, msg_type="status", **content_checks):
     msg = await client.get_iopub_msg()
     validate_message(msg, msg_type, msg_id)
     content = msg["content"]
