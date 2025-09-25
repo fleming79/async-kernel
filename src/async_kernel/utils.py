@@ -7,8 +7,9 @@ from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
 import anyio
-import anyio.to_thread
 import traitlets
+from anyio import from_thread
+from anyio.lowlevel import current_token
 
 import async_kernel
 from async_kernel.typing import Message, MetadataKeys
@@ -56,28 +57,33 @@ def do_not_debug_this_thread():
             mark_thread_pydev_do_not_trace(threading.current_thread(), remove=True)
 
 
-async def wait_thread_event(event: threading.Event):
+async def wait_thread_event(thread_event: threading.Event, /):
     """
-    Wait for the threading event using an anyio worker thread.
+    Wait for `thread_event` to be set.
 
     !!! info
 
-        - If the event is already set anyio.sleep(0) is used instead.
+        - If `thread_event` is already set anyio.sleep(0) is used instead.
         - On external cancellation the `event` is set here to prevent the thread from waiting forever.
     """
-    if event.is_set():
+    if thread_event.is_set():
         # Required  - allow other tasks to run.
         await anyio.sleep(0)
         return
 
-    def _in_thread_call():
-        with do_not_debug_this_thread():
-            event.wait()
+    def _wait_thread_event(thread_event: threading.Event, event: anyio.Event, token):
+        thread_event.wait()
+        from_thread.run_sync(event.set, token=token)
 
     try:
-        await anyio.to_thread.run_sync(_in_thread_call)
+        event = anyio.Event()
+        thread = threading.Thread(target=_wait_thread_event, args=[thread_event, event, current_token()], daemon=True)
+        thread.pydev_do_not_trace = True  # pyright: ignore[reportAttributeAccessIssue]
+        if not thread_event.is_set():
+            thread.start()
+            await event.wait()
     finally:
-        event.set()
+        thread_event.set()
 
 
 def get_kernel() -> Kernel:
