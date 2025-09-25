@@ -63,7 +63,6 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable, Generator, Iterable
     from types import CoroutineType, FrameType
 
-    from anyio.abc import TaskStatus
     from IPython.core.interactiveshell import ExecutionResult
 
     from async_kernel.comm import CommManager
@@ -475,22 +474,21 @@ class Kernel(HasTraits):
         self.anyio_backend = sniffio.current_async_library()
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:
-                tg = caller._taskgroup  # pyright: ignore[reportPrivateUsage]
-                assert tg
-                await tg.start(self._wait_stopped)
+                caller.call_soon(self._wait_stopped)
                 try:
                     await self._start_heartbeat()
                     await self._start_iopub_proxy()
                     await self._start_control_loop()
-                    await tg.start(self._start_stdin)
-                    await tg.start(self._receive_msg_loop, SocketID.shell)
+                    await self._start_main_loop()
                     assert len(self._sockets) == len(SocketID)
                     self._write_connection_file()
                     print(f"Kernel started: {self!r}")
-                    await tg.start(self._start_iopub)
-                    self.event_started.set()
-                    yield self
+                    with self._iopub():
+                        self.event_started.set()
+                        self.comm_manager.kernel = self
+                        yield self
                 finally:
+                    self.comm_manager.kernel = None
                     self.stop()
         finally:
             AsyncInteractiveShell.clear_instance()
@@ -527,12 +525,6 @@ class Kernel(HasTraits):
         heartbeat_thread.start()
         await ready_event.wait()
 
-    async def _start_stdin(self, task_status: TaskStatus[None]) -> None:
-        socket = Context.instance().socket(SocketType.ROUTER)
-        with self._bind_socket(SocketID.stdin, socket), contextlib.suppress(self.CancelledError):
-            task_status.started()
-            await anyio.sleep_forever()
-
     async def _start_iopub_proxy(self) -> None:
         """Provide an io proxy."""
 
@@ -556,7 +548,8 @@ class Kernel(HasTraits):
         iopub_thread.start()
         await ready_event.wait()
 
-    async def _start_iopub(self, task_status: TaskStatus[None]) -> None:
+    @contextlib.contextmanager
+    def _iopub(self):
         # Save IO
         self._original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
 
@@ -577,32 +570,29 @@ class Kernel(HasTraits):
 
             wrapper = OutStream(flusher=flusher)
             setattr(sys, name, wrapper)
-        task_status.started()
-        self.comm_manager.kernel = self
         try:
-            await anyio.sleep_forever()
-        except self.CancelledError:
-            return
+            yield
         finally:
-            self.comm_manager.kernel = None
             # Reset IO
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
 
     async def _start_control_loop(self) -> None:
-        async def run_in_control_event_loop():
-            assert caller._taskgroup  # pyright: ignore[reportPrivateUsage]
-            await caller._taskgroup.start(self._receive_msg_loop, SocketID.control)  # pyright: ignore[reportPrivateUsage]
-            ready_event.set()
+        self.control_thread_caller = Caller.start_new(backend=self.anyio_backend, name="ControlThread", protected=True)
+        ready = AsyncEvent()
+        self.control_thread_caller.call_soon(self._receive_msg_loop, SocketID.control, ready.set)
+        await ready.wait()
 
-        self.control_thread_caller = caller = Caller.start_new(
-            backend=self.anyio_backend, name="ControlThread", protected=True
-        )
-        ready_event = AsyncEvent()
-        caller.call_soon(run_in_control_event_loop)
-        await ready_event.wait()
+    async def _start_main_loop(self):
+        async def run_in_main_event_loop():
+            stdin_socket = Context.instance().socket(SocketType.ROUTER)
+            with self._bind_socket(SocketID.stdin, stdin_socket):
+                await self._receive_msg_loop(SocketID.shell, ready.set)
 
-    async def _wait_stopped(self, task_status: TaskStatus[None]) -> None:
-        task_status.started()
+        ready = AsyncEvent()
+        Caller.get_instance().call_soon(run_in_main_event_loop)
+        await ready.wait()
+
+    async def _wait_stopped(self) -> None:
         try:
             await self.event_stopped.wait()
             if self.debugger.debugpy_client.connected:
@@ -682,7 +672,7 @@ class Kernel(HasTraits):
         return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 
     async def _receive_msg_loop(
-        self, socket_id: Literal[SocketID.control, SocketID.shell], *, task_status: TaskStatus[None]
+        self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]
     ) -> None:
         """Receive shell and control messages over zmq sockets."""
         if (
@@ -696,7 +686,7 @@ class Kernel(HasTraits):
         socket: Socket[Literal[SocketType.ROUTER]] = Context.instance().socket(SocketType.ROUTER)
         with self._bind_socket(socket_id, socket):
             try:
-                task_status.started()
+                started()
                 while True:
                     while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
                         try:

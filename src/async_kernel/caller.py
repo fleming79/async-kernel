@@ -388,7 +388,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
     _queue_map: dict[int, Future]
-    _taskgroup: TaskGroup | None = None
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
     _job_added: threading.Event
@@ -456,7 +455,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._running = True
         self._stopped_event = threading.Event()
         async with anyio.create_task_group() as tg:
-            self._taskgroup = tg
             try:
                 await tg.start(self._server_loop, tg)
                 yield self
