@@ -354,10 +354,10 @@ async def test_interrupt_request(client, kernel):
 
 async def test_interrupt_request_async_request(subprocess_kernels_client):
     client = subprocess_kernels_client
-    timeout = 100 if async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1
-    msg_id = client.execute(f"await anyio.sleep({timeout * 4})")
+    msg_id = client.execute(f"await anyio.sleep({utils.TIMEOUT * 4})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+    await anyio.sleep(0.5)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
@@ -366,12 +366,12 @@ async def test_interrupt_request_async_request(subprocess_kernels_client):
 # @pytest.mark.flaky
 async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
     client = subprocess_kernels_client
-    timeout = 100 if async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1
-    msg_id = client.execute(f"import time;time.sleep({timeout * 4})")
+    msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 4})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+    await anyio.sleep(0.5)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
-    with anyio.fail_after(timeout):
+    with anyio.fail_after(utils.TIMEOUT):
         reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
     assert reply["content"]["ename"] == "FutureCancelledError"
@@ -387,7 +387,7 @@ async def test_interrupt_request_blocking_task(subprocess_kernels_client):
     msg_id = client.execute(code, reply=False)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await anyio.sleep(0.2)
+    await anyio.sleep(0.5)
     for _ in range(2):  # Blocking calls in tasks need to be interrupted twice
         await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
