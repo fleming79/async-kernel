@@ -14,15 +14,15 @@ async def test_execute(client, kernel):
 
 
 async def test_execute_control(client, kernel):
-    await utils.clear_iopub(client)
-    await utils.send_control_message(client, MsgType.execute_request, {"code": "y=10", "silent": True}, clear_pub=False)
+    reply = await utils.send_control_message(
+        client, MsgType.execute_request, {"code": "y=10", "silent": True}, clear_pub=False
+    )
     assert kernel.shell.user_ns["y"] == 10
-    await utils.check_pub_message(client, execution_state="busy")
-    await utils.check_pub_message(client, execution_state="idle")
+    await utils.check_pub_message(client, reply["parent_header"]["msg_id"], execution_state="busy")
+    await utils.check_pub_message(client, reply["parent_header"]["msg_id"], execution_state="idle")
 
 
 async def test_execute_silent(client):
-    await utils.clear_iopub(client)
     msg_id, reply = await utils.execute(client, code="x=1", silent=True, clear_pub=False)
     count = reply["execution_count"]
     await utils.check_pub_message(client, msg_id, execution_state="busy")
@@ -42,7 +42,6 @@ async def test_execute_silent(client):
 
 
 async def test_execute_error(client):
-    await utils.clear_iopub(client)
     msg_id, reply = await utils.execute(client, code="1/0", clear_pub=False)
     assert reply["status"] == "error"
     assert reply["ename"] == "ZeroDivisionError"
@@ -245,6 +244,7 @@ async def test_history_search(client):
 
 
 async def test_stream(client):
+    await utils.clear_iopub(client)
     client.execute("print('hi')")
     stdout, _ = await utils.assemble_output(client)
     assert stdout.startswith("hi")
@@ -253,7 +253,6 @@ async def test_stream(client):
 @pytest.mark.parametrize("clear", [True, False])
 async def test_display_data(kernel, client, clear: bool):
     # kernel.display_formatter
-    await utils.clear_iopub(client)
     msg_id, _ = await utils.execute(
         client, f"from IPython.display import display; display(1, clear={clear})", clear_pub=False
     )

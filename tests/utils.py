@@ -100,7 +100,12 @@ async def execute(client: AsyncKernelClient, /, code="", clear_pub=True, metadat
 
 
 async def assemble_output(client: AsyncKernelClient, timeout=TIMEOUT, exit_at_idle=True):
-    """Assemble stdout/err from an execution."""
+    """Assemble stdout/err from an execution.
+
+    !!! tip
+
+        Call `await utils.clear_iopub(client)` to clear old messages before the command that generates the expected output.
+    """
     assert isinstance(client, AsyncKernelClient)
     stdout = ""
     stderr = ""
@@ -162,7 +167,7 @@ async def send_control_message(
     return await get_reply(client, msg["header"]["msg_id"], channel="control", clear_pub=clear_pub)
 
 
-async def check_pub_message(client: AsyncKernelClient, msg_id: str = "", *, msg_type="status", **content_checks):
+async def check_pub_message(client: AsyncKernelClient, msg_id: str, /, *, msg_type="status", **content_checks):
     msg = await client.get_iopub_msg()
     validate_message(msg, msg_type, msg_id)
     content = msg["content"]
