@@ -244,6 +244,7 @@ async def test_history_search(client):
 
 
 async def test_stream(client):
+    await utils.clear_iopub(client)
     client.execute("print('hi')")
     stdout, _ = await utils.assemble_output(client)
     assert stdout.startswith("hi")

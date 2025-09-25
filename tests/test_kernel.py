@@ -101,6 +101,7 @@ async def test_execute_request_success(client):
 @pytest.mark.parametrize("quiet", [True, False])
 async def test_simple_print(kernel, client, quiet: bool):
     """Simple print statement in kernel."""
+    await utils.clear_iopub(client)
     kernel.quiet = quiet
     try:
         client.execute("print('test_simple_print')")
@@ -242,6 +243,7 @@ async def test_message_order(client):
 
 
 async def test_execute_request_error_tag_ignore_error(client):
+    await utils.clear_iopub(client)
     metadata = {"tags": [Tags.suppress_error]}
     await utils.execute(client, "stop - suppress me", metadata=metadata, clear_pub=False)
     stdout, _ = await utils.assemble_output(client)
@@ -469,6 +471,7 @@ async def test_properties(kernel) -> None:
 
 @pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers"])
 async def test_magic(client, code: str, kernel, monkeypatch):
+    await utils.clear_iopub(client)
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
     assert code
     _, reply = await utils.execute(client, code, clear_pub=False)
@@ -497,6 +500,7 @@ import time
 time.sleep(0.1)
 print("{mode.name}")
 """
+    await utils.clear_iopub(client)
     _, reply = await utils.execute(client, code, clear_pub=False)
     assert reply["status"] == "ok"
     stdout, _ = await utils.assemble_output(client)
