@@ -108,16 +108,19 @@ async def test_debugger(subprocess_kernels_client):
     client.execute(code)
 
     while True:
+        await anyio.sleep(0.01)
         reply = await send_debug_request(client, "debugInfo")
         if reply["body"]["stoppedThreads"]:
             break
+    assert len(reply["body"]["stoppedThreads"]) == 1
+    thread_id = reply["body"]["stoppedThreads"][0]
 
-    # next
-    reply = await send_debug_request(client, "next", {"threadId": 1})
+    # # next
+    reply = await send_debug_request(client, "next", {"threadId": thread_id})
     await anyio.sleep(0.5)
 
     # stackTrace
-    reply = await send_debug_request(client, "stackTrace", {"threadId": 1})
+    reply = await send_debug_request(client, "stackTrace", {"threadId": thread_id})
     stacks = reply["body"]["stackFrames"]
     assert stacks
 
@@ -179,7 +182,7 @@ async def test_debugger(subprocess_kernels_client):
     reply = await send_debug_request(client=client, command="inspectVariables", arguments={"frameId": frameId})
     assert reply["success"]
     # continue
-    reply = await send_debug_request(client, "continue", {"threadId": 1})
+    reply = await send_debug_request(client, "continue", {"threadId": thread_id})
 
     # debugInfo
     while True:
