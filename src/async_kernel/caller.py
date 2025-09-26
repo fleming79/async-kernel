@@ -12,6 +12,7 @@ import time
 import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
+from contextlib import asynccontextmanager
 from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, cast, overload
 
@@ -363,7 +364,7 @@ class Future(Awaitable[T]):
         return Caller(thread=self._thread)
 
 
-class Caller:
+class Caller(anyio.AsyncContextManagerMixin):
     """
     A class to enable calling functions and coroutines between anyio event loops.
 
@@ -381,14 +382,12 @@ class Caller:
     MAX_IDLE_POOL_INSTANCES = 10
     "The number of `pool` instances to leave idle (See also[to_thread][async_kernel.Caller.to_thread])."
 
-    __stack = None
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
     _busy_worker_threads: ClassVar[int] = 0
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
     _queue_map: dict[int, Future]
-    _taskgroup: TaskGroup | None = None
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
     _job_added: threading.Event
@@ -450,20 +449,17 @@ class Caller:
     def __repr__(self) -> str:
         return f"Caller<{self.name} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')}>"
 
-    async def __aenter__(self) -> Self:
-        async with contextlib.AsyncExitStack() as stack:
-            self._backend = Backend(sniffio.current_async_library())
-            self._running = True
-            self._stopped_event = threading.Event()
-            self._taskgroup = tg = await stack.enter_async_context(anyio.create_task_group())
-            await tg.start(self._server_loop, tg)
-            self.__stack = stack.pop_all()
-        return self
-
-    async def __aexit__(self, exc_type, exc_value, exc_tb) -> None:
-        if self.__stack is not None:
-            self.stop(force=True)
-            await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
+    @asynccontextmanager
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        self._backend = Backend(sniffio.current_async_library())
+        self._running = True
+        self._stopped_event = threading.Event()
+        async with anyio.create_task_group() as tg:
+            try:
+                await tg.start(self._server_loop, tg)
+                yield self
+            finally:
+                self.stop(force=True)
 
     async def _server_loop(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         socket = Context.instance().socket(SocketType.PUB)
