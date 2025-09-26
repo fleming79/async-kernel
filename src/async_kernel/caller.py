@@ -927,14 +927,14 @@ class Caller(anyio.AsyncContextManagerMixin):
             msg = f"A thread with {name=} already exists!"
             raise RuntimeError(msg)
 
-        def anyio_run_caller() -> None:
+        def async_kernel_caller() -> None:
             anyio.run(caller.get_runner(started=ready_event.set), backend=backend_, backend_options=backend_options)
 
         backend_ = Backend(backend if backend is not NoValue else sniffio.current_async_library())
         if backend_options is NoValue:
             backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
         ready_event = threading.Event()
-        thread = threading.Thread(target=anyio_run_caller, name=name or None, daemon=True)
+        thread = threading.Thread(target=async_kernel_caller, name=name or None, daemon=True)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
         thread.start()
         ready_event.wait()

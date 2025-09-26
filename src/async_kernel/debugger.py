@@ -13,6 +13,7 @@ from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
 from async_kernel import AsyncEvent, Future, utils
+from async_kernel.caller import AsyncLock
 
 if TYPE_CHECKING:
     from anyio.abc import TaskGroup
@@ -126,6 +127,7 @@ class DebugpyClient(HasTraits):
     capabilities = Dict()
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
     _socketstream: anyio.abc.SocketStream | None = None
+    _send_lock = Instance(AsyncLock, ())
 
     def __init__(self, log, event_callback):
         """Initialize the client."""
@@ -142,14 +144,15 @@ class DebugpyClient(HasTraits):
     async def send_request(self, request: dict) -> Future:
         if not (socketstream := self._socketstream):
             raise RuntimeError
-        self._future_responses[request["seq"]] = fut = Future()
-        content = self._pack(request)
-        content_length = str(len(content)).encode()
-        buf = self.HEADER + content_length + self.SEPARATOR
-        buf += content
-        self.log.debug("DEBUGPYCLIENT: request %s", buf)
-        await socketstream.send(buf)
-        return fut
+        async with self._send_lock:
+            self._future_responses[request["seq"]] = fut = Future()
+            content = self._pack(request)
+            content_length = str(len(content)).encode()
+            buf = self.HEADER + content_length + self.SEPARATOR
+            buf += content
+            self.log.debug("DEBUGPYCLIENT: request %s", buf)
+            await socketstream.send(buf)
+            return fut
 
     def put_tcp_frame(self, frame: bytes):
         """Buffer the frame and process the buffer."""
