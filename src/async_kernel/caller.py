@@ -1078,11 +1078,11 @@ class Caller(anyio.AsyncContextManagerMixin):
 
 class AsyncLock:
     """
-    Implements a mutex asynchronous lock that is compatible with [async_kernel.caller.Caller][].
+    A mutex asynchronous lock that is compatible with [async_kernel.caller.Caller][].
 
     !!! note
 
-        - Attempting to lock a 'mutuex' configured lock that is *locked* will raise a [RuntimeError][].
+        - Attempting to acquire the lock from inside a locked context will raise a [RuntimeError][].
     """
 
     _reentrant: ClassVar[bool] = False
