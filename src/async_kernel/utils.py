@@ -77,7 +77,7 @@ async def wait_thread_event(thread_event: threading.Event, /):
     try:
         event = anyio.Event()
         thread = threading.Thread(target=_wait_thread_event, args=[thread_event, event, current_token()], daemon=True)
-        thread.pydev_do_not_trace = True  # pyright: ignore[reportAttributeAccessIssue]
+        thread.pydev_do_not_trace = not LAUNCHED_BY_DEBUGPY  # pyright: ignore[reportAttributeAccessIssue]
         if not thread_event.is_set():
             thread.start()
             await event.wait()

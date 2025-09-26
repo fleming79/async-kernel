@@ -309,6 +309,7 @@ class Kernel(HasTraits):
     def __init__(self, settings: dict | None = None, /) -> None:
         if self._initialised:
             return  # Only initialize once
+        assert threading.current_thread() is threading.main_thread(), "The kernel must start in the main thread."
         self._initialised = True
         super().__init__()
         sys.excepthook = self.excepthook
@@ -317,6 +318,7 @@ class Kernel(HasTraits):
         if not os.environ.get("MPLBACKEND"):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
         # setting get loaded in `_validate_settings`
+        assert self.shell, "The shell should be loaded here."
         self._settings = settings or {}
 
     @override
@@ -669,7 +671,7 @@ class Kernel(HasTraits):
                 await self._receive_msg_loop(SocketID.shell, ready.set)
 
         ready = AsyncEvent()
-        Caller.get_instance().call_soon(run_in_main_event_loop)
+        Caller().call_soon(run_in_main_event_loop)
         await ready.wait()
 
     async def _receive_msg_loop(
@@ -776,6 +778,9 @@ class Kernel(HasTraits):
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
         match (concurrency_mode, socket_id, msg_type):
+            case _, SocketID.shell, MsgType.shutdown_request | MsgType.debug_request:
+                msg = f"{msg_type=} not allowed on shell!"
+                raise ValueError(msg)
             case KernelConcurrencyMode.blocking, _, _:
                 return RunMode.blocking
             case _, SocketID.control, MsgType.execute_request:
@@ -790,9 +795,6 @@ class Kernel(HasTraits):
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
                 return RunMode.queue
-            case _, SocketID.shell, MsgType.shutdown_request | MsgType.debug_request:
-                msg = f"{msg_type=} not allowed on shell!"
-                raise ValueError(msg)
             case _, _, MsgType.inspect_request | MsgType.complete_request | MsgType.is_complete_request:
                 return RunMode.thread
             case _, _, MsgType.history_request:
@@ -801,8 +803,10 @@ class Kernel(HasTraits):
                 return RunMode.queue
             case _, _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
                 return RunMode.blocking
+            case _, _, MsgType.debug_request:
+                return RunMode.blocking
             case _:
-                return RunMode.task
+                return RunMode.blocking
 
     def all_concurrency_run_modes(
         self,
