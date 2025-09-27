@@ -261,7 +261,7 @@ class AsyncInteractiveShell(InteractiveShell):
             if msg := utils.get_metadata().get(MetadataKeys.suppress_error_message, "⚠"):
                 print(msg)
             return
-        if utils.get_execute_request_timeout() is not None and etype is self.kernel.CancelledError:
+        if utils.get_execute_request_timeout() is not None and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
         self.kernel.iopub_send(
             msg_or_type="error",

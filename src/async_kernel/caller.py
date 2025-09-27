@@ -517,8 +517,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     fut.set_result(result)
                 except anyio.get_cancelled_exc_class():
                     if not fut.cancelled():
-                        with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                            fut.cancel()
+                        fut.cancel()
                     fut.set_result(None)  # This will cancel
                     raise
                 except Exception as e:
@@ -727,24 +726,24 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
 
+        The queue executor loop will stay open until one of the following occurs:
+
+        1. The method [async_kernel.caller.Caller.queue_close][] is called with `func`.
+        2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
+
         Args:
             func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
         """
         key = hash(func)
-        if not (fut := self._queue_map.get(key)):
+        if not (fut_ := self._queue_map.get(key)):
             queue = deque()
             event_added = threading.Event()
-
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
-            def sender(args):
-                queue.append(args)
-                event_added.set()
-
-            async def execute_loop(sender, queue: deque, event_added=event_added) -> None:
+            async def queue_loop(key: int, queue: deque, event_added: threading.Event) -> None:
                 fut = self.current_future()
                 assert fut
                 try:
@@ -758,7 +757,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                     await result
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
                                 if fut.cancelled():
-                                    break
+                                    raise
                                 self.log.exception("Execution %f failed", func_, exc_info=e)
                             finally:
                                 func_ = None
@@ -767,10 +766,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = fut = self.call_soon(
-                execute_loop, sender=sender, queue=queue, event_added=event_added
-            )
-        fut.metadata["kwargs"]["sender"]((contextvars.copy_context(), func, args, kwargs))
+            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
+        fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
+        fut_.metadata["kwargs"]["event_added"].set()
 
     def queue_close(self, func: Callable | int) -> None:
         """
@@ -781,8 +779,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         key = func if isinstance(func, int) else hash(func)
         if fut := self._queue_map.pop(key, None):
-            if (kwargs := fut.metadata.get("kwargs")) and (event := kwargs.get("event_added")):
-                event.set()
             fut.cancel()
 
     @classmethod

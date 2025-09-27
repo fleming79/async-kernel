@@ -473,7 +473,6 @@ class Kernel(HasTraits):
         if self._sockets:
             msg = "Already started"
             raise RuntimeError(msg)
-        self.CancelledError = anyio.get_cancelled_exc_class()
         self.anyio_backend = sniffio.current_async_library()
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:
@@ -687,35 +686,32 @@ class Kernel(HasTraits):
 
             utils.mark_thread_pydev_do_not_trace(get_selector()._thread)  # pyright: ignore[reportPrivateUsage]
         socket: Socket[Literal[SocketType.ROUTER]] = Context.instance().socket(SocketType.ROUTER)
-        with self._bind_socket(socket_id, socket):
-            try:
-                started()
-                while True:
-                    while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
-                        try:
-                            ident, msg = self.session.recv(socket, copy=False)
-                            if ident and msg:
-                                if socket_id == SocketID.shell:
-                                    # Reset the frame to show the main thread is not blocked.
-                                    self._last_interrupt_frame = None
-                                self.log.debug("*** _receive_msg_loop %s*** %s", socket_id, msg)
-                                await self.handle_message_request(
-                                    Job(
-                                        socket_id=socket_id,
-                                        socket=socket,
-                                        ident=ident,
-                                        msg=msg,  # pyright: ignore[reportArgumentType]
-                                        received_time=time.monotonic(),
-                                        run_mode=None,  #  pyright: ignore[reportArgumentType]. This value is set by `get_handler_and_run_mode`.
-                                    )
+        with self._bind_socket(socket_id, socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
+            started()
+            while True:
+                while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
+                    try:
+                        ident, msg = self.session.recv(socket, copy=False)
+                        if ident and msg:
+                            if socket_id == SocketID.shell:
+                                # Reset the frame to show the main thread is not blocked.
+                                self._last_interrupt_frame = None
+                            self.log.debug("*** _receive_msg_loop %s*** %s", socket_id, msg)
+                            await self.handle_message_request(
+                                Job(
+                                    socket_id=socket_id,
+                                    socket=socket,
+                                    ident=ident,
+                                    msg=msg,  # pyright: ignore[reportArgumentType]
+                                    received_time=time.monotonic(),
+                                    run_mode=None,  #  pyright: ignore[reportArgumentType]. This value is set by `get_handler_and_run_mode`.
                                 )
-                        except Exception as e:
-                            self.log.debug("Bad message on %s: %s", socket_id, e)
-                            continue
-                        await anyio.sleep(0)
-                    await anyio.wait_readable(socket)
-            except (zmq.ContextTerminated, self.CancelledError):
-                return
+                            )
+                    except Exception as e:
+                        self.log.debug("Bad message on %s: %s", socket_id, e)
+                        continue
+                    await anyio.sleep(0)
+                await anyio.wait_readable(socket)
 
     async def handle_message_request(self, job: Job, /) -> None:
         """
@@ -966,8 +962,8 @@ class Kernel(HasTraits):
             # A safeguard to catch exceptions not caught by the shell.
             err = e
         if (err) and (
-            (Tags.suppress_error in metadata.get("tags", ()))  # 1.
-            or (isinstance(err, self.CancelledError) and (utils.get_execute_request_timeout() is not None))  # 2.
+            (Tags.suppress_error in metadata.get("tags", ()))
+            or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
         ):
             # Suppress the error due to either:
             # 1. tag
