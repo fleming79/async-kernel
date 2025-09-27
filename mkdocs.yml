@@ -68,6 +68,7 @@ plugins:
       include_source: True
       kernel_name: async-docs
       execute: true
+      ignore_h1_titles: false
       # include_requirejs: true
       highlight_extra_classes: custom-css-classes
       include: ["*.ipynb"]
@@ -96,29 +97,32 @@ plugins:
             - https://jupyter-client.readthedocs.io/en/stable/objects.inv
             - https://anyio.readthedocs.io/en/stable/objects.inv
           options:
+            docstring_style: google
             docstring_options:
               ignore_init_summary: true
             docstring_section_style: list
             extensions: []
             filters: public
             heading_level: 2
-            inherited_members: true
+            inherited_members: false
             line_length: 90
+            members_order: source
             merge_init_into_class: true
             parameter_headings: true
             # preload_modules: [mkdocstrings]
             relative_crossrefs: true
             scoped_crossrefs: true
             separate_signature: true
-            show_bases: false
+            show_bases: true
             show_inheritance_diagram: true
-            show_root_heading: true
+            show_root_heading: false
             show_root_full_path: true
+            show_root_members_full_path: true
             show_signature_annotations: true
             show_if_no_docstring: false
-            show_root_members_full_path: false
             show_source: true
-            show_symbol_type_heading: false
+            show_docstring_description: true
+            show_symbol_type_heading: true
             show_symbol_type_toc: true
             show_category_heading: false
             signature_crossrefs: true
@@ -135,7 +139,7 @@ markdown_extensions:
   - footnotes
   - toc:
       permalink: true
-      toc_depth: 4
+      toc_depth: 3
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.emoji:
@@ -157,20 +161,20 @@ nav:
       - usage/index.md
       - Notebooks:
           - notebooks/index.md
-          - notebooks/simple_example.ipynb
-          - notebooks/concurrency.ipynb
-          - notebooks/caller.ipynb
+          - Simple example: notebooks/simple_example.ipynb
+          - About concurrency: notebooks/concurrency.ipynb
+          - Using caller: notebooks/caller.ipynb
       - Commands: commands.md
   - Reference:
       - reference/index.md
-      - reference/caller.md
-      - reference/comm.md
-      - reference/command.md
-      - reference/kernel.md
-      - reference/kernelspec.md
-      - reference/asyncshell.md
-      - reference/typing.md
-      - reference/utils.md
+      - "async_kernel.caller": reference/caller.md
+      - "async_kernel.comm": reference/comm.md
+      - "async_kernel.command": reference/command.md
+      - "async_kernel.kernel": reference/kernel.md
+      - "async_kernel.kernelspec": reference/kernelspec.md
+      - "async_kernel.asyncshell": reference/asyncshell.md
+      - "async_kernel.typing": reference/typing.md
+      - "async_kernel.utils": reference/utils.md
 
   - About:
       - about/index.md

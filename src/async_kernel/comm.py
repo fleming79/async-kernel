@@ -14,7 +14,7 @@ __all__ = ["Comm"]
 
 class Comm(BaseComm):
     """
-    An implementation of `comm.BaseComms` for async-kernel.
+    An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).
 
     !!! note
 

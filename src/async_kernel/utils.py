@@ -63,7 +63,6 @@ async def wait_thread_event(thread_event: threading.Event, /):
 
     !!! info
 
-        - This will always
         - On external cancellation the `event` is set here to prevent the thread from waiting forever.
     """
     await anyio.sleep(0)
