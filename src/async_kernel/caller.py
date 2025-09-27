@@ -728,7 +728,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         The queue executor loop will stay open until one of the following occurs:
 
-        1. The method [async_caller.caller.Caller.queue_close][] is called with `func`.
+        1. The method [async_kernel.caller.Caller.queue_close][] is called with `func`.
         2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
 
         Args:
