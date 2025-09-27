@@ -51,7 +51,7 @@ truncated_rep.fillvalue = "…"
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
-    "Used to indicate a `Future` is cancelled."
+    "Used to indicate a [Future][async_kernel.caller.Future] is cancelled."
 
 
 class InvalidStateError(RuntimeError):
@@ -59,7 +59,7 @@ class InvalidStateError(RuntimeError):
 
 
 class AsyncEvent:
-    """An asynchronous thread-safe event compatible with [async_kernel.caller.Caller][]."""
+    """An asynchronous thread-safe event compatible with [Caller][async_kernel.caller.Caller]."""
 
     __slots__ = ["__weakref__", "_events", "_flag", "_thread"]
 
@@ -80,7 +80,7 @@ class AsyncEvent:
 
         !!! warning
 
-            This method requires that a [async_kernel.caller.Caller][] for its target thread.
+            This method requires that a [Caller][async_kernel.caller.Caller] for its target thread.
             ```
         """
         if not self._flag:
@@ -121,8 +121,8 @@ class Future(Awaitable[T]):
     A class representing a future result modelled on [asyncio.Future][].
 
     This class provides an anyio compatible Future primitive. It is designed
-    to work with `Caller` to enable thread-safe calling, setting and awaiting
-    execution results.
+    to work with `Caller` to enable thread-safe calling, setting, awaiting and
+    cancelling execution results.
     """
 
     _cancelled = False
@@ -191,7 +191,6 @@ class Future(Awaitable[T]):
         A dict provided to store metadata with the future.
 
         !!! info
-
             The metadata is used when forming the representation of the future.
 
         !!! example
@@ -208,6 +207,13 @@ class Future(Awaitable[T]):
                 fut = Caller().call_soon(anyio.sleep, 0)
                 fut.metadata.update(name="My future")
                 ```
+
+        !!! tip
+
+            A `future` returned by methods of [async_kernel.caller.Caller][] stores the function and call arguments
+            in the futures metedata. It adds a on_set_callback that clears the metadata to avoid memory leaks.
+
+
         """
         return self._metadata
 
@@ -360,7 +366,7 @@ class Future(Awaitable[T]):
             self.cancel()
 
     def get_caller(self) -> Caller:
-        "The [async_kernel.caller.Caller][] that is running for this *futures* thread."
+        "The [Caller][async_kernel.caller.Caller] that is running for this *futures* thread."
         return Caller(thread=self._thread)
 
 
@@ -380,7 +386,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     """
 
     MAX_IDLE_POOL_INSTANCES = 10
-    "The number of `pool` instances to leave idle (See also[to_thread][async_kernel.Caller.to_thread])."
+    "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.Caller.to_thread])."
 
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
     _busy_worker_threads: ClassVar[int] = 0
@@ -784,7 +790,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     @classmethod
     def stop_all(cls, *, _stop_protected: bool = False) -> None:
         """
-        A classmethod to stop all un-protected callers.
+        A [classmethod][] to stop all un-protected callers.
 
         Args:
             _stop_protected: A private argument to shutdown protected instances.
@@ -795,7 +801,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     @classmethod
     def get_instance(cls, name: str | None = "MainThread", *, create: bool = False) -> Self:
         """
-        A classmethod that gets the caller associated to the thread using the threads name.
+        A [classmethod][] that gets the caller associated to the thread using the threads name.
 
 
         The default will provide the caller from the MainThread.  If an instance doesn't exist
@@ -822,7 +828,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Future[T]:
-        """A classmethod to call func in a separate thread see also [to_thread_by_name][async_kernel.Caller.to_thread_by_name]."""
+        """A [classmethod][] to call func in a separate thread see also [to_thread_by_name][async_kernel.Caller.to_thread_by_name]."""
         return cls.to_thread_by_name(None, func, *args, **kwargs)
 
     @classmethod
@@ -835,7 +841,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Future[T]:
         """
-        A classmethod to call func in the thread specified by name.
+        A [classmethod][] to call func in the thread specified by name.
 
         Args:
             name: The name of the `Caller`. A new `Caller` is created if an instance corresponding to name  [^notes].
@@ -882,7 +888,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
     ) -> Self:
         """
-        Create a new caller instance with the thread determined according to the provided `name`.
+        A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.
 
         When `name` equals the current threads it will use the current thread providing the backend is 'asyncio' and
         there is a running event loop available.
@@ -938,13 +944,13 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @classmethod
     def current_future(cls) -> Future[Any] | None:
-        """A classmethod that returns the current future when called from inside a function scheduled by Caller."""
+        """A [classmethod][] that returns the current future when called from inside a function scheduled by Caller."""
         return cls._future_var.get()
 
     @classmethod
     def all_callers(cls, running_only: bool = True) -> list[Caller]:
         """
-        A classmethod to get a list of the callers.
+        A [classmethod][] to get a list of the callers.
 
         Args:
             running_only: Restrict the list to callers that are active (running in an async context).
@@ -960,12 +966,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         shield: bool = False,
     ) -> AsyncGenerator[Future[T], Any]:
         """
-        A classmethod iterator to get [Futures][async_kernel.caller.Future] as they complete.
+        A [classmethod][] iterator to get [Futures][async_kernel.caller.Future] as they complete.
 
         Args:
             items: Either a container with existing futures or generator of Futures.
             max_concurrent: The maximum number of concurrent futures to monitor at a time.
-                This is useful when `items` is a generator utilising Caller.to_thread.
+                This is useful when `items` is a generator utilising [async_kernel.caller.Caller.to_thread][].
                 By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
             shield: Shield existing items from cancellation.
 
@@ -1039,7 +1045,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
     ) -> tuple[set[T], set[Future[T]]]:
         """
-        A classmethod to wait for the futures given by items to complete.
+        A [classmethod][] to wait for the futures given by items to complete.
 
         Returns two sets of the futures: (done, pending).
 
@@ -1074,7 +1080,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
 class ReentrantAsyncLock:
     """
-    A Reentrant asynchronous lock compatible with [async_kernel.caller.Caller][].
+    A Reentrant asynchronous lock compatible with [Caller][async_kernel.caller.Caller].
 
     The lock is reentrant in terms of [contextvars.Context][].
 
@@ -1189,7 +1195,7 @@ class ReentrantAsyncLock:
 
 class AsyncLock(ReentrantAsyncLock):
     """
-    A mutex asynchronous lock that is compatible with [async_kernel.caller.Caller][].
+    A mutex asynchronous lock that is compatible with [Caller][async_kernel.caller.Caller].
 
     !!! note
 
