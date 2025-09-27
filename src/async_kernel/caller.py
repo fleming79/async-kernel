@@ -1085,6 +1085,7 @@ class ReentrantAsyncLock:
     !!! note
 
         - The lock context can be exitied in any order.
+        - The context can potentially leak.
         - A 'reentrant' lock can *release* control to another context and then re-enter later for
             tasks or threads called from a locked thread maintaining the same reentrant context.
     """
@@ -1125,7 +1126,7 @@ class ReentrantAsyncLock:
             msg = "Already locked and not reentrant!"
             raise RuntimeError(msg)
         # Get the context.
-        if not self._reentrant or not (ctx := self._ctx_var.get()):
+        if (self._ctx_count == 0) or not self._reentrant or not (ctx := self._ctx_var.get()):
             self._ctx_count = ctx = self._ctx_count + 1
             self._ctx_var.set(ctx)
         # Check if we can lock or re-enter an active lock.
@@ -1158,8 +1159,6 @@ class ReentrantAsyncLock:
 
         If the current depth==1 the lock will be passed to the next queued or released if there isn't one.
         """
-        if not self.is_in_context():
-            raise InvalidStateError
         if self._count == 1 and self._queue and not self._releasing:
             self._releasing = True
             self._ctx_var.set(0)
@@ -1172,6 +1171,24 @@ class ReentrantAsyncLock:
     def is_in_context(self) -> bool:
         "Returns `True` if the current [contextvars.Context][] has the lock."
         return bool(self._count and self._ctx_current and (self._ctx_var.get() == self._ctx_current))
+
+    @asynccontextmanager
+    async def base(self) -> AsyncGenerator[Self, Any]:
+        """
+        Acquire the lock as a new [contextvars.Context][].
+
+        Use this to ensure exclusive access from within this [contextvars.Context][].
+
+        !!! note
+            - This method is not useful for the mutex varient ([async_kernel.caller.AsyncLock][]) which does this by default.
+
+        !!! warning
+            Using this inside its own acquired lock will cause a deadlock.
+        """
+        if self._reentrant:
+            self._ctx_var.set(0)
+        async with self:
+            yield self
 
 
 class AsyncLock(ReentrantAsyncLock):

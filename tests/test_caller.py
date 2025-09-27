@@ -704,26 +704,23 @@ class TestLock:
         unlock.set()
         assert not lock._queue  # pyright: ignore[reportPrivateUsage]
 
-    async def test_invald_release(self, caller):
-        lock = AsyncLock()
-        with pytest.raises(InvalidStateError):
-            await lock.release()
-
     async def test_reentrant(self, caller: Caller):
-        lock = ReentrantAsyncLock()
+        lock: ReentrantAsyncLock = ReentrantAsyncLock()
 
         async def func():
             assert lock.count == 2
             async with lock:
                 assert lock.is_in_context()
                 assert lock.count == 3
-            return True
 
-        async with lock:
+        async with lock.base():
             assert lock.is_in_context()
             assert lock.count == 1
             async with lock:
                 await caller.call_soon(func)
+                with pytest.raises(TimeoutError), anyio.fail_after(0.1):
+                    async with lock.base():
+                        pass
         assert lock.count == 0
         assert not lock.is_in_context()
 
