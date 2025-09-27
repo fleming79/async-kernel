@@ -1602,7 +1602,7 @@ program is interrupted.</p>
 
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_start</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">async</span> <span class="k">with</span> <span class="n">kernel</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
+                <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">()):</span>
                     <span class="k">await</span> <span class="n">wait_exit_context</span><span class="p">()</span>
 
         <span class="k">try</span><span class="p">:</span>
