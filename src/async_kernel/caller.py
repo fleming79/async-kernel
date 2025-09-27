@@ -387,7 +387,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
-    _queue_map: dict[int, tuple[Callable, Future]]
+    _queue_map: dict[int, Future]
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
     _job_added: threading.Event
@@ -714,9 +714,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             - This future loops forever until the  loop is closed or func no longer exists.
             - `queue_close` is the preferred means to shutdown the queue.
         """
-        if item := self._queue_map.get(hash(func)):
-            return item[1]
-        return None
+        return self._queue_map.get(hash(func))
 
     def queue_call(
         self,
@@ -728,24 +726,24 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
 
+        The queue executor loop will stay open until one of the following occurs:
+
+        1. The method [async_caller.caller.Caller.queue_close][] is called with `func`.
+        2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
+
         Args:
             func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
         """
         key = hash(func)
-        if not (sender_fut := self._queue_map.get(key)):
+        if not (fut_ := self._queue_map.get(key)):
             queue = deque()
             event_added = threading.Event()
-
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
-            def sender(args):
-                queue.append(args)
-                event_added.set()
-
-            async def execute_loop() -> None:
+            async def queue_loop(key: int, queue: deque, event_added: threading.Event) -> None:
                 fut = self.current_future()
                 assert fut
                 try:
@@ -768,8 +766,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = sender_fut = sender, self.call_soon(execute_loop)
-        sender_fut[0]((contextvars.copy_context(), func, args, kwargs))
+            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
+        fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
+        fut_.metadata["kwargs"]["event_added"].set()
 
     def queue_close(self, func: Callable | int) -> None:
         """
@@ -779,8 +778,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             func: The queue of the function to close.
         """
         key = func if isinstance(func, int) else hash(func)
-        if item := self._queue_map.pop(key, None):
-            item[1].cancel()
+        if fut := self._queue_map.pop(key, None):
+            fut.cancel()
 
     @classmethod
     def stop_all(cls, *, _stop_protected: bool = False) -> None:
