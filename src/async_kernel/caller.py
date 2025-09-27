@@ -1076,16 +1076,21 @@ class Caller(anyio.AsyncContextManagerMixin):
         return done, pending
 
 
-class AsyncLock:
+class ReentrantAsyncLock:
     """
-    Implements a mutex asynchronous lock that is compatible with [async_kernel.caller.Caller][].
+    A Reentrant asynchronous lock compatible with [async_kernel.caller.Caller][].
+
+    The lock is reentrant in terms of [contextvars.Context][].
 
     !!! note
 
-        - Attempting to lock a 'mutuex' configured lock that is *locked* will raise a [RuntimeError][].
+        - The lock context can be exitied in any order.
+        - The context can potentially leak.
+        - A 'reentrant' lock can *release* control to another context and then re-enter later for
+            tasks or threads called from a locked thread maintaining the same reentrant context.
     """
 
-    _reentrant: ClassVar[bool] = False
+    _reentrant: ClassVar[bool] = True
     _count: int = 0
     _ctx_count: int = 0
     _ctx_current: int = 0
@@ -1093,7 +1098,7 @@ class AsyncLock:
 
     def __init__(self):
         self._ctx_var: contextvars.ContextVar[int] = contextvars.ContextVar(f"Lock:{id(self)}", default=0)
-        self._queue: deque[tuple[int, Future[Future | None]]] = deque()
+        self._queue: deque[tuple[int, Future[bool]]] = deque()
 
     @override
     def __repr__(self) -> str:
@@ -1115,13 +1120,13 @@ class AsyncLock:
         """
         Acquire a lock.
 
-        If the lock is reentrant the internal counter increments to share the lock.
+        The internal counter increments when the lock is entered.
         """
         if not self._reentrant and self.is_in_context():
             msg = "Already locked and not reentrant!"
             raise RuntimeError(msg)
         # Get the context.
-        if not self._reentrant or not (ctx := self._ctx_var.get()):
+        if (self._ctx_count == 0) or not self._reentrant or not (ctx := self._ctx_var.get()):
             self._ctx_count = ctx = self._ctx_count + 1
             self._ctx_var.set(ctx)
         # Check if we can lock or re-enter an active lock.
@@ -1130,21 +1135,20 @@ class AsyncLock:
             self._ctx_current = ctx
             return self
         # Join the queue.
-        k: tuple[int, Future[None | Future[Future[None] | None]]] = ctx, Future()
+        k: tuple[int, Future[bool]] = ctx, Future()
         self._queue.append(k)
         try:
-            fut = await k[1]
+            result = await k[1]
         finally:
             if k in self._queue:
                 self._queue.remove(k)
-        if fut:
+        if result:
             self._ctx_current = ctx
-            fut.set_result(None)
             if self._reentrant:
                 for k in tuple(self._queue):
                     if k[0] == ctx:
                         self._queue.remove(k)
-                        k[1].set_result(None)
+                        k[1].set_result(False)
                         self._count += 1
             self._releasing = False
         return self
@@ -1155,49 +1159,45 @@ class AsyncLock:
 
         If the current depth==1 the lock will be passed to the next queued or released if there isn't one.
         """
-        if not self.is_in_context():
-            raise InvalidStateError
         if self._count == 1 and self._queue and not self._releasing:
             self._releasing = True
             self._ctx_var.set(0)
-            try:
-                fut = Future()
-                k = self._queue.popleft()
-                k[1].set_result(fut)
-                await k[1]
-            except Exception:
-                self._releasing = False
+            self._queue.popleft()[1].set_result(True)
         else:
             self._count -= 1
         if self._count == 0:
             self._ctx_current = 0
 
     def is_in_context(self) -> bool:
-        "Returns `True` if the current context has the lock."
+        "Returns `True` if the current [contextvars.Context][] has the lock."
         return bool(self._count and self._ctx_current and (self._ctx_var.get() == self._ctx_current))
 
+    @asynccontextmanager
+    async def base(self) -> AsyncGenerator[Self, Any]:
+        """
+        Acquire the lock as a new [contextvars.Context][].
 
-class ReentrantAsyncLock(AsyncLock):
+        Use this to ensure exclusive access from within this [contextvars.Context][].
+
+        !!! note
+            - This method is not useful for the mutex variant ([async_kernel.caller.AsyncLock][]) which does this by default.
+
+        !!! warning
+            Using this inside its own acquired lock will cause a deadlock.
+        """
+        if self._reentrant:
+            self._ctx_var.set(0)
+        async with self:
+            yield self
+
+
+class AsyncLock(ReentrantAsyncLock):
     """
-    Implements a Reentrant asynchronous lock compatible with [async_kernel.caller.Caller][].
-
-
-    !!! example
-
-        ```python
-        # Inside a coroutine running inside a thread where a [asyncio.caller.Caller][] instance is running.
-
-        lock = ReentrantAsyncLock(reentrant=True)  # a reentrant lock
-        async with lock:
-            async with lock:
-                Caller().to_thread(...)  # The lock is shared with the thread.
-        ```
+    A mutex asynchronous lock that is compatible with [async_kernel.caller.Caller][].
 
     !!! note
 
-        - The lock context can be exitied in any order.
-        - A 'reentrant' lock can *release* control to another context and then re-enter later for
-            tasks or threads called from a locked thread maintaining the same reentrant context.
+        - Attempting to acquire the lock from inside a locked [contextvars.Context][] will raise a [RuntimeError][].
     """
 
-    _reentrant: ClassVar[bool] = True
+    _reentrant: ClassVar[bool] = False
