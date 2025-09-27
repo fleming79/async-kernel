@@ -754,7 +754,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 assert fut
                 try:
                     while True:
-                        event_added.clear()
+                        if not queue:
+                            await wait_thread_event(event_added)
                         if queue:
                             context, func_, args, kwargs = queue.popleft()
                             try:
@@ -768,13 +769,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                             finally:
                                 func_ = None
                         else:
-                            await wait_thread_event(event_added)
+                            event_added.clear()
                 finally:
                     self._queue_map.pop(key)
 
             self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
         fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
-        fut_.metadata["kwargs"]["event_added"].set()
+        if len(fut_.metadata["kwargs"]["queue"]) == 1:
+            fut_.metadata["kwargs"]["event_added"].set()
 
     def queue_close(self, func: Callable | int) -> None:
         """
