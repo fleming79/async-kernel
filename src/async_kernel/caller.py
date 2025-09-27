@@ -1180,7 +1180,7 @@ class ReentrantAsyncLock:
         Use this to ensure exclusive access from within this [contextvars.Context][].
 
         !!! note
-            - This method is not useful for the mutex varient ([async_kernel.caller.AsyncLock][]) which does this by default.
+            - This method is not useful for the mutex variant ([async_kernel.caller.AsyncLock][]) which does this by default.
 
         !!! warning
             Using this inside its own acquired lock will cause a deadlock.
