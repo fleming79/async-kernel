@@ -854,6 +854,15 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#async_kernel.caller.AsyncLock.base" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;base
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.caller.AsyncLock.is_in_context" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_in_context
@@ -1334,6 +1343,15 @@ viewing the latest version.
   <a href="#async_kernel.caller.ReentrantAsyncLock.acquire" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;acquire
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.caller.ReentrantAsyncLock.base" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;base
     </span>
   </a>
   
@@ -1787,6 +1805,15 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#async_kernel.caller.AsyncLock.base" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;base
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.caller.AsyncLock.is_in_context" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_in_context
@@ -2273,6 +2300,15 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#async_kernel.caller.ReentrantAsyncLock.base" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;base
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.caller.ReentrantAsyncLock.is_in_context" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_in_context
@@ -2355,7 +2391,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="AsyncLock (async_kernel.caller.AsyncLock)" href="#async_kernel.caller.AsyncLock">AsyncLock</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Implements a mutex asynchronous lock that is compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
+            <p>A mutex asynchronous lock that is compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2390,7 +2426,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="ReentrantAsyncLock (async_kernel.caller.ReentrantAsyncLock)" href="#async_kernel.caller.ReentrantAsyncLock">ReentrantAsyncLock</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Implements a Reentrant asynchronous lock compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
+            <p>A Reentrant asynchronous lock compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
           </div>
         </li>
     </ul>
@@ -2678,11 +2714,11 @@ viewing the latest version.
     <div class="doc doc-contents ">
 
 
-        <p>Implements a mutex asynchronous lock that is compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
+        <p>A mutex asynchronous lock that is compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul>
-<li>Attempting to lock a 'mutuex' configured lock that is <em>locked</em> will raise a <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError">RuntimeError</a>.</li>
+<li>Attempting to acquire the lock from inside a locked <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a> will raise a <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError">RuntimeError</a>.</li>
 </ul>
 </div>
 
@@ -2712,10 +2748,22 @@ viewing the latest version.
             </div>
           </li>
           <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="base
+
+
+  
+      async
+   (async_kernel.caller.AsyncLock.base)" href="#async_kernel.caller.AsyncLock.base">base</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Acquire the lock as a new <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a>.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="is_in_context (async_kernel.caller.AsyncLock.is_in_context)" href="#async_kernel.caller.AsyncLock.is_in_context">is_in_context</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Returns <code>True</code> if the current context has the lock.</p>
+              <p>Returns <code>True</code> if the current <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a> has the lock.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -2754,11 +2802,11 @@ viewing the latest version.
 
                   <details class="quote">
                     <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1094</span>
-<span class="normal">1095</span>
-<span class="normal">1096</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1099</span>
+<span class="normal">1100</span>
+<span class="normal">1101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lock:</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="n">Future</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -2817,17 +2865,12 @@ viewing the latest version.
     <div class="doc doc-contents ">
 
         <p>Acquire a lock.</p>
-<p>If the lock is reentrant the internal counter increments to share the lock.</p>
+<p>The internal counter increments when the lock is entered.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1114</span>
-<span class="normal">1115</span>
-<span class="normal">1116</span>
-<span class="normal">1117</span>
-<span class="normal">1118</span>
-<span class="normal">1119</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1119</span>
 <span class="normal">1120</span>
 <span class="normal">1121</span>
 <span class="normal">1122</span>
@@ -2858,17 +2901,21 @@ viewing the latest version.
 <span class="normal">1147</span>
 <span class="normal">1148</span>
 <span class="normal">1149</span>
-<span class="normal">1150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="normal">1150</span>
+<span class="normal">1151</span>
+<span class="normal">1152</span>
+<span class="normal">1153</span>
+<span class="normal">1154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Acquire a lock.</span>
 
-<span class="sd">    If the lock is reentrant the internal counter increments to share the lock.</span>
+<span class="sd">    The internal counter increments when the lock is entered.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_context</span><span class="p">():</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Already locked and not reentrant!&quot;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="c1"># Get the context.</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ctx</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">get</span><span class="p">()):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ctx_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ctx</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">get</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_count</span> <span class="o">=</span> <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_count</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
     <span class="c1"># Check if we can lock or re-enter an active lock.</span>
@@ -2877,24 +2924,95 @@ viewing the latest version.
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span> <span class="o">=</span> <span class="n">ctx</span>
         <span class="k">return</span> <span class="bp">self</span>
     <span class="c1"># Join the queue.</span>
-    <span class="n">k</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="kc">None</span> <span class="o">|</span> <span class="n">Future</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">Future</span><span class="p">()</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">Future</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">fut</span> <span class="o">=</span> <span class="k">await</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">fut</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span> <span class="o">=</span> <span class="n">ctx</span>
-        <span class="n">fut</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ctx</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-                    <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="async_kernel.caller.AsyncLock.base" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">base</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#async_kernel.caller.AsyncLock.base" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Acquire the lock as a new <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a>.</p>
+<p>Use this to ensure exclusive access from within this <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li>This method is not useful for the mutex variant (<a class="autorefs autorefs-internal" title="AsyncLock" href="#async_kernel.caller.AsyncLock">async_kernel.caller.AsyncLock</a>) which does this by default.</li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Using this inside its own acquired lock will cause a deadlock.</p>
+</div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1175</span>
+<span class="normal">1176</span>
+<span class="normal">1177</span>
+<span class="normal">1178</span>
+<span class="normal">1179</span>
+<span class="normal">1180</span>
+<span class="normal">1181</span>
+<span class="normal">1182</span>
+<span class="normal">1183</span>
+<span class="normal">1184</span>
+<span class="normal">1185</span>
+<span class="normal">1186</span>
+<span class="normal">1187</span>
+<span class="normal">1188</span>
+<span class="normal">1189</span>
+<span class="normal">1190</span>
+<span class="normal">1191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">base</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Acquire the lock as a new [contextvars.Context][].</span>
+
+<span class="sd">    Use this to ensure exclusive access from within this [contextvars.Context][].</span>
+
+<span class="sd">    !!! note</span>
+<span class="sd">        - This method is not useful for the mutex variant ([async_kernel.caller.AsyncLock][]) which does this by default.</span>
+
+<span class="sd">    !!! warning</span>
+<span class="sd">        Using this inside its own acquired lock will cause a deadlock.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2914,15 +3032,15 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Returns <code>True</code> if the current context has the lock.</p>
+        <p>Returns <code>True</code> if the current <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a> has the lock.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1175</span>
-<span class="normal">1176</span>
-<span class="normal">1177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_in_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="s2">&quot;Returns `True` if the current context has the lock.&quot;</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1171</span>
+<span class="normal">1172</span>
+<span class="normal">1173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_in_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="s2">&quot;Returns `True` if the current [contextvars.Context][] has the lock.&quot;</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2953,11 +3071,7 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1156</span>
 <span class="normal">1157</span>
 <span class="normal">1158</span>
 <span class="normal">1159</span>
@@ -2970,28 +3084,16 @@ viewing the latest version.
 <span class="normal">1166</span>
 <span class="normal">1167</span>
 <span class="normal">1168</span>
-<span class="normal">1169</span>
-<span class="normal">1170</span>
-<span class="normal">1171</span>
-<span class="normal">1172</span>
-<span class="normal">1173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">1169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decrement the internal counter.</span>
 
 <span class="sd">    If the current depth==1 the lock will be passed to the next queued or released if there isn&#39;t one.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_context</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">InvalidStateError</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">fut</span> <span class="o">=</span> <span class="n">Future</span><span class="p">()</span>
-            <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
-            <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
-            <span class="k">await</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">-=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -6777,21 +6879,13 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
     <div class="doc doc-contents ">
 
 
-        <p>Implements a Reentrant asynchronous lock compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Inside a coroutine running inside a thread where a [asyncio.caller.Caller][] instance is running.</span>
-
-<span class="n">lock</span> <span class="o">=</span> <span class="n">ReentrantAsyncLock</span><span class="p">(</span><span class="n">reentrant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># a reentrant lock</span>
-<span class="k">async</span> <span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
-    <span class="k">async</span> <span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
-        <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># The lock is shared with the thread.</span>
-</code></pre></div>
-</div>
+        <p>A Reentrant asynchronous lock compatible with <a class="autorefs autorefs-internal" title="Caller" href="#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
+<p>The lock is reentrant in terms of <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul>
 <li>The lock context can be exitied in any order.</li>
+<li>The context can potentially leak.</li>
 <li>A 'reentrant' lock can <em>release</em> control to another context and then re-enter later for
     tasks or threads called from a locked thread maintaining the same reentrant context.</li>
 </ul>
@@ -6823,10 +6917,22 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
             </div>
           </li>
           <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="base
+
+
+  
+      async
+   (async_kernel.caller.ReentrantAsyncLock.base)" href="#async_kernel.caller.ReentrantAsyncLock.base">base</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Acquire the lock as a new <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a>.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="is_in_context (async_kernel.caller.ReentrantAsyncLock.is_in_context)" href="#async_kernel.caller.ReentrantAsyncLock.is_in_context">is_in_context</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Returns <code>True</code> if the current context has the lock.</p>
+              <p>Returns <code>True</code> if the current <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a> has the lock.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -6865,11 +6971,11 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
 
                   <details class="quote">
                     <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1094</span>
-<span class="normal">1095</span>
-<span class="normal">1096</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1099</span>
+<span class="normal">1100</span>
+<span class="normal">1101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lock:</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="n">Future</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -6928,17 +7034,12 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
     <div class="doc doc-contents ">
 
         <p>Acquire a lock.</p>
-<p>If the lock is reentrant the internal counter increments to share the lock.</p>
+<p>The internal counter increments when the lock is entered.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1114</span>
-<span class="normal">1115</span>
-<span class="normal">1116</span>
-<span class="normal">1117</span>
-<span class="normal">1118</span>
-<span class="normal">1119</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1119</span>
 <span class="normal">1120</span>
 <span class="normal">1121</span>
 <span class="normal">1122</span>
@@ -6969,17 +7070,21 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
 <span class="normal">1147</span>
 <span class="normal">1148</span>
 <span class="normal">1149</span>
-<span class="normal">1150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="normal">1150</span>
+<span class="normal">1151</span>
+<span class="normal">1152</span>
+<span class="normal">1153</span>
+<span class="normal">1154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Acquire a lock.</span>
 
-<span class="sd">    If the lock is reentrant the internal counter increments to share the lock.</span>
+<span class="sd">    The internal counter increments when the lock is entered.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_context</span><span class="p">():</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Already locked and not reentrant!&quot;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="c1"># Get the context.</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ctx</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">get</span><span class="p">()):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ctx_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ctx</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">get</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_count</span> <span class="o">=</span> <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_count</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
     <span class="c1"># Check if we can lock or re-enter an active lock.</span>
@@ -6988,24 +7093,95 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span> <span class="o">=</span> <span class="n">ctx</span>
         <span class="k">return</span> <span class="bp">self</span>
     <span class="c1"># Join the queue.</span>
-    <span class="n">k</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="kc">None</span> <span class="o">|</span> <span class="n">Future</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">Future</span><span class="p">()</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">Future</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">fut</span> <span class="o">=</span> <span class="k">await</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">fut</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span> <span class="o">=</span> <span class="n">ctx</span>
-        <span class="n">fut</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ctx</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-                    <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="async_kernel.caller.ReentrantAsyncLock.base" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">base</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#async_kernel.caller.ReentrantAsyncLock.base" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Acquire the lock as a new <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a>.</p>
+<p>Use this to ensure exclusive access from within this <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li>This method is not useful for the mutex variant (<a class="autorefs autorefs-internal" title="AsyncLock" href="#async_kernel.caller.AsyncLock">async_kernel.caller.AsyncLock</a>) which does this by default.</li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Using this inside its own acquired lock will cause a deadlock.</p>
+</div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1175</span>
+<span class="normal">1176</span>
+<span class="normal">1177</span>
+<span class="normal">1178</span>
+<span class="normal">1179</span>
+<span class="normal">1180</span>
+<span class="normal">1181</span>
+<span class="normal">1182</span>
+<span class="normal">1183</span>
+<span class="normal">1184</span>
+<span class="normal">1185</span>
+<span class="normal">1186</span>
+<span class="normal">1187</span>
+<span class="normal">1188</span>
+<span class="normal">1189</span>
+<span class="normal">1190</span>
+<span class="normal">1191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">base</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Acquire the lock as a new [contextvars.Context][].</span>
+
+<span class="sd">    Use this to ensure exclusive access from within this [contextvars.Context][].</span>
+
+<span class="sd">    !!! note</span>
+<span class="sd">        - This method is not useful for the mutex variant ([async_kernel.caller.AsyncLock][]) which does this by default.</span>
+
+<span class="sd">    !!! warning</span>
+<span class="sd">        Using this inside its own acquired lock will cause a deadlock.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reentrant</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7025,15 +7201,15 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
 
     <div class="doc doc-contents ">
 
-        <p>Returns <code>True</code> if the current context has the lock.</p>
+        <p>Returns <code>True</code> if the current <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">contextvars.Context</a> has the lock.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1175</span>
-<span class="normal">1176</span>
-<span class="normal">1177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_in_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="s2">&quot;Returns `True` if the current context has the lock.&quot;</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1171</span>
+<span class="normal">1172</span>
+<span class="normal">1173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_in_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="s2">&quot;Returns `True` if the current [contextvars.Context][] has the lock.&quot;</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_current</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7064,11 +7240,7 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1156</span>
 <span class="normal">1157</span>
 <span class="normal">1158</span>
 <span class="normal">1159</span>
@@ -7081,28 +7253,16 @@ value as it will be replaced with a <a class="autorefs autorefs-internal" title=
 <span class="normal">1166</span>
 <span class="normal">1167</span>
 <span class="normal">1168</span>
-<span class="normal">1169</span>
-<span class="normal">1170</span>
-<span class="normal">1171</span>
-<span class="normal">1172</span>
-<span class="normal">1173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">1169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decrement the internal counter.</span>
 
 <span class="sd">    If the current depth==1 the lock will be passed to the next queued or released if there isn&#39;t one.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_context</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">InvalidStateError</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">fut</span> <span class="o">=</span> <span class="n">Future</span><span class="p">()</span>
-            <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
-            <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
-            <span class="k">await</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_releasing</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">-=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
