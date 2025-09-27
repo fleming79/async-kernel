@@ -517,8 +517,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     fut.set_result(result)
                 except anyio.get_cancelled_exc_class():
                     if not fut.cancelled():
-                        with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                            fut.cancel()
+                        fut.cancel()
                     fut.set_result(None)  # This will cancel
                     raise
                 except Exception as e:
@@ -758,7 +757,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                     await result
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
                                 if fut.cancelled():
-                                    break
+                                    raise
                                 self.log.exception("Execution %f failed", func_, exc_info=e)
                             finally:
                                 func_ = None
