@@ -114,6 +114,7 @@ async def test_simple_print(kernel, client, quiet: bool):
 
 @pytest.mark.parametrize("mode", ["kernel_timeout", "metadata"])
 async def test_execute_kernel_timeout(client, kernel: Kernel, mode: str):
+    await utils.clear_iopub(client)
     kernel.shell.execute_request_timeout = 0.1 if "kernel" in mode else None
     last_stop_time = kernel._stop_on_error_time  # pyright: ignore[reportPrivateUsage]
     metadata: dict[str, float | list] = {"timeout": 0.1}
@@ -353,6 +354,7 @@ async def test_interrupt_request(client, kernel):
 
 
 async def test_interrupt_request_async_request(subprocess_kernels_client):
+    await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
     msg_id = client.execute(f"await anyio.sleep({utils.TIMEOUT * 4})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
@@ -365,6 +367,7 @@ async def test_interrupt_request_async_request(subprocess_kernels_client):
 
 # @pytest.mark.flaky
 async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
+    await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
     msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 4})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
@@ -378,6 +381,7 @@ async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client
 
 
 async def test_interrupt_request_blocking_task(subprocess_kernels_client):
+    await utils.clear_iopub(subprocess_kernels_client)
     code = f"""
     import time
     from async_kernel import Caller
