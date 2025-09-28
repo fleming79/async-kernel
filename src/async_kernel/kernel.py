@@ -140,13 +140,14 @@ def _wrap_handler(
     A cache of run handlers.
 
     Args:
-        runner: The function that calls and awaits the  handler
+        runner: The function that calls and awaits the handler
+        handler: The handler to which the runner is associated.
 
-    Required by:
-
-    - call[async_kernel.Caller.queue_call][] : The queue is on per-function (hash) basis.
+    Used by:
+        - call[async_kernel.Kernel.handle_message_request][]
     """
 
+    @functools.wraps(handler)
     async def wrap_handler(job: Job) -> None:
         await runner(handler, job)
 
