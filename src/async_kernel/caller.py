@@ -754,7 +754,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 assert fut
                 try:
                     while True:
-                        event_added.clear()
+                        if not queue:
+                            await wait_thread_event(event_added)
                         if queue:
                             context, func_, args, kwargs = queue.popleft()
                             try:
@@ -768,13 +769,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                             finally:
                                 func_ = None
                         else:
-                            await wait_thread_event(event_added)
+                            event_added.clear()
                 finally:
                     self._queue_map.pop(key)
 
             self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
         fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
-        fut_.metadata["kwargs"]["event_added"].set()
+        if len(fut_.metadata["kwargs"]["queue"]) == 1:
+            fut_.metadata["kwargs"]["event_added"].set()
 
     def queue_close(self, func: Callable | int) -> None:
         """
@@ -993,7 +995,8 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         def _on_done(fut: Future[T]) -> None:
             has_result.append(fut)
-            event_future_ready.set()
+            if not event_future_ready.is_set():
+                event_future_ready.set()
 
         async def iter_items():
             nonlocal done, resume
@@ -1005,7 +1008,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                         futures.add(fut)
                         if fut.done():
                             has_result.append(fut)
-                            event_future_ready.set()
+                            if not event_future_ready.is_set():
+                                event_future_ready.set()
                         else:
                             fut.add_done_callback(_on_done)
                         if max_concurrent_ and len(futures) == max_concurrent_:
@@ -1015,20 +1019,23 @@ class Caller(anyio.AsyncContextManagerMixin):
                 return
             finally:
                 done = True
-                event_future_ready.set()
+                if not event_future_ready.is_set():
+                    event_future_ready.set()
 
         fut = cls().call_soon(iter_items)
         try:
             while futures or not done:
+                if not has_result:
+                    await wait_thread_event(event_future_ready)
                 if has_result:
-                    event_future_ready.clear()
                     fut = has_result.popleft()
                     futures.discard(fut)
                     yield fut
                     if resume:
                         resume.set()
                 else:
-                    await wait_thread_event(event_future_ready)
+                    event_future_ready.clear()
+
         finally:
             fut.cancel()
             for fut in futures:
