@@ -806,13 +806,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         A [classmethod][] that gets the caller associated to the thread using the threads name.
 
 
-        When called without a name `MainThread` will be used. If an instance doesn't exist
-        for the main thread an instance will be created and started when the backend provided
-        there is a running event loop.
+        When called without a name `MainThread` will be used as the `name`.
 
         Args:
-            name: The name of the thread where the caller is base. When name is `None`, a new worker thread is created.
             create: Create a new instance if one with the corresponding name does not already exist.
+                When not provided it defaults to `True` when `name` is `MainThread` otherwise `False`.
         kwargs:
             Options to use to identify or create a new instance if an instance does not already exist.
         """
