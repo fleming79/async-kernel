@@ -23,7 +23,7 @@ from zmq import Context, Socket, SocketType
 
 import async_kernel
 from async_kernel.kernelspec import Backend
-from async_kernel.typing import NoValue, T
+from async_kernel.typing import CallerStartNewOptions, NoValue, T
 from async_kernel.utils import wait_thread_event
 
 if TYPE_CHECKING:
@@ -830,23 +830,26 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Future[T]:
-        """A [classmethod][] to call func in a separate thread see also [to_thread_by_name][async_kernel.Caller.to_thread_by_name]."""
-        return cls.to_thread_by_name(None, func, *args, **kwargs)
+        """A [classmethod][] to call func in a separate thread see also [to_thread_advanced][async_kernel.Caller.to_thread_advanced]."""
+        return cls.to_thread_advanced(None, func, *args, **kwargs)
 
     @classmethod
-    def to_thread_by_name(
+    def to_thread_advanced(
         cls,
-        name: str | None,
+        options: CallerStartNewOptions | None,
         func: Callable[P, T | CoroutineType[Any, Any, T]],
         /,
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Future[T]:
         """
-        A [classmethod][] to call func in the thread specified by name.
+        A [classmethod][] to call func in a Caller specified by the options.
+
+        A Caller will be created if it isn't found.
 
         Args:
-            name: The name of the `Caller`. A new `Caller` is created if an instance corresponding to name  [^notes].
+            options: A dict wht the `name` of the Caller to use and other Options to pass to [async_kernel.caller.Caller.start_new][]
+                should a a new instance is started [^notes].
 
                 [^notes]:  'MainThread' is special name corresponding to the main thread.
                     A `RuntimeError` will be raised if a Caller does not exist for the main thread.
@@ -858,17 +861,24 @@ class Caller(anyio.AsyncContextManagerMixin):
         Returns:
             A future that can be awaited for the  result of func.
         """
-        caller = (
-            cls._to_thread_pool.popleft()
-            if not name and cls._to_thread_pool
-            else cls.get_instance(name=name, create=True)
-        )
+        name = options["name"] if options else None
+        try:
+            caller = (
+                cls._to_thread_pool.popleft()
+                if not options and cls._to_thread_pool
+                else cls.get_instance(name=name, create=name is None)
+            )
+        except RuntimeError:
+            if not options:
+                raise
+            caller = cls.start_new(**options)
+
         fut = caller.call_soon(func, *args, **kwargs)
         if not name:
             cls._pool_instances.add(caller)
             cls._busy_worker_threads += 1
 
-            def _to_thread_by_name_on_done(_) -> None:
+            def _to_thread_on_done(_) -> None:
                 cls._busy_worker_threads -= 1
                 if not caller._stopped:
                     if len(caller._to_thread_pool) + cls._busy_worker_threads < caller.MAX_IDLE_POOL_INSTANCES:
@@ -876,7 +886,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     else:
                         caller.stop()
 
-            fut.add_done_callback(_to_thread_by_name_on_done)
+            fut.add_done_callback(_to_thread_on_done)
         return fut
 
     @classmethod
@@ -892,7 +902,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.
 
-        When `name` equals the current threads it will use the current thread providing the backend is 'asyncio' and
+        When `name` equals the current thread's name it will use the current thread providing the backend is 'asyncio' and
         there is a running event loop available.
 
         When the name does not match the current thread name, a new thread will be started provided

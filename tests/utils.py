@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, NotRequired, TypedDict
+from typing import TYPE_CHECKING, Any, Literal
 
 import anyio
 from jupyter_client.asynchronous.client import AsyncKernelClient
@@ -15,15 +15,6 @@ if TYPE_CHECKING:
 
 TIMEOUT = 20 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
 MATPLOTLIB_INLINE_BACKEND = "module://matplotlib_inline.backend_inline"
-
-
-class ExecuteContentType(TypedDict):
-    code: NotRequired[str]
-    silent: NotRequired[bool]
-    store_history: NotRequired[bool]
-    user_expressions: NotRequired[dict[str, str]]
-    allow_stdin: NotRequired[bool]
-    stop_on_error: NotRequired[bool]
 
 
 async def get_reply(

@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, ParamSpec, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, TypedDict, TypeVar
 
 from typing_extensions import Sentinel, override
 
 if TYPE_CHECKING:
+    import logging
     from collections.abc import Mapping
 
     import zmq
+
+    from async_kernel.kernelspec import Backend
 
 __all__ = [
     "DebugMessage",
@@ -312,6 +315,16 @@ class ExecuteContent(TypedDict):
     ""
     stop_on_error: bool
     ""
+
+
+class CallerStartNewOptions(TypedDict):
+    "Options for [async_kernel.caller.Caller.start_new][]."
+
+    name: str
+    log: NotRequired[logging.LoggerAdapter]
+    backend: NotRequired[Backend]
+    protected: NotRequired[bool]
+    backend_options: NotRequired[dict | None]
 
 
 DebugMessage = dict[str, Any]
