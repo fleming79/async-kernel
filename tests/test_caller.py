@@ -348,7 +348,7 @@ class TestCaller:
         the_thread.start()
         ready.wait()
         assert isinstance(finished_event, AsyncEvent)
-        caller = Caller.get_instance(the_thread.name)
+        caller = Caller.get_instance(name=the_thread.name)
         if check_result == "result":
             expr = "10"
             context = contextlib.nullcontext()
@@ -384,7 +384,7 @@ class TestCaller:
 
     async def test_get_instance_no_instance(self, anyio_backend):
         with pytest.raises(RuntimeError):
-            Caller.get_instance(None, create=False)
+            Caller.get_instance(name=None, create=False)
 
     async def test_get_instance_get_runner(self, anyio_backend):
         if anyio_backend == Backend.trio:
@@ -562,7 +562,7 @@ class TestCaller:
             await anyio.sleep_forever()
 
         fut = Caller.to_thread(close_tsc)
-        caller = Caller.get_instance(fut.thread.name)
+        caller = Caller.get_instance(name=fut.thread.name)
         ready.wait()
         never_called_future = caller.call_later(10, str)
         proceed.set()
