@@ -5,9 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-09-30
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Remove 'name' argument from get_instance (it can be provided as a kwarg. [#152](https://github.com/fleming79/async-kernel/pull/152)
+
+- Rename Caller.to_thread_by_name to Caller.to_thread_advanced change the first argument from a string or None to a dict. [#151](https://github.com/fleming79/async-kernel/pull/151)
+
+### <!-- 1 --> 🚀 Features
+
+- Add hooks to AsyncDisplayPublisher [#150](https://github.com/fleming79/async-kernel/pull/150)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Better handling of Keyboard Interrupt. [#149](https://github.com/fleming79/async-kernel/pull/149)
+
 ## [0.5.4] - 2025-09-28
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.5.4 [#148](https://github.com/fleming79/async-kernel/pull/148)
 
 - Add functools.wraps decorator to kernel._wrap_handler to make it easier to identify which function it is wrapping. [#147](https://github.com/fleming79/async-kernel/pull/147)
 
@@ -349,6 +367,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.6.0]: https://github.com/fleming79/async-kernel/compare/v0.5.4..v0.6.0
 [0.5.4]: https://github.com/fleming79/async-kernel/compare/v0.5.3..v0.5.4
 [0.5.3]: https://github.com/fleming79/async-kernel/compare/v0.5.2..v0.5.3
 [0.5.2]: https://github.com/fleming79/async-kernel/compare/v0.5.1..v0.5.2
