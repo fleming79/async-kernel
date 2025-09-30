@@ -587,8 +587,12 @@ class Kernel(HasTraits):
             if self.debugger.debugpy_client.connected:
                 await self.control_thread_caller.call_soon(self.debugger.disconnect)
         except BaseException:
-            pass
-        Caller.stop_all(_stop_protected=True)
+            with anyio.CancelScope(shield=True):
+                self.event_stopped.set()
+                await anyio.sleep(0)
+            raise
+        finally:
+            Caller.stop_all(_stop_protected=True)
 
     async def _start_heartbeat(self) -> None:
         # Reference: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
