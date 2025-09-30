@@ -319,7 +319,6 @@ class Kernel(HasTraits):
         if not os.environ.get("MPLBACKEND"):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
         # setting get loaded in `_validate_settings`
-        assert self.shell, "The shell should be loaded here."
         self._settings = settings or {}
 
     @override
@@ -474,6 +473,7 @@ class Kernel(HasTraits):
         if self._sockets:
             msg = "Already started"
             raise RuntimeError(msg)
+        assert self.shell
         self.anyio_backend = sniffio.current_async_library()
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:

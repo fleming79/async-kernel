@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from typing import Self
 
 import comm
@@ -123,3 +124,10 @@ def set_comm():
     """
     comm.create_comm = Comm
     comm.get_comm_manager = get_comm_manager
+
+    # # Monkey patch ipykernel for modules that use it such as pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
+    with contextlib.suppress(ImportError):
+        import ipykernel.comm  # noqa: PLC0415
+
+        ipykernel.comm.Comm = Comm
+        ipykernel.comm.CommManager = CommManager

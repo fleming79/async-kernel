@@ -82,6 +82,7 @@ dev = [
     "basedpyright",
     "ruff",
     "debugpy",
+    "ipykernel",
     {include-group = "uvloop"},
     {include-group = "test"}
 ]

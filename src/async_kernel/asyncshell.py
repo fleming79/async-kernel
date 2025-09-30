@@ -20,9 +20,11 @@ from typing_extensions import override
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.typing import Content, MetadataKeys, Tags
+from async_kernel.typing import MetadataKeys, Tags
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from async_kernel.kernel import Kernel
 
 
@@ -73,10 +75,14 @@ class AsyncDisplayPublisher(DisplayPublisher):
 
     topic: ClassVar = b"display_data"
 
+    def __init__(self, shell=None, *args, **kwargs) -> None:
+        super().__init__(shell, *args, **kwargs)
+        self._hooks = []
+
     @override
     def publish(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
-        data: Content,
+        data: dict[str, Any],
         metadata: dict | None = None,
         *,
         transient: dict | None = None,
@@ -95,11 +101,17 @@ class AsyncDisplayPublisher(DisplayPublisher):
 
         [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)
         """
-        utils.get_kernel().iopub_send(
-            msg_or_type="update_display_data" if update else "display_data",
-            content={"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs,
-            ident=self.topic,
-        )
+        content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
+        msg_type = "update_display_data" if update else "display_data"
+        msg = utils.get_kernel().session.msg(msg_type, content, parent=utils.get_parent())  # pyright: ignore[reportArgumentType]
+        for hook in self._hooks:
+            try:
+                msg = hook(msg)
+            except Exception:
+                pass
+            if msg is None:
+                return
+        utils.get_kernel().iopub_send(msg)
 
     @override
     def clear_output(self, wait: bool = False) -> None:
@@ -112,6 +124,18 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 This reduces bounce during repeated clear & display loops.
         """
         utils.get_kernel().iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=self.topic)
+
+    def register_hook(self, hook: Callable[[dict], dict | None]) -> None:
+        """Register a hook for when publish is called.
+
+        The hook should return the message or None.
+        Only return `None` when the message should *not* be sent.
+        """
+        self._hooks.append(hook)
+
+    def unregister_hook(self, hook: Callable[[dict], dict | None]) -> None:
+        while hook in self._hooks:
+            self._hooks.remove(hook)
 
 
 class AsyncInteractiveShell(InteractiveShell):
