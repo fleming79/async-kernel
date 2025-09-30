@@ -502,7 +502,6 @@ async def test_shell_display_hook_reg(kernel: Kernel):
     def my_hook(msg):
         nonlocal val
         val = msg
-        return msg
 
     kernel.shell.display_pub.register_hook(my_hook)
     assert my_hook in kernel.shell.display_pub._hooks  # pyright: ignore[reportPrivateUsage]
