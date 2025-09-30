@@ -71,7 +71,10 @@ async def wait_thread_event(thread_event: threading.Event, /):
 
     def _wait_thread_event(thread_event: threading.Event, event: anyio.Event, token):
         thread_event.wait()
-        from_thread.run_sync(event.set, token=token)
+        try:
+            from_thread.run_sync(event.set, token=token)
+        except anyio.RunFinishedError:
+            pass
 
     try:
         event = anyio.Event()
