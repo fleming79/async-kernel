@@ -496,6 +496,22 @@ async def test_shell_can_set_namespace(kernel):
     assert set(kernel.shell.user_ns) == {"Out", "_oh", "In", "exit", "_dh", "open", "get_ipython", "_ih", "quit"}
 
 
+async def test_shell_display_hook_reg(kernel: Kernel):
+    val: None | dict = None
+
+    def my_hook(msg):
+        nonlocal val
+        val = msg
+        return msg
+
+    kernel.shell.display_pub.register_hook(my_hook)
+    assert my_hook in kernel.shell.display_pub._hooks  # pyright: ignore[reportPrivateUsage]
+    kernel.shell.display_pub.publish({"test": True})
+    kernel.shell.display_pub.unregister_hook(my_hook)
+    assert my_hook not in kernel.shell.display_pub._hooks  # pyright: ignore[reportPrivateUsage]
+    assert val
+
+
 @pytest.mark.parametrize("mode", RunMode)
 async def test_header_mode(client, mode: RunMode):
     code = f"""
