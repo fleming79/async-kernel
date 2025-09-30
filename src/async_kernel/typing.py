@@ -320,7 +320,7 @@ class ExecuteContent(TypedDict):
 class CallerStartNewOptions(TypedDict):
     "Options for [async_kernel.caller.Caller.start_new][]."
 
-    name: str
+    name: NotRequired[str | None]
     log: NotRequired[logging.LoggerAdapter]
     backend: NotRequired[Backend]
     protected: NotRequired[bool]

@@ -14,7 +14,7 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, cast, overload
 
 import anyio
 import sniffio
@@ -801,25 +801,29 @@ class Caller(anyio.AsyncContextManagerMixin):
             caller.stop(force=_stop_protected)
 
     @classmethod
-    def get_instance(cls, name: str | None = "MainThread", *, create: bool = False) -> Self:
+    def get_instance(cls, *, create: bool | NoValue = NoValue, **kwargs: Unpack[CallerStartNewOptions]) -> Self:  # pyright: ignore[reportInvalidTypeForm]
         """
         A [classmethod][] that gets the caller associated to the thread using the threads name.
 
 
-        The default will provide the caller from the MainThread.  If an instance doesn't exist
+        When called without a name `MainThread` will be used. If an instance doesn't exist
         for the main thread an instance will be created and started when the backend provided
         there is a running event loop.
 
         Args:
             name: The name of the thread where the caller is base. When name is `None`, a new worker thread is created.
             create: Create a new instance if one with the corresponding name does not already exist.
+        kwargs:
+            Options to use to identify or create a new instance if an instance does not already exist.
         """
+        if "name" not in kwargs:
+            kwargs["name"] = "MainThread"
         for caller in cls._instances.values():
-            if caller.name == name:
+            if caller.name == kwargs["name"]:
                 return caller
-        if create is True or name == "MainThread":
-            return cls.start_new(name=name)
-        msg = f"A Caller was not found for {name=}."
+        if create is True or (create is NoValue and kwargs["name"] == "MainThread"):
+            return cls.start_new(**kwargs)
+        msg = f"A Caller was not found for {kwargs['name']=}."
         raise RuntimeError(msg)
 
     @classmethod
@@ -831,12 +835,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Future[T]:
         """A [classmethod][] to call func in a separate thread see also [to_thread_advanced][async_kernel.Caller.to_thread_advanced]."""
-        return cls.to_thread_advanced(None, func, *args, **kwargs)
+        return cls.to_thread_advanced({"name": None}, func, *args, **kwargs)
 
     @classmethod
     def to_thread_advanced(
         cls,
-        options: CallerStartNewOptions | None,
+        options: CallerStartNewOptions,
         func: Callable[P, T | CoroutineType[Any, Any, T]],
         /,
         *args: P.args,
@@ -861,20 +865,14 @@ class Caller(anyio.AsyncContextManagerMixin):
         Returns:
             A future that can be awaited for the  result of func.
         """
-        name = options["name"] if options else None
-        try:
-            caller = (
-                cls._to_thread_pool.popleft()
-                if not options and cls._to_thread_pool
-                else cls.get_instance(name=name, create=name is None)
-            )
-        except RuntimeError:
-            if not options:
-                raise
-            caller = cls.start_new(**options)
-
+        caller = None
+        if not options.get("name"):
+            with contextlib.suppress(IndexError):
+                caller = cls._to_thread_pool.popleft()
+        if caller is None:
+            caller = cls.get_instance(create=True, **options)
         fut = caller.call_soon(func, *args, **kwargs)
-        if not name:
+        if not options.get("name"):
             cls._pool_instances.add(caller)
             cls._busy_worker_threads += 1
 
