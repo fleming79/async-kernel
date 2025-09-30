@@ -36,36 +36,34 @@ class AsyncDisplayHook(DisplayHook):
     This is intended to work with an InteractiveShell instance. It sends a dict of different
     representations of the object."""
 
-    kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
-    content: Dict[str, Any] = Dict()
+    shell: AsyncInteractiveShell
 
     @property
     @override
     def prompt_count(self) -> int:
-        return self.kernel.execution_count
+        return utils.get_execution_count()
 
     @override
     def start_displayhook(self) -> None:
         """Start the display hook."""
-        self.content = {}
+
+    @property
+    @override
+    def is_active(self) -> bool:
+        return bool(utils.get_job())
 
     @override
     def write_output_prompt(self) -> None:
         """Write the output prompt."""
-        self.content["execution_count"] = self.prompt_count
 
     @override
-    def write_format_data(self, format_dict, md_dict=None) -> None:
+    def write_format_data(self, format_dict: dict, md_dict: dict | None = None) -> None:
         """Write format data to the message."""
-        self.content["data"] = format_dict
-        self.content["metadata"] = md_dict
+        self.shell.display_pub.publish(format_dict, md_dict)
 
     @override
     def finish_displayhook(self) -> None:
         """Finish up all displayhook activities."""
-        if self.content:
-            self.kernel.iopub_send("display_data", content=self.content)
-            self.content = {}
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
