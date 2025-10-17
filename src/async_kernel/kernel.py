@@ -52,6 +52,7 @@ from async_kernel.typing import (
     HandlerType,
     Job,
     KernelConcurrencyMode,
+    Message,
     MsgType,
     NoValue,
     RunMode,
@@ -1129,3 +1130,16 @@ class Kernel(HasTraits):
         """Return the connection info as a dict."""
         with self.connection_file.open("r") as f:
             return json.load(f)
+
+    def get_parent(self) -> Message[dict[str, Any]] | None:
+        """A convenience method to access the 'message' in the current context if there is one.
+
+        'parent' is the parameter name uses in [Session.send][jupyter_client.session.Session.send].
+
+        See also:
+            - [Kernel.iopub_send][async_kernel.Kernel.iopub_send]
+            - [ipywidgets.Output][ipywidgets.widgets.widget_output.Output]:
+                Uses `get_ipython().kernel.get_parent()` to obtain the `msg_id` which
+                is used to 'capture' output when it's context has been acquired.
+        """
+        return utils.get_parent()
