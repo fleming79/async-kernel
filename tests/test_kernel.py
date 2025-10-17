@@ -601,3 +601,9 @@ async def test_all_concurrency_run_modes(kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
     assert murmur2_x86(str(data), 1) == 790110932
+
+
+async def test_get_parent(client, kernel):
+    assert kernel.get_parent() is None
+    code = "assert 'header' in get_ipython().kernel.get_parent()"
+    await utils.execute(client, code)
