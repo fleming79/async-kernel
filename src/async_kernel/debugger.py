@@ -26,17 +26,14 @@ try:
         os.environ["PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING"] = "1"
 
     # This import is required to provide _pydevd_bundle imports
-    from debugpy.server import api  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    import debugpy.server.api  # pyright: ignore[reportUnusedImport]  # noqa: F401
 
-    _is_debugpy_available = True
 except ImportError:
-    _is_debugpy_available = False
+    pass
 except Exception as e:
     # We cannot import the module where the DebuggerInitializationError
     # is defined
-    if e.__class__.__name__ == "DebuggerInitializationError":
-        _is_debugpy_available = False
-    else:
+    if e.__class__.__name__ != "DebuggerInitializationError":
         raise
 
 _host_port: None | tuple[str, int] = None
@@ -332,8 +329,6 @@ class Debugger(HasTraits):
 
     async def do_debug_info(self, msg: DebugMessage, /):
         """Handle a debug info message."""
-        if not _is_debugpy_available or utils.LAUNCHED_BY_DEBUGPY:
-            return {}
         breakpoint_list = []
         for key, value in self.breakpoint_list.items():
             breakpoint_list.append({"source": key, "breakpoints": value})
@@ -344,7 +339,7 @@ class Debugger(HasTraits):
             "success": True,
             "command": msg["command"],
             "body": {
-                "isStarted": self.debugpy_client.connected,
+                "isStarted": self.debugpy_client.connected and not utils.LAUNCHED_BY_DEBUGPY,
                 "hashMethod": compiler.hash_method,
                 "hashSeed": compiler.hash_seed,
                 "tmpFilePrefix": compiler.tmp_file_prefix,
