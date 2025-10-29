@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2025-10-29
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump the actions group with 2 updates [#158](https://github.com/fleming79/async-kernel/pull/158)
+
+- Don't reraise caught cancelled error in Caller_wrap_call. [#159](https://github.com/fleming79/async-kernel/pull/159)
+
+- Ensure debugInfo is fullly populated. [#157](https://github.com/fleming79/async-kernel/pull/157)
+
 ## [0.6.1] - 2025-10-17
 
 ### <!-- 1 --> 🚀 Features
@@ -12,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Kernel.get_parent. [#155](https://github.com/fleming79/async-kernel/pull/155)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.6.1 [#156](https://github.com/fleming79/async-kernel/pull/156)
 
 - Bump astral-sh/setup-uv from 6 to 7 in the actions group [#154](https://github.com/fleming79/async-kernel/pull/154)
 
@@ -379,6 +391,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.6.2]: https://github.com/fleming79/async-kernel/compare/v0.6.1..v0.6.2
 [0.6.1]: https://github.com/fleming79/async-kernel/compare/v0.6.0..v0.6.1
 [0.6.0]: https://github.com/fleming79/async-kernel/compare/v0.5.4..v0.6.0
 [0.5.4]: https://github.com/fleming79/async-kernel/compare/v0.5.3..v0.5.4
