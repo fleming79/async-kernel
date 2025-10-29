@@ -525,7 +525,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not fut.cancelled():
                         fut.cancel()
                     fut.set_result(None)  # This will cancel
-                    raise
                 except Exception as e:
                     fut.set_exception(e)
         except Exception as e:
