@@ -303,11 +303,10 @@ class AsyncInteractiveShell(InteractiveShell):
         """
         Enable a given gui.
         """
-        supported_no_eventloop = [None, 'inline', 'ipympl']
+        supported_no_eventloop = [None, "inline", "ipympl"]
         if gui not in supported_no_eventloop:
             msg = f"The backend {gui=} is not supported by async-kernel. The currently supported gui options are: {supported_no_eventloop}."
             raise NotImplementedError(msg)
-    
 
 
 @magics_class

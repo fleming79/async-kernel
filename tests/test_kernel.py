@@ -465,7 +465,6 @@ async def test_debug_static_richInspectVariables(client, variable_name):
     assert reply["content"]["status"] == "ok"
 
 
-
 @pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers"])
 async def test_magic(client, code: str, kernel, monkeypatch):
     await utils.clear_iopub(client)
@@ -483,7 +482,7 @@ async def test_shell_required_properites(kernel: Kernel):
     # U
     kernel.shell.enable_gui()
     with pytest.raises(NotImplementedError):
-        kernel.shell.enable_gui('tk')
+        kernel.shell.enable_gui("tk")
 
 
 async def test_shell_can_set_namespace(kernel: Kernel):
