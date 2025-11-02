@@ -285,7 +285,7 @@ async def test_inspect_request(client):
     assert reply["header"]["msg_type"] == "inspect_reply"
 
 
-async def test_history_request(client, kernel):
+async def test_history_request(client, kernel: Kernel):
     assert kernel.shell
     # assert kernel.shell.history_manager
 
@@ -344,9 +344,9 @@ async def test_comm_open_msg_close(client, kernel, mocker):
     kernel.comm_manager.unregister_target("my target", cb)
 
 
-async def test_interrupt_request(client, kernel):
+async def test_interrupt_request(client, kernel: Kernel):
     event = threading.Event()
-    kernel._interrupts.add(event.set)
+    kernel._interrupts.add(event.set)  # pyright: ignore[reportPrivateUsage]
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}
@@ -436,7 +436,7 @@ async def test_debug_static(client, command: str, mocker):
         assert reply["content"]["body"] == {"content": code}
 
 
-async def test_debug_raises_no_socket(kernel):
+async def test_debug_raises_no_socket(kernel: Kernel):
     with pytest.raises(RuntimeError):
         await kernel.debugger.debugpy_client.send_request({})
 
@@ -465,14 +465,6 @@ async def test_debug_static_richInspectVariables(client, variable_name):
     assert reply["content"]["status"] == "ok"
 
 
-async def test_properties(kernel) -> None:
-    class user_mod:
-        __dict__ = {}
-
-    kernel.user_module = user_mod()
-    kernel.user_ns = {}
-
-
 @pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers"])
 async def test_magic(client, code: str, kernel, monkeypatch):
     await utils.clear_iopub(client)
@@ -484,14 +476,16 @@ async def test_magic(client, code: str, kernel, monkeypatch):
     assert stdout
 
 
-async def test_shell_required_properites(kernel):
+async def test_shell_required_properites(kernel: Kernel):
     # used by ipython AutoMagicChecker via is_shadowed (requires 'builitin')
     assert set(kernel.shell.ns_table) == {"user_global", "user_local", "builtin"}
     # U
     kernel.shell.enable_gui()
+    with pytest.raises(NotImplementedError):
+        kernel.shell.enable_gui("tk")
 
 
-async def test_shell_can_set_namespace(kernel):
+async def test_shell_can_set_namespace(kernel: Kernel):
     kernel.shell.user_ns = {}
     assert set(kernel.shell.user_ns) == {"Out", "_oh", "In", "exit", "_dh", "open", "get_ipython", "_ih", "quit"}
 
@@ -597,13 +591,13 @@ async def test_get_run_mode_tag(client):
     assert "thread" in content["user_expressions"]["run_mode"]["data"]["text/plain"]
 
 
-async def test_all_concurrency_run_modes(kernel):
+async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
     assert murmur2_x86(str(data), 1) == 790110932
 
 
-async def test_get_parent(client, kernel):
+async def test_get_parent(client, kernel: Kernel):
     assert kernel.get_parent() is None
     code = "assert 'header' in get_ipython().kernel.get_parent()"
     await utils.execute(client, code)
