@@ -17,8 +17,8 @@ from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, cast, overload
 
 import anyio
-import sniffio
 from aiologic import Event
+from aiologic.lowlevel import current_async_library
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
@@ -48,6 +48,7 @@ class FutureCancelledError(anyio.ClosedResourceError):
 
 class InvalidStateError(RuntimeError):
     "An invalid state of a [Future][async_kernel.caller.Future]."
+
 
 AsyncEvent = Event
 
@@ -383,7 +384,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        self._backend = Backend(sniffio.current_async_library())
+        self._backend = Backend(current_async_library())
         self._running = True
         self._stopped_event = Event()
         async with anyio.create_task_group() as tg:
@@ -853,7 +854,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         # Current thread
         if name is not None and name == threading.current_thread().name:
-            if (backend := sniffio.current_async_library()) == Backend.asyncio:
+            if (backend := current_async_library()) == Backend.asyncio:
                 loop = asyncio.get_running_loop()
                 caller = cls(log=log, create=True, protected=protected)
                 caller._task = loop.create_task(caller.get_runner()())  # pyright: ignore[reportAttributeAccessIssue]
@@ -869,7 +870,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         def async_kernel_caller() -> None:
             anyio.run(caller.get_runner(started=ready_event.set), backend=backend_, backend_options=backend_options)
 
-        backend_ = Backend(backend if backend is not NoValue else sniffio.current_async_library())
+        backend_ = Backend(backend if backend is not NoValue else current_async_library())
         if backend_options is NoValue:
             backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
         ready_event = Event()

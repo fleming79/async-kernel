@@ -27,10 +27,10 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 
 import anyio
 import IPython.core.completer
-import sniffio
 import traitlets
 import zmq
 from aiologic import Event
+from aiologic.lowlevel import current_async_library
 from IPython.core.error import StdinNotImplementedError
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client import write_connection_file
@@ -362,7 +362,7 @@ class Kernel(HasTraits):
     @traitlets.default("kernel_name")
     def _default_kernel_name(self) -> Literal[KernelName.trio, KernelName.asyncio]:
         try:
-            if sniffio.current_async_library() == "trio":
+            if current_async_library() == "trio":
                 return KernelName.trio
         except Exception:
             pass
@@ -479,7 +479,7 @@ class Kernel(HasTraits):
             msg = "Already started"
             raise RuntimeError(msg)
         assert self.shell
-        self.anyio_backend = sniffio.current_async_library()
+        self.anyio_backend = current_async_library()
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:
                 caller.call_soon(self._wait_stopped)

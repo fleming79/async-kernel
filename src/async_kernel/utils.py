@@ -53,7 +53,6 @@ def do_not_debug_this_thread():
             mark_thread_pydev_do_not_trace(threading.current_thread(), remove=True)
 
 
-
 def get_kernel() -> Kernel:
     "Get the current kernel."
     return async_kernel.Kernel()

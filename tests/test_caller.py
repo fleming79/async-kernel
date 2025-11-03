@@ -10,8 +10,8 @@ from typing import Literal, cast
 import anyio
 import anyio.to_thread
 import pytest
-import sniffio
 from aiologic import Event
+from aiologic.lowlevel import current_async_library
 
 from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
 from async_kernel.kernelspec import Backend
@@ -397,7 +397,7 @@ class TestCaller:
         mocker.patch.object(Caller, "MAX_IDLE_POOL_INSTANCES", new=2)
 
         async def func():
-            assert sniffio.current_async_library() == anyio_backend
+            assert current_async_library() == anyio_backend
             n = random()
             if n < 0.2:
                 time.sleep(n / 10)
