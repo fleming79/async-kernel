@@ -18,13 +18,13 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, c
 
 import anyio
 import sniffio
+from aiologic import Event
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
 import async_kernel
 from async_kernel.kernelspec import Backend
 from async_kernel.typing import CallerStartNewOptions, NoValue, T
-from async_kernel.utils import wait_thread_event
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -34,15 +34,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = [
-    "AsyncEvent",
-    "AsyncLock",
-    "Caller",
-    "Future",
-    "FutureCancelledError",
-    "InvalidStateError",
-    "ReentrantAsyncLock",
-]
+__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -57,63 +49,7 @@ class FutureCancelledError(anyio.ClosedResourceError):
 class InvalidStateError(RuntimeError):
     "An invalid state of a [Future][async_kernel.caller.Future]."
 
-
-class AsyncEvent:
-    """An asynchronous thread-safe event compatible with [Caller][async_kernel.caller.Caller]."""
-
-    __slots__ = ["__weakref__", "_events", "_flag", "_thread"]
-
-    def __init__(self, thread: threading.Thread | None = None) -> None:
-        self._thread = thread or threading.current_thread()
-        self._events = set()
-        self._flag = False
-
-    @override
-    def __repr__(self) -> str:
-        return f"<AsyncEvent {'🏁' if self._flag else '🏃'}>"
-
-    async def wait(self) -> None:
-        """
-        Wait until the flag has been set.
-
-        If the flag has already been set when this method is called, it returns immediately.
-
-        !!! warning
-
-            This method requires that a [Caller][async_kernel.caller.Caller] for its target thread.
-            ```
-        """
-        if not self._flag:
-
-            def _get_event(event_type: type[T]) -> T | None:
-                for event in self._events:
-                    if isinstance(event, event_type):
-                        return event if not self._flag else None
-                event = event_type()
-                self._events.add(event)
-                return event if not self._flag else None
-
-            if self._thread is threading.current_thread():
-                if event := _get_event(anyio.Event):
-                    await event.wait()
-            else:
-                if event := _get_event(threading.Event):
-                    await wait_thread_event(event)
-        self.set()
-
-    def set(self) -> None:
-        "Set the internal flag to `True` and trigger notification."
-        self._flag = True
-        while self._events:
-            event = self._events.pop()
-            if isinstance(event, anyio.Event):
-                Caller(thread=self._thread).call_direct(event.set)
-            else:
-                event.set()
-
-    def is_set(self) -> bool:
-        "Return `True` if the flag is set, `False` if not."
-        return self._flag
+AsyncEvent = Event
 
 
 class Future(Awaitable[T]):
@@ -136,7 +72,7 @@ class Future(Awaitable[T]):
         self._done_callbacks = []
         self._metadata = metadata
         self._thread = thread = thread or threading.current_thread()
-        self._done = AsyncEvent(thread)
+        self._done = AsyncEvent()
 
     @override
     def __repr__(self) -> str:
@@ -161,20 +97,10 @@ class Future(Awaitable[T]):
         if self._cancelled:
             mode = "exception"
             value = self._make_cancelled_error()
-        if threading.current_thread() is not self._thread:
-            try:
-                Caller(thread=self._thread).call_direct(self.__set_value, mode, value)
-            except RuntimeError:
-                msg = f"The current thread is not {self._thread.name} and a `Caller` does not exist for that thread either."
-                raise RuntimeError(msg) from None
-        else:
-            self.__set_value(mode, value)
-
-    def __set_value(self, mode: Literal["result", "exception"], value):
         if mode == "exception":
             self._exception = value
         else:
-            self._result = value
+            self._result = value  # pyright: ignore[reportAttributeAccessIssue]
         self._done.set()
         for cb in reversed(self._done_callbacks):
             try:
@@ -244,7 +170,7 @@ class Future(Awaitable[T]):
         try:
             if not self.done():
                 with anyio.fail_after(timeout):
-                    await self._done.wait()
+                    await self._done
             return self.result() if result else None
         finally:
             if not self.done() and not shield:
@@ -396,8 +322,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     _queue_map: dict[int, Future]
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
-    _job_added: threading.Event
-    _stopped_event: threading.Event
+    _job_added: Event
+    _stopped_event: Event
     _stopped = False
     _protected = False
     _running = False
@@ -445,7 +371,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._name = thread.name
             inst.log = log or logging.LoggerAdapter(logging.getLogger())
             inst._jobs = deque()
-            inst._job_added = threading.Event()
+            inst._job_added = Event()
             inst._protected = protected
             inst._queue_map = {}
             cls._instances[thread] = inst
@@ -459,7 +385,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self._backend = Backend(sniffio.current_async_library())
         self._running = True
-        self._stopped_event = threading.Event()
+        self._stopped_event = Event()
         async with anyio.create_task_group() as tg:
             try:
                 await tg.start(self._server_loop, tg)
@@ -475,9 +401,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             self.iopub_sockets[self.thread] = socket
             task_status.started()
             while not self._stopped:
-                self._job_added.clear()
                 if not self._jobs:
-                    await wait_thread_event(self._job_added)
+                    if self._job_added.is_set():
+                        self._job_added = Event()
+                    else:
+                        await self._job_added
                 while self._jobs:
                     if self._stopped:
                         return
@@ -744,17 +672,15 @@ class Caller(anyio.AsyncContextManagerMixin):
         key = hash(func)
         if not (fut_ := self._queue_map.get(key)):
             queue = deque()
-            event_added = threading.Event()
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
-            async def queue_loop(key: int, queue: deque, event_added: threading.Event) -> None:
+            async def queue_loop(key: int, queue: deque) -> None:
                 fut = self.current_future()
                 assert fut
+                event_added: Event | None = None
                 try:
                     while True:
-                        if not queue:
-                            await wait_thread_event(event_added)
                         if queue:
                             context, func_, args, kwargs = queue.popleft()
                             try:
@@ -768,14 +694,18 @@ class Caller(anyio.AsyncContextManagerMixin):
                             finally:
                                 func_ = None
                         else:
-                            event_added.clear()
+                            if event_added is not None and not event_added:
+                                await event_added
+                                fut.metadata["kwargs"].pop("event_added")
+                            else:
+                                event_added = fut.metadata["kwargs"]["event_added"] = Event()
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
+            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue)
         fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
-        if len(fut_.metadata["kwargs"]["queue"]) == 1:
-            fut_.metadata["kwargs"]["event_added"].set()
+        if (event := fut_.metadata["kwargs"].get("event_added")) is not None:
+            event.set()
 
     def queue_close(self, func: Callable | int) -> None:
         """
@@ -942,7 +872,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         backend_ = Backend(backend if backend is not NoValue else sniffio.current_async_library())
         if backend_options is NoValue:
             backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
-        ready_event = threading.Event()
+        ready_event = Event()
         thread = threading.Thread(target=async_kernel_caller, name=name or None, daemon=True)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
         thread.start()
@@ -987,11 +917,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             1. Pass a generator should you wish to limit the number future jobs when calling to_thread/to_task etc.
             2. Pass a set/list/tuple to ensure all get monitored at once.
         """
-        event_future_ready = threading.Event()
-        has_result: deque[Future[T]] = deque()
+        resume = cast("Callable | None", None)
+        done_futures_added: Event | None = None
+        done_futures: deque[Future[T]] = deque()
         futures: set[Future[T]] = set()
         done = False
-        resume: AsyncEvent | None = cast("AsyncEvent | None", None)
         current_future = cls.current_future()
         if isinstance(items, set | list | tuple):
             max_concurrent_ = 0
@@ -999,47 +929,55 @@ class Caller(anyio.AsyncContextManagerMixin):
             max_concurrent_ = cls.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
 
         def _on_done(fut: Future[T]) -> None:
-            has_result.append(fut)
-            if not event_future_ready.is_set():
-                event_future_ready.set()
+            nonlocal resume
+            done_futures.append(fut)
+            if done_futures_added is not None:
+                done_futures_added.set()
 
         async def iter_items():
-            nonlocal done, resume
+            nonlocal done, resume, done_futures_added
             gen = items if isinstance(items, AsyncGenerator) else iter(items)
             try:
                 while True:
                     fut = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
-                    if fut is not current_future:
-                        futures.add(fut)
-                        if fut.done():
-                            has_result.append(fut)
-                            if not event_future_ready.is_set():
-                                event_future_ready.set()
-                        else:
-                            fut.add_done_callback(_on_done)
-                        if max_concurrent_ and len(futures) == max_concurrent_:
-                            resume = AsyncEvent()
-                            await resume.wait()
+                    assert fut is not current_future, "Would result in deadlock"
+                    futures.add(fut)
+                    if fut.done():
+                        done_futures.append(fut)
+                        if done_futures_added is not None:
+                            done_futures_added.set()
+                    else:
+                        fut.add_done_callback(_on_done)
+                    if max_concurrent_ and len(futures) == max_concurrent_:
+                        resume_event = Event()
+                        resume = resume_event.set
+                        await anyio.sleep(0)
+                        if not resume_event:
+                            await resume_event
+                        resume = None
+
             except (StopAsyncIteration, StopIteration):
                 return
             finally:
                 done = True
-                if not event_future_ready.is_set():
-                    event_future_ready.set()
+                if done_futures_added:
+                    done_futures_added.set()
 
         fut = cls().call_soon(iter_items)
         try:
             while futures or not done:
-                if not has_result:
-                    await wait_thread_event(event_future_ready)
-                if has_result:
-                    fut = has_result.popleft()
+                if done_futures:
+                    fut = done_futures.popleft()
                     futures.discard(fut)
                     yield fut
                     if resume:
-                        resume.set()
+                        resume()
                 else:
-                    event_future_ready.clear()
+                    if done_futures_added is None:
+                        done_futures_added = Event()
+                    else:
+                        await done_futures_added
+                        done_futures_added = None
 
         finally:
             fut.cancel()
@@ -1088,130 +1026,3 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
                         break
         return done, pending
-
-
-class ReentrantAsyncLock:
-    """
-    A Reentrant asynchronous lock compatible with [Caller][async_kernel.caller.Caller].
-
-    The lock is reentrant in terms of [contextvars.Context][].
-
-    !!! note
-
-        - The lock context can be exitied in any order.
-        - The context can potentially leak.
-        - A 'reentrant' lock can *release* control to another context and then re-enter later for
-            tasks or threads called from a locked thread maintaining the same reentrant context.
-    """
-
-    _reentrant: ClassVar[bool] = True
-    _count: int = 0
-    _ctx_count: int = 0
-    _ctx_current: int = 0
-    _releasing: bool = False
-
-    def __init__(self):
-        self._ctx_var: contextvars.ContextVar[int] = contextvars.ContextVar(f"Lock:{id(self)}", default=0)
-        self._queue: deque[tuple[int, Future[bool]]] = deque()
-
-    @override
-    def __repr__(self) -> str:
-        info = f"🔒{self.count}" if self.count else "🔓"
-        return f"{self.__class__.__name__}({info})"
-
-    async def __aenter__(self) -> Self:
-        return await self.acquire()
-
-    async def __aexit__(self, exc_type, exc, tb) -> None:
-        await self.release()
-
-    @property
-    def count(self) -> int:
-        "Returns the number of times the locked context has been entered."
-        return self._count
-
-    async def acquire(self) -> Self:
-        """
-        Acquire a lock.
-
-        The internal counter increments when the lock is entered.
-        """
-        if not self._reentrant and self.is_in_context():
-            msg = "Already locked and not reentrant!"
-            raise RuntimeError(msg)
-        # Get the context.
-        if (self._ctx_count == 0) or not self._reentrant or not (ctx := self._ctx_var.get()):
-            self._ctx_count = ctx = self._ctx_count + 1
-            self._ctx_var.set(ctx)
-        # Check if we can lock or re-enter an active lock.
-        if (not self._releasing) and ((not self.count) or (self._reentrant and self.is_in_context())):
-            self._count += 1
-            self._ctx_current = ctx
-            return self
-        # Join the queue.
-        k: tuple[int, Future[bool]] = ctx, Future()
-        self._queue.append(k)
-        try:
-            result = await k[1]
-        finally:
-            if k in self._queue:
-                self._queue.remove(k)
-        if result:
-            self._ctx_current = ctx
-            if self._reentrant:
-                for k in tuple(self._queue):
-                    if k[0] == ctx:
-                        self._queue.remove(k)
-                        k[1].set_result(False)
-                        self._count += 1
-            self._releasing = False
-        return self
-
-    async def release(self) -> None:
-        """
-        Decrement the internal counter.
-
-        If the current depth==1 the lock will be passed to the next queued or released if there isn't one.
-        """
-        if self._count == 1 and self._queue and not self._releasing:
-            self._releasing = True
-            self._ctx_var.set(0)
-            self._queue.popleft()[1].set_result(True)
-        else:
-            self._count -= 1
-        if self._count == 0:
-            self._ctx_current = 0
-
-    def is_in_context(self) -> bool:
-        "Returns `True` if the current [contextvars.Context][] has the lock."
-        return bool(self._count and self._ctx_current and (self._ctx_var.get() == self._ctx_current))
-
-    @asynccontextmanager
-    async def base(self) -> AsyncGenerator[Self, Any]:
-        """
-        Acquire the lock as a new [contextvars.Context][].
-
-        Use this to ensure exclusive access from within this [contextvars.Context][].
-
-        !!! note
-            - This method is not useful for the mutex variant ([async_kernel.caller.AsyncLock][]) which does this by default.
-
-        !!! warning
-            Using this inside its own acquired lock will cause a deadlock.
-        """
-        if self._reentrant:
-            self._ctx_var.set(0)
-        async with self:
-            yield self
-
-
-class AsyncLock(ReentrantAsyncLock):
-    """
-    A mutex asynchronous lock that is compatible with [Caller][async_kernel.caller.Caller].
-
-    !!! note
-
-        - Attempting to acquire the lock from inside a locked [contextvars.Context][] will raise a [RuntimeError][].
-    """
-
-    _reentrant: ClassVar[bool] = False

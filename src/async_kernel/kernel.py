@@ -30,6 +30,7 @@ import IPython.core.completer
 import sniffio
 import traitlets
 import zmq
+from aiologic import Event
 from IPython.core.error import StdinNotImplementedError
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client import write_connection_file
@@ -41,7 +42,7 @@ from typing_extensions import override
 from zmq import Context, Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
-from async_kernel import AsyncEvent, Caller, utils
+from async_kernel import Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell
 from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
@@ -268,9 +269,9 @@ class Kernel(HasTraits):
     transport: CaselessStrEnum[str] = CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
     )
-    event_started = Instance(AsyncEvent, (), read_only=True)
+    event_started = Instance(Event, (), read_only=True)
     "An event that occurs when the kernel is started."
-    event_stopped = Instance(AsyncEvent, (), read_only=True)
+    event_stopped = Instance(Event, (), read_only=True)
     "An event that occurs when the kernel is stopped."
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -333,7 +334,7 @@ class Kernel(HasTraits):
 
         - Only one instance can (should) run at a time.
         - An instance can only be started once.
-        - A new instance can be started after a previous instance has stopped.
+        - A new instance can be started after a previous instance has stopped and the context exited.
 
         !!! example
 
@@ -342,14 +343,17 @@ class Kernel(HasTraits):
                 await anyio.sleep_forever()
             ```
         """
+        assert not self.event_stopped.is_set()
         async with contextlib.AsyncExitStack() as stack:
-            self._running = True
             await stack.enter_async_context(self._start_in_context())
             self.__stack = stack.pop_all()
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_tb) -> None:
-        await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
+        try:
+            await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
+        finally:
+            Kernel._instance = None
 
     @traitlets.default("log")
     def _default_log(self) -> LoggerAdapter[Logger]:
@@ -584,8 +588,8 @@ class Kernel(HasTraits):
 
     async def _wait_stopped(self) -> None:
         try:
-            await self.event_stopped.wait()
-            if self.debugger.debugpy_client.connected:
+            await self.event_stopped
+            if self.trait_has_value("debugger") and self.debugger.debugpy_client.connected:
                 await self.control_thread_caller.call_soon(self.debugger.disconnect)
         except BaseException:
             with anyio.CancelScope(shield=True):
@@ -607,10 +611,10 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     return
 
-        ready_event = AsyncEvent()
+        ready_event = Event()
         heartbeat_thread = threading.Thread(target=heartbeat, name="heartbeat", daemon=True)
         heartbeat_thread.start()
-        await ready_event.wait()
+        await ready_event
 
     async def _start_iopub_proxy(self) -> None:
         """Provide an io proxy."""
@@ -630,10 +634,10 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        ready_event = AsyncEvent()
+        ready_event = Event()
         iopub_thread = threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True)
         iopub_thread.start()
-        await ready_event.wait()
+        await ready_event
 
     @contextlib.contextmanager
     def _iopub(self):
@@ -665,9 +669,9 @@ class Kernel(HasTraits):
 
     async def _start_control_loop(self) -> None:
         self.control_thread_caller = Caller.start_new(backend=self.anyio_backend, name="ControlThread", protected=True)
-        ready = AsyncEvent()
+        ready = Event()
         self.control_thread_caller.call_soon(self._receive_msg_loop, SocketID.control, ready.set)
-        await ready.wait()
+        await ready
 
     async def _start_main_loop(self):
         async def run_in_main_event_loop():
@@ -675,9 +679,9 @@ class Kernel(HasTraits):
             with self._bind_socket(SocketID.stdin, stdin_socket):
                 await self._receive_msg_loop(SocketID.shell, ready.set)
 
-        ready = AsyncEvent()
+        ready = Event()
         Caller().call_soon(run_in_main_event_loop)
-        await ready.wait()
+        await ready
 
     async def _receive_msg_loop(
         self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]

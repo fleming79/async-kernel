@@ -6,10 +6,7 @@ import threading
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
-import anyio
 import traitlets
-from anyio import from_thread
-from anyio.lowlevel import current_token
 
 import async_kernel
 from async_kernel.typing import Message, MetadataKeys
@@ -30,7 +27,6 @@ __all__ = [
     "get_tags",
     "mark_thread_pydev_do_not_trace",
     "setattr_nested",
-    "wait_thread_event",
 ]
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
@@ -56,35 +52,6 @@ def do_not_debug_this_thread():
         if not LAUNCHED_BY_DEBUGPY:
             mark_thread_pydev_do_not_trace(threading.current_thread(), remove=True)
 
-
-async def wait_thread_event(thread_event: threading.Event, /):
-    """
-    Wait for `thread_event` to be set.
-
-    !!! info
-
-        - On external cancellation the `event` is set here to prevent the thread from waiting forever.
-    """
-    await anyio.sleep(0)
-    if thread_event.is_set():
-        return
-
-    def _wait_thread_event(thread_event: threading.Event, event: anyio.Event, token):
-        thread_event.wait()
-        try:
-            from_thread.run_sync(event.set, token=token)
-        except anyio.RunFinishedError:
-            pass
-
-    try:
-        event = anyio.Event()
-        thread = threading.Thread(target=_wait_thread_event, args=[thread_event, event, current_token()], daemon=True)
-        thread.pydev_do_not_trace = not LAUNCHED_BY_DEBUGPY  # pyright: ignore[reportAttributeAccessIssue]
-        if not thread_event.is_set():
-            thread.start()
-            await event.wait()
-    finally:
-        thread_event.set()
 
 
 def get_kernel() -> Kernel:

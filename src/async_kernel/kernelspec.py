@@ -130,7 +130,7 @@ def write_kernel_spec(
                     b = Button(description="Continue")
                     b.on_click(lambda _: event.set())
                     display(b)
-                    await event.wait()
+                    await event
                     b.close()
                     return await super().execute_request(job)
 
