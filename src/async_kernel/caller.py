@@ -443,11 +443,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         finally:
             self._future_var.reset(token)
 
-    def _check_in_thread(self):
-        if self.thread is not threading.current_thread():
-            msg = "This function must be called from its own thread. Tip: Use `call_direct` to call this method from another thread."
-            raise RuntimeError(msg)
-
     @property
     def name(self) -> str:
         "The name of the thread when the caller was created."

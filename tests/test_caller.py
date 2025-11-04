@@ -446,13 +446,6 @@ class TestCaller:
             with pytest.raises(FutureCancelledError):
                 await item
 
-    async def test__check_in_thread(self, anyio_backend):
-        Caller.to_thread(anyio.sleep, 0.1)
-        worker = next(iter(Caller.all_callers()))
-        assert not worker.protected
-        with pytest.raises(RuntimeError):
-            worker._check_in_thread()  # pyright: ignore[reportPrivateUsage]
-
     async def test_execution_queue(self, caller: Caller):
         N = 10
 
