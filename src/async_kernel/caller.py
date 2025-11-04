@@ -654,7 +654,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         key = hash(func)
         if not (fut_ := self._queue_map.get(key)):
             queue = deque()
-            event_added = REvent(True)
+            event_added = REvent()
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
@@ -894,8 +894,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             1. Pass a generator if you wish to limit the number future jobs when calling to_thread/to_task etc.
             2. Pass a container with all [Futures][async_kernel.caller.Future] when the limiter is not relevant.
         """
-        resume_event = REvent(True)
-        future_done_event = REvent(True)
+        resume_event = REvent()
+        future_done_event = REvent()
         done_futures: deque[Future[T]] = deque()
         futures: set[Future[T]] = set()
         done = False
