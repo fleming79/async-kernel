@@ -69,7 +69,7 @@ class Future(Awaitable[T]):
     def __init__(self, **metadata) -> None:
         self._done_callbacks = []
         self._metadata = metadata
-        self._done_event = Event()
+        self.done_event = Event()
 
     @override
     def __repr__(self) -> str:
@@ -98,7 +98,7 @@ class Future(Awaitable[T]):
             self._exception = value
         else:
             self._result = value  # pyright: ignore[reportAttributeAccessIssue]
-        self._done_event.set()
+        self.done_event.set()
         while self._done_callbacks:
             cb = self._done_callbacks.pop()
             try:
@@ -136,8 +136,6 @@ class Future(Awaitable[T]):
 
             A `future` returned by methods of [async_kernel.caller.Caller][] stores the function and call arguments
             in the futures metedata. It adds a on_set_callback that clears the metadata to avoid memory leaks.
-
-
         """
         return self._metadata
 
@@ -163,7 +161,7 @@ class Future(Awaitable[T]):
         try:
             if not self.done():
                 with anyio.fail_after(timeout):
-                    await self._done_event
+                    await self.done_event
             return self.result() if result else None
         finally:
             if not self.done() and not shield:
@@ -270,6 +268,11 @@ class Future(Awaitable[T]):
         """
         Set a callback to handle cancellation.
 
+        Args:
+            canceller: A callback that performs the cancellation of the future.
+                - It must accept the cancellation message as the first argument.
+                - The cancellation call is not thread-safe.
+
         !!! note
 
             `set_result` must still be called to mark the future as completed. You can pass any
@@ -304,9 +307,9 @@ class Caller(anyio.AsyncContextManagerMixin):
     _to_thread_pool: ClassVar[deque[Self]] = deque()
     _backend: Backend
     _queue_map: dict[int, Future]
-    _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
+    _queue: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
-    _job_added: Event
+    _queue_added: REvent
     _stopped_event: Event
     _stopped = False
     _protected = False
@@ -354,8 +357,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._thread = thread
             inst._name = thread.name
             inst.log = log or logging.LoggerAdapter(logging.getLogger())
-            inst._jobs = deque()
-            inst._job_added = Event()
+            inst._queue = deque()
+            inst._queue_added = REvent()
             inst._protected = protected
             inst._queue_map = {}
             cls._instances[thread] = inst
@@ -385,30 +388,28 @@ class Caller(anyio.AsyncContextManagerMixin):
             self.iopub_sockets[self.thread] = socket
             task_status.started()
             while not self._stopped:
-                if not self._jobs:
-                    if self._job_added.is_set():
-                        self._job_added = Event()
-                    else:
-                        await self._job_added
-                while self._jobs:
+                if not self._queue:
+                    self._queue_added.clear()
+                    await self._queue_added
+                while self._queue:
                     if self._stopped:
                         return
-                    job = self._jobs.popleft()
-                    if isinstance(job, Callable):
+                    item = self._queue.popleft()
+                    if isinstance(item, Callable):
                         try:
-                            result = job()
+                            result = item()
                             if inspect.iscoroutine(result):
                                 await result
                         except Exception as e:
                             self.log.exception("Simple call failed", exc_info=e)
                     else:
-                        context, fut = job
+                        context, fut = item
                         context.run(tg.start_soon, self._wrap_call, fut)
         finally:
             self._running = False
-            for job in self._jobs:
-                if isinstance(job, tuple):
-                    job[1].set_exception(FutureCancelledError())
+            for item in self._queue:
+                if isinstance(item, tuple):
+                    item[1].set_exception(FutureCancelledError())
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
             self._stopped_event.set()
@@ -509,7 +510,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._stopped = True
         for func in tuple(self._queue_map):
             self.queue_close(func)
-        self._job_added.set()
+        self._queue_added.set()
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
@@ -546,8 +547,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise anyio.ClosedResourceError
         fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         fut.add_done_callback(self._on_call_done)
-        self._jobs.append((context or contextvars.copy_context(), fut))
-        self._job_added.set()
+        self._queue.append((context or contextvars.copy_context(), fut))
+        self._queue_added.set()
         return fut
 
     @staticmethod
@@ -619,8 +620,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             **Use this method for lightweight calls only!**
 
         """
-        self._jobs.append(functools.partial(func, *args, **kwargs))
-        self._job_added.set()
+        self._queue.append(functools.partial(func, *args, **kwargs))
+        self._queue_added.set()
 
     def queue_get(self, func: Callable) -> Future[Never] | None:
         """Returns Future for `func` where the queue is running.
@@ -684,8 +685,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
         fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
-        if not (event_added := fut_.metadata["kwargs"]["event_added"]).is_set():
-            event_added.set()
+        fut_.metadata["kwargs"]["event_added"].set()
 
     def queue_close(self, func: Callable | int) -> None:
         """
@@ -909,8 +909,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         def future_done(fut: Future[T]) -> None:
             done_futures.append(fut)
-            if not future_done_event.is_set():
-                future_done_event.set()
+            future_done_event.set()
 
         async def iter_items():
             nonlocal done
@@ -923,17 +922,15 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not fut.done():
                         futures.add(fut)
                         if max_concurrent_ and (len(futures) == max_concurrent_):
-                            if resume_event.is_set():
-                                resume_event.clear()
+                            resume_event.clear()
                             await resume_event
 
             except (StopAsyncIteration, StopIteration):
                 return
             finally:
                 done = True
-                for event in {resume_event, future_done_event}:
-                    if not event.is_set():
-                        event.set()
+                resume_event.set()
+                future_done_event.set()
 
         fut_ = cls().call_soon(iter_items)
         try:
@@ -946,7 +943,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     futures.discard(fut)
                     yield fut
                 else:
-                    if not resume_event.is_set() and (len(futures) < max_concurrent_):
+                    if len(futures) < max_concurrent_:
                         resume_event.set()
                     future_done_event.clear()
                     await future_done_event

@@ -389,7 +389,6 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             caller.get_runner()
 
-    @pytest.mark.flaky()
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend, mode: Literal["restricted", "surge"], mocker):
         mocker.patch.object(Caller, "MAX_IDLE_POOL_INSTANCES", new=2)

@@ -343,7 +343,7 @@ class Kernel(HasTraits):
                 await anyio.sleep_forever()
             ```
         """
-        assert not self.event_stopped.is_set()
+        assert not self.event_stopped
         async with contextlib.AsyncExitStack() as stack:
             await stack.enter_async_context(self._start_in_context())
             self.__stack = stack.pop_all()
