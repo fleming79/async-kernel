@@ -69,7 +69,7 @@ class Future(Awaitable[T]):
     def __init__(self, **metadata) -> None:
         self._done_callbacks = []
         self._metadata = metadata
-        self.done_event = Event()
+        self._done_event = Event()
 
     @override
     def __repr__(self) -> str:
@@ -98,13 +98,13 @@ class Future(Awaitable[T]):
             self._exception = value
         else:
             self._result = value  # pyright: ignore[reportAttributeAccessIssue]
-        self.done_event.set()
         while self._done_callbacks:
             cb = self._done_callbacks.pop()
             try:
                 cb(self)
             except Exception:
                 pass
+        self._done_event.set()
 
     def _make_cancelled_error(self) -> FutureCancelledError:
         return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
@@ -160,9 +160,9 @@ class Future(Awaitable[T]):
             result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [async_kernel.caller.Future.result][]).
         """
         try:
-            if not self.done():
+            if not self._done_event:
                 with anyio.fail_after(timeout):
-                    await self.done_event
+                    await self._done_event
             return self.result() if result else None
         finally:
             if not self.done() and not shield:
@@ -178,7 +178,7 @@ class Future(Awaitable[T]):
 
     def done(self) -> bool:
         """
-        Returns True if the Future is done.
+        Returns True if the Future has a result.
 
         Done means either that a result / exception is available."""
         return self._done
@@ -936,6 +936,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if done_futures:
                     fut = done_futures.popleft()
                     futures.discard(fut)
+                    # Ensure all Future done callbacks are complete.
+                    await fut.wait(result=False)
                     yield fut
                 else:
                     if len(futures) < max_concurrent_:
