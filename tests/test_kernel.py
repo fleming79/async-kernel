@@ -350,7 +350,7 @@ async def test_interrupt_request(client, kernel: Kernel):
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}
-    assert event.is_set()
+    assert event
 
 
 async def test_interrupt_request_async_request(subprocess_kernels_client):
@@ -365,7 +365,6 @@ async def test_interrupt_request_async_request(subprocess_kernels_client):
     assert reply["content"]["status"] == "error"
 
 
-# @pytest.mark.flaky
 async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client

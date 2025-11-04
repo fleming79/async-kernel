@@ -168,10 +168,10 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path, anyio_backend):
     connection_file = tmp_path / "connection_file.json"
     command = make_argv(connection_file=connection_file)
     process = await anyio.open_process(command)
-    while not connection_file.exists():
+    async with process:
+        while not connection_file.exists():
+            await anyio.sleep(0.1)
         await anyio.sleep(0.1)
-    # Simulate a keyboard interrupt from the console.
-    process.send_signal(signal.SIGINT)
-    while process.returncode is None:
-        await anyio.sleep(0.1)
+        # Simulate a keyboard interrupt from the console.
+        process.send_signal(signal.SIGINT)
     assert process.returncode == 0
