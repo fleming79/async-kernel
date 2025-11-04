@@ -893,8 +893,8 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         !!! tip
 
-            1. Pass a generator should you wish to limit the number future jobs when calling to_thread/to_task etc.
-            2. Pass a set/list/tuple to ensure all get monitored at once.
+            1. Pass a generator if you wish to limit the number future jobs when calling to_thread/to_task etc.
+            2. Pass a container with all [Futures][async_kernel.caller.Future] when the limiter is not relevant.
         """
         resume_event = REvent(True)
         future_done_event = REvent(True)
@@ -937,9 +937,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             while not done or futures:
                 if done_futures:
                     fut = done_futures.popleft()
-                    while fut._done_callbacks:  # pyright: ignore[reportPrivateUsage]
-                        # Wait for all done callbacks to complete
-                        await anyio.sleep(0)
                     futures.discard(fut)
                     yield fut
                 else:
