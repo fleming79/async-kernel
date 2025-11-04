@@ -2080,20 +2080,19 @@ else:
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">demo</span><span class="p">():</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 
+    <span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Button</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncEvent</span><span class="p">,</span> <span class="n">Caller</span><span class="p">,</span> <span class="n">utils</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Run mode:"</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_job</span><span class="p">()[</span><span class="s2">"run_mode"</span><span class="p">])</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
     <span class="n">button</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Finish"</span><span class="p">)</span>
-    <span class="n">event</span> <span class="o">=</span> <span class="n">AsyncEvent</span><span class="p">()</span>
-    <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>  <span class="c1"># Use caller so the `##thread` example works.</span>
-    <span class="c1"># This is because widget messages are received by the shell in the main thread. The event is being waited in this thread.</span>
-    <span class="n">button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">))</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+    <span class="n">button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
     <span class="n">display</span><span class="p">(</span><span class="n">button</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">event</span>
     <span class="n">button</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished ... thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
     <span class="k">return</span> <span class="s2">"Finished"</span>
@@ -2101,20 +2100,19 @@ else:
 <div class="clipboard-copy-txt" id="cell-4">async def demo():
     import threading
 
+    from aiologic import Event
     from ipywidgets import Button
 
-    from async_kernel import AsyncEvent, Caller, utils
+    from async_kernel import utils
 
     print("Run mode:", utils.get_job()["run_mode"])
 
     print(f"Thread name: '{threading.current_thread().name}'")
     button = Button(description="Finish")
-    event = AsyncEvent()
-    caller = Caller()  # Use caller so the `##thread` example works.
-    # This is because widget messages are received by the shell in the main thread. The event is being waited in this thread.
-    button.on_click(lambda _: caller.call_direct(event.set))
+    event = Event()
+    button.on_click(lambda _: event.set())
     display(button)
-    await event.wait()
+    await event
     button.close()
     print(f"Finished ... thread name: '{threading.current_thread().name}'")
     return "Finished"</div>
@@ -2617,7 +2615,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-26 (async_kernel_caller)	← current thread</pre>
+<pre>   ✓			Thread-2 (async_kernel_caller)	← current thread</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2660,7 +2658,7 @@ await demo()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 26, 2025 04:43:28 UTC"><span class="timeago" datetime="2025-09-26T04:43:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 26, 2025 04:43:28 UTC">2025-09-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 4, 2025 21:49:41 UTC"><span class="timeago" datetime="2025-11-04T21:49:41+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 4, 2025 21:49:41 UTC">2025-11-04</span>
   </span>
 
     

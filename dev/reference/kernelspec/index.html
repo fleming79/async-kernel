@@ -1857,27 +1857,20 @@ Unpack from a dict to avoid syntax errors.</p>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">kernel_factory</span><span class="p">(</span><span class="n">settings</span><span class="p">):</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">anyio</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Button</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncEvent</span><span class="p">,</span> <span class="n">Kernel</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Kernel</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">MyKernel</span><span class="p">(</span><span class="n">Kernel</span><span class="p">):</span>
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
-            <span class="n">event</span> <span class="o">=</span> <span class="n">AsyncEvent</span><span class="p">()</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Continue&quot;</span><span class="p">)</span>
-            <span class="n">b</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
-            <span class="n">display</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-            <span class="k">await</span> <span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-            <span class="n">b</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
             <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">MyKernel</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 
 
 <span class="n">async_kernel</span><span class="o">.</span><span class="n">kernelspec</span><span class="o">.</span><span class="n">write_kernel_spec</span><span class="p">(</span>
-    <span class="n">kernel_name</span><span class="o">=</span><span class="s2">&quot;async-button&quot;</span><span class="p">,</span> <span class="n">kernel_factory</span><span class="o">=</span><span class="n">kernel_factory</span>
+    <span class="n">kernel_name</span><span class="o">=</span><span class="s2">&quot;async-print-job&quot;</span><span class="p">,</span> <span class="n">kernel_factory</span><span class="o">=</span><span class="n">kernel_factory</span>
 <span class="p">)</span>
 </code></pre></div>
 <div class="admonition warning">
@@ -1989,14 +1982,7 @@ Unpack from a dict to avoid syntax errors.</p>
 <span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">kernel_name</span><span class="p">:</span> <span class="n">KernelName</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
@@ -2040,27 +2026,20 @@ Unpack from a dict to avoid syntax errors.</p>
 
 
 <span class="sd">        def kernel_factory(settings):</span>
-<span class="sd">            from IPython.display import display</span>
-<span class="sd">            import anyio</span>
 <span class="sd">            from ipywidgets import Button</span>
 
-<span class="sd">            from async_kernel import AsyncEvent, Kernel</span>
+<span class="sd">            from async_kernel import Kernel</span>
 
 <span class="sd">            class MyKernel(Kernel):</span>
 <span class="sd">                async def execute_request(self, job):</span>
-<span class="sd">                    event = AsyncEvent()</span>
-<span class="sd">                    b = Button(description=&quot;Continue&quot;)</span>
-<span class="sd">                    b.on_click(lambda _: event.set())</span>
-<span class="sd">                    display(b)</span>
-<span class="sd">                    await event.wait()</span>
-<span class="sd">                    b.close()</span>
+<span class="sd">                    print(job)</span>
 <span class="sd">                    return await super().execute_request(job)</span>
 
 <span class="sd">            return MyKernel(settings)</span>
 
 
 <span class="sd">        async_kernel.kernelspec.write_kernel_spec(</span>
-<span class="sd">            kernel_name=&quot;async-button&quot;, kernel_factory=kernel_factory</span>
+<span class="sd">            kernel_name=&quot;async-print-job&quot;, kernel_factory=kernel_factory</span>
 <span class="sd">        )</span>
 <span class="sd">        ```</span>
 
@@ -2128,12 +2107,12 @@ Unpack from a dict to avoid syntax errors.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_kernel_spec</span><span class="p">(</span><span class="n">kernel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_kernel_spec</span><span class="p">(</span><span class="n">kernel_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Remove a kernelspec returning True if it was removed.&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">folder</span> <span class="o">:=</span> <span class="n">get_kernel_dir</span><span class="p">()</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">kernel_name</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -2178,14 +2157,14 @@ Unpack from a dict to avoid syntax errors.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The path to where kernel specs are stored for Jupyter.</span>
 
@@ -2244,7 +2223,14 @@ Unpack from a dict to avoid syntax errors.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
 <span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
@@ -2258,14 +2244,7 @@ Unpack from a dict to avoid syntax errors.</p>
 <span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_kernel_factory</span><span class="p">(</span><span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KernelFactoryType</span><span class="p">:</span>
+<span class="normal">219</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_kernel_factory</span><span class="p">(</span><span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KernelFactoryType</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Import the kernel factory as defined in a kernel spec.</span>
 
