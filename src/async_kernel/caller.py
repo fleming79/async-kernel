@@ -112,10 +112,10 @@ class Future(Awaitable[T]):
     @property
     def metadata(self) -> dict[str, Any]:
         """
-        A dict provided to store metadata with the future.
+        A dict provided to store metadata with the Future until it is done.
 
         !!! info
-            The metadata is used when forming the representation of the future.
+            The metadata is used when forming the representation of the Future.
 
         !!! example
 
@@ -132,10 +132,11 @@ class Future(Awaitable[T]):
                 fut.metadata.update(name="My future")
                 ```
 
-        !!! tip
+        !!! info
 
-            A `future` returned by methods of [async_kernel.caller.Caller][] stores the function and call arguments
-            in the futures metedata. It adds a on_set_callback that clears the metadata to avoid memory leaks.
+            A `Future` returned by methods of [Caller][async_kernel.caller.Caller] stores the function and call arguments
+            in the futures metedata. It also adds a *done callback* using [add_done_callback][async_kernel.caller.Caller.add_done_callback]
+            which clears the Future's metadata to avoid memory leaks.
         """
         return self._metadata
 
@@ -151,12 +152,12 @@ class Future(Awaitable[T]):
 
     async def wait(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
         """
-        Wait for future to be done (thread-safe) returning the result if specified.
+        Wait for Future to be done (thread-safe) returning the result if specified.
 
         Args:
             timeout: Timeout in seconds.
-            shield: Shield the future from cancellation.
-            result: Whether the result should be returned.
+            shield: Shield the Future from cancellation.
+            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [async_kernel.caller.Future.result][]).
         """
         try:
             if not self.done():
@@ -168,11 +169,11 @@ class Future(Awaitable[T]):
                 self.cancel("Cancelled with waiter cancellation.")
 
     def set_result(self, value: T) -> None:
-        "Set the result (thread-safe using Caller)."
+        "Set the result (thread-safe)."
         self._set_value("result", value)
 
     def set_exception(self, exception: BaseException) -> None:
-        "Set the exception (thread-safe using Caller)."
+        "Set the exception (thread-safe)."
         self._set_value("exception", exception)
 
     def done(self) -> bool:
@@ -184,12 +185,9 @@ class Future(Awaitable[T]):
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
         """
-        Add a callback for when the callback is done (not thread-safe).
+        Add a callback for when the Future is done (not thread-safe).
 
         If the Future is already done it will called immediately.
-
-        The result of the future and done callbacks are always called for the futures thread.
-        Callbacks are called in the reverse order in which they were added in the owning thread.
         """
         if not self.done():
             self._done_callbacks.append(fn)
@@ -198,13 +196,13 @@ class Future(Awaitable[T]):
 
     def cancel(self, msg: str | None = None) -> bool:
         """
-        Cancel the Future (thread-safe using Caller).
+        Cancel the Future.
 
         !!! note
 
             - Cancellation cannot be undone.
-            - The future will not be done until set_result or set_excetion is called
-                in both cases the value is ignore and replaced with a [FutureCancelledError][async_kernel.caller.FutureCancelledError]
+            - The Future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
+                In both cases the value is ignore and replaced with a [FutureCancelledError][async_kernel.caller.FutureCancelledError]
                 and the result is inaccessible.
 
         Args:
@@ -269,13 +267,13 @@ class Future(Awaitable[T]):
         Set a callback to handle cancellation.
 
         Args:
-            canceller: A callback that performs the cancellation of the future.
+            canceller: A callback that performs the cancellation of the Future.
                 - It must accept the cancellation message as the first argument.
                 - The cancellation call is not thread-safe.
 
         !!! note
 
-            `set_result` must still be called to mark the future as completed. You can pass any
+            `set_result` must still be called to mark the Future as completed. You can pass any
             value as it will be replaced with a [async_kernel.caller.FutureCancelledError][].
         """
         if self.done() or self._canceller:
