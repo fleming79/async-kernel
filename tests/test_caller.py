@@ -151,6 +151,10 @@ class TestFuture:
         caller.to_thread(fut.set_result, value=123)
         assert (await fut) == 123
 
+    async def test_already_exists(self, caller: Caller):
+        with pytest.raises(RuntimeError, match="already exists"):
+            Caller.start_new(name=caller.thread.name)
+
     async def test_start_new_should_fail(self, caller: Caller):
         await anyio.to_thread.run_sync(print, "")
         name = next(iter(t.name for t in threading.enumerate() if t.name != "MainThread"))
