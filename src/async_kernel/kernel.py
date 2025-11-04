@@ -841,9 +841,11 @@ class Kernel(HasTraits):
 
     async def run_handler(self, handler: HandlerType, job: Job[dict]) -> None:
         """
-        Runs the handler in the context of the job/message sending the reply content if it is provided.
+        A wrapper for running handler in the context of the job/message.
 
         This method gets called for every valid request with the relevant handler.
+        If the handler returns a `dict`. The return value is used as reply `content`.
+        If `status` is not provided in the content it is added as {'status': 'ok'}.
         """
 
         def send_reply(job: Job[dict], content: dict, /) -> None:
@@ -949,7 +951,7 @@ class Kernel(HasTraits):
                 parent=job["msg"],
                 ident=self.topic("execute_input"),
             )
-        fut = (Caller.to_thread if job["run_mode"] is RunMode.thread else Caller().call_soon)(
+        fut = Caller().call_soon(
             self.shell.run_cell_async,
             raw_cell=c["code"],
             store_history=c.get("store_history", False),
