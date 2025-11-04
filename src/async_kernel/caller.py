@@ -188,13 +188,13 @@ class Future(Awaitable[T]):
         Returns True if the Future is done.
 
         Done means either that a result / exception is available."""
-        return self._done_event.is_set()
+        return self._done
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
         """
         Add a callback for when the callback is done (not thread-safe).
 
-        If the Future is already done it will be scheduled for calling.
+        If the Future is already done it will called immediately.
 
         The result of the future and done callbacks are always called for the futures thread.
         Callbacks are called in the reverse order in which they were added in the owning thread.
@@ -202,7 +202,7 @@ class Future(Awaitable[T]):
         if not self.done():
             self._done_callbacks.append(fn)
         else:
-            self.get_caller().call_direct(fn, self)
+            fn(self)
 
     def cancel(self, msg: str | None = None) -> bool:
         """
@@ -228,7 +228,7 @@ class Future(Awaitable[T]):
                 if threading.current_thread() is self._thread:
                     canceller(msg)
                 else:
-                    Caller(thread=self._thread).call_direct(self.cancel)
+                    self.get_caller().call_direct(self.cancel)
         return self.cancelled()
 
     def cancelled(self) -> bool:
@@ -933,11 +933,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 while True:
                     fut = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
                     assert fut is not current_future, "Would result in deadlock"
-                    if fut.done():
-                        future_done(fut)
-                    else:
+                    fut.add_done_callback(future_done)
+                    if not fut.done():
                         futures.add(fut)
-                        fut.add_done_callback(future_done)
                         if max_concurrent_ and (len(futures) == max_concurrent_):
                             if resume_event.is_set():
                                 resume_event.clear()

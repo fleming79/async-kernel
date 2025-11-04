@@ -146,17 +146,10 @@ class TestFuture:
         with pytest.raises(FutureCancelledError):
             fut.exception()
 
-    async def test_set_from_non_thread(self, anyio_backend):
-        caller = Caller.start_new(backend=anyio_backend)
-        try:
-            fut = Future(caller.thread)
-            assert fut.thread is not threading.current_thread()
-            fut.set_result(value=123)
-            assert (await fut) == 123
-            with pytest.raises(RuntimeError, match="already exists"):
-                Caller.start_new(name=caller.thread.name)
-        finally:
-            caller.stop()
+    async def test_set_from_non_thread(self, caller: Caller):
+        fut = Future()
+        caller.to_thread(fut.set_result, value=123)
+        assert (await fut) == 123
 
     async def test_start_new_should_fail(self, caller: Caller):
         await anyio.to_thread.run_sync(print, "")
@@ -439,7 +432,7 @@ class TestCaller:
             with pytest.raises(RuntimeError):
                 await fut
 
-    async def test_as_completed_cancelled(self, caller):
+    async def test_as_completed_cancelled(self, caller: Caller):
         items = {Caller.to_thread(anyio.sleep, 100) for _ in range(4)}
         with anyio.move_on_after(0.1):
             with pytest.raises(anyio.get_cancelled_exc_class()):
@@ -540,19 +533,18 @@ class TestCaller:
             res = await fut
             assert res is fut
 
-    async def test_closed_in_call_soon(self, caller: Caller):
+    async def test_closed_in_call_soon(self):
         ready = threading.Event()
         proceed = threading.Event()
 
         async def close_tsc():
-            caller = Caller(create=True)
             ready.set()
             proceed.wait()
             caller.stop()
             await anyio.sleep_forever()
 
-        fut = Caller.to_thread(close_tsc)
-        caller = Caller.get_instance(name=fut.thread.name)
+        caller = Caller.get_instance(create=True, name="test-thread")
+        fut = caller.call_soon(close_tsc)
         ready.wait()
         never_called_future = caller.call_later(10, str)
         proceed.set()
