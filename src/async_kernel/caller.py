@@ -135,7 +135,7 @@ class Future(Awaitable[T]):
         !!! info
 
             A `Future` returned by methods of [Caller][async_kernel.caller.Caller] stores the function and call arguments
-            in the futures metedata. It also adds a *done callback* using [add_done_callback][async_kernel.caller.Caller.add_done_callback]
+            in the futures metedata. It also adds a *done callback* using [add_done_callback][async_kernel.caller.Future.add_done_callback]
             which clears the Future's metadata to avoid memory leaks.
         """
         return self._metadata
