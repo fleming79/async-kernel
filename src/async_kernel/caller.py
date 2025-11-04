@@ -66,15 +66,14 @@ class Future(Awaitable[T]):
     _result: T
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
-    def __init__(self, thread: threading.Thread | None = None, /, **metadata) -> None:
+    def __init__(self, **metadata) -> None:
         self._done_callbacks = []
         self._metadata = metadata
-        self._thread = thread = thread or threading.current_thread()
         self._done_event = Event()
 
     @override
     def __repr__(self) -> str:
-        rep = f"<Future {self._thread.name}" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else " 🏃")
+        rep = "<Future" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else " 🏃")
         with contextlib.suppress(Exception):
             md = self.metadata
             if "func" in md:
@@ -141,11 +140,6 @@ class Future(Awaitable[T]):
 
         """
         return self._metadata
-
-    @property
-    def thread(self) -> threading.Thread:
-        "The thread to which the future is associated."
-        return self._thread
 
     if TYPE_CHECKING:
 
@@ -225,10 +219,7 @@ class Future(Awaitable[T]):
                 msg = f"{self._cancelled}\n{msg}"
             self._cancelled = msg or self._cancelled or True
             if canceller := self._canceller:
-                if threading.current_thread() is self._thread:
-                    canceller(msg)
-                else:
-                    self.get_caller().call_direct(self.cancel)
+                canceller(msg)
         return self.cancelled()
 
     def cancelled(self) -> bool:
@@ -289,10 +280,6 @@ class Future(Awaitable[T]):
         self._canceller = canceller
         if self.cancelled():
             self.cancel()
-
-    def get_caller(self) -> Caller:
-        "The [Caller][async_kernel.caller.Caller] that is running for this *futures* thread."
-        return Caller(thread=self._thread)
 
 
 class Caller(anyio.AsyncContextManagerMixin):
@@ -437,7 +424,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         token = self._future_var.set(fut)
         try:
             with anyio.CancelScope() as scope:
-                fut.set_canceller(scope.cancel)
+                fut.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
                 try:
                     if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
                         await anyio.sleep(delay)
@@ -553,12 +540,11 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         !!! note
 
-            All arguments are stored in the future's metadata. When the call is done the
-            metadata is cleared to avoid memory leaks.
+            All arguments are stored in the future's metadata. When the call is done the metadata is cleared to prevent memory leaks.
         """
         if self._stopped:
             raise anyio.ClosedResourceError
-        fut = Future(self.thread, func=func, args=args, kwargs=kwargs, **metadata)
+        fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         fut.add_done_callback(self._on_call_done)
         self._jobs.append((context or contextvars.copy_context(), fut))
         self._job_added.set()
