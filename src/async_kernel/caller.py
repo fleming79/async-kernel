@@ -14,10 +14,10 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, overload
 
 import anyio
-from aiologic import Event
+from aiologic import Event, REvent
 from aiologic.lowlevel import current_async_library
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
@@ -50,9 +50,6 @@ class InvalidStateError(RuntimeError):
     "An invalid state of a [Future][async_kernel.caller.Future]."
 
 
-AsyncEvent = Event
-
-
 class Future(Awaitable[T]):
     """
     A class representing a future result modelled on [asyncio.Future][].
@@ -65,7 +62,7 @@ class Future(Awaitable[T]):
     _cancelled = False
     _canceller: Callable[[str | None], Any] | None = None
     _exception = None
-    _setting_value = False
+    _done = False
     _result: T
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
@@ -73,7 +70,7 @@ class Future(Awaitable[T]):
         self._done_callbacks = []
         self._metadata = metadata
         self._thread = thread = thread or threading.current_thread()
-        self._done = AsyncEvent()
+        self._done_event = Event()
 
     @override
     def __repr__(self) -> str:
@@ -92,9 +89,9 @@ class Future(Awaitable[T]):
         return self.wait().__await__()
 
     def _set_value(self, mode: Literal["result", "exception"], value) -> None:
-        if self._setting_value:
+        if self._done:
             raise InvalidStateError
-        self._setting_value = True
+        self._done = True
         if self._cancelled:
             mode = "exception"
             value = self._make_cancelled_error()
@@ -102,8 +99,9 @@ class Future(Awaitable[T]):
             self._exception = value
         else:
             self._result = value  # pyright: ignore[reportAttributeAccessIssue]
-        self._done.set()
-        for cb in reversed(self._done_callbacks):
+        self._done_event.set()
+        while self._done_callbacks:
+            cb = self._done_callbacks.pop()
             try:
                 cb(self)
             except Exception:
@@ -171,7 +169,7 @@ class Future(Awaitable[T]):
         try:
             if not self.done():
                 with anyio.fail_after(timeout):
-                    await self._done
+                    await self._done_event
             return self.result() if result else None
         finally:
             if not self.done() and not shield:
@@ -190,7 +188,7 @@ class Future(Awaitable[T]):
         Returns True if the Future is done.
 
         Done means either that a result / exception is available."""
-        return self._done.is_set()
+        return self._done_event.is_set()
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
         """
@@ -316,9 +314,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.Caller.to_thread])."
 
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
-    _busy_worker_threads: ClassVar[int] = 0
     _to_thread_pool: ClassVar[deque[Self]] = deque()
-    _pool_instances: ClassVar[weakref.WeakSet[Self]] = weakref.WeakSet()
     _backend: Backend
     _queue_map: dict[int, Future]
     _jobs: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
@@ -673,13 +669,13 @@ class Caller(anyio.AsyncContextManagerMixin):
         key = hash(func)
         if not (fut_ := self._queue_map.get(key)):
             queue = deque()
+            event_added = REvent(True)
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
-            async def queue_loop(key: int, queue: deque) -> None:
+            async def queue_loop(key: int, queue: deque, event_added: REvent) -> None:
                 fut = self.current_future()
                 assert fut
-                event_added: Event | None = None
                 try:
                     while True:
                         if queue:
@@ -695,18 +691,15 @@ class Caller(anyio.AsyncContextManagerMixin):
                             finally:
                                 func_ = None
                         else:
-                            if event_added is not None and not event_added:
-                                await event_added
-                                fut.metadata["kwargs"].pop("event_added")
-                            else:
-                                event_added = fut.metadata["kwargs"]["event_added"] = Event()
+                            event_added.clear()
+                            await event_added
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue)
+            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
         fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
-        if (event := fut_.metadata["kwargs"].get("event_added")) is not None:
-            event.set()
+        if not (event_added := fut_.metadata["kwargs"]["event_added"]).is_set():
+            event_added.set()
 
     def queue_close(self, func: Callable | int) -> None:
         """
@@ -795,20 +788,19 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         caller = None
         if not options.get("name"):
-            with contextlib.suppress(IndexError):
+            try:
                 caller = cls._to_thread_pool.popleft()
+            except IndexError:
+                pass
         if caller is None:
             caller = cls.get_instance(create=True, **options)
         fut = caller.call_soon(func, *args, **kwargs)
         if not options.get("name"):
-            cls._pool_instances.add(caller)
-            cls._busy_worker_threads += 1
 
             def _to_thread_on_done(_) -> None:
-                cls._busy_worker_threads -= 1
                 if not caller._stopped:
-                    if len(caller._to_thread_pool) + cls._busy_worker_threads < caller.MAX_IDLE_POOL_INSTANCES:
-                        caller._to_thread_pool.append(caller)
+                    if len(cls._to_thread_pool) < cls.MAX_IDLE_POOL_INSTANCES:
+                        cls._to_thread_pool.append(caller)
                     else:
                         caller.stop()
 
@@ -918,8 +910,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             1. Pass a generator should you wish to limit the number future jobs when calling to_thread/to_task etc.
             2. Pass a set/list/tuple to ensure all get monitored at once.
         """
-        resume = cast("Callable | None", None)
-        done_futures_added: Event | None = None
+        resume_event = REvent(True)
+        future_done_event = REvent(True)
         done_futures: deque[Future[T]] = deque()
         futures: set[Future[T]] = set()
         done = False
@@ -929,61 +921,56 @@ class Caller(anyio.AsyncContextManagerMixin):
         else:
             max_concurrent_ = cls.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
 
-        def _on_done(fut: Future[T]) -> None:
-            nonlocal resume
+        def future_done(fut: Future[T]) -> None:
             done_futures.append(fut)
-            if done_futures_added is not None:
-                done_futures_added.set()
+            if not future_done_event.is_set():
+                future_done_event.set()
 
         async def iter_items():
-            nonlocal done, resume, done_futures_added
+            nonlocal done
             gen = items if isinstance(items, AsyncGenerator) else iter(items)
             try:
                 while True:
                     fut = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
                     assert fut is not current_future, "Would result in deadlock"
-                    futures.add(fut)
                     if fut.done():
-                        done_futures.append(fut)
-                        if done_futures_added is not None:
-                            done_futures_added.set()
+                        future_done(fut)
                     else:
-                        fut.add_done_callback(_on_done)
-                    if max_concurrent_ and len(futures) == max_concurrent_:
-                        resume_event = Event()
-                        resume = resume_event.set
-                        await anyio.sleep(0)
-                        if not resume_event:
+                        futures.add(fut)
+                        fut.add_done_callback(future_done)
+                        if max_concurrent_ and (len(futures) == max_concurrent_):
+                            if resume_event.is_set():
+                                resume_event.clear()
                             await resume_event
-                        resume = None
 
             except (StopAsyncIteration, StopIteration):
                 return
             finally:
                 done = True
-                if done_futures_added:
-                    done_futures_added.set()
+                for event in {resume_event, future_done_event}:
+                    if not event.is_set():
+                        event.set()
 
-        fut = cls().call_soon(iter_items)
+        fut_ = cls().call_soon(iter_items)
         try:
-            while futures or not done:
+            while not done or futures:
                 if done_futures:
                     fut = done_futures.popleft()
+                    while fut._done_callbacks:  # pyright: ignore[reportPrivateUsage]
+                        # Wait for all done callbacks to complete
+                        await anyio.sleep(0)
                     futures.discard(fut)
                     yield fut
-                    if resume:
-                        resume()
                 else:
-                    if done_futures_added is None:
-                        done_futures_added = Event()
-                    else:
-                        await done_futures_added
-                        done_futures_added = None
+                    if not resume_event.is_set() and (len(futures) < max_concurrent_):
+                        resume_event.set()
+                    future_done_event.clear()
+                    await future_done_event
 
         finally:
-            fut.cancel()
+            fut_.cancel()
             for fut in futures:
-                fut.remove_done_callback(_on_done)
+                fut.remove_done_callback(future_done)
                 if not shield:
                     fut.cancel("Cancelled by as_completed")
 

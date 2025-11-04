@@ -2,7 +2,7 @@ import sys
 from importlib.metadata import PackageNotFoundError, version
 
 from async_kernel import utils
-from async_kernel.caller import AsyncEvent, Caller, Future
+from async_kernel.caller import Caller, Future
 from async_kernel.kernel import Kernel
 
 try:
@@ -24,7 +24,6 @@ kernel_protocol_version_info = {
 
 
 __all__ = [
-    "AsyncEvent",
     "Caller",
     "Future",
     "Kernel",

@@ -69,6 +69,8 @@ class TestFuture:
             done_called = True
 
         fut.add_done_callback(callback)
+        assert fut.remove_done_callback(callback) == 1
+        fut.add_done_callback(callback)
         assert not fut.done()
         exc = ValueError("fail")
         fut.set_exception(exc)
@@ -77,7 +79,6 @@ class TestFuture:
         assert e.value is exc
         assert fut.done()
         assert done_called
-        assert fut.remove_done_callback(callback) == 1
 
     async def test_set_result_twice_raises(self):
         fut = Future()

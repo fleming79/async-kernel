@@ -118,27 +118,20 @@ def write_kernel_spec(
 
 
         def kernel_factory(settings):
-            from IPython.display import display
-            import anyio
             from ipywidgets import Button
 
-            from async_kernel import AsyncEvent, Kernel
+            from async_kernel import Kernel
 
             class MyKernel(Kernel):
                 async def execute_request(self, job):
-                    event = AsyncEvent()
-                    b = Button(description="Continue")
-                    b.on_click(lambda _: event.set())
-                    display(b)
-                    await event
-                    b.close()
+                    print(job)
                     return await super().execute_request(job)
 
             return MyKernel(settings)
 
 
         async_kernel.kernelspec.write_kernel_spec(
-            kernel_name="async-button", kernel_factory=kernel_factory
+            kernel_name="async-print-job", kernel_factory=kernel_factory
         )
         ```
 
