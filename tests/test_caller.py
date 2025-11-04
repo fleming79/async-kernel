@@ -618,15 +618,15 @@ class TestCaller:
             finally:
                 waiters[i + 1].set()
 
-        items = [caller.call_later(i * 0.01, f, i) for i in range(3)]
+        items = [caller.call_later(i * 0.02, f, i) for i in range(3)]
         done, pending = await Caller.wait(items, return_when=return_when)
         match return_when:
             case "FIRST_COMPLETED":
-                assert items[0] in done
+                assert {items[0]} == done
             case "FIRST_EXCEPTION":
-                assert items[1] in done
+                assert {*items[0:2]} == done
             case _:
-                assert done == set(items)
+                assert {*items} == done
                 assert not pending
 
     async def test_cancelled_future(self, caller: Caller):

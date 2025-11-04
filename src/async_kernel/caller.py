@@ -979,9 +979,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         done = set()
         if pending := set(items):
             with anyio.move_on_after(timeout):
-                async for fut in cls.as_completed(items, shield=True):
-                    pending.discard(fut)
-                    done.add(fut)
+                async for fut in cls.as_completed(pending.copy(), shield=True):
+                    _ = (pending.discard(fut), done.add(fut))
                     if return_when == "FIRST_COMPLETED":
                         break
                     if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
