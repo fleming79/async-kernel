@@ -161,6 +161,7 @@ def test_uv_loop_default(monkeypatch, disabled: bool):
     with pytest.raises(SystemExit):
         command_line(wait_exit)
 
+
 @pytest.mark.skipif(sys.platform == "win32", reason="Can't simulate keyboard interrupt on windows.")
 async def test_subprocess_kernel_keyboard_interrupt(tmp_path, anyio_backend):
     # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
