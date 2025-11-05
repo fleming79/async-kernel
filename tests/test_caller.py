@@ -170,6 +170,17 @@ class TestFuture:
             await fut.wait(timeout=0.001)
         assert fut.cancelled()
 
+    async def test_wait_sync(self, caller: Caller):
+        fut = Future()
+        with pytest.raises(TimeoutError):
+            fut.wait_sync(timeout=0.01)
+        assert not fut.done()
+
+        caller.to_thread(fut.set_result, 1)
+        with anyio.fail_after(1):
+            fut.wait_sync()
+            assert fut.result() == 1
+
     def test_repr(self):
         fut = Future(name="test", mydict={"test": "a long string" * 100})
         assert repr(fut) == "<Future 🏃 {'mydict': {…}, 'name': 'test'} >"

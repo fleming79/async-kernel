@@ -168,6 +168,14 @@ class Future(Awaitable[T]):
             if not self.done() and not shield:
                 self.cancel("Cancelled with waiter cancellation.")
 
+    def wait_sync(self, timeout: float | None = None) -> T:
+        "Wait synchronously for the future to be done."
+        if not self._done_event:
+            self._done_event.wait(timeout)
+        if not self.done():
+            raise TimeoutError
+        return self.result()
+
     def set_result(self, value: T) -> None:
         "Set the result (thread-safe)."
         self._set_value("result", value)
