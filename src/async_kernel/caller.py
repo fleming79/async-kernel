@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, o
 
 import anyio
 from aiologic import Event, REvent
-from aiologic.lowlevel import current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
@@ -283,6 +283,10 @@ class Future(Awaitable[T]):
             self.cancel()
 
 
+def noop():
+    pass
+
+
 class Caller(anyio.AsyncContextManagerMixin):
     """
     A class to enable calling functions and coroutines between anyio event loops.
@@ -307,7 +311,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     _queue_map: dict[int, Future]
     _queue: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
     _thread: threading.Thread
-    _queue_added: REvent
     _stopped_event: Event
     _stopped = False
     _protected = False
@@ -356,7 +359,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._name = thread.name
             inst.log = log or logging.LoggerAdapter(logging.getLogger())
             inst._queue = deque()
-            inst._queue_added = REvent()
+            inst._resume = noop
             inst._protected = protected
             inst._queue_map = {}
             cls._instances[thread] = inst
@@ -387,11 +390,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             task_status.started()
             while not self._stopped:
                 if not self._queue:
-                    self._queue_added.clear()
-                    await self._queue_added
-                while self._queue:
-                    if self._stopped:
-                        return
+                    event = create_async_event()
+                    if not self._stopped and not self._queue:
+                        self._resume = event.set
+                        await event
+                        self._resume = noop
+                while not self._stopped and self._queue:
                     item = self._queue.popleft()
                     if isinstance(item, Callable):
                         try:
@@ -503,7 +507,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._stopped = True
         for func in tuple(self._queue_map):
             self.queue_close(func)
-        self._queue_added.set()
+        self._resume()
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
@@ -541,7 +545,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         fut.add_done_callback(self._on_call_done)
         self._queue.append((context or contextvars.copy_context(), fut))
-        self._queue_added.set()
+        self._resume()
         return fut
 
     @staticmethod
@@ -614,7 +618,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         """
         self._queue.append(functools.partial(func, *args, **kwargs))
-        self._queue_added.set()
+        self._resume()
 
     def queue_get(self, func: Callable) -> Future[Never] | None:
         """Returns Future for `func` where the queue is running.
