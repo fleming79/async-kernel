@@ -76,7 +76,7 @@ class Future(Awaitable[T]):
 
     @override
     def __repr__(self) -> str:
-        rep = "<Future" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self.done() else " 🏃")
+        rep = "<Future" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self._done else " 🏃")
         with contextlib.suppress(Exception):
             md = self.metadata
             if "func" in md:
@@ -151,7 +151,7 @@ class Future(Awaitable[T]):
                         await event
             return self.result() if result else None
         finally:
-            if not self.done() and not shield:
+            if not self._done and not shield:
                 self.cancel("Cancelled with waiter cancellation.")
 
     def set_result(self, value: T) -> None:
@@ -175,7 +175,7 @@ class Future(Awaitable[T]):
 
         If the Future is already done it will called immediately.
         """
-        if not self.done():
+        if not self._done:
             self._done_callbacks.append(fn)
         else:
             fn(self)
@@ -196,7 +196,7 @@ class Future(Awaitable[T]):
 
         Returns if it has been cancelled.
         """
-        if not self.done():
+        if not self._done:
             if msg and isinstance(self._cancelled, str):
                 msg = f"{self._cancelled}\n{msg}"
             self._cancelled = msg or self._cancelled or True
@@ -216,7 +216,7 @@ class Future(Awaitable[T]):
 
         If the Future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
         """
-        if not self.cancelled() and not self.done():
+        if not self._done and not self.cancelled():
             raise InvalidStateError
         if e := self.exception():
             raise e
@@ -232,7 +232,7 @@ class Future(Awaitable[T]):
         """
         if self._cancelled:
             raise self._make_cancelled_error()
-        if not self.done():
+        if not self._done:
             raise InvalidStateError
         return self._exception
 
@@ -262,7 +262,7 @@ class Future(Awaitable[T]):
             `set_result` must still be called to mark the Future as completed. You can pass any
             value as it will be replaced with a [async_kernel.caller.FutureCancelledError][].
         """
-        if self.done() or self._canceller:
+        if self._done or self._canceller:
             raise InvalidStateError
         self._canceller = canceller
         if self.cancelled():
