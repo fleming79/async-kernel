@@ -507,6 +507,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         args: tuple,
         kwargs: dict,
         context: contextvars.Context | None = None,
+        retain_metadata=False,
         **metadata: Any,
     ) -> Future[T]:
         """
@@ -520,6 +521,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
+            retain_metadata: Passed to Future.
             metadata: Additional metadata to store in the future.
 
         !!! note
@@ -528,7 +530,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if self._stopped:
             raise anyio.ClosedResourceError
-        fut = Future(False, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        fut = Future(retain_metadata, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), fut))
         self._resume()
         return fut
