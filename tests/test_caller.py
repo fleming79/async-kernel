@@ -11,7 +11,7 @@ import anyio
 import anyio.to_thread
 import pytest
 from aiologic import Event
-from aiologic.lowlevel import current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
 from async_kernel.kernelspec import Backend
@@ -607,7 +607,7 @@ class TestCaller:
 
     @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
     async def test_wait(self, caller: Caller, return_when):
-        waiters = [Event() for _ in range(4)]
+        waiters = [create_async_event() for _ in range(4)]
         waiters[0].set()
 
         async def f(i: int):
@@ -616,9 +616,9 @@ class TestCaller:
                 if i == 1:
                     raise RuntimeError
             finally:
-                waiters[i + 1].set()
+                caller.call_soon(waiters[i + 1].set)
 
-        items = [caller.call_later(i * 0.02, f, i) for i in range(3)]
+        items = [caller.call_soon(f, i) for i in range(3)]
         done, pending = await Caller.wait(items, return_when=return_when)
         match return_when:
             case "FIRST_COMPLETED":
