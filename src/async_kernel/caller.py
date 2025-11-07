@@ -873,8 +873,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             1. Pass a generator if you wish to limit the number future jobs when calling to_thread/to_task etc.
             2. Pass a container with all [Futures][async_kernel.caller.Future] when the limiter is not relevant.
         """
-        resume_event = REvent()
-        future_done_event = REvent()
+        resume = noop
+        future_ready = noop
         done_futures: deque[Future[T]] = deque()
         futures: set[Future[T]] = set()
         done = False
@@ -886,10 +886,10 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         def future_done(fut: Future[T]) -> None:
             done_futures.append(fut)
-            future_done_event.set()
+            future_ready()
 
         async def iter_items():
-            nonlocal done
+            nonlocal done, resume
             gen = items if isinstance(items, AsyncGenerator) else iter(items)
             try:
                 while True:
@@ -899,15 +899,18 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not fut.done():
                         futures.add(fut)
                         if max_concurrent_ and (len(futures) == max_concurrent_):
-                            resume_event.clear()
-                            await resume_event
+                            event = create_async_event()
+                            resume = event.set
+                            if len(futures) == max_concurrent_:
+                                await event
+                            resume = noop
 
             except (StopAsyncIteration, StopIteration):
                 return
             finally:
                 done = True
-                resume_event.set()
-                future_done_event.set()
+                resume()
+                future_ready()
 
         fut_ = cls().call_soon(iter_items)
         try:
@@ -919,11 +922,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                     await fut.wait(result=False)
                     yield fut
                 else:
-                    if len(futures) < max_concurrent_:
-                        resume_event.set()
-                    future_done_event.clear()
-                    await future_done_event
-
+                    if max_concurrent_ and len(futures) < max_concurrent_:
+                        resume()
+                    event = create_async_event()
+                    future_ready = event.set
+                    if not done or futures:
+                        await event
+                    future_ready = noop
         finally:
             fut_.cancel()
             for fut in futures:
