@@ -371,10 +371,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             while not self._stopped:
                 if not self._queue:
                     event = create_async_event()
+                    self._resume = event.set
                     if not self._stopped and not self._queue:
-                        self._resume = event.set
                         await event
-                        self._resume = noop
+                    self._resume = noop
                 while not self._stopped and self._queue:
                     item = self._queue.popleft()
                     if isinstance(item, Callable):
