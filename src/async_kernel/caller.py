@@ -501,7 +501,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         args: tuple,
         kwargs: dict,
         context: contextvars.Context | None = None,
-        retain_metadata=False,
+        retain_metadata: bool = False,
         **metadata: Any,
     ) -> Future[T]:
         """
