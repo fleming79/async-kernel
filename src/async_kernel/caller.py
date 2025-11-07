@@ -54,9 +54,11 @@ class Future(Awaitable[T]):
     """
     A class representing a future result modelled on [asyncio.Future][].
 
-    This class provides an anyio compatible Future primitive. It is designed
-    to work with `Caller` to enable thread-safe calling, setting, awaiting and
-    cancelling execution results.
+    This class provides an anyio compatible Future primitive. It is thread-safe for:
+    - `fut = Future()`
+    - `await fut`
+    - `fut.wait()`
+    - `fut.set()`
     """
 
     _cancelled = False
@@ -64,12 +66,13 @@ class Future(Awaitable[T]):
     _exception = None
     _done = False
     _result: T
+    "A flag to indicate if the metadata should be deleted after the result is set."
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
-    def __init__(self, **metadata) -> None:
-        self._done_callbacks = []
-        self._metadata = metadata
-        self._done_event = Event()
+    def __init__(self, retain_metadata=True, /, **metadata) -> None:
+        self._done_callbacks: deque[Callable[[Self], Any]] = deque()
+        self._metadata: dict[str, Any] = metadata
+        self._retain_metadata = retain_metadata
 
     @override
     def __repr__(self) -> str:
@@ -104,7 +107,8 @@ class Future(Awaitable[T]):
                 cb(self)
             except Exception:
                 pass
-        self._done_event.set()
+        if not self._retain_metadata:
+            del self._metadata
 
     def _make_cancelled_error(self) -> FutureCancelledError:
         return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
@@ -112,33 +116,12 @@ class Future(Awaitable[T]):
     @property
     def metadata(self) -> dict[str, Any]:
         """
-        A dict provided to store metadata with the Future until it is done.
-
-        !!! info
-            The metadata is used when forming the representation of the Future.
-
-        !!! example
-
-            === "At init"
-
-                ```python
-                fut = Future(name="My future")
-                ```
-
-            === "On the instance"
-
-                ```python
-                fut = Caller().call_soon(anyio.sleep, 0)
-                fut.metadata.update(name="My future")
-                ```
-
-        !!! info
-
-            A `Future` returned by methods of [Caller][async_kernel.caller.Caller] stores the function and call arguments
-            in the futures metedata. It also adds a *done callback* using [add_done_callback][async_kernel.caller.Future.add_done_callback]
-            which clears the Future's metadata to avoid memory leaks.
+        A dict of metadata passed when creating the Future.
         """
-        return self._metadata
+        try:
+            return self._metadata
+        except Exception:
+            return {}
 
     if TYPE_CHECKING:
 
@@ -160,9 +143,12 @@ class Future(Awaitable[T]):
             result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [async_kernel.caller.Future.result][]).
         """
         try:
-            if not self._done_event:
+            if not self._done or self._done_callbacks:
+                event = create_async_event()
+                self._done_callbacks.appendleft(lambda _: event.set())
                 with anyio.fail_after(timeout):
-                    await self._done_event
+                    if not self._done or self._done_callbacks:
+                        await event
             return self.result() if result else None
         finally:
             if not self.done() and not shield:
@@ -542,16 +528,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if self._stopped:
             raise anyio.ClosedResourceError
-        fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        fut.add_done_callback(self._on_call_done)
+        fut = Future(False, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), fut))
         self._resume()
         return fut
-
-    @staticmethod
-    def _on_call_done(fut: Future):
-        #  Avoid memory leaks
-        fut.metadata.clear()
 
     def call_later(
         self,
