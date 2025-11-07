@@ -17,7 +17,7 @@ from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, overload
 
 import anyio
-from aiologic import Event, REvent
+from aiologic import Event
 from aiologic.lowlevel import create_async_event, current_async_library
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
@@ -633,11 +633,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         key = hash(func)
         if not (fut_ := self._queue_map.get(key)):
             queue = deque()
-            event_added = REvent()
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
-            async def queue_loop(key: int, queue: deque, event_added: REvent) -> None:
+            async def queue_loop(key: int, queue: deque) -> None:
                 fut = self.current_future()
                 assert fut
                 try:
@@ -655,14 +654,19 @@ class Caller(anyio.AsyncContextManagerMixin):
                             finally:
                                 func_ = None
                         else:
-                            event_added.clear()
-                            await event_added
+                            event = create_async_event()
+                            fut.metadata["resume"] = event.set
+                            if not queue:
+                                await event
+                            fut.metadata["resume"] = noop
+
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue, event_added=event_added)
+            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue)
         fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
-        fut_.metadata["kwargs"]["event_added"].set()
+        if resume := fut_.metadata.get("resume"):
+            resume()
 
     def queue_close(self, func: Callable | int) -> None:
         """
