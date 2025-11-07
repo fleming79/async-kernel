@@ -42,6 +42,10 @@ truncated_rep.maxother = 100
 truncated_rep.fillvalue = "…"
 
 
+def noop():
+    pass
+
+
 class FutureCancelledError(anyio.ClosedResourceError):
     "Used to indicate a [Future][async_kernel.caller.Future] is cancelled."
 
@@ -261,10 +265,6 @@ class Future(Awaitable[T]):
         self._canceller = canceller
         if self.cancelled():
             self.cancel()
-
-
-def noop():
-    pass
 
 
 class Caller(anyio.AsyncContextManagerMixin):
