@@ -52,13 +52,7 @@ class InvalidStateError(RuntimeError):
 
 class Future(Awaitable[T]):
     """
-    A class representing a future result modelled on [asyncio.Future][].
-
-    This class provides an anyio compatible Future primitive. It is thread-safe for:
-    - `fut = Future()`
-    - `await fut`
-    - `fut.wait()`
-    - `fut.set()`
+    A class representing a thread-safe future result modelled on [asyncio.Future][].
     """
 
     _cancelled = False
