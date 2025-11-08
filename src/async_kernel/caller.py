@@ -365,9 +365,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         socket = Context.instance().socket(SocketType.PUB)
         socket.linger = 500
         socket.connect(self.iopub_url)
+        self.iopub_sockets[self.thread] = socket
+        task_status.started()
         try:
-            self.iopub_sockets[self.thread] = socket
-            task_status.started()
             while not self._stopped:
                 if not self._queue:
                     event = create_async_event()
@@ -377,7 +377,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self._resume = noop
                 while not self._stopped and self._queue:
                     item = self._queue.popleft()
-                    if isinstance(item, Callable):
+                    if callable(item):
                         try:
                             result = item()
                             if inspect.iscoroutine(result):
@@ -655,7 +655,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if not queue:
                                 await event
                             fut.metadata["resume"] = noop
-
                 finally:
                     self._queue_map.pop(key)
 
