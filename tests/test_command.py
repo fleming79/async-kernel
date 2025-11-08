@@ -102,6 +102,8 @@ def test_start_kernel_success(monkeypatch, capsys):
     async def wait_exit():
         nonlocal started
         started = True
+        with pytest.raises(RuntimeError):
+            async_kernel.Kernel().run()
 
     with pytest.raises(SystemExit) as e:
         command_line(wait_exit)

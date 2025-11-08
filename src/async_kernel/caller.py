@@ -828,7 +828,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if backend_options is NoValue:
             backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
         ready_event = Event()
-        thread = threading.Thread(target=async_kernel_caller, name=name or None, daemon=True)
+        thread = threading.Thread(target=async_kernel_caller, name=name or None)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
         thread.start()
         ready_event.wait()

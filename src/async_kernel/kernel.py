@@ -62,7 +62,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Generator, Iterable
+    from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable
     from types import CoroutineType, FrameType
 
     from IPython.core.interactiveshell import ExecutionResult
@@ -459,6 +459,37 @@ class Kernel(HasTraits):
             "debugger": not utils.LAUNCHED_BY_DEBUGPY,
             "kernel_name": self.kernel_name,
         }
+
+    def run(self, wait_exit: Callable[[], Awaitable] = anyio.sleep_forever, /):
+        """
+        Run the kernel (blocking).
+
+        Args:
+            wait_exit: The kernel will stop when the awaitable is complete.
+        """
+        if getattr(self, "_started", False):
+            raise RuntimeError
+        self._started = True
+
+        async def _run() -> None:
+            async with self:
+                with contextlib.suppress(anyio.get_cancelled_exc_class()):
+                    await wait_exit()
+
+        try:
+            backend = Backend.trio if "trio" in self.kernel_name.lower() else Backend.asyncio
+            anyio.run(_run, backend=backend, backend_options=self.anyio_backend_options.get(backend))
+        except KeyboardInterrupt:
+            pass
+        except BaseException as e:
+            traceback.print_exception(e, file=sys.stderr)
+            if sys.__stderr__ is not sys.stderr:
+                traceback.print_exception(e, file=sys.__stderr__)
+            sys.exit(1)
+        else:
+            sys.exit(0)
+        finally:
+            self.stop()
 
     @staticmethod
     def stop() -> None:
