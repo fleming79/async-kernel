@@ -605,16 +605,16 @@ class Kernel(HasTraits):
         def heartbeat():
             socket: Socket = Context.instance().socket(zmq.ROUTER)
             with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.heartbeat, socket):
-                ready_event.set()
+                ready.set()
                 try:
                     zmq.proxy(socket, socket)
                 except zmq.ContextTerminated:
                     return
 
-        ready_event = Event()
+        ready = Event()
         heartbeat_thread = threading.Thread(target=heartbeat, name="heartbeat", daemon=True)
         heartbeat_thread.start()
-        await ready_event
+        await ready
 
     async def _start_iopub_proxy(self) -> None:
         """Provide an io proxy."""
@@ -628,16 +628,16 @@ class Kernel(HasTraits):
             frontend.bind(Caller.iopub_url)
             iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
             with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.iopub, iopub_socket):
-                ready_event.set()
+                ready.set()
                 try:
                     zmq.proxy(frontend, iopub_socket)
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        ready_event = Event()
+        ready = Event()
         iopub_thread = threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True)
         iopub_thread.start()
-        await ready_event
+        await ready
 
     @contextlib.contextmanager
     def _iopub(self):
