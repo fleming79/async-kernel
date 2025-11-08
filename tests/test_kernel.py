@@ -356,7 +356,7 @@ async def test_interrupt_request(client, kernel: Kernel):
 async def test_interrupt_request_async_request(subprocess_kernels_client):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
-    msg_id = client.execute(f"await anyio.sleep({utils.TIMEOUT * 4})")
+    msg_id = client.execute(f"import anyio;await anyio.sleep({utils.TIMEOUT * 4})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
     await anyio.sleep(0.5)
