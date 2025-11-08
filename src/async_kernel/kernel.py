@@ -310,17 +310,16 @@ class Kernel(HasTraits):
         return instance  # pyright: ignore[reportReturnType]
 
     def __init__(self, settings: dict | None = None, /) -> None:
-        if self._initialised:
-            return  # Only initialize once
-        self._initialised = True
-        super().__init__()
-        sys.excepthook = self.excepthook
-        sys.unraisablehook = self.unraisablehook
-        signal.signal(signal.SIGINT, self._signal_handler)
-        if not os.environ.get("MPLBACKEND"):
-            os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
-        # setting get loaded in `_validate_settings`
-        self._settings = settings or {}
+        if not self._initialised:
+            self._initialised = True
+            super().__init__()
+            sys.excepthook = self.excepthook
+            sys.unraisablehook = self.unraisablehook
+            signal.signal(signal.SIGINT, self._signal_handler)
+            if not os.environ.get("MPLBACKEND"):
+                os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+        if settings:
+            self.load_settings(settings)
 
     @override
     def __repr__(self) -> str:
@@ -430,13 +429,6 @@ class Kernel(HasTraits):
     def _validate_connection_file(self, proposal) -> Path:
         return pathlib.Path(proposal.value)
 
-    @traitlets.validate("_settings")
-    def _validate_settings(self, proposal) -> dict[str, Any]:
-        settings = self._settings or {"kernel_name": self.kernel_name}
-        for k, v in proposal.value.items():
-            settings |= utils.setattr_nested(self, k, v)
-        return settings
-
     @property
     def settings(self) -> dict[str, Any]:
         return {k: getattr(self, k) for k in ("kernel_name", "connection_file")} | self._settings
@@ -458,6 +450,25 @@ class Kernel(HasTraits):
             "debugger": not utils.LAUNCHED_BY_DEBUGPY,
             "kernel_name": self.kernel_name,
         }
+
+    def load_settings(self, settings: dict[str, Any]) -> None:
+        """
+        Load settings into the kernel.
+
+        Permitted until the kernel async context has been entered.
+
+        Args:
+            settings:
+                key: dotted.path.of.attribute.
+                value: The value to set.
+        """
+        if self._sockets:
+            msg = "It is too late to load settings!"
+            raise RuntimeError(msg)
+        settings_ = self._settings or {"kernel_name": self.kernel_name}
+        for k, v in settings.items():
+            settings_ |= utils.setattr_nested(self, k, v)
+        self._settings = settings_
 
     def run(self, wait_exit: Callable[[], Awaitable] = anyio.sleep_forever, /):
         """
