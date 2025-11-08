@@ -25,6 +25,8 @@ async def test_start_kernel_in_context(anyio_backend, kernel_name):
         with pytest.raises(RuntimeError, match="Already started"):
             async with kernel:
                 pass
+        with pytest.raises(RuntimeError):
+            Kernel({"invalid": None})
         # Test prevents binding socket more than once.
         with (
             pytest.raises(RuntimeError, match="is already loaded"),
