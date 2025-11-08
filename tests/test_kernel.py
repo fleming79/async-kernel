@@ -77,7 +77,7 @@ async def test_iopub(kernel, mode: Literal["direct", "proxy"]) -> None:
     try:
         time.sleep(0.05)
         if mode == "proxy":
-            socket = Caller.iopub_sockets[threading.current_thread()]
+            socket = Caller.iopub_sockets[kernel.control_thread_caller.thread]
         for i in range(n):
             socket.send_multipart([b"0", f"{i}".encode()])
         thread.join()

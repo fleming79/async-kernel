@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import sys
+import traceback
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
@@ -139,7 +141,18 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
             settings.pop("connection_file", None)
         factory: KernelFactoryType = import_kernel_factory(getattr(args, "kernel_factory", ""))
         kernel: Kernel = factory(settings)
-        kernel.run(wait_exit_context)
+        try:
+            kernel.run(wait_exit_context)
+        except KeyboardInterrupt:
+            pass
+        except BaseException as e:
+            traceback.print_exception(e, file=sys.stderr)
+            if sys.__stderr__ is not sys.stderr:
+                traceback.print_exception(e, file=sys.__stderr__)
+            sys.exit(1)
+        else:
+            sys.exit(0)
+
     # Print help
     else:
         parser.print_help()

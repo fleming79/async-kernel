@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import threading
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
@@ -35,8 +36,8 @@ def transport():
     return "ipc" if sys.platform == "linux" else "tcp"
 
 
-@pytest.fixture(scope="module")
-async def kernel(anyio_backend, transport: str, tmp_path_factory):
+@pytest.fixture(scope="module", params=["MainThread", "ShellThread"])
+async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     # Set a blank connection_file
     connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
@@ -44,8 +45,18 @@ async def kernel(anyio_backend, transport: str, tmp_path_factory):
     kernel.connection_file = connection_file
     os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
     kernel.transport = transport
-    async with kernel:
-        yield kernel
+    if request.param == "MainThread":
+        async with kernel:
+            yield kernel
+    else:
+        thread = threading.Thread(target=kernel.run, name="ShellThread")
+        thread.start()
+        kernel.event_started.wait()
+        try:
+            yield kernel
+        finally:
+            kernel.stop()
+            thread.join()
 
 
 @pytest.fixture(scope="module")

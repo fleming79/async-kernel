@@ -312,7 +312,6 @@ class Kernel(HasTraits):
     def __init__(self, settings: dict | None = None, /) -> None:
         if self._initialised:
             return  # Only initialize once
-        assert threading.current_thread() is threading.main_thread(), "The kernel must start in the main thread."
         self._initialised = True
         super().__init__()
         sys.excepthook = self.excepthook
@@ -466,6 +465,13 @@ class Kernel(HasTraits):
 
         Args:
             wait_exit: The kernel will stop when the awaitable is complete.
+
+        !!! warning
+
+            Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
+            1. Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
+            2. Some libraries may assume the call is occurring in the 'MainThread'.
+            3. If there is an asyncio or trio event loop already running in the 'MainThread. Simply use `async with kernel` instead.
         """
         if getattr(self, "_started", False):
             raise RuntimeError
@@ -479,15 +485,6 @@ class Kernel(HasTraits):
         try:
             backend = Backend.trio if "trio" in self.kernel_name.lower() else Backend.asyncio
             anyio.run(_run, backend=backend, backend_options=self.anyio_backend_options.get(backend))
-        except KeyboardInterrupt:
-            pass
-        except BaseException as e:
-            traceback.print_exception(e, file=sys.stderr)
-            if sys.__stderr__ is not sys.stderr:
-                traceback.print_exception(e, file=sys.__stderr__)
-            sys.exit(1)
-        else:
-            sys.exit(0)
         finally:
             self.stop()
 
