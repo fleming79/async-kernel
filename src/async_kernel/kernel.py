@@ -62,7 +62,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Generator, Iterable
+    from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable
     from types import CoroutineType, FrameType
 
     from IPython.core.interactiveshell import ExecutionResult
@@ -165,52 +165,42 @@ class KernelInterruptError(InterruptedError):
 
 class Kernel(HasTraits):
     """
-    An asynchronous kernel with an anyio backend providing an IPython AsyncInteractiveShell with zmq sockets.
+    A Jupyter kernel that supports [concurrent execution][async_kernel.Kernel.get_run_mode] providing an
+    [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
-    Only one instance will be created/run at a time. The instance can be obtained with `Kernel()` or [async_kernel.utils.get_kernel].
+    !!! info
 
-    To start the kernel:
+        Only one instance of a kernel is created at a time per subprocess. The instance can be obtained with `Kernel()` or [async_kernel.utils.get_kernel].
 
+    ## Starting the kernel
 
-    === "Shell"
+    The kernel should appear in the list of kernels just as other kernels are. Variants of the kernel
+    can with custom configuration can be added at the [command line][async_kernel.command.command_line].
 
-        At the command prompt.
+    **From the shell**
 
-        ``` shell
-        async-kernel -f .
-        ```
+    ``` shell
+    async-kernel -f .
+    ```
 
-        See also:
+    **Blocking**
 
-        -
+    ```python
+    Kernel().run()
+    ```
 
-    === "Normal"
+    **Inside a coroutine**
 
-        ```python
-        from async_kernel.__main__ import main
+    ```python
+    async with Kernel():
+        await anyio.sleep_forever()
+    ```
 
-        main()
-        ```
+    **Origins**
 
-    === "start (`classmethod`)"
-
-        ```python
-        Kernel.start()
-        ```
-
-    === "Asynchronously inside anyio event loop"
-
-        ```python
-        kernel = Kernel()
-        async with kernel:
-            await anyio.sleep_forever()
-        ```
-
-        ???+ tip
-
-            This is a convenient way to start a kernel for debugging.
-
-    Origins: [IPyKernel Kernel][ipykernel.kernelbase.Kernel], [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp] &  [IPyKernel IPythonKernel][ipykernel.ipkernel.IPythonKernel]
+    - [IPyKernel Kernel][ipykernel.kernelbase.Kernel]
+    - [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp]
+    - [IPyKernel IPythonKernel][ipykernel.ipkernel.IPythonKernel]
     """
 
     _instance: Self | None = None
@@ -226,7 +216,7 @@ class Kernel(HasTraits):
     anyio_backend = UseEnum(Backend)
     ""
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
-    "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`"
+    "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
 
     concurrency_mode = UseEnum(KernelConcurrencyMode)
     """
@@ -238,7 +228,7 @@ class Kernel(HasTraits):
     help_links = Tuple()
     ""
     quiet = traitlets.Bool(True)
-    "Only send stdout/stderr to output stream"
+    "Only send stdout/stderr to output stream."
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
     """
     JSON file in which to store connection info [default: kernel-<pid>.json]
@@ -310,18 +300,16 @@ class Kernel(HasTraits):
         return instance  # pyright: ignore[reportReturnType]
 
     def __init__(self, settings: dict | None = None, /) -> None:
-        if self._initialised:
-            return  # Only initialize once
-        assert threading.current_thread() is threading.main_thread(), "The kernel must start in the main thread."
-        self._initialised = True
-        super().__init__()
-        sys.excepthook = self.excepthook
-        sys.unraisablehook = self.unraisablehook
-        signal.signal(signal.SIGINT, self._signal_handler)
-        if not os.environ.get("MPLBACKEND"):
-            os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
-        # setting get loaded in `_validate_settings`
-        self._settings = settings or {}
+        if not self._initialised:
+            self._initialised = True
+            super().__init__()
+            sys.excepthook = self.excepthook
+            sys.unraisablehook = self.unraisablehook
+            signal.signal(signal.SIGINT, self._signal_handler)
+            if not os.environ.get("MPLBACKEND"):
+                os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+        if settings:
+            self.load_settings(settings)
 
     @override
     def __repr__(self) -> str:
@@ -330,7 +318,7 @@ class Kernel(HasTraits):
 
     async def __aenter__(self) -> Self:
         """
-        Start the kernel.
+        Start the kernel in the current asynchronous context.
 
         - Only one instance can (should) run at a time.
         - An instance can only be started once.
@@ -339,7 +327,7 @@ class Kernel(HasTraits):
         !!! example
 
             ```python
-            async with Kerne() as kernel:
+            async with Kernel() as kernel:
                 await anyio.sleep_forever()
             ```
         """
@@ -396,7 +384,7 @@ class Kernel(HasTraits):
         return (
             {
                 "text": "Async Kernel Reference ",
-                "url": "TODO",
+                "url": "https://fleming79.github.io/async-kernel/",
             },
             {
                 "text": "IPython Reference",
@@ -431,15 +419,9 @@ class Kernel(HasTraits):
     def _validate_connection_file(self, proposal) -> Path:
         return pathlib.Path(proposal.value)
 
-    @traitlets.validate("_settings")
-    def _validate_settings(self, proposal) -> dict[str, Any]:
-        settings = self._settings or {"kernel_name": self.kernel_name}
-        for k, v in proposal.value.items():
-            settings |= utils.setattr_nested(self, k, v)
-        return settings
-
     @property
     def settings(self) -> dict[str, Any]:
+        "Settings that have been set to customise the behaviour of the kernel."
         return {k: getattr(self, k) for k in ("kernel_name", "connection_file")} | self._settings
 
     @property
@@ -449,6 +431,7 @@ class Kernel(HasTraits):
 
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
+        ""
         return {
             "protocol_version": async_kernel.kernel_protocol_version,
             "implementation": "async_kernel",
@@ -460,10 +443,59 @@ class Kernel(HasTraits):
             "kernel_name": self.kernel_name,
         }
 
+    def load_settings(self, settings: dict[str, Any]) -> None:
+        """
+        Load settings into the kernel.
+
+        Permitted until the kernel async context has been entered.
+
+        Args:
+            settings:
+                key: dotted.path.of.attribute.
+                value: The value to set.
+        """
+        if self._sockets:
+            msg = "It is too late to load settings!"
+            raise RuntimeError(msg)
+        settings_ = self._settings or {"kernel_name": self.kernel_name}
+        for k, v in settings.items():
+            settings_ |= utils.setattr_nested(self, k, v)
+        self._settings = settings_
+
+    def run(self, wait_exit: Callable[[], Awaitable] = anyio.sleep_forever, /):
+        """
+        Run the kernel (blocking).
+
+        Args:
+            wait_exit: The kernel will stop when the awaitable is complete.
+
+        !!! warning
+
+            Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
+
+            - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
+            - Some libraries may assume the call is occurring in the 'MainThread'.
+            - If there is an asyncio or trio event loop already running in the 'MainThread. Simply use `async with kernel` instead.
+        """
+        if getattr(self, "_started", False):
+            raise RuntimeError
+        self._started = True
+
+        async def _run() -> None:
+            async with self:
+                with contextlib.suppress(anyio.get_cancelled_exc_class()):
+                    await wait_exit()
+
+        try:
+            backend = Backend.trio if "trio" in self.kernel_name.lower() else Backend.asyncio
+            anyio.run(_run, backend=backend, backend_options=self.anyio_backend_options.get(backend))
+        finally:
+            self.stop()
+
     @staticmethod
     def stop() -> None:
         """
-        Stop the running kernel.
+        A [staticmethod][] to stop the running kernel.
 
         Once a kernel is stopped; that instance of the kernel cannot be restarted.
         Instead, a new kernel must be started.
@@ -520,7 +552,8 @@ class Kernel(HasTraits):
     def _bind_socket(self, socket_id: SocketID, socket: zmq.Socket) -> Generator[None, Any, None]:
         """
         Bind a zmq.Socket storing a reference to the socket and the port
-        details and closing the socket on leaving the context."""
+        details and closing the socket on leaving the context.
+        """
         if socket_id in self._sockets:
             msg = f"{socket_id=} is already loaded"
             raise RuntimeError(msg)
@@ -605,16 +638,16 @@ class Kernel(HasTraits):
         def heartbeat():
             socket: Socket = Context.instance().socket(zmq.ROUTER)
             with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.heartbeat, socket):
-                ready_event.set()
+                ready.set()
                 try:
                     zmq.proxy(socket, socket)
                 except zmq.ContextTerminated:
                     return
 
-        ready_event = Event()
+        ready = Event()
         heartbeat_thread = threading.Thread(target=heartbeat, name="heartbeat", daemon=True)
         heartbeat_thread.start()
-        await ready_event
+        await ready
 
     async def _start_iopub_proxy(self) -> None:
         """Provide an io proxy."""
@@ -628,16 +661,16 @@ class Kernel(HasTraits):
             frontend.bind(Caller.iopub_url)
             iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
             with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.iopub, iopub_socket):
-                ready_event.set()
+                ready.set()
                 try:
                     zmq.proxy(frontend, iopub_socket)
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        ready_event = Event()
+        ready = Event()
         iopub_thread = threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True)
         iopub_thread.start()
-        await ready_event
+        await ready
 
     @contextlib.contextmanager
     def _iopub(self):
@@ -824,7 +857,8 @@ class Kernel(HasTraits):
     ]:
         """
         Generates a dictionary containing all combinations of SocketID, KernelConcurrencyMode, and MsgType,
-        along with their corresponding RunMode (if available)."""
+        along with their corresponding RunMode (if available).
+        """
         data: list[Any] = []
         for socket_id in socket_ids:
             for concurrency_mode in KernelConcurrencyMode:
@@ -1138,7 +1172,8 @@ class Kernel(HasTraits):
             return json.load(f)
 
     def get_parent(self) -> Message[dict[str, Any]] | None:
-        """A convenience method to access the 'message' in the current context if there is one.
+        """
+        A convenience method to access the 'message' in the current context if there is one.
 
         'parent' is the parameter name uses in [Session.send][jupyter_client.session.Session.send].
 

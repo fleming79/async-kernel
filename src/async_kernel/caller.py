@@ -114,7 +114,12 @@ class Future(Awaitable[T]):
     @property
     def metadata(self) -> dict[str, Any]:
         """
-        A dict of metadata passed when creating the Future.
+        The metadata passed as keyword arguments to the Future during creation.
+
+        !!! warning
+
+            Metadata is deleted when `False` is passed as the first argument when the Future is created.
+            This is the default behaviour for Futures returned by [][async_kernel.Caller].
         """
         try:
             return self._metadata
@@ -365,9 +370,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         socket = Context.instance().socket(SocketType.PUB)
         socket.linger = 500
         socket.connect(self.iopub_url)
+        self.iopub_sockets[self.thread] = socket
+        task_status.started()
         try:
-            self.iopub_sockets[self.thread] = socket
-            task_status.started()
             while not self._stopped:
                 if not self._queue:
                     event = create_async_event()
@@ -377,7 +382,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self._resume = noop
                 while not self._stopped and self._queue:
                     item = self._queue.popleft()
-                    if isinstance(item, Callable):
+                    if callable(item):
                         try:
                             result = item()
                             if inspect.iscoroutine(result):
@@ -458,7 +463,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._stopped
 
     def get_runner(self, *, started: Callable[[], None] | None = None):
-        """The preferred way to run the caller loop.
+        """
+        The preferred way to run the caller loop.
 
         !!! tip
 
@@ -655,7 +661,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if not queue:
                                 await event
                             fut.metadata["resume"] = noop
-
                 finally:
                     self._queue_map.pop(key)
 
@@ -829,7 +834,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if backend_options is NoValue:
             backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
         ready_event = Event()
-        thread = threading.Thread(target=async_kernel_caller, name=name or None, daemon=True)
+        thread = threading.Thread(target=async_kernel_caller, name=name or None)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
         thread.start()
         ready_event.wait()

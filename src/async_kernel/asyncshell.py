@@ -36,7 +36,8 @@ class AsyncDisplayHook(DisplayHook):
     A displayhook subclass that publishes data using ZeroMQ.
 
     This is intended to work with an InteractiveShell instance. It sends a dict of different
-    representations of the object."""
+    representations of the object.
+    """
 
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
     content: Dict[str, Any] = Dict()
@@ -140,7 +141,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
 
 class AsyncInteractiveShell(InteractiveShell):
     """
-    An [IPython InteractiveShell][IPython.core.interactiveshell.InteractiveShell] modified to work with [Async kernel][async_kernel.Kernel].
+    An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.Kernel].
 
     !!! note "Notable differences"
 
@@ -149,7 +150,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
             [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
         - Not all features are support (see "not-supported" features listed below).
-
+        - Gui event loops(tk, qt, ...) are not presently supported.
     """
 
     displayhook_class = Type(AsyncDisplayHook)
@@ -302,6 +303,13 @@ class AsyncInteractiveShell(InteractiveShell):
     def enable_gui(self, gui=None) -> None:
         """
         Enable a given gui.
+
+        **Supported guis.**
+
+        - [x] inline
+        - [x] ipympl
+        - [ ] tk
+        - [ ] qt
         """
         supported_no_eventloop = [None, "inline", "ipympl"]
         if gui not in supported_no_eventloop:

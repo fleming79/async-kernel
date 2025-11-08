@@ -55,20 +55,20 @@ uv run pytest -vv --cov --cov-fail-under=100
 
 ### Pre-commit
 
-Pre-commit runs a number of checks on the code and will also re-format it.
+Pre-commit(prek) runs a number of checks on the code and will also re-format it.
 
 Pre-commit will run automatically on submission of a PR but you can also run it locally as a tool with:
 
 === "Changed files"
 
     ```bash
-    uvx pre-commit run
+    uvx prek run
     ```
 
 === "All files"
 
     ```bash
-    uvx pre-commit run -a
+    uvx prek run -a
     ```
 
 ### Type checking
@@ -196,7 +196,7 @@ to PyPi. If it is published to PyPI successfully, it will also create a Github r
 You can run tests locally to see if there is anything that might be caught by CI.
 
 ```bash
-uvx pre-commit run -a
+uvx prek run -a
 uv run pytest -vv --cov --cov-fail-under=100
 uv run basedpyright
 uv run mkdocs build -s
