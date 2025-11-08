@@ -114,7 +114,12 @@ class Future(Awaitable[T]):
     @property
     def metadata(self) -> dict[str, Any]:
         """
-        A dict of metadata passed when creating the Future.
+        The metadata passed as keyword arguments to the Future during creation.
+
+        !!! warning
+
+            Metadata is deleted when `False` is passed as the first argument when the Future is created.
+            This is the default behaviour for Futures returned by [][async_kernel.Caller].
         """
         try:
             return self._metadata
@@ -458,7 +463,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._stopped
 
     def get_runner(self, *, started: Callable[[], None] | None = None):
-        """The preferred way to run the caller loop.
+        """
+        The preferred way to run the caller loop.
 
         !!! tip
 
