@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import sys
 import threading
 from contextvars import ContextVar
@@ -18,7 +17,6 @@ if TYPE_CHECKING:
     from async_kernel.typing import Job
 
 __all__ = [
-    "do_not_debug_this_thread",
     "get_execute_request_timeout",
     "get_execution_count",
     "get_job",
@@ -36,21 +34,10 @@ _execution_count_var: ContextVar[int] = ContextVar("execution_count")
 _execute_request_timeout: ContextVar[float | None] = ContextVar("execute_request_timeout", default=None)
 
 
-def mark_thread_pydev_do_not_trace(thread: threading.Thread, *, remove=False):
+def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False):
     """Modifies the given thread's attributes to hide or unhide it from the debugger (e.g., debugpy)."""
+    thread = thread or threading.current_thread()
     thread.pydev_do_not_trace = not remove  # pyright: ignore[reportAttributeAccessIssue]
-
-
-@contextlib.contextmanager
-def do_not_debug_this_thread():
-    "A context to mark the thread for debugpy to not debug."
-    if not LAUNCHED_BY_DEBUGPY:
-        mark_thread_pydev_do_not_trace(threading.current_thread())
-    try:
-        yield
-    finally:
-        if not LAUNCHED_BY_DEBUGPY:
-            mark_thread_pydev_do_not_trace(threading.current_thread(), remove=True)
 
 
 def get_kernel() -> Kernel:

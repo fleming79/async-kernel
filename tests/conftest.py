@@ -106,7 +106,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
         finally:
             client.shutdown()
             client.stop_channels()
-            assert process.wait(10) == 0
+            assert process.wait(utils.TIMEOUT) == 0
     finally:
         if process.returncode is None:
             process.kill()

@@ -474,11 +474,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise RuntimeError
 
         async def run_caller_in_context() -> None:
-            with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                async with self:
-                    if started:
-                        started()
-                    await anyio.sleep_forever()
+            async with self:
+                if started:
+                    started()
+                await anyio.sleep_forever()
 
         return run_caller_in_context
 
@@ -741,11 +740,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         A Caller will be created if it isn't found.
 
         Args:
-            options: A dict wht the `name` of the Caller to use and other Options to pass to [async_kernel.caller.Caller.start_new][]
-                should a a new instance is started [^notes].
+            options: Options to pass to [async_kernel.caller.Caller.start_new][].
+                If name is missing on evaluates to `False` it will assume
 
-                [^notes]:  'MainThread' is special name corresponding to the main thread.
-                    A `RuntimeError` will be raised if a Caller does not exist for the main thread.
 
             func: The function.
             *args: Arguments to use with func.
@@ -756,6 +753,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         caller = None
         if not options.get("name"):
+            options = options.copy()
+            options["name"] = None
             try:
                 caller = cls._to_thread_pool.popleft()
             except IndexError:

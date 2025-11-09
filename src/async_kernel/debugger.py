@@ -13,7 +13,7 @@ from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
-from async_kernel import Future, utils
+from async_kernel import Caller, Future, utils
 
 if TYPE_CHECKING:
     from anyio.abc import TaskGroup
@@ -174,11 +174,7 @@ class DebugpyClient(HasTraits):
             import debugpy  # noqa: PLC0415
 
             _host_port = debugpy.listen(0)
-            utils.mark_thread_pydev_do_not_trace(threading.current_thread())
-            for thread in threading.enumerate():
-                if thread.name == "IPythonHistorySavingThread":
-                    thread.pydev_do_not_trace = True  # pyright: ignore[reportAttributeAccessIssue]
-            # This thread can't be stopped by the debugger when debugging
+            utils.mark_thread_pydev_do_not_trace()
         try:
             self.log.debug("++ debugpy socketstream connecting ++")
             async with await anyio.connect_tcp(*_host_port) as socketstream:
@@ -198,6 +194,7 @@ class DebugpyClient(HasTraits):
 class Debugger(HasTraits):
     """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
+    NO_DEBUG = {"IPythonHistorySavingThread"}
     _seq = 0
     breakpoint_list = Dict()
     capabilities = Dict()
@@ -260,7 +257,7 @@ class Debugger(HasTraits):
                         self.stopped_threads.add(thread["id"])
                 self._publish_event(event)
 
-            self.kernel.control_thread_caller.call_soon(_handle_stopped_event)
+            Caller().call_soon(_handle_stopped_event)
             return
 
         if event["event"] == "continued":
@@ -313,9 +310,12 @@ class Debugger(HasTraits):
 
     async def do_initialize(self, msg: DebugMessage, /):
         "Initialize debugpy server starting as required."
+        for thread in threading.enumerate():
+            if thread.name in self.NO_DEBUG:
+                utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
             ready = Event()
-            self.kernel.control_thread_caller.call_soon(self.debugpy_client.connect_tcp_socket, ready)
+            Caller().call_soon(self.debugpy_client.connect_tcp_socket, ready)
             await ready
             # Don't remove leading empty lines when debugging so the breakpoints are correctly positioned
             cleanup_transforms = self.kernel.shell.input_transformer_manager.cleanup_transforms
@@ -568,18 +568,3 @@ class Debugger(HasTraits):
         self.init_event = Event()
         self.breakpoint_list = {}
         return response
-
-    async def disconnect(self):
-        if self.debugpy_client.connected:
-            await self.send_dap_request(
-                {
-                    "type": "request",
-                    "command": "disconnect",
-                    "seq": self.next_seq(),
-                    "arguments": {
-                        "restart": False,
-                        "terminateDebuggee": False,
-                        "suspendDebuggee": False,
-                    },
-                }
-            )
