@@ -146,12 +146,12 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         except KeyboardInterrupt:
             pass
         except BaseException as e:
-            traceback.print_exception(e, file=sys.stderr)
-            if sys.__stderr__ is not sys.stderr:
-                traceback.print_exception(e, file=sys.__stderr__)
-            sys.exit(1)
-        else:
-            sys.exit(0)
+            if "Stopping kernel" not in str(e):
+                traceback.print_exception(e, file=sys.stderr)
+                if sys.__stderr__ is not sys.stderr:
+                    traceback.print_exception(e, file=sys.__stderr__)
+                sys.exit(1)
+        sys.exit(0)
 
     # Print help
     else:

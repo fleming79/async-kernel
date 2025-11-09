@@ -474,11 +474,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise RuntimeError
 
         async def run_caller_in_context() -> None:
-            with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                async with self:
-                    if started:
-                        started()
-                    await anyio.sleep_forever()
+            async with self:
+                if started:
+                    started()
+                await anyio.sleep_forever()
 
         return run_caller_in_context
 

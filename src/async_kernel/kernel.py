@@ -509,21 +509,24 @@ class Kernel(HasTraits):
         self.anyio_backend = Backend(current_async_library())
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:
-                with anyio.CancelScope() as scope:
-                    self._stop = lambda: caller.call_direct(scope.cancel, "Stopping")
-                    self._callers[SocketID.shell] = caller
-                    try:
-                        await self._start_threads_and_open_sockets()
-                        assert len(self._sockets) == len(SocketID)
-                        self._write_connection_file()
-                        print(f"Kernel started: {self!r}")
-                        with self._iopub():
+                self._callers[SocketID.shell] = caller
+                await self._start_threads_and_open_sockets()
+                assert len(self._sockets) == len(SocketID)
+                self._write_connection_file()
+                print(f"Kernel started: {self!r}")
+                with self._iopub():
+                    with anyio.CancelScope() as scope:
+                        self._stop = lambda: caller.call_direct(scope.cancel, "Stopping kernel")
+                        try:
                             self.event_started.set()
                             self.comm_manager.kernel = self
                             yield self
-                    finally:
-                        self.comm_manager.kernel = None
-                        self.event_stopped.set()
+                        except BaseException:
+                            if not scope.cancel_called:
+                                raise
+                        finally:
+                            self.comm_manager.kernel = None
+                            self.event_stopped.set()
         finally:
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
