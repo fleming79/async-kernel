@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import async_kernel
 
+if TYPE_CHECKING:
+    from async_kernel.kernelspec import Backend
 
-async def test_kernel_subclass(anyio_backend):
+
+async def test_kernel_subclass(anyio_backend: Backend):
     # Ensure the subclass correctly overrides the kernel.
     async_kernel.Kernel.stop()
 

@@ -19,6 +19,8 @@ from tests import utils
 if TYPE_CHECKING:
     import pathlib
 
+    from jupyter_client.asynchronous.client import AsyncKernelClient
+
 
 @pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
 def transport(request):
@@ -123,7 +125,7 @@ def test_start_kernel_failure(monkeypatch, capsys, mocker):
     assert e.value.code == 1
 
 
-async def test_subprocess_kernels_client(subprocess_kernels_client, kernel_name, transport):
+async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, kernel_name, transport):
     # Start & Stop a kernel
     backend = Backend.trio if "trio" in kernel_name.lower() else Backend.asyncio
     _, reply = await utils.execute(
