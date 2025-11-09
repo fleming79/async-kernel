@@ -581,12 +581,12 @@ async def test_get_run_mode_tag(client):
     metadata = {"tags": [RunMode.thread]}
     _, content = await utils.execute(
         client,
-        "from async_kernel import utils;run_mode=utils.get_job()['run_mode']",
+        "import threading;thread_name=threading.current_thread().name",
         metadata=metadata,
-        user_expressions={"run_mode": "run_mode"},
+        user_expressions={"thread_name": "thread_name"},
     )
     assert content["status"] == "ok"
-    assert "thread" in content["user_expressions"]["run_mode"]["data"]["text/plain"]
+    assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
 async def test_all_concurrency_run_modes(kernel: Kernel):

@@ -285,9 +285,6 @@ class Job(TypedDict, Generic[T]):
     received_time: float
     "The time the message was received."
 
-    run_mode: RunMode
-    """The run mode."""
-
 
 class ExecuteContent(TypedDict):
     "[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).  see also: [Message][async_kernel.typing.Message]"
