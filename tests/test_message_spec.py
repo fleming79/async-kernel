@@ -100,7 +100,6 @@ async def test_execute_stop_on_error(client):
     assert content["status"] == "ok"
 
 
-
 async def test_user_expressions(client):
     msg_id = client.execute(code="x=1", user_expressions={"foo": "x+1"})
     reply = await utils.get_reply(client, msg_id)  # execute
