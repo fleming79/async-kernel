@@ -133,7 +133,7 @@ def bind_socket(
 
 
 @functools.cache
-def _wrap_handler(
+def wrap_handler(
     runner: Callable[[HandlerType, Job]], handler: HandlerType
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
     """
@@ -144,7 +144,7 @@ def _wrap_handler(
         handler: The handler to which the runner is associated.
 
     Used by:
-        - call[async_kernel.Kernel.handle_message_request][]
+        - call[async_kernel.Kernel.receive_msg_loop][]
     """
 
     @functools.wraps(handler)
@@ -220,9 +220,6 @@ class Kernel(HasTraits):
     concurrency_mode = UseEnum(KernelConcurrencyMode)
     """
     The mode to use when getting the run mode for running the handler of a message request.
-    
-    See also:
-        - [async_kernel.Kernel.handle_message_request][]
     """
     help_links = Tuple()
     ""
@@ -583,7 +580,7 @@ class Kernel(HasTraits):
         async def run_in_shell_event_loop(ready=shell_ready.set):
             stdin_socket = Context.instance().socket(SocketType.ROUTER)
             with self._bind_socket(SocketID.stdin, stdin_socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
-                thread = threading.Thread(target=self._receive_msg_loop, args=(SocketID.shell, ready))
+                thread = threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, ready))
                 thread.start()
                 await anyio.sleep_forever()
 
@@ -597,7 +594,7 @@ class Kernel(HasTraits):
         threading.Thread(target=pub_proxy, name="iopub proxy").start()
         pub_proxy_ready.wait()
 
-        threading.Thread(target=self._receive_msg_loop, args=(SocketID.control, control_ready.set)).start()
+        threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready.set)).start()
         control_ready.wait()
 
         self._callers[SocketID.shell].call_soon(run_in_shell_event_loop)
@@ -702,10 +699,14 @@ class Kernel(HasTraits):
             # Reset IO
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
 
-    def _receive_msg_loop(
+    def receive_msg_loop(
         self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]
     ) -> None:
-        """Receive shell and control messages over zmq sockets."""
+        """
+        Receive shell and control messages over zmq sockets.
+
+        This gets called for both shell and control messages when the kernel is started.
+        """
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
         msg: Message
@@ -725,7 +726,7 @@ class Kernel(HasTraits):
                     if socket_id == SocketID.shell:
                         # Reset the frame to show the main thread is not blocked.
                         self._last_interrupt_frame = None
-                    self.log.debug("*** _receive_msg_loop %s*** %s", socket_id, msg)
+                    self.log.debug("*** receive_msg_loop %s*** %s", socket_id, msg)
                     try:
                         msg_type = MsgType(msg["header"]["msg_type"])
                         handler = self.get_handler(msg_type)
@@ -744,7 +745,7 @@ class Kernel(HasTraits):
                     self.log.debug(
                         "%s  %s run mode %s caller %s handler: %s", socket_id, msg_type, run_mode, caller, handler
                     )
-                    runner = _wrap_handler(self.run_handler, handler)
+                    runner = wrap_handler(self.run_handler, handler)
                     match run_mode:
                         case RunMode.queue:
                             caller.queue_call(runner, job)
@@ -796,8 +797,6 @@ class Kernel(HasTraits):
             case _, SocketID.shell, MsgType.shutdown_request | MsgType.debug_request:
                 msg = f"{msg_type=} not allowed on shell!"
                 raise ValueError(msg)
-            case KernelConcurrencyMode.blocking, _, _:
-                return RunMode.blocking
             case _, SocketID.control, MsgType.execute_request:
                 return RunMode.task
             case _, _, MsgType.execute_request:

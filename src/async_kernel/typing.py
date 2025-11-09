@@ -52,8 +52,7 @@ class SocketID(enum.StrEnum):
 
 class RunMode(enum.StrEnum):
     """
-    An Enum of the [kernel run modes][async_kernel.Kernel.handle_message_request] available for
-    altering how message requests are run.
+    An Enum of the run modes available for altering how message requests are run.
 
     !!! hint "String match options"
 
@@ -120,8 +119,6 @@ class KernelConcurrencyMode(enum.StrEnum):
 
     default = "default"
     "The default concurrency mode"
-    blocking = "blocking"
-    "All handlers are run with the [blocking][async_kernel.typing.RunMode.blocking]."
 
 
 class MsgType(enum.StrEnum):
