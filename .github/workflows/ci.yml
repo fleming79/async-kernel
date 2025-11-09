@@ -61,7 +61,7 @@ jobs:
 
       - name: Run tests with coverage
         timeout-minutes: 5
-        run: uv run pytest --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy  --cov-fail-under=100
+        run: uv run pytest --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy  --cov-fail-under=100 --cov-report markdown-append:$GITHUB_STEP_SUMMARY
 
       - name: Upload coverage reports to Codecov
         if: ${{ !cancelled() }}
