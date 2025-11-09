@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import threading
 from typing import TYPE_CHECKING, cast
 
 import pytest
@@ -13,11 +12,6 @@ if TYPE_CHECKING:
 
 
 class TestUtils:
-    def test_do_not_debug_this_thread(self):
-        with ak_utils.do_not_debug_this_thread():
-            thread = threading.current_thread()
-            assert getattr(thread, "pydev_do_not_trace", None)
-
     async def test_get_job(self, anyio_backend, job: Job[ExecuteContent]) -> None:
         with pytest.raises(LookupError):
             ak_utils._job_var.get()  # pyright: ignore[reportPrivateUsage]

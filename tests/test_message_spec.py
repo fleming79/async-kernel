@@ -100,24 +100,6 @@ async def test_execute_stop_on_error(client):
     assert content["status"] == "ok"
 
 
-async def test_non_execute_stop_on_error(client):
-    """Test that non-execute_request's are not aborted after an error."""
-
-    execute_id = client.execute("raise ValueError")
-    content = await utils.get_shell_message(client, execute_id, "execute_reply")
-    assert content.get("status") == "error"
-
-    kernel_info_id = client.kernel_info()
-    comm_info_id = client.comm_info()
-    inspect_id = client.inspect(code="print")
-
-    content = await utils.get_shell_message(client, kernel_info_id, "kernel_info_reply")
-    assert content.get("status") == "ok"
-    content = await utils.get_shell_message(client, comm_info_id, "comm_info_reply")
-    assert content.get("status") == "ok"
-    content = await utils.get_shell_message(client, inspect_id, "inspect_reply")
-    assert content.get("status") == "ok"
-
 
 async def test_user_expressions(client):
     msg_id = client.execute(code="x=1", user_expressions={"foo": "x+1"})

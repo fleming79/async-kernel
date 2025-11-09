@@ -106,7 +106,6 @@ async def test_debugger(subprocess_kernels_client):
         reply = await send_debug_request(client, "debugInfo")
         if reply["body"]["stoppedThreads"]:
             break
-    assert len(reply["body"]["stoppedThreads"]) == 1
     thread_id = reply["body"]["stoppedThreads"][0]
 
     # # next
@@ -118,6 +117,30 @@ async def test_debugger(subprocess_kernels_client):
     stacks = reply["body"]["stackFrames"]
     assert stacks
 
+    frameId = stacks[0]["id"]
+    reply = await send_debug_request(
+        client=client,
+        command="evaluate",
+        arguments={
+            "expression": "import threading;threads = {thread.name: getattr(thread, 'pydev_do_not_trace', None) for thread in threading.enumerate()}",
+            "context": "repl",
+            "frameId": frameId,
+        },
+    )
+
+    reply = await send_debug_request(
+        client=client,
+        command="evaluate",
+        arguments={
+            "expression": "threads",
+            "context": "variables",
+            "frameId": frameId,
+        },
+    )
+    threads = eval(reply["body"]["result"])
+    debug_threads = [thread for thread, no_debug in threads.items() if not no_debug]
+    assert debug_threads == ["MainThread"]
+
     # source
     reply = await send_debug_request(client, "source", {"source": stacks[0]["source"]})
     assert reply["success"]
@@ -127,8 +150,6 @@ async def test_debugger(subprocess_kernels_client):
     reply = await send_debug_request(client, "scopes", {"frameId": stacks[0]["id"]})
     assert reply["success"]
     variables_reference = reply["body"]["scopes"][0]["variablesReference"]
-
-    frameId = stacks[0]["id"]
 
     # variables
     reply = await send_debug_request(

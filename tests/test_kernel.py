@@ -49,7 +49,7 @@ def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
 
 
 @pytest.mark.parametrize("mode", ["direct", "proxy"])
-async def test_iopub(kernel, mode: Literal["direct", "proxy"]) -> None:
+async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
     def pubio_subscribe():
         """Consume messages."""
         with ctx.socket(zmq.SocketType.SUB) as socket:
@@ -68,16 +68,16 @@ async def test_iopub(kernel, mode: Literal["direct", "proxy"]) -> None:
             assert msg[-1] == b'{"name": "stdout", "text": "done"}'
 
     n = 10
-    socket = kernel._sockets[SocketID.iopub]
+    socket = kernel._sockets[SocketID.iopub]  # pyright: ignore[reportPrivateUsage]
     url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
-    assert url.endswith(str(kernel._ports[SocketID.iopub]))
+    assert url.endswith(str(kernel._ports[SocketID.iopub]))  # pyright: ignore[reportPrivateUsage]
     ctx = zmq.Context()
     thread = threading.Thread(target=pubio_subscribe)
     thread.start()
     try:
         time.sleep(0.05)
         if mode == "proxy":
-            socket = Caller.iopub_sockets[kernel.control_thread_caller.thread]
+            socket = Caller.iopub_sockets[kernel._control_thread_caller.thread]  # pyright: ignore[reportPrivateUsage]
         for i in range(n):
             socket.send_multipart([b"0", f"{i}".encode()])
         thread.join()
@@ -99,7 +99,7 @@ async def test_execute_request_success(client):
 
 
 @pytest.mark.parametrize("quiet", [True, False])
-async def test_simple_print(kernel, client, quiet: bool):
+async def test_simple_print(kernel: Kernel, client, quiet: bool):
     """Simple print statement in kernel."""
     await utils.clear_iopub(client)
     kernel.quiet = quiet
@@ -178,9 +178,9 @@ async def test_input(
     assert text in reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
 
 
-async def test_unraisablehook(kernel, mocker):
+async def test_unraisablehook(kernel: Kernel, mocker):
     handler = logging.Handler()
-    kernel.log.logger.addHandler(handler)
+    kernel.log.logger.addHandler(handler)  # pyright: ignore[reportAttributeAccessIssue]
 
     class Unraiseable:
         def __init__(self) -> None:
@@ -191,9 +191,9 @@ async def test_unraisablehook(kernel, mocker):
             self.object = ""
 
     emit = mocker.patch.object(handler, "emit")
-    kernel.unraisablehook(Unraiseable())
+    kernel.unraisablehook(Unraiseable())  # pyright: ignore[reportArgumentType]
     assert emit.call_count == 1
-    kernel.log.logger.removeHandler(handler)
+    kernel.log.logger.removeHandler(handler)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 async def test_save_history(client, tmp_path):
@@ -376,7 +376,7 @@ async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client
     with anyio.fail_after(utils.TIMEOUT):
         reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "FutureCancelledError"
+    assert reply["content"]["ename"] == "KernelInterruptError"
 
 
 async def test_interrupt_request_blocking_task(subprocess_kernels_client):
@@ -395,17 +395,16 @@ async def test_interrupt_request_blocking_task(subprocess_kernels_client):
         await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "FutureCancelledError"
+    assert reply["content"]["ename"] == "KernelInterruptError"
 
 
 @pytest.mark.parametrize("response", ["y", ""])
-async def test_user_exit(client, kernel, mocker, response: Literal["y", ""]):
+async def test_user_exit(client, kernel: Kernel, mocker, response: Literal["y", ""]):
     stop = mocker.patch.object(kernel, "stop")
     raw_input = mocker.patch.object(kernel, "raw_input", return_value=response)
     await utils.execute(client, "quit()")
     assert raw_input.call_count == 1
     assert stop.call_count == (1 if response == "y" else 0)
-    kernel.exit_now = False
 
 
 async def test_is_complete_request(client):
@@ -593,7 +592,7 @@ async def test_get_run_mode_tag(client):
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 790110932
+    assert murmur2_x86(str(data), 1) == 1889583061
 
 
 async def test_get_parent(client, kernel: Kernel):

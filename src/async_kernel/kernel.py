@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import atexit
 import builtins
 import contextlib
@@ -48,6 +47,7 @@ from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
 from async_kernel.kernelspec import Backend, KernelName
 from async_kernel.typing import (
+    CallerStartNewOptions,
     Content,
     ExecuteContent,
     HandlerType,
@@ -64,8 +64,6 @@ from async_kernel.typing import (
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable
     from types import CoroutineType, FrameType
-
-    from IPython.core.interactiveshell import ExecutionResult
 
     from async_kernel.comm import CommManager
 
@@ -213,7 +211,7 @@ class Kernel(HasTraits):
     _sockets: Dict[SocketID, zmq.Socket] = Dict()
     _ports: Dict[SocketID, int] = Dict()
     _execution_count = traitlets.Int(0)
-    anyio_backend = UseEnum(Backend)
+    anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
     ""
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
@@ -497,12 +495,11 @@ class Kernel(HasTraits):
         """
         A [staticmethod][] to stop the running kernel.
 
-        Once a kernel is stopped; that instance of the kernel cannot be restarted.
-        Instead, a new kernel must be started.
+        Once an instance of a kernel is stopped the instance cannot be restarted.
+        Instead a new instance should be started.
         """
-        if instance := Kernel._instance:
-            Kernel._instance = None
-            instance.event_stopped.set()
+        if (instance := Kernel._instance) and (stop := getattr(instance, "_stop", None)):
+            stop()
 
     @asynccontextmanager
     async def _start_in_context(self) -> AsyncGenerator[Self, Any]:
@@ -511,27 +508,31 @@ class Kernel(HasTraits):
             msg = "Already started"
             raise RuntimeError(msg)
         assert self.shell
-        self.anyio_backend = current_async_library()
+        self.anyio_backend = Backend(current_async_library())
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:
-                caller.call_soon(self._wait_stopped)
-                try:
-                    await self._start_heartbeat()
-                    await self._start_iopub_proxy()
-                    await self._start_control_loop()
-                    await self._start_main_loop()
-                    assert len(self._sockets) == len(SocketID)
-                    self._write_connection_file()
-                    print(f"Kernel started: {self!r}")
-                    with self._iopub():
-                        self.event_started.set()
-                        self.comm_manager.kernel = self
-                        yield self
-                finally:
-                    self.comm_manager.kernel = None
-                    self.stop()
+                with anyio.CancelScope() as scope:
+                    self._stop = lambda: caller.call_direct(scope.cancel, "Stopping")
+                    self._main_thread_caller = caller
+                    try:
+                        await self._start_heartbeat()
+                        await self._start_iopub_proxy()
+                        await self._start_control_loop()
+                        await self._start_main_loop()
+                        assert len(self._sockets) == len(SocketID)
+                        self._write_connection_file()
+                        print(f"Kernel started: {self!r}")
+                        with self._iopub():
+                            self.event_started.set()
+                            self.comm_manager.kernel = self
+                            yield self
+                    finally:
+                        self.comm_manager.kernel = None
+                        self.event_stopped.set()
         finally:
+            Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
+            Caller.stop_all(_stop_protected=True)
             Context.instance().term()
             print(f"Kernel stopped: {self!r}")
 
@@ -619,25 +620,12 @@ class Kernel(HasTraits):
                 raise KernelInterruptError
         return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 
-    async def _wait_stopped(self) -> None:
-        try:
-            await self.event_stopped
-            if self.trait_has_value("debugger") and self.debugger.debugpy_client.connected:
-                await self.control_thread_caller.call_soon(self.debugger.disconnect)
-        except BaseException:
-            with anyio.CancelScope(shield=True):
-                self.event_stopped.set()
-                await anyio.sleep(0)
-            raise
-        finally:
-            Caller.stop_all(_stop_protected=True)
-
     async def _start_heartbeat(self) -> None:
         # Reference: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
 
         def heartbeat():
             socket: Socket = Context.instance().socket(zmq.ROUTER)
-            with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.heartbeat, socket):
+            with self._bind_socket(SocketID.heartbeat, socket):
                 ready.set()
                 try:
                     zmq.proxy(socket, socket)
@@ -646,6 +634,7 @@ class Kernel(HasTraits):
 
         ready = Event()
         heartbeat_thread = threading.Thread(target=heartbeat, name="heartbeat", daemon=True)
+        utils.mark_thread_pydev_do_not_trace(heartbeat_thread)
         heartbeat_thread.start()
         await ready
 
@@ -660,7 +649,7 @@ class Kernel(HasTraits):
             frontend: zmq.Socket = Context.instance().socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
             iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
-            with utils.do_not_debug_this_thread(), self._bind_socket(SocketID.iopub, iopub_socket):
+            with self._bind_socket(SocketID.iopub, iopub_socket):
                 ready.set()
                 try:
                     zmq.proxy(frontend, iopub_socket)
@@ -669,6 +658,7 @@ class Kernel(HasTraits):
 
         ready = Event()
         iopub_thread = threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True)
+        utils.mark_thread_pydev_do_not_trace(iopub_thread)
         iopub_thread.start()
         await ready
 
@@ -701,88 +691,81 @@ class Kernel(HasTraits):
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
 
     async def _start_control_loop(self) -> None:
-        self.control_thread_caller = Caller.start_new(backend=self.anyio_backend, name="ControlThread", protected=True)
+        self._control_thread_caller = Caller.start_new(backend=self.anyio_backend, name="ControlThread", protected=True)
         ready = Event()
-        self.control_thread_caller.call_soon(self._receive_msg_loop, SocketID.control, ready.set)
+        thread = threading.Thread(target=self._receive_msg_loop, args=(SocketID.control, ready.set))
+        thread.start()
         await ready
 
     async def _start_main_loop(self):
         async def run_in_main_event_loop():
             stdin_socket = Context.instance().socket(SocketType.ROUTER)
-            with self._bind_socket(SocketID.stdin, stdin_socket):
-                await self._receive_msg_loop(SocketID.shell, ready.set)
+            with self._bind_socket(SocketID.stdin, stdin_socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
+                thread = threading.Thread(target=self._receive_msg_loop, args=(SocketID.shell, ready.set))
+                thread.start()
+                await anyio.sleep_forever()
 
         ready = Event()
-        Caller().call_soon(run_in_main_event_loop)
+        self._main_thread_caller.call_soon(run_in_main_event_loop)
         await ready
 
-    async def _receive_msg_loop(
+    def _receive_msg_loop(
         self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]
     ) -> None:
         """Receive shell and control messages over zmq sockets."""
-        if (
-            sys.platform == "win32"
-            and self.anyio_backend is Backend.asyncio
-            and isinstance(asyncio.get_running_loop(), asyncio.ProactorEventLoop)
-        ):
-            from anyio._core._asyncio_selector_thread import get_selector  # noqa: PLC0415
-
-            utils.mark_thread_pydev_do_not_trace(get_selector()._thread)  # pyright: ignore[reportPrivateUsage]
+        if not utils.LAUNCHED_BY_DEBUGPY:
+            utils.mark_thread_pydev_do_not_trace()
+        msg: Message
+        ident: list[bytes]
+        caller = self._main_thread_caller if socket_id is SocketID.shell else self._control_thread_caller
         socket: Socket[Literal[SocketType.ROUTER]] = Context.instance().socket(SocketType.ROUTER)
-        with self._bind_socket(socket_id, socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
+        new_thread_options: CallerStartNewOptions = {
+            "backend": self.anyio_backend,
+            "backend_options": self.anyio_backend_options,
+            "name": None,
+        }
+        with self._bind_socket(socket_id, socket):
             started()
             while True:
-                while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
+                try:
+                    ident, msg = self.session.recv(socket, mode=zmq.BLOCKY, copy=False)  # pyright: ignore[reportAssignmentType]
+                    if socket_id == SocketID.shell:
+                        # Reset the frame to show the main thread is not blocked.
+                        self._last_interrupt_frame = None
+                    self.log.debug("*** _receive_msg_loop %s*** %s", socket_id, msg)
                     try:
-                        ident, msg = self.session.recv(socket, copy=False)
-                        if ident and msg:
-                            if socket_id == SocketID.shell:
-                                # Reset the frame to show the main thread is not blocked.
-                                self._last_interrupt_frame = None
-                            self.log.debug("*** _receive_msg_loop %s*** %s", socket_id, msg)
-                            await self.handle_message_request(
-                                Job(
-                                    socket_id=socket_id,
-                                    socket=socket,
-                                    ident=ident,
-                                    msg=msg,  # pyright: ignore[reportArgumentType]
-                                    received_time=time.monotonic(),
-                                    run_mode=None,  #  pyright: ignore[reportArgumentType]. This value is set by `get_handler_and_run_mode`.
-                                )
-                            )
-                    except Exception as e:
-                        self.log.debug("Bad message on %s: %s", socket_id, e)
+                        msg_type = MsgType(msg["header"]["msg_type"])
+                        handler = self.get_handler(msg_type)
+                    except (ValueError, TypeError, KeyError):
+                        self.log.debug("Invalid msg %s", msg)
                         continue
-                    await anyio.sleep(0)
-                await anyio.wait_readable(socket)
-
-    async def handle_message_request(self, job: Job, /) -> None:
-        """
-        The main handler for all shell and control messages.
-
-        Args:
-            job: The packed [message][async_kernel.typing.Message] for handling.
-        """
-        try:
-            msg_type = MsgType(job["msg"]["header"]["msg_type"])
-            socket_id = job["socket_id"]
-            handler = self.get_handler(msg_type)
-        except (ValueError, TypeError):
-            self.log.debug("Invalid job %s", job)
-            return
-        run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
-        self.log.debug("%s  %s run mode %s handler: %s", socket_id, msg_type, run_mode, handler)
-        job["run_mode"] = run_mode
-        runner = _wrap_handler(self.run_handler, handler)
-        match run_mode:
-            case RunMode.queue:
-                Caller().queue_call(runner, job)
-            case RunMode.thread:
-                Caller.to_thread(runner, job)
-            case RunMode.task:
-                Caller().call_soon(runner, job)
-            case RunMode.blocking:
-                await runner(job)
+                    job = Job(
+                        socket_id=socket_id,
+                        socket=socket,
+                        ident=ident,
+                        msg=msg,
+                        received_time=time.monotonic(),
+                        run_mode=None,  # pyright: ignore[reportArgumentType]
+                    )
+                    run_mode = job["run_mode"] = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
+                    self.log.debug(
+                        "%s  %s run mode %s caller %s handler: %s", socket_id, msg_type, run_mode, caller, handler
+                    )
+                    runner = _wrap_handler(self.run_handler, handler)
+                    match run_mode:
+                        case RunMode.queue:
+                            caller.queue_call(runner, job)
+                        case RunMode.thread:
+                            Caller.to_thread_advanced(new_thread_options, runner, job)
+                        case RunMode.task:
+                            caller.call_soon(runner, job)
+                        case RunMode.blocking:
+                            caller.call_direct(runner, job)
+                except zmq.ContextTerminated:
+                    break
+                except Exception as e:
+                    self.log.debug("Bad message on %s: %s", socket_id, e)
+                    continue
 
     def get_run_mode(
         self,
@@ -843,7 +826,7 @@ class Kernel(HasTraits):
             case _, _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
                 return RunMode.blocking
             case _, _, MsgType.debug_request:
-                return RunMode.blocking
+                return RunMode.queue
             case _:
                 return RunMode.blocking
 
@@ -938,7 +921,7 @@ class Kernel(HasTraits):
                     "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
                 )
         else:
-            self.control_thread_caller.call_direct(
+            self._control_thread_caller.call_direct(
                 self.iopub_send,
                 msg_or_type=msg_or_type,
                 content=content,
@@ -989,24 +972,30 @@ class Kernel(HasTraits):
                 parent=job["msg"],
                 ident=self.topic("execute_input"),
             )
-        fut = Caller().call_soon(
-            self.shell.run_cell_async,
-            raw_cell=c["code"],
-            store_history=c.get("store_history", False),
-            silent=silent,
-            transformed_cell=self.shell.transform_cell(c["code"]),
-            shell_futures=True,
-            cell_id=metadata.get("cellId"),
-        )
-        if not silent:
-            self._interrupts.add(fut.cancel)
-            fut.add_done_callback(lambda fut: self._interrupts.discard(fut.cancel))
-        try:
-            result: ExecutionResult = await fut
-            err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
-        except Exception as e:
-            # A safeguard to catch exceptions not caught by the shell.
-            err = e
+        caller = Caller()
+        err = None
+        with anyio.CancelScope() as scope:
+
+            def cancel():
+                if not silent:
+                    caller.call_direct(scope.cancel, "Interrupted")
+
+            try:
+                self._interrupts.add(cancel)
+                result = await self.shell.run_cell_async(
+                    raw_cell=c["code"],
+                    store_history=c.get("store_history", False),
+                    silent=silent,
+                    transformed_cell=self.shell.transform_cell(c["code"]),
+                    shell_futures=True,
+                )
+
+            except (Exception, anyio.get_cancelled_exc_class()) as e:
+                # A safeguard to catch exceptions not caught by the shell.
+                err = e
+            else:
+                err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+            self._interrupts.discard(cancel)
         if (err) and (
             (Tags.suppress_error in metadata.get("tags", ()))
             or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
