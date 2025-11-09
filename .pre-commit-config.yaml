@@ -32,41 +32,31 @@ repos:
     hooks:
       - id: check-github-workflows
 
-  - repo: https://github.com/hukkin/mdformat
-    rev: 0.7.22
-    hooks:
-      - id: mdformat
-        additional_dependencies:
-          - mdformat-gfm
-          - mdformat-frontmatter
-          - mdformat-footnote
-          - mdformat-mkdocs
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v4.0.0-alpha.8"
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.6.2
     hooks:
       - id: prettier
-        types_or: [yaml, html, json]
+        types_or: [markdown, yaml, html, json]
 
   - repo: https://github.com/adamchainz/blacken-docs
-    rev: "1.20.0"
+    rev: 1.20.0
     hooks:
       - id: blacken-docs
         additional_dependencies: [black==23.7.0]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.4.1"
+    rev: v2.4.1
     hooks:
       - id: codespell
         args: ["-L", "sur,nd"]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: "v1.10.0"
+    rev: v1.10.0
     hooks:
       - id: python-use-type-annotations
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.3
+    rev: v0.14.4
     hooks:
       - id: ruff-check
         types_or: [python, jupyter]
@@ -75,12 +65,12 @@ repos:
         types_or: [python, jupyter]
 
   - repo: https://github.com/scientific-python/cookie
-    rev: "2025.10.20"
+    rev: 2025.11.07
     hooks:
       - id: sp-repo-review
         additional_dependencies: ["repo-review[cli]"]
 
   - repo: https://github.com/kynan/nbstripout
-    rev: "0.8.1"
+    rev: 0.8.1
     hooks:
       - id: nbstripout
