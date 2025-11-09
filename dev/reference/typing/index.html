@@ -1059,15 +1059,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode.blocking" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;blocking
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1896,15 +1887,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode.blocking" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;blocking
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2434,12 +2416,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            async_kernel.typing.RunMode" href="#async_kernel.typing.RunMode">RunMode</a></code></b>
           –
           <div class="doc-md-description">
-            <p>An Enum of the <a class="autorefs autorefs-internal" title="            handle_message_request
-
-
-  
-      async
-  " href="../kernel/#async_kernel.kernel.Kernel.handle_message_request">kernel run modes</a> available for</p>
+            <p>An Enum of the run modes available for altering how message requests are run.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2772,13 +2749,7 @@ viewing the latest version.
               Bases: <code><a class="autorefs autorefs-external" title="enum.StrEnum" href="https://docs.python.org/3/library/enum.html#enum.StrEnum">StrEnum</a></code></p>
 
 
-        <p>An Enum of the <a class="autorefs autorefs-internal" title="            handle_message_request
-
-
-  
-      async
-  " href="../kernel/#async_kernel.kernel.Kernel.handle_message_request">kernel run modes</a> available for
-altering how message requests are run.</p>
+        <p>An Enum of the run modes available for altering how message requests are run.</p>
 <div class="admonition hint">
 <p class="admonition-title">String match options</p>
 <p>Each of these options will give a match.</p>
@@ -3021,7 +2992,8 @@ Add it at the top line (or use the string equivalent "##<run mode>") of a code c
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">86</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">85</span>
+<span class="normal">86</span>
 <span class="normal">87</span>
 <span class="normal">88</span>
 <span class="normal">89</span>
@@ -3029,8 +3001,7 @@ Add it at the top line (or use the string equivalent "##<run mode>") of a code c
 <span class="normal">91</span>
 <span class="normal">92</span>
 <span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_mode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Get a RunMode from the code if it is found.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
@@ -3100,25 +3071,6 @@ Add it at the top line (or use the string equivalent "##<run mode>") of a code c
             <p>The default concurrency mode</p>
           </div>
         </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            blocking
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.typing.KernelConcurrencyMode.blocking)" href="#async_kernel.typing.KernelConcurrencyMode.blocking">blocking</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p>All handlers are run with the <a class="autorefs autorefs-internal" title="            blocking
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="#async_kernel.typing.RunMode.blocking">blocking</a>.</p>
-          </div>
-        </li>
     </ul>
 
 
@@ -3152,37 +3104,6 @@ Add it at the top line (or use the string equivalent "##<run mode>") of a code c
     <div class="doc doc-contents ">
 
         <p>The default concurrency mode</p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.typing.KernelConcurrencyMode.blocking" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">blocking</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.typing.KernelConcurrencyMode.blocking" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">blocking</span> <span class="o">=</span> <span class="s1">&#39;blocking&#39;</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>All handlers are run with the <a class="autorefs autorefs-internal" title="            blocking
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="#async_kernel.typing.RunMode.blocking">blocking</a>.</p>
 
     </div>
 
