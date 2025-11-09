@@ -28,7 +28,7 @@ import anyio
 import IPython.core.completer
 import traitlets
 import zmq
-from aiologic import Event
+from aiologic import Event, Lock
 from aiologic.lowlevel import current_async_library
 from IPython.core.error import StdinNotImplementedError
 from IPython.utils.tokenutil import token_at_cursor
@@ -133,7 +133,7 @@ def bind_socket(
 
 @functools.cache
 def wrap_handler(
-    runner: Callable[[HandlerType, Job]], handler: HandlerType
+    runner: Callable[[HandlerType, Lock, Job]], lock: Lock, handler: HandlerType
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
     """
     A cache of run handlers.
@@ -148,7 +148,7 @@ def wrap_handler(
 
     @functools.wraps(handler)
     async def wrap_handler(job: Job) -> None:
-        await runner(handler, job)
+        await runner(handler, lock, job)
 
     return wrap_handler
 
@@ -715,6 +715,7 @@ class Kernel(HasTraits):
             "backend_options": self.anyio_backend_options,
             "name": None,
         }
+        lock = Lock()
         with self._bind_socket(socket_id, socket):
             started()
             while True:
@@ -741,7 +742,7 @@ class Kernel(HasTraits):
                     self.log.debug(
                         "%s  %s run mode %s caller %s handler: %s", socket_id, msg_type, run_mode, caller, handler
                     )
-                    runner = wrap_handler(self.run_handler, handler)
+                    runner = wrap_handler(self.run_handler, lock, handler)
                     match run_mode:
                         case RunMode.queue:
                             caller.queue_call(runner, job)
@@ -844,7 +845,7 @@ class Kernel(HasTraits):
             raise TypeError(msg)
         return f  # pyright: ignore[reportReturnType]
 
-    async def run_handler(self, handler: HandlerType, job: Job[dict]) -> None:
+    async def run_handler(self, handler: HandlerType, lock: Lock, job: Job[dict]) -> None:
         """
         A wrapper for running handler in the context of the job/message.
 
@@ -853,26 +854,28 @@ class Kernel(HasTraits):
         If `status` is not provided in the content it is added as {'status': 'ok'}.
         """
 
-        def send_reply(job: Job[dict], content: dict, /) -> None:
+        async def send_reply(job: Job[dict], content: dict, /) -> None:
             if "status" not in content:
                 content["status"] = "ok"
-            msg = self.session.send(
-                stream=job["socket"],
-                msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
-                content=content,
-                parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
-                ident=job["ident"],
-            )
-            if msg:
-                self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
+            # Although we aren't sending from the thread where the socket belongs this still appears to be reliable.
+            async with lock:
+                msg = self.session.send(
+                    stream=job["socket"],
+                    msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
+                    content=content,
+                    parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
+                    ident=job["ident"],
+                )
+                if msg:
+                    self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
         token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
             self.iopub_send(msg_or_type="status", content={"execution_state": "busy"}, ident=self.topic("status"))
             if (content := await handler(job)) is not None:
-                send_reply(job, content)
+                await send_reply(job, content)
         except Exception as e:
-            send_reply(job, error_to_content(e))
+            await send_reply(job, error_to_content(e))
             self.log.exception("Exception in message handler:", exc_info=e)
         finally:
             utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
