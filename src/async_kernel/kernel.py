@@ -209,6 +209,7 @@ class Kernel(HasTraits):
     _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
     _settings: Dict[str, Any] = Dict()
     _sockets: Dict[SocketID, zmq.Socket] = Dict()
+    _callers: Dict[SocketID, Caller] = Dict()
     _ports: Dict[SocketID, int] = Dict()
     _execution_count = traitlets.Int(0)
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
@@ -513,7 +514,7 @@ class Kernel(HasTraits):
             async with Caller(log=self.log, create=True, protected=True) as caller:
                 with anyio.CancelScope() as scope:
                     self._stop = lambda: caller.call_direct(scope.cancel, "Stopping")
-                    self._main_thread_caller = caller
+                    self._callers[SocketID.shell] = caller
                     try:
                         await self._start_threads_and_open_sockets()
                         assert len(self._sockets) == len(SocketID)
@@ -579,14 +580,16 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        async def run_in_main_event_loop(ready=shell_ready.set):
+        async def run_in_shell_event_loop(ready=shell_ready.set):
             stdin_socket = Context.instance().socket(SocketType.ROUTER)
             with self._bind_socket(SocketID.stdin, stdin_socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
                 thread = threading.Thread(target=self._receive_msg_loop, args=(SocketID.shell, ready))
                 thread.start()
                 await anyio.sleep_forever()
 
-        self._control_thread_caller = Caller.start_new(backend=self.anyio_backend, name="ControlThread", protected=True)
+        self._callers[SocketID.control] = Caller.start_new(
+            backend=self.anyio_backend, name="ControlThread", protected=True
+        )
 
         threading.Thread(target=heartbeat, name="heartbeat").start()
         heartbeat_ready.wait()
@@ -597,7 +600,7 @@ class Kernel(HasTraits):
         threading.Thread(target=self._receive_msg_loop, args=(SocketID.control, control_ready.set)).start()
         control_ready.wait()
 
-        self._main_thread_caller.call_soon(run_in_main_event_loop)
+        self._callers[SocketID.shell].call_soon(run_in_shell_event_loop)
         await shell_ready
 
     @contextlib.contextmanager
@@ -707,7 +710,7 @@ class Kernel(HasTraits):
             utils.mark_thread_pydev_do_not_trace()
         msg: Message
         ident: list[bytes]
-        caller = self._main_thread_caller if socket_id is SocketID.shell else self._control_thread_caller
+        caller = self._callers[socket_id]
         socket: Socket[Literal[SocketType.ROUTER]] = Context.instance().socket(SocketType.ROUTER)
         new_thread_options: CallerStartNewOptions = {
             "backend": self.anyio_backend,
@@ -911,7 +914,7 @@ class Kernel(HasTraits):
                     "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
                 )
         else:
-            self._control_thread_caller.call_direct(
+            self._callers[SocketID.control].call_direct(
                 self.iopub_send,
                 msg_or_type=msg_or_type,
                 content=content,
