@@ -52,7 +52,6 @@ from async_kernel.typing import (
     ExecuteContent,
     HandlerType,
     Job,
-    KernelConcurrencyMode,
     Message,
     MsgType,
     NoValue,
@@ -217,10 +216,6 @@ class Kernel(HasTraits):
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
 
-    concurrency_mode = UseEnum(KernelConcurrencyMode)
-    """
-    The mode to use when getting the run mode for running the handler of a message request.
-    """
     help_links = Tuple()
     ""
     quiet = traitlets.Bool(True)
@@ -710,8 +705,7 @@ class Kernel(HasTraits):
 
         This gets called for both shell and control messages when the kernel is started.
         """
-        if not utils.LAUNCHED_BY_DEBUGPY:
-            utils.mark_thread_pydev_do_not_trace()
+        utils.mark_thread_pydev_do_not_trace()
         msg: Message
         ident: list[bytes]
         caller = self._callers[socket_id]
@@ -769,7 +763,6 @@ class Kernel(HasTraits):
         msg_type: MsgType,
         *,
         socket_id: Literal[SocketID.shell, SocketID.control] = SocketID.shell,
-        concurrency_mode: KernelConcurrencyMode | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         job: Job | None = None,
     ) -> RunMode:
         """
@@ -780,7 +773,6 @@ class Kernel(HasTraits):
         Args:
             socket_id: The socket ID the message was received on.
             msg_type: The type of the message.
-            concurrency_mode: The concurrency mode of the kernel. Defaults to [kernel.concurrency_mode][async_kernel.Kernel.concurrency_mode]
             job: The job associated with the message, if any.
 
         Returns:
@@ -790,19 +782,18 @@ class Kernel(HasTraits):
             ValueError: If a shutdown or debug request is received on the shell socket.
         """
 
-        concurrency_mode = self.concurrency_mode if concurrency_mode is NoValue else concurrency_mode
         # TODO: Are any of these options worth including?
         # if mode_from_metadata := job["msg"]["metadata"].get("run_mode"):
         #     return RunMode( mode_from_metadata)
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
-        match (concurrency_mode, socket_id, msg_type):
-            case _, SocketID.shell, MsgType.shutdown_request | MsgType.debug_request:
+        match (socket_id, msg_type):
+            case SocketID.shell, MsgType.shutdown_request | MsgType.debug_request:
                 msg = f"{msg_type=} not allowed on shell!"
                 raise ValueError(msg)
-            case _, SocketID.control, MsgType.execute_request:
+            case SocketID.control, MsgType.execute_request:
                 return RunMode.task
-            case _, _, MsgType.execute_request:
+            case _, MsgType.execute_request:
                 if job:
                     if content := job["msg"].get("content", {}):
                         if (code := content.get("code")) and (mode_ := RunMode.get_mode(code)):
@@ -812,15 +803,15 @@ class Kernel(HasTraits):
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
                 return RunMode.queue
-            case _, _, MsgType.inspect_request | MsgType.complete_request | MsgType.is_complete_request:
+            case _, MsgType.inspect_request | MsgType.complete_request | MsgType.is_complete_request:
                 return RunMode.thread
-            case _, _, MsgType.history_request:
+            case _, MsgType.history_request:
                 return RunMode.thread
-            case _, _, MsgType.comm_msg:
+            case _, MsgType.comm_msg:
                 return RunMode.queue
-            case _, _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
+            case _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
                 return RunMode.blocking
-            case _, _, MsgType.debug_request:
+            case _, MsgType.debug_request:
                 return RunMode.queue
             case _:
                 return RunMode.blocking
@@ -830,24 +821,23 @@ class Kernel(HasTraits):
         socket_ids: Iterable[Literal[SocketID.shell, SocketID.control]] = (SocketID.shell, SocketID.control),
         msg_types: Iterable[MsgType] = MsgType,
     ) -> dict[
-        Literal["SocketID", "KernelConcurrencyMode", "MsgType", "RunMode"],
-        tuple[SocketID, KernelConcurrencyMode, MsgType, RunMode | None],
+        Literal["SocketID", "MsgType", "RunMode"],
+        tuple[SocketID, MsgType, RunMode | None],
     ]:
         """
-        Generates a dictionary containing all combinations of SocketID, KernelConcurrencyMode, and MsgType,
+        Generates a dictionary containing all combinations of SocketID, and MsgType,
         along with their corresponding RunMode (if available).
         """
         data: list[Any] = []
         for socket_id in socket_ids:
-            for concurrency_mode in KernelConcurrencyMode:
-                for msg_type in msg_types:
-                    try:
-                        mode = self.get_run_mode(msg_type, socket_id=socket_id, concurrency_mode=concurrency_mode)
-                    except ValueError:
-                        mode = None
-                    data.append((socket_id, concurrency_mode, msg_type, mode))
+            for msg_type in msg_types:
+                try:
+                    mode = self.get_run_mode(msg_type, socket_id=socket_id)
+                except ValueError:
+                    mode = None
+                data.append((socket_id, msg_type, mode))
         data_ = zip(*data, strict=True)
-        return dict(zip(["SocketID", "KernelConcurrencyMode", "MsgType", "RunMode"], data_, strict=True))
+        return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
         if not callable(f := getattr(self, msg_type, None)):
