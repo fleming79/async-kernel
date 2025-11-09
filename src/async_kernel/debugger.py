@@ -568,18 +568,3 @@ class Debugger(HasTraits):
         self.init_event = Event()
         self.breakpoint_list = {}
         return response
-
-    async def disconnect(self):
-        if self.debugpy_client.connected:
-            await self.send_dap_request(
-                {
-                    "type": "request",
-                    "command": "disconnect",
-                    "seq": self.next_seq(),
-                    "arguments": {
-                        "restart": False,
-                        "terminateDebuggee": False,
-                        "suspendDebuggee": False,
-                    },
-                }
-            )
