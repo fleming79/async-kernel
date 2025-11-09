@@ -515,10 +515,7 @@ class Kernel(HasTraits):
                     self._stop = lambda: caller.call_direct(scope.cancel, "Stopping")
                     self._main_thread_caller = caller
                     try:
-                        await self._start_heartbeat()
-                        await self._start_iopub_proxy()
-                        await self._start_control_loop()
-                        await self._start_main_loop()
+                        await self._start_threads_and_open_sockets()
                         assert len(self._sockets) == len(SocketID)
                         self._write_connection_file()
                         print(f"Kernel started: {self!r}")
@@ -548,6 +545,60 @@ class Kernel(HasTraits):
             self._last_interrupt_frame = frame
         else:
             signal.default_int_handler(signum, frame)
+
+    async def _start_threads_and_open_sockets(self) -> None:
+        heartbeat_ready = Event()
+        pub_proxy_ready = Event()
+        control_ready = Event()
+        shell_ready = Event()
+
+        def heartbeat(ready=heartbeat_ready.set):
+            # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
+            utils.mark_thread_pydev_do_not_trace()
+            socket: Socket = Context.instance().socket(zmq.ROUTER)
+            with self._bind_socket(SocketID.heartbeat, socket):
+                ready()
+                try:
+                    zmq.proxy(socket, socket)
+                except zmq.ContextTerminated:
+                    return
+
+        def pub_proxy(ready=pub_proxy_ready.set):
+            # We use an internal proxy to collect pub messages for distribution.
+            # Each thread needs to open its own socket to publish to the internal proxy.
+            # When thread-safe sockets become available, this could be changed...
+            # Ref: https://zguide.zeromq.org/docs/chapter2/#Working-with-Messages (fig 14)
+            utils.mark_thread_pydev_do_not_trace()
+            frontend: zmq.Socket = Context.instance().socket(zmq.XSUB)
+            frontend.bind(Caller.iopub_url)
+            iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
+            with self._bind_socket(SocketID.iopub, iopub_socket):
+                ready()
+                try:
+                    zmq.proxy(frontend, iopub_socket)
+                except zmq.ContextTerminated:
+                    frontend.close(linger=500)
+
+        async def run_in_main_event_loop(ready=shell_ready.set):
+            stdin_socket = Context.instance().socket(SocketType.ROUTER)
+            with self._bind_socket(SocketID.stdin, stdin_socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
+                thread = threading.Thread(target=self._receive_msg_loop, args=(SocketID.shell, ready))
+                thread.start()
+                await anyio.sleep_forever()
+
+        self._control_thread_caller = Caller.start_new(backend=self.anyio_backend, name="ControlThread", protected=True)
+
+        threading.Thread(target=heartbeat, name="heartbeat").start()
+        heartbeat_ready.wait()
+
+        threading.Thread(target=pub_proxy, name="iopub proxy").start()
+        pub_proxy_ready.wait()
+
+        threading.Thread(target=self._receive_msg_loop, args=(SocketID.control, control_ready.set)).start()
+        control_ready.wait()
+
+        self._main_thread_caller.call_soon(run_in_main_event_loop)
+        await shell_ready
 
     @contextlib.contextmanager
     def _bind_socket(self, socket_id: SocketID, socket: zmq.Socket) -> Generator[None, Any, None]:
@@ -620,48 +671,6 @@ class Kernel(HasTraits):
                 raise KernelInterruptError
         return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 
-    async def _start_heartbeat(self) -> None:
-        # Reference: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
-
-        def heartbeat():
-            socket: Socket = Context.instance().socket(zmq.ROUTER)
-            with self._bind_socket(SocketID.heartbeat, socket):
-                ready.set()
-                try:
-                    zmq.proxy(socket, socket)
-                except zmq.ContextTerminated:
-                    return
-
-        ready = Event()
-        heartbeat_thread = threading.Thread(target=heartbeat, name="heartbeat", daemon=True)
-        utils.mark_thread_pydev_do_not_trace(heartbeat_thread)
-        heartbeat_thread.start()
-        await ready
-
-    async def _start_iopub_proxy(self) -> None:
-        """Provide an io proxy."""
-
-        def pub_proxy():
-            # We use an internal proxy to collect pub messages for distribution.
-            # Each thread needs to open its own socket to publish to the internal proxy.
-            # When thread-safe sockets become available, this could be changed...
-            # Ref: https://zguide.zeromq.org/docs/chapter2/#Working-with-Messages (fig 14)
-            frontend: zmq.Socket = Context.instance().socket(zmq.XSUB)
-            frontend.bind(Caller.iopub_url)
-            iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
-            with self._bind_socket(SocketID.iopub, iopub_socket):
-                ready.set()
-                try:
-                    zmq.proxy(frontend, iopub_socket)
-                except zmq.ContextTerminated:
-                    frontend.close(linger=500)
-
-        ready = Event()
-        iopub_thread = threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True)
-        utils.mark_thread_pydev_do_not_trace(iopub_thread)
-        iopub_thread.start()
-        await ready
-
     @contextlib.contextmanager
     def _iopub(self):
         # Save IO
@@ -689,25 +698,6 @@ class Kernel(HasTraits):
         finally:
             # Reset IO
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
-
-    async def _start_control_loop(self) -> None:
-        self._control_thread_caller = Caller.start_new(backend=self.anyio_backend, name="ControlThread", protected=True)
-        ready = Event()
-        thread = threading.Thread(target=self._receive_msg_loop, args=(SocketID.control, ready.set))
-        thread.start()
-        await ready
-
-    async def _start_main_loop(self):
-        async def run_in_main_event_loop():
-            stdin_socket = Context.instance().socket(SocketType.ROUTER)
-            with self._bind_socket(SocketID.stdin, stdin_socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
-                thread = threading.Thread(target=self._receive_msg_loop, args=(SocketID.shell, ready.set))
-                thread.start()
-                await anyio.sleep_forever()
-
-        ready = Event()
-        self._main_thread_caller.call_soon(run_in_main_event_loop)
-        await ready
 
     def _receive_msg_loop(
         self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]
