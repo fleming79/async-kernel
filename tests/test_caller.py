@@ -213,7 +213,7 @@ class TestCaller:
         caller.call_direct(lambda: fut)
         assert await caller.call_soon(lambda: fut) is fut
 
-    async def test_repr(self, caller):
+    async def test_repr(self, caller: Caller):
         async def test_func(a, b, c):
             pass
 
@@ -235,7 +235,7 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             Caller()
 
-    async def test_protected(self, anyio_backend):
+    async def test_protected(self, anyio_backend: Backend):
         caller = Caller(create=True, protected=True)
         caller.stop()
         assert not caller.stopped
@@ -258,7 +258,7 @@ class TestCaller:
             assert val == args_kwargs
             assert (await fut) == args_kwargs
 
-    async def test_anyio_to_thread(self, anyio_backend):
+    async def test_anyio_to_thread(self, anyio_backend: Backend):
         # Test the call works from an anyio thread
         async with Caller(create=True) as caller:
             assert caller.running
@@ -368,11 +368,11 @@ class TestCaller:
         caller.call_soon(finished_event.set)
         the_thread.join()
 
-    async def test_get_instance_no_instance(self, anyio_backend):
+    async def test_get_instance_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
             Caller.get_instance(name=None, create=False)
 
-    async def test_get_instance_get_runner(self, anyio_backend):
+    async def test_get_instance_get_runner(self, anyio_backend: Backend):
         if anyio_backend == Backend.trio:
             with pytest.raises(RuntimeError):
                 Caller.get_instance()
@@ -390,7 +390,7 @@ class TestCaller:
             caller.get_runner()
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
-    async def test_as_completed(self, anyio_backend, mode: Literal["restricted", "surge"], mocker):
+    async def test_as_completed(self, anyio_backend: Backend, mode: Literal["restricted", "surge"], mocker):
         mocker.patch.object(Caller, "MAX_IDLE_POOL_INSTANCES", new=2)
 
         async def func():
@@ -475,7 +475,7 @@ class TestCaller:
         caller.to_thread(caller.queue_call, event.set)
         await event
 
-    async def test_gc(self, anyio_backend):
+    async def test_gc(self, anyio_backend: Backend):
         event_finalize_called = Event()
         async with Caller(create=True) as caller:
             weakref.finalize(caller, event_finalize_called.set)
@@ -514,7 +514,7 @@ class TestCaller:
         await obj_finalized
         assert not any(caller._queue_map)  # pyright: ignore[reportPrivateUsage]
 
-    async def test_call_early(self, anyio_backend) -> None:
+    async def test_call_early(self, anyio_backend: Backend) -> None:
         caller = Caller(create=True)
         assert not caller.running
         fut = caller.call_soon(time.sleep, 0.1)
@@ -523,7 +523,7 @@ class TestCaller:
         async with caller:
             await fut
 
-    async def test_current_future(self, anyio_backend):
+    async def test_current_future(self, anyio_backend: Backend):
         async with Caller(create=True) as caller:
             fut = caller.call_soon(Caller.current_future)
             res = await fut
@@ -606,7 +606,9 @@ class TestCaller:
             fut.exception()
 
     @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
-    async def test_wait(self, caller: Caller, return_when):
+    async def test_wait(
+        self, caller: Caller, return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"]
+    ):
         waiters = [create_async_event() for _ in range(4)]
         waiters[0].set()
 

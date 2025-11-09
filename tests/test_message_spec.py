@@ -1,19 +1,27 @@
+from __future__ import annotations
+
 from queue import Empty
+from typing import TYPE_CHECKING
 
 import pytest
 
 from async_kernel.typing import MsgType
 from tests import utils
 
+if TYPE_CHECKING:
+    from jupyter_client.asynchronous.client import AsyncKernelClient
 
-async def test_execute(client, kernel):
+    from async_kernel import Kernel
+
+
+async def test_execute(client: AsyncKernelClient, kernel: Kernel):
     msg_id = client.execute(code="x=1")
     reply = await utils.get_reply(client, msg_id)
     utils.validate_message(reply, "execute_reply", msg_id)
     assert kernel.shell.user_ns["x"] == 1
 
 
-async def test_execute_control(client, kernel):
+async def test_execute_control(client: AsyncKernelClient, kernel: Kernel):
     await utils.clear_iopub(client)
     reply = await utils.send_control_message(
         client, MsgType.execute_request, {"code": "y=10", "silent": True}, clear_pub=False
@@ -23,7 +31,7 @@ async def test_execute_control(client, kernel):
     await utils.check_pub_message(client, reply["parent_header"]["msg_id"], execution_state="idle")
 
 
-async def test_execute_silent(client):
+async def test_execute_silent(client: AsyncKernelClient):
     await utils.clear_iopub(client)
     msg_id, reply = await utils.execute(client, code="x=1", silent=True, clear_pub=False)
     count = reply["execution_count"]
@@ -43,7 +51,7 @@ async def test_execute_silent(client):
     assert count_2 == count, "count should not increment when silent"
 
 
-async def test_execute_error(client):
+async def test_execute_error(client: AsyncKernelClient):
     await utils.clear_iopub(client)
     msg_id, reply = await utils.execute(client, code="1/0", clear_pub=False)
     assert reply["status"] == "error"
@@ -55,7 +63,7 @@ async def test_execute_error(client):
     await utils.check_pub_message(client, msg_id, execution_state="idle")
 
 
-async def test_execute_inc(client):
+async def test_execute_inc(client: AsyncKernelClient):
     """Execute request should increment execution_count."""
 
     _, reply = await utils.execute(client, code="x=1")
@@ -66,7 +74,7 @@ async def test_execute_inc(client):
     assert count_2 == count + 1
 
 
-async def test_execute_stop_on_error(client):
+async def test_execute_stop_on_error(client: AsyncKernelClient):
     """Execute request should not abort execution queue with stop_on_error False."""
 
     bad_code = "\n".join(
@@ -100,7 +108,7 @@ async def test_execute_stop_on_error(client):
     assert content["status"] == "ok"
 
 
-async def test_user_expressions(client):
+async def test_user_expressions(client: AsyncKernelClient):
     msg_id = client.execute(code="x=1", user_expressions={"foo": "x+1"})
     reply = await utils.get_reply(client, msg_id)  # execute
     user_expressions = reply["content"]["user_expressions"]
@@ -113,7 +121,7 @@ async def test_user_expressions(client):
     }
 
 
-async def test_user_expressions_fail(client):
+async def test_user_expressions_fail(client: AsyncKernelClient):
     _, reply = await utils.execute(client, code="x=0", user_expressions={"foo": "nosuchname"})
     user_expressions = reply["user_expressions"]
     foo = user_expressions["foo"]
@@ -121,13 +129,13 @@ async def test_user_expressions_fail(client):
     assert foo["ename"] == "NameError"
 
 
-async def test_oinfo(client):
+async def test_oinfo(client: AsyncKernelClient):
     msg_id = client.inspect("a")
     reply = await utils.get_reply(client, msg_id)
     utils.validate_message(reply, "inspect_reply", msg_id)
 
 
-async def test_oinfo_found(client):
+async def test_oinfo_found(client: AsyncKernelClient):
     msg_id, reply = await utils.execute(client, code="a=5")
 
     msg_id = client.inspect("a")
@@ -140,7 +148,7 @@ async def test_oinfo_found(client):
     assert "Docstring:" in text
 
 
-async def test_oinfo_detail(client):
+async def test_oinfo_detail(client: AsyncKernelClient):
     msg_id, reply = await utils.execute(client, code="ip=get_ipython()")
 
     msg_id = client.inspect("ip.object_inspect", cursor_pos=10, detail_level=1)
@@ -153,7 +161,7 @@ async def test_oinfo_detail(client):
     assert "Source:" in text
 
 
-async def test_oinfo_not_found(client):
+async def test_oinfo_not_found(client: AsyncKernelClient):
     msg_id = client.inspect("does_not_exist")
     reply = await utils.get_reply(client, msg_id)
     utils.validate_message(reply, "inspect_reply", msg_id)
@@ -161,7 +169,7 @@ async def test_oinfo_not_found(client):
     assert not content["found"]
 
 
-async def test_complete(client):
+async def test_complete(client: AsyncKernelClient):
     msg_id, reply = await utils.execute(client, code="alpha = albert = 5")
 
     msg_id = client.complete("al", 2)
@@ -172,7 +180,7 @@ async def test_complete(client):
         assert name in matches
 
 
-async def test_kernel_info_request(client):
+async def test_kernel_info_request(client: AsyncKernelClient):
     msg_id = client.kernel_info()
     reply = await utils.get_reply(client, msg_id)
     utils.validate_message(reply, "kernel_info_reply", msg_id)
@@ -188,19 +196,19 @@ async def test_kernel_info_request(client):
     }.difference(reply["content"])
 
 
-async def test_comm_info_request(client):
+async def test_comm_info_request(client: AsyncKernelClient):
     msg_id = client.comm_info()
     reply = await utils.get_reply(client, msg_id)
     utils.validate_message(reply, "comm_info_reply", msg_id)
 
 
-async def test_is_complete(client):
+async def test_is_complete(client: AsyncKernelClient):
     msg_id = client.is_complete("a = 1")
     reply = await utils.get_reply(client, msg_id)
     utils.validate_message(reply, "is_complete_reply", msg_id)
 
 
-async def test_history_range(client):
+async def test_history_range(client: AsyncKernelClient):
     await utils.execute(client, code="x=1", store_history=True)
     msg_id = client.history(hist_access_type="range", raw=True, output=True, start=1, stop=2, session=0)
     reply = await utils.get_reply(client, msg_id)
@@ -209,7 +217,7 @@ async def test_history_range(client):
     assert len(content["history"]) == 1
 
 
-async def test_history_tail(client):
+async def test_history_tail(client: AsyncKernelClient):
     await utils.execute(client, code="x=1", store_history=True)
     msg_id = client.history(hist_access_type="tail", raw=True, output=True, n=1, session=0)
     reply = await utils.get_reply(client, msg_id)
@@ -218,7 +226,7 @@ async def test_history_tail(client):
     assert len(content["history"]) == 1
 
 
-async def test_history_search(client):
+async def test_history_search(client: AsyncKernelClient):
     await utils.execute(client, code="x=1", store_history=True)
     msg_id = client.history(hist_access_type="search", raw=True, output=True, n=1, pattern="*", session=0)
     reply = await utils.get_reply(client, msg_id)
@@ -227,7 +235,7 @@ async def test_history_search(client):
     assert len(content["history"]) == 1
 
 
-async def test_stream(client):
+async def test_stream(client: AsyncKernelClient):
     await utils.clear_iopub(client)
     client.execute("print('hi')")
     stdout, _ = await utils.assemble_output(client)
@@ -235,7 +243,7 @@ async def test_stream(client):
 
 
 @pytest.mark.parametrize("clear", [True, False])
-async def test_display_data(kernel, client, clear: bool):
+async def test_display_data(kernel: Kernel, client: AsyncKernelClient, clear: bool):
     await utils.clear_iopub(client)
     # kernel.display_formatter
     msg_id, _ = await utils.execute(

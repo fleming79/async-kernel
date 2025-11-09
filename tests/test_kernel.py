@@ -22,6 +22,8 @@ from tests import utils
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from jupyter_client.asynchronous.client import AsyncKernelClient
+
     from async_kernel.kernel import Kernel
 
 
@@ -90,7 +92,7 @@ async def test_load_connection_info_error(kernel: Kernel, tmp_path):
         kernel.load_connection_info({})
 
 
-async def test_execute_request_success(client):
+async def test_execute_request_success(client: AsyncKernelClient):
     reply: dict[Any, Any] | Mapping[str, Mapping[str, Any]] = await utils.send_shell_message(
         client, MsgType.execute_request, {"code": "1 + 1", "silent": False}
     )
@@ -99,7 +101,7 @@ async def test_execute_request_success(client):
 
 
 @pytest.mark.parametrize("quiet", [True, False])
-async def test_simple_print(kernel: Kernel, client, quiet: bool):
+async def test_simple_print(kernel: Kernel, client: AsyncKernelClient, quiet: bool):
     """Simple print statement in kernel."""
     await utils.clear_iopub(client)
     kernel.quiet = quiet
@@ -113,7 +115,7 @@ async def test_simple_print(kernel: Kernel, client, quiet: bool):
 
 
 @pytest.mark.parametrize("mode", ["kernel_timeout", "metadata"])
-async def test_execute_kernel_timeout(client, kernel: Kernel, mode: str):
+async def test_execute_kernel_timeout(client: AsyncKernelClient, kernel: Kernel, mode: str):
     await utils.clear_iopub(client)
     kernel.shell.execute_request_timeout = 0.1 if "kernel" in mode else None
     last_stop_time = kernel._stop_on_error_time  # pyright: ignore[reportPrivateUsage]
@@ -132,7 +134,7 @@ async def test_execute_kernel_timeout(client, kernel: Kernel, mode: str):
         kernel.shell.execute_request_timeout = None
 
 
-async def test_bad_message(client):
+async def test_bad_message(client: AsyncKernelClient):
     await utils.send_shell_message(client, "bad_message", reply=False)  # pyright: ignore[reportArgumentType]
     await utils.send_control_message(client, "bad_message", reply=False)  # pyright: ignore[reportArgumentType]
     await utils.execute(client, "")
@@ -196,7 +198,7 @@ async def test_unraisablehook(kernel: Kernel, mocker):
     kernel.log.logger.removeHandler(handler)  # pyright: ignore[reportAttributeAccessIssue]
 
 
-async def test_save_history(client, tmp_path):
+async def test_save_history(client: AsyncKernelClient, tmp_path):
     file = tmp_path.joinpath("hist.out")
     client.execute("a=1")
     await utils.wait_for_idle(client)
@@ -219,7 +221,7 @@ async def test_save_history(client, tmp_path):
         ("%%timeit\na\n\n", "complete"),
     ],
 )
-async def test_is_complete(client, code: str, status: str):
+async def test_is_complete(client: AsyncKernelClient, code: str, status: str):
     # There are more test cases for this in core - here we just check
     # that the kernel exposes the interface correctly.
     client.is_complete(code)
@@ -227,7 +229,7 @@ async def test_is_complete(client, code: str, status: str):
     assert reply["content"]["status"] == status
 
 
-async def test_message_order(client):
+async def test_message_order(client: AsyncKernelClient):
     N = 10  # number of messages to test
 
     _, reply = await utils.execute(client, "a = 1")
@@ -243,7 +245,7 @@ async def test_message_order(client):
         assert reply["parent_header"]["msg_id"] == msg_id
 
 
-async def test_execute_request_error_tag_ignore_error(client):
+async def test_execute_request_error_tag_ignore_error(client: AsyncKernelClient):
     await utils.clear_iopub(client)
     metadata = {"tags": [Tags.suppress_error]}
     await utils.execute(client, "stop - suppress me", metadata=metadata, clear_pub=False)
@@ -263,29 +265,29 @@ async def test_execute_request_error_tag_ignore_error(client):
         await fail()""",
     ],
 )
-async def test_execute_request_error(client, code: str, run_mode: RunMode):
+async def test_execute_request_error(client: AsyncKernelClient, code: str, run_mode: RunMode):
     reply = await utils.send_shell_message(client, MsgType.execute_request, {"code": code, "silent": False})
     assert reply["header"]["msg_type"] == "execute_reply"
     assert reply["content"]["status"] == "error"
 
 
-async def test_execute_request_stop_on_error(client):
+async def test_execute_request_stop_on_error(client: AsyncKernelClient):
     client.execute("import anyio;await anyio.sleep(0.1);stop-here")
     _, content = await utils.execute(client)
     assert content["evalue"] == "Aborting due to prior exception"
 
 
-async def test_complete_request(client):
+async def test_complete_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.complete_request, {"code": "hello", "cursor_pos": 0})
     assert reply["header"]["msg_type"] == "complete_reply"
 
 
-async def test_inspect_request(client):
+async def test_inspect_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.inspect_request, {"code": "hello", "cursor_pos": 0})
     assert reply["header"]["msg_type"] == "inspect_reply"
 
 
-async def test_history_request(client, kernel: Kernel):
+async def test_history_request(client: AsyncKernelClient, kernel: Kernel):
     assert kernel.shell
     # assert kernel.shell.history_manager
 
@@ -308,12 +310,12 @@ async def test_history_request(client, kernel: Kernel):
     assert reply["header"]["msg_type"] == "history_reply"
 
 
-async def test_comm_info_request(client):
+async def test_comm_info_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.comm_info_request)
     assert reply["header"]["msg_type"] == "comm_info_reply"
 
 
-async def test_comm_open_msg_close(client, kernel, mocker):
+async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
     comm = None
 
     def cb(comm_, _):
@@ -344,7 +346,7 @@ async def test_comm_open_msg_close(client, kernel, mocker):
     kernel.comm_manager.unregister_target("my target", cb)
 
 
-async def test_interrupt_request(client, kernel: Kernel):
+async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
     event = threading.Event()
     kernel._interrupts.add(event.set)  # pyright: ignore[reportPrivateUsage]
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
@@ -353,7 +355,7 @@ async def test_interrupt_request(client, kernel: Kernel):
     assert event
 
 
-async def test_interrupt_request_async_request(subprocess_kernels_client):
+async def test_interrupt_request_async_request(subprocess_kernels_client: AsyncKernelClient):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
     msg_id = client.execute(f"import anyio;await anyio.sleep({utils.TIMEOUT * 4})")
@@ -365,7 +367,7 @@ async def test_interrupt_request_async_request(subprocess_kernels_client):
     assert reply["content"]["status"] == "error"
 
 
-async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client):
+async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client: AsyncKernelClient):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
     msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 4})")
@@ -379,7 +381,7 @@ async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client
     assert reply["content"]["ename"] == "KernelInterruptError"
 
 
-async def test_interrupt_request_blocking_task(subprocess_kernels_client):
+async def test_interrupt_request_blocking_task(subprocess_kernels_client: AsyncKernelClient):
     await utils.clear_iopub(subprocess_kernels_client)
     code = f"""
     import time
@@ -387,7 +389,7 @@ async def test_interrupt_request_blocking_task(subprocess_kernels_client):
     await Caller().call_soon(time.sleep, {utils.TIMEOUT * 2})
     """
     client = subprocess_kernels_client
-    msg_id = client.execute(code, reply=False)
+    msg_id = client.execute(code)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
     await anyio.sleep(0.5)
@@ -399,7 +401,7 @@ async def test_interrupt_request_blocking_task(subprocess_kernels_client):
 
 
 @pytest.mark.parametrize("response", ["y", ""])
-async def test_user_exit(client, kernel: Kernel, mocker, response: Literal["y", ""]):
+async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, response: Literal["y", ""]):
     stop = mocker.patch.object(kernel, "stop")
     raw_input = mocker.patch.object(kernel, "raw_input", return_value=response)
     await utils.execute(client, "quit()")
@@ -407,13 +409,13 @@ async def test_user_exit(client, kernel: Kernel, mocker, response: Literal["y", 
     assert stop.call_count == (1 if response == "y" else 0)
 
 
-async def test_is_complete_request(client):
+async def test_is_complete_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.is_complete_request, {"code": "hello"})
     assert reply["header"]["msg_type"] == "is_complete_reply"
 
 
 @pytest.mark.parametrize("command", ["debugInfo", "inspectVariables", "modules", "dumpCell", "source"])
-async def test_debug_static(client, command: str, mocker):
+async def test_debug_static(client: AsyncKernelClient, command: str, mocker):
     # These are tests on the debugger that don't required the debugger to be connected.
     code = "my_variable=123"
     if command == "debugInfo":
@@ -439,7 +441,7 @@ async def test_debug_raises_no_socket(kernel: Kernel):
         await kernel.debugger.debugpy_client.send_request({})
 
 
-async def test_debug_not_connected(client):
+async def test_debug_not_connected(client: AsyncKernelClient):
     reply = await utils.send_control_message(
         client, MsgType.debug_request, {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
     )
@@ -448,7 +450,7 @@ async def test_debug_not_connected(client):
 
 
 @pytest.mark.parametrize("variable_name", ["my_variable", "invalid variable name", "special variables"])
-async def test_debug_static_richInspectVariables(client, variable_name):
+async def test_debug_static_richInspectVariables(client: AsyncKernelClient, variable_name: str):
     # These are tests on the debugger that don't required the debugger to be connected.
     reply = await utils.send_control_message(
         client,
@@ -464,7 +466,7 @@ async def test_debug_static_richInspectVariables(client, variable_name):
 
 
 @pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers"])
-async def test_magic(client, code: str, kernel, monkeypatch):
+async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
     await utils.clear_iopub(client)
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
     assert code
@@ -504,7 +506,7 @@ async def test_shell_display_hook_reg(kernel: Kernel):
 
 
 @pytest.mark.parametrize("mode", RunMode)
-async def test_header_mode(client, mode: RunMode):
+async def test_header_mode(client: AsyncKernelClient, mode: RunMode):
     code = f"""
 {mode}
 import time
@@ -526,7 +528,7 @@ print("{mode.name}")
         "from async_kernel import Caller; Caller().call_soon(print, 'hello')",
     ],
 )
-async def test_namespace_default(client, code: str):
+async def test_namespace_default(client: AsyncKernelClient, code: str):
     assert code
     _, reply = await utils.execute(client, code)
     assert reply["status"] == "ok"
@@ -534,7 +536,7 @@ async def test_namespace_default(client, code: str):
 
 
 @pytest.mark.parametrize("channel", ["shell", "control"])
-async def test_invalid_message(client, channel):
+async def test_invalid_message(client: AsyncKernelClient, channel: Literal["shell", "control"]):
     f = utils.send_control_message if channel == "control" else utils.send_shell_message
     response = None
     with anyio.move_on_after(0.1):
@@ -577,7 +579,7 @@ async def test_get_run_mode(
     assert mode is expected
 
 
-async def test_get_run_mode_tag(client):
+async def test_get_run_mode_tag(client: AsyncKernelClient):
     metadata = {"tags": [RunMode.thread]}
     _, content = await utils.execute(
         client,
@@ -595,7 +597,7 @@ async def test_all_concurrency_run_modes(kernel: Kernel):
     assert murmur2_x86(str(data), 1) == 251112711
 
 
-async def test_get_parent(client, kernel: Kernel):
+async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
     assert kernel.get_parent() is None
     code = "assert 'header' in get_ipython().kernel.get_parent()"
     await utils.execute(client, code)

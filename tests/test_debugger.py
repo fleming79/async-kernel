@@ -57,7 +57,7 @@ async def send_debug_request(client: AsyncKernelClient, command: str, arguments:
     return reply["content"]
 
 
-async def test_debugger(subprocess_kernels_client):
+async def test_debugger(subprocess_kernels_client:AsyncKernelClient):
     client = subprocess_kernels_client
     reply = await send_debug_request(client=client, command="initialize", arguments=initialize_args)
     assert reply["status"] == "ok"

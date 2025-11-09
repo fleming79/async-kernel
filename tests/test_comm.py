@@ -1,7 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from async_kernel.comm import Comm, CommManager
 
+if TYPE_CHECKING:
+    from async_kernel import Kernel
 
-async def test_comm(kernel) -> None:
+
+async def test_comm(kernel: Kernel) -> None:
     assert isinstance(kernel.comm_manager, CommManager)
     c = Comm(target_name="bar")
     msgs = []
@@ -27,7 +34,7 @@ async def test_comm(kernel) -> None:
     assert c.target_name == "bar"
 
 
-async def test_comm_manager(kernel, mocker) -> None:
+async def test_comm_manager(kernel: Kernel, mocker) -> None:
     manager = kernel.comm_manager
     msgs = []
 
@@ -62,22 +69,22 @@ async def test_comm_manager(kernel, mocker) -> None:
     assert manager.get_comm("foo") is None
 
     msg = {"content": {"comm_id": comm.comm_id, "target_name": "foo"}}
-    manager.comm_open(None, None, msg)
+    manager.comm_open(None, None, msg)  # pyright: ignore[reportArgumentType]
     assert len(msgs) == 1
     msg["content"]["target_name"] = "bar"
-    manager.comm_open(None, None, msg)
+    manager.comm_open(None, None, msg)  # pyright: ignore[reportArgumentType]
     assert len(msgs) == 1
     msg = {"content": {"comm_id": comm.comm_id, "target_name": "fizz"}}
-    manager.comm_open(None, None, msg)
+    manager.comm_open(None, None, msg)  # pyright: ignore[reportArgumentType]
     assert len(msgs) == 1
 
     manager.register_comm(comm)
     assert manager.get_comm(comm.comm_id) == comm
     msg = {"content": {"comm_id": comm.comm_id}}
-    manager.comm_msg(None, None, msg)
+    manager.comm_msg(None, None, msg)  # pyright: ignore[reportArgumentType]
     assert len(msgs) == 2
     msg["content"]["comm_id"] = "foo"
-    manager.comm_msg(None, None, msg)
+    manager.comm_msg(None, None, msg)  # pyright: ignore[reportArgumentType]
     assert len(msgs) == 2
 
     manager.register_comm(comm)
@@ -88,7 +95,7 @@ async def test_comm_manager(kernel, mocker) -> None:
     manager.kernel = kernel
     assert comm.kernel is kernel
 
-    manager.comm_close(None, None, msg)
+    manager.comm_close(None, None, msg)  # pyright: ignore[reportArgumentType]
     assert len(msgs) == 3
 
     assert comm._closed  # pyright: ignore[reportPrivateUsage]

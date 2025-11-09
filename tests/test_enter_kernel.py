@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from async_kernel import Kernel
-from async_kernel.kernelspec import KernelName
+from async_kernel.kernelspec import Backend, KernelName
 from async_kernel.typing import SocketID
 
 
@@ -17,7 +17,7 @@ def anyio_backend(kernel_name: KernelName):
     return "trio" if kernel_name is KernelName.trio else "asyncio"
 
 
-async def test_start_kernel_in_context(anyio_backend, kernel_name):
+async def test_start_kernel_in_context(anyio_backend: Backend, kernel_name: KernelName):
     async with Kernel() as kernel:
         assert kernel.kernel_name == kernel_name
         connection_file = kernel.connection_file
