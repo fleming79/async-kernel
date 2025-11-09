@@ -730,15 +730,14 @@ class Kernel(HasTraits):
                     except (ValueError, TypeError, KeyError):
                         self.log.debug("Invalid msg %s", msg)
                         continue
-                    job = Job(
-                        socket_id=socket_id,
-                        socket=socket,
-                        ident=ident,
-                        msg=msg,
-                        received_time=time.monotonic(),
-                        run_mode=None,  # pyright: ignore[reportArgumentType]
-                    )
-                    run_mode = job["run_mode"] = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
+                    job: Job = {
+                        "socket_id": socket_id,
+                        "socket": socket,
+                        "ident": ident,
+                        "msg": msg,
+                        "received_time": time.monotonic(),
+                    }
+                    run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
                     self.log.debug(
                         "%s  %s run mode %s caller %s handler: %s", socket_id, msg_type, run_mode, caller, handler
                     )
@@ -938,11 +937,7 @@ class Kernel(HasTraits):
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
         c = job["msg"]["content"]
-        if (
-            job["run_mode"] is RunMode.queue
-            and (job["received_time"] < self._stop_on_error_time)
-            and not c.get("silent", False)
-        ):
+        if (job["received_time"] < self._stop_on_error_time) and not c.get("silent", False):
             self.log.info("Aborting execute_request: %s", job)
             return error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self.execution_count

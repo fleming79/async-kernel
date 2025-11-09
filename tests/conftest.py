@@ -122,4 +122,4 @@ def job() -> Job[ExecuteContent]:
     )
     header = MsgHeader(msg_id="", session="", username="", date="", msg_type=MsgType.execute_request, version="1")
     msg = Message(header=header, parent_header=header, metadata={}, buffers=[], content=content)
-    return Job(msg=msg, socket_id=SocketID.shell, ident=[b""], socket=None, received_time=0.0, run_mode=None)  # pyright: ignore[ reportArgumentType]
+    return Job(msg=msg, socket_id=SocketID.shell, ident=[b""], socket=None, received_time=0.0)  # pyright: ignore[ reportArgumentType]
