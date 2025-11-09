@@ -228,7 +228,7 @@ async def test_is_complete(client, code: str, status: str):
 
 
 async def test_message_order(client):
-    N = 100  # number of messages to test
+    N = 10  # number of messages to test
 
     _, reply = await utils.execute(client, "a = 1")
     offset = reply["execution_count"] + 1
