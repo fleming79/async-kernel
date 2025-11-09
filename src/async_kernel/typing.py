@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 __all__ = [
     "DebugMessage",
     "Job",
-    "KernelConcurrencyMode",
     "Message",
     "MetadataKeys",
     "MsgHeader",
@@ -112,13 +111,6 @@ class RunMode(enum.StrEnum):
         
         Use this for short running messages that should be processed as soon as it is received.
     """
-
-
-class KernelConcurrencyMode(enum.StrEnum):
-    ""
-
-    default = "default"
-    "The default concurrency mode"
 
 
 class MsgType(enum.StrEnum):
