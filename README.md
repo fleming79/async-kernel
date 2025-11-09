@@ -18,14 +18,14 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
 - [Concurrent message handling](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/)
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 - [Configurable backend](https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec)
-    - Asyncio (default)
-        - [uvloop](https://pypi.org/project/uvloop/) enabled by default[^uv-loop]
-    - [trio](https://pypi.org/project/trio/) backend
+  - Asyncio (default)
+    - [uvloop](https://pypi.org/project/uvloop/) enabled by default[^uv-loop]
+  - [trio](https://pypi.org/project/trio/) backend
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell) provides:
-    - code execution
-    - magic
-    - code completions
-    - history
+  - code execution
+  - magic
+  - code completions
+  - history
 
 [![Link to demo](https://github.com/user-attachments/assets/9a4935ba-6af8-4c9f-bc67-b256be368811)](https://fleming79.github.io/async-kernel/simple_example/ "Show demo notebook.")
 

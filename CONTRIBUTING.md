@@ -125,7 +125,7 @@ uv run mkdocs build -s
 ### Serve locally
 
 ```bash
-mkdocs serve 
+mkdocs serve
 ```
 
 ### API / Docstrings

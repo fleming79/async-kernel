@@ -28,10 +28,10 @@ async-kernel -a async-trio
 Additional arguments can be included when defining the kernel spec, these include:
 
 - Arguments for [async_kernel.kernelspec.write_kernel_spec][]
-    - `--kernel_factory`
-    - `--fullpath=False`
-    - `--display_name`
-    - `--prefix`
+  - `--kernel_factory`
+  - `--fullpath=False`
+  - `--display_name`
+  - `--prefix`
 - Nested attributes on the kernel via \`kernel.\<nested.attribute.name>'
 
 Each parameter should be specified as if it were a 'flag' as follows.
@@ -91,13 +91,13 @@ or, with compact notation to set a Boolean value as a Boolean flag.
     Set `kernel.quiet=True`:
 
     ```console
-    --quiet 
+    --quiet
     ```
 
     Set `kernel.quiet=False`:
 
     ```bash
-    --no=quiet 
+    --no=quiet
     ```
 
 ## Remove a kernel spec
