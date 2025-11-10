@@ -619,7 +619,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> None:
         """
-        Queue the execution of `func` in a queue unique to it and this caller (thread-safe).
+        Queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).
 
         The queue executor loop will stay open until one of the following occurs:
 
