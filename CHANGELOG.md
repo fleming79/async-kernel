@@ -5,11 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-11-10
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Drop 'run_mode' key from Job dict. [#174](https://github.com/fleming79/async-kernel/pull/174)
+
+- Remove usage of KernelConcurrencyMode. It was functional but unnecessary. [#173](https://github.com/fleming79/async-kernel/pull/173)
+
+- Run shell and control socket loops in threads without event loops. [#172](https://github.com/fleming79/async-kernel/pull/172)
+
+### <!-- 1 --> 🚀 Features
+
+- Use BinarySemaphore instead of Lock for best performance in send_reply. [#178](https://github.com/fleming79/async-kernel/pull/178)
+
+- Use a lock in send_reply. [#175](https://github.com/fleming79/async-kernel/pull/175)
+
+### <!-- 5 --> 📝 Documentation
+
+- Use BinarySemaphore instead of Lock for best performance in send_reply and update readme. [#179](https://github.com/fleming79/async-kernel/pull/179)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Switch from mdformat to prettier for formatting markdown [#177](https://github.com/fleming79/async-kernel/pull/177)
+
+- Improve typehints in tests. [#176](https://github.com/fleming79/async-kernel/pull/176)
+
+- Added Kernel.run and permit the kernel to run outside the main thread [#171](https://github.com/fleming79/async-kernel/pull/171)
+
 ## [0.7.0-rc.2] - 2025-11-07
 
 ### <!-- 1 --> 🚀 Features
 
 - Use low-level async primatives in caller module. [#169](https://github.com/fleming79/async-kernel/pull/169)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.7.0-rc.2 [#170](https://github.com/fleming79/async-kernel/pull/170)
 
 ## [0.7.0-rc.1] - 2025-11-04
 
@@ -423,6 +455,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.7.0]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.2..v0.7.0
 [0.7.0-rc.2]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.1..v0.7.0-rc.2
 [0.7.0-rc.1]: https://github.com/fleming79/async-kernel/compare/v0.6.3..v0.7.0-rc.1
 [0.6.3]: https://github.com/fleming79/async-kernel/compare/v0.6.2..v0.6.3
