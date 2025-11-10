@@ -479,6 +479,39 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#asynchronous-event-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      Asynchronous event loops
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Asynchronous event loops">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      Messaging
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run mode
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#origin" class="md-nav__link">
     <span class="md-ellipsis">
       Origin
@@ -1189,6 +1222,39 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#asynchronous-event-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      Asynchronous event loops
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Asynchronous event loops">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      Messaging
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run mode
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#origin" class="md-nav__link">
     <span class="md-ellipsis">
       Origin
@@ -1225,25 +1291,33 @@ viewing the latest version.
 <a href="https://docs.basedpyright.com"><img alt="basedpyright - checked" src="https://img.shields.io/badge/basedpyright-checked-42b983" /></a>
 <a href="https://squidfunk.github.io/mkdocs-material/"><img alt="Built with Material for MkDocs" src="https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&amp;logo=MaterialForMkDocs&amp;logoColor=white" /></a>
 <a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a></p>
-<p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter kernel</a> that runs in an <a href="https://pypi.org/project/anyio/">anyio</a> event loop.</p>
-<p><strong><a href="https://fleming79.github.io/async-kernel/">Documentation</a></strong></p>
+<p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter kernel</a> that enables concurrent execution.</p>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
-<ul>
+<ul class="task-list">
 <li><a href="https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/">Concurrent message handling</a></li>
+<li><a href="#asynchronous-event-loops">Separate event loops per channel</a> + <a href="#messaging">dedicated per-channel thread for message scheduling</a></li>
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
 <li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a></li>
+<li><a href="https://pypi.org/project/anyio/">anyio</a></li>
 <li>Asyncio (default)<ul>
 <li><a href="https://pypi.org/project/uvloop/">uvloop</a> enabled by default<sup id="fnref:uv-loop"><a class="footnote-ref" href="#fn:uv-loop">1</a></sup></li>
 </ul>
 </li>
 <li><a href="https://pypi.org/project/trio/">trio</a> backend</li>
-<li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a> provides:</li>
+<li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a>
+  provides:</li>
 <li>code execution</li>
 <li>magic</li>
 <li>code completions</li>
 <li>history</li>
+<li>The <code>Caller</code> class provides thread-safe scheduling of code execution (thanks to <a href="https://aiologic.readthedocs.io/latest/">aiologic</a>)</li>
+<li>GUI event loops</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> tk</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> qt</li>
 </ul>
-<p><a href="https://fleming79.github.io/async-kernel/simple_example/" title="Show demo notebook."><img alt="Link to demo" src="https://github.com/user-attachments/assets/9a4935ba-6af8-4c9f-bc67-b256be368811" /></a></p>
+<p><strong><a href="https://fleming79.github.io/async-kernel/">Documentation</a></strong></p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>async-kernel
 </code></pre></div>
@@ -1252,6 +1326,104 @@ viewing the latest version.
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
 async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 </code></pre></div>
+<h2 id="asynchronous-event-loops">Asynchronous event loops<a class="headerlink" href="#asynchronous-event-loops" title="Permanent link">&para;</a></h2>
+<p>Async kernel provides two event loops (one per channel):</p>
+<ul>
+<li><code>shell</code>: The shell event loop runs in the thread where it is started; normally the <code>MainThread</code> (it is possible to run the shell in other threads)</li>
+<li><code>control</code>: The control event loop always starts in a new thread named 'ControlThread'</li>
+</ul>
+<h3 id="messaging">Messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h3>
+<p>Messages are received in a separate thread (per-channel) with the target function <a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.receive_msg_loop">receive_msg_loop</a>
+and processed as follows:</p>
+<ol>
+<li>Get the <a href="https://fleming79.github.io/async-kernel/latest/reference/typing/#async_kernel.typing.MsgType">message type</a> from the message header.</li>
+<li>Get the run mode based on the message type and channel (<code>shell</code> or <code>control</code>).</li>
+<li>Using the <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Caller</a> corresponding to the event loop schedule handling of the job via the Caller methods as follows.</li>
+<li><code>queue</code> -&gt; <code>caller.queue_call</code></li>
+<li><code>thread</code> -&gt; <code>caller.to_thread</code></li>
+<li><code>task</code> -&gt; <code>caller.call_soon</code></li>
+<li><code>blocking</code> -&gt; <code>caller.call_direct</code></li>
+</ol>
+<h3 id="run-mode">Run mode<a class="headerlink" href="#run-mode" title="Permanent link">&para;</a></h3>
+<p>The <a href="https://fleming79.github.io/async-kernel/latest/reference/typing/?h=run_mode#async_kernel.typing.RunMode">run mode</a> (one of <code>queue</code>, <code>task</code>, <code>thread</code>, <code>blocking</code>)
+<a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.get_run_mode"><code>get_run_mode</code></a> is then determined
+according to the <code>MsgType</code> and channel.</p>
+<table>
+<thead>
+<tr>
+<th>MsgType</th>
+<th>control</th>
+<th>shell</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>comm_close</td>
+<td>blocking</td>
+<td>blocking</td>
+</tr>
+<tr>
+<td>comm_info_request</td>
+<td>blocking</td>
+<td>blocking</td>
+</tr>
+<tr>
+<td>comm_msg</td>
+<td>queue</td>
+<td>queue</td>
+</tr>
+<tr>
+<td>comm_open</td>
+<td>blocking</td>
+<td>blocking</td>
+</tr>
+<tr>
+<td>complete_request</td>
+<td>thread</td>
+<td>thread</td>
+</tr>
+<tr>
+<td>debug_request</td>
+<td>queue</td>
+<td>None</td>
+</tr>
+<tr>
+<td>execute_request</td>
+<td>task</td>
+<td>queue</td>
+</tr>
+<tr>
+<td>history_request</td>
+<td>thread</td>
+<td>thread</td>
+</tr>
+<tr>
+<td>inspect_request</td>
+<td>thread</td>
+<td>thread</td>
+</tr>
+<tr>
+<td>interrupt_request</td>
+<td>blocking</td>
+<td>blocking</td>
+</tr>
+<tr>
+<td>is_complete_request</td>
+<td>thread</td>
+<td>thread</td>
+</tr>
+<tr>
+<td>kernel_info_request</td>
+<td>blocking</td>
+<td>blocking</td>
+</tr>
+<tr>
+<td>shutdown_request</td>
+<td>blocking</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
 <p>Async kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
 of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to the original contributors of IPyKernel that made Async kernel possible.</p>

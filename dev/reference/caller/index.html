@@ -3019,7 +3019,7 @@ provides methods to start, stop, and query the status of the caller.</p>
             <b><code><a class="autorefs autorefs-internal" title="            queue_call (async_kernel.caller.Caller.queue_call)" href="#async_kernel.caller.Caller.queue_call">queue_call</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Queue the execution of <code>func</code> in a queue unique to it and this caller (thread-safe).</p>
+              <p>Queue the execution of <code>func</code> in a queue unique to it and the caller instance (thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -4403,7 +4403,7 @@ need to be performed from within the callers event loop/taskgroup.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Queue the execution of <code>func</code> in a queue unique to it and this caller (thread-safe).</p>
+        <p>Queue the execution of <code>func</code> in a queue unique to it and the caller instance (thread-safe).</p>
 <p>The queue executor loop will stay open until one of the following occurs:</p>
 <ol>
 <li>The method <a class="autorefs autorefs-internal" title="            queue_close" href="#async_kernel.caller.Caller.queue_close">async_kernel.caller.Caller.queue_close</a> is called with <code>func</code>.</li>
@@ -4509,7 +4509,7 @@ need to be performed from within the callers event loop/taskgroup.</p>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Queue the execution of `func` in a queue unique to it and this caller (thread-safe).</span>
+<span class="sd">    Queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).</span>
 
 <span class="sd">    The queue executor loop will stay open until one of the following occurs:</span>
 
