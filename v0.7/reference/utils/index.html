@@ -953,15 +953,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.utils.do_not_debug_this_thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;do_not_debug_this_thread
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#async_kernel.utils.get_kernel" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel
@@ -1263,15 +1254,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.utils.do_not_debug_this_thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;do_not_debug_this_thread
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#async_kernel.utils.get_kernel" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel
@@ -1425,13 +1407,6 @@ viewing the latest version.
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            async_kernel.utils.do_not_debug_this_thread" href="#async_kernel.utils.do_not_debug_this_thread">do_not_debug_this_thread</a></code></b>
-            –
-            <div class="doc-md-description">
-              <p>A context to mark the thread for debugpy to not debug.</p>
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            async_kernel.utils.get_job" href="#async_kernel.utils.get_job">get_job</a></code></b>
             –
             <div class="doc-md-description">
@@ -1505,7 +1480,7 @@ viewing the latest version.
 
 
 <a href="#async_kernel.utils.mark_thread_pydev_do_not_trace" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n"><span title="async_kernel.utils.mark_thread_pydev_do_not_trace(thread)">thread</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="threading.Thread" href="https://docs.python.org/3/library/threading.html#threading.Thread">Thread</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.utils.mark_thread_pydev_do_not_trace(remove)">remove</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n"><span title="async_kernel.utils.mark_thread_pydev_do_not_trace(thread)">thread</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="threading.Thread" href="https://docs.python.org/3/library/threading.html#threading.Thread">Thread</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.utils.mark_thread_pydev_do_not_trace(remove)">remove</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1515,54 +1490,13 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifies the given thread&#39;s attributes to hide or unhide it from the debugger (e.g., debugpy).&quot;&quot;&quot;</span>
+    <span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span> <span class="ow">or</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
     <span class="n">thread</span><span class="o">.</span><span class="n">pydev_do_not_trace</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">remove</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="async_kernel.utils.do_not_debug_this_thread" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">async_kernel.utils.do_not_debug_this_thread</span>
-
-
-<a href="#async_kernel.utils.do_not_debug_this_thread" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_not_debug_this_thread</span><span class="p">()</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>A context to mark the thread for debugpy to not debug.</p>
-
-
-            <details class="quote">
-              <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">do_not_debug_this_thread</span><span class="p">():</span>
-    <span class="s2">&quot;A context to mark the thread for debugpy to not debug.&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">LAUNCHED_BY_DEBUGPY</span><span class="p">:</span>
-        <span class="n">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">())</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">yield</span>
-    <span class="k">finally</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">LAUNCHED_BY_DEBUGPY</span><span class="p">:</span>
-            <span class="n">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">(),</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1587,9 +1521,9 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Kernel</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Kernel</span><span class="p">:</span>
     <span class="s2">&quot;Get the current kernel.&quot;</span>
     <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">Kernel</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -1616,12 +1550,12 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Job</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Job</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="s2">&quot;Get the job for the current context.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_job_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
@@ -1651,9 +1585,9 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Get the [parent message]() for the current context.&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">get_job</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;msg&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -1680,9 +1614,9 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
     <span class="s2">&quot;Gets [metadata]() for the current context.&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">get_job</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;msg&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">{})</span>
 </code></pre></div></td></tr></table></div>
@@ -1709,9 +1643,9 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="s2">&quot;Gets the [tags]() for the current context.&quot;</span>
     <span class="k">return</span> <span class="n">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">,</span> <span class="p">[])</span>
 </code></pre></div></td></tr></table></div>
@@ -1738,14 +1672,14 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">84</span>
-<span class="normal">85</span>
-<span class="normal">86</span>
-<span class="normal">87</span>
-<span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_execute_request_timeout</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_execute_request_timeout</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Gets the execute_request_timeout for the current context.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">timeout</span> <span class="o">:=</span> <span class="n">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">MetadataKeys</span><span class="o">.</span><span class="n">timeout</span><span class="p">):</span>
@@ -1777,10 +1711,10 @@ viewing the latest version.
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">94</span>
-<span class="normal">95</span>
-<span class="normal">96</span>
-<span class="normal">97</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_execution_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_execution_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="s2">&quot;Gets the execution count for the current context, defaults to the current kernel count.&quot;</span>
 
     <span class="k">return</span> <span class="n">_execution_count_var</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">Kernel</span><span class="p">()</span><span class="o">.</span><span class="n">_execution_count</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
@@ -1860,7 +1794,20 @@ to set the nesteded attributes on on kernels.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
 <span class="normal">101</span>
 <span class="normal">102</span>
 <span class="normal">103</span>
@@ -1879,20 +1826,7 @@ to set the nesteded attributes on on kernels.</p>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set a nested attribute of an object.</span>
 

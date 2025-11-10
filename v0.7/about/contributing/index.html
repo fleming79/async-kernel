@@ -1449,16 +1449,16 @@ are generated with <a href="https://about.codecov.io/">Codecov</a>.</p>
 </ol>
 </details>
 <h3 id="pre-commit">Pre-commit<a class="headerlink" href="#pre-commit" title="Permanent link">&para;</a></h3>
-<p>Pre-commit runs a number of checks on the code and will also re-format it.</p>
+<p>Pre-commit(prek) runs a number of checks on the code and will also re-format it.</p>
 <p>Pre-commit will run automatically on submission of a PR but you can also run it locally as a tool with:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="changed-files" name="__tabbed_1" type="radio" /><input id="all-files" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="changed-files">Changed files</label><label for="all-files">All files</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>pre-commit<span class="w"> </span>run
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>prek<span class="w"> </span>run
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>-a
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>prek<span class="w"> </span>run<span class="w"> </span>-a
 </code></pre></div>
 </div>
 </div>
@@ -1494,7 +1494,7 @@ uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"
 for inclusion in the usage section of the documentation.</p>
 </details>
 <h3 id="serve-locally">Serve locally<a class="headerlink" href="#serve-locally" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>serve<span class="w"> </span>
+<div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>serve
 </code></pre></div>
 <h3 id="api-docstrings">API / Docstrings<a class="headerlink" href="#api-docstrings" title="Permanent link">&para;</a></h3>
 <p>API documentation is included using <a href="https://mkdocstrings.github.io/">mkdocstrings</a>.</p>
@@ -1553,7 +1553,7 @@ It will always publish to TestPyPI on a push. If the git head has a tag starting
 to PyPi. If it is published to PyPI successfully, it will also create a Github release.</p>
 <h3 id="run-ci-checks-locally">Run ci checks locally<a class="headerlink" href="#run-ci-checks-locally" title="Permanent link">&para;</a></h3>
 <p>You can run tests locally to see if there is anything that might be caught by CI.</p>
-<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>-a
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>prek<span class="w"> </span>run<span class="w"> </span>-a
 uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-vv<span class="w"> </span>--cov<span class="w"> </span>--cov-fail-under<span class="o">=</span><span class="m">100</span>
 uv<span class="w"> </span>run<span class="w"> </span>basedpyright
 uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>-s

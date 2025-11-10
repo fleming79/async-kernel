@@ -1041,39 +1041,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelConcurrencyMode
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" KernelConcurrencyMode">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode.default" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;default
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode.blocking" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;blocking
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#async_kernel.typing.MsgType" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType
@@ -1450,15 +1417,6 @@ viewing the latest version.
   <a href="#async_kernel.typing.Job.received_time" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;received_time
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.Job.run_mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;run_mode
     </span>
   </a>
   
@@ -1878,39 +1836,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelConcurrencyMode
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" KernelConcurrencyMode">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode.default" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;default
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.KernelConcurrencyMode.blocking" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;blocking
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#async_kernel.typing.MsgType" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType
@@ -2292,15 +2217,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.Job.run_mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;run_mode
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2434,19 +2350,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            async_kernel.typing.RunMode" href="#async_kernel.typing.RunMode">RunMode</a></code></b>
           –
           <div class="doc-md-description">
-            <p>An Enum of the <a class="autorefs autorefs-internal" title="            handle_message_request
-
-
-  
-      async
-  " href="../kernel/#async_kernel.kernel.Kernel.handle_message_request">kernel run modes</a> available for</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            async_kernel.typing.KernelConcurrencyMode" href="#async_kernel.typing.KernelConcurrencyMode">KernelConcurrencyMode</a></code></b>
-          –
-          <div class="doc-md-description">
-            
+            <p>An Enum of the run modes available for altering how message requests are run.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2772,13 +2676,7 @@ viewing the latest version.
               Bases: <code><a class="autorefs autorefs-external" title="enum.StrEnum" href="https://docs.python.org/3/library/enum.html#enum.StrEnum">StrEnum</a></code></p>
 
 
-        <p>An Enum of the <a class="autorefs autorefs-internal" title="            handle_message_request
-
-
-  
-      async
-  " href="../kernel/#async_kernel.kernel.Kernel.handle_message_request">kernel run modes</a> available for
-altering how message requests are run.</p>
+        <p>An Enum of the run modes available for altering how message requests are run.</p>
 <div class="admonition hint">
 <p class="admonition-title">String match options</p>
 <p>Each of these options will give a match.</p>
@@ -3021,16 +2919,16 @@ Add it at the top line (or use the string equivalent "##<run mode>") of a code c
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">86</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
 <span class="normal">87</span>
 <span class="normal">88</span>
 <span class="normal">89</span>
 <span class="normal">90</span>
 <span class="normal">91</span>
 <span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_mode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Get a RunMode from the code if it is found.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
@@ -3045,151 +2943,6 @@ Add it at the top line (or use the string equivalent "##<run mode>") of a code c
     </div>
 
 </div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="async_kernel.typing.KernelConcurrencyMode" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">async_kernel.typing.KernelConcurrencyMode</span>
-
-
-<a href="#async_kernel.typing.KernelConcurrencyMode" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-external" title="enum.StrEnum" href="https://docs.python.org/3/library/enum.html#enum.StrEnum">StrEnum</a></code></p>
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            default
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.typing.KernelConcurrencyMode.default)" href="#async_kernel.typing.KernelConcurrencyMode.default">default</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p>The default concurrency mode</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            blocking
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.typing.KernelConcurrencyMode.blocking)" href="#async_kernel.typing.KernelConcurrencyMode.blocking">blocking</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p>All handlers are run with the <a class="autorefs autorefs-internal" title="            blocking
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="#async_kernel.typing.RunMode.blocking">blocking</a>.</p>
-          </div>
-        </li>
-    </ul>
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.typing.KernelConcurrencyMode.default" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">default</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.typing.KernelConcurrencyMode.default" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">default</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The default concurrency mode</p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.typing.KernelConcurrencyMode.blocking" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">blocking</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.typing.KernelConcurrencyMode.blocking" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">blocking</span> <span class="o">=</span> <span class="s1">&#39;blocking&#39;</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>All handlers are run with the <a class="autorefs autorefs-internal" title="            blocking
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="#async_kernel.typing.RunMode.blocking">blocking</a>.</p>
-
-    </div>
-
-</div>
-
-
-
 
 
 
@@ -4818,19 +4571,6 @@ see also: <a class="autorefs autorefs-internal" title="            async_kernel.
             <p>The time the message was received.</p>
           </div>
         </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            run_mode
-
-
-  
-      instance-attribute
-   (async_kernel.typing.Job.run_mode)" href="#async_kernel.typing.Job.run_mode">run_mode</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            async_kernel.typing.RunMode" href="#async_kernel.typing.RunMode">RunMode</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The run mode.</p>
-          </div>
-        </li>
     </ul>
 
 
@@ -4971,30 +4711,6 @@ see also: <a class="autorefs autorefs-internal" title="            async_kernel.
     <div class="doc doc-contents ">
 
         <p>The time the message was received.</p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.typing.Job.run_mode" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">run_mode</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.typing.Job.run_mode" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">run_mode</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            async_kernel.typing.RunMode" href="#async_kernel.typing.RunMode">RunMode</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The run mode.</p>
 
     </div>
 
