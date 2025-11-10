@@ -28,7 +28,7 @@ import anyio
 import IPython.core.completer
 import traitlets
 import zmq
-from aiologic import Event, Lock
+from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import current_async_library
 from IPython.core.error import StdinNotImplementedError
 from IPython.utils.tokenutil import token_at_cursor
@@ -133,7 +133,7 @@ def bind_socket(
 
 @functools.cache
 def wrap_handler(
-    runner: Callable[[HandlerType, Lock, Job]], lock: Lock, handler: HandlerType
+    runner: Callable[[HandlerType, BinarySemaphore, Job]], lock: BinarySemaphore, handler: HandlerType
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
     """
     A cache of run handlers.
@@ -715,7 +715,7 @@ class Kernel(HasTraits):
             "backend_options": self.anyio_backend_options,
             "name": None,
         }
-        lock = Lock()
+        lock = BinarySemaphore()
         with self._bind_socket(socket_id, socket):
             started()
             while True:
@@ -845,7 +845,7 @@ class Kernel(HasTraits):
             raise TypeError(msg)
         return f  # pyright: ignore[reportReturnType]
 
-    async def run_handler(self, handler: HandlerType, lock: Lock, job: Job[dict]) -> None:
+    async def run_handler(self, handler: HandlerType, lock: BinarySemaphore, job: Job[dict]) -> None:
         """
         A wrapper for running handler in the context of the job/message.
 
