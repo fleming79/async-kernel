@@ -380,6 +380,18 @@ class TestCaller:
         with pytest.raises(ValueError, match="A name was not provided"):
             Caller.to_thread_advanced({}, lambda: None)
 
+    async def test_get_instance_main_thread(self, anyio_backend: Backend):
+        name = "MainThread"
+        # Check a caller can be started in asyncio using create_task.
+        assert not Caller._instances  # pyright: ignore[reportPrivateUsage]
+        if anyio_backend == Backend.trio:
+            with pytest.raises(RuntimeError):
+                Caller.get_instance(name=name)
+            return
+        if anyio_backend == Backend.asyncio:
+            caller = Caller.get_instance(name=name)
+        assert await caller.call_soon(lambda: 1 + 1) == 2
+
     async def test_get_instance_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
             Caller.get_instance(name=None, create=False)
