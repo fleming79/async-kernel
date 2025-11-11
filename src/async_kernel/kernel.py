@@ -584,7 +584,7 @@ class Kernel(HasTraits):
         async def run_in_shell_event_loop(ready=shell_ready.set):
             stdin_socket = Context.instance().socket(SocketType.ROUTER)
             with self._bind_socket(SocketID.stdin, stdin_socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
-                thread = threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, ready))
+                thread = threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, ready), daemon=True)
                 thread.start()
                 await anyio.sleep_forever()
 
@@ -592,13 +592,13 @@ class Kernel(HasTraits):
             backend=self.anyio_backend, name="ControlThread", protected=True
         )
 
-        threading.Thread(target=heartbeat, name="heartbeat").start()
+        threading.Thread(target=heartbeat, name="heartbeat", daemon=True).start()
         heartbeat_ready.wait()
 
-        threading.Thread(target=pub_proxy, name="iopub proxy").start()
+        threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True).start()
         pub_proxy_ready.wait()
 
-        threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready.set)).start()
+        threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready.set), daemon=True).start()
         control_ready.wait()
 
         self.callers[SocketID.shell].call_soon(run_in_shell_event_loop)

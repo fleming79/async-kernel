@@ -734,9 +734,13 @@ class Caller(anyio.AsyncContextManagerMixin):
         When called without a name `MainThread` will be used as the `name`.
 
         Args:
-            create: Create a new instance if one with the corresponding name does not already exist.
-                When not provided it defaults to `True` when `name` is `MainThread` otherwise `False`.
+            create: Create a new instance if a Caller with the corresponding name does not already exist.
             **kwargs: Options to use to identify or create a new instance if an instance does not already exist.
+
+        Notes:
+            - If `name` is not passed in `**kwargs` name is set to `name = "MainThread"`.
+            - For the case of `name="MainThread"` an instance will be created if one doesn't already exist except if `create=False`.
+            - `'MainThread'` always corresponds to an existing thread
         """
         if "name" not in kwargs:
             kwargs["name"] = "MainThread"
@@ -831,6 +835,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         backend: Backend | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         protected: bool = False,
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        daemon: bool = True,
     ) -> Self:
         """
         A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.
@@ -847,6 +852,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             log: A logging adapter to use for debug messages.
             protected: When True, the caller will not shutdown unless shutdown is called with `force=True`.
             backend_options: Backend options for [anyio.run][]. Defaults to `Kernel.backend_options`.
+            daemon: Passed to [threading.Thread][].
 
         Returns:
             Caller: The newly created caller.
@@ -883,7 +889,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             backend_options = kernel.anyio_backend_options.get(backend) if kernel else None
 
         ready_event = Event()
-        thread = threading.Thread(target=async_kernel_caller, name=name or None)
+        thread = threading.Thread(target=async_kernel_caller, name=name or None, daemon=daemon)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
         thread.start()
         ready_event.wait()
