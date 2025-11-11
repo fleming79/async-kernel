@@ -4829,8 +4829,7 @@ need to be performed from within the callers event loop/taskgroup.</p>
 )
           –
           <div class="doc-md-description">
-            <p>Create a new instance if one with the corresponding name does not already exist.
-When not provided it defaults to <code>True</code> when <code>name</code> is <code>MainThread</code> otherwise <code>False</code>.</p>
+            <p>Create a new instance if a Caller with the corresponding name does not already exist.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -4845,6 +4844,15 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
         </li>
     </ul>
 
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <ul>
+<li>If <code>name</code> is not passed in <code>**kwargs</code> name is set to <code>name = "MainThread"</code>.</li>
+<li>For the case of <code>name="MainThread"</code> an instance will be created if one doesn't already exist except if <code>create=False</code>.</li>
+<li><code>'MainThread'</code> always corresponds to an existing thread</li>
+</ul>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
@@ -4869,7 +4877,11 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
 <span class="normal">746</span>
 <span class="normal">747</span>
 <span class="normal">748</span>
-<span class="normal">749</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_instance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerStartNewOptions</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A [classmethod][] that gets the caller associated to the thread using the threads name.</span>
@@ -4878,9 +4890,13 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
 <span class="sd">    When called without a name `MainThread` will be used as the `name`.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        create: Create a new instance if one with the corresponding name does not already exist.</span>
-<span class="sd">            When not provided it defaults to `True` when `name` is `MainThread` otherwise `False`.</span>
+<span class="sd">        create: Create a new instance if a Caller with the corresponding name does not already exist.</span>
 <span class="sd">        **kwargs: Options to use to identify or create a new instance if an instance does not already exist.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        - If `name` is not passed in `**kwargs` name is set to `name = &quot;MainThread&quot;`.</span>
+<span class="sd">        - For the case of `name=&quot;MainThread&quot;` an instance will be created if one doesn&#39;t already exist except if `create=False`.</span>
+<span class="sd">        - `&#39;MainThread&#39;` always corresponds to an existing thread</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;MainThread&quot;</span>
@@ -4967,11 +4983,7 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">751</span>
-<span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">755</span>
 <span class="normal">756</span>
 <span class="normal">757</span>
 <span class="normal">758</span>
@@ -4987,7 +4999,11 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
 <span class="normal">768</span>
 <span class="normal">769</span>
 <span class="normal">770</span>
-<span class="normal">771</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_thread</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
@@ -5108,11 +5124,7 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">777</span>
 <span class="normal">778</span>
 <span class="normal">779</span>
 <span class="normal">780</span>
@@ -5158,7 +5170,11 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
 <span class="normal">820</span>
 <span class="normal">821</span>
 <span class="normal">822</span>
-<span class="normal">823</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_thread_advanced</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">options</span><span class="p">:</span> <span class="n">CallerStartNewOptions</span><span class="p">,</span>
@@ -5234,6 +5250,7 @@ When not provided it defaults to <code>True</code> when <code>name</code> is <co
     <span class="n"><a class="autorefs autorefs-internal" title="backend (async_kernel.caller.Caller.start_new(backend))" href="#async_kernel.caller.Caller.start_new(backend)">backend</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.kernelspec.Backend">Backend</span></span> <span class="o">|</span> <span class="n"><span title="async_kernel.typing.NoValue">NoValue</span></span> <span class="o">=</span> <span class="n"><span title="async_kernel.typing.NoValue">NoValue</span></span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="protected (async_kernel.caller.Caller.start_new(protected))" href="#async_kernel.caller.Caller.start_new(protected)">protected</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="backend_options (async_kernel.caller.Caller.start_new(backend_options))" href="#async_kernel.caller.Caller.start_new(backend_options)">backend_options</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n"><span title="async_kernel.typing.NoValue">NoValue</span></span> <span class="o">=</span> <span class="n"><span title="async_kernel.typing.NoValue">NoValue</span></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="daemon (async_kernel.caller.Caller.start_new(daemon))" href="#async_kernel.caller.Caller.start_new(daemon)">daemon</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span>
 </code></pre></div>
 
@@ -5289,6 +5306,16 @@ name is provided, a new thread can always be started.</p>
             <p>Backend options for <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>. Defaults to <code>Kernel.backend_options</code>.</p>
           </div>
         </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.caller.Caller.start_new(daemon)" class="doc doc-heading doc-heading-parameter">              <b><code>daemon</code></b>
+<a href="#async_kernel.caller.Caller.start_new(daemon)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Passed to <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/threading.html#threading.Thread">threading.Thread</a>.</p>
+          </div>
+        </li>
     </ul>
 
 
@@ -5318,11 +5345,7 @@ name is provided, a new thread can always be started.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">825</span>
-<span class="normal">826</span>
-<span class="normal">827</span>
-<span class="normal">828</span>
-<span class="normal">829</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">829</span>
 <span class="normal">830</span>
 <span class="normal">831</span>
 <span class="normal">832</span>
@@ -5383,7 +5406,13 @@ name is provided, a new thread can always be started.</p>
 <span class="normal">887</span>
 <span class="normal">888</span>
 <span class="normal">889</span>
-<span class="normal">890</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">890</span>
+<span class="normal">891</span>
+<span class="normal">892</span>
+<span class="normal">893</span>
+<span class="normal">894</span>
+<span class="normal">895</span>
+<span class="normal">896</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start_new</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5392,6 +5421,7 @@ name is provided, a new thread can always be started.</p>
     <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
     <span class="n">protected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">backend_options</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
+    <span class="n">daemon</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.</span>
@@ -5408,6 +5438,7 @@ name is provided, a new thread can always be started.</p>
 <span class="sd">        log: A logging adapter to use for debug messages.</span>
 <span class="sd">        protected: When True, the caller will not shutdown unless shutdown is called with `force=True`.</span>
 <span class="sd">        backend_options: Backend options for [anyio.run][]. Defaults to `Kernel.backend_options`.</span>
+<span class="sd">        daemon: Passed to [threading.Thread][].</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Caller: The newly created caller.</span>
@@ -5444,7 +5475,7 @@ name is provided, a new thread can always be started.</p>
         <span class="n">backend_options</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">anyio_backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span> <span class="k">if</span> <span class="n">kernel</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="n">ready_event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
-    <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">async_kernel_caller</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">async_kernel_caller</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="n">daemon</span><span class="p">)</span>
     <span class="n">caller</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">thread</span><span class="o">=</span><span class="n">thread</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="n">protected</span><span class="p">)</span>
     <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
     <span class="n">ready_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
@@ -5477,10 +5508,10 @@ name is provided, a new thread can always be started.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">892</span>
-<span class="normal">893</span>
-<span class="normal">894</span>
-<span class="normal">895</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">current_future</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Future</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A [classmethod][] that returns the current future when called from inside a function scheduled by Caller.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_future_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
@@ -5527,15 +5558,15 @@ name is provided, a new thread can always be started.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">897</span>
-<span class="normal">898</span>
-<span class="normal">899</span>
-<span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">903</span>
 <span class="normal">904</span>
-<span class="normal">905</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">905</span>
+<span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span>
+<span class="normal">911</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">all_callers</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">running_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Caller</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A [classmethod][] to get a list of the callers.</span>
@@ -5626,13 +5657,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
-<span class="normal">911</span>
-<span class="normal">912</span>
-<span class="normal">913</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">913</span>
 <span class="normal">914</span>
 <span class="normal">915</span>
 <span class="normal">916</span>
@@ -5709,7 +5734,13 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="normal">987</span>
 <span class="normal">988</span>
 <span class="normal">989</span>
-<span class="normal">990</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">990</span>
+<span class="normal">991</span>
+<span class="normal">992</span>
+<span class="normal">993</span>
+<span class="normal">994</span>
+<span class="normal">995</span>
+<span class="normal">996</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
@@ -5872,13 +5903,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 992</span>
-<span class="normal"> 993</span>
-<span class="normal"> 994</span>
-<span class="normal"> 995</span>
-<span class="normal"> 996</span>
-<span class="normal"> 997</span>
-<span class="normal"> 998</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 998</span>
 <span class="normal"> 999</span>
 <span class="normal">1000</span>
 <span class="normal">1001</span>
@@ -5907,7 +5932,13 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="normal">1024</span>
 <span class="normal">1025</span>
 <span class="normal">1026</span>
-<span class="normal">1027</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">1027</span>
+<span class="normal">1028</span>
+<span class="normal">1029</span>
+<span class="normal">1030</span>
+<span class="normal">1031</span>
+<span class="normal">1032</span>
+<span class="normal">1033</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Future</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
