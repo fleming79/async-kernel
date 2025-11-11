@@ -358,6 +358,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self._backend = Backend(current_async_library())
         self._running = True
+        self._stopped = False
         self._stopped_event = Event()
         async with anyio.create_task_group() as tg:
             try:
@@ -374,13 +375,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         task_status.started()
         try:
             while not self._stopped:
-                if not self._queue:
-                    event = create_async_event()
-                    self._resume = event.set
-                    if not self._stopped and not self._queue:
-                        await event
-                    self._resume = noop
-                while not self._stopped and self._queue:
+                if self._queue:
                     item = self._queue.popleft()
                     if callable(item):
                         try:
@@ -388,10 +383,16 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if inspect.iscoroutine(result):
                                 await result
                         except Exception as e:
-                            self.log.exception("Simple call failed", exc_info=e)
+                            self.log.exception("Direct call failed", exc_info=e)
                     else:
                         context, fut = item
                         context.run(tg.start_soon, self._wrap_call, fut)
+                else:
+                    event = create_async_event()
+                    self._resume = event.set
+                    if not self._stopped and not self._queue:
+                        await event
+                    self._resume = noop
         finally:
             self._running = False
             for item in self._queue:
@@ -496,7 +497,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
-        if self.thread is not threading.current_thread():
+        if self._running and self.thread is not threading.current_thread():
             self._stopped_event.wait()
 
     def schedule_call(
@@ -741,28 +742,31 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Args:
             options: Options to pass to [async_kernel.caller.Caller.start_new][].
-                If name is missing on evaluates to `False` it will assume
-
-
             func: The function.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
 
         Returns:
             A future that can be awaited for the  result of func.
+
+        Raise:
+            ValueError: When a name is not supplied.
+        Notes:
+            - When `options == {"name": None}` the caller is associated with a pool of workers.
         """
         caller = None
-        if not options.get("name"):
-            options = options.copy()
-            options["name"] = None
+        if pool := options == {"name": None}:
             try:
                 caller = cls._to_thread_pool.popleft()
             except IndexError:
                 pass
+        elif not options.get("name"):
+            msg = "A name was not provided in {options=}."
+            raise ValueError(msg)
         if caller is None:
             caller = cls.get_instance(create=True, **options)
         fut = caller.call_soon(func, *args, **kwargs)
-        if not options.get("name"):
+        if pool:
 
             def _to_thread_on_done(_) -> None:
                 if not caller._stopped:
@@ -829,9 +833,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         def async_kernel_caller() -> None:
             anyio.run(caller.get_runner(started=ready_event.set), backend=backend_, backend_options=backend_options)
 
-        backend_ = Backend(backend if backend is not NoValue else current_async_library())
+        kernel = async_kernel.Kernel()
+        backend_ = backend if backend is not NoValue else (current_async_library(failsafe=True) or kernel.anyio_backend)
+
         if backend_options is NoValue:
-            backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
+            backend_options = kernel.anyio_backend_options.get(backend) if kernel else None
+
         ready_event = Event()
         thread = threading.Thread(target=async_kernel_caller, name=name or None)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
