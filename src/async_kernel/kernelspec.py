@@ -47,7 +47,7 @@ def make_argv(
     kernel_name: KernelName | str = KernelName.asyncio,
     kernel_factory: str | KernelFactoryType = "async_kernel.Kernel",
     fullpath: bool = True,
-    **kwargs,
+    **kwargs: dict[str, Any],
 ) -> list[str]:
     """Returns an argument vector (argv) that can be used to start a `Kernel`.
 
@@ -60,10 +60,7 @@ def make_argv(
             callable that returns a non-started kernel.
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
-
-    kwargs:
-        Additional settings to pass when creating the kernel passed to `kernel_factory`.
-        When the kernel factThe key should be the dotted path to the attribute. Or if using a
+        **kwargs: Additional settings to pass when creating the kernel passed to `kernel_factory`.
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
@@ -83,7 +80,7 @@ def write_kernel_spec(
     prefix: str = "",
     kernel_factory: str | KernelFactoryType = "async_kernel.Kernel",
     connection_file: str = "{connection_file}",
-    **kwargs,
+    **kwargs: dict[str, Any],
 ) -> Path:
     """
     Write a kernel spec for launching a kernel.
@@ -95,20 +92,14 @@ def write_kernel_spec(
         display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
         kernel_factory: The string import path to a callable that creates the Kernel or,
             a *self-contained* function that returns an instance of a `Kernel`.
-
         connection_file: The path to the connection file.
         prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
+        **kwargs: Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
+            Each setting should correspond to the dotted path to the attribute relative to the kernel.
+            For example `..., **{'shell.execute_request_timeout'=0.1})`.
 
-    kwargs:
-        Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
-        Each setting should correspond to the dotted path to the attribute in the kernel.
-        For example `kernel.shell.execute_request_timeout` should be passed as `shell.execute_request_timeout`.
-        Unpack from a dict to avoid syntax errors.
-
-        kwargs added to [KernelSpec.argv][jupyter_client.kernelspec.KernelSpec.argv].
-
-    ??? example "Example: Passing a callable kernel_factory."
+    Example passing a callable kernel_factory:
 
         When `kernel_factory` is passed as a callable, the callable is stored in the file
         'kernel_spec.py' inside the kernelspec folder.
@@ -118,8 +109,6 @@ def write_kernel_spec(
 
 
         def kernel_factory(settings):
-            from ipywidgets import Button
-
             from async_kernel import Kernel
 
             class MyKernel(Kernel):
@@ -135,11 +124,8 @@ def write_kernel_spec(
         )
         ```
 
-        !!! warning
-
+        Warning:
             Moving the spec folder will break the import which is stored as an absolute path.
-
-
     """
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), kernel_name)
     path = Path(path) if path else (get_kernel_dir(prefix) / kernel_name)

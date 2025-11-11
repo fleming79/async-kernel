@@ -202,6 +202,14 @@ class TestCaller:
     def teardown_method(self, test_method):
         Caller.stop_all()
 
+    async def test_restart(self):
+        async with Caller(create=True) as caller:
+            pass
+        assert caller.stopped
+        async with caller:
+            assert await caller.call_soon(lambda: 1 + 1) == 2
+        assert caller.stopped
+
     async def test_sync(self):
         async with Caller(create=True) as caller:
             is_called = Event()
@@ -527,6 +535,13 @@ class TestCaller:
         async with caller:
             await fut
 
+    async def test_prevent_multi_entry(self, anyio_backend: Backend):
+        async with Caller(create=True) as caller:
+            assert caller is Caller()
+            with pytest.raises(RuntimeError):
+                async with caller:
+                    pass
+
     async def test_current_future(self, anyio_backend: Backend):
         async with Caller(create=True) as caller:
             fut = caller.call_soon(Caller.current_future)
@@ -608,6 +623,15 @@ class TestCaller:
             await fut
         with pytest.raises(FutureCancelledError):
             fut.exception()
+
+    async def test_cancelled_while_waiting(self, caller: Caller):
+        async def async_func():
+            with anyio.fail_after(0.01):
+                await anyio.sleep_forever()
+
+        fut = caller.call_soon(async_func)
+        with pytest.raises(TimeoutError):
+            await fut
 
     @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
     async def test_wait(

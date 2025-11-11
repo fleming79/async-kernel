@@ -33,7 +33,7 @@ __all__ = ["AsyncDisplayHook", "AsyncDisplayPublisher", "AsyncInteractiveShell"]
 
 class AsyncDisplayHook(DisplayHook):
     """
-    A displayhook subclass that publishes data using ZeroMQ.
+    A displayhook subclass that publishes data using [async_kernel.Kernel.iopub_send][].
 
     This is intended to work with an InteractiveShell instance. It sends a dict of different
     representations of the object.
@@ -72,7 +72,7 @@ class AsyncDisplayHook(DisplayHook):
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
-    """A display publisher that publishes data using a ZeroMQ PUB socket."""
+    """A display publisher that publishes data using [async_kernel.Kernel.iopub_send][]."""
 
     topic: ClassVar = b"display_data"
 
@@ -143,14 +143,13 @@ class AsyncInteractiveShell(InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.Kernel].
 
-    !!! note "Notable differences"
-
+    Notable differences:
         - All [execute requests][async_kernel.Kernel.execute_request] are run asynchronously.
-        - Supports a soft timeout with the metadata {"timeout":<value in seconds>}[^1].
-
-            [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
+        - Supports a soft timeout specified via metadata `{"timeout":<value in seconds>}`[^1].
+        - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
-        - Gui event loops(tk, qt, ...) are not presently supported.
+
+        [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
 
     displayhook_class = Type(AsyncDisplayHook)
@@ -166,18 +165,13 @@ class AsyncInteractiveShell(InteractiveShell):
     "A timeout in seconds to complete [execute requests][async_kernel.Kernel.execute_request]."
 
     run_cell = None  # pyright: ignore[reportAssignmentType]
-    "**not-supported**"
+    "**Not supported** -  use [run_cell_async][async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async] instead."
     should_run_async = None  # pyright: ignore[reportAssignmentType]
     loop_runner_map = None
-    "**not-supported**"
     loop_runner = None
-    "**not-supported**"
-    debug = None
-    "**not-supported**"
-    readline_use = False
-    "**not-supported**"
     autoindent = False
-    "**not-supported**"
+    debug = None
+    "**Not supported - use the built in debugger instead.**"
 
     @default("banner1")
     def _default_banner1(self) -> str:
@@ -304,12 +298,11 @@ class AsyncInteractiveShell(InteractiveShell):
         """
         Enable a given gui.
 
-        **Supported guis.**
-
-        - [x] inline
-        - [x] ipympl
-        - [ ] tk
-        - [ ] qt
+        Supported guis:
+            - [x] inline
+            - [x] ipympl
+            - [ ] tk
+            - [ ] qt
         """
         supported_no_eventloop = [None, "inline", "ipympl"]
         if gui not in supported_no_eventloop:

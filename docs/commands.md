@@ -28,10 +28,10 @@ async-kernel -a async-trio
 Additional arguments can be included when defining the kernel spec, these include:
 
 - Arguments for [async_kernel.kernelspec.write_kernel_spec][]
-  - `--kernel_factory`
-  - `--fullpath=False`
-  - `--display_name`
-  - `--prefix`
+    - `--kernel_factory`
+    - `--fullpath=False`
+    - `--display_name`
+    - `--prefix`
 - Nested attributes on the kernel via \`kernel.\<nested.attribute.name>'
 
 Each parameter should be specified as if it were a 'flag' as follows.
@@ -103,10 +103,6 @@ or, with compact notation to set a Boolean value as a Boolean flag.
 ## Remove a kernel spec
 
 Use the flag `-r` or `--remove` to remove a kernelspec.
-
-```bash
-async-kernel
-```
 
 If you added the custom kernel spec above, you can remove it with:
 
