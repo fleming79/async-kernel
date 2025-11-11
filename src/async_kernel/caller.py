@@ -831,7 +831,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         backend: Backend | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         protected: bool = False,
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        daemon:bool = True
+        daemon: bool = True,
     ) -> Self:
         """
         A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.
