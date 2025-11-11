@@ -742,28 +742,29 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Args:
             options: Options to pass to [async_kernel.caller.Caller.start_new][].
-                If name is missing on evaluates to `False` it will assume
-
-
             func: The function.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
 
         Returns:
             A future that can be awaited for the  result of func.
+
+        Notes:
+            - When `options == {"name": None}` the caller is associated with a pool of workers.
         """
         caller = None
-        if not options.get("name"):
-            options = options.copy()
-            options["name"] = None
+        if pool := options == {"name": None}:
             try:
                 caller = cls._to_thread_pool.popleft()
             except IndexError:
                 pass
+        elif not options.get("name"):
+            msg = "A name must be specified with passing options."
+            raise RuntimeError(msg)
         if caller is None:
             caller = cls.get_instance(create=True, **options)
         fut = caller.call_soon(func, *args, **kwargs)
-        if not options.get("name"):
+        if pool:
 
             def _to_thread_on_done(_) -> None:
                 if not caller._stopped:
@@ -830,9 +831,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         def async_kernel_caller() -> None:
             anyio.run(caller.get_runner(started=ready_event.set), backend=backend_, backend_options=backend_options)
 
-        backend_ = Backend(backend if backend is not NoValue else current_async_library())
+        kernel = async_kernel.Kernel()
+        backend_ = backend if backend is not NoValue else (current_async_library(failsafe=True) or kernel.anyio_backend)
+
         if backend_options is NoValue:
-            backend_options = async_kernel.Kernel().anyio_backend_options.get(backend_)
+            backend_options = kernel.anyio_backend_options.get(backend) if kernel else None
+
         ready_event = Event()
         thread = threading.Thread(target=async_kernel_caller, name=name or None)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
