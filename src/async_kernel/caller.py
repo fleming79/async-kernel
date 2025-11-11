@@ -358,6 +358,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self._backend = Backend(current_async_library())
         self._running = True
+        self._stopped = False
         self._stopped_event = Event()
         async with anyio.create_task_group() as tg:
             try:
@@ -374,13 +375,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         task_status.started()
         try:
             while not self._stopped:
-                if not self._queue:
-                    event = create_async_event()
-                    self._resume = event.set
-                    if not self._stopped and not self._queue:
-                        await event
-                    self._resume = noop
-                while not self._stopped and self._queue:
+                if self._queue:
                     item = self._queue.popleft()
                     if callable(item):
                         try:
@@ -388,10 +383,16 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if inspect.iscoroutine(result):
                                 await result
                         except Exception as e:
-                            self.log.exception("Simple call failed", exc_info=e)
+                            self.log.exception("Direct call failed", exc_info=e)
                     else:
                         context, fut = item
                         context.run(tg.start_soon, self._wrap_call, fut)
+                else:
+                    event = create_async_event()
+                    self._resume = event.set
+                    if not self._stopped and not self._queue:
+                        await event
+                    self._resume = noop
         finally:
             self._running = False
             for item in self._queue:
@@ -496,7 +497,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
-        if self.thread is not threading.current_thread():
+        if self._running and self.thread is not threading.current_thread():
             self._stopped_event.wait()
 
     def schedule_call(
