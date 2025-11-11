@@ -368,6 +368,10 @@ class TestCaller:
         caller.call_soon(finished_event.set)
         the_thread.join()
 
+    async def test_to_thread_advanced_no_name(self):
+        with pytest.raises(ValueError, match="A name was not provided"):
+            Caller.to_thread_advanced({}, lambda: None)
+
     async def test_get_instance_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
             Caller.get_instance(name=None, create=False)

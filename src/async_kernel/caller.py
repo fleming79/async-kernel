@@ -749,6 +749,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         Returns:
             A future that can be awaited for the  result of func.
 
+        Raise:
+            ValueError: When a name is not supplied.
         Notes:
             - When `options == {"name": None}` the caller is associated with a pool of workers.
         """
@@ -759,8 +761,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             except IndexError:
                 pass
         elif not options.get("name"):
-            msg = "A name must be specified with passing options."
-            raise RuntimeError(msg)
+            msg = "A name was not provided in {options=}."
+            raise ValueError(msg)
         if caller is None:
             caller = cls.get_instance(create=True, **options)
         fut = caller.call_soon(func, *args, **kwargs)
