@@ -17,8 +17,7 @@ class Comm(BaseComm):
     """
     An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).
 
-    !!! note
-
+    Notes:
         - `kernel` is added/removed by the CommManager.
         - `kernel` is added to the CommManager by the kernel once the sockets have been opened.
         - publish_msg is no-op when kernel is unset.
@@ -72,8 +71,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
     """
     The comm manager for all Comm instances.
 
-    !!! note
-
+    Notes:
         - When the trait `CommManager.kernel` is set the `Comm.kernel` trait is set on all [async_kernel.comm.Comm][] instances.
         - The `Comm` will only send messages when the kernel is set.
         - The `kernel` sets `CommManager.kernel` when its ready the iopub socket is open.

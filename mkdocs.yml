@@ -97,6 +97,7 @@ plugins:
             - https://ipywidgets.readthedocs.io/en/stable/objects.inv
             - https://jupyter-client.readthedocs.io/en/stable/objects.inv
             - https://anyio.readthedocs.io/en/stable/objects.inv
+            - http://aiologic.readthedocs.io/latest/objects.inv
           options:
             docstring_style: google
             docstring_options:
@@ -171,6 +172,7 @@ nav:
       - "async_kernel.caller": reference/caller.md
       - "async_kernel.comm": reference/comm.md
       - "async_kernel.command": reference/command.md
+      - "async_kernel.debugger": reference/debugger.md
       - "async_kernel.kernel": reference/kernel.md
       - "async_kernel.kernelspec": reference/kernelspec.md
       - "async_kernel.asyncshell": reference/asyncshell.md

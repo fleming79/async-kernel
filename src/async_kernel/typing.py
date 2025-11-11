@@ -53,21 +53,19 @@ class RunMode(enum.StrEnum):
     """
     An Enum of the run modes available for altering how message requests are run.
 
-    !!! hint "String match options"
+    When [receive_msg_loop][async_kernel.Kernel.receive_msg_loop] receives a message it uses
+    [get_run_mode[async_kernel.Kernel.get_run_mode] to get the run mode.
 
-        Each of these options will give a match.
+    Cell overrides:
+        The user can also specify an execution mode in execute requests.
 
-        - `<value>`
-        - `<##value>`
-        - '`RunMode.<value>`.
-
-    !!! note "special usage"
-
-        Run mode can be used in [execute requests](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).
-        Add it at the top line (or use the string equivalent "##<run mode>") of a code cell.
+        Top line comment:
+            ```python
+            ##task
+            ```
+        Tag:
+            see: [async_kernel.typing.MetadataKeys][].
     """
-
-    "The prefix for each run mode."
 
     @override
     def __str__(self):
@@ -93,21 +91,20 @@ class RunMode(enum.StrEnum):
             return None
 
     queue = "queue"
-    "The message for the [handler][async_kernel.typing.MsgType] is run sequentially with other messages that are queued."
+    "Run the message handler using [async_kernel.Caller.queue_call][]."
 
     task = "task"
-    "The message for the [handler][async_kernel.typing.MsgType] are run concurrently in task (starting immediately)."
+    "Run the message handler using [async_kernel.Caller.call_soon][]."
 
     thread = "thread"
-    "Messages for the [handler][async_kernel.typing.MsgType] are run concurrently in a thread (starting immediately)."
+    "Run the message handler using [async_kernel.Caller.to_thread_advanced][] to start use a 'worker'."
 
     blocking = "blocking"
     """
-    Run the handler directly as soon as it is received.
+    Run the message handler using [async_kernel.Caller.call_direct][].
     
-    !!! warning 
-    
-        **This mode blocks the message loop.** 
+    Warning: 
+        **This mode blocks the associated loop.** 
         
         Use this for short running messages that should be processed as soon as it is received.
     """
@@ -166,8 +163,7 @@ class MetadataKeys(enum.StrEnum):
     This is an enum of keys for [metadata in kernel messages](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
     that are used in async_kernel.
 
-    !!! note
-
+    Notes:
         Metadata can be edited in Jupyter lab "Advanced tools" and Tags can be added using "common tools" in the [right side bar](https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar).
     """
 
@@ -196,9 +192,8 @@ class MetadataKeys(enum.StrEnum):
     """
     A message to print when the error has been suppressed using [async_kernel.typing.Tags.suppress_error][]. 
     
-    ???+ note
-
-        The default message is '⚠'.
+    Notes:
+        - The default message is '⚠'.
     """
 
 
@@ -206,7 +201,7 @@ class Tags(enum.StrEnum):
     """
     Tags recognised by the kernel.
 
-    ??? info
+    Info:
         Tags are can be added per cell.
 
         - Jupyter: via the [right side bar](https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar).
@@ -225,8 +220,7 @@ class Tags(enum.StrEnum):
     """
     Suppress exceptions that occur during execution of the code cell.
     
-    !!! note "Warning"
-    
+    Warning:
         The code block will return as 'ok' and there will be no message recorded.
     """
 
@@ -275,13 +269,13 @@ class Job(TypedDict, Generic[T]):
     "An [async_kernel.typing.Message][] bundled with sockit_id, socket and ident."
 
     msg: Message[T]
-    ""
+    "The message received over the socket."
     socket_id: Literal[SocketID.control, SocketID.shell]
-    ""
+    "The channel over which the socket was received."
     socket: zmq.Socket
-    ""
+    "The actual socket."
     ident: bytes | list[bytes]
-    ""
+    "The ident associated with the message and it's origin."
     received_time: float
     "The time the message was received."
 
@@ -307,12 +301,36 @@ class CallerStartNewOptions(TypedDict):
     "Options for [async_kernel.caller.Caller.start_new][]."
 
     name: NotRequired[str | None]
+    """
+    The name to assign to a new thread when creating the new caller.
+    """
     log: NotRequired[logging.LoggerAdapter]
+    "A logging adapter to use to log exceptions."
     backend: NotRequired[Backend]
-    protected: NotRequired[bool]
+    "The anyio backend to use."
     backend_options: NotRequired[dict | None]
+    "Options to use when calling [anyio.run][] inside the new thread."
+    protected: NotRequired[bool]
+    "The caller should be protected against accidental closure."
 
 
 DebugMessage = dict[str, Any]
+"""
+A TypeAlias for a debug message.
+
+Used by:
+    - [async_kernel.debugger.Debugger.process_request][]. 
+"""
+
 Content = dict[str, Any]
+"""
+A TypeAlias for the content in [async_kernel.typing.Message][].
+"""
+
 HandlerType = Callable[[Job], Awaitable[Content | None]]
+"""
+A TypeAlias for the handler of message requests.
+
+Used by:
+    - [async_kernel.Kernel.run_handler][]
+"""

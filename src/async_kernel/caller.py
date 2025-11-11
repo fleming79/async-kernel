@@ -56,7 +56,16 @@ class InvalidStateError(RuntimeError):
 
 class Future(Awaitable[T]):
     """
-    A class representing a thread-safe future result modelled on [asyncio.Future][].
+    A future represents a computation that may complete asynchronously, providing a result or exception in the future.
+
+    This class implements the Awaitable protocol, allowing it to be awaited in async code in thread or event loop.
+    It supports cancellation, result retrieval, exception handling, and attaching callbacks to be invoked upon completion.
+
+    Notes:
+        - The future is not considered done until set_result or set_exception is called.
+        - If cancelled, the result is replaced with a FutureCancelledError.
+        - Metadata is deleted if retain_metadata is False.
+        - A callback can be set to handle cancellation with `set_canceller`.
     """
 
     _cancelled = False
@@ -114,12 +123,11 @@ class Future(Awaitable[T]):
     @property
     def metadata(self) -> dict[str, Any]:
         """
-        The metadata passed as keyword arguments to the Future during creation.
+        The metadata passed as keyword arguments to the future during creation.
 
-        !!! warning
-
-            Metadata is deleted when `False` is passed as the first argument when the Future is created.
-            This is the default behaviour for Futures returned by [][async_kernel.Caller].
+        Warning:
+            Metadata is deleted when `False` is passed as the first argument when the future is created.
+            This is the default behaviour for Futures returned by [async_kernel.Caller][].
         """
         try:
             return self._metadata
@@ -138,11 +146,11 @@ class Future(Awaitable[T]):
 
     async def wait(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
         """
-        Wait for Future to be done (thread-safe) returning the result if specified.
+        Wait for future to be done (thread-safe) returning the result if specified.
 
         Args:
             timeout: Timeout in seconds.
-            shield: Shield the Future from cancellation.
+            shield: Shield the future from cancellation.
             result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [async_kernel.caller.Future.result][]).
         """
         try:
@@ -167,16 +175,16 @@ class Future(Awaitable[T]):
 
     def done(self) -> bool:
         """
-        Returns True if the Future has a result.
+        Returns True if the future has a result.
 
         Done means either that a result / exception is available."""
         return self._done
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
         """
-        Add a callback for when the Future is done (not thread-safe).
+        Add a callback for when the future is done (not thread-safe).
 
-        If the Future is already done it will called immediately.
+        If the future is already done it will called immediately.
         """
         if not self._done:
             self._done_callbacks.append(fn)
@@ -187,10 +195,9 @@ class Future(Awaitable[T]):
         """
         Cancel the Future.
 
-        !!! note
-
+        Notes:
             - Cancellation cannot be undone.
-            - The Future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
+            - The future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
                 In both cases the value is ignore and replaced with a [FutureCancelledError][async_kernel.caller.FutureCancelledError]
                 and the result is inaccessible.
 
@@ -208,16 +215,16 @@ class Future(Awaitable[T]):
         return self.cancelled()
 
     def cancelled(self) -> bool:
-        """Return True if the Future is cancelled."""
+        """Return True if the future is cancelled."""
         return bool(self._cancelled)
 
     def result(self) -> T:
         """
-        Return the result of the Future.
+        Return the result of the future.
 
-        If the Future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
+        If the future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
 
-        If the Future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
+        If the future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
         """
         if not self._done and not self.cancelled():
             raise InvalidStateError
@@ -227,11 +234,11 @@ class Future(Awaitable[T]):
 
     def exception(self) -> BaseException | None:
         """
-        Return the exception that was set on the Future.
+        Return the exception that was set on the future.
 
-        If the Future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
+        If the future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
 
-        If the Future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
+        If the future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
         """
         if self._cancelled:
             raise self._make_cancelled_error()
@@ -256,14 +263,22 @@ class Future(Awaitable[T]):
         Set a callback to handle cancellation.
 
         Args:
-            canceller: A callback that performs the cancellation of the Future.
+            canceller: A callback that performs the cancellation of the future.
                 - It must accept the cancellation message as the first argument.
                 - The cancellation call is not thread-safe.
 
-        !!! note
+        Notes:
+            - `set_result` must still be called to mark the future as completed.
+            - Any value passed is replaced with a [async_kernel.caller.FutureCancelledError][].
 
-            `set_result` must still be called to mark the Future as completed. You can pass any
-            value as it will be replaced with a [async_kernel.caller.FutureCancelledError][].
+        Example:
+            ```python
+            fut = Future()
+            fut.cancel()
+            assert not fut.done()
+            fut.set_canceller(lambda msg: fut.set_result(None))
+            assert fut.done()
+            ```
         """
         if self._done or self._canceller:
             raise InvalidStateError
@@ -274,17 +289,39 @@ class Future(Awaitable[T]):
 
 class Caller(anyio.AsyncContextManagerMixin):
     """
-    A class to enable calling functions and coroutines between anyio event loops.
+    Caller is a task scheduler for running functions in a dedicated thread with an AnyIO event loop.
 
-    The `Caller` class provides a mechanism to execute functions and coroutines
-    in a dedicated thread, leveraging AnyIO for asynchronous task management.
-    It supports scheduling calls with delays, executing them immediately,
-    and running them without a context.  It also provides a means to manage
-    a pool of threads for general purpose offloading of tasks.
+    This class manages the execution of callables in a thread-safe manner, providing mechanisms for
+    scheduling, queuing, and managing the lifecycle of tasks and their associated threads and event loops.
+    It supports advanced features such as delayed execution, per-function queues, cancellation, and
+    specification of the AnyIO supported backend.
 
-    The class maintains a registry of instances, associating each with a specific
-    thread. It uses a task group to manage the execution of scheduled tasks and
-    provides methods to start, stop, and query the status of the caller.
+    Key Features:
+        - One Caller instance per thread, accessible via class methods.
+        - Thread-safe scheduling of synchronous and asynchronous functions.
+        - Support for delayed and immediate execution (`call_later`, `call_soon`).
+        - Per-function execution queues with lifecycle management (`queue_call`, `queue_close`).
+        - Integration with AnyIO's async context management and task groups.
+        - Mechanisms for stopping, protecting, and pooling Caller instances.
+        - Utilities for running functions in separate threads (`to_thread`, `to_thread_advanced`).
+        - Methods for waiting on and iterating over multiple futures as they complete.
+        - IOpub socket per Caller instance.
+
+    Usage:
+        - Use `Caller.get_instance()` to get or create a Caller for the 'MainThread' or a named thread.
+        - Use `call_soon`, `call_later`, or `schedule_call` to schedule work.
+        - Use `queue_call` for per-function task queues.
+        - Use `to_thread` to run work in a separate thread.
+        - Use `as_completed` and `wait` to manage multiple Futures.
+        - Use `async with Caller(create=True) = caller:` start the caller inside a coroutine.
+
+    Raises:
+        RuntimeError: For invalid operations such as duplicate Caller creation or missing instances.
+        anyio.ClosedResourceError: When scheduling on a stopped Caller.
+
+    Notes:
+        - It is safe to use the underlying libraries taskgroups
+        - [aiologic](https://aiologic.readthedocs.io/latest/) provides thread-safe synchronisation primiates for working across threads.
     """
 
     MAX_IDLE_POOL_INSTANCES = 10
@@ -467,8 +504,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         The preferred way to run the caller loop.
 
-        !!! tip
-
+        Tip:
             See [async_kernel.caller.Caller.get_instance][] for a usage example.
         """
         if self.running or self.stopped:
@@ -521,12 +557,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
-            retain_metadata: Passed to Future.
-            metadata: Additional metadata to store in the future.
+            retain_metadata: Passed to future.
+            **metadata: Additional metadata to store in the future.
 
-        !!! note
-
-            All arguments are stored in the future's metadata. When the call is done the metadata is cleared to prevent memory leaks.
+        Notes:
+            - All arguments are stored in the future's metadata.
+            - When the call is done the metadata is cleared to prevent memory leaks.
         """
         if self._stopped:
             raise anyio.ClosedResourceError
@@ -552,8 +588,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
 
-        !!! info
-
+        Info:
             All call arguments are packed into the Futures metadata. The future metadata
             is cleared when futures result is set.
         """
@@ -594,7 +629,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
 
-        ??? warning
+        Warning:
 
             **Use this method for lightweight calls only!**
 
@@ -603,10 +638,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._resume()
 
     def queue_get(self, func: Callable) -> Future[Never] | None:
-        """Returns Future for `func` where the queue is running.
+        """Returns future for `func` where the queue is running.
 
-        !!! warning
-
+        Warning:
             - This future loops forever until the  loop is closed or func no longer exists.
             - `queue_close` is the preferred means to shutdown the queue.
         """
@@ -702,8 +736,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             create: Create a new instance if one with the corresponding name does not already exist.
                 When not provided it defaults to `True` when `name` is `MainThread` otherwise `False`.
-        kwargs:
-            Options to use to identify or create a new instance if an instance does not already exist.
+            **kwargs: Options to use to identify or create a new instance if an instance does not already exist.
         """
         if "name" not in kwargs:
             kwargs["name"] = "MainThread"
@@ -723,7 +756,18 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Future[T]:
-        """A [classmethod][] to call func in a separate thread see also [to_thread_advanced][async_kernel.Caller.to_thread_advanced]."""
+        """
+        A [classmethod][] to call func in a separate thread see also [to_thread_advanced][async_kernel.Caller.to_thread_advanced].
+
+        Args:
+            func: The function.
+            *args: Arguments to use with func.
+            **kwargs: Keyword arguments to use with func.
+
+        Notes:
+            - A minimum number of caller instances are retained for this method.
+            - Async code run inside func should use taskgroups for creating task.
+        """
         return cls.to_thread_advanced({"name": None}, func, *args, **kwargs)
 
     @classmethod
@@ -809,7 +853,6 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Raises:
             RuntimeError: If a caller already exists or when the caller can't be started.
-
         """
         if name and name in [t.name for t in cls._instances]:
             msg = f"A caller already exists with {name=}!"
@@ -879,8 +922,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
             shield: Shield existing items from cancellation.
 
-        !!! tip
-
+        Tip:
             1. Pass a generator if you wish to limit the number future jobs when calling to_thread/to_task etc.
             2. Pass a container with all [Futures][async_kernel.caller.Future] when the limiter is not relevant.
         """
@@ -965,14 +1007,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             timeout: The maximum time before returning.
             return_when: The same options as available for [asyncio.wait][].
 
-        !!! example
-
+        Example:
             ```python
             done, pending = await asyncio.wait(items)
             ```
-
-        !!! info
-
+        Info:
             - This does not raise a TimeoutError!
             - Futures that aren't done when the timeout occurs are returned in the second set.
         """

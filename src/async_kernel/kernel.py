@@ -138,11 +138,12 @@ def wrap_handler(
     A cache of run handlers.
 
     Args:
-        runner: The function that calls and awaits the handler
+        runner: The function that calls and awaits the handler.
+        lock: The lock to use for sending the reply.
         handler: The handler to which the runner is associated.
 
     Used by:
-        - call[async_kernel.Kernel.receive_msg_loop][]
+        - [async_kernel.Kernel.receive_msg_loop][]
     """
 
     @functools.wraps(handler)
@@ -161,42 +162,39 @@ class KernelInterruptError(InterruptedError):
 
 class Kernel(HasTraits):
     """
-    A Jupyter kernel that supports [concurrent execution][async_kernel.Kernel.get_run_mode] providing an
-    [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
+    A Jupyter kernel that supports [concurrent execution][async_kernel.Kernel.get_run_mode] providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
-    !!! info
+    Info:
+        Only one instance of a kernel is created at a time per subprocess. The instance can be obtained
+        with `Kernel()` or [async_kernel.utils.get_kernel].
 
-        Only one instance of a kernel is created at a time per subprocess. The instance can be obtained with `Kernel()` or [async_kernel.utils.get_kernel].
+    Starting the kernel:
+        The kernel should appear in the list of kernels just as other kernels are. Variants of the kernel
+        can with custom configuration can be added at the [command line][async_kernel.command.command_line].
 
-    ## Starting the kernel
+        === "From the shell"
 
-    The kernel should appear in the list of kernels just as other kernels are. Variants of the kernel
-    can with custom configuration can be added at the [command line][async_kernel.command.command_line].
+            ``` shell
+            async-kernel -f .
+            ```
 
-    **From the shell**
+        === "Blocking"
 
-    ``` shell
-    async-kernel -f .
-    ```
+            ```python
+            Kernel().run()
+            ```
 
-    **Blocking**
+        === "Inside a coroutine"
 
-    ```python
-    Kernel().run()
-    ```
+            ```python
+            async with Kernel():
+                await anyio.sleep_forever()
+            ```
 
-    **Inside a coroutine**
-
-    ```python
-    async with Kernel():
-        await anyio.sleep_forever()
-    ```
-
-    **Origins**
-
-    - [IPyKernel Kernel][ipykernel.kernelbase.Kernel]
-    - [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp]
-    - [IPyKernel IPythonKernel][ipykernel.ipkernel.IPythonKernel]
+    Origins:
+        - [IPyKernel Kernel][ipykernel.kernelbase.Kernel]
+        - [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp]
+        - [IPyKernel IPythonKernel][ipykernel.ipkernel.IPythonKernel]
     """
 
     _instance: Self | None = None
@@ -212,7 +210,7 @@ class Kernel(HasTraits):
     _ports: Dict[SocketID, int] = Dict()
     _execution_count = traitlets.Int(0)
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
-    ""
+    "The anyio configured backend used to run the event loops."
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
     _stabilisation_delay = traitlets.Float(0.1)
@@ -237,15 +235,16 @@ class Kernel(HasTraits):
     The kernel's IP address [default localhost].
     
     If the IP address is something other than localhost, then Consoles on other machines 
-    will be able to connect to the Kernel, so be careful!"""
+    will be able to connect to the Kernel, so be careful!
+    """
     log = Instance(logging.LoggerAdapter)
-    ""
+    "The logging adapter."
     shell = Instance(AsyncInteractiveShell, ())
-    ""
+    "The interactive shell."
     session = Instance(Session, ())
-    ""
+    "Handles serialization and sending of messages."
     debugger = Instance(Debugger, ())
-    ""
+    "Handles (debug requests)[https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request]."
     comm_manager: Instance[CommManager] = Instance("async_kernel.comm.CommManager")
     ""
     transport: CaselessStrEnum[str] = CaselessStrEnum(
@@ -316,8 +315,7 @@ class Kernel(HasTraits):
         - An instance can only be started once.
         - A new instance can be started after a previous instance has stopped and the context exited.
 
-        !!! example
-
+        Example:
             ```python
             async with Kernel() as kernel:
                 await anyio.sleep_forever()
@@ -461,8 +459,7 @@ class Kernel(HasTraits):
         Args:
             wait_exit: The kernel will stop when the awaitable is complete.
 
-        !!! warning
-
+        Warning:
             Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
 
             - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
@@ -790,9 +787,7 @@ class Kernel(HasTraits):
         job: Job | None = None,
     ) -> RunMode:
         """
-        Determine the run mode for a given channel, message type and concurrency mode.
-
-        The run mode determines how the kernel will execute the message.
+        Determine the run mode for a given channel, message type and job.
 
         Args:
             socket_id: The socket ID the message was received on.
@@ -801,9 +796,6 @@ class Kernel(HasTraits):
 
         Returns:
             The run mode for the message.
-
-        Raises:
-            ValueError: If a shutdown or debug request is received on the shell socket.
         """
 
         # TODO: Are any of these options worth including?
@@ -871,11 +863,28 @@ class Kernel(HasTraits):
 
     async def run_handler(self, handler: HandlerType, lock: BinarySemaphore, job: Job[dict]) -> None:
         """
-        A wrapper for running handler in the context of the job/message.
+        Asynchronously runs a message handler for a given job, managing reply sending and execution state.
 
-        This method gets called for every valid request with the relevant handler.
-        If the handler returns a `dict`. The return value is used as reply `content`.
-        If `status` is not provided in the content it is added as {'status': 'ok'}.
+        Args:
+            handler: The coroutine function to handle the job. Should accept a Job and return a dict or None.
+                        - If the handler returns `None` no reply is sent
+                        - otherwise the return value (dict expected) set as the `content` in a reply Message.
+                        - If `status` is not provided in the content it is added as {'status': 'ok'}.
+            lock: An async semaphore used to synchronize reply sending.
+            job: The job dictionary containing message, socket, and identification information.
+
+        Workflow:
+            - Sets the current job context variable.
+            - Sends a "busy" status message on the IOPub channel.
+            - Awaits the handler; if it returns content, sends a reply using the provided lock.
+            - On exception, sends an error reply and logs the exception.
+            - Resets the job context variable.
+            - Sends an "idle" status message on the IOPub channel.
+
+        Notes:
+            - Replies are sent even if exceptions occur in the handler.
+            - The reply message type is derived from the original request type.
+            - The function ensures proper synchronization when sending replies.
         """
 
         async def send_reply(job: Job[dict], content: dict, /) -> None:
@@ -1151,9 +1160,8 @@ class Kernel(HasTraits):
         """
         Forward raw_input to frontends.
 
-        Raises
-        ------
-        StdinNotImplementedError if active frontend doesn't support stdin.
+        Raises:
+           IPython.core.error.StdinNotImplementedError: if active frontend doesn't support stdin.
         """
         return self._input_request(str(prompt), password=False)
 
@@ -1170,7 +1178,7 @@ class Kernel(HasTraits):
         """
         A convenience method to access the 'message' in the current context if there is one.
 
-        'parent' is the parameter name uses in [Session.send][jupyter_client.session.Session.send].
+        'parent' is the parameter name used by [Session.send][jupyter_client.session.Session.send] to provide context when sending a reply.
 
         See also:
             - [Kernel.iopub_send][async_kernel.Kernel.iopub_send]
