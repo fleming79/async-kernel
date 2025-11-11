@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2025-11-11
+
+### <!-- 1 --> 🚀 Features
+
+- Added Kernel.schedule_job, exposed Kernel.caller [#181](https://github.com/fleming79/async-kernel/pull/181)
+
+### <!-- 5 --> 📝 Documentation
+
+- Improve docstrings: [#182](https://github.com/fleming79/async-kernel/pull/182)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Make all Threads daemon and add daemon option to Caller.start_new. [#183](https://github.com/fleming79/async-kernel/pull/183)
+
 ## [0.7.0] - 2025-11-10
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -26,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use BinarySemaphore instead of Lock for best performance in send_reply and update readme. [#179](https://github.com/fleming79/async-kernel/pull/179)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.7.0 [#180](https://github.com/fleming79/async-kernel/pull/180)
 
 - Switch from mdformat to prettier for formatting markdown [#177](https://github.com/fleming79/async-kernel/pull/177)
 
@@ -455,6 +471,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.7.1]: https://github.com/fleming79/async-kernel/compare/v0.7.0..v0.7.1
 [0.7.0]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.2..v0.7.0
 [0.7.0-rc.2]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.1..v0.7.0-rc.2
 [0.7.0-rc.1]: https://github.com/fleming79/async-kernel/compare/v0.6.3..v0.7.0-rc.1
