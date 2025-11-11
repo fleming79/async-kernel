@@ -790,6 +790,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -892,6 +894,29 @@ viewing the latest version.
   
   <span class="md-ellipsis">
     async_kernel.command
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/debugger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    async_kernel.debugger
     
   </span>
   
@@ -1291,31 +1316,39 @@ viewing the latest version.
 <a href="https://docs.basedpyright.com"><img alt="basedpyright - checked" src="https://img.shields.io/badge/basedpyright-checked-42b983" /></a>
 <a href="https://squidfunk.github.io/mkdocs-material/"><img alt="Built with Material for MkDocs" src="https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&amp;logo=MaterialForMkDocs&amp;logoColor=white" /></a>
 <a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a></p>
-<p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter kernel</a> that enables concurrent execution.</p>
+<p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter kernel</a> that enables concurrent handling of messages and execution.</p>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
-<ul class="task-list">
+<ul>
 <li><a href="https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/">Concurrent message handling</a></li>
-<li><a href="#asynchronous-event-loops">Separate event loops per channel</a> + <a href="#messaging">dedicated per-channel thread for message scheduling</a></li>
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a></li>
-<li><a href="https://pypi.org/project/anyio/">anyio</a></li>
-<li>Asyncio (default)<ul>
-<li><a href="https://pypi.org/project/uvloop/">uvloop</a> enabled by default<sup id="fnref:uv-loop"><a class="footnote-ref" href="#fn:uv-loop">1</a></sup></li>
+<li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a><ul>
+<li><a href="https://pypi.org/project/anyio/">anyio</a><ul>
+<li><a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code> backend</a> (default)<sup id="fnref:uv-loop"><a class="footnote-ref" href="#fn:uv-loop">1</a></sup></li>
+<li><a href="https://pypi.org/project/trio/"><code>trio</code> backend</a></li>
 </ul>
 </li>
-<li><a href="https://pypi.org/project/trio/">trio</a> backend</li>
+</ul>
+</li>
 <li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a>
-  provides:</li>
+  provides:<ul>
 <li>code execution</li>
 <li>magic</li>
 <li>code completions</li>
 <li>history</li>
-<li>The <code>Caller</code> class provides thread-safe scheduling of code execution (thanks to <a href="https://aiologic.readthedocs.io/latest/">aiologic</a>)</li>
-<li>GUI event loops</li>
+</ul>
+</li>
+<li>Thread safe (thanks to <a href="https://aiologic.readthedocs.io/latest/">aiologic</a>)<ul>
+<li><code>Caller</code> for starting and scheduling of code execution in it's event loop</li>
+<li><code>Future</code> for a pending result</li>
+</ul>
+</li>
+<li>GUI event loops<ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> tk</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> qt</li>
+</ul>
+</li>
 </ul>
 <p><strong><a href="https://fleming79.github.io/async-kernel/">Documentation</a></strong></p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
@@ -1333,21 +1366,16 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 <li><code>control</code>: The control event loop always starts in a new thread named 'ControlThread'</li>
 </ul>
 <h3 id="messaging">Messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h3>
-<p>Messages are received in a separate thread (per-channel) with the target function <a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.receive_msg_loop">receive_msg_loop</a>
-and processed as follows:</p>
-<ol>
-<li>Get the <a href="https://fleming79.github.io/async-kernel/latest/reference/typing/#async_kernel.typing.MsgType">message type</a> from the message header.</li>
-<li>Get the run mode based on the message type and channel (<code>shell</code> or <code>control</code>).</li>
-<li>Using the <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Caller</a> corresponding to the event loop schedule handling of the job via the Caller methods as follows.</li>
-<li><code>queue</code> -&gt; <code>caller.queue_call</code></li>
-<li><code>thread</code> -&gt; <code>caller.to_thread</code></li>
-<li><code>task</code> -&gt; <code>caller.call_soon</code></li>
-<li><code>blocking</code> -&gt; <code>caller.call_direct</code></li>
-</ol>
+<p>Messages are received in a separate thread (per-channel) and scheduled in in the channels event loop.</p>
 <h3 id="run-mode">Run mode<a class="headerlink" href="#run-mode" title="Permanent link">&para;</a></h3>
-<p>The <a href="https://fleming79.github.io/async-kernel/latest/reference/typing/?h=run_mode#async_kernel.typing.RunMode">run mode</a> (one of <code>queue</code>, <code>task</code>, <code>thread</code>, <code>blocking</code>)
-<a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.get_run_mode"><code>get_run_mode</code></a> is then determined
-according to the <code>MsgType</code> and channel.</p>
+<p>The run mode is defined per-message type and channel and is one of the following:</p>
+<ul>
+<li><code>queue</code></li>
+<li><code>thread</code></li>
+<li><code>task</code></li>
+<li><code>blocking</code></li>
+</ul>
+<p>The currently defined run modes are:</p>
 <table>
 <thead>
 <tr>
@@ -1424,6 +1452,7 @@ according to the <code>MsgType</code> and channel.</p>
 </tr>
 </tbody>
 </table>
+<p>For further detail see the <a href="https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/">notebook on concurrency</a>.</p>
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
 <p>Async kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
 of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to the original contributors of IPyKernel that made Async kernel possible.</p>
