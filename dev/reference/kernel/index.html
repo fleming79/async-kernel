@@ -871,6 +871,15 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#async_kernel.kernel.Kernel.callers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.kernel.Kernel.anyio_backend" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend
@@ -1072,6 +1081,15 @@ viewing the latest version.
   <a href="#async_kernel.kernel.Kernel.receive_msg_loop" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;receive_msg_loop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernel.Kernel.schedule_job" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_job
     </span>
   </a>
   
@@ -1648,6 +1666,15 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#async_kernel.kernel.Kernel.callers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.kernel.Kernel.anyio_backend" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend
@@ -1849,6 +1876,15 @@ viewing the latest version.
   <a href="#async_kernel.kernel.Kernel.receive_msg_loop" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;receive_msg_loop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernel.Kernel.schedule_job" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_job
     </span>
   </a>
   
@@ -2337,7 +2373,14 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
             <b><code><a class="autorefs autorefs-internal" title="            receive_msg_loop (async_kernel.kernel.Kernel.receive_msg_loop)" href="#async_kernel.kernel.Kernel.receive_msg_loop">receive_msg_loop</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Receive shell and control messages over zmq sockets.</p>
+              <p>Continuously receives and processes messages from a ZeroMQ ROUTER socket in a loop.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            schedule_job (async_kernel.kernel.Kernel.schedule_job)" href="#async_kernel.kernel.Kernel.schedule_job">schedule_job</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Schedules a job to be executed by the handler using the specified run mode.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -2586,6 +2629,32 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="            callers
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.callers)" href="#async_kernel.kernel.Kernel.callers">callers</a></code></b>
+              (<code><span title="traitlets.Dict">Dict</span>[<a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a>, <a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a>], <a class="autorefs autorefs-internal" title="            async_kernel.caller.Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The caller associated with the kernel once it has started.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title="            anyio_backend
 
 
@@ -2815,8 +2884,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 
                   <details class="quote">
                     <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">293</span>
-<span class="normal">294</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
 <span class="normal">297</span>
@@ -2825,7 +2893,8 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 <span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
-<span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">303</span>
+<span class="normal">304</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialised</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initialised</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -2848,6 +2917,43 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="async_kernel.kernel.Kernel.callers" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">callers</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#async_kernel.kernel.Kernel.callers" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">callers</span><span class="p">:</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="            async_kernel.caller.Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The caller associated with the kernel once it has started.</p>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
@@ -3314,8 +3420,7 @@ and is called by load_connection_file.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">258</span>
-<span class="normal">259</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
 <span class="normal">262</span>
@@ -3341,7 +3446,8 @@ and is called by load_connection_file.</p>
 <span class="normal">282</span>
 <span class="normal">283</span>
 <span class="normal">284</span>
-<span class="normal">285</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">285</span>
+<span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load connection info from a dict containing connection info.</span>
 
@@ -3408,8 +3514,7 @@ and is called by load_connection_file.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">310</span>
-<span class="normal">311</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">311</span>
 <span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
@@ -3427,7 +3532,8 @@ and is called by load_connection_file.</p>
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="normal">329</span>
+<span class="normal">330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the kernel in the current asynchronous context.</span>
 
@@ -3486,8 +3592,7 @@ value: The value to set.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">437</span>
-<span class="normal">438</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
@@ -3503,7 +3608,8 @@ value: The value to set.</p>
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
-<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">454</span>
+<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load settings into the kernel.</span>
 
@@ -3569,8 +3675,7 @@ value: The value to set.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">456</span>
-<span class="normal">457</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">457</span>
 <span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
@@ -3597,7 +3702,8 @@ value: The value to set.</p>
 <span class="normal">481</span>
 <span class="normal">482</span>
 <span class="normal">483</span>
-<span class="normal">484</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_exit</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+<span class="normal">484</span>
+<span class="normal">485</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_exit</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the kernel (blocking).</span>
 
@@ -3656,8 +3762,7 @@ Instead a new instance should be started.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
-<span class="normal">487</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
 <span class="normal">490</span>
@@ -3665,7 +3770,8 @@ Instead a new instance should be started.</p>
 <span class="normal">492</span>
 <span class="normal">493</span>
 <span class="normal">494</span>
-<span class="normal">495</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">495</span>
+<span class="normal">496</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A [staticmethod][] to stop the running kernel.</span>
@@ -3689,7 +3795,7 @@ Instead a new instance should be started.</p>
 
 
 <a href="#async_kernel.kernel.Kernel.receive_msg_loop" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.receive_msg_loop(socket_id)">socket_id</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            control
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="socket_id (async_kernel.kernel.Kernel.receive_msg_loop(socket_id))" href="#async_kernel.kernel.Kernel.receive_msg_loop(socket_id)">socket_id</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            control
 
 
   
@@ -3701,27 +3807,75 @@ Instead a new instance should be started.</p>
   
       class-attribute
       instance-attribute
-   (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">],</span> <span class="n"><span title="async_kernel.kernel.Kernel.receive_msg_loop(started)">started</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+   (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="started (async_kernel.kernel.Kernel.receive_msg_loop(started))" href="#async_kernel.kernel.Kernel.receive_msg_loop(started)">started</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Receive shell and control messages over zmq sockets.</p>
-<p>This gets called for both shell and control messages when the kernel is started.</p>
+        <p>Continuously receives and processes messages from a ZeroMQ ROUTER socket in a loop.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.kernel.Kernel.receive_msg_loop(socket_id)" class="doc doc-heading doc-heading-parameter">              <b><code>socket_id</code></b>
+<a href="#async_kernel.kernel.Kernel.receive_msg_loop(socket_id)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a>, <a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The identifier for the socket to listen on (either control or shell).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.kernel.Kernel.receive_msg_loop(started)" class="doc doc-heading doc-heading-parameter">              <b><code>started</code></b>
+<a href="#async_kernel.kernel.Kernel.receive_msg_loop(started)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], None]</code>)
+          –
+          <div class="doc-md-description">
+            <p>A callback function to be called once the socket is bound and ready to receive messages.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="behavior" open>
+  <summary>Behavior</summary>
+  <ul>
+<li>Binds a ROUTER socket for the specified socket_id.</li>
+<li>Calls the <code>started</code> callback after binding and a short delay.</li>
+<li>Enters a loop to receive messages from the socket.</li>
+<li>For each received message:<ul>
+<li>Determines the message type and retrieves the appropriate handler.</li>
+<li>Constructs a job dictionary containing message and context information.</li>
+<li>Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or blocking).</li>
+</ul>
+</li>
+<li>Handles invalid messages and logs errors.</li>
+<li>Exits the loop gracefully if the ZeroMQ context is terminated.</li>
+</ul>
+</details>
+
+<details class="exception-handling" open>
+  <summary>Exception handling</summary>
+  <ul>
+<li>Handles and logs exceptions during message processing.</li>
+<li>Breaks the loop on <code>zmq.ContextTerminated</code>.</li>
+</ul>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">709</span>
 <span class="normal">710</span>
 <span class="normal">711</span>
 <span class="normal">712</span>
@@ -3771,40 +3925,48 @@ Instead a new instance should be started.</p>
 <span class="normal">756</span>
 <span class="normal">757</span>
 <span class="normal">758</span>
-<span class="normal">759</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">socket_id</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">started</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Receive shell and control messages over zmq sockets.</span>
+<span class="sd">    Continuously receives and processes messages from a ZeroMQ ROUTER socket in a loop.</span>
 
-<span class="sd">    This gets called for both shell and control messages when the kernel is started.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        socket_id: The identifier for the socket to listen on (either control or shell).</span>
+<span class="sd">        started: A callback function to be called once the socket is bound and ready to receive messages.</span>
+
+<span class="sd">    Behavior:</span>
+<span class="sd">        - Binds a ROUTER socket for the specified socket_id.</span>
+<span class="sd">        - Calls the `started` callback after binding and a short delay.</span>
+<span class="sd">        - Enters a loop to receive messages from the socket.</span>
+<span class="sd">        - For each received message:</span>
+<span class="sd">            - Determines the message type and retrieves the appropriate handler.</span>
+<span class="sd">            - Constructs a job dictionary containing message and context information.</span>
+<span class="sd">            - Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or blocking).</span>
+<span class="sd">        - Handles invalid messages and logs errors.</span>
+<span class="sd">        - Exits the loop gracefully if the ZeroMQ context is terminated.</span>
+
+<span class="sd">    Exception handling:</span>
+<span class="sd">        - Handles and logs exceptions during message processing.</span>
+<span class="sd">        - Breaks the loop on `zmq.ContextTerminated`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">utils</span><span class="o">.</span><span class="n">mark_thread_pydev_do_not_trace</span><span class="p">()</span>
     <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span>
     <span class="n">ident</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span>
-    <span class="n">caller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span>
+    <span class="n">caller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span>
     <span class="n">socket</span><span class="p">:</span> <span class="n">Socket</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">SocketType</span><span class="o">.</span><span class="n">ROUTER</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Context</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">SocketType</span><span class="o">.</span><span class="n">ROUTER</span><span class="p">)</span>
-    <span class="n">new_thread_options</span><span class="p">:</span> <span class="n">CallerStartNewOptions</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend</span><span class="p">,</span>
-        <span class="s2">&quot;backend_options&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend_options</span><span class="p">,</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">}</span>
     <span class="n">lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_socket</span><span class="p">(</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">socket</span><span class="p">):</span>
         <span class="n">started</span><span class="p">()</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stabilisation_delay</span><span class="p">)</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">ident</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">zmq</span><span class="o">.</span><span class="n">BLOCKY</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
-                <span class="k">if</span> <span class="n">socket_id</span> <span class="o">==</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">:</span>
-                    <span class="c1"># Reset the frame to show the main thread is not blocked.</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_last_interrupt_frame</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;*** receive_msg_loop </span><span class="si">%s</span><span class="s2">*** </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">socket_id</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">msg_type</span> <span class="o">=</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">])</span>
-                    <span class="n">handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">)</span>
-                <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Invalid msg </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
-                    <span class="k">continue</span>
+                <span class="n">msg_type</span> <span class="o">=</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">])</span>
+                <span class="n">handler</span> <span class="o">=</span> <span class="n">wrap_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_handler</span><span class="p">,</span> <span class="n">lock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">))</span>
                 <span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;socket_id&quot;</span><span class="p">:</span> <span class="n">socket_id</span><span class="p">,</span>
                     <span class="s2">&quot;socket&quot;</span><span class="p">:</span> <span class="n">socket</span><span class="p">,</span>
@@ -3813,24 +3975,127 @@ Instead a new instance should be started.</p>
                     <span class="s2">&quot;received_time&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">(),</span>
                 <span class="p">}</span>
                 <span class="n">run_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">socket_id</span><span class="o">=</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">job</span><span class="o">=</span><span class="n">job</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">  </span><span class="si">%s</span><span class="s2"> run mode </span><span class="si">%s</span><span class="s2"> caller </span><span class="si">%s</span><span class="s2"> handler: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">socket_id</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">run_mode</span><span class="p">,</span> <span class="n">caller</span><span class="p">,</span> <span class="n">handler</span>
-                <span class="p">)</span>
-                <span class="n">runner</span> <span class="o">=</span> <span class="n">wrap_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_handler</span><span class="p">,</span> <span class="n">lock</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
-                <span class="k">match</span> <span class="n">run_mode</span><span class="p">:</span>
-                    <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
-                        <span class="n">caller</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
-                    <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
-                        <span class="n">Caller</span><span class="o">.</span><span class="n">to_thread_advanced</span><span class="p">(</span><span class="n">new_thread_options</span><span class="p">,</span> <span class="n">runner</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
-                    <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">task</span><span class="p">:</span>
-                        <span class="n">caller</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
-                    <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">blocking</span><span class="p">:</span>
-                        <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">schedule_job</span><span class="p">(</span><span class="n">caller</span><span class="p">,</span> <span class="n">lock</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">run_mode</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">socket_id</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">run_mode</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ContextTerminated</span><span class="p">:</span>
                 <span class="k">break</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Bad message on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">socket_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
                 <span class="k">continue</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="async_kernel.kernel.Kernel.schedule_job" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">schedule_job</span>
+
+
+<a href="#async_kernel.kernel.Kernel.schedule_job" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">schedule_job</span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="caller (async_kernel.kernel.Kernel.schedule_job(caller))" href="#async_kernel.kernel.Kernel.schedule_job(caller)">caller</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            async_kernel.caller.Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="lock (async_kernel.kernel.Kernel.schedule_job(lock))" href="#async_kernel.kernel.Kernel.schedule_job(lock)">lock</a></span><span class="p">:</span> <span class="n"><span title="aiologic.BinarySemaphore">BinarySemaphore</span></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="handler (async_kernel.kernel.Kernel.schedule_job(handler))" href="#async_kernel.kernel.Kernel.schedule_job(handler)">handler</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.HandlerType">HandlerType</span></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="run_mode (async_kernel.kernel.Kernel.schedule_job(run_mode))" href="#async_kernel.kernel.Kernel.schedule_job(run_mode)">run_mode</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            async_kernel.typing.RunMode" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="job (async_kernel.kernel.Kernel.schedule_job(job))" href="#async_kernel.kernel.Kernel.schedule_job(job)">job</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            async_kernel.typing.Job" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Schedules a job to be executed by the handler using the specified run mode.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.kernel.Kernel.schedule_job(caller)" class="doc doc-heading doc-heading-parameter">              <b><code>caller</code></b>
+<a href="#async_kernel.kernel.Kernel.schedule_job(caller)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            async_kernel.caller.Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The caller instance responsible for scheduling.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.kernel.Kernel.schedule_job(lock)" class="doc doc-heading doc-heading-parameter">              <b><code>lock</code></b>
+<a href="#async_kernel.kernel.Kernel.schedule_job(lock)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><span title="aiologic.BinarySemaphore">BinarySemaphore</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>A binary semaphore for synchronization (not used in this method).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.kernel.Kernel.schedule_job(handler)" class="doc doc-heading doc-heading-parameter">              <b><code>handler</code></b>
+<a href="#async_kernel.kernel.Kernel.schedule_job(handler)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><span title="async_kernel.typing.HandlerType">HandlerType</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function or callable to execute for the job.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.kernel.Kernel.schedule_job(run_mode)" class="doc doc-heading doc-heading-parameter">              <b><code>run_mode</code></b>
+<a href="#async_kernel.kernel.Kernel.schedule_job(run_mode)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            async_kernel.typing.RunMode" href="../typing/#async_kernel.typing.RunMode">RunMode</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mode in which to run the job.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.kernel.Kernel.schedule_job(job)" class="doc doc-heading doc-heading-parameter">              <b><code>job</code></b>
+<a href="#async_kernel.kernel.Kernel.schedule_job(job)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            async_kernel.typing.Job" href="../typing/#async_kernel.typing.Job">Job</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The job instance or data to be passed to the handler.</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">schedule_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">caller</span><span class="p">:</span> <span class="n">Caller</span><span class="p">,</span> <span class="n">lock</span><span class="p">:</span> <span class="n">BinarySemaphore</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">HandlerType</span><span class="p">,</span> <span class="n">run_mode</span><span class="p">:</span> <span class="n">RunMode</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Schedules a job to be executed by the handler using the specified run mode.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        caller: The caller instance responsible for scheduling.</span>
+<span class="sd">        lock: A binary semaphore for synchronization (not used in this method).</span>
+<span class="sd">        handler: The function or callable to execute for the job.</span>
+<span class="sd">        run_mode: The mode in which to run the job.</span>
+<span class="sd">        job: The job instance or data to be passed to the handler.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">match</span> <span class="n">run_mode</span><span class="p">:</span>
+        <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">blocking</span><span class="p">:</span>
+            <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
+            <span class="n">caller</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">task</span><span class="p">:</span>
+            <span class="n">caller</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+        <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
+            <span class="n">Caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3954,31 +4219,7 @@ Instead a new instance should be started.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">761</span>
-<span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span>
-<span class="normal">782</span>
-<span class="normal">783</span>
-<span class="normal">784</span>
-<span class="normal">785</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">785</span>
 <span class="normal">786</span>
 <span class="normal">787</span>
 <span class="normal">788</span>
@@ -4010,7 +4251,31 @@ Instead a new instance should be started.</p>
 <span class="normal">814</span>
 <span class="normal">815</span>
 <span class="normal">816</span>
-<span class="normal">817</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_run_mode</span><span class="p">(</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_run_mode</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -4121,28 +4386,28 @@ along with their corresponding RunMode (if available).</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span>
-<span class="normal">825</span>
-<span class="normal">826</span>
-<span class="normal">827</span>
-<span class="normal">828</span>
-<span class="normal">829</span>
-<span class="normal">830</span>
-<span class="normal">831</span>
-<span class="normal">832</span>
-<span class="normal">833</span>
-<span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span>
-<span class="normal">838</span>
-<span class="normal">839</span>
-<span class="normal">840</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">all_concurrency_run_modes</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">all_concurrency_run_modes</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">socket_ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">),</span>
     <span class="n">msg_types</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">MsgType</span><span class="p">]</span> <span class="o">=</span> <span class="n">MsgType</span><span class="p">,</span>
@@ -4195,31 +4460,7 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">848</span>
-<span class="normal">849</span>
-<span class="normal">850</span>
-<span class="normal">851</span>
-<span class="normal">852</span>
-<span class="normal">853</span>
-<span class="normal">854</span>
-<span class="normal">855</span>
-<span class="normal">856</span>
-<span class="normal">857</span>
-<span class="normal">858</span>
-<span class="normal">859</span>
-<span class="normal">860</span>
-<span class="normal">861</span>
-<span class="normal">862</span>
-<span class="normal">863</span>
-<span class="normal">864</span>
-<span class="normal">865</span>
-<span class="normal">866</span>
-<span class="normal">867</span>
-<span class="normal">868</span>
-<span class="normal">869</span>
-<span class="normal">870</span>
-<span class="normal">871</span>
-<span class="normal">872</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">872</span>
 <span class="normal">873</span>
 <span class="normal">874</span>
 <span class="normal">875</span>
@@ -4231,7 +4472,31 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 <span class="normal">881</span>
 <span class="normal">882</span>
 <span class="normal">883</span>
-<span class="normal">884</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">HandlerType</span><span class="p">,</span> <span class="n">lock</span><span class="p">:</span> <span class="n">BinarySemaphore</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">884</span>
+<span class="normal">885</span>
+<span class="normal">886</span>
+<span class="normal">887</span>
+<span class="normal">888</span>
+<span class="normal">889</span>
+<span class="normal">890</span>
+<span class="normal">891</span>
+<span class="normal">892</span>
+<span class="normal">893</span>
+<span class="normal">894</span>
+<span class="normal">895</span>
+<span class="normal">896</span>
+<span class="normal">897</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">HandlerType</span><span class="p">,</span> <span class="n">lock</span><span class="p">:</span> <span class="n">BinarySemaphore</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A wrapper for running handler in the context of the job/message.</span>
 
@@ -4299,31 +4564,7 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">886</span>
-<span class="normal">887</span>
-<span class="normal">888</span>
-<span class="normal">889</span>
-<span class="normal">890</span>
-<span class="normal">891</span>
-<span class="normal">892</span>
-<span class="normal">893</span>
-<span class="normal">894</span>
-<span class="normal">895</span>
-<span class="normal">896</span>
-<span class="normal">897</span>
-<span class="normal">898</span>
-<span class="normal">899</span>
-<span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">910</span>
 <span class="normal">911</span>
 <span class="normal">912</span>
 <span class="normal">913</span>
@@ -4332,7 +4573,31 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 <span class="normal">916</span>
 <span class="normal">917</span>
 <span class="normal">918</span>
-<span class="normal">919</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span>
+<span class="normal">927</span>
+<span class="normal">928</span>
+<span class="normal">929</span>
+<span class="normal">930</span>
+<span class="normal">931</span>
+<span class="normal">932</span>
+<span class="normal">933</span>
+<span class="normal">934</span>
+<span class="normal">935</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span>
+<span class="normal">939</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">content</span><span class="p">:</span> <span class="n">Content</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4356,8 +4621,8 @@ If <code>status</code> is not provided in the content it is added as {'status': 
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                 <span class="s2">&quot;iopub_send: (thread=</span><span class="si">%s</span><span class="s2">) msg_type:&#39;</span><span class="si">%s</span><span class="s2">&#39;, content: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">thread</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;msg_type&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
             <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_callers</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">]</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">caller</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">thread</span><span class="p">:</span>
+        <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">,</span>
             <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_or_type</span><span class="p">,</span>
             <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
@@ -4390,9 +4655,9 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">945</span>
+<span class="normal">946</span>
+<span class="normal">947</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;prefixed topic for IOPub messages.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kernel.</span><span class="si">{</span><span class="n">topic</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -4423,9 +4688,9 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">925</span>
-<span class="normal">926</span>
-<span class="normal">927</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kernel_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">949</span>
+<span class="normal">950</span>
+<span class="normal">951</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kernel_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_info</span>
 </code></pre></div></td></tr></table></div>
@@ -4456,16 +4721,16 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">929</span>
-<span class="normal">930</span>
-<span class="normal">931</span>
-<span class="normal">932</span>
-<span class="normal">933</span>
-<span class="normal">934</span>
-<span class="normal">935</span>
-<span class="normal">936</span>
-<span class="normal">937</span>
-<span class="normal">938</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span>
+<span class="normal">958</span>
+<span class="normal">959</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info).&quot;&quot;&quot;</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
     <span class="n">target_name</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;target_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -4503,31 +4768,7 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 940</span>
-<span class="normal"> 941</span>
-<span class="normal"> 942</span>
-<span class="normal"> 943</span>
-<span class="normal"> 944</span>
-<span class="normal"> 945</span>
-<span class="normal"> 946</span>
-<span class="normal"> 947</span>
-<span class="normal"> 948</span>
-<span class="normal"> 949</span>
-<span class="normal"> 950</span>
-<span class="normal"> 951</span>
-<span class="normal"> 952</span>
-<span class="normal"> 953</span>
-<span class="normal"> 954</span>
-<span class="normal"> 955</span>
-<span class="normal"> 956</span>
-<span class="normal"> 957</span>
-<span class="normal"> 958</span>
-<span class="normal"> 959</span>
-<span class="normal"> 960</span>
-<span class="normal"> 961</span>
-<span class="normal"> 962</span>
-<span class="normal"> 963</span>
-<span class="normal"> 964</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 964</span>
 <span class="normal"> 965</span>
 <span class="normal"> 966</span>
 <span class="normal"> 967</span>
@@ -4567,7 +4808,30 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 <span class="normal">1001</span>
 <span class="normal">1002</span>
 <span class="normal">1003</span>
-<span class="normal">1004</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">ExecuteContent</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">1004</span>
+<span class="normal">1005</span>
+<span class="normal">1006</span>
+<span class="normal">1007</span>
+<span class="normal">1008</span>
+<span class="normal">1009</span>
+<span class="normal">1010</span>
+<span class="normal">1011</span>
+<span class="normal">1012</span>
+<span class="normal">1013</span>
+<span class="normal">1014</span>
+<span class="normal">1015</span>
+<span class="normal">1016</span>
+<span class="normal">1017</span>
+<span class="normal">1018</span>
+<span class="normal">1019</span>
+<span class="normal">1020</span>
+<span class="normal">1021</span>
+<span class="normal">1022</span>
+<span class="normal">1023</span>
+<span class="normal">1024</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">ExecuteContent</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).&quot;&quot;&quot;</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;received_time&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_time</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;silent&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
@@ -4602,7 +4866,6 @@ If <code>status</code> is not provided in the content it is added as {'status': 
                 <span class="n">transformed_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]),</span>
                 <span class="n">shell_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
-
         <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># A safeguard to catch exceptions not caught by the shell.</span>
             <span class="n">err</span> <span class="o">=</span> <span class="n">e</span>
@@ -4660,32 +4923,32 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1006</span>
-<span class="normal">1007</span>
-<span class="normal">1008</span>
-<span class="normal">1009</span>
-<span class="normal">1010</span>
-<span class="normal">1011</span>
-<span class="normal">1012</span>
-<span class="normal">1013</span>
-<span class="normal">1014</span>
-<span class="normal">1015</span>
-<span class="normal">1016</span>
-<span class="normal">1017</span>
-<span class="normal">1018</span>
-<span class="normal">1019</span>
-<span class="normal">1020</span>
-<span class="normal">1021</span>
-<span class="normal">1022</span>
-<span class="normal">1023</span>
-<span class="normal">1024</span>
-<span class="normal">1025</span>
-<span class="normal">1026</span>
-<span class="normal">1027</span>
-<span class="normal">1028</span>
-<span class="normal">1029</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1029</span>
 <span class="normal">1030</span>
-<span class="normal">1031</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">1031</span>
+<span class="normal">1032</span>
+<span class="normal">1033</span>
+<span class="normal">1034</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span>
+<span class="normal">1044</span>
+<span class="normal">1045</span>
+<span class="normal">1046</span>
+<span class="normal">1047</span>
+<span class="normal">1048</span>
+<span class="normal">1049</span>
+<span class="normal">1050</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion).&quot;&quot;&quot;</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span>
@@ -4739,13 +5002,13 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1033</span>
-<span class="normal">1034</span>
-<span class="normal">1035</span>
-<span class="normal">1036</span>
-<span class="normal">1037</span>
-<span class="normal">1038</span>
-<span class="normal">1039</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness).&quot;&quot;&quot;</span>
     <span class="n">status</span><span class="p">,</span> <span class="n">indent_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">input_transformer_manager</span><span class="o">.</span><span class="n">check_complete</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">][</span><span class="s2">&quot;code&quot;</span><span class="p">])</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">}</span>
@@ -4780,21 +5043,21 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1041</span>
-<span class="normal">1042</span>
-<span class="normal">1043</span>
-<span class="normal">1044</span>
-<span class="normal">1045</span>
-<span class="normal">1046</span>
-<span class="normal">1047</span>
-<span class="normal">1048</span>
-<span class="normal">1049</span>
-<span class="normal">1050</span>
-<span class="normal">1051</span>
-<span class="normal">1052</span>
-<span class="normal">1053</span>
-<span class="normal">1054</span>
-<span class="normal">1055</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1064</span>
+<span class="normal">1065</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span>
+<span class="normal">1072</span>
+<span class="normal">1073</span>
+<span class="normal">1074</span>
+<span class="normal">1075</span>
+<span class="normal">1076</span>
+<span class="normal">1077</span>
+<span class="normal">1078</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection).&quot;&quot;&quot;</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
     <span class="n">detail_level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;detail_level&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
@@ -4837,28 +5100,28 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1057</span>
-<span class="normal">1058</span>
-<span class="normal">1059</span>
-<span class="normal">1060</span>
-<span class="normal">1061</span>
-<span class="normal">1062</span>
-<span class="normal">1063</span>
-<span class="normal">1064</span>
-<span class="normal">1065</span>
-<span class="normal">1066</span>
-<span class="normal">1067</span>
-<span class="normal">1068</span>
-<span class="normal">1069</span>
-<span class="normal">1070</span>
-<span class="normal">1071</span>
-<span class="normal">1072</span>
-<span class="normal">1073</span>
-<span class="normal">1074</span>
-<span class="normal">1075</span>
-<span class="normal">1076</span>
-<span class="normal">1077</span>
-<span class="normal">1078</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1080</span>
+<span class="normal">1081</span>
+<span class="normal">1082</span>
+<span class="normal">1083</span>
+<span class="normal">1084</span>
+<span class="normal">1085</span>
+<span class="normal">1086</span>
+<span class="normal">1087</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span>
+<span class="normal">1090</span>
+<span class="normal">1091</span>
+<span class="normal">1092</span>
+<span class="normal">1093</span>
+<span class="normal">1094</span>
+<span class="normal">1095</span>
+<span class="normal">1096</span>
+<span class="normal">1097</span>
+<span class="normal">1098</span>
+<span class="normal">1099</span>
+<span class="normal">1100</span>
+<span class="normal">1101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history).&quot;&quot;&quot;</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
     <span class="n">history_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">history_manager</span>
@@ -4908,9 +5171,9 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1080</span>
-<span class="normal">1081</span>
-<span class="normal">1082</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1103</span>
+<span class="normal">1104</span>
+<span class="normal">1105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">comm_manager</span><span class="o">.</span><span class="n">comm_open</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;socket&quot;</span><span class="p">],</span> <span class="n">ident</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;ident&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
 </code></pre></div></td></tr></table></div>
@@ -4941,9 +5204,9 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1084</span>
-<span class="normal">1085</span>
-<span class="normal">1086</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1107</span>
+<span class="normal">1108</span>
+<span class="normal">1109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm msg request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">comm_manager</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;socket&quot;</span><span class="p">],</span> <span class="n">ident</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;ident&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
 </code></pre></div></td></tr></table></div>
@@ -4974,9 +5237,9 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1088</span>
-<span class="normal">1089</span>
-<span class="normal">1090</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1111</span>
+<span class="normal">1112</span>
+<span class="normal">1113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm close request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">comm_manager</span><span class="o">.</span><span class="n">comm_close</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;socket&quot;</span><span class="p">],</span> <span class="n">ident</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;ident&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
 </code></pre></div></td></tr></table></div>
@@ -5007,17 +5270,17 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1092</span>
-<span class="normal">1093</span>
-<span class="normal">1094</span>
-<span class="normal">1095</span>
-<span class="normal">1096</span>
-<span class="normal">1097</span>
-<span class="normal">1098</span>
-<span class="normal">1099</span>
-<span class="normal">1100</span>
-<span class="normal">1101</span>
-<span class="normal">1102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">interrupt_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1115</span>
+<span class="normal">1116</span>
+<span class="normal">1117</span>
+<span class="normal">1118</span>
+<span class="normal">1119</span>
+<span class="normal">1120</span>
+<span class="normal">1121</span>
+<span class="normal">1122</span>
+<span class="normal">1123</span>
+<span class="normal">1124</span>
+<span class="normal">1125</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">interrupt_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_requested</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
@@ -5056,10 +5319,10 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1104</span>
-<span class="normal">1105</span>
-<span class="normal">1106</span>
-<span class="normal">1107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">shutdown_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1127</span>
+<span class="normal">1128</span>
+<span class="normal">1129</span>
+<span class="normal">1130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">shutdown_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;restart&quot;</span><span class="p">:</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;restart&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)}</span>
@@ -5091,9 +5354,9 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1109</span>
-<span class="normal">1110</span>
-<span class="normal">1111</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">debug_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1132</span>
+<span class="normal">1133</span>
+<span class="normal">1134</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">debug_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">process_request</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
 </code></pre></div></td></tr></table></div>
@@ -5120,10 +5383,10 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1113</span>
-<span class="normal">1114</span>
-<span class="normal">1115</span>
-<span class="normal">1116</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">excepthook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etype</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">tb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1136</span>
+<span class="normal">1137</span>
+<span class="normal">1138</span>
+<span class="normal">1139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">excepthook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etype</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">tb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle an exception.&quot;&quot;&quot;</span>
     <span class="c1"># write uncaught traceback to &#39;real&#39; stderr, not zmq-forwarder</span>
     <span class="n">traceback</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">tb</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span><span class="p">)</span>
@@ -5151,14 +5414,14 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1118</span>
-<span class="normal">1119</span>
-<span class="normal">1120</span>
-<span class="normal">1121</span>
-<span class="normal">1122</span>
-<span class="normal">1123</span>
-<span class="normal">1124</span>
-<span class="normal">1125</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unraisablehook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unraisable</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">UnraisableHookArgs</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1141</span>
+<span class="normal">1142</span>
+<span class="normal">1143</span>
+<span class="normal">1144</span>
+<span class="normal">1145</span>
+<span class="normal">1146</span>
+<span class="normal">1147</span>
+<span class="normal">1148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unraisablehook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unraisable</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">UnraisableHookArgs</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Handle unraisable exceptions (during gc for instance).&quot;</span>
     <span class="n">exc_info</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">unraisable</span><span class="o">.</span><span class="n">exc_type</span><span class="p">,</span>
@@ -5192,15 +5455,15 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1127</span>
-<span class="normal">1128</span>
-<span class="normal">1129</span>
-<span class="normal">1130</span>
-<span class="normal">1131</span>
-<span class="normal">1132</span>
-<span class="normal">1133</span>
-<span class="normal">1134</span>
-<span class="normal">1135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1150</span>
+<span class="normal">1151</span>
+<span class="normal">1152</span>
+<span class="normal">1153</span>
+<span class="normal">1154</span>
+<span class="normal">1155</span>
+<span class="normal">1156</span>
+<span class="normal">1157</span>
+<span class="normal">1158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward raw_input to frontends.</span>
 
@@ -5233,9 +5496,9 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1137</span>
-<span class="normal">1138</span>
-<span class="normal">1139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1160</span>
+<span class="normal">1161</span>
+<span class="normal">1162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward getpass to frontends.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_request</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -5262,10 +5525,10 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
-<span class="normal">1144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1164</span>
+<span class="normal">1165</span>
+<span class="normal">1166</span>
+<span class="normal">1167</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the connection info as a dict.&quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -5304,19 +5567,19 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1146</span>
-<span class="normal">1147</span>
-<span class="normal">1148</span>
-<span class="normal">1149</span>
-<span class="normal">1150</span>
-<span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
-<span class="normal">1157</span>
-<span class="normal">1158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1169</span>
+<span class="normal">1170</span>
+<span class="normal">1171</span>
+<span class="normal">1172</span>
+<span class="normal">1173</span>
+<span class="normal">1174</span>
+<span class="normal">1175</span>
+<span class="normal">1176</span>
+<span class="normal">1177</span>
+<span class="normal">1178</span>
+<span class="normal">1179</span>
+<span class="normal">1180</span>
+<span class="normal">1181</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A convenience method to access the &#39;message&#39; in the current context if there is one.</span>
 
@@ -5363,7 +5626,8 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">73</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">72</span>
+<span class="normal">73</span>
 <span class="normal">74</span>
 <span class="normal">75</span>
 <span class="normal">76</span>
@@ -5373,8 +5637,7 @@ If <code>status</code> is not provided in the content it is added as {'status': 
 <span class="normal">80</span>
 <span class="normal">81</span>
 <span class="normal">82</span>
-<span class="normal">83</span>
-<span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">error_to_content</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">83</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">error_to_content</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert the error to a dict.</span>
 
@@ -5418,7 +5681,8 @@ defaults to 100 if port missing, else 2 attempts.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 87</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 86</span>
+<span class="normal"> 87</span>
 <span class="normal"> 88</span>
 <span class="normal"> 89</span>
 <span class="normal"> 90</span>
@@ -5461,8 +5725,7 @@ defaults to 100 if port missing, else 2 attempts.</p>
 <span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">bind_socket</span><span class="p">(</span>
+<span class="normal">130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">bind_socket</span><span class="p">(</span>
     <span class="n">socket</span><span class="p">:</span> <span class="n">Socket</span><span class="p">[</span><span class="n">SocketType</span><span class="p">],</span>
     <span class="n">transport</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">,</span> <span class="s2">&quot;ipc&quot;</span><span class="p">],</span>
     <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -5567,7 +5830,8 @@ defaults to 100 if port missing, else 2 attempts.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">134</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
+<span class="normal">134</span>
 <span class="normal">135</span>
 <span class="normal">136</span>
 <span class="normal">137</span>
@@ -5585,8 +5849,7 @@ defaults to 100 if port missing, else 2 attempts.</p>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">wrap_handler</span><span class="p">(</span>
     <span class="n">runner</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">HandlerType</span><span class="p">,</span> <span class="n">BinarySemaphore</span><span class="p">,</span> <span class="n">Job</span><span class="p">]],</span> <span class="n">lock</span><span class="p">:</span> <span class="n">BinarySemaphore</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">HandlerType</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Job</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]:</span>
