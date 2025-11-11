@@ -47,7 +47,6 @@ from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
 from async_kernel.kernelspec import Backend, KernelName
 from async_kernel.typing import (
-    CallerStartNewOptions,
     Content,
     ExecuteContent,
     HandlerType,
@@ -208,14 +207,16 @@ class Kernel(HasTraits):
     _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
     _settings: Dict[str, Any] = Dict()
     _sockets: Dict[SocketID, zmq.Socket] = Dict()
-    _callers: Dict[SocketID, Caller] = Dict()
+    callers: Dict[Literal[SocketID.shell, SocketID.control], Caller] = Dict()
+    "The caller associated with the kernel once it has started."
     _ports: Dict[SocketID, int] = Dict()
     _execution_count = traitlets.Int(0)
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
     ""
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
-
+    _stabilisation_delay = traitlets.Float(0.1)
+    "The sleep time before entering the message loop to allow the kernel to stabilise."
     help_links = Tuple()
     ""
     quiet = traitlets.Bool(True)
@@ -504,7 +505,7 @@ class Kernel(HasTraits):
         self.anyio_backend = Backend(current_async_library())
         try:
             async with Caller(log=self.log, create=True, protected=True) as caller:
-                self._callers[SocketID.shell] = caller
+                self.callers[SocketID.shell] = caller
                 await self._start_threads_and_open_sockets()
                 assert len(self._sockets) == len(SocketID)
                 self._write_connection_file()
@@ -522,6 +523,7 @@ class Kernel(HasTraits):
                         finally:
                             self.comm_manager.kernel = None
                             self.event_stopped.set()
+                            self.callers.clear()
         finally:
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
@@ -539,6 +541,13 @@ class Kernel(HasTraits):
                 # A blocking call that is not an execute_request
                 raise KernelInterruptError
             self._last_interrupt_frame = frame
+
+            def clear_last_interrupt_frame():
+                if self._last_interrupt_frame is frame:
+                    self._last_interrupt_frame = None
+
+            if caller := self.callers.get(SocketID.shell):
+                caller.call_direct(clear_last_interrupt_frame)
         else:
             signal.default_int_handler(signum, frame)
 
@@ -582,7 +591,7 @@ class Kernel(HasTraits):
                 thread.start()
                 await anyio.sleep_forever()
 
-        self._callers[SocketID.control] = Caller.start_new(
+        self.callers[SocketID.control] = Caller.start_new(
             backend=self.anyio_backend, name="ControlThread", protected=True
         )
 
@@ -595,7 +604,7 @@ class Kernel(HasTraits):
         threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready.set)).start()
         control_ready.wait()
 
-        self._callers[SocketID.shell].call_soon(run_in_shell_event_loop)
+        self.callers[SocketID.shell].call_soon(run_in_shell_event_loop)
         await shell_ready
 
     @contextlib.contextmanager
@@ -701,36 +710,41 @@ class Kernel(HasTraits):
         self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]
     ) -> None:
         """
-        Receive shell and control messages over zmq sockets.
+        Continuously receives and processes messages from a ZeroMQ ROUTER socket in a loop.
 
-        This gets called for both shell and control messages when the kernel is started.
+        Args:
+            socket_id: The identifier for the socket to listen on (either control or shell).
+            started: A callback function to be called once the socket is bound and ready to receive messages.
+
+        Behavior:
+            - Binds a ROUTER socket for the specified socket_id.
+            - Calls the `started` callback after binding and a short delay.
+            - Enters a loop to receive messages from the socket.
+            - For each received message:
+                - Determines the message type and retrieves the appropriate handler.
+                - Constructs a job dictionary containing message and context information.
+                - Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or blocking).
+            - Handles invalid messages and logs errors.
+            - Exits the loop gracefully if the ZeroMQ context is terminated.
+
+        Exception handling:
+            - Handles and logs exceptions during message processing.
+            - Breaks the loop on `zmq.ContextTerminated`.
         """
         utils.mark_thread_pydev_do_not_trace()
         msg: Message
         ident: list[bytes]
-        caller = self._callers[socket_id]
+        caller = self.callers[socket_id]
         socket: Socket[Literal[SocketType.ROUTER]] = Context.instance().socket(SocketType.ROUTER)
-        new_thread_options: CallerStartNewOptions = {
-            "backend": self.anyio_backend,
-            "backend_options": self.anyio_backend_options,
-            "name": None,
-        }
         lock = BinarySemaphore()
         with self._bind_socket(socket_id, socket):
             started()
+            time.sleep(self._stabilisation_delay)
             while True:
                 try:
                     ident, msg = self.session.recv(socket, mode=zmq.BLOCKY, copy=False)  # pyright: ignore[reportAssignmentType]
-                    if socket_id == SocketID.shell:
-                        # Reset the frame to show the main thread is not blocked.
-                        self._last_interrupt_frame = None
-                    self.log.debug("*** receive_msg_loop %s*** %s", socket_id, msg)
-                    try:
-                        msg_type = MsgType(msg["header"]["msg_type"])
-                        handler = self.get_handler(msg_type)
-                    except (ValueError, TypeError, KeyError):
-                        self.log.debug("Invalid msg %s", msg)
-                        continue
+                    msg_type = MsgType(msg["header"]["msg_type"])
+                    handler = wrap_handler(self.run_handler, lock, self.get_handler(msg_type))
                     job: Job = {
                         "socket_id": socket_id,
                         "socket": socket,
@@ -739,24 +753,34 @@ class Kernel(HasTraits):
                         "received_time": time.monotonic(),
                     }
                     run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
-                    self.log.debug(
-                        "%s  %s run mode %s caller %s handler: %s", socket_id, msg_type, run_mode, caller, handler
-                    )
-                    runner = wrap_handler(self.run_handler, lock, handler)
-                    match run_mode:
-                        case RunMode.queue:
-                            caller.queue_call(runner, job)
-                        case RunMode.thread:
-                            Caller.to_thread_advanced(new_thread_options, runner, job)
-                        case RunMode.task:
-                            caller.call_soon(runner, job)
-                        case RunMode.blocking:
-                            caller.call_direct(runner, job)
+                    self.schedule_job(caller, lock, handler, run_mode, job)
+                    self.log.debug("%s %s %s %s %s", socket_id, msg_type, run_mode, handler, msg)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:
                     self.log.debug("Bad message on %s: %s", socket_id, e)
                     continue
+
+    def schedule_job(self, caller: Caller, lock: BinarySemaphore, handler: HandlerType, run_mode: RunMode, job: Job, /):
+        """
+        Schedules a job to be executed by the handler using the specified run mode.
+
+        Args:
+            caller: The caller instance responsible for scheduling.
+            lock: A binary semaphore for synchronization (not used in this method).
+            handler: The function or callable to execute for the job.
+            run_mode: The mode in which to run the job.
+            job: The job instance or data to be passed to the handler.
+        """
+        match run_mode:
+            case RunMode.blocking:
+                caller.call_direct(handler, job)
+            case RunMode.queue:
+                caller.queue_call(handler, job)
+            case RunMode.task:
+                caller.call_soon(handler, job)
+            case RunMode.thread:
+                Caller.to_thread(handler, job)
 
     def get_run_mode(
         self,
@@ -907,8 +931,8 @@ class Kernel(HasTraits):
                 self.log.debug(
                     "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
                 )
-        else:
-            self._callers[SocketID.control].call_direct(
+        elif (caller := self.callers.get(SocketID.control)) and caller.thread is not thread:
+            caller.call_direct(
                 self.iopub_send,
                 msg_or_type=msg_or_type,
                 content=content,
@@ -972,7 +996,6 @@ class Kernel(HasTraits):
                     transformed_cell=self.shell.transform_cell(c["code"]),
                     shell_futures=True,
                 )
-
             except (Exception, anyio.get_cancelled_exc_class()) as e:
                 # A safeguard to catch exceptions not caught by the shell.
                 err = e
