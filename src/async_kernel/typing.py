@@ -312,6 +312,8 @@ class CallerStartNewOptions(TypedDict):
     "Options to use when calling [anyio.run][] inside the new thread."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure."
+    daemon: NotRequired[bool]
+    "Passed to the new [Thread][threading.Thread]."
 
 
 DebugMessage = dict[str, Any]

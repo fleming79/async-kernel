@@ -734,9 +734,13 @@ class Caller(anyio.AsyncContextManagerMixin):
         When called without a name `MainThread` will be used as the `name`.
 
         Args:
-            create: Create a new instance if one with the corresponding name does not already exist.
-                When not provided it defaults to `True` when `name` is `MainThread` otherwise `False`.
+            create: Create a new instance if a Caller with the corresponding name does not already exist.
             **kwargs: Options to use to identify or create a new instance if an instance does not already exist.
+
+        Notes:
+            - If `name` is not passed in `**kwargs` name is set to `name = "MainThread"`.
+            - For the case of `name="MainThread"` an instance will be created if one doesn't already exist except if `create=False`.
+            - `'MainThread'` always corresponds to an existing thread
         """
         if "name" not in kwargs:
             kwargs["name"] = "MainThread"
@@ -831,7 +835,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         backend: Backend | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         protected: bool = False,
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        daemon:bool = True
+        daemon: bool = True,
     ) -> Self:
         """
         A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.
