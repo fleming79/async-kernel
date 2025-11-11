@@ -764,6 +764,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -866,6 +868,29 @@ viewing the latest version.
   
   <span class="md-ellipsis">
     async_kernel.command
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/debugger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    async_kernel.debugger
     
   </span>
   
@@ -1674,14 +1699,15 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="concurrency">Concurrency<a class="anchor-link" href="#concurrency">¶</a></h1><p>Async kernel runs <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#messaging-in-jupyter">message request</a> with one of the following <code>RunModes</code>.</p>
+<h1 id="concurrency">Concurrency<a class="anchor-link" href="#concurrency">¶</a></h1><p>Async kernel handles message requests concurrently. How the request is handled is a function of the channel and message type.</p>
+<p>The following <code>RunModes</code> are provided.</p>
 <ul>
 <li>blocking: Run the handler directly blocking the message loop</li>
-<li>queue: Run in a queue</li>
-<li>task: Run in a task</li>
-<li>thread: Run in a Caller thread</li>
+<li>queue: Run in a queue (default for the <code>shell</code> channel)</li>
+<li>task: Run in a task (default for the <code>control</code> channel)</li>
+<li>thread: Run in a worker thread</li>
 </ul>
-<p>The kernel decides the run mode dynamically with the method [get_run_mode][async_kernel.kernel.Kernel.get_run_mode].</p>
+<p>The kernel decides the run mode dynamically with the method <a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/?h=get_run_mod#async_kernel.kernel.Kernel.get_run_mode">get_run_mode</a>.</p>
 </div>
 </div>
 </div>
@@ -1741,7 +1767,7 @@ kernel.get_run_mode(MsgType.comm_msg)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Below is a list of the run modes.</p>
+<p>Below is a list of the run modes according to the message type and channel (SocketID).</p>
 </div>
 </div>
 </div>
@@ -1948,10 +1974,6 @@ else:
     <span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Button</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Run mode:"</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_job</span><span class="p">()[</span><span class="s2">"run_mode"</span><span class="p">])</span>
-
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
     <span class="n">button</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Finish"</span><span class="p">)</span>
     <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
@@ -1967,10 +1989,6 @@ else:
 
     from aiologic import Event
     from ipywidgets import Button
-
-    from async_kernel import utils
-
-    print("Run mode:", utils.get_job()["run_mode"])
 
     print(f"Thread name: '{threading.current_thread().name}'")
     button = Button(description="Finish")
@@ -2036,21 +2054,27 @@ else:
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Thread name: 'MainThread'</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> demo()
-
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 9</span>, in <span class="ansi-cyan-fg">demo</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">ipywidgets</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> Button
-<span class="ansi-green-fg">      7</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">async_kernel</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> utils
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Run mode:</span><span class="ansi-yellow-fg">"</span>, <span class="ansi-yellow-bg">utils</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_job</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-fg ansi-yellow-bg">run_mode</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-bg">]</span>)
-<span class="ansi-green-fg">     11</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Thread name: </span><span class="ansi-yellow-fg">'</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>threading.current_thread().name<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">"</span>)
-<span class="ansi-green-fg">     12</span> button = Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Finish</span><span class="ansi-yellow-fg">"</span>)
-
-<span class="ansi-red-fg">KeyError</span>: 'run_mode'</pre>
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Button(description='Finish', style=ButtonStyle())</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre></pre>
 </div>
 </div>
 </div>
@@ -2111,23 +2135,27 @@ await demo()</div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Thread name: 'MainThread'</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 3</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)">##task</span>
-<span class="ansi-green-fg">      2</span> <span style="color: rgb(95,135,135)"># Tip: try running this cell while the previous cell is still busy.</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> demo()
-
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 9</span>, in <span class="ansi-cyan-fg">demo</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">ipywidgets</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> Button
-<span class="ansi-green-fg">      7</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">async_kernel</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> utils
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Run mode:</span><span class="ansi-yellow-fg">"</span>, <span class="ansi-yellow-bg">utils</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_job</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-fg ansi-yellow-bg">run_mode</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-bg">]</span>)
-<span class="ansi-green-fg">     11</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Thread name: </span><span class="ansi-yellow-fg">'</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>threading.current_thread().name<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">"</span>)
-<span class="ansi-green-fg">     12</span> button = Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Finish</span><span class="ansi-yellow-fg">"</span>)
-
-<span class="ansi-red-fg">KeyError</span>: 'run_mode'</pre>
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Button(description='Finish', style=ButtonStyle())</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre></pre>
 </div>
 </div>
 </div>
@@ -2190,22 +2218,27 @@ await demo()</div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Thread name: 'MainThread'</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyError</span>                                  Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># This time we'll use the tag to run the cell in a Thread</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> demo()
-
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 9</span>, in <span class="ansi-cyan-fg">demo</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">      5</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">ipywidgets</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> Button
-<span class="ansi-green-fg">      7</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">async_kernel</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">import</span> utils
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Run mode:</span><span class="ansi-yellow-fg">"</span>, <span class="ansi-yellow-bg">utils</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">get_job</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-fg ansi-yellow-bg">run_mode</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-bg">]</span>)
-<span class="ansi-green-fg">     11</span> <span style="color: rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Thread name: </span><span class="ansi-yellow-fg">'</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>threading.current_thread().name<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">"</span>)
-<span class="ansi-green-fg">     12</span> button = Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Finish</span><span class="ansi-yellow-fg">"</span>)
-
-<span class="ansi-red-fg">KeyError</span>: 'run_mode'</pre>
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Button(description='Finish', style=ButtonStyle())</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre></pre>
 </div>
 </div>
 </div>
@@ -2341,7 +2374,7 @@ await demo()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 9, 2025 11:47:40 UTC"><span class="timeago" datetime="2025-11-09T11:47:40+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 9, 2025 11:47:40 UTC">2025-11-09</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 11, 2025 04:43:56 UTC"><span class="timeago" datetime="2025-11-11T04:43:56+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 11, 2025 04:43:56 UTC">2025-11-11</span>
   </span>
 
     

@@ -675,6 +675,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -780,6 +782,29 @@ viewing the latest version.
   
   <span class="md-ellipsis">
     async_kernel.command
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    async_kernel.debugger
     
   </span>
   
@@ -1019,45 +1044,9 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner_map" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_runner_map
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_runner
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.asyncshell.AsyncInteractiveShell.debug" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.readline_use" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;readline_use
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.autoindent" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;autoindent
     </span>
   </a>
   
@@ -1492,45 +1481,9 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner_map" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_runner_map
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_runner
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.asyncshell.AsyncInteractiveShell.debug" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.readline_use" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;readline_use
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.autoindent" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;autoindent
     </span>
   </a>
   
@@ -1653,14 +1606,14 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            async_kernel.asyncshell.AsyncDisplayHook" href="#async_kernel.asyncshell.AsyncDisplayHook">AsyncDisplayHook</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A displayhook subclass that publishes data using ZeroMQ.</p>
+            <p>A displayhook subclass that publishes data using <a class="autorefs autorefs-internal" title="            iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title="            async_kernel.asyncshell.AsyncDisplayPublisher" href="#async_kernel.asyncshell.AsyncDisplayPublisher">AsyncDisplayPublisher</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A display publisher that publishes data using a ZeroMQ PUB socket.</p>
+            <p>A display publisher that publishes data using <a class="autorefs autorefs-internal" title="            iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -1704,7 +1657,7 @@ viewing the latest version.
               Bases: <code><span title="IPython.core.displayhook.DisplayHook">DisplayHook</span></code></p>
 
 
-        <p>A displayhook subclass that publishes data using ZeroMQ.</p>
+        <p>A displayhook subclass that publishes data using <a class="autorefs autorefs-internal" title="            iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
 <p>This is intended to work with an InteractiveShell instance. It sends a dict of different
 representations of the object.</p>
 
@@ -1922,7 +1875,7 @@ representations of the object.</p>
               Bases: <code><span title="IPython.core.displaypub.DisplayPublisher">DisplayPublisher</span></code></p>
 
 
-        <p>A display publisher that publishes data using a ZeroMQ PUB socket.</p>
+        <p>A display publisher that publishes data using <a class="autorefs autorefs-internal" title="            iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
 
 
 
@@ -2252,24 +2205,21 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
 
         <p>An IPython InteractiveShell adapted to work with <a class="autorefs autorefs-internal" title="            async_kernel.kernel.Kernel" href="../kernel/#async_kernel.kernel.Kernel">Async kernel</a>.</p>
-<div class="admonition note">
-<p class="admonition-title">Notable differences</p>
-<ul>
+
+
+<details class="notable-differences" open>
+  <summary>Notable differences</summary>
+  <ul>
 <li>All <a class="autorefs autorefs-internal" title="            execute_request
 
 
   
       async
   " href="../kernel/#async_kernel.kernel.Kernel.execute_request">execute requests</a> are run asynchronously.</li>
-<li>
-<p>Supports a soft timeout with the metadata {"timeout":<value in seconds>}<sup id="async_kernel.asyncshell.AsyncInteractiveShell--fnref:1"><a class="footnote-ref" href="#async_kernel.asyncshell.AsyncInteractiveShell--fn:1">1</a></sup>.</p>
-</li>
-<li>
-<p>Not all features are support (see "not-supported" features listed below).</p>
-</li>
-<li>Gui event loops(tk, qt, ...) are not presently supported.</li>
+<li>Supports a soft timeout specified via metadata <code>{"timeout":&lt;value in seconds&gt;}</code><sup id="async_kernel.asyncshell.AsyncInteractiveShell--fnref:1"><a class="footnote-ref" href="#async_kernel.asyncshell.AsyncInteractiveShell--fn:1">1</a></sup>.</li>
+<li>Gui event loops(tk, qt, ...) <a class="autorefs autorefs-internal" title="            enable_gui" href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_gui">are not presently supported</a>.</li>
+<li>Not all features are support (see "not-supported" features listed below).</li>
 </ul>
-</div>
 <div class="footnote">
 <hr />
 <ol>
@@ -2278,7 +2228,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 </li>
 </ol>
 </div>
-
+</details>
 
 
 
@@ -2353,33 +2303,12 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
    (async_kernel.asyncshell.AsyncInteractiveShell.run_cell)" href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell">run_cell</a></code></b>
           –
           <div class="doc-md-description">
-            <p><strong>not-supported</strong></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            loop_runner_map
+            <p><strong>Not supported</strong> -  use <a class="autorefs autorefs-internal" title="            run_cell_async
 
 
   
-      class-attribute
-      instance-attribute
-   (async_kernel.asyncshell.AsyncInteractiveShell.loop_runner_map)" href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner_map">loop_runner_map</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p><strong>not-supported</strong></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            loop_runner
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.asyncshell.AsyncInteractiveShell.loop_runner)" href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner">loop_runner</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p><strong>not-supported</strong></p>
+      async
+  " href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async">run_cell_async</a> instead.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2392,33 +2321,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
    (async_kernel.asyncshell.AsyncInteractiveShell.debug)" href="#async_kernel.asyncshell.AsyncInteractiveShell.debug">debug</a></code></b>
           –
           <div class="doc-md-description">
-            <p><strong>not-supported</strong></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            readline_use
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.asyncshell.AsyncInteractiveShell.readline_use)" href="#async_kernel.asyncshell.AsyncInteractiveShell.readline_use">readline_use</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p><strong>not-supported</strong></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            autoindent
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.asyncshell.AsyncInteractiveShell.autoindent)" href="#async_kernel.asyncshell.AsyncInteractiveShell.autoindent">autoindent</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p><strong>not-supported</strong></p>
+            <p><strong>Not supported - use the built in debugger instead.</strong></p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2496,57 +2399,12 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
     <div class="doc doc-contents ">
 
-        <p><strong>not-supported</strong></p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
+        <p><strong>Not supported</strong> -  use <a class="autorefs autorefs-internal" title="            run_cell_async
 
 
-
-<h3 id="async_kernel.asyncshell.AsyncInteractiveShell.loop_runner_map" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">loop_runner_map</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner_map" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop_runner_map</span> <span class="o">=</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p><strong>not-supported</strong></p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.asyncshell.AsyncInteractiveShell.loop_runner" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">loop_runner</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.asyncshell.AsyncInteractiveShell.loop_runner" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop_runner</span> <span class="o">=</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p><strong>not-supported</strong></p>
+  
+      async
+  " href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async">run_cell_async</a> instead.</p>
 
     </div>
 
@@ -2571,57 +2429,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
     <div class="doc doc-contents ">
 
-        <p><strong>not-supported</strong></p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.asyncshell.AsyncInteractiveShell.readline_use" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">readline_use</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.asyncshell.AsyncInteractiveShell.readline_use" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">readline_use</span> <span class="o">=</span> <span class="kc">False</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p><strong>not-supported</strong></p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.asyncshell.AsyncInteractiveShell.autoindent" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">autoindent</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.asyncshell.AsyncInteractiveShell.autoindent" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">autoindent</span> <span class="o">=</span> <span class="kc">False</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p><strong>not-supported</strong></p>
+        <p><strong>Not supported - use the built in debugger instead.</strong></p>
 
     </div>
 
@@ -2692,7 +2500,13 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
@@ -2717,13 +2531,7 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_cell_async</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">raw_cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2779,11 +2587,11 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_magics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize magics.&quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_magics</span><span class="p">()</span>
@@ -2808,18 +2616,27 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
     <div class="doc doc-contents ">
 
         <p>Enable a given gui.</p>
-<p><strong>Supported guis.</strong></p>
-<ul class="task-list">
+
+
+<details class="supported-guis" open>
+  <summary>Supported guis</summary>
+  <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> tk</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> qt</li>
 </ul>
-
+</details>
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">302</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
 <span class="normal">303</span>
 <span class="normal">304</span>
 <span class="normal">305</span>
@@ -2827,24 +2644,16 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 <span class="normal">307</span>
 <span class="normal">308</span>
 <span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">enable_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Enable a given gui.</span>
 
-<span class="sd">    **Supported guis.**</span>
-
-<span class="sd">    - [x] inline</span>
-<span class="sd">    - [x] ipympl</span>
-<span class="sd">    - [ ] tk</span>
-<span class="sd">    - [ ] qt</span>
+<span class="sd">    Supported guis:</span>
+<span class="sd">        - [x] inline</span>
+<span class="sd">        - [x] ipympl</span>
+<span class="sd">        - [ ] tk</span>
+<span class="sd">        - [ ] qt</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">supported_no_eventloop</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;inline&quot;</span><span class="p">,</span> <span class="s2">&quot;ipympl&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">gui</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_no_eventloop</span><span class="p">:</span>
@@ -2945,7 +2754,14 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
 <span class="normal">325</span>
 <span class="normal">326</span>
 <span class="normal">327</span>
@@ -2956,14 +2772,7 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 <span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Print information for connecting other clients to this kernel.&quot;&quot;&quot;</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
@@ -3006,16 +2815,16 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 
             <details class="quote">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
 <span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">callers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Print a table of [Callers][async_kernel.Caller], indicating its status including:  -running - protected - on the current thread.&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;Running&quot;</span><span class="p">,</span> <span class="s2">&quot;Protected&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">]),</span> <span class="s2">&quot;─&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">]</span>
