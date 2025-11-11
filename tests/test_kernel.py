@@ -74,7 +74,7 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
     url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
     assert url.endswith(str(kernel._ports[SocketID.iopub]))  # pyright: ignore[reportPrivateUsage]
     ctx = zmq.Context()
-    thread = threading.Thread(target=pubio_subscribe)
+    thread = threading.Thread(target=pubio_subscribe, daemon=True)
     thread.start()
     try:
         time.sleep(0.05)

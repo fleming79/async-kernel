@@ -831,6 +831,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         backend: Backend | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         protected: bool = False,
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        daemon:bool = True
     ) -> Self:
         """
         A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.
@@ -847,6 +848,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             log: A logging adapter to use for debug messages.
             protected: When True, the caller will not shutdown unless shutdown is called with `force=True`.
             backend_options: Backend options for [anyio.run][]. Defaults to `Kernel.backend_options`.
+            daemon: Passed to [threading.Thread][].
 
         Returns:
             Caller: The newly created caller.
@@ -883,7 +885,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             backend_options = kernel.anyio_backend_options.get(backend) if kernel else None
 
         ready_event = Event()
-        thread = threading.Thread(target=async_kernel_caller, name=name or None)
+        thread = threading.Thread(target=async_kernel_caller, name=name or None, daemon=daemon)
         caller = cls(thread=thread, log=log, create=True, protected=protected)
         thread.start()
         ready_event.wait()
