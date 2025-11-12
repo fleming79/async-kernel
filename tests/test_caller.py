@@ -39,6 +39,11 @@ class TestFuture:
         f = Future()
         assert weakref.ref(f)() is f
 
+    def test_is_slots(self):
+        f = Future()
+        with pytest.raises(AttributeError):
+            f.not_an_att = None  # pyright: ignore[reportAttributeAccessIssue]
+
     async def test_set_and_wait_result(self):
         fut = Future[int]()
         assert inspect.isawaitable(fut)
