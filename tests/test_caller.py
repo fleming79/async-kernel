@@ -578,6 +578,11 @@ class TestCaller:
             with pytest.raises(RuntimeError):
                 async with caller:
                     pass
+        assert caller.stopped
+        await caller._stopped_event  # pyright: ignore[reportPrivateUsage]
+        with pytest.raises(RuntimeError):
+            async with caller:
+                pass
 
     async def test_current_future(self, anyio_backend: Backend):
         async with Caller(create=True) as caller:

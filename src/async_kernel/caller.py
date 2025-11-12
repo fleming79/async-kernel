@@ -422,8 +422,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         if self._stopped:
-            msg = "Already stopped!"
-            raise anyio.ClosedResourceError(msg)
+            msg = f"Already stopped and restarting is not allowed: {self}"
+            raise RuntimeError(msg)
         self._backend = Backend(current_async_library())
         self._running = True
         self._stopped_event = Event()
