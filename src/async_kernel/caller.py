@@ -59,7 +59,7 @@ class Future(Awaitable[T]):
     A future represents a computation that may complete asynchronously, providing a result or exception in the future.
 
     This class implements the Awaitable protocol, allowing it to be awaited in async code in thread or event loop.
-    It also provides the method `wait_sync` so the future can block until the result has been set.
+    Or synchronously with `wait_sync`.
     It supports cancellation, result retrieval, exception handling, and attaching callbacks to be invoked upon completion.
 
     Notes:
@@ -68,10 +68,11 @@ class Future(Awaitable[T]):
         - A callback can be set to handle cancellation with `set_canceller`.
     """
 
-    _cancelled = False
-    _canceller: Callable[[str | None], Any] | None = None
-    _exception = None
-    _done = False
+    __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
+    _cancelled: str
+    _canceller: Callable[[str | None], Any]
+    _exception: Exception
+    _done: bool
     _result: T
     _metadata_mappings: dict[int, dict[str, Any]] = {}
     "A flag to indicate if the metadata should be deleted after the result is set."
@@ -80,6 +81,7 @@ class Future(Awaitable[T]):
     def __init__(self, **metadata) -> None:
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
         self._metadata_mappings[id(self)] = metadata
+        self._done = False
 
     def __del__(self):
         self._metadata_mappings.pop(id(self), None)
@@ -105,13 +107,11 @@ class Future(Awaitable[T]):
         if self._done:
             raise InvalidStateError
         self._done = True
-        if self._cancelled:
-            mode = "exception"
-            value = self._make_cancelled_error()
-        if mode == "exception":
-            self._exception = value
-        else:
-            self._result = value  # pyright: ignore[reportAttributeAccessIssue]
+        if not hasattr(self, "_cancelled"):
+            if mode == "exception":
+                self._exception = value
+            else:
+                self._result = value
         while self._done_callbacks:
             cb = self._done_callbacks.pop()
             try:
@@ -120,7 +120,7 @@ class Future(Awaitable[T]):
                 pass
 
     def _make_cancelled_error(self) -> FutureCancelledError:
-        return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
+        return FutureCancelledError(self._cancelled)
 
     @property
     def metadata(self) -> dict[str, Any]:
@@ -170,7 +170,7 @@ class Future(Awaitable[T]):
 
     def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
         """
-        Wait for the result to be done synchronously blocking the current thread.
+        Wait for the result to be done synchronously (thread-safe) blocking the current thread.
 
         Args:
             timeout: Timeout in seconds.
@@ -235,16 +235,17 @@ class Future(Awaitable[T]):
         Returns if it has been cancelled.
         """
         if not self._done:
-            if msg and isinstance(self._cancelled, str):
-                msg = f"{self._cancelled}\n{msg}"
-            self._cancelled = msg or self._cancelled or True
-            if canceller := self._canceller:
+            cancelled = getattr(self, "_cancelled", "")
+            if msg and isinstance(cancelled, str):
+                msg = f"{cancelled}\n{msg}"
+            self._cancelled = msg or cancelled
+            if canceller := getattr(self, "_canceller", None):
                 canceller(msg)
         return self.cancelled()
 
     def cancelled(self) -> bool:
         """Return True if the future is cancelled."""
-        return bool(self._cancelled)
+        return isinstance(getattr(self, "_cancelled", None), str)
 
     def result(self) -> T:
         """
@@ -268,11 +269,11 @@ class Future(Awaitable[T]):
 
         If the future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
         """
-        if self._cancelled:
+        if hasattr(self, "_cancelled"):
             raise self._make_cancelled_error()
         if not self._done:
             raise InvalidStateError
-        return self._exception
+        return getattr(self, "_exception", None)
 
     def remove_done_callback(self, fn: Callable[[Self], object], /) -> int:
         """
@@ -308,7 +309,7 @@ class Future(Awaitable[T]):
             assert fut.done()
             ```
         """
-        if self._done or self._canceller:
+        if self._done or hasattr(self, "_canceller"):
             raise InvalidStateError
         self._canceller = canceller
         if self.cancelled():
