@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2025-11-12
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Add __slots__ to Future. [#186](https://github.com/fleming79/async-kernel/pull/186)
+
+- Drop Future.__init__ positional argument 'retain_metadata' [#185](https://github.com/fleming79/async-kernel/pull/185)
+
+### <!-- 5 --> 📝 Documentation
+
+- Maintenance and documentation. [#187](https://github.com/fleming79/async-kernel/pull/187)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- General maintenance [#188](https://github.com/fleming79/async-kernel/pull/188)
+
 ## [0.7.1] - 2025-11-11
 
 ### <!-- 1 --> 🚀 Features
@@ -16,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve docstrings: [#182](https://github.com/fleming79/async-kernel/pull/182)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.7.1 [#184](https://github.com/fleming79/async-kernel/pull/184)
 
 - Make all Threads daemon and add daemon option to Caller.start_new. [#183](https://github.com/fleming79/async-kernel/pull/183)
 
@@ -471,6 +489,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.7.2]: https://github.com/fleming79/async-kernel/compare/v0.7.1..v0.7.2
 [0.7.1]: https://github.com/fleming79/async-kernel/compare/v0.7.0..v0.7.1
 [0.7.0]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.2..v0.7.0
 [0.7.0-rc.2]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.1..v0.7.0-rc.2
