@@ -59,22 +59,22 @@ class Future(Awaitable[T]):
     A future represents a computation that may complete asynchronously, providing a result or exception in the future.
 
     This class implements the Awaitable protocol, allowing it to be awaited in async code in thread or event loop.
-    Or synchronously with `wait_sync`.
     It supports cancellation, result retrieval, exception handling, and attaching callbacks to be invoked upon completion.
 
     Notes:
         - The future is not considered done until set_result or set_exception is called.
         - If cancelled, the result is replaced with a FutureCancelledError.
         - A callback can be set to handle cancellation with `set_canceller`.
+        - Its result can also be synchronously waited (blocking) using `wait_sync`.
     """
 
     __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
 
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
-    "Keys of metadata to omit when creating a truncated repr for the repr of the future."
+    "Keys of metadata to omit when creating a repr of the future."
 
     _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
-    "A mapping of future's id its metadata"
+    "A mapping of future's id its metadata."
 
     _cancelled: str
     _canceller: Callable[[str | None], Any]
@@ -107,15 +107,11 @@ class Future(Awaitable[T]):
     def __await__(self) -> Generator[Any, None, T]:
         return self.wait().__await__()
 
-    def _set_value(self, mode: Literal["result", "exception"], value) -> None:
+    def _set_done(self, mode: Literal["result", "exception"], value) -> None:
         if self._done:
             raise InvalidStateError
         self._done = True
-        if not hasattr(self, "_cancelled"):
-            if mode == "exception":
-                self._exception = value
-            else:
-                self._result = value
+        setattr(self, "_" + mode, value)
         while self._done_callbacks:
             cb = self._done_callbacks.pop()
             try:
@@ -184,7 +180,7 @@ class Future(Awaitable[T]):
             TimeoutError: When the timeout expires and a result has not been set.
 
         Warning:
-            **Blocking the thread in which the result is set will cause deadlock.**
+            **Blocking the thread in which the result is set will result in deadlock.**
         """
         if not self._done:
             done = Event()
@@ -199,17 +195,18 @@ class Future(Awaitable[T]):
 
     def set_result(self, value: T) -> None:
         "Set the result (thread-safe)."
-        self._set_value("result", value)
+        self._set_done("result", value)
 
     def set_exception(self, exception: BaseException) -> None:
         "Set the exception (thread-safe)."
-        self._set_value("exception", exception)
+        self._set_done("exception", exception)
 
     def done(self) -> bool:
         """
         Returns True if the future has a result.
 
-        Done means either that a result / exception is available."""
+        Done means either that a result / exception is available or that cancellation is complete.
+        """
         return self._done
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
@@ -227,16 +224,14 @@ class Future(Awaitable[T]):
         """
         Cancel the Future.
 
-        Notes:
-            - Cancellation cannot be undone.
-            - The future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
-                In both cases the value is ignore and replaced with a [FutureCancelledError][async_kernel.caller.FutureCancelledError]
-                and the result is inaccessible.
-
         Args:
             msg: The message to use when cancelling.
 
-        Returns if it has been cancelled.
+        Notes:
+            - Cancellation cannot be undone.
+            - The future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
+
+        Returns: If it has been cancelled.
         """
         if not self._done:
             cancelled = getattr(self, "_cancelled", "")
@@ -301,8 +296,7 @@ class Future(Awaitable[T]):
                 - The cancellation call is not thread-safe.
 
         Notes:
-            - `set_result` must still be called to mark the future as completed.
-            - Any value passed is replaced with a [async_kernel.caller.FutureCancelledError][].
+            - `set_result` must be called to mark the future as completed.
 
         Example:
             ```python
