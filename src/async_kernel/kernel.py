@@ -823,11 +823,11 @@ class Kernel(HasTraits):
             case _, MsgType.comm_msg:
                 return RunMode.queue
             case _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
-                return RunMode.direct
+                return RunMode.queue
             case _, MsgType.debug_request:
                 return RunMode.queue
             case _:
-                return RunMode.direct
+                return RunMode.queue
 
     def all_concurrency_run_modes(
         self,
