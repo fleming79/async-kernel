@@ -367,7 +367,7 @@ async def test_interrupt_request_async_request(subprocess_kernels_client: AsyncK
     assert reply["content"]["status"] == "error"
 
 
-async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client: AsyncKernelClient):
+async def test_interrupt_request_direct_exec_request(subprocess_kernels_client: AsyncKernelClient):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
     msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 4})")
@@ -381,7 +381,7 @@ async def test_interrupt_request_blocking_exec_request(subprocess_kernels_client
     assert reply["content"]["ename"] == "KernelInterruptError"
 
 
-async def test_interrupt_request_blocking_task(subprocess_kernels_client: AsyncKernelClient):
+async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKernelClient):
     await utils.clear_iopub(subprocess_kernels_client)
     code = f"""
     import time
@@ -567,7 +567,7 @@ async def test_kernel_get_handler(kernel: Kernel):
         ("", False, SocketID.control, RunMode.task),
         ("threads", False, SocketID.shell, RunMode.queue),
         ("Task", False, SocketID.shell, RunMode.queue),
-        ("RunMode.blocking", False, SocketID.shell, RunMode.blocking),
+        ("RunMode.direct", False, SocketID.shell, RunMode.direct),
     ],
 )
 async def test_get_run_mode(
@@ -594,7 +594,7 @@ async def test_get_run_mode_tag(client: AsyncKernelClient):
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 251112711
+    assert murmur2_x86(str(data), 1) == 3858295689
 
 
 async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):

@@ -97,14 +97,14 @@ class RunMode(enum.StrEnum):
     "Run the message handler using [async_kernel.Caller.call_soon][]."
 
     thread = "thread"
-    "Run the message handler using [async_kernel.Caller.to_thread_advanced][] to start use a 'worker'."
+    "Run the message handler using [async_kernel.Caller.to_thread][] to start use a 'worker'."
 
-    blocking = "blocking"
+    direct = "direct"
     """
     Run the message handler using [async_kernel.Caller.call_direct][].
     
     Warning: 
-        **This mode blocks the associated loop.** 
+        **This mode runs directly in the caller scheduler blocking other tasks from being scheduled.** 
         
         Use this for short running messages that should be processed as soon as it is received.
     """

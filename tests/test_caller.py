@@ -614,25 +614,25 @@ class TestCaller:
         with pytest.raises(FutureCancelledError):
             await never_called_future
 
-    @pytest.mark.parametrize("mode", ["async", "blocking"])
+    @pytest.mark.parametrize("mode", ["async", "direct"])
     @pytest.mark.parametrize("cancel_mode", ["local", "thread"])
     @pytest.mark.parametrize("msg", ["msg", None, "twice"])
     async def test_cancel(
-        self, caller: Caller, mode: Literal["async", "blocking"], cancel_mode: Literal["local", "thread"], msg
+        self, caller: Caller, mode: Literal["async", "direct"], cancel_mode: Literal["local", "thread"], msg
     ):
         ready = Event()
         proceed = Event()
 
-        async def blocking_func():
+        async def direct_func():
             ready.set()
             await proceed
             time.sleep(0.1)
 
-        async def non_blocking_func():
+        async def non_direct_func():
             ready.set()
             await anyio.sleep_forever()
 
-        my_func = blocking_func if mode == "blocking" else non_blocking_func
+        my_func = direct_func if mode == "direct" else non_direct_func
 
         fut = caller.call_soon(my_func)
         await ready
