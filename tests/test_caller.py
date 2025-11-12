@@ -188,7 +188,6 @@ class TestFuture:
         assert re.match(matches[2], repr(fut))
 
     async def test_gc(self, caller: Caller):
-
         finalized = Event()
         ok = False
 
@@ -216,6 +215,16 @@ class TestFuture:
         assert r() is None, f"References found {gc.get_referrers(r())}"
         assert ok
         assert id_ not in Future._metadata_mappings  # pyright: ignore[reportPrivateUsage]
+
+    @pytest.mark.parametrize("result", [True, False])
+    async def test_wait_sync(self, caller: Caller, result: bool):
+        fut = caller.to_thread(lambda: 1 + 1)
+        assert fut.wait_sync(result=result) == (2 if result else None)
+
+    async def test_wait_sync_timeout(self, caller: Caller):
+        fut = caller.call_soon(anyio.sleep_forever)
+        with pytest.raises(TimeoutError):
+            fut.wait_sync(timeout=0.01)
 
 
 @pytest.mark.anyio
@@ -246,7 +255,6 @@ class TestCaller:
         assert await caller.call_soon(lambda: fut) is fut
 
     async def test_repr_caller_future(self, caller):
-
         async def test_func(a, b, c):
             pass
 

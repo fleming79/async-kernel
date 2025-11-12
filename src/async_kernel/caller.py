@@ -59,6 +59,7 @@ class Future(Awaitable[T]):
     A future represents a computation that may complete asynchronously, providing a result or exception in the future.
 
     This class implements the Awaitable protocol, allowing it to be awaited in async code in thread or event loop.
+    It also provides the method `wait_sync` so the future can block until the result has been set.
     It supports cancellation, result retrieval, exception handling, and attaching callbacks to be invoked upon completion.
 
     Notes:
@@ -158,6 +159,39 @@ class Future(Awaitable[T]):
         finally:
             if not self._done and not shield:
                 self.cancel("Cancelled with waiter cancellation.")
+
+    if TYPE_CHECKING:
+
+        @overload
+        def wait_sync(self, *, timeout: float | None = ..., result: Literal[True] = True) -> T: ...
+
+        @overload
+        def wait_sync(self, *, timeout: float | None = ..., result: Literal[False]) -> None: ...
+
+    def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
+        """
+        Wait for the result to be done synchronously blocking the current thread.
+
+        Args:
+            timeout: Timeout in seconds.
+            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [async_kernel.caller.Future.result][]).
+
+        Raises:
+            TimeoutError: When the timeout expires and a result has not been set.
+
+        Warning:
+            **Blocking the thread in which the result is set will cause deadlock.**
+        """
+        if not self._done:
+            done = Event()
+            self.add_done_callback(lambda _: done.set())
+            if not self._done:
+                done.wait(timeout)
+            if not self._done:
+                msg = f"Timeout waiting for {self}"
+                raise TimeoutError(msg)
+
+        return self.result() if result else None
 
     def set_result(self, value: T) -> None:
         "Set the result (thread-safe)."
@@ -551,10 +585,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
             **metadata: Additional metadata to store in the future.
-
-        Notes:
-            - All arguments are stored in the future's metadata.
-            - When the call is done the metadata is cleared to prevent memory leaks.
         """
         if self._stopped:
             raise anyio.ClosedResourceError
