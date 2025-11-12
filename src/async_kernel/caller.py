@@ -69,14 +69,18 @@ class Future(Awaitable[T]):
     """
 
     __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
+
+    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
+    "Keys of metadata to omit when creating a truncated repr for the repr of the future."
+
+    _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
+    "A mapping of future's id its metadata"
+
     _cancelled: str
     _canceller: Callable[[str | None], Any]
     _exception: Exception
     _done: bool
     _result: T
-    _metadata_mappings: dict[int, dict[str, Any]] = {}
-    "A flag to indicate if the metadata should be deleted after the result is set."
-    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
     def __init__(self, **metadata) -> None:
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
