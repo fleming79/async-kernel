@@ -5034,7 +5034,7 @@ along with their corresponding RunMode (if available).</p>
             <span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># A safeguard to catch exceptions not caught by the shell.</span>
-            <span class="n">err</span> <span class="o">=</span> <span class="n">e</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">KernelInterruptError</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_interrupt_frame</span> <span class="k">else</span> <span class="n">e</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">error_before_exec</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">error_in_exec</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="n">KernelInterruptError</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_interrupts</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
