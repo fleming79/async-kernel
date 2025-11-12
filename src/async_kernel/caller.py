@@ -59,24 +59,28 @@ class Future(Awaitable[T]):
     A future represents a computation that may complete asynchronously, providing a result or exception in the future.
 
     This class implements the Awaitable protocol, allowing it to be awaited in async code in thread or event loop.
-    Or synchronously with `wait_sync`.
     It supports cancellation, result retrieval, exception handling, and attaching callbacks to be invoked upon completion.
 
     Notes:
         - The future is not considered done until set_result or set_exception is called.
         - If cancelled, the result is replaced with a FutureCancelledError.
         - A callback can be set to handle cancellation with `set_canceller`.
+        - Its result can also be synchronously waited (blocking) using `wait_sync`.
     """
 
     __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
+
+    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
+    "Keys of metadata to omit when creating a repr of the future."
+
+    _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
+    "A mapping of future's id its metadata."
+
     _cancelled: str
     _canceller: Callable[[str | None], Any]
     _exception: Exception
     _done: bool
     _result: T
-    _metadata_mappings: dict[int, dict[str, Any]] = {}
-    "A flag to indicate if the metadata should be deleted after the result is set."
-    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
     def __init__(self, **metadata) -> None:
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
@@ -103,15 +107,11 @@ class Future(Awaitable[T]):
     def __await__(self) -> Generator[Any, None, T]:
         return self.wait().__await__()
 
-    def _set_value(self, mode: Literal["result", "exception"], value) -> None:
+    def _set_done(self, mode: Literal["result", "exception"], value) -> None:
         if self._done:
             raise InvalidStateError
         self._done = True
-        if not hasattr(self, "_cancelled"):
-            if mode == "exception":
-                self._exception = value
-            else:
-                self._result = value
+        setattr(self, "_" + mode, value)
         while self._done_callbacks:
             cb = self._done_callbacks.pop()
             try:
@@ -180,7 +180,7 @@ class Future(Awaitable[T]):
             TimeoutError: When the timeout expires and a result has not been set.
 
         Warning:
-            **Blocking the thread in which the result is set will cause deadlock.**
+            **Blocking the thread in which the result is set will result in deadlock.**
         """
         if not self._done:
             done = Event()
@@ -195,17 +195,18 @@ class Future(Awaitable[T]):
 
     def set_result(self, value: T) -> None:
         "Set the result (thread-safe)."
-        self._set_value("result", value)
+        self._set_done("result", value)
 
     def set_exception(self, exception: BaseException) -> None:
         "Set the exception (thread-safe)."
-        self._set_value("exception", exception)
+        self._set_done("exception", exception)
 
     def done(self) -> bool:
         """
         Returns True if the future has a result.
 
-        Done means either that a result / exception is available."""
+        Done means either that a result / exception is available or that cancellation is complete.
+        """
         return self._done
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
@@ -223,16 +224,14 @@ class Future(Awaitable[T]):
         """
         Cancel the Future.
 
-        Notes:
-            - Cancellation cannot be undone.
-            - The future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
-                In both cases the value is ignore and replaced with a [FutureCancelledError][async_kernel.caller.FutureCancelledError]
-                and the result is inaccessible.
-
         Args:
             msg: The message to use when cancelling.
 
-        Returns if it has been cancelled.
+        Notes:
+            - Cancellation cannot be undone.
+            - The future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
+
+        Returns: If it has been cancelled.
         """
         if not self._done:
             cancelled = getattr(self, "_cancelled", "")
@@ -297,8 +296,7 @@ class Future(Awaitable[T]):
                 - The cancellation call is not thread-safe.
 
         Notes:
-            - `set_result` must still be called to mark the future as completed.
-            - Any value passed is replaced with a [async_kernel.caller.FutureCancelledError][].
+            - `set_result` must be called to mark the future as completed.
 
         Example:
             ```python
@@ -351,6 +349,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     Notes:
         - It is safe to use the underlying libraries taskgroups
         - [aiologic](https://aiologic.readthedocs.io/latest/) provides thread-safe synchronisation primiates for working across threads.
+        - Once a caller is stopped it cannot be restarted.
     """
 
     MAX_IDLE_POOL_INSTANCES = 10
@@ -422,18 +421,36 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        if self._stopped:
+            msg = f"Already stopped and restarting is not allowed: {self}"
+            raise RuntimeError(msg)
         self._backend = Backend(current_async_library())
         self._running = True
-        self._stopped = False
         self._stopped_event = Event()
-        async with anyio.create_task_group() as tg:
-            try:
-                await tg.start(self._server_loop, tg)
-                yield self
-            finally:
-                self.stop(force=True)
+        with contextlib.suppress(anyio.ClosedResourceError):
+            async with anyio.create_task_group() as tg:
+                try:
+                    await tg.start(self._scheduler, tg)
+                    yield self
+                finally:
+                    self.stop(force=True)
 
-    async def _server_loop(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
+    async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
+        """
+        Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
+
+        This method sets up a PUB socket for sending iopub messages, processes queued tasks (either callables or tuples with runnables),
+        and handles coroutine execution. It waits for new tasks when the queue is empty and ensures proper cleanup and exception
+        handling on shutdown.
+
+        Args:
+            tg: The task group used to manage concurrent tasks.
+            task_status: Used to signal when the scheduler has started.
+
+        Raises:
+            Exception: Logs and handles exceptions raised during direct callable execution.
+            FutureCancelledError: Sets this exception on pending futures in the queue upon shutdown.
+        """
         socket = Context.instance().socket(SocketType.PUB)
         socket.linger = 500
         socket.connect(self.iopub_url)
@@ -451,7 +468,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         except Exception as e:
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
-                        item[0].run(tg.start_soon, self._wrap_call, item[1])
+                        item[0].run(tg.start_soon, self._caller, item[1])
                     del item
                 else:
                     event = create_async_event()
@@ -469,33 +486,52 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
-    async def _wrap_call(self, fut: Future) -> None:
-        if fut.cancelled():
-            if not fut.done():
-                fut.set_result(None)  # This will cancel
-            return
+    async def _caller(self, fut: Future) -> None:
+        """
+        Asynchronously executes the function associated with the given Future, handling cancellation, delays, and exceptions.
+
+        Args:
+            fut: The Future object containing metadata about the function to execute, its arguments, and execution state.
+
+        Workflow:
+            - Sets the current future in a context variable.
+            - If the future is cancelled before starting, sets a FutureCancelledError.
+            - Otherwise, enters a cancellation scope:
+                - Registers a canceller for the future.
+                - Waits for a specified delay if present in metadata.
+                - Calls the function (sync or async) with provided arguments.
+                - Sets the result or exception on the future as appropriate.
+            - Handles cancellation and other exceptions, logging errors as needed.
+            - Resets the context variable after execution.
+        """
         md = fut.metadata
-        func = md["func"]
         token = self._future_var.set(fut)
         try:
-            with anyio.CancelScope() as scope:
-                fut.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
-                try:
+            if fut.cancelled():
+                if not fut.done():
+                    fut.set_exception(FutureCancelledError("Cancelled before started."))
+            else:
+                with anyio.CancelScope() as scope:
+                    fut.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                    # Call later.
                     if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
                         await anyio.sleep(delay)
-                    # Evaluate
-                    result = func(*md["args"], **md["kwargs"])
-                    if inspect.iscoroutine(result):
-                        result = await result
-                    fut.set_result(result)
-                except anyio.get_cancelled_exc_class():
-                    if not fut.cancelled():
-                        fut.cancel()
-                    fut.set_result(None)  # This will cancel
-                except Exception as e:
-                    fut.set_exception(e)
+                    # Call now.
+                    try:
+                        result = md["func"](*md["args"], **md["kwargs"])
+                        if inspect.iscoroutine(result):
+                            result = await result
+                        fut.set_result(result)
+                    # Cancelled.
+                    except anyio.get_cancelled_exc_class() as e:
+                        if not fut.cancelled():
+                            fut.cancel()
+                        fut.set_exception(e)
+                    # Catch exceptions.
+                    except Exception as e:
+                        fut.set_exception(e)
         except Exception as e:
-            self.log.exception("Calling func %s failed", func, exc_info=e)
+            self.log.exception("Calling func %s failed", md["func"], exc_info=e)
         finally:
             self._future_var.reset(token)
 
@@ -556,10 +592,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._protected and not force:
             return
         self._stopped = True
+        self._instances.pop(self.thread, None)
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
-        self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
         if self._running and self.thread is not threading.current_thread():

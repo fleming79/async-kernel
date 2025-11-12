@@ -240,14 +240,6 @@ class TestCaller:
     def teardown_method(self, test_method):
         Caller.stop_all()
 
-    async def test_restart(self):
-        async with Caller(create=True) as caller:
-            pass
-        assert caller.stopped
-        async with caller:
-            assert await caller.call_soon(lambda: 1 + 1) == 2
-        assert caller.stopped
-
     async def test_sync(self):
         async with Caller(create=True) as caller:
             is_called = Event()
@@ -586,6 +578,11 @@ class TestCaller:
             with pytest.raises(RuntimeError):
                 async with caller:
                     pass
+        assert caller.stopped
+        await caller._stopped_event  # pyright: ignore[reportPrivateUsage]
+        with pytest.raises(RuntimeError):
+            async with caller:
+                pass
 
     async def test_current_future(self, anyio_backend: Backend):
         async with Caller(create=True) as caller:
