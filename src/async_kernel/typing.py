@@ -284,6 +284,7 @@ class Job(TypedDict, Generic[T]):
     received_time: float
     "The time the message was received."
 
+
 class ExecuteContent(TypedDict):
     "[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."
 

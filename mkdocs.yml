@@ -20,7 +20,7 @@ extra:
 extra_css:
   - stylesheets/extra.css
 extra_javascript:
-- https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js  
+  - https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js
 theme:
   name: material
   custom_dir: docs/overrides
