@@ -724,7 +724,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             - The queue executor loop will stay open until one of the following occurs:
                 1. The method [Caller.queue_close][] is called with `func`.
                 2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
-            - The [context][contextvars.Context] of the inital call is is used for subsequent queue calls.
+            - The [context][contextvars.Context] of the initial call is is used for subsequent queue calls.
         """
         key = hash(func)
         if not (fut_ := self._queue_map.get(key)):
@@ -738,17 +738,17 @@ class Caller(anyio.AsyncContextManagerMixin):
                 try:
                     while True:
                         if queue:
-                            func_, args, kwargs = queue.popleft()
+                            item = queue.popleft()
                             try:
-                                result = func_(*args, **kwargs)
+                                result = item[0](*item[1], **item[2])
                                 if inspect.iscoroutine(object=result):
                                     await result
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
                                 if fut.cancelled():
                                     raise
-                                self.log.exception("Execution %f failed", func_, exc_info=e)
+                                self.log.exception("Execution %f failed", item, exc_info=e)
                             finally:
-                                func_ = None
+                                del item
                             await anyio.sleep(0)
                         else:
                             event = create_async_event()
