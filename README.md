@@ -26,7 +26,7 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
     - code completions
     - history
 - Thread safe (thanks to [aiologic](https://aiologic.readthedocs.io/latest/))
-    - `Caller` for starting and scheduling of code execution in it's event loop
+    - `Caller` for starting and scheduling of code execution in its event loop
     - `Future` for a pending result
 - GUI event loops
     - [x] inline
