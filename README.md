@@ -73,21 +73,21 @@ The run mode is defined per-message type and channel and is one of the following
 
 The currently defined run modes are:
 
-| MsgType             | control  | shell    |
-| ------------------- | -------- | -------- |
-| comm_close          | direct | direct |
-| comm_info_request   | direct | direct |
-| comm_msg            | queue    | queue    |
-| comm_open           | direct | direct |
-| complete_request    | thread   | thread   |
-| debug_request       | queue    | None     |
-| execute_request     | task     | queue    |
-| history_request     | thread   | thread   |
-| inspect_request     | thread   | thread   |
-| interrupt_request   | direct | direct |
-| is_complete_request | thread   | thread   |
-| kernel_info_request | direct | direct |
-| shutdown_request    | direct | None     |
+| MsgType             | control | shell  |
+| ------------------- | ------- | ------ |
+| comm_close          | direct  | direct |
+| comm_info_request   | direct  | direct |
+| comm_msg            | queue   | queue  |
+| comm_open           | direct  | direct |
+| complete_request    | thread  | thread |
+| debug_request       | queue   | None   |
+| execute_request     | task    | queue  |
+| history_request     | thread  | thread |
+| inspect_request     | thread  | thread |
+| interrupt_request   | direct  | direct |
+| is_complete_request | thread  | thread |
+| kernel_info_request | direct  | direct |
+| shutdown_request    | direct  | None   |
 
 For further detail see the [notebook on concurrency](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/).
 
