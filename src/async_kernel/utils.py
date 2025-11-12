@@ -91,7 +91,7 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
     If the attribute name contains dots, it is interpreted as a nested attribute.
     For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.
 
-    This is primarily intended for use with [async_kernel.command.command_line][]
+    This is primarily intended for use with [command.command_line][]
     to set the nesteded attributes on on kernels.
 
     Args:

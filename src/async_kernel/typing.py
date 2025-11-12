@@ -15,18 +15,24 @@ if TYPE_CHECKING:
     from async_kernel.kernelspec import Backend
 
 __all__ = [
+    "CallerStartNewOptions",
+    "Content",
     "DebugMessage",
+    "ExecuteContent",
+    "HandlerType",
     "Job",
     "Message",
     "MetadataKeys",
     "MsgHeader",
     "MsgType",
+    "NoValue",
     "RunMode",
     "SocketID",
     "Tags",
 ]
 
 NoValue = Sentinel("NoValue")
+"A sentinel to indicate a value has not been provided."
 
 
 T = TypeVar("T")
@@ -104,9 +110,8 @@ class RunMode(enum.StrEnum):
     Run the message handler using [async_kernel.Caller.call_direct][].
     
     Warning: 
-        **This mode runs directly in the caller scheduler blocking other tasks from being scheduled.** 
-        
-        Use this for short running messages that should be processed as soon as it is received.
+        - This mode runs directly in the caller scheduler as soon as it is received.
+        - Use this only for fast running high priority code.
     """
 
 
@@ -205,7 +210,7 @@ class Tags(enum.StrEnum):
         Tags are can be added per cell.
 
         - Jupyter: via the [right side bar](https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar).
-        - VScode: via [Jupyter variables explorer](https://code.visualstudio.com/docs/python/jupyter-support-py#_variables-explorer-and-data-viewer)/
+        - VScode: via [Jupyter variables explorer](https://code.visualstudio.com/docs/python/jupyter-support-py#_variables-explorer-and-data-viewer)
     """
 
     @override
@@ -259,14 +264,14 @@ class Message(TypedDict, Generic[T]):
     
     See also:
 
-    - [ExecuteContent][async_kernel.typing.ExecuteContent]
+    - [ExecuteContent][]
     """
     buffers: list[bytearray | bytes]
     ""
 
 
 class Job(TypedDict, Generic[T]):
-    "An [async_kernel.typing.Message][] bundled with sockit_id, socket and ident."
+    "A `Message` bundle."
 
     msg: Message[T]
     "The message received over the socket."
@@ -279,9 +284,8 @@ class Job(TypedDict, Generic[T]):
     received_time: float
     "The time the message was received."
 
-
 class ExecuteContent(TypedDict):
-    "[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).  see also: [Message][async_kernel.typing.Message]"
+    "[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."
 
     code: str
     "The code to execute."
@@ -298,7 +302,7 @@ class ExecuteContent(TypedDict):
 
 
 class CallerStartNewOptions(TypedDict):
-    "Options for [async_kernel.caller.Caller.start_new][]."
+    "Options for [Caller.start_new][async_kernel.caller.Caller.start_new]."
 
     name: NotRequired[str | None]
     """
@@ -319,20 +323,14 @@ class CallerStartNewOptions(TypedDict):
 DebugMessage = dict[str, Any]
 """
 A TypeAlias for a debug message.
-
-Used by:
-    - [async_kernel.debugger.Debugger.process_request][]. 
 """
 
 Content = dict[str, Any]
 """
-A TypeAlias for the content in [async_kernel.typing.Message][].
+A TypeAlias for the content in `Message`.
 """
 
 HandlerType = Callable[[Job], Awaitable[Content | None]]
 """
 A TypeAlias for the handler of message requests.
-
-Used by:
-    - [async_kernel.Kernel.run_handler][]
 """

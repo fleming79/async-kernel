@@ -146,7 +146,7 @@ class Future(Awaitable[T]):
         Args:
             timeout: Timeout in seconds.
             shield: Shield the future from cancellation.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [async_kernel.caller.Future.result][]).
+            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Future.result][]).
         """
         try:
             if not self._done or self._done_callbacks:
@@ -174,7 +174,7 @@ class Future(Awaitable[T]):
 
         Args:
             timeout: Timeout in seconds.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [async_kernel.caller.Future.result][]).
+            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Future.result][]).
 
         Raises:
             TimeoutError: When the timeout expires and a result has not been set.
@@ -229,7 +229,7 @@ class Future(Awaitable[T]):
 
         Notes:
             - Cancellation cannot be undone.
-            - The future will not be *done* until either [async_kernel.caller.Future.set_result][] or [async_kernel.caller.Future.set_exception][] is called.
+            - The future will not be *done* until either [Future.set_result][] or [Future.set_exception][] is called.
 
         Returns: If it has been cancelled.
         """
@@ -250,9 +250,9 @@ class Future(Awaitable[T]):
         """
         Return the result of the future.
 
-        If the future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
-
-        If the future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
+        Raises:
+            FutureCancelledError: If the future has been cancelled.
+            InvalidStateError: If the future isn't done yet.
         """
         if not self._done and not self.cancelled():
             raise InvalidStateError
@@ -264,9 +264,9 @@ class Future(Awaitable[T]):
         """
         Return the exception that was set on the future.
 
-        If the future has been cancelled, this method raises a [FutureCancelledError][async_kernel.caller.FutureCancelledError] exception.
-
-        If the future isn't done yet, this method raises an [InvalidStateError][async_kernel.caller.InvalidStateError] exception.
+        Raises:
+            FutureCancelledError: If the future has been cancelled.
+            InvalidStateError: If the future isn't done yet.
         """
         if hasattr(self, "_cancelled"):
             raise self._make_cancelled_error()
@@ -570,7 +570,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         The preferred way to run the caller loop.
 
         Tip:
-            See [async_kernel.caller.Caller.get_instance][] for a usage example.
+            See [Caller.get_instance][] for a usage example.
         """
         if self.running or self.stopped:
             raise RuntimeError
@@ -613,7 +613,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Schedule `func` to be called inside a task running in the callers thread (thread-safe).
 
-        The methods [call_soon][async_kernel.caller.Caller.call_soon] and [call_later][async_kernel.caller.Caller.call_later]
+        The methods [call_soon][Caller.call_soon] and [call_later][Caller.call_later]
         use this method in the background,  they should be used in preference to this method since they provide type hinting for the arguments.
 
         Args:
@@ -717,7 +717,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         The queue executor loop will stay open until one of the following occurs:
 
-        1. The method [async_kernel.caller.Caller.queue_close][] is called with `func`.
+        1. The method [Caller.queue_close][] is called with `func`.
         2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
 
         Args:
@@ -820,7 +820,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Future[T]:
         """
-        A [classmethod][] to call func in a separate thread see also [to_thread_advanced][async_kernel.Caller.to_thread_advanced].
+        A [classmethod][] to call func in a separate thread.
 
         Args:
             func: The function.
@@ -830,6 +830,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         Notes:
             - A minimum number of caller instances are retained for this method.
             - Async code run inside func should use taskgroups for creating task.
+
+        See also:
+            - [Caller.to_thread_advanced][]
         """
         return cls.to_thread_advanced({"name": None}, func, *args, **kwargs)
 
@@ -848,7 +851,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         A Caller will be created if it isn't found.
 
         Args:
-            options: Options to pass to [async_kernel.caller.Caller.start_new][].
+            options: Options to pass to [Caller.start_new][].
             func: The function.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
@@ -856,7 +859,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         Returns:
             A future that can be awaited for the  result of func.
 
-        Raise:
+        Raises:
             ValueError: When a name is not supplied.
         Notes:
             - When `options == {"name": None}` the caller is associated with a pool of workers.
@@ -983,7 +986,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             items: Either a container with existing futures or generator of Futures.
             max_concurrent: The maximum number of concurrent futures to monitor at a time.
-                This is useful when `items` is a generator utilising [async_kernel.caller.Caller.to_thread][].
+                This is useful when `items` is a generator utilising [Caller.to_thread][].
                 By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
             shield: Shield existing items from cancellation.
 

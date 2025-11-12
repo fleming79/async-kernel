@@ -19,6 +19,8 @@ extra:
 
 extra_css:
   - stylesheets/extra.css
+extra_javascript:
+- https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js  
 theme:
   name: material
   custom_dir: docs/overrides
@@ -37,7 +39,7 @@ theme:
     - search.highlight # https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-search/?h=search#search-highlighting
     - navigation.instant # https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/?h=naviga#instant-loading
     - navigation.indexes # https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/#section-index-pages
-
+    - navigation.path # https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/?h=breadcrumbs#navigation-path
   icon:
     annotation: material/information-outline
   font: false
@@ -116,7 +118,6 @@ plugins:
             scoped_crossrefs: true
             separate_signature: true
             show_bases: true
-            show_inheritance_diagram: true
             show_root_heading: false
             show_root_full_path: true
             show_root_members_full_path: true
@@ -130,6 +131,10 @@ plugins:
             signature_crossrefs: true
             summary: true
             unwrap_annotated: true
+            skip_local_inventory: true
+            backlinks: tree
+            show_inheritance_diagram: true
+            inheritance_diagram_direction: TD
 
 markdown_extensions:
   - attr_list

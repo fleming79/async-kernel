@@ -141,9 +141,6 @@ def wrap_handler(
         runner: The function that calls and awaits the handler.
         lock: The lock to use for sending the reply.
         handler: The handler to which the runner is associated.
-
-    Used by:
-        - [async_kernel.Kernel.receive_msg_loop][]
     """
 
     @functools.wraps(handler)
@@ -166,11 +163,11 @@ class Kernel(HasTraits):
 
     Info:
         Only one instance of a kernel is created at a time per subprocess. The instance can be obtained
-        with `Kernel()` or [async_kernel.utils.get_kernel].
+        with `Kernel()` or [get_kernel].
 
     Starting the kernel:
         The kernel should appear in the list of kernels just as other kernels are. Variants of the kernel
-        can with custom configuration can be added at the [command line][async_kernel.command.command_line].
+        can with custom configuration can be added at the [command line][command.command_line].
 
         === "From the shell"
 
@@ -1181,7 +1178,7 @@ class Kernel(HasTraits):
         'parent' is the parameter name used by [Session.send][jupyter_client.session.Session.send] to provide context when sending a reply.
 
         See also:
-            - [Kernel.iopub_send][async_kernel.Kernel.iopub_send]
+            - [Kernel.iopub_send][Kernel.iopub_send]
             - [ipywidgets.Output][ipywidgets.widgets.widget_output.Output]:
                 Uses `get_ipython().kernel.get_parent()` to obtain the `msg_id` which
                 is used to 'capture' output when its context has been acquired.

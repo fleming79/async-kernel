@@ -52,7 +52,7 @@ def make_argv(
     """Returns an argument vector (argv) that can be used to start a `Kernel`.
 
     This function returns a list of arguments can be used directly start a kernel with [subprocess.Popen][].
-    It will always call [async_kernel.command.command_line][] as a python module.
+    It will always call [command.command_line][] as a python module.
 
     Args:
         connection_file: The path to the connection file.
