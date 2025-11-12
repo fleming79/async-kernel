@@ -720,7 +720,7 @@ class Kernel(HasTraits):
             - For each received message:
                 - Determines the message type and retrieves the appropriate handler.
                 - Constructs a job dictionary containing message and context information.
-                - Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or blocking).
+                - Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or direct).
             - Handles invalid messages and logs errors.
             - Exits the loop gracefully if the ZeroMQ context is terminated.
 
@@ -770,7 +770,7 @@ class Kernel(HasTraits):
             job: The job instance or data to be passed to the handler.
         """
         match run_mode:
-            case RunMode.blocking:
+            case RunMode.direct:
                 caller.call_direct(handler, job)
             case RunMode.queue:
                 caller.queue_call(handler, job)
@@ -826,11 +826,11 @@ class Kernel(HasTraits):
             case _, MsgType.comm_msg:
                 return RunMode.queue
             case _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
-                return RunMode.blocking
+                return RunMode.direct
             case _, MsgType.debug_request:
                 return RunMode.queue
             case _:
-                return RunMode.blocking
+                return RunMode.direct
 
     def all_concurrency_run_modes(
         self,
