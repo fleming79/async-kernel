@@ -430,12 +430,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         with contextlib.suppress(anyio.ClosedResourceError):
             async with anyio.create_task_group() as tg:
                 try:
-                    await tg.start(self._server_loop, tg)
+                    await tg.start(self._scheduler, tg)
                     yield self
                 finally:
                     self.stop(force=True)
 
-    async def _server_loop(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
+    async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         socket = Context.instance().socket(SocketType.PUB)
         socket.linger = 500
         socket.connect(self.iopub_url)
