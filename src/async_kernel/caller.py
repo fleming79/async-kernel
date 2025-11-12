@@ -468,32 +468,34 @@ class Caller(anyio.AsyncContextManagerMixin):
             tg.cancel_scope.cancel()
 
     async def _wrap_call(self, fut: Future) -> None:
-        if fut.cancelled():
-            if not fut.done():
-                fut.set_result(None)  # This will cancel
-            return
         md = fut.metadata
-        func = md["func"]
         token = self._future_var.set(fut)
         try:
-            with anyio.CancelScope() as scope:
-                fut.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
-                try:
+            if fut.cancelled():
+                if not fut.done():
+                    fut.set_exception(FutureCancelledError("Cancelled before started."))
+            else:
+                with anyio.CancelScope() as scope:
+                    fut.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                    # Call later.
                     if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
                         await anyio.sleep(delay)
-                    # Evaluate
-                    result = func(*md["args"], **md["kwargs"])
-                    if inspect.iscoroutine(result):
-                        result = await result
-                    fut.set_result(result)
-                except anyio.get_cancelled_exc_class():
-                    if not fut.cancelled():
-                        fut.cancel()
-                    fut.set_result(None)  # This will cancel
-                except Exception as e:
-                    fut.set_exception(e)
+                    # Call now.
+                    try:
+                        result = md["func"](*md["args"], **md["kwargs"])
+                        if inspect.iscoroutine(result):
+                            result = await result
+                        fut.set_result(result)
+                    # Cancelled.
+                    except anyio.get_cancelled_exc_class() as e:
+                        if not fut.cancelled():
+                            fut.cancel()
+                        fut.set_exception(e)
+                    # Catch exceptions.
+                    except Exception as e:
+                        fut.set_exception(e)
         except Exception as e:
-            self.log.exception("Calling func %s failed", func, exc_info=e)
+            self.log.exception("Calling func %s failed", md["func"], exc_info=e)
         finally:
             self._future_var.reset(token)
 
