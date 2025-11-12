@@ -349,6 +349,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     Notes:
         - It is safe to use the underlying libraries taskgroups
         - [aiologic](https://aiologic.readthedocs.io/latest/) provides thread-safe synchronisation primiates for working across threads.
+        - Once a caller is stopped it cannot be restarted.
     """
 
     MAX_IDLE_POOL_INSTANCES = 10
@@ -420,16 +421,19 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        if self._stopped:
+            msg = "Already stopped!"
+            raise anyio.ClosedResourceError(msg)
         self._backend = Backend(current_async_library())
         self._running = True
-        self._stopped = False
         self._stopped_event = Event()
-        async with anyio.create_task_group() as tg:
-            try:
-                await tg.start(self._server_loop, tg)
-                yield self
-            finally:
-                self.stop(force=True)
+        with contextlib.suppress(anyio.ClosedResourceError):
+            async with anyio.create_task_group() as tg:
+                try:
+                    await tg.start(self._server_loop, tg)
+                    yield self
+                finally:
+                    self.stop(force=True)
 
     async def _server_loop(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         socket = Context.instance().socket(SocketType.PUB)
@@ -556,10 +560,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._protected and not force:
             return
         self._stopped = True
+        self._instances.pop(self.thread, None)
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
-        self._instances.pop(self.thread, None)
         if self in self._to_thread_pool:
             self._to_thread_pool.remove(self)
         if self._running and self.thread is not threading.current_thread():
