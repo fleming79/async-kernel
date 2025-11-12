@@ -1,6 +1,8 @@
 import contextlib
+import gc
 import importlib.util
 import inspect
+import re
 import threading
 import time
 import weakref
@@ -171,27 +173,49 @@ class TestFuture:
         assert fut.cancelled()
 
     def test_repr(self):
-        fut = Future(name="test", mydict={"test": "a long string" * 100})
-        assert repr(fut) == "<Future 🏃 {'mydict': {…}, 'name': 'test'} >"
+        a = "long string" * 100
+        b = {f"name {i}": "long_string" * 100 for i in range(100)}
+        fut = Future()
+        fut.metadata.update(a=a, b=b)
+        matches = [
+            f"<Future {indicator} at {id(fut)} {{'a': 'long stringl…nglong string', 'b': {{…}}}} >"
+            for indicator in ("🏃", "⛔ 🏃", "⛔ 🏁")
+        ]
+        assert re.match(matches[0], repr(fut))
+        fut.cancel()
+        assert re.match(matches[1], repr(fut))
+        fut.set_result(None)
+        assert re.match(matches[2], repr(fut))
 
     async def test_gc(self, caller: Caller):
+
         finalized = Event()
         ok = False
 
-        class Cls:
-            def func(self):
-                assert Caller.current_future()
-                nonlocal ok
-                ok = True
+        def isolated():
+            class Cls:
+                def func(self):
+                    assert Caller.current_future()
+                    nonlocal ok
+                    ok = True
 
-        t = Cls()
-        weakref.finalize(t, finalized.set)
-        fut = caller.call_soon(t.func)
-        assert hash(fut.metadata["func"]) == hash(t.func)
-        del fut
-        del t
-        await finalized
+            t = Cls()
+            weakref.finalize(t, finalized.set)
+            fut = caller.call_soon(t.func)
+            id_ = id(fut)
+            assert hash(fut.metadata["func"]) == hash(t.func)
+            r = weakref.ref(fut)
+            del fut
+            del t
+            return r, id_
+
+        r, id_ = isolated()
+        assert id_ in Future._metadata_mappings  # pyright: ignore[reportPrivateUsage]
+        with anyio.move_on_after(1):
+            await finalized
+        assert r() is None, f"References found {gc.get_referrers(r())}"
         assert ok
+        assert id_ not in Future._metadata_mappings  # pyright: ignore[reportPrivateUsage]
 
 
 @pytest.mark.anyio
@@ -221,23 +245,19 @@ class TestCaller:
         caller.call_direct(lambda: fut)
         assert await caller.call_soon(lambda: fut) is fut
 
-    async def test_repr(self, caller: Caller):
+    async def test_repr_caller_future(self, caller):
+
         async def test_func(a, b, c):
             pass
 
-        a = "long string" * 100
-        b = {f"name {i}": "long_string" * 100 for i in range(100)}
-        c = Future()
-        c.metadata.update(a=a, b=b)
-        assert repr(c) == "<Future 🏃 {'a': 'long stringl…nglong string', 'b': {…}} >"
-        fut = caller.call_soon(test_func, a, b, c)
-        assert repr(fut).startswith("<Future 🏃 | <function")
+        fut = caller.call_soon(test_func, 1, "ABC", {"a": 10})
+        matches = [
+            f"<Future {indicator} at {id(fut)} | <function TestCaller.test_repr.<locals>.test_func at {id(test_func)}> caller=Caller<MainThread 🏃> >"
+            for indicator in ("🏃", "🏁")
+        ]
+        assert re.match(matches[0], repr(fut))
         await fut
-        assert repr(fut) == "<Future 🏁 >"
-        c.cancel()
-        assert repr(c) == "<Future ⛔ 🏃 {'a': 'long stringl…nglong string', 'b': {…}} >"
-        c.set_result(None)
-        assert repr(c) == "<Future ⛔ 🏁 {'a': 'long stringl…nglong string', 'b': {…}} >"
+        assert re.match(matches[1], repr(fut))
 
     def test_no_thread(self):
         with pytest.raises(RuntimeError):

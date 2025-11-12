@@ -64,7 +64,6 @@ class Future(Awaitable[T]):
     Notes:
         - The future is not considered done until set_result or set_exception is called.
         - If cancelled, the result is replaced with a FutureCancelledError.
-        - Metadata is deleted if retain_metadata is False.
         - A callback can be set to handle cancellation with `set_canceller`.
     """
 
@@ -73,17 +72,21 @@ class Future(Awaitable[T]):
     _exception = None
     _done = False
     _result: T
+    _metadata_mappings: dict[int, dict[str, Any]] = {}
     "A flag to indicate if the metadata should be deleted after the result is set."
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
 
-    def __init__(self, retain_metadata=True, /, **metadata) -> None:
+    def __init__(self, **metadata) -> None:
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
-        self._metadata: dict[str, Any] = metadata
-        self._retain_metadata = retain_metadata
+        self._metadata_mappings[id(self)] = metadata
+
+    def __del__(self):
+        self._metadata_mappings.pop(id(self), None)
 
     @override
     def __repr__(self) -> str:
         rep = "<Future" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self._done else " 🏃")
+        rep = f"{rep} at {id(self)}"
         with contextlib.suppress(Exception):
             md = self.metadata
             if "func" in md:
@@ -114,8 +117,6 @@ class Future(Awaitable[T]):
                 cb(self)
             except Exception:
                 pass
-        if not self._retain_metadata:
-            del self._metadata
 
     def _make_cancelled_error(self) -> FutureCancelledError:
         return FutureCancelledError(self._cancelled) if isinstance(self._cancelled, str) else FutureCancelledError()
@@ -124,15 +125,8 @@ class Future(Awaitable[T]):
     def metadata(self) -> dict[str, Any]:
         """
         The metadata passed as keyword arguments to the future during creation.
-
-        Warning:
-            Metadata is deleted when `False` is passed as the first argument when the future is created.
-            This is the default behaviour for Futures returned by [async_kernel.Caller][].
         """
-        try:
-            return self._metadata
-        except Exception:
-            return {}
+        return self._metadata_mappings[id(self)]
 
     if TYPE_CHECKING:
 
@@ -422,8 +416,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                         except Exception as e:
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
-                        context, fut = item
-                        context.run(tg.start_soon, self._wrap_call, fut)
+                        item[0].run(tg.start_soon, self._wrap_call, item[1])
+                    del item
                 else:
                     event = create_async_event()
                     self._resume = event.set
@@ -543,7 +537,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         args: tuple,
         kwargs: dict,
         context: contextvars.Context | None = None,
-        retain_metadata: bool = False,
         **metadata: Any,
     ) -> Future[T]:
         """
@@ -557,7 +550,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
-            retain_metadata: Passed to future.
             **metadata: Additional metadata to store in the future.
 
         Notes:
@@ -566,7 +558,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if self._stopped:
             raise anyio.ClosedResourceError
-        fut = Future(retain_metadata, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), fut))
         self._resume()
         return fut
