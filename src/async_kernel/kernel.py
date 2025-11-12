@@ -1007,7 +1007,7 @@ class Kernel(HasTraits):
                 )
             except (Exception, anyio.get_cancelled_exc_class()) as e:
                 # A safeguard to catch exceptions not caught by the shell.
-                err = e
+                err = KernelInterruptError() if self._last_interrupt_frame else e
             else:
                 err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
             self._interrupts.discard(cancel)
