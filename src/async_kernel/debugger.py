@@ -21,20 +21,8 @@ if TYPE_CHECKING:
     from async_kernel import Kernel
     from async_kernel.typing import DebugMessage
 
-try:
-    if "PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING" not in os.environ:
-        os.environ["PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING"] = "1"
-
-    # This import is required to provide _pydevd_bundle imports
-    import debugpy.server.api  # pyright: ignore[reportUnusedImport]  # noqa: F401
-
-except ImportError:
-    pass
-except Exception as e:
-    # We cannot import the module where the DebuggerInitializationError
-    # is defined
-    if e.__class__.__name__ != "DebuggerInitializationError":
-        raise
+if "PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING" not in os.environ:
+    os.environ["PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING"] = "1"
 
 _host_port: None | tuple[str, int] = None
 
@@ -81,7 +69,9 @@ class VariableExplorer(HasTraits):
     def __init__(self):
         """Initialize the explorer."""
         super().__init__()
-        from _pydevd_bundle.pydevd_suspended_frames import SuspendedFramesManager, _FramesTracker  # type: ignore[attr-defined]  # noqa: I001, PLC0415
+        # This import is apparently required to provide _pydevd_bundle imports
+        import debugpy.server.api  # noqa: F401, I001, PLC0415  # pyright: ignore[reportUnusedImport]
+        from _pydevd_bundle.pydevd_suspended_frames import SuspendedFramesManager, _FramesTracker  # type: ignore[attr-defined]  # noqa: PLC0415
 
         self.suspended_frame_manager = SuspendedFramesManager()
         self.py_db = _DummyPyDB()
