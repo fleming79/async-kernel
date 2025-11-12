@@ -459,7 +459,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         try:
             while not self._stopped:
                 if self._queue:
-                    item = self._queue.popleft()
+                    item, result = self._queue.popleft(), None
                     if callable(item):
                         try:
                             result = item()
@@ -469,7 +469,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
                         item[0].run(tg.start_soon, self._caller, item[1])
-                    del item
+                    del item, result
                 else:
                     event = create_async_event()
                     self._resume = event.set
@@ -715,15 +715,16 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).
 
-        The queue executor loop will stay open until one of the following occurs:
-
-        1. The method [Caller.queue_close][] is called with `func`.
-        2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
-
         Args:
             func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
+
+        Notes:
+            - The queue executor loop will stay open until one of the following occurs:
+                1. The method [Caller.queue_close][] is called with `func`.
+                2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
+            - The [context][contextvars.Context] of the initial call is is used for subsequent queue calls.
         """
         key = hash(func)
         if not (fut_ := self._queue_map.get(key)):
@@ -737,28 +738,29 @@ class Caller(anyio.AsyncContextManagerMixin):
                 try:
                     while True:
                         if queue:
-                            context, func_, args, kwargs = queue.popleft()
+                            item, result = queue.popleft(), None
                             try:
-                                result = context.run(func_, *args, **kwargs)
+                                result = item[0](*item[1], **item[2])
                                 if inspect.iscoroutine(object=result):
                                     await result
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
                                 if fut.cancelled():
                                     raise
-                                self.log.exception("Execution %f failed", func_, exc_info=e)
+                                self.log.exception("Execution %f failed", item, exc_info=e)
                             finally:
-                                func_ = None
+                                del item, result
+                            await anyio.sleep(0)
                         else:
                             event = create_async_event()
                             fut.metadata["resume"] = event.set
                             if not queue:
                                 await event
-                            fut.metadata["resume"] = noop
+                            fut.metadata.pop("resume")
                 finally:
                     self._queue_map.pop(key)
 
             self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue)
-        fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
+        fut_.metadata["kwargs"]["queue"].append((func, args, kwargs))
         if resume := fut_.metadata.get("resume"):
             resume()
 
