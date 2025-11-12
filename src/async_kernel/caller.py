@@ -531,7 +531,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     except Exception as e:
                         fut.set_exception(e)
         except Exception as e:
-            self.log.exception("Calling func %s failed", md["func"], exc_info=e)
+            fut.set_exception(e)
         finally:
             self._future_var.reset(token)
 
