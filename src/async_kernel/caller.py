@@ -459,7 +459,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         try:
             while not self._stopped:
                 if self._queue:
-                    item = self._queue.popleft()
+                    item, result = self._queue.popleft(), None
                     if callable(item):
                         try:
                             result = item()
@@ -469,7 +469,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
                         item[0].run(tg.start_soon, self._caller, item[1])
-                    del item
+                    del item, result
                 else:
                     event = create_async_event()
                     self._resume = event.set
@@ -738,7 +738,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 try:
                     while True:
                         if queue:
-                            item = queue.popleft()
+                            item, result = queue.popleft(), None
                             try:
                                 result = item[0](*item[1], **item[2])
                                 if inspect.iscoroutine(object=result):
@@ -748,7 +748,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                     raise
                                 self.log.exception("Execution %f failed", item, exc_info=e)
                             finally:
-                                del item
+                                del item, result
                             await anyio.sleep(0)
                         else:
                             event = create_async_event()
