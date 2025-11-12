@@ -1,15 +1,11 @@
 import sys
-from importlib.metadata import PackageNotFoundError, version
+from importlib.metadata import version
 
 from async_kernel import utils
 from async_kernel.caller import Caller, Future
 from async_kernel.kernel import Kernel
 
-try:
-    __version__ = version(distribution_name="async-kernel")
-except PackageNotFoundError:
-    # package is not installed
-    __version__ = "not installed"
+__version__ = version(distribution_name="async-kernel")
 
 kernel_protocol_version = "5.4"
 kernel_protocol_version_info = {
