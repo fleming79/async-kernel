@@ -123,11 +123,7 @@ filterwarnings= []
 
 [tool.coverage.report]
 exclude_lines = [
-  "def __repr__",
-  "raise NotImplementedError",
-  "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
-  "class .*\bProtocol\\):",
   "except .*",
   "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
   ".*sys.platform == \"win32\".*"
