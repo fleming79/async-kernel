@@ -72,7 +72,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
     The comm manager for all Comm instances.
 
     Notes:
-        - When the trait `CommManager.kernel` is set the `Comm.kernel` trait is set on all [async_kernel.comm.Comm][] instances.
+        - When the trait `CommManager.kernel` is set the `Comm.kernel` trait is set on all [Comm][] instances.
         - The `Comm` will only send messages when the kernel is set.
         - The `kernel` sets `CommManager.kernel` when its ready the iopub socket is open.
     """
@@ -117,8 +117,8 @@ def set_comm():
     """
     Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
 
-    1.  `comm.create_comm` to [async_kernel.comm.Comm][].
-    1. `comm.get_com_manager` to [async_kernel.comm.CommManager][].
+    1.  `comm.create_comm` to [Comm][].
+    1. `comm.get_com_manager` to [CommManager][].
     """
     comm.create_comm = Comm
     comm.get_comm_manager = get_comm_manager
