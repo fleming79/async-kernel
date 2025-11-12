@@ -3912,7 +3912,7 @@ Instead a new instance should be started.</p>
 <li>For each received message:<ul>
 <li>Determines the message type and retrieves the appropriate handler.</li>
 <li>Constructs a job dictionary containing message and context information.</li>
-<li>Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or blocking).</li>
+<li>Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or direct).</li>
 </ul>
 </li>
 <li>Handles invalid messages and logs errors.</li>
@@ -4000,7 +4000,7 @@ Instead a new instance should be started.</p>
 <span class="sd">        - For each received message:</span>
 <span class="sd">            - Determines the message type and retrieves the appropriate handler.</span>
 <span class="sd">            - Constructs a job dictionary containing message and context information.</span>
-<span class="sd">            - Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or blocking).</span>
+<span class="sd">            - Determines the run mode for the message and dispatches the handler accordingly (queue, thread, task, or direct).</span>
 <span class="sd">        - Handles invalid messages and logs errors.</span>
 <span class="sd">        - Exits the loop gracefully if the ZeroMQ context is terminated.</span>
 
@@ -4153,7 +4153,7 @@ Instead a new instance should be started.</p>
 <span class="sd">        job: The job instance or data to be passed to the handler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">match</span> <span class="n">run_mode</span><span class="p">:</span>
-        <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">blocking</span><span class="p">:</span>
+        <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">direct</span><span class="p">:</span>
             <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
             <span class="n">caller</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
@@ -4369,11 +4369,11 @@ Instead a new instance should be started.</p>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span> <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_info_request</span> <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_open</span> <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_close</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">blocking</span>
+            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">direct</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">debug_request</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">blocking</span>
+            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">direct</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

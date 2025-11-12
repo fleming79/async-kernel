@@ -1702,7 +1702,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h1 id="concurrency">Concurrency<a class="anchor-link" href="#concurrency">¶</a></h1><p>Async kernel handles message requests concurrently. How the request is handled is a function of the channel and message type.</p>
 <p>The following <code>RunModes</code> are provided.</p>
 <ul>
-<li>blocking: Run the handler directly blocking the message loop</li>
+<li>direct: Run the handler directly in the message loop (recommend only for short running code)</li>
 <li>queue: Run in a queue (default for the <code>shell</code> channel)</li>
 <li>task: Run in a task (default for the <code>control</code> channel)</li>
 <li>thread: Run in a worker thread</li>
@@ -1852,13 +1852,13 @@ else:
 <tbody>
 <tr>
 <th>comm_close</th>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <th>comm_info_request</th>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <th>comm_msg</th>
@@ -1867,8 +1867,8 @@ else:
 </tr>
 <tr>
 <th>comm_open</th>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <th>complete_request</th>
@@ -1897,8 +1897,8 @@ else:
 </tr>
 <tr>
 <th>interrupt_request</th>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <th>is_complete_request</th>
@@ -1907,12 +1907,12 @@ else:
 </tr>
 <tr>
 <th>kernel_info_request</th>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <th>shutdown_request</th>
-<td>blocking</td>
+<td>direct</td>
 <td>None</td>
 </tr>
 </tbody>
@@ -2374,7 +2374,7 @@ await demo()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 11, 2025 04:43:56 UTC"><span class="timeago" datetime="2025-11-11T04:43:56+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 11, 2025 04:43:56 UTC">2025-11-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 12, 2025 07:45:53 UTC"><span class="timeago" datetime="2025-11-12T07:45:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 12, 2025 07:45:53 UTC">2025-11-12</span>
   </span>
 
     

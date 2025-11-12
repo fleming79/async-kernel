@@ -1070,9 +1070,9 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.typing.RunMode.blocking" class="md-nav__link">
+  <a href="#async_kernel.typing.RunMode.direct" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;blocking
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;direct
     </span>
   </a>
   
@@ -1952,9 +1952,9 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.typing.RunMode.blocking" class="md-nav__link">
+  <a href="#async_kernel.typing.RunMode.direct" class="md-nav__link">
     <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;blocking
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;direct
     </span>
   </a>
   
@@ -3075,22 +3075,22 @@ Tag:
    (async_kernel.typing.RunMode.thread)" href="#async_kernel.typing.RunMode.thread">thread</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread_advanced
+            <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread
 
 
   
       classmethod
-  " href="../caller/#async_kernel.caller.Caller.to_thread_advanced">async_kernel.Caller.to_thread_advanced</a> to start use a 'worker'.</p>
+  " href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a> to start use a 'worker'.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            blocking
+          <b><code><a class="autorefs autorefs-internal" title="            direct
 
 
   
       class-attribute
       instance-attribute
-   (async_kernel.typing.RunMode.blocking)" href="#async_kernel.typing.RunMode.blocking">blocking</a></code></b>
+   (async_kernel.typing.RunMode.direct)" href="#async_kernel.typing.RunMode.direct">direct</a></code></b>
           –
           <div class="doc-md-description">
             <p>Run the message handler using <a class="autorefs autorefs-internal" title="            call_direct" href="../caller/#async_kernel.caller.Caller.call_direct">async_kernel.Caller.call_direct</a>.</p>
@@ -3178,12 +3178,12 @@ Tag:
 
     <div class="doc doc-contents ">
 
-        <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread_advanced
+        <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread
 
 
   
       classmethod
-  " href="../caller/#async_kernel.caller.Caller.to_thread_advanced">async_kernel.Caller.to_thread_advanced</a> to start use a 'worker'.</p>
+  " href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a> to start use a 'worker'.</p>
 
     </div>
 
@@ -3193,8 +3193,8 @@ Tag:
 
 
 
-<h3 id="async_kernel.typing.RunMode.blocking" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">blocking</span>
+<h3 id="async_kernel.typing.RunMode.direct" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">direct</span>
 
 
   <span class="doc doc-labels">
@@ -3202,8 +3202,8 @@ Tag:
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
-<a href="#async_kernel.typing.RunMode.blocking" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">blocking</span> <span class="o">=</span> <span class="s1">&#39;blocking&#39;</span>
+<a href="#async_kernel.typing.RunMode.direct" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">direct</span> <span class="o">=</span> <span class="s1">&#39;direct&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3213,7 +3213,7 @@ Tag:
 
 <details class="warning" open>
   <summary>Warning</summary>
-  <p><strong>This mode blocks the associated loop.</strong> </p>
+  <p><strong>This mode runs directly in the caller scheduler blocking other tasks from being scheduled.</strong> </p>
 <p>Use this for short running messages that should be processed as soon as it is received.</p>
 </details>
     </div>

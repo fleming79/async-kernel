@@ -1373,7 +1373,7 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 <li><code>queue</code></li>
 <li><code>thread</code></li>
 <li><code>task</code></li>
-<li><code>blocking</code></li>
+<li><code>direct</code></li>
 </ul>
 <p>The currently defined run modes are:</p>
 <table>
@@ -1387,13 +1387,13 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 <tbody>
 <tr>
 <td>comm_close</td>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <td>comm_info_request</td>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <td>comm_msg</td>
@@ -1402,8 +1402,8 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 </tr>
 <tr>
 <td>comm_open</td>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <td>complete_request</td>
@@ -1432,8 +1432,8 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 </tr>
 <tr>
 <td>interrupt_request</td>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <td>is_complete_request</td>
@@ -1442,12 +1442,12 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 </tr>
 <tr>
 <td>kernel_info_request</td>
-<td>blocking</td>
-<td>blocking</td>
+<td>direct</td>
+<td>direct</td>
 </tr>
 <tr>
 <td>shutdown_request</td>
-<td>blocking</td>
+<td>direct</td>
 <td>None</td>
 </tr>
 </tbody>
