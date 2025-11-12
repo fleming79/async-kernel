@@ -715,15 +715,16 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).
 
-        The queue executor loop will stay open until one of the following occurs:
-
-        1. The method [Caller.queue_close][] is called with `func`.
-        2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
-
         Args:
             func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
+
+        Notes:
+            - The queue executor loop will stay open until one of the following occurs:
+                1. The method [Caller.queue_close][] is called with `func`.
+                2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
+            - The [context][contextvars.Context] of the inital call is is used for subsequent queue calls.
         """
         key = hash(func)
         if not (fut_ := self._queue_map.get(key)):
@@ -737,9 +738,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 try:
                     while True:
                         if queue:
-                            context, func_, args, kwargs = queue.popleft()
+                            func_, args, kwargs = queue.popleft()
                             try:
-                                result = context.run(func_, *args, **kwargs)
+                                result = func_(*args, **kwargs)
                                 if inspect.iscoroutine(object=result):
                                     await result
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
@@ -748,17 +749,18 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 self.log.exception("Execution %f failed", func_, exc_info=e)
                             finally:
                                 func_ = None
+                            await anyio.sleep(0)
                         else:
                             event = create_async_event()
                             fut.metadata["resume"] = event.set
                             if not queue:
                                 await event
-                            fut.metadata["resume"] = noop
+                            fut.metadata.pop("resume")
                 finally:
                     self._queue_map.pop(key)
 
             self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue)
-        fut_.metadata["kwargs"]["queue"].append((contextvars.copy_context(), func, args, kwargs))
+        fut_.metadata["kwargs"]["queue"].append((func, args, kwargs))
         if resume := fut_.metadata.get("resume"):
             resume()
 
