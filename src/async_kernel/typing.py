@@ -275,7 +275,7 @@ class Job(TypedDict, Generic[T]):
     socket: zmq.Socket
     "The actual socket."
     ident: bytes | list[bytes]
-    "The ident associated with the message and it's origin."
+    "The ident associated with the message and its origin."
     received_time: float
     "The time the message was received."
 

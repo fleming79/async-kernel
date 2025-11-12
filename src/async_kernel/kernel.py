@@ -1184,6 +1184,6 @@ class Kernel(HasTraits):
             - [Kernel.iopub_send][async_kernel.Kernel.iopub_send]
             - [ipywidgets.Output][ipywidgets.widgets.widget_output.Output]:
                 Uses `get_ipython().kernel.get_parent()` to obtain the `msg_id` which
-                is used to 'capture' output when it's context has been acquired.
+                is used to 'capture' output when its context has been acquired.
         """
         return utils.get_parent()
