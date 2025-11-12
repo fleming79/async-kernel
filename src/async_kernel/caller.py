@@ -436,6 +436,21 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.stop(force=True)
 
     async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
+        """
+        Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
+
+        This method sets up a PUB socket for sending iopub messages, processes queued tasks (either callables or tuples with runnables),
+        and handles coroutine execution. It waits for new tasks when the queue is empty and ensures proper cleanup and exception
+        handling on shutdown.
+
+        Args:
+            tg: The task group used to manage concurrent tasks.
+            task_status: Used to signal when the scheduler has started.
+
+        Raises:
+            Exception: Logs and handles exceptions raised during direct callable execution.
+            FutureCancelledError: Sets this exception on pending futures in the queue upon shutdown.
+        """
         socket = Context.instance().socket(SocketType.PUB)
         socket.linger = 500
         socket.connect(self.iopub_url)
@@ -472,6 +487,23 @@ class Caller(anyio.AsyncContextManagerMixin):
             tg.cancel_scope.cancel()
 
     async def _caller(self, fut: Future) -> None:
+        """
+        Asynchronously executes the function associated with the given Future, handling cancellation, delays, and exceptions.
+
+        Args:
+            fut: The Future object containing metadata about the function to execute, its arguments, and execution state.
+
+        Workflow:
+            - Sets the current future in a context variable.
+            - If the future is cancelled before starting, sets a FutureCancelledError.
+            - Otherwise, enters a cancellation scope:
+                - Registers a canceller for the future.
+                - Waits for a specified delay if present in metadata.
+                - Calls the function (sync or async) with provided arguments.
+                - Sets the result or exception on the future as appropriate.
+            - Handles cancellation and other exceptions, logging errors as needed.
+            - Resets the context variable after execution.
+        """
         md = fut.metadata
         token = self._future_var.set(fut)
         try:
