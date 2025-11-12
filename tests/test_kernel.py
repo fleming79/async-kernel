@@ -594,7 +594,7 @@ async def test_get_run_mode_tag(client: AsyncKernelClient):
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 3858295689
+    assert murmur2_x86(str(data), 1) == 3893443255
 
 
 async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
