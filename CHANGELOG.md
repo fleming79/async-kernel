@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.2] - 2025-11-12
+## [0.8.0] - 2025-11-12
 
 ### <!-- 0 --> 🏗️ Breaking changes
+
+- Rename 'RunMode.blocking' to 'RunMode.direct'. [#190](https://github.com/fleming79/async-kernel/pull/190)
 
 - Add __slots__ to Future. [#186](https://github.com/fleming79/async-kernel/pull/186)
 
@@ -18,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maintenance and documentation. [#187](https://github.com/fleming79/async-kernel/pull/187)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.7.2 [#189](https://github.com/fleming79/async-kernel/pull/189)
 
 - General maintenance [#188](https://github.com/fleming79/async-kernel/pull/188)
 
@@ -489,7 +493,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
-[0.7.2]: https://github.com/fleming79/async-kernel/compare/v0.7.1..v0.7.2
+[0.8.0]: https://github.com/fleming79/async-kernel/compare/v0.7.1..v0.8.0
 [0.7.1]: https://github.com/fleming79/async-kernel/compare/v0.7.0..v0.7.1
 [0.7.0]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.2..v0.7.0
 [0.7.0-rc.2]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.1..v0.7.0-rc.2
