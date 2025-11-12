@@ -4492,11 +4492,11 @@ Instead a new instance should be started.</p>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span> <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_info_request</span> <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_open</span> <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_close</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">direct</span>
+            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">debug_request</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">direct</span>
+            <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5126,24 +5126,9 @@ along with their corresponding RunMode (if available).</p>
       <a href="../asyncshell/#">async_kernel.asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.execute_request_timeout"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request_timeout</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;run_cell_async</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
