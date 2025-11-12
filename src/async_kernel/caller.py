@@ -453,7 +453,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         except Exception as e:
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
-                        item[0].run(tg.start_soon, self._wrap_call, item[1])
+                        item[0].run(tg.start_soon, self._caller, item[1])
                     del item
                 else:
                     event = create_async_event()
@@ -471,7 +471,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
-    async def _wrap_call(self, fut: Future) -> None:
+    async def _caller(self, fut: Future) -> None:
         md = fut.metadata
         token = self._future_var.set(fut)
         try:
