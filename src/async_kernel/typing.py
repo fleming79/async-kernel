@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     import zmq
-    from anyio.lowlevel import EventLoopToken
 
     from async_kernel.kernelspec import Backend
 
@@ -323,8 +322,7 @@ class CallerStartNewOptions(TypedDict):
     "The caller should be protected against accidental closure."
     daemon: NotRequired[bool]
     "Passed to the new [Thread][threading.Thread]."
-    token: NotRequired[EventLoopToken]
-    "A token for the event loop to start the caller. When passed, thread is required."
+
 
 
 DebugMessage = dict[str, Any]

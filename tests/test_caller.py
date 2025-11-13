@@ -230,17 +230,11 @@ class TestCaller:
         Caller.stop_all()
 
     def test_start_new_checks(self, caller: Caller):
-        with pytest.raises(RuntimeError):
-            Caller.start_new(token=anyio.lowlevel.current_token())
-
         with pytest.raises(RuntimeError, match="A caller already exists for"):
             Caller.start_new(thread=caller.thread)
 
-        with pytest.raises(ValueError, match="Invalid name"):
-            Caller.start_new(name="")
-
-        with pytest.raises(RuntimeError, match="does not match"):
-            Caller.start_new(name="testing", thread=threading.Thread(daemon=False))
+        with pytest.raises(ValueError, match="One of 'thread' or 'name' must be specified and not both!"):
+            Caller.start_new(name="testing", thread="thread")  # pyright: ignore[reportArgumentType]
 
         with pytest.raises(RuntimeError, match="A caller already exists with"):
             Caller.start_new(name=caller.name)

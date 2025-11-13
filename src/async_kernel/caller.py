@@ -19,7 +19,7 @@ import anyio
 import anyio.from_thread
 from aiologic import Event
 from aiologic.lowlevel import create_async_event, current_async_library
-from anyio.lowlevel import EventLoopToken, current_token
+from anyio.lowlevel import current_token
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
@@ -32,7 +32,6 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     from anyio.abc import TaskGroup, TaskStatus
-    from anyio.lowlevel import EventLoopToken
 
     from async_kernel.typing import P
 
@@ -901,7 +900,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         protected: bool = False,
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         daemon: bool = True,
-        token: EventLoopToken | None = None,
     ) -> Self:
         """
         A [classmethod][] that creates and starts a new caller instance, optionally in a new thread, with the specified configuration.
@@ -914,7 +912,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             protected: Whether the caller should be protected from certain interruptions. Defaults to False.
             backend_options: Additional options for the async backend. If not specified, inferred from kernel.
             daemon: Whether the thread should be a daemon thread. Defaults to True.
-            token: An existing event loop token to use. If provided, a thread must also be specified.
 
         Returns:
             Self: The created caller instance.
@@ -930,31 +927,21 @@ class Caller(anyio.AsyncContextManagerMixin):
             - If a thread is provided, it must have a running backend.
         """
         # checks
-        if token and not thread:
-            msg = "When providing a token a thread must also be provided!"
-            raise RuntimeError(msg)
+
+        if thread and name:
+            msg = "One of 'thread' or 'name' must be specified and not both!"
+            raise ValueError(msg)
 
         if thread and thread in cls._instances:
             msg = f"A caller already exists for {thread=}!"
             raise RuntimeError(msg)
 
-        if name is not None:
-            if name in [""]:
-                msg = f"Invalid name {name=}"
-                raise ValueError(msg)
-            if thread and name != thread.name:
-                msg = f"{name=} does not match {thread.name=}"
-                raise RuntimeError(msg)
-            if name in [t.name for t in cls._instances]:
-                msg = f"A caller already exists with {name=}!"
-                raise RuntimeError(msg)
+        if name and name in [t.name for t in cls._instances]:
+            msg = f"A caller already exists with {name=}!"
+            raise RuntimeError(msg)
 
-        if thread and not token and thread == threading.current_thread():
-            # Obtain a token so the event loop can be run from another thread.
-            token = current_token()
-
-        # settings
-        if not token and (backend is NoValue or backend_options is NoValue):
+        token = current_token() if thread else None
+        if not thread:
             kernel = async_kernel.Kernel()
             if backend is NoValue:
                 backend = Backend(current_async_library(failsafe=True) or kernel.anyio_backend)
@@ -985,7 +972,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     raise
 
         fut: Future[Self] = Future()
-        threading.Thread(target=async_kernel_caller, name=None if token else name, daemon=daemon).start()
+        threading.Thread(target=async_kernel_caller, name=name, daemon=daemon).start()
         return fut.wait_sync()
 
     @classmethod
