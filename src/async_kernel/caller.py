@@ -804,7 +804,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             caller.stop(force=_stop_protected)
 
     @classmethod
-    def get_instance(cls, *, create: bool | NoValue = NoValue, **kwargs: Unpack[CallerStartNewOptions]) -> Self:  # pyright: ignore[reportInvalidTypeForm]
+    def get_instance(cls, *, create: bool = True, **kwargs: Unpack[CallerStartNewOptions]) -> Self:
         """
         Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
 
@@ -827,7 +827,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         for caller in cls._instances.values():
             if caller.thread == thread or caller.name == name:
                 return caller
-        if create in {True, NoValue}:
+        if create:
             if not kwargs:
                 kwargs["thread"] = threading.main_thread()
             return cls.start_new(**kwargs)
