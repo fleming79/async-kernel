@@ -448,12 +448,6 @@ class TestCaller:
         assert (await caller.call_soon(lambda: 2 + 2)) == 4
         done.set()
 
-    async def test_get_runner_error(self):
-        caller = Caller(create=True)
-        caller.stop()
-        with pytest.raises(RuntimeError):
-            caller.get_runner()
-
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend: Backend, mode: Literal["restricted", "surge"], mocker):
         mocker.patch.object(Caller, "MAX_IDLE_POOL_INSTANCES", new=2)

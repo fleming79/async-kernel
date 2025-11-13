@@ -590,24 +590,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         "Returns  `True` if the caller is stopped."
         return self._stopped
 
-    def get_runner(self, *, started: Callable[[], None] | None = None):
-        """
-        The preferred way to run the caller loop.
-
-        Tip:
-            See [Caller.get_instance][] for a usage example.
-        """
-        if self.running or self.stopped:
-            raise RuntimeError
-
-        async def run_caller_in_context() -> None:
-            async with self:
-                if started:
-                    started()
-                await anyio.sleep_forever()
-
-        return run_caller_in_context
-
     def stop(self, *, force=False) -> None:
         """
         Stop the caller, cancelling all pending tasks and close the thread.
@@ -989,17 +971,26 @@ class Caller(anyio.AsyncContextManagerMixin):
                 backend_options = kernel.anyio_backend_options.get(backend) if kernel else None
 
         def async_kernel_caller() -> None:
-            caller = cls(thread=thread, log=log, create=True, protected=protected)
             try:
+                # Create the caller
+                caller = cls(thread=thread, log=log, create=True, protected=protected)
+
+                async def run_caller_in_context() -> None:
+                    async with caller:
+                        if not fut.done():
+                            fut.set_result(caller)
+                        await anyio.sleep_forever()
+
+                # Start the caller
                 with suppress_cancelled_exception():
                     if token:
                         fut.set_result(caller)
-                        anyio.from_thread.run(caller.get_runner(), token=token)
+                        anyio.from_thread.run(run_caller_in_context, token=token)
                     else:
-                        runner = caller.get_runner(started=lambda: fut.set_result(caller))
-                        anyio.run(runner, backend=backend, backend_options=backend_options)
+                        anyio.run(run_caller_in_context, backend=backend, backend_options=backend_options)
             except Exception as e:
-                fut.set_exception(e)
+                if not fut.done():
+                    fut.set_exception(e)
 
         fut: Future[Self] = Future()
         threading.Thread(target=async_kernel_caller, name=None if thread else name, daemon=daemon).start()
