@@ -233,17 +233,17 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             Caller.start_new(token=anyio.lowlevel.current_token())
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError, match="A caller already exists for"):
             Caller.start_new(thread=caller.thread)
 
         with pytest.raises(ValueError, match="Invalid name"):
             Caller.start_new(name="")
 
-        with pytest.raises(RuntimeError):
-            Caller.start_new(name="testing", thread=threading.current_thread())
+        with pytest.raises(RuntimeError, match="does not match"):
+            Caller.start_new(name="testing", thread=threading.Thread(daemon=False))
 
-        with pytest.raises(RuntimeError):
-            Caller.start_new(name=caller.name, thread=threading.current_thread())
+        with pytest.raises(RuntimeError, match="A caller already exists with"):
+            Caller.start_new(name=caller.name)
 
     def test_start_new(self, anyio_backend: Backend):
         caller = Caller.start_new()
@@ -260,7 +260,7 @@ class TestCaller:
             caller.call_later(0.01, is_called.set)
             await is_called
 
-    async def test_call_returns_future(self, caller: Caller):
+    async def test_call_returns_future(self, caller: Caller) -> None:
         fut = Future()
         caller.call_direct(lambda: fut)
         assert await caller.call_soon(lambda: fut) is fut
@@ -435,7 +435,7 @@ class TestCaller:
 
         def caller_not_already_running():
             async def async_loop_before_caller_started():
-                caller = Caller.get_instance(name=threading.current_thread().name, create=True)
+                caller = Caller.get_instance(thread=threading.current_thread())
                 fut.set_result(caller)
                 await done
 

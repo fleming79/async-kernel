@@ -803,28 +803,32 @@ class Caller(anyio.AsyncContextManagerMixin):
     @classmethod
     def get_instance(cls, *, create: bool | NoValue = NoValue, **kwargs: Unpack[CallerStartNewOptions]) -> Self:  # pyright: ignore[reportInvalidTypeForm]
         """
-        A [classmethod][] that gets the caller associated to the thread using the threads name.
-
-
-        When called without a name `MainThread` will be used as the `name`.
+        Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
 
         Args:
-            create: Create a new instance if a Caller with the corresponding name does not already exist.
-            **kwargs: Options to use to identify or create a new instance if an instance does not already exist.
+            create: If True or NoValue (default), a new instance will be created if no matching instance is found.
+            **kwargs: Additional keyword arguments used to identify or create the instance. Common options include 'name' and 'thread'.
+
+        Returns:
+            Self: An existing or newly created instance of the class.
+
+        Raises:
+            RuntimeError: If no matching instance is found and 'create' is set to False.
 
         Notes:
-            - If `name` is not passed in `**kwargs` name is set to `name = "MainThread"`.
-            - For the case of `name="MainThread"` an instance will be created if one doesn't already exist except if `create=False`.
-            - `'MainThread'` always corresponds to an existing thread
+            - If both 'name' and 'thread' are provided, the method returns the first matching instance.
+            - If no matching instance is found and 'create' is True or NoValue, a new instance is created using the provided kwargs.
+            - If 'kwargs' is empty when creating a new instance, the main thread is used by default.
         """
-        if "name" not in kwargs:
-            kwargs["name"] = "MainThread"
+        name, thread = kwargs.get("name"), kwargs.get("thread")
         for caller in cls._instances.values():
-            if caller.name == kwargs["name"]:
+            if caller.thread == thread or caller.name == name:
                 return caller
-        if create is True or (create is NoValue and kwargs["name"] == "MainThread"):
+        if create in {True, NoValue}:
+            if not kwargs:
+                kwargs["thread"] = threading.main_thread()
             return cls.start_new(**kwargs)
-        msg = f"A Caller was not found for {kwargs['name']=}."
+        msg = f"A Caller was not found for {kwargs=}."
         raise RuntimeError(msg)
 
     @classmethod
@@ -952,7 +956,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise RuntimeError(msg)
         if thread and thread == threading.current_thread() and not token:
             token = current_token()
-            name = thread.name
+            name = name or thread.name
         if name is not None:
             if name in [""]:
                 msg = f"Invalid name {name=}"
@@ -963,8 +967,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             if name in [t.name for t in cls._instances]:
                 msg = f"A caller already exists with {name=}!"
                 raise RuntimeError(msg)
-            if token and not thread and name in [t.name for t in threading.enumerate()]:
-                msg = f"A thread already exists with {name=}!"
 
         # settings
         if not token and (backend is NoValue or backend_options is NoValue):

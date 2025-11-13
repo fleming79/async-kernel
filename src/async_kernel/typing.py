@@ -8,6 +8,7 @@ from typing_extensions import Sentinel, override
 
 if TYPE_CHECKING:
     import logging
+    import threading
     from collections.abc import Mapping
 
     import zmq
@@ -309,6 +310,8 @@ class CallerStartNewOptions(TypedDict):
     """
     The name to assign to a new thread when creating the new caller.
     """
+    thread: NotRequired[threading.Thread]
+    "The thread of the caller"
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use to log exceptions."
     backend: NotRequired[Backend]
