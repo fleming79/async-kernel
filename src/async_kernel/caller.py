@@ -48,18 +48,6 @@ def noop():
     pass
 
 
-@contextlib.contextmanager
-def suppress_cancelled_exception():
-    try:
-        yield
-    except BaseExceptionGroup:
-        pass
-    except BaseException as e:
-        if e.__class__.__name__ not in {"Cancelled", "CancelledError"}:
-            print(str(e), type(e))
-            raise
-
-
 class FutureCancelledError(anyio.ClosedResourceError):
     "Used to indicate a [Future][async_kernel.caller.Future] is cancelled."
 
@@ -945,12 +933,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         if token and not thread:
             msg = "When providing a token a thread must also be provided!"
             raise RuntimeError(msg)
+
         if thread and thread in cls._instances:
             msg = f"A caller already exists for {thread=}!"
             raise RuntimeError(msg)
-        if thread and thread == threading.current_thread() and not token:
-            token = current_token()
-            name = name or thread.name
+
         if name is not None:
             if name in [""]:
                 msg = f"Invalid name {name=}"
@@ -961,6 +948,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             if name in [t.name for t in cls._instances]:
                 msg = f"A caller already exists with {name=}!"
                 raise RuntimeError(msg)
+
+        if thread and not token and thread == threading.current_thread():
+            # Obtain a token so the event loop can be run from another thread.
+            token = current_token()
 
         # settings
         if not token and (backend is NoValue or backend_options is NoValue):
@@ -981,19 +972,20 @@ class Caller(anyio.AsyncContextManagerMixin):
                             fut.set_result(caller)
                         await anyio.sleep_forever()
 
-                # Start the caller
-                with suppress_cancelled_exception():
-                    if token:
-                        fut.set_result(caller)
-                        anyio.from_thread.run(run_caller_in_context, token=token)
-                    else:
-                        anyio.run(run_caller_in_context, backend=backend, backend_options=backend_options)
-            except Exception as e:
+                if token:
+                    # Start the caller
+                    fut.set_result(caller)
+                    anyio.from_thread.run(run_caller_in_context, token=token)
+                else:
+                    anyio.run(run_caller_in_context, backend=backend, backend_options=backend_options)
+            except (BaseExceptionGroup, BaseException) as e:
                 if not fut.done():
                     fut.set_exception(e)
+                if e.__class__.__name__ not in {"Cancelled", "CancelledError"}:
+                    raise
 
         fut: Future[Self] = Future()
-        threading.Thread(target=async_kernel_caller, name=None if thread else name, daemon=daemon).start()
+        threading.Thread(target=async_kernel_caller, name=None if token else name, daemon=daemon).start()
         return fut.wait_sync()
 
     @classmethod
