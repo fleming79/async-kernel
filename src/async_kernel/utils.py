@@ -34,10 +34,12 @@ _execution_count_var: ContextVar[int] = ContextVar("execution_count")
 _execute_request_timeout: ContextVar[float | None] = ContextVar("execute_request_timeout", default=None)
 
 
-def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False):
+def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:
     """Modifies the given thread's attributes to hide or unhide it from the debugger (e.g., debugpy)."""
     thread = thread or threading.current_thread()
     thread.pydev_do_not_trace = not remove  # pyright: ignore[reportAttributeAccessIssue]
+    thread.is_pydev_daemon_thread = not remove  # pyright: ignore[reportAttributeAccessIssue]
+    return
 
 
 def get_kernel() -> Kernel:

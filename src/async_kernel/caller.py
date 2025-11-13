@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import contextlib
 import contextvars
 import functools
@@ -17,8 +16,10 @@ from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, overload
 
 import anyio
+import anyio.from_thread
 from aiologic import Event
 from aiologic.lowlevel import create_async_event, current_async_library
+from anyio.lowlevel import EventLoopToken, current_token
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     from anyio.abc import TaskGroup, TaskStatus
+    from anyio.lowlevel import EventLoopToken
 
     from async_kernel.typing import P
 
@@ -44,6 +46,18 @@ truncated_rep.fillvalue = "…"
 
 def noop():
     pass
+
+
+@contextlib.contextmanager
+def suppress_cancelled_exception():
+    try:
+        yield
+    except BaseExceptionGroup:
+        pass
+    except BaseException as e:
+        if e.__class__.__name__ not in {"Cancelled", "CancelledError"}:
+            print(str(e), type(e))
+            raise
 
 
 class FutureCancelledError(anyio.ClosedResourceError):
@@ -623,7 +637,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             **metadata: Additional metadata to store in the future.
         """
         if self._stopped:
-            raise anyio.ClosedResourceError
+            msg = f"{self} is stopped!"
+            raise RuntimeError(msg)
         fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), fut))
         self._resume()
@@ -894,69 +909,87 @@ class Caller(anyio.AsyncContextManagerMixin):
         cls,
         *,
         name: str | None = None,
+        thread: threading.Thread | None = None,
         log: logging.LoggerAdapter | None = None,
         backend: Backend | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         protected: bool = False,
         backend_options: dict | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         daemon: bool = True,
+        token: EventLoopToken | None = None,
     ) -> Self:
         """
-        A [classmethod][] that creates a new caller instance with the thread determined according to the provided `name`.
-
-        When `name` equals the current thread's name it will use the current thread providing the backend is 'asyncio' and
-        there is a running event loop available.
-
-        When the name does not match the current thread name, a new thread will be started provided
-        that the name provided is not the name does not overlap with any existing threads. When no
-        name is provided, a new thread can always be started.
+        A [classmethod][] that creates and starts a new caller instance, optionally in a new thread, with the specified configuration.
 
         Args:
-            backend: The backend to use for the anyio event loop (anyio.run). Defaults to the backend from where it is called.
-            log: A logging adapter to use for debug messages.
-            protected: When True, the caller will not shutdown unless shutdown is called with `force=True`.
-            backend_options: Backend options for [anyio.run][]. Defaults to `Kernel.backend_options`.
-            daemon: Passed to [threading.Thread][].
+            name: The name to assign to the new thread/caller. If not provided, defaults to the thread's name.
+            thread: An existing thread to associate with the caller. If not provided, a new thread is created.
+            log: A LoggerAdapter to use for this caller instance.
+            backend: The async backend to use (e.g., 'asyncio', 'trio'). If not specified, it is inferred.
+            protected: Whether the caller should be protected from certain interruptions. Defaults to False.
+            backend_options: Additional options for the async backend. If not specified, inferred from kernel.
+            daemon: Whether the thread should be a daemon thread. Defaults to True.
+            token: An existing event loop token to use. If provided, a thread must also be specified.
 
         Returns:
-            Caller: The newly created caller.
+            Self: The created caller instance.
 
         Raises:
-            RuntimeError: If a caller already exists or when the caller can't be started.
+            RuntimeError: If invalid combinations of thread, token, or name are provided, or if a caller already exists for the given thread or name.
+            ValueError: If an invalid name is provided.
+
+        Notes:
+            - If a token is provided, a thread must also be specified.
+            - If neither backend nor backend_options are specified, they are inferred from the current async kernel.
+            - The caller is started in a new thread unless an existing thread is provided.
+            - If a thread is provided, it must have a running backend.
         """
-        if name and name in [t.name for t in cls._instances]:
-            msg = f"A caller already exists with {name=}!"
+        # checks
+        if token and not thread:
+            msg = "When providing a token a thread must also be provided!"
             raise RuntimeError(msg)
+        if thread and thread in cls._instances:
+            msg = f"A caller already exists for {thread=}!"
+            raise RuntimeError(msg)
+        if thread and thread == threading.current_thread() and not token:
+            token = current_token()
+            name = thread.name
+        if name is not None:
+            if name in [""]:
+                msg = f"Invalid name {name=}"
+                raise ValueError(msg)
+            if thread and name != thread.name:
+                msg = f"{name=} does not match {thread.name=}"
+                raise RuntimeError(msg)
+            if name in [t.name for t in cls._instances]:
+                msg = f"A caller already exists with {name=}!"
+                raise RuntimeError(msg)
+            if token and not thread and name in [t.name for t in threading.enumerate()]:
+                msg = f"A thread already exists with {name=}!"
 
-        # Current thread
-        if name is not None and name == threading.current_thread().name:
-            if (backend := current_async_library()) == Backend.asyncio:
-                loop = asyncio.get_running_loop()
-                caller = cls(log=log, create=True, protected=protected)
-                caller._task = loop.create_task(caller.get_runner()())  # pyright: ignore[reportAttributeAccessIssue]
-                return caller
-            msg = f"Starting a caller for the MainThread is not supported for {backend=}"
-            raise RuntimeError(msg)
-
-        # New thread
-        if name and name in [t.name for t in threading.enumerate()]:
-            msg = f"A thread with {name=} already exists!"
-            raise RuntimeError(msg)
+        # settings
+        if not token and (backend is NoValue or backend_options is NoValue):
+            kernel = async_kernel.Kernel()
+            if backend is NoValue:
+                backend = Backend(current_async_library(failsafe=True) or kernel.anyio_backend)
+            if backend_options is NoValue:
+                backend_options = kernel.anyio_backend_options.get(backend) if kernel else None
 
         def async_kernel_caller() -> None:
-            anyio.run(caller.get_runner(started=ready_event.set), backend=backend_, backend_options=backend_options)
+            caller = cls(thread=thread, log=log, create=True, protected=protected)
+            try:
+                with suppress_cancelled_exception():
+                    if token:
+                        fut.set_result(caller)
+                        anyio.from_thread.run(caller.get_runner(), token=token)
+                    else:
+                        runner = caller.get_runner(started=lambda: fut.set_result(caller))
+                        anyio.run(runner, backend=backend, backend_options=backend_options)
+            except Exception as e:
+                fut.set_exception(e)
 
-        kernel = async_kernel.Kernel()
-        backend_ = backend if backend is not NoValue else (current_async_library(failsafe=True) or kernel.anyio_backend)
-
-        if backend_options is NoValue:
-            backend_options = kernel.anyio_backend_options.get(backend) if kernel else None
-
-        ready_event = Event()
-        thread = threading.Thread(target=async_kernel_caller, name=name or None, daemon=daemon)
-        caller = cls(thread=thread, log=log, create=True, protected=protected)
-        thread.start()
-        ready_event.wait()
-        return caller
+        fut: Future[Self] = Future()
+        threading.Thread(target=async_kernel_caller, name=None if thread else name, daemon=daemon).start()
+        return fut.wait_sync()
 
     @classmethod
     def current_future(cls) -> Future[Any] | None:

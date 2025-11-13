@@ -10,6 +10,7 @@ from random import random
 from typing import Literal, cast
 
 import anyio
+import anyio.lowlevel
 import anyio.to_thread
 import pytest
 from aiologic import Event
@@ -26,10 +27,8 @@ def anyio_backend(request):
 
 @pytest.fixture
 async def caller(anyio_backend: Backend):
-    try:
-        async with Caller(create=True) as caller:
-            yield caller
-    finally:
+    async with Caller(create=True) as caller:
+        yield caller
         Caller.stop_all()
 
 
@@ -158,16 +157,6 @@ class TestFuture:
         caller.to_thread(fut.set_result, value=123)
         assert (await fut) == 123
 
-    async def test_already_exists(self, caller: Caller):
-        with pytest.raises(RuntimeError, match="already exists"):
-            Caller.start_new(name=caller.thread.name)
-
-    async def test_start_new_should_fail(self, caller: Caller):
-        await anyio.to_thread.run_sync(print, "")
-        name = next(iter(t.name for t in threading.enumerate() if t.name != "MainThread"))
-        with pytest.raises(RuntimeError, match="already exists"):
-            Caller.start_new(name=name)
-
     async def test_wait_cancelled_shield(self, caller: Caller):
         fut = Future()
         with pytest.raises(TimeoutError):
@@ -239,6 +228,31 @@ class TestCaller:
 
     def teardown_method(self, test_method):
         Caller.stop_all()
+
+    def test_start_new_checks(self, caller: Caller):
+        with pytest.raises(RuntimeError):
+            Caller.start_new(token=anyio.lowlevel.current_token())
+
+        with pytest.raises(RuntimeError):
+            Caller.start_new(thread=caller.thread)
+
+        with pytest.raises(ValueError, match="Invalid name"):
+            Caller.start_new(name="")
+
+        with pytest.raises(RuntimeError):
+            Caller.start_new(name="testing", thread=threading.current_thread())
+
+        with pytest.raises(RuntimeError):
+            Caller.start_new(name=caller.name, thread=threading.current_thread())
+
+    def test_start_new(self, anyio_backend: Backend):
+        caller = Caller.start_new()
+        assert "async_kernel_caller" in caller.name
+        assert (caller.call_soon(lambda: 2 + 1).wait_sync()) == 3
+
+    async def test_already_exists(self, caller: Caller):
+        with pytest.raises(RuntimeError, match="already exists"):
+            Caller.start_new(thread=caller.thread)
 
     async def test_sync(self):
         async with Caller(create=True) as caller:
@@ -405,32 +419,34 @@ class TestCaller:
         with pytest.raises(ValueError, match="A name was not provided"):
             Caller.to_thread_advanced({}, lambda: None)
 
-    async def test_get_instance_main_thread(self, anyio_backend: Backend):
-        name = "MainThread"
-        # Check a caller can be started in asyncio using create_task.
-        assert not Caller._instances  # pyright: ignore[reportPrivateUsage]
-        if anyio_backend == Backend.trio:
-            with pytest.raises(RuntimeError):
-                Caller.get_instance(name=name)
-            return
-        if anyio_backend == Backend.asyncio:
-            caller = Caller.get_instance(name=name)
-        assert await caller.call_soon(lambda: 1 + 1) == 2
-
     async def test_get_instance_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
             Caller.get_instance(name=None, create=False)
 
-    async def test_get_instance_get_runner(self, anyio_backend: Backend):
-        if anyio_backend == Backend.trio:
-            with pytest.raises(RuntimeError):
-                Caller.get_instance()
-            return
+    async def test_get_instance_start_main_thread(self, anyio_backend: Backend):
+        # Check a caller can be started in the main thread synchronously.
         caller = Caller.get_instance()
-        try:
-            await caller.call_soon(anyio.sleep, 0.01)
-        finally:
-            caller.stop()
+        assert await caller.call_soon(lambda: 1 + 1) == 2
+
+    async def test_get_instance_current_thread(self, anyio_backend: Backend):
+        # Test starting in the async event loop of a non-main-thread
+        fut = Future[Caller]()
+        done = Event()
+
+        def caller_not_already_running():
+            async def async_loop_before_caller_started():
+                caller = Caller.get_instance(name=threading.current_thread().name, create=True)
+                fut.set_result(caller)
+                await done
+
+            anyio.run(async_loop_before_caller_started, backend=anyio_backend)
+
+        thread = threading.Thread(target=caller_not_already_running, daemon=True)
+        thread.start()
+        caller = await fut
+        assert caller.name == thread.name
+        assert (await caller.call_soon(lambda: 2 + 2)) == 4
+        done.set()
 
     async def test_get_runner_error(self):
         caller = Caller(create=True)
@@ -609,7 +625,7 @@ class TestCaller:
             await fut
         assert fut.done()
         assert caller.stopped
-        with pytest.raises(anyio.ClosedResourceError):
+        with pytest.raises(RuntimeError):
             caller.call_soon(time.sleep, 0)
         with pytest.raises(FutureCancelledError):
             await never_called_future
