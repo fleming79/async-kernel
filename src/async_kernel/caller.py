@@ -411,6 +411,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Raises:
             RuntimeError: If `create` is `False` and a `Caller` instance does not exist.
+
+        Tip:
+            - Use `Caller.get_instance(thread=threading.current_thread())` when a running caller is required.
         """
 
         thread = thread or threading.current_thread()
