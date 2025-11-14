@@ -8,6 +8,7 @@ from typing_extensions import Sentinel, override
 
 if TYPE_CHECKING:
     import logging
+    import threading
     from collections.abc import Mapping
 
     import zmq
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from async_kernel.kernelspec import Backend
 
 __all__ = [
-    "CallerStartNewOptions",
+    "CallerGetInstanceOptions",
     "Content",
     "DebugMessage",
     "ExecuteContent",
@@ -302,13 +303,15 @@ class ExecuteContent(TypedDict):
     ""
 
 
-class CallerStartNewOptions(TypedDict):
-    "Options for [Caller.start_new][async_kernel.caller.Caller.start_new]."
+class CallerGetInstanceOptions(TypedDict):
+    "Options for [Caller.get_instance][async_kernel.caller.Caller.get_instance]."
 
     name: NotRequired[str | None]
     """
     The name to assign to a new thread when creating the new caller.
     """
+    thread: NotRequired[threading.Thread]
+    "The thread of the caller."
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use to log exceptions."
     backend: NotRequired[Backend]

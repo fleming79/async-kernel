@@ -83,9 +83,6 @@ def kernel_name(request):
 async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name: KernelName, transport):
     """
     Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it.
-
-    This is primarily provided for testing the debugger making it more convenient
-    connect a debugger to the test.
     """
     assert anyio_backend == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
