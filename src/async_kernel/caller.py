@@ -492,10 +492,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not self._stopped and not self._queue:
                         await event
                     self._resume = noop
-        except (BaseException, BaseExceptionGroup) as e:
-            if "shutdown" in str(e):
-                return
-            raise
         finally:
             self._resume = noop
             self._running = False
@@ -837,14 +833,10 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             async def run_caller_in_context(caller: Self) -> None:
                 # run the caller in context
-                try:
-                    async with caller:
-                        if not fut.done():
-                            fut.set_result(caller)
-                        await anyio.sleep_forever()
-                except (BaseExceptionGroup, BaseException) as e:
-                    if e.__class__.__name__ not in {"Cancelled", "CancelledError"}:
-                        raise
+                async with caller:
+                    if not fut.done():
+                        fut.set_result(caller)
+                    await anyio.sleep_forever()
 
             def async_kernel_caller(options: dict) -> None:
                 # A thread that runs the caller
@@ -859,24 +851,28 @@ class Caller(anyio.AsyncContextManagerMixin):
                         anyio.from_thread.run(run_caller_in_context, caller, **options)
                     else:
                         anyio.run(run_caller_in_context, caller, **options)
-                except Exception as e:
+                except (BaseExceptionGroup, BaseException) as e:
                     if not fut.done():
                         fut.set_exception(e)
+                    if not "shutdown" not in str(e):
+                        raise
 
             # options
             if thread:
                 assert thread is threading.current_thread()
                 args = [{"token": current_token()}]
+                daemon = True
             else:
                 kernel = async_kernel.Kernel()
                 backend = kwargs.get("backend", current_async_library(failsafe=True))
                 backend = Backend(value=backend or kernel.anyio_backend)
                 backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
+                daemon = kwargs.get("daemon", True)
                 args = [{"backend": backend, "backend_options": backend_options}]
 
             # Create and start the caller
             fut: Future[Self] = Future()
-            threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=kwargs.get("daemon")).start()
+            threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=daemon).start()
             return fut.wait_sync()
 
     @classmethod
