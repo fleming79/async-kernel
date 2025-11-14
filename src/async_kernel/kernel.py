@@ -591,9 +591,7 @@ class Kernel(HasTraits):
                 thread.start()
                 await anyio.sleep_forever()
 
-        self.callers[SocketID.control] = Caller.start_new(
-            backend=self.anyio_backend, name="ControlThread", protected=True
-        )
+        self.callers[SocketID.control] = Caller.get_instance(create=True, name="ControlThread", protected=True)
 
         threading.Thread(target=heartbeat, name="heartbeat", daemon=True).start()
         heartbeat_ready.wait()

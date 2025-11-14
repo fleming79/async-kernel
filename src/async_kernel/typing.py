@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from async_kernel.kernelspec import Backend
 
 __all__ = [
-    "CallerStartNewOptions",
+    "CallerGetInstanceOptions",
     "Content",
     "DebugMessage",
     "ExecuteContent",
@@ -303,8 +303,8 @@ class ExecuteContent(TypedDict):
     ""
 
 
-class CallerStartNewOptions(TypedDict):
-    "Options for [Caller.start_new][async_kernel.caller.Caller.start_new]."
+class CallerGetInstanceOptions(TypedDict):
+    "Options for [Caller.get_instance][async_kernel.caller.Caller.get_instance]."
 
     name: NotRequired[str | None]
     """
@@ -322,7 +322,6 @@ class CallerStartNewOptions(TypedDict):
     "The caller should be protected against accidental closure."
     daemon: NotRequired[bool]
     "Passed to the new [Thread][threading.Thread]."
-
 
 
 DebugMessage = dict[str, Any]

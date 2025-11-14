@@ -10,10 +10,9 @@ from random import random
 from typing import Literal, cast
 
 import anyio
-import anyio.lowlevel
 import anyio.to_thread
 import pytest
-from aiologic import Event
+from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
@@ -229,24 +228,57 @@ class TestCaller:
     def teardown_method(self, test_method):
         Caller.stop_all()
 
-    def test_start_new_checks(self, caller: Caller):
-        with pytest.raises(RuntimeError, match="A caller already exists for"):
-            Caller.start_new(thread=caller.thread)
+    def test_no_thread(self):
+        with pytest.raises(RuntimeError):
+            Caller()
 
+    def test_get_instance_checks(self, caller: Caller):
         with pytest.raises(ValueError, match="One of 'thread' or 'name' must be specified and not both!"):
-            Caller.start_new(name="testing", thread="thread")  # pyright: ignore[reportArgumentType]
+            Caller.get_instance(name="testing", thread="thread")  # pyright: ignore[reportArgumentType]
 
-        with pytest.raises(RuntimeError, match="A caller already exists with"):
-            Caller.start_new(name=caller.name)
-
-    def test_start_new(self, anyio_backend: Backend):
-        caller = Caller.start_new()
+    def test_get_instance_worker(self, anyio_backend: Backend):
+        caller = Caller.get_instance(name=None)
         assert "async_kernel_caller" in caller.name
         assert (caller.call_soon(lambda: 2 + 1).wait_sync()) == 3
 
     async def test_already_exists(self, caller: Caller):
-        with pytest.raises(RuntimeError, match="already exists"):
-            Caller.start_new(thread=caller.thread)
+        assert Caller.get_instance(thread=caller.thread) is caller
+        assert Caller.get_instance(thread=threading.current_thread()) is caller
+        assert Caller.get_instance(name=caller.name) is caller
+
+    @pytest.mark.parametrize("mode", ["name", "thread"])
+    async def test_start_after(self, anyio_backend: Backend, mode: Literal["name", "thread"]):
+        caller = Caller(create=True)
+        assert not caller.running
+        fut = caller.call_soon(lambda: 2 + 3)
+        if mode == "name":
+            caller.get_instance(name=caller.name)
+        else:
+            caller.get_instance(thread=caller.thread)
+        assert await fut == 5
+        assert caller.running
+
+    def test_forbid_other_thread_start(self) -> None:
+        done = Event()
+        thread = threading.Thread(target=done.wait, daemon=True)
+        thread.start()
+        with pytest.raises(RuntimeError, match="is not current thread!"):
+            Caller.get_instance(name=thread.name)
+        with pytest.raises(RuntimeError, match="is not current thread!"):
+            Caller.get_instance(thread=thread)
+        done.set()
+
+    async def test_get_instance_non_main_thread(self, anyio_backend: Backend):
+        async def get_caller():
+            thread = threading.current_thread()
+            assert thread is not threading.main_thread()
+            caller = Caller.get_instance(thread=thread)
+            assert caller.thread is thread
+            assert (await caller.call_soon(lambda: 1 + 1)) == 2
+
+        thread = threading.Thread(target=anyio.run, args=[get_caller], daemon=True)
+        thread.start()
+        thread.join()
 
     async def test_sync(self):
         async with Caller(create=True) as caller:
@@ -271,10 +303,6 @@ class TestCaller:
         assert re.match(matches[0], repr(fut))
         await fut
         assert re.match(matches[1], repr(fut))
-
-    def test_no_thread(self):
-        with pytest.raises(RuntimeError):
-            Caller()
 
     async def test_protected(self, anyio_backend: Backend):
         caller = Caller(create=True, protected=True)
@@ -441,63 +469,6 @@ class TestCaller:
         assert caller.name == thread.name
         assert (await caller.call_soon(lambda: 2 + 2)) == 4
         done.set()
-
-    @pytest.mark.parametrize("mode", ["restricted", "surge"])
-    async def test_as_completed(self, anyio_backend: Backend, mode: Literal["restricted", "surge"], mocker):
-        mocker.patch.object(Caller, "MAX_IDLE_POOL_INSTANCES", new=2)
-
-        async def func():
-            assert current_async_library() == anyio_backend
-            n = random()
-            if n < 0.2:
-                time.sleep(n / 10)
-            elif n < 0.6:
-                await anyio.sleep(n / 10)
-            return threading.current_thread()
-
-        threads = set[threading.Thread]()
-        n = 40
-        fut = Caller.to_thread(time.sleep, 0)
-        await fut
-        async with Caller(create=True):
-            # check can handle completed future okay first
-            async for fut_ in Caller.as_completed([fut]):
-                assert fut_.done()
-            # work directly with iterator
-            n_ = 0
-            max_concurrent = Caller.MAX_IDLE_POOL_INSTANCES if mode == "restricted" else n / 2
-            async for fut in Caller.as_completed(
-                (Caller.to_thread(func) for _ in range(n)), max_concurrent=max_concurrent
-            ):
-                assert fut.done()
-                n_ += 1
-                thread = await fut
-                threads.add(thread)
-            assert n_ == n
-            if mode == "restricted":
-                assert len(threads) == 2
-            else:
-                assert len(threads) > 2
-            assert len(Caller._to_thread_pool) == 2  # pyright: ignore[reportPrivateUsage]
-
-    async def test_as_completed_error(self, caller: Caller):
-        def func():
-            raise RuntimeError()
-
-        async for fut in Caller.as_completed((Caller.to_thread(func) for _ in range(6)), max_concurrent=4):
-            with pytest.raises(RuntimeError):
-                await fut
-
-    async def test_as_completed_cancelled(self, caller: Caller):
-        items = {Caller.to_thread(anyio.sleep, 100) for _ in range(4)}
-        with anyio.move_on_after(0.1):
-            with pytest.raises(anyio.get_cancelled_exc_class()):
-                async for _ in Caller.as_completed(items):
-                    pass
-        for item in items:
-            assert item.cancelled()
-            with pytest.raises(FutureCancelledError):
-                await item
 
     async def test_execution_queue(self, caller: Caller):
         N = 10
@@ -712,3 +683,71 @@ class TestCaller:
         weakref.finalize(a, fut.cancel)
         del a
         await fut.wait(result=False)
+
+    @pytest.mark.parametrize("mode", ["restricted", "surge"])
+    async def test_as_completed(self, anyio_backend: Backend, mode: Literal["restricted", "surge"], mocker):
+        mocker.patch.object(Caller, "MAX_IDLE_POOL_INSTANCES", new=2)
+
+        async def func():
+            assert current_async_library() == anyio_backend
+            n = random()
+            if n < 0.2:
+                time.sleep(n / 10)
+            elif n < 0.6:
+                await anyio.sleep(n / 10)
+            return threading.current_thread()
+
+        threads = set[threading.Thread]()
+        n = 40
+        fut = Caller.to_thread(time.sleep, 0)
+        await fut
+        async with Caller(create=True):
+            # check can handle completed future okay first
+            async for fut_ in Caller.as_completed([fut]):
+                assert fut_.done()
+            # work directly with iterator
+            n_ = 0
+            max_concurrent = Caller.MAX_IDLE_POOL_INSTANCES if mode == "restricted" else n / 2
+            async for fut in Caller.as_completed(
+                (Caller.to_thread(func) for _ in range(n)), max_concurrent=max_concurrent
+            ):
+                assert fut.done()
+                n_ += 1
+                thread = await fut
+                threads.add(thread)
+            assert n_ == n
+            if mode == "restricted":
+                assert len(threads) == 2
+            else:
+                assert len(threads) > 2
+            assert len(Caller._to_thread_pool) == 2  # pyright: ignore[reportPrivateUsage]
+
+    async def test_as_completed_error(self, caller: Caller):
+        def func():
+            raise RuntimeError()
+
+        async for fut in Caller.as_completed((Caller.to_thread(func) for _ in range(6)), max_concurrent=4):
+            with pytest.raises(RuntimeError):
+                await fut
+
+    async def test_as_completed_cancelled(self, caller: Caller):
+        n = 4
+        ready = CountdownEvent(n)
+
+        async def test_func():
+            ready.down()
+            if ready.value:
+                await anyio.sleep_forever()
+            return ready
+
+        items = {Caller.to_thread(test_func) for _ in range(n)}
+        with anyio.CancelScope() as scope:
+            async for _ in Caller.as_completed(items):
+                await ready
+                scope.cancel()
+        for item in items:
+            if not item.cancelled():
+                assert item.result() is ready
+            else:
+                with pytest.raises(FutureCancelledError):
+                    await item
