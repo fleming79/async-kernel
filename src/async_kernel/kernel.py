@@ -188,6 +188,11 @@ class Kernel(HasTraits):
                 await anyio.sleep_forever()
             ```
 
+    Warning:
+        Starting the kernel outside the main thread has the following implicatations:
+            - Execute requests won't be run in the main thread.
+            - Interrupts via signals won't work, so thread blocking calls in the shell cannot be interrupted.
+
     Origins:
         - [IPyKernel Kernel][ipykernel.kernelbase.Kernel]
         - [IPyKernel IPKernelApp][ipykernel.kernelapp.IPKernelApp]
@@ -291,9 +296,6 @@ class Kernel(HasTraits):
         if not self._initialised:
             self._initialised = True
             super().__init__()
-            sys.excepthook = self.excepthook
-            sys.unraisablehook = self.unraisablehook
-            signal.signal(signal.SIGINT, self._signal_handler)
             if not os.environ.get("MPLBACKEND"):
                 os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
         if settings:
@@ -320,6 +322,10 @@ class Kernel(HasTraits):
         """
         assert not self.event_stopped
         async with contextlib.AsyncExitStack() as stack:
+            sys.excepthook = self.excepthook
+            sys.unraisablehook = self.unraisablehook
+            with contextlib.suppress(ValueError):
+                signal.signal(signal.SIGINT, self._signal_handler)
             await stack.enter_async_context(self._start_in_context())
             self.__stack = stack.pop_all()
         return self
@@ -1121,11 +1127,12 @@ class Kernel(HasTraits):
     async def interrupt_request(self, job: Job[Content], /) -> Content:
         """Handle a [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only)."""
         self._interrupt_requested = True
-        if sys.platform == "win32":
-            signal.raise_signal(signal.SIGINT)
-            time.sleep(0)
-        else:
-            os.kill(os.getpid(), signal.SIGINT)
+        if self.callers[SocketID.shell].thread is threading.main_thread():
+            if sys.platform == "win32":
+                signal.raise_signal(signal.SIGINT)
+                time.sleep(0)
+            else:
+                os.kill(os.getpid(), signal.SIGINT)
         for interrupter in tuple(self._interrupts):
             interrupter()
         return {}
