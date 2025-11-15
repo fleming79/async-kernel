@@ -10,10 +10,10 @@ import threading
 import time
 import weakref
 from collections import deque
-from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack
 
 import anyio
 import anyio.from_thread
@@ -25,6 +25,7 @@ from zmq import Context, Socket, SocketType
 
 import async_kernel
 from async_kernel.kernelspec import Backend
+from async_kernel.result import Result, ResultCancelledError
 from async_kernel.typing import CallerGetInstanceOptions, NoValue, SocketID, T
 from async_kernel.utils import mark_thread_pydev_do_not_trace
 
@@ -36,7 +37,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError"]
+__all__ = ["Caller"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -46,274 +47,6 @@ truncated_rep.fillvalue = "…"
 
 def noop():
     pass
-
-
-class FutureCancelledError(anyio.ClosedResourceError):
-    "Used to indicate a [Future][async_kernel.caller.Future] is cancelled."
-
-
-class InvalidStateError(RuntimeError):
-    "An invalid state of a [Future][async_kernel.caller.Future]."
-
-
-class Future(Awaitable[T]):
-    """
-    A future represents a computation that may complete asynchronously, providing a result or exception in the future.
-
-    This class implements the Awaitable protocol, allowing it to be awaited in async code in thread or event loop.
-    It supports cancellation, result retrieval, exception handling, and attaching callbacks to be invoked upon completion.
-
-    Notes:
-        - The future is not considered done until set_result or set_exception is called.
-        - If cancelled, the result is replaced with a FutureCancelledError.
-        - A callback can be set to handle cancellation with `set_canceller`.
-        - Its result can also be synchronously waited (blocking) using `wait_sync`.
-    """
-
-    __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
-
-    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
-    "Keys of metadata to omit when creating a repr of the future."
-
-    _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
-    "A mapping of future's id its metadata."
-
-    _cancelled: str
-    _canceller: Callable[[str | None], Any]
-    _exception: Exception
-    _done: bool
-    _result: T
-
-    def __init__(self, **metadata) -> None:
-        self._done_callbacks: deque[Callable[[Self], Any]] = deque()
-        self._metadata_mappings[id(self)] = metadata
-        self._done = False
-
-    def __del__(self):
-        self._metadata_mappings.pop(id(self), None)
-
-    @override
-    def __repr__(self) -> str:
-        rep = "<Future" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self._done else " 🏃")
-        rep = f"{rep} at {id(self)}"
-        with contextlib.suppress(Exception):
-            md = self.metadata
-            if "func" in md:
-                items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
-                rep += f" | {md['func']} {' | '.join(items) if items else ''}"
-            else:
-                rep += f" {truncated_rep.repr(md)}" if md else ""
-        return rep + " >"
-
-    @override
-    def __await__(self) -> Generator[Any, None, T]:
-        return self.wait().__await__()
-
-    def _set_done(self, mode: Literal["result", "exception"], value) -> None:
-        if self._done:
-            raise InvalidStateError
-        self._done = True
-        setattr(self, "_" + mode, value)
-        while self._done_callbacks:
-            cb = self._done_callbacks.pop()
-            try:
-                cb(self)
-            except Exception:
-                pass
-
-    def _make_cancelled_error(self) -> FutureCancelledError:
-        return FutureCancelledError(self._cancelled)
-
-    @property
-    def metadata(self) -> dict[str, Any]:
-        """
-        The metadata passed as keyword arguments to the future during creation.
-        """
-        return self._metadata_mappings[id(self)]
-
-    if TYPE_CHECKING:
-
-        @overload
-        async def wait(
-            self, *, timeout: float | None = ..., shield: bool = False | ..., result: Literal[True] = True
-        ) -> T: ...
-
-        @overload
-        async def wait(self, *, timeout: float | None = ..., shield: bool = ..., result: Literal[False]) -> None: ...
-
-    async def wait(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
-        """
-        Wait for future to be done (thread-safe) returning the result if specified.
-
-        Args:
-            timeout: Timeout in seconds.
-            shield: Shield the future from cancellation.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Future.result][]).
-        """
-        try:
-            if not self._done or self._done_callbacks:
-                event = create_async_event()
-                self._done_callbacks.appendleft(lambda _: event.set())
-                with anyio.fail_after(timeout):
-                    if not self._done or self._done_callbacks:
-                        await event
-            return self.result() if result else None
-        finally:
-            if not self._done and not shield:
-                self.cancel("Cancelled with waiter cancellation.")
-
-    if TYPE_CHECKING:
-
-        @overload
-        def wait_sync(self, *, timeout: float | None = ..., result: Literal[True] = True) -> T: ...
-
-        @overload
-        def wait_sync(self, *, timeout: float | None = ..., result: Literal[False]) -> None: ...
-
-    def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
-        """
-        Wait for the result to be done synchronously (thread-safe) blocking the current thread.
-
-        Args:
-            timeout: Timeout in seconds.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Future.result][]).
-
-        Raises:
-            TimeoutError: When the timeout expires and a result has not been set.
-
-        Warning:
-            **Blocking the thread in which the result is set will result in deadlock.**
-        """
-        if not self._done:
-            done = Event()
-            self.add_done_callback(lambda _: done.set())
-            if not self._done:
-                done.wait(timeout)
-            if not self._done:
-                msg = f"Timeout waiting for {self}"
-                raise TimeoutError(msg)
-
-        return self.result() if result else None
-
-    def set_result(self, value: T) -> None:
-        "Set the result (thread-safe)."
-        self._set_done("result", value)
-
-    def set_exception(self, exception: BaseException) -> None:
-        "Set the exception (thread-safe)."
-        self._set_done("exception", exception)
-
-    def done(self) -> bool:
-        """
-        Returns True if the future has a result.
-
-        Done means either that a result / exception is available or that cancellation is complete.
-        """
-        return self._done
-
-    def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
-        """
-        Add a callback for when the future is done (not thread-safe).
-
-        If the future is already done it will called immediately.
-        """
-        if not self._done:
-            self._done_callbacks.append(fn)
-        else:
-            fn(self)
-
-    def cancel(self, msg: str | None = None) -> bool:
-        """
-        Cancel the Future.
-
-        Args:
-            msg: The message to use when cancelling.
-
-        Notes:
-            - Cancellation cannot be undone.
-            - The future will not be *done* until either [Future.set_result][] or [Future.set_exception][] is called.
-
-        Returns: If it has been cancelled.
-        """
-        if not self._done:
-            cancelled = getattr(self, "_cancelled", "")
-            if msg and isinstance(cancelled, str):
-                msg = f"{cancelled}\n{msg}"
-            self._cancelled = msg or cancelled
-            if canceller := getattr(self, "_canceller", None):
-                canceller(msg)
-        return self.cancelled()
-
-    def cancelled(self) -> bool:
-        """Return True if the future is cancelled."""
-        return isinstance(getattr(self, "_cancelled", None), str)
-
-    def result(self) -> T:
-        """
-        Return the result of the future.
-
-        Raises:
-            FutureCancelledError: If the future has been cancelled.
-            InvalidStateError: If the future isn't done yet.
-        """
-        if not self._done and not self.cancelled():
-            raise InvalidStateError
-        if e := self.exception():
-            raise e
-        return self._result
-
-    def exception(self) -> BaseException | None:
-        """
-        Return the exception that was set on the future.
-
-        Raises:
-            FutureCancelledError: If the future has been cancelled.
-            InvalidStateError: If the future isn't done yet.
-        """
-        if hasattr(self, "_cancelled"):
-            raise self._make_cancelled_error()
-        if not self._done:
-            raise InvalidStateError
-        return getattr(self, "_exception", None)
-
-    def remove_done_callback(self, fn: Callable[[Self], object], /) -> int:
-        """
-        Remove all instances of a callback from the callbacks list.
-
-        Returns the number of callbacks removed.
-        """
-        n = 0
-        while fn in self._done_callbacks:
-            n += 1
-            self._done_callbacks.remove(fn)
-        return n
-
-    def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
-        """
-        Set a callback to handle cancellation.
-
-        Args:
-            canceller: A callback that performs the cancellation of the future.
-                - It must accept the cancellation message as the first argument.
-                - The cancellation call is not thread-safe.
-
-        Notes:
-            - `set_result` must be called to mark the future as completed.
-
-        Example:
-            ```python
-            fut = Future()
-            fut.cancel()
-            assert not fut.done()
-            fut.set_canceller(lambda msg: fut.set_result(None))
-            assert fut.done()
-            ```
-        """
-        if self._done or hasattr(self, "_canceller"):
-            raise InvalidStateError
-        self._canceller = canceller
-        if self.cancelled():
-            self.cancel()
 
 
 class Caller(anyio.AsyncContextManagerMixin):
@@ -333,7 +66,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         - Integration with AnyIO's async context management and task groups.
         - Mechanisms for stopping, protecting, and pooling Caller instances.
         - Utilities for running functions in separate threads (`to_thread`, `to_thread_advanced`).
-        - Methods for waiting on and iterating over multiple futures as they complete.
+        - Methods for waiting on and iterating over multiple results as they complete.
         - IOpub socket per Caller instance.
 
     Usage:
@@ -341,7 +74,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         - Use `call_soon`, `call_later`, or `schedule_call` to schedule work.
         - Use `queue_call` for per-function task queues.
         - Use `to_thread` to run work in a separate thread.
-        - Use `as_completed` and `wait` to manage multiple Futures.
+        - Use `as_completed` and `wait` to manage multiple Results.
         - Use `async with Caller(create=True) = caller:` start the caller inside a coroutine.
 
     Raises:
@@ -362,15 +95,15 @@ class Caller(anyio.AsyncContextManagerMixin):
     _lock: ClassVar = BinarySemaphore()
 
     _backend: Backend
-    _queue_map: dict[int, Future]
-    _queue: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
+    _queue_map: dict[int, Result]
+    _queue: deque[tuple[contextvars.Context, Result] | Callable[[], Any]]
     _thread: threading.Thread
     _stopped_event: Event
     _stopped = False
     _protected = False
     _running = False
     _name: str
-    _future_var: contextvars.ContextVar[Future | None] = contextvars.ContextVar("_future_var", default=None)
+    _result_var: contextvars.ContextVar[Result | None] = contextvars.ContextVar("_result_var", default=None)
 
     log: logging.LoggerAdapter[Any]
     ""
@@ -464,7 +197,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Raises:
             Exception: Logs and handles exceptions raised during direct callable execution.
-            FutureCancelledError: Sets this exception on pending futures in the queue upon shutdown.
+            ResultCancelledError: Sets this exception on pending results in the queue upon shutdown.
         """
         socket = Context.instance().socket(SocketType.PUB)
         socket.linger = 500
@@ -497,36 +230,36 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._running = False
             for item in self._queue:
                 if isinstance(item, tuple):
-                    item[1].set_exception(FutureCancelledError())
+                    item[1].set_exception(ResultCancelledError())
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
             self._stopped_event.set()
             tg.cancel_scope.cancel()
 
-    async def _caller(self, fut: Future) -> None:
+    async def _caller(self, fut: Result) -> None:
         """
-        Asynchronously executes the function associated with the given Future, handling cancellation, delays, and exceptions.
+        Asynchronously executes the function associated with the given Result, handling cancellation, delays, and exceptions.
 
         Args:
-            fut: The Future object containing metadata about the function to execute, its arguments, and execution state.
+            fut: The Result object containing metadata about the function to execute, its arguments, and execution state.
 
         Workflow:
-            - Sets the current future in a context variable.
-            - If the future is cancelled before starting, sets a FutureCancelledError.
+            - Sets the current result in a context variable.
+            - If the result is cancelled before starting, sets a ResultCancelledError.
             - Otherwise, enters a cancellation scope:
-                - Registers a canceller for the future.
+                - Registers a canceller for the result.
                 - Waits for a specified delay if present in metadata.
                 - Calls the function (sync or async) with provided arguments.
-                - Sets the result or exception on the future as appropriate.
+                - Sets the result or exception on the result as appropriate.
             - Handles cancellation and other exceptions, logging errors as needed.
             - Resets the context variable after execution.
         """
         md = fut.metadata
-        token = self._future_var.set(fut)
+        token = self._result_var.set(fut)
         try:
             if fut.cancelled():
                 if not fut.done():
-                    fut.set_exception(FutureCancelledError("Cancelled before started."))
+                    fut.set_exception(ResultCancelledError("Cancelled before started."))
             else:
                 with anyio.CancelScope() as scope:
                     fut.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
@@ -550,7 +283,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         except Exception as e:
             fut.set_exception(e)
         finally:
-            self._future_var.reset(token)
+            self._result_var.reset(token)
 
     @property
     def name(self) -> str:
@@ -608,7 +341,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         kwargs: dict,
         context: contextvars.Context | None = None,
         **metadata: Any,
-    ) -> Future[T]:
+    ) -> Result[T]:
         """
         Schedule `func` to be called inside a task running in the callers thread (thread-safe).
 
@@ -620,12 +353,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
-            **metadata: Additional metadata to store in the future.
+            **metadata: Additional metadata to store in the result.
         """
         if self._stopped:
             msg = f"{self} is stopped!"
             raise RuntimeError(msg)
-        fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        fut = Result(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), fut))
         self._resume()
         return fut
@@ -637,7 +370,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Future[T]:
+    ) -> Result[T]:
         """
         Schedule func to be called in caller's event loop copying the current context.
 
@@ -648,8 +381,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with func.
 
         Info:
-            All call arguments are packed into the Futures metadata. The future metadata
-            is cleared when futures result is set.
+            All call arguments are packed into the Results metadata. The result metadata
+            is cleared when results result is set.
         """
         return self.schedule_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
 
@@ -659,7 +392,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Future[T]:
+    ) -> Result[T]:
         """
         Schedule func to be called in caller's event loop copying the current context.
 
@@ -696,11 +429,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._queue.append(functools.partial(func, *args, **kwargs))
         self._resume()
 
-    def queue_get(self, func: Callable) -> Future[Never] | None:
-        """Returns future for `func` where the queue is running.
+    def queue_get(self, func: Callable) -> Result[Never] | None:
+        """Returns result for `func` where the queue is running.
 
         Warning:
-            - This future loops forever until the  loop is closed or func no longer exists.
+            - This result loops forever until the  loop is closed or func no longer exists.
             - `queue_close` is the preferred means to shutdown the queue.
         """
         return self._queue_map.get(hash(func))
@@ -733,7 +466,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
             async def queue_loop(key: int, queue: deque) -> None:
-                fut = self.current_future()
+                fut = self.current_result()
                 assert fut
                 try:
                     while True:
@@ -871,7 +604,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 args = [{"backend": backend, "backend_options": backend_options}]
 
             # Create and start the caller
-            fut: Future[Self] = Future()
+            fut: Result[Self] = Result()
             threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=daemon).start()
             return fut.wait_sync()
 
@@ -882,7 +615,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Future[T]:
+    ) -> Result[T]:
         """
         A [classmethod][] to call func in a separate thread.
 
@@ -908,7 +641,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Future[T]:
+    ) -> Result[T]:
         """
         A [classmethod][] to call func in a Caller specified by the options.
 
@@ -921,7 +654,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with func.
 
         Returns:
-            A future that can be awaited for the  result of func.
+            A result that can be awaited for the  result of func.
 
         Raises:
             ValueError: When a name is not supplied.
@@ -953,9 +686,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         return fut
 
     @classmethod
-    def current_future(cls) -> Future[Any] | None:
-        """A [classmethod][] that returns the current future when called from inside a function scheduled by Caller."""
-        return cls._future_var.get()
+    def current_result(cls) -> Result[Any] | None:
+        """A [classmethod][] that returns the current result when called from inside a function scheduled by Caller."""
+        return cls._result_var.get()
 
     @classmethod
     def all_callers(cls, running_only: bool = True) -> list[Caller]:
@@ -970,39 +703,39 @@ class Caller(anyio.AsyncContextManagerMixin):
     @classmethod
     async def as_completed(
         cls,
-        items: Iterable[Future[T]] | AsyncGenerator[Future[T]],
+        items: Iterable[Result[T]] | AsyncGenerator[Result[T]],
         *,
         max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         shield: bool = False,
-    ) -> AsyncGenerator[Future[T], Any]:
+    ) -> AsyncGenerator[Result[T], Any]:
         """
-        A [classmethod][] iterator to get [Futures][async_kernel.caller.Future] as they complete.
+        A [classmethod][] iterator to get result as they complete.
 
         Args:
-            items: Either a container with existing futures or generator of Futures.
-            max_concurrent: The maximum number of concurrent futures to monitor at a time.
+            items: Either a container with existing results or generator of Results.
+            max_concurrent: The maximum number of concurrent results to monitor at a time.
                 This is useful when `items` is a generator utilising [Caller.to_thread][].
                 By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
             shield: Shield existing items from cancellation.
 
         Tip:
-            1. Pass a generator if you wish to limit the number future jobs when calling to_thread/to_task etc.
-            2. Pass a container with all [Futures][async_kernel.caller.Future] when the limiter is not relevant.
+            1. Pass a generator if you wish to limit the number result jobs when calling to_thread/to_task etc.
+            2. Pass a container with all results when the limiter is not relevant.
         """
         resume = noop
-        future_ready = noop
-        done_futures: deque[Future[T]] = deque()
-        futures: set[Future[T]] = set()
+        result_ready = noop
+        done_results: deque[Result[T]] = deque()
+        results: set[Result[T]] = set()
         done = False
-        current_future = cls.current_future()
+        current_result = cls.current_result()
         if isinstance(items, set | list | tuple):
             max_concurrent_ = 0
         else:
             max_concurrent_ = cls.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
 
-        def future_done(fut: Future[T]) -> None:
-            done_futures.append(fut)
-            future_ready()
+        def result_done(fut: Result[T]) -> None:
+            done_results.append(fut)
+            result_ready()
 
         async def iter_items():
             nonlocal done, resume
@@ -1010,14 +743,14 @@ class Caller(anyio.AsyncContextManagerMixin):
             try:
                 while True:
                     fut = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
-                    assert fut is not current_future, "Would result in deadlock"
-                    fut.add_done_callback(future_done)
+                    assert fut is not current_result, "Would result in deadlock"
+                    fut.add_done_callback(result_done)
                     if not fut.done():
-                        futures.add(fut)
-                        if max_concurrent_ and (len(futures) == max_concurrent_):
+                        results.add(fut)
+                        if max_concurrent_ and (len(results) == max_concurrent_):
                             event = create_async_event()
                             resume = event.set
-                            if len(futures) == max_concurrent_:
+                            if len(results) == max_concurrent_:
                                 await event
                             resume = noop
 
@@ -1026,47 +759,47 @@ class Caller(anyio.AsyncContextManagerMixin):
             finally:
                 done = True
                 resume()
-                future_ready()
+                result_ready()
 
         fut_ = cls().call_soon(iter_items)
         try:
-            while not done or futures:
-                if done_futures:
-                    fut = done_futures.popleft()
-                    futures.discard(fut)
-                    # Ensure all Future done callbacks are complete.
+            while not done or results:
+                if done_results:
+                    fut = done_results.popleft()
+                    results.discard(fut)
+                    # Ensure all Result done callbacks are complete.
                     await fut.wait(result=False)
                     yield fut
                 else:
-                    if max_concurrent_ and len(futures) < max_concurrent_:
+                    if max_concurrent_ and len(results) < max_concurrent_:
                         resume()
                     event = create_async_event()
-                    future_ready = event.set
-                    if not done or futures:
+                    result_ready = event.set
+                    if not done or results:
                         await event
-                    future_ready = noop
+                    result_ready = noop
         finally:
             fut_.cancel()
-            for fut in futures:
-                fut.remove_done_callback(future_done)
+            for fut in results:
+                fut.remove_done_callback(result_done)
                 if not shield:
                     fut.cancel("Cancelled by as_completed")
 
     @classmethod
     async def wait(
         cls,
-        items: Iterable[Future[T]],
+        items: Iterable[Result[T]],
         *,
         timeout: float | None = None,
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
-    ) -> tuple[set[T], set[Future[T]]]:
+    ) -> tuple[set[T], set[Result[T]]]:
         """
-        A [classmethod][] to wait for the futures given by items to complete.
+        A [classmethod][] to wait for the results given by items to complete.
 
-        Returns two sets of the futures: (done, pending).
+        Returns two sets of the results: (done, pending).
 
         Args:
-            items: An iterable of futures to wait for.
+            items: An iterable of results to wait for.
             timeout: The maximum time before returning.
             return_when: The same options as available for [asyncio.wait][].
 
@@ -1076,7 +809,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             ```
         Info:
             - This does not raise a TimeoutError!
-            - Futures that aren't done when the timeout occurs are returned in the second set.
+            - Results that aren't done when the timeout occurs are returned in the second set.
         """
         done = set()
         if pending := set(items):

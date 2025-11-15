@@ -13,7 +13,9 @@ from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
-from async_kernel import Caller, Future, utils
+from async_kernel import utils
+from async_kernel.caller import Caller
+from async_kernel.result import Result
 
 if TYPE_CHECKING:
     from anyio.abc import TaskGroup
@@ -110,7 +112,7 @@ class DebugpyClient(HasTraits):
     SEPARATOR = b"\r\n\r\n"
     SEPARATOR_LENGTH = 4
     tcp_buffer = b""
-    _future_responses: Dict[int, Future] = Dict()
+    _result_responses: Dict[int, Result] = Dict()
     capabilities = Dict()
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
     _socketstream: anyio.abc.SocketStream | None = None
@@ -128,11 +130,11 @@ class DebugpyClient(HasTraits):
     def connected(self):
         return bool(self._socketstream)
 
-    async def send_request(self, request: dict) -> Future:
+    async def send_request(self, request: dict) -> Result:
         if not (socketstream := self._socketstream):
             raise RuntimeError
         async with self._send_lock:
-            self._future_responses[request["seq"]] = fut = Future()
+            self._result_responses[request["seq"]] = fut = Result()
             content = self._pack(request)
             content_length = str(len(content)).encode()
             buf = self.HEADER + content_length + self.SEPARATOR
@@ -153,8 +155,8 @@ class DebugpyClient(HasTraits):
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
                     self.event_callback(msg)
-                elif future := self._future_responses.pop(msg["request_seq"], None):
-                    future.set_result(msg)
+                elif result := self._result_responses.pop(msg["request_seq"], None):
+                    result.set_result(msg)
             self.tcp_buffer = b""
 
     async def connect_tcp_socket(self, ready: Event):

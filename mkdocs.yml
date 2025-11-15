@@ -181,6 +181,7 @@ nav:
       - "async_kernel.kernel": reference/kernel.md
       - "async_kernel.kernelspec": reference/kernelspec.md
       - "async_kernel.asyncshell": reference/asyncshell.md
+      - "async_kernel.result": reference/result.md
       - "async_kernel.typing": reference/typing.md
       - "async_kernel.utils": reference/utils.md
 

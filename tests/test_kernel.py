@@ -263,9 +263,9 @@ async def test_execute_request_error_tag_ignore_error(client: AsyncKernelClient)
     [
         "some invalid code",
         """
-        from async_kernel.caller import FutureCancelledError,
+        from async_kernel.caller import ResultCancelledError,
         async def fail():,
-            raise FutureCancelledError,
+            raise ResultCancelledError,
         await fail()""",
     ],
 )
