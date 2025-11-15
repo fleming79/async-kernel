@@ -10,6 +10,7 @@ import pytest
 from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel.utils
+from async_kernel import Caller
 from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import Backend, KernelName, make_argv
 from async_kernel.typing import ExecuteContent, Job, Message, MsgHeader, MsgType, SocketID
@@ -120,3 +121,9 @@ def job() -> Job[ExecuteContent]:
     header = MsgHeader(msg_id="", session="", username="", date="", msg_type=MsgType.execute_request, version="1")
     msg = Message(header=header, parent_header=header, metadata={}, buffers=[], content=content)
     return Job(msg=msg, socket_id=SocketID.shell, ident=[b""], socket=None, received_time=0.0)  # pyright: ignore[ reportArgumentType]
+
+
+@pytest.fixture
+async def caller(anyio_backend: Backend):
+    async with Caller(thread=threading.current_thread()) as caller:
+        yield caller

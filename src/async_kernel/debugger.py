@@ -166,7 +166,6 @@ class DebugpyClient(HasTraits):
             import debugpy  # noqa: PLC0415
 
             _host_port = debugpy.listen(0)
-            utils.mark_thread_pydev_do_not_trace()
         try:
             self.log.debug("++ debugpy socketstream connecting ++")
             async with await anyio.connect_tcp(*_host_port) as socketstream:
@@ -249,7 +248,7 @@ class Debugger(HasTraits):
                         self.stopped_threads.add(thread["id"])
                 self._publish_event(event)
 
-            Caller().call_soon(_handle_stopped_event)
+            Caller.get_instance().call_soon(_handle_stopped_event)
             return
 
         if event["event"] == "continued":
@@ -302,12 +301,13 @@ class Debugger(HasTraits):
 
     async def do_initialize(self, msg: DebugMessage, /):
         "Initialize debugpy server starting as required."
+        utils.mark_thread_pydev_do_not_trace()
         for thread in threading.enumerate():
             if thread.name in self.NO_DEBUG:
                 utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
             ready = Event()
-            Caller().call_soon(self.debugpy_client.connect_tcp_socket, ready)
+            Caller.get_instance().call_soon(self.debugpy_client.connect_tcp_socket, ready)
             await ready
             # Don't remove leading empty lines when debugging so the breakpoints are correctly positioned
             cleanup_transforms = self.kernel.shell.input_transformer_manager.cleanup_transforms

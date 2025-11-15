@@ -1,7 +1,7 @@
 import gc
-import importlib.util
 import inspect
 import re
+import threading
 import weakref
 
 import anyio
@@ -13,16 +13,9 @@ from async_kernel.kernelspec import Backend
 from async_kernel.result import InvalidStateError, Result, ResultCancelledError
 
 
-@pytest.fixture(params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
+@pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
     return request.param
-
-
-@pytest.fixture
-async def caller(anyio_backend: Backend):
-    async with Caller(create=True) as caller:
-        yield caller
-    Caller.stop_all()
 
 
 @pytest.mark.anyio
@@ -36,7 +29,7 @@ class TestResult:
         with pytest.raises(AttributeError):
             f.not_an_att = None  # pyright: ignore[reportAttributeAccessIssue]
 
-    async def test_set_and_wait_result(self):
+    async def test_set_and_wait_result(self, anyio_backend: Backend):
         fut = Result[int]()
         assert inspect.isawaitable(fut)
         done_called = False
@@ -54,11 +47,11 @@ class TestResult:
         result = await fut
         assert result == 42
         assert done_called
-        async with Caller(create=True):
+        async with Caller(thread=threading.current_thread()):
             fut.add_done_callback(callback)
             await after_done
 
-    async def test_set_and_wait_exception(self):
+    async def test_set_and_wait_exception(self, anyio_backend: Backend):
         fut = Result()
         done_called = False
 
@@ -79,33 +72,33 @@ class TestResult:
         assert fut.done()
         assert done_called
 
-    async def test_set_result_twice_raises(self):
+    async def test_set_result_twice_raises(self, anyio_backend: Backend):
         fut = Result()
         fut.set_result(1)
         with pytest.raises(RuntimeError):
             fut.set_result(2)
 
-    async def test_set_canceller_twice_raises(self):
+    async def test_set_canceller_twice_raises(self, anyio_backend: Backend):
         fut = Result()
         with anyio.CancelScope() as cancel_scope:
             fut.set_canceller(cancel_scope.cancel)
             with pytest.raises(InvalidStateError):
                 fut.set_canceller(cancel_scope.cancel)
 
-    async def test_set_canceller_after_cancelled(self):
+    async def test_set_canceller_after_cancelled(self, anyio_backend: Backend):
         fut = Result()
         fut.cancel()
         with anyio.CancelScope() as cancel_scope:
             fut.set_canceller(cancel_scope.cancel)
             assert cancel_scope.cancel_called
 
-    async def test_set_exception_twice_raises(self):
+    async def test_set_exception_twice_raises(self, anyio_backend: Backend):
         fut = Result()
         fut.set_exception(ValueError())
         with pytest.raises(InvalidStateError):
             fut.set_exception(ValueError())
 
-    async def test_set_result_after_exception_raises(self):
+    async def test_set_result_after_exception_raises(self, anyio_backend: Backend):
         fut = Result()
         with pytest.raises(InvalidStateError):
             fut.exception()
@@ -114,7 +107,7 @@ class TestResult:
         with pytest.raises(RuntimeError):
             fut.set_result(1)
 
-    async def test_set_exception_after_result_raises(self):
+    async def test_set_exception_after_result_raises(self, anyio_backend: Backend):
         fut = Result()
         fut.set_result(1)
         with pytest.raises(RuntimeError):
@@ -139,18 +132,18 @@ class TestResult:
         with pytest.raises(TypeError, match="my exception"):
             fut.result()
 
-    async def test_cancel(self):
+    async def test_cancel(self, anyio_backend: Backend):
         fut = Result()
         assert fut.cancel()
         with pytest.raises(ResultCancelledError):
             fut.exception()
 
-    async def test_set_from_non_thread(self, caller: Caller):
+    async def test_set_from_non_thread(self, caller: Caller, anyio_backend: Backend):
         fut = Result()
         caller.to_thread(fut.set_result, value=123)
         assert (await fut) == 123
 
-    async def test_wait_cancelled_shield(self, caller: Caller):
+    async def test_wait_cancelled_shield(self, caller: Caller, anyio_backend: Backend):
         fut = Result()
         with pytest.raises(TimeoutError):
             await fut.wait(timeout=0.001, shield=True)
@@ -174,7 +167,7 @@ class TestResult:
         fut.set_result(None)
         assert re.match(matches[2], repr(fut))
 
-    async def test_gc(self, caller: Caller):
+    async def test_gc(self, caller: Caller, anyio_backend: Backend):
         finalized = Event()
         ok = False
 
@@ -204,11 +197,11 @@ class TestResult:
         assert id_ not in Result._metadata_mappings  # pyright: ignore[reportPrivateUsage]
 
     @pytest.mark.parametrize("result", [True, False])
-    async def test_wait_sync(self, caller: Caller, result: bool):
+    async def test_wait_sync(self, caller: Caller, result: bool, anyio_backend: Backend):
         fut = caller.to_thread(lambda: 1 + 1)
         assert fut.wait_sync(result=result) == (2 if result else None)
 
-    async def test_wait_sync_timeout(self, caller: Caller):
+    async def test_wait_sync_timeout(self, caller: Caller, anyio_backend: Backend):
         fut = caller.call_soon(anyio.sleep_forever)
         with pytest.raises(TimeoutError):
             fut.wait_sync(timeout=0.01)

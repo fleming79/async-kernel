@@ -16,10 +16,12 @@ if TYPE_CHECKING:
     from async_kernel.kernelspec import Backend
 
 __all__ = [
-    "CallerGetInstanceOptions",
+    "CallerCreateOptions",
     "Content",
     "DebugMessage",
     "ExecuteContent",
+    "FixedCreate",
+    "FixedCreated",
     "HandlerType",
     "Job",
     "Message",
@@ -36,6 +38,7 @@ NoValue = Sentinel("NoValue")
 "A sentinel to indicate a value has not been provided."
 
 
+S = TypeVar("S")
 T = TypeVar("T")
 D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
@@ -303,14 +306,27 @@ class ExecuteContent(TypedDict):
     ""
 
 
-class CallerGetInstanceOptions(TypedDict):
-    "Options for [Caller.get_instance][async_kernel.caller.Caller.get_instance]."
+class FixedCreate(TypedDict, Generic[S]):
+    "A TypedDict relevant to Fixed."
+
+    name: str
+    owner: S
+
+
+class FixedCreated(TypedDict, Generic[S, T]):
+    "A TypedDict relevant to Fixed."
+
+    name: str
+    owner: S
+    obj: T
+
+
+class CallerCreateOptions(TypedDict):
+    "Options for creating a new [Caller][async_kernel.caller.Caller]."
 
     name: NotRequired[str | None]
-    """
-    The name to assign to a new thread when creating the new caller.
-    """
-    thread: NotRequired[threading.Thread]
+    """The name to use for the caller."""
+    thread: NotRequired[threading.Thread | None]
     "The thread of the caller."
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use to log exceptions."
@@ -320,8 +336,6 @@ class CallerGetInstanceOptions(TypedDict):
     "Options to use when calling [anyio.run][] inside the new thread."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure."
-    daemon: NotRequired[bool]
-    "Passed to the new [Thread][threading.Thread]."
 
 
 DebugMessage = dict[str, Any]

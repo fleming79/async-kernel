@@ -4,6 +4,7 @@ import builtins
 import json
 import pathlib
 import sys
+import threading
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import anyio
@@ -340,7 +341,9 @@ class KernelMagics(Magics):
         lines = ["\t".join(["Running", "Protected", "\t", "Name"]), "─" * 70]
         for caller in Caller.all_callers(running_only=False):
             symbol = "   ✓" if caller.running else "   ✗"
-            current_thread: Literal["← current thread", ""] = "← current thread" if caller is Caller() else ""
+            current_thread: Literal["← current thread", ""] = (
+                "← current thread" if caller.thread is threading.current_thread() else ""
+            )
             protected = "   🔐" if caller.protected else ""
             lines.append("\t".join([symbol, protected, "", caller.thread.name, current_thread]))
         print(*lines, sep="\n")
