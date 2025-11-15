@@ -1,7 +1,5 @@
 import contextlib
-import gc
 import importlib.util
-import inspect
 import re
 import threading
 import time
@@ -15,8 +13,9 @@ import pytest
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
 
-from async_kernel.caller import Caller, Future, FutureCancelledError, InvalidStateError
+from async_kernel.caller import Caller
 from async_kernel.kernelspec import Backend
+from async_kernel.result import Result, ResultCancelledError
 
 
 @pytest.fixture(params=list(Backend) if importlib.util.find_spec("trio") else [Backend.asyncio])
@@ -29,195 +28,6 @@ async def caller(anyio_backend: Backend):
     async with Caller(create=True) as caller:
         yield caller
         Caller.stop_all()
-
-
-@pytest.mark.anyio
-class TestFuture:
-    def test_weakref(self):
-        f = Future()
-        assert weakref.ref(f)() is f
-
-    def test_is_slots(self):
-        f = Future()
-        with pytest.raises(AttributeError):
-            f.not_an_att = None  # pyright: ignore[reportAttributeAccessIssue]
-
-    async def test_set_and_wait_result(self):
-        fut = Future[int]()
-        assert inspect.isawaitable(fut)
-        done_called = False
-        after_done = Event()
-
-        def callback(obj):
-            nonlocal done_called
-            assert obj is fut
-            if done_called:
-                after_done.set()
-            done_called = True
-
-        fut.add_done_callback(callback)
-        fut.set_result(42)
-        result = await fut
-        assert result == 42
-        assert done_called
-        async with Caller(create=True):
-            fut.add_done_callback(callback)
-            await after_done
-
-    async def test_set_and_wait_exception(self):
-        fut = Future()
-        done_called = False
-
-        def callback(obj):
-            nonlocal done_called
-            assert obj is fut
-            done_called = True
-
-        fut.add_done_callback(callback)
-        assert fut.remove_done_callback(callback) == 1
-        fut.add_done_callback(callback)
-        assert not fut.done()
-        exc = ValueError("fail")
-        fut.set_exception(exc)
-        with pytest.raises(ValueError, match="fail") as e:
-            await fut
-        assert e.value is exc
-        assert fut.done()
-        assert done_called
-
-    async def test_set_result_twice_raises(self):
-        fut = Future()
-        fut.set_result(1)
-        with pytest.raises(RuntimeError):
-            fut.set_result(2)
-
-    async def test_set_canceller_twice_raises(self):
-        fut = Future()
-        with anyio.CancelScope() as cancel_scope:
-            fut.set_canceller(cancel_scope.cancel)
-            with pytest.raises(InvalidStateError):
-                fut.set_canceller(cancel_scope.cancel)
-
-    async def test_set_canceller_after_cancelled(self):
-        fut = Future()
-        fut.cancel()
-        with anyio.CancelScope() as cancel_scope:
-            fut.set_canceller(cancel_scope.cancel)
-            assert cancel_scope.cancel_called
-
-    async def test_set_exception_twice_raises(self):
-        fut = Future()
-        fut.set_exception(ValueError())
-        with pytest.raises(InvalidStateError):
-            fut.set_exception(ValueError())
-
-    async def test_set_result_after_exception_raises(self):
-        fut = Future()
-        with pytest.raises(InvalidStateError):
-            fut.exception()
-        fut.set_exception(ValueError())
-        assert isinstance(fut.exception(), ValueError)
-        with pytest.raises(RuntimeError):
-            fut.set_result(1)
-
-    async def test_set_exception_after_result_raises(self):
-        fut = Future()
-        fut.set_result(1)
-        with pytest.raises(RuntimeError):
-            fut.set_exception(ValueError())
-
-    def test_result(self):
-        fut = Future()
-        with pytest.raises(InvalidStateError):
-            fut.result()
-        fut.set_result(1)
-        assert fut.result() == 1
-
-    def test_result_cancelled(self):
-        fut = Future()
-        assert fut.cancel()
-        with pytest.raises(FutureCancelledError):
-            fut.result()
-
-    def test_result_exception(self):
-        fut = Future()
-        fut.set_exception(TypeError("my exception"))
-        with pytest.raises(TypeError, match="my exception"):
-            fut.result()
-
-    async def test_cancel(self):
-        fut = Future()
-        assert fut.cancel()
-        with pytest.raises(FutureCancelledError):
-            fut.exception()
-
-    async def test_set_from_non_thread(self, caller: Caller):
-        fut = Future()
-        caller.to_thread(fut.set_result, value=123)
-        assert (await fut) == 123
-
-    async def test_wait_cancelled_shield(self, caller: Caller):
-        fut = Future()
-        with pytest.raises(TimeoutError):
-            await fut.wait(timeout=0.001, shield=True)
-        assert not fut.cancelled()
-        with pytest.raises(TimeoutError):
-            await fut.wait(timeout=0.001)
-        assert fut.cancelled()
-
-    def test_repr(self):
-        a = "long string" * 100
-        b = {f"name {i}": "long_string" * 100 for i in range(100)}
-        fut = Future()
-        fut.metadata.update(a=a, b=b)
-        matches = [
-            f"<Future {indicator} at {id(fut)} {{'a': 'long stringl…nglong string', 'b': {{…}}}} >"
-            for indicator in ("🏃", "⛔ 🏃", "⛔ 🏁")
-        ]
-        assert re.match(matches[0], repr(fut))
-        fut.cancel()
-        assert re.match(matches[1], repr(fut))
-        fut.set_result(None)
-        assert re.match(matches[2], repr(fut))
-
-    async def test_gc(self, caller: Caller):
-        finalized = Event()
-        ok = False
-
-        def isolated():
-            class Cls:
-                def func(self):
-                    assert Caller.current_future()
-                    nonlocal ok
-                    ok = True
-
-            t = Cls()
-            weakref.finalize(t, finalized.set)
-            fut = caller.call_soon(t.func)
-            id_ = id(fut)
-            assert hash(fut.metadata["func"]) == hash(t.func)
-            r = weakref.ref(fut)
-            del fut
-            del t
-            return r, id_
-
-        r, id_ = isolated()
-        assert id_ in Future._metadata_mappings  # pyright: ignore[reportPrivateUsage]
-        with anyio.move_on_after(1):
-            await finalized
-        assert r() is None, f"References found {gc.get_referrers(r())}"
-        assert ok
-        assert id_ not in Future._metadata_mappings  # pyright: ignore[reportPrivateUsage]
-
-    @pytest.mark.parametrize("result", [True, False])
-    async def test_wait_sync(self, caller: Caller, result: bool):
-        fut = caller.to_thread(lambda: 1 + 1)
-        assert fut.wait_sync(result=result) == (2 if result else None)
-
-    async def test_wait_sync_timeout(self, caller: Caller):
-        fut = caller.call_soon(anyio.sleep_forever)
-        with pytest.raises(TimeoutError):
-            fut.wait_sync(timeout=0.01)
 
 
 @pytest.mark.anyio
@@ -286,18 +96,18 @@ class TestCaller:
             caller.call_later(0.01, is_called.set)
             await is_called
 
-    async def test_call_returns_future(self, caller: Caller) -> None:
-        fut = Future()
+    async def test_call_returns_result(self, caller: Caller) -> None:
+        fut = Result()
         caller.call_direct(lambda: fut)
         assert await caller.call_soon(lambda: fut) is fut
 
-    async def test_repr_caller_future(self, caller):
+    async def test_repr_caller_result(self, caller):
         async def test_func(a, b, c):
             pass
 
         fut = caller.call_soon(test_func, 1, "ABC", {"a": 10})
         matches = [
-            f"<Future {indicator} at {id(fut)} | <function TestCaller.test_repr.<locals>.test_func at {id(test_func)}> caller=Caller<MainThread 🏃> >"
+            f"<Result {indicator} at {id(fut)} | <function TestCaller.test_repr.<locals>.test_func at {id(test_func)}> caller=Caller<MainThread 🏃> >"
             for indicator in ("🏃", "🏁")
         ]
         assert re.match(matches[0], repr(fut))
@@ -452,7 +262,7 @@ class TestCaller:
 
     async def test_get_instance_current_thread(self, anyio_backend: Backend):
         # Test starting in the async event loop of a non-main-thread
-        fut = Future[Caller]()
+        fut = Result[Caller]()
         done = Event()
 
         def caller_not_already_running():
@@ -559,9 +369,9 @@ class TestCaller:
             async with caller:
                 pass
 
-    async def test_current_future(self, anyio_backend: Backend):
+    async def test_current_result(self, anyio_backend: Backend):
         async with Caller(create=True) as caller:
-            fut = caller.call_soon(Caller.current_future)
+            fut = caller.call_soon(Caller.current_result)
             res = await fut
             assert res is fut
 
@@ -578,16 +388,16 @@ class TestCaller:
         caller = Caller.get_instance(create=True, name=None)
         fut = caller.call_soon(close_tsc)
         ready.wait()
-        never_called_future = caller.call_later(10, str)
+        never_called_result = caller.call_later(10, str)
         proceed.set()
-        with pytest.raises(FutureCancelledError):
+        with pytest.raises(ResultCancelledError):
             await fut
         assert fut.done()
         assert caller.stopped
         with pytest.raises(RuntimeError):
             caller.call_soon(time.sleep, 0)
-        with pytest.raises(FutureCancelledError):
-            await never_called_future
+        with pytest.raises(ResultCancelledError):
+            await never_called_result
 
     @pytest.mark.parametrize("mode", ["async", "direct"])
     @pytest.mark.parametrize("cancel_mode", ["local", "thread"])
@@ -626,7 +436,7 @@ class TestCaller:
 
             caller.to_thread(in_thread)
 
-        with pytest.raises(FutureCancelledError, match=msg):
+        with pytest.raises(ResultCancelledError, match=msg):
             await fut
 
     async def test_cancelled_waiter(self, caller: Caller):
@@ -638,7 +448,7 @@ class TestCaller:
         fut = caller.call_soon(async_func)
         with anyio.move_on_after(0.1):
             await fut
-        with pytest.raises(FutureCancelledError):
+        with pytest.raises(ResultCancelledError):
             fut.exception()
 
     async def test_cancelled_while_waiting(self, caller: Caller):
@@ -676,7 +486,7 @@ class TestCaller:
                 assert {*items} == done
                 assert not pending
 
-    async def test_cancelled_future(self, caller: Caller):
+    async def test_cancelled_result(self, caller: Caller):
         fut = caller.call_soon(anyio.sleep_forever)
         await anyio.sleep(0.1)
         a = Event()
@@ -702,7 +512,7 @@ class TestCaller:
         fut = Caller.to_thread(time.sleep, 0)
         await fut
         async with Caller(create=True):
-            # check can handle completed future okay first
+            # check can handle completed result okay first
             async for fut_ in Caller.as_completed([fut]):
                 assert fut_.done()
             # work directly with iterator
@@ -749,5 +559,5 @@ class TestCaller:
             if not item.cancelled():
                 assert item.result() is ready
             else:
-                with pytest.raises(FutureCancelledError):
+                with pytest.raises(ResultCancelledError):
                     await item
