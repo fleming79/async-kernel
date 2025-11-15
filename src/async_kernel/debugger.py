@@ -248,7 +248,7 @@ class Debugger(HasTraits):
                         self.stopped_threads.add(thread["id"])
                 self._publish_event(event)
 
-            Caller.get_instance().call_soon(_handle_stopped_event)
+            Caller.get().call_soon(_handle_stopped_event)
             return
 
         if event["event"] == "continued":
@@ -307,7 +307,7 @@ class Debugger(HasTraits):
                 utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
             ready = Event()
-            Caller.get_instance().call_soon(self.debugpy_client.connect_tcp_socket, ready)
+            Caller.get().call_soon(self.debugpy_client.connect_tcp_socket, ready)
             await ready
             # Don't remove leading empty lines when debugging so the breakpoints are correctly positioned
             cleanup_transforms = self.kernel.shell.input_transformer_manager.cleanup_transforms

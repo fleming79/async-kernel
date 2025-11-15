@@ -71,7 +71,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         - IOpub socket per Caller instance.
 
     Usage:
-        - Use `Caller.get_instance()` to get or create a Caller for the 'MainThread' or a named thread.
+        - Use `Caller.get()` to get or create a Caller for the 'MainThread' or a named thread.
         - Use `call_soon`, `call_later`, or `schedule_call` to schedule work.
         - Use `queue_call` for per-function task queues.
         - Use `to_thread` to run work in a separate thread.
@@ -155,7 +155,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Create the `Caller` instance.
 
-        Normal usage is to use `Caller.get_instance()` to get a running caller for the current thread
+        Normal usage is to use `Caller.get()` to get a running caller for the current thread
         that has a running backend.
 
         Returns:
@@ -166,7 +166,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Notes:
             - There is only one caller instance per thread.
-            - [Caller.get_instance][] is the recommended way to get a running caller.
+            - [Caller.get][] is the recommended way to get a running caller.
             - A caller reatains its own pool of workers.
             - When a caller is shutdown the workers are shutdown.
             - `Caller` instances started using [Caller.to_thread][] and [Caller.to_thread_advanced][]
@@ -184,22 +184,22 @@ class Caller(anyio.AsyncContextManagerMixin):
             === "From a thread with a backend eventloop"
 
                 ```python
-                caller = Caller.get_instance()
+                caller = Caller.get()
                 ```
 
             === "Start a new thread"
 
             ```python
-                my_caller = Caller.get_instance(name="My new caller thread")
+                my_caller = Caller.get(name="My new caller thread")
             ```
         """
 
         if not (thread := kwargs.get("thread")):
-            msg = "Thread is required! Use `Caller.get_instance()` instead."
+            msg = "Thread is required! Use `Caller.get()` instead."
             raise RuntimeError(msg) from None
         with cls._lock:
             if thread in cls._instances:
-                msg = f"A caller already exist for {thread=}. You can use the classmethod `Caller.get_instance()` to access it."
+                msg = f"A caller already exist for {thread=}. You can use the classmethod `Caller.get()` to access it."
                 raise RuntimeError(msg)
             inst = super().__new__(cls)
             inst._backend = Backend(kwargs.get("backend") or current_async_library())
@@ -213,7 +213,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return inst
 
     @classmethod
-    def get_instance(cls, *, create: bool = True, daemon=True, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
+    def get(cls, *, create: bool = True, daemon=True, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
         """
         Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
 
@@ -242,7 +242,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 raise ValueError(msg)
         if thread and thread is not threading.current_thread():
             if thread is threading.main_thread():
-                # return utils.call_in_main_thread(cls.get_instance, thread=threading.main_thread())
+                # return utils.call_in_main_thread(cls.get, thread=threading.main_thread())
                 # TODO:
                 raise NotImplementedError
             msg = "Cannot create a caller from a different thread!"
@@ -485,7 +485,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         A Caller will be created if it isn't found.
 
         Args:
-            options: Options to pass to [Caller.get_instance][].
+            options: Options to pass to [Caller.get][].
             func: The function.
             *args: Arguments to use with func.
             **kwargs: Keyword arguments to use with func.
@@ -503,12 +503,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             try:
                 caller = self._worker_pool.popleft()
             except IndexError:
-                caller = self.get_instance(name=None, backend=self.backend, backend_options=self.backend_options)
+                caller = self.get(name=None, backend=self.backend, backend_options=self.backend_options)
         else:
             if not options.get("name"):
                 msg = "A name was not provided in {options=}."
                 raise ValueError(msg)
-            caller = self.get_instance(**options)
+            caller = self.get(**options)
         self.children.add(caller)
 
         pen = caller.call_soon(func, *args, **kwargs)

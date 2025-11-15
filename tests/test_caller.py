@@ -27,11 +27,11 @@ class TestCaller:
 
     def test_no_thread(self):
         with pytest.raises(RuntimeError):
-            Caller.get_instance()
+            Caller.get()
 
     def test_get_instance_checks(self, caller: Caller):
         with pytest.raises(ValueError, match="One of 'thread' or 'name' must be specified and not both!"):
-            Caller.get_instance(name="testing", thread="thread")  # pyright: ignore[reportArgumentType]
+            Caller.get(name="testing", thread="thread")  # pyright: ignore[reportArgumentType]
 
     async def test_worker_lifecycle(self, anyio_backend: Backend):
         async with Caller(thread=threading.current_thread()) as caller:
@@ -42,9 +42,9 @@ class TestCaller:
         assert len(caller.children) == 0
 
     async def test_already_exists(self, caller: Caller):
-        assert Caller.get_instance(thread=caller.thread) is caller
-        assert Caller.get_instance(thread=threading.current_thread()) is caller
-        assert Caller.get_instance(name=caller.name) is caller
+        assert Caller.get(thread=caller.thread) is caller
+        assert Caller.get(thread=threading.current_thread()) is caller
+        assert Caller.get(name=caller.name) is caller
 
     @pytest.mark.parametrize("mode", ["name", "thread"])
     async def test_start_after(self, anyio_backend: Backend, mode: Literal["name", "thread"]):
@@ -52,9 +52,9 @@ class TestCaller:
         assert not caller.running
         pen = caller.call_soon(lambda: 2 + 3)
         if mode == "name":
-            caller.get_instance(name=caller.name)
+            assert Caller.get(name=caller.name) is caller
         else:
-            caller.get_instance(thread=caller.thread)
+            assert Caller.get(thread=caller.thread) is caller
         assert await pen == 5
         assert caller.running
 
@@ -63,14 +63,14 @@ class TestCaller:
         thread = threading.Thread(target=done.wait, daemon=True)
         thread.start()
         with pytest.raises(RuntimeError, match="Cannot create a caller from a different thread!"):
-            Caller.get_instance(thread=thread)
+            Caller.get(thread=thread)
         done.set()
 
     async def test_get_instance_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():
             thread = threading.current_thread()
             assert thread is not threading.main_thread()
-            caller = Caller.get_instance()
+            caller = Caller.get()
             assert caller.thread is thread
             assert (await caller.call_soon(lambda: 1 + 1)) == 2
 
@@ -201,7 +201,7 @@ class TestCaller:
         the_thread.start()
         ready.wait()
         assert isinstance(finished_event, Event)
-        caller = Caller.get_instance(name=the_thread.name)
+        caller = Caller.get(name=the_thread.name)
         if check_result == "result":
             expr = "10"
             context = contextlib.nullcontext()
@@ -241,11 +241,11 @@ class TestCaller:
 
     async def test_get_instance_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
-            Caller.get_instance(name=None, create=False)
+            Caller.get(name=None, create=False)
 
     async def test_get_instance_start_main_thread(self, anyio_backend: Backend):
         # Check a caller can be started in the main thread synchronously.
-        caller = Caller.get_instance()
+        caller = Caller.get()
         assert await caller.call_soon(lambda: 1 + 1) == 2
 
     async def test_get_instance_current_thread(self, anyio_backend: Backend):
@@ -255,7 +255,7 @@ class TestCaller:
 
         def caller_not_already_running():
             async def async_loop_before_caller_started():
-                caller = Caller.get_instance(thread=threading.current_thread())
+                caller = Caller.get(thread=threading.current_thread())
                 pen.set_result(caller)
                 await done
 
@@ -347,7 +347,7 @@ class TestCaller:
 
     async def test_prevent_multi_entry(self, anyio_backend: Backend):
         async with Caller(thread=threading.current_thread()) as caller:
-            assert caller is Caller.get_instance()
+            assert caller is Caller.get()
             with pytest.raises(RuntimeError):
                 async with caller:
                     pass

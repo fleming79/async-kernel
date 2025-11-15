@@ -507,7 +507,7 @@ class Kernel(HasTraits):
             async with Caller(thread=threading.current_thread(), log=self.log, protected=True) as caller:
                 # Callers
                 self.callers[SocketID.shell] = caller
-                self.callers[SocketID.control] = Caller.get_instance(name="ControlThread", protected=True)
+                self.callers[SocketID.control] = Caller.get(name="ControlThread", protected=True)
                 caller.children.add(self.callers[SocketID.control])
 
                 await self._start_threads_and_open_sockets()
@@ -991,7 +991,7 @@ class Kernel(HasTraits):
                 parent=job["msg"],
                 ident=self.topic("execute_input"),
             )
-        caller = Caller.get_instance()
+        caller = Caller.get()
         err = None
         with anyio.CancelScope() as scope:
 
