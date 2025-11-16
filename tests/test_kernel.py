@@ -87,10 +87,6 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
         ctx.term()
 
 
-async def test_caller_get_instance(kernel: Kernel):
-    assert Caller.get_instance() is kernel.callers[SocketID.shell]
-
-
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
     with pytest.raises(RuntimeError):
         kernel.load_connection_info({})
@@ -263,9 +259,9 @@ async def test_execute_request_error_tag_ignore_error(client: AsyncKernelClient)
     [
         "some invalid code",
         """
-        from async_kernel.caller import FutureCancelledError,
+        from async_kernel.caller import PendingCancelled,
         async def fail():,
-            raise FutureCancelledError,
+            raise PendingCancelled,
         await fail()""",
     ],
 )
@@ -390,7 +386,7 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
     code = f"""
     import time
     from async_kernel import Caller
-    await Caller().call_soon(time.sleep, {utils.TIMEOUT * 2})
+    await Caller.get().call_soon(time.sleep, {utils.TIMEOUT * 2})
     """
     client = subprocess_kernels_client
     msg_id = client.execute(code)
@@ -522,14 +518,13 @@ print("{mode.name}")
     assert reply["status"] == "ok"
     stdout, _ = await utils.assemble_output(client)
     assert mode.name in stdout
-    Caller.stop_all()
 
 
 @pytest.mark.parametrize(
     "code",
     [
-        "from async_kernel import Caller; Caller().call_later(str, 0, 123)",
-        "from async_kernel import Caller; Caller().call_soon(print, 'hello')",
+        "from async_kernel import Caller; Caller.get().call_later(str, 0, 123)",
+        "from async_kernel import Caller; Caller.get().call_soon(print, 'hello')",
     ],
 )
 async def test_namespace_default(client: AsyncKernelClient, code: str):

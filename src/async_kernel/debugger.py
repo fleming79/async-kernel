@@ -13,7 +13,9 @@ from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
-from async_kernel import Caller, Future, utils
+from async_kernel import utils
+from async_kernel.caller import Caller
+from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
     from anyio.abc import TaskGroup
@@ -110,7 +112,7 @@ class DebugpyClient(HasTraits):
     SEPARATOR = b"\r\n\r\n"
     SEPARATOR_LENGTH = 4
     tcp_buffer = b""
-    _future_responses: Dict[int, Future] = Dict()
+    _result_responses: Dict[int, Pending] = Dict()
     capabilities = Dict()
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
     _socketstream: anyio.abc.SocketStream | None = None
@@ -128,18 +130,18 @@ class DebugpyClient(HasTraits):
     def connected(self):
         return bool(self._socketstream)
 
-    async def send_request(self, request: dict) -> Future:
+    async def send_request(self, request: dict) -> Pending:
         if not (socketstream := self._socketstream):
             raise RuntimeError
         async with self._send_lock:
-            self._future_responses[request["seq"]] = fut = Future()
+            self._result_responses[request["seq"]] = pen = Pending()
             content = self._pack(request)
             content_length = str(len(content)).encode()
             buf = self.HEADER + content_length + self.SEPARATOR
             buf += content
             self.log.debug("DEBUGPYCLIENT: request %s", buf)
             await socketstream.send(buf)
-            return fut
+            return pen
 
     def put_tcp_frame(self, frame: bytes):
         """Buffer the frame and process the buffer."""
@@ -153,8 +155,8 @@ class DebugpyClient(HasTraits):
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
                     self.event_callback(msg)
-                elif future := self._future_responses.pop(msg["request_seq"], None):
-                    future.set_result(msg)
+                elif result := self._result_responses.pop(msg["request_seq"], None):
+                    result.set_result(msg)
             self.tcp_buffer = b""
 
     async def connect_tcp_socket(self, ready: Event):
@@ -164,7 +166,6 @@ class DebugpyClient(HasTraits):
             import debugpy  # noqa: PLC0415
 
             _host_port = debugpy.listen(0)
-            utils.mark_thread_pydev_do_not_trace()
         try:
             self.log.debug("++ debugpy socketstream connecting ++")
             async with await anyio.connect_tcp(*_host_port) as socketstream:
@@ -247,7 +248,7 @@ class Debugger(HasTraits):
                         self.stopped_threads.add(thread["id"])
                 self._publish_event(event)
 
-            Caller().call_soon(_handle_stopped_event)
+            Caller.get().call_soon(_handle_stopped_event)
             return
 
         if event["event"] == "continued":
@@ -300,12 +301,13 @@ class Debugger(HasTraits):
 
     async def do_initialize(self, msg: DebugMessage, /):
         "Initialize debugpy server starting as required."
+        utils.mark_thread_pydev_do_not_trace()
         for thread in threading.enumerate():
             if thread.name in self.NO_DEBUG:
                 utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
             ready = Event()
-            Caller().call_soon(self.debugpy_client.connect_tcp_socket, ready)
+            Caller.get().call_soon(self.debugpy_client.connect_tcp_socket, ready)
             await ready
             # Don't remove leading empty lines when debugging so the breakpoints are correctly positioned
             cleanup_transforms = self.kernel.shell.input_transformer_manager.cleanup_transforms

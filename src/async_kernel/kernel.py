@@ -503,9 +503,11 @@ class Kernel(HasTraits):
             raise RuntimeError(msg)
         assert self.shell
         self.anyio_backend = Backend(current_async_library())
+        self.callers[SocketID.shell] = caller = Caller(thread=threading.current_thread(), log=self.log, protected=True)
+        self.callers[SocketID.control] = caller.get(name="ControlThread", protected=True)
         try:
-            async with Caller(log=self.log, create=True, protected=True) as caller:
-                self.callers[SocketID.shell] = caller
+            async with caller:
+                # Callers
                 await self._start_threads_and_open_sockets()
                 assert len(self._sockets) == len(SocketID)
                 self._write_connection_file()
@@ -527,7 +529,6 @@ class Kernel(HasTraits):
         finally:
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
-            Caller.stop_all(_stop_protected=True)
             Context.instance().term()
             print(f"Kernel stopped: {self!r}")
 
@@ -586,12 +587,10 @@ class Kernel(HasTraits):
 
         async def run_in_shell_event_loop(ready=shell_ready.set):
             stdin_socket = Context.instance().socket(SocketType.ROUTER)
-            with self._bind_socket(SocketID.stdin, stdin_socket), contextlib.suppress(anyio.get_cancelled_exc_class()):
+            with self._bind_socket(SocketID.stdin, stdin_socket):
                 thread = threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, ready), daemon=True)
                 thread.start()
                 await anyio.sleep_forever()
-
-        self.callers[SocketID.control] = Caller.get_instance(create=True, name="ControlThread", protected=True)
 
         threading.Thread(target=heartbeat, name="heartbeat", daemon=True).start()
         heartbeat_ready.wait()
@@ -729,7 +728,8 @@ class Kernel(HasTraits):
             - Handles and logs exceptions during message processing.
             - Breaks the loop on `zmq.ContextTerminated`.
         """
-        utils.mark_thread_pydev_do_not_trace()
+        if not utils.LAUNCHED_BY_DEBUGPY:
+            utils.mark_thread_pydev_do_not_trace()
         msg: Message
         ident: list[bytes]
         caller = self.callers[socket_id]
@@ -778,7 +778,7 @@ class Kernel(HasTraits):
             case RunMode.task:
                 caller.call_soon(handler, job)
             case RunMode.thread:
-                Caller.to_thread(handler, job)
+                caller.to_thread(handler, job)
 
     def get_run_mode(
         self,
@@ -989,7 +989,7 @@ class Kernel(HasTraits):
                 parent=job["msg"],
                 ident=self.topic("execute_input"),
             )
-        caller = Caller()
+        caller = Caller.get()
         err = None
         with anyio.CancelScope() as scope:
 

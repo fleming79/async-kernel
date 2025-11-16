@@ -16,10 +16,12 @@ if TYPE_CHECKING:
     from async_kernel.kernelspec import Backend
 
 __all__ = [
-    "CallerGetInstanceOptions",
+    "CallerCreateOptions",
     "Content",
     "DebugMessage",
     "ExecuteContent",
+    "FixedCreate",
+    "FixedCreated",
     "HandlerType",
     "Job",
     "Message",
@@ -36,6 +38,7 @@ NoValue = Sentinel("NoValue")
 "A sentinel to indicate a value has not been provided."
 
 
+S = TypeVar("S")
 T = TypeVar("T")
 D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
@@ -303,25 +306,43 @@ class ExecuteContent(TypedDict):
     ""
 
 
-class CallerGetInstanceOptions(TypedDict):
-    "Options for [Caller.get_instance][async_kernel.caller.Caller.get_instance]."
+class FixedCreate(TypedDict, Generic[S]):
+    "A TypedDict relevant to Fixed."
+
+    name: str
+    owner: S
+
+
+class FixedCreated(TypedDict, Generic[S, T]):
+    "A TypedDict relevant to Fixed."
+
+    name: str
+    owner: S
+    obj: T
+
+
+class CallerCreateOptions(TypedDict):
+    "Options for creating a new [Caller][async_kernel.caller.Caller]."
 
     name: NotRequired[str | None]
-    """
-    The name to assign to a new thread when creating the new caller.
-    """
-    thread: NotRequired[threading.Thread]
-    "The thread of the caller."
+    """The name to use for the caller."""
+    thread: NotRequired[threading.Thread | None]
+    "The thread of the caller. (current thread)"
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use to log exceptions."
-    backend: NotRequired[Backend]
-    "The anyio backend to use."
+    backend: NotRequired[Backend | Literal["trio", "asyncio"]]
+    "The anyio backend to use (1. Inherited. 2. current_async_library 3. From  [async_kernel.kernel.Kernel.anyio_backend][])."
     backend_options: NotRequired[dict | None]
-    "Options to use when calling [anyio.run][] inside the new thread."
+    "Options to use when calling [anyio.run][] inside the new thread (1. Inherited. 2. From [async_kernel.kernel.Kernel.anyio_backend_options][])."
     protected: NotRequired[bool]
-    "The caller should be protected against accidental closure."
+    "The caller should be protected against accidental closure (False)."
+
+
+class CallerGetOptions(TypedDict):
+    create: NotRequired[bool]
+    "Use this when searching for an existing instance (True)."
     daemon: NotRequired[bool]
-    "Passed to the new [Thread][threading.Thread]."
+    "Passed to [threading.Thread][] if a new thread is started (True)."
 
 
 DebugMessage = dict[str, Any]

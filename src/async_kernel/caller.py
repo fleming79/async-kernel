@@ -10,23 +10,31 @@ import threading
 import time
 import weakref
 from collections import deque
-from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack
 
 import anyio
 import anyio.from_thread
-from aiologic import BinarySemaphore, Event
+from aiologic import Event, RLock
 from aiologic.lowlevel import create_async_event, current_async_library
 from anyio.lowlevel import current_token
 from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
 import async_kernel
+from async_kernel.common import Fixed
 from async_kernel.kernelspec import Backend
-from async_kernel.typing import CallerGetInstanceOptions, NoValue, SocketID, T
+from async_kernel.pending import Pending, PendingCancelled
+from async_kernel.typing import CallerCreateOptions, CallerGetOptions, NoValue, T
 from async_kernel.utils import mark_thread_pydev_do_not_trace
+
+with contextlib.suppress(ImportError):
+    # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
+    import sniffio
+
+    sniffio.current_async_library = current_async_library
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -36,7 +44,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller", "Future", "FutureCancelledError", "InvalidStateError"]
+__all__ = ["Caller"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -46,274 +54,6 @@ truncated_rep.fillvalue = "…"
 
 def noop():
     pass
-
-
-class FutureCancelledError(anyio.ClosedResourceError):
-    "Used to indicate a [Future][async_kernel.caller.Future] is cancelled."
-
-
-class InvalidStateError(RuntimeError):
-    "An invalid state of a [Future][async_kernel.caller.Future]."
-
-
-class Future(Awaitable[T]):
-    """
-    A future represents a computation that may complete asynchronously, providing a result or exception in the future.
-
-    This class implements the Awaitable protocol, allowing it to be awaited in async code in thread or event loop.
-    It supports cancellation, result retrieval, exception handling, and attaching callbacks to be invoked upon completion.
-
-    Notes:
-        - The future is not considered done until set_result or set_exception is called.
-        - If cancelled, the result is replaced with a FutureCancelledError.
-        - A callback can be set to handle cancellation with `set_canceller`.
-        - Its result can also be synchronously waited (blocking) using `wait_sync`.
-    """
-
-    __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
-
-    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
-    "Keys of metadata to omit when creating a repr of the future."
-
-    _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
-    "A mapping of future's id its metadata."
-
-    _cancelled: str
-    _canceller: Callable[[str | None], Any]
-    _exception: Exception
-    _done: bool
-    _result: T
-
-    def __init__(self, **metadata) -> None:
-        self._done_callbacks: deque[Callable[[Self], Any]] = deque()
-        self._metadata_mappings[id(self)] = metadata
-        self._done = False
-
-    def __del__(self):
-        self._metadata_mappings.pop(id(self), None)
-
-    @override
-    def __repr__(self) -> str:
-        rep = "<Future" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self._done else " 🏃")
-        rep = f"{rep} at {id(self)}"
-        with contextlib.suppress(Exception):
-            md = self.metadata
-            if "func" in md:
-                items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
-                rep += f" | {md['func']} {' | '.join(items) if items else ''}"
-            else:
-                rep += f" {truncated_rep.repr(md)}" if md else ""
-        return rep + " >"
-
-    @override
-    def __await__(self) -> Generator[Any, None, T]:
-        return self.wait().__await__()
-
-    def _set_done(self, mode: Literal["result", "exception"], value) -> None:
-        if self._done:
-            raise InvalidStateError
-        self._done = True
-        setattr(self, "_" + mode, value)
-        while self._done_callbacks:
-            cb = self._done_callbacks.pop()
-            try:
-                cb(self)
-            except Exception:
-                pass
-
-    def _make_cancelled_error(self) -> FutureCancelledError:
-        return FutureCancelledError(self._cancelled)
-
-    @property
-    def metadata(self) -> dict[str, Any]:
-        """
-        The metadata passed as keyword arguments to the future during creation.
-        """
-        return self._metadata_mappings[id(self)]
-
-    if TYPE_CHECKING:
-
-        @overload
-        async def wait(
-            self, *, timeout: float | None = ..., shield: bool = False | ..., result: Literal[True] = True
-        ) -> T: ...
-
-        @overload
-        async def wait(self, *, timeout: float | None = ..., shield: bool = ..., result: Literal[False]) -> None: ...
-
-    async def wait(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
-        """
-        Wait for future to be done (thread-safe) returning the result if specified.
-
-        Args:
-            timeout: Timeout in seconds.
-            shield: Shield the future from cancellation.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Future.result][]).
-        """
-        try:
-            if not self._done or self._done_callbacks:
-                event = create_async_event()
-                self._done_callbacks.appendleft(lambda _: event.set())
-                with anyio.fail_after(timeout):
-                    if not self._done or self._done_callbacks:
-                        await event
-            return self.result() if result else None
-        finally:
-            if not self._done and not shield:
-                self.cancel("Cancelled with waiter cancellation.")
-
-    if TYPE_CHECKING:
-
-        @overload
-        def wait_sync(self, *, timeout: float | None = ..., result: Literal[True] = True) -> T: ...
-
-        @overload
-        def wait_sync(self, *, timeout: float | None = ..., result: Literal[False]) -> None: ...
-
-    def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
-        """
-        Wait for the result to be done synchronously (thread-safe) blocking the current thread.
-
-        Args:
-            timeout: Timeout in seconds.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Future.result][]).
-
-        Raises:
-            TimeoutError: When the timeout expires and a result has not been set.
-
-        Warning:
-            **Blocking the thread in which the result is set will result in deadlock.**
-        """
-        if not self._done:
-            done = Event()
-            self.add_done_callback(lambda _: done.set())
-            if not self._done:
-                done.wait(timeout)
-            if not self._done:
-                msg = f"Timeout waiting for {self}"
-                raise TimeoutError(msg)
-
-        return self.result() if result else None
-
-    def set_result(self, value: T) -> None:
-        "Set the result (thread-safe)."
-        self._set_done("result", value)
-
-    def set_exception(self, exception: BaseException) -> None:
-        "Set the exception (thread-safe)."
-        self._set_done("exception", exception)
-
-    def done(self) -> bool:
-        """
-        Returns True if the future has a result.
-
-        Done means either that a result / exception is available or that cancellation is complete.
-        """
-        return self._done
-
-    def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
-        """
-        Add a callback for when the future is done (not thread-safe).
-
-        If the future is already done it will called immediately.
-        """
-        if not self._done:
-            self._done_callbacks.append(fn)
-        else:
-            fn(self)
-
-    def cancel(self, msg: str | None = None) -> bool:
-        """
-        Cancel the Future.
-
-        Args:
-            msg: The message to use when cancelling.
-
-        Notes:
-            - Cancellation cannot be undone.
-            - The future will not be *done* until either [Future.set_result][] or [Future.set_exception][] is called.
-
-        Returns: If it has been cancelled.
-        """
-        if not self._done:
-            cancelled = getattr(self, "_cancelled", "")
-            if msg and isinstance(cancelled, str):
-                msg = f"{cancelled}\n{msg}"
-            self._cancelled = msg or cancelled
-            if canceller := getattr(self, "_canceller", None):
-                canceller(msg)
-        return self.cancelled()
-
-    def cancelled(self) -> bool:
-        """Return True if the future is cancelled."""
-        return isinstance(getattr(self, "_cancelled", None), str)
-
-    def result(self) -> T:
-        """
-        Return the result of the future.
-
-        Raises:
-            FutureCancelledError: If the future has been cancelled.
-            InvalidStateError: If the future isn't done yet.
-        """
-        if not self._done and not self.cancelled():
-            raise InvalidStateError
-        if e := self.exception():
-            raise e
-        return self._result
-
-    def exception(self) -> BaseException | None:
-        """
-        Return the exception that was set on the future.
-
-        Raises:
-            FutureCancelledError: If the future has been cancelled.
-            InvalidStateError: If the future isn't done yet.
-        """
-        if hasattr(self, "_cancelled"):
-            raise self._make_cancelled_error()
-        if not self._done:
-            raise InvalidStateError
-        return getattr(self, "_exception", None)
-
-    def remove_done_callback(self, fn: Callable[[Self], object], /) -> int:
-        """
-        Remove all instances of a callback from the callbacks list.
-
-        Returns the number of callbacks removed.
-        """
-        n = 0
-        while fn in self._done_callbacks:
-            n += 1
-            self._done_callbacks.remove(fn)
-        return n
-
-    def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
-        """
-        Set a callback to handle cancellation.
-
-        Args:
-            canceller: A callback that performs the cancellation of the future.
-                - It must accept the cancellation message as the first argument.
-                - The cancellation call is not thread-safe.
-
-        Notes:
-            - `set_result` must be called to mark the future as completed.
-
-        Example:
-            ```python
-            fut = Future()
-            fut.cancel()
-            assert not fut.done()
-            fut.set_canceller(lambda msg: fut.set_result(None))
-            assert fut.done()
-            ```
-        """
-        if self._done or hasattr(self, "_canceller"):
-            raise InvalidStateError
-        self._canceller = canceller
-        if self.cancelled():
-            self.cancel()
 
 
 class Caller(anyio.AsyncContextManagerMixin):
@@ -333,16 +73,18 @@ class Caller(anyio.AsyncContextManagerMixin):
         - Integration with AnyIO's async context management and task groups.
         - Mechanisms for stopping, protecting, and pooling Caller instances.
         - Utilities for running functions in separate threads (`to_thread`, `to_thread_advanced`).
-        - Methods for waiting on and iterating over multiple futures as they complete.
+        - Methods for waiting on and iterating over multiple pending instances as they complete.
         - IOpub socket per Caller instance.
+        - Threads
 
     Usage:
-        - Use `Caller.get_instance()` to get or create a Caller for the 'MainThread' or a named thread.
+        - Use `Caller.get()` to get or create a Caller instances.
+        - Use `caller.get()` (same method from a caller instance) for inherited stopping.
         - Use `call_soon`, `call_later`, or `schedule_call` to schedule work.
         - Use `queue_call` for per-function task queues.
         - Use `to_thread` to run work in a separate thread.
-        - Use `as_completed` and `wait` to manage multiple Futures.
-        - Use `async with Caller(create=True) = caller:` start the caller inside a coroutine.
+        - Use `as_completed` and `wait` to manage multiple Pendings.
+        - Use `async with Caller(thread=threading.current_thread()) = caller:` to use Caller as a context manager (useful to provide pytest fixtures for example).
 
     Raises:
         RuntimeError: For invalid operations such as duplicate Caller creation or missing instances.
@@ -351,26 +93,34 @@ class Caller(anyio.AsyncContextManagerMixin):
     Notes:
         - It is safe to use the underlying libraries taskgroups
         - [aiologic](https://aiologic.readthedocs.io/latest/) provides thread-safe synchronisation primiates for working across threads.
-        - Once a caller is stopped it cannot be restarted.
+        - Once a caller is stopped it cannot be restarted, instead a new caller should be started.
     """
 
     MAX_IDLE_POOL_INSTANCES = 10
     "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.Caller.to_thread])."
 
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
-    _to_thread_pool: ClassVar[deque[Caller]] = deque()
-    _lock: ClassVar = BinarySemaphore()
+    _rlock: ClassVar = RLock()
 
-    _backend: Backend
-    _queue_map: dict[int, Future]
-    _queue: deque[tuple[contextvars.Context, Future] | Callable[[], Any]]
+    _name: str
     _thread: threading.Thread
-    _stopped_event: Event
-    _stopped = False
+    _backend: Backend
+    _backend_options: dict[str, Any] | None
     _protected = False
     _running = False
-    _name: str
-    _future_var: contextvars.ContextVar[Future | None] = contextvars.ContextVar("_future_var", default=None)
+    _continue = True
+
+    _parent_ref: weakref.ref[Caller] | None = None
+
+    # Fixed
+    _children: Fixed[Self, set[Caller]] = Fixed(set)
+    _worker_pool: Fixed[Self, deque[Caller]] = Fixed(deque)
+    _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
+    _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | Callable[[], Any]]] = Fixed(deque)
+    stopped = Fixed(Event)
+    "A thread-safe Event for when the caller is stopped."
+
+    _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.LoggerAdapter[Any]
     ""
@@ -378,179 +128,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     ""
     iopub_url: ClassVar = "inproc://iopub"
     ""
-
-    def __new__(
-        cls,
-        *,
-        thread: threading.Thread | None = None,
-        log: logging.LoggerAdapter | None = None,
-        create: bool = False,
-        protected: bool = False,
-    ) -> Self:
-        """
-        Create or retrieve the `Caller` instance for the specified thread.
-
-        Args:
-            thread: The thread where the caller is based. There is only one instance per thread.
-            log: Logger to use for logging messages.
-            create: Whether to create a new instance if one does not exist for the current thread.
-            protected: Whether the caller is protected from having its event loop closed.
-
-        Returns:
-            Caller: The `Caller` instance for the current thread.
-
-        Raises:
-            RuntimeError: If `create` is `False` and a `Caller` instance does not exist.
-
-        Warning:
-            Only use `create` when the intending to enter with an async context to run it.
-
-            For example:
-                ```python
-                async with Caller(create=True):
-                    anyio.sleep_forever()
-                ```
-
-        Notes:
-            - [Caller.get_instance][] is the recommended way to get a running caller.
-        """
-
-        thread = thread or threading.current_thread()
-        if not (inst := cls._instances.get(thread)):
-            if not create:
-                msg = f"A caller does not exist {thread=}. Did you mean use the classmethod `Caller.get_instance()`?"
-                raise RuntimeError(msg)
-            inst = super().__new__(cls)
-            inst._thread = thread
-            inst._name = thread.name
-            inst.log = log or logging.LoggerAdapter(logging.getLogger())
-            inst._queue = deque()
-            inst._resume = noop
-            inst._protected = protected
-            inst._queue_map = {}
-            cls._instances[thread] = inst
-        return inst
-
-    @override
-    def __repr__(self) -> str:
-        return f"Caller<{self.name} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')}>"
-
-    @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        if self._stopped:
-            msg = f"Already stopped and restarting is not allowed: {self}"
-            raise RuntimeError(msg)
-        self._backend = Backend(current_async_library())
-        self._running = True
-        self._stopped_event = Event()
-        async with anyio.create_task_group() as tg:
-            try:
-                await tg.start(self._scheduler, tg)
-                yield self
-            finally:
-                self.stop(force=True)
-
-    async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
-        """
-        Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
-
-        This method sets up a PUB socket for sending iopub messages, processes queued tasks (either callables or tuples with runnables),
-        and handles coroutine execution. It waits for new tasks when the queue is empty and ensures proper cleanup and exception
-        handling on shutdown.
-
-        Args:
-            tg: The task group used to manage concurrent tasks.
-            task_status: Used to signal when the scheduler has started.
-
-        Raises:
-            Exception: Logs and handles exceptions raised during direct callable execution.
-            FutureCancelledError: Sets this exception on pending futures in the queue upon shutdown.
-        """
-        socket = Context.instance().socket(SocketType.PUB)
-        socket.linger = 500
-        socket.connect(self.iopub_url)
-        self.iopub_sockets[self.thread] = socket
-        task_status.started()
-
-        try:
-            while not self._stopped:
-                if self._queue:
-                    item, result = self._queue.popleft(), None
-                    if callable(item):
-                        try:
-                            result = item()
-                            if inspect.iscoroutine(result):
-                                await result
-                        except Exception as e:
-                            self.log.exception("Direct call failed", exc_info=e)
-                    else:
-                        item[0].run(tg.start_soon, self._caller, item[1])
-                    del item, result
-                else:
-                    event = create_async_event()
-                    self._resume = event.set
-                    if not self._stopped and not self._queue:
-                        await event
-                    self._resume = noop
-        finally:
-            self._resume = noop
-            self._running = False
-            for item in self._queue:
-                if isinstance(item, tuple):
-                    item[1].set_exception(FutureCancelledError())
-            socket.close()
-            self.iopub_sockets.pop(self.thread, None)
-            self._stopped_event.set()
-            tg.cancel_scope.cancel()
-
-    async def _caller(self, fut: Future) -> None:
-        """
-        Asynchronously executes the function associated with the given Future, handling cancellation, delays, and exceptions.
-
-        Args:
-            fut: The Future object containing metadata about the function to execute, its arguments, and execution state.
-
-        Workflow:
-            - Sets the current future in a context variable.
-            - If the future is cancelled before starting, sets a FutureCancelledError.
-            - Otherwise, enters a cancellation scope:
-                - Registers a canceller for the future.
-                - Waits for a specified delay if present in metadata.
-                - Calls the function (sync or async) with provided arguments.
-                - Sets the result or exception on the future as appropriate.
-            - Handles cancellation and other exceptions, logging errors as needed.
-            - Resets the context variable after execution.
-        """
-        md = fut.metadata
-        token = self._future_var.set(fut)
-        try:
-            if fut.cancelled():
-                if not fut.done():
-                    fut.set_exception(FutureCancelledError("Cancelled before started."))
-            else:
-                with anyio.CancelScope() as scope:
-                    fut.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
-                    # Call later.
-                    if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
-                        await anyio.sleep(delay)
-                    # Call now.
-                    try:
-                        result = md["func"](*md["args"], **md["kwargs"])
-                        if inspect.iscoroutine(result):
-                            result = await result
-                        fut.set_result(result)
-                    # Cancelled.
-                    except anyio.get_cancelled_exc_class() as e:
-                        if not fut.cancelled():
-                            fut.cancel()
-                        fut.set_exception(e)
-                    # Catch exceptions.
-                    except Exception as e:
-                        fut.set_exception(e)
-        except Exception as e:
-            fut.set_exception(e)
-        finally:
-            self._future_var.reset(token)
 
     @property
     def name(self) -> str:
@@ -568,6 +145,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._backend
 
     @property
+    def backend_options(self) -> dict | None:
+        return self._backend_options
+
+    @property
     def protected(self) -> bool:
         "Returns `True` if the caller is protected from stopping."
         return self._protected
@@ -578,9 +159,200 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._running
 
     @property
-    def stopped(self) -> bool:
-        "Returns  `True` if the caller is stopped."
-        return self._stopped
+    def children(self) -> set[Caller]:
+        """A copy of the set of instances that were created by the caller.
+
+        Notes:
+            - When the parent is stopped, all children are stopped.
+            - All children are stopped prior to the parent exiting its async context.
+        """
+        return self._children.copy()
+
+    @override
+    def __repr__(self) -> str:
+        children = "🧒 [" + ", ".join(repr(c.name) for c in self._children) + "]" if self._children else ""
+        return f"Caller<{self.name} {self.backend} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')} {children}>"
+
+    def __new__(cls, **kwargs: Unpack[CallerCreateOptions]) -> Self:
+        """
+        Create the `Caller` instance.
+
+        Normal usage is to use `Caller.get()` to get a running caller for the current thread
+        that has a running backend.
+
+        Returns:
+            Caller: The `Caller` instance for the current thread.
+
+        Raises:
+            RuntimeError: If an instance already exists for the specified thread.
+
+        Notes:
+            - There is only one caller instance per thread.
+            - [Caller.get][] is the recommended way to get a *running* caller.
+            - A caller retains its own pool of workers.
+            - When a caller is shutdown its children are shutdown.
+            - `Caller` instances started using [Caller.to_thread][] and [Caller.to_thread_advanced][]
+                are considered children and stopped with the caller when it closes.
+
+        Uasge:
+
+            === "As a context manager"
+
+                ```python
+                async with Caller(thread=threading.current_thread()) as caller:
+                    ...
+                ```
+
+            === "From a thread with a backend eventloop"
+
+                ```python
+                caller = Caller.get()
+                ```
+
+            === "Start a new thread"
+
+            ```python
+            my_caller = Caller.get(name="My new caller thread")
+            ```
+        """
+
+        if not (thread := kwargs.get("thread")):
+            msg = "`thread` is a required argument when creating an instance! Use `Caller.get()`."
+            raise RuntimeError(msg) from None
+        with cls._rlock:
+            if thread in cls._instances:
+                msg = f"A caller already exist for {thread=}. You can use the classmethod `Caller.get()` to access it."
+                raise RuntimeError(msg)
+            inst = super().__new__(cls)
+            inst._backend = Backend(kwargs.get("backend") or current_async_library())
+            inst._thread = thread
+            inst._name = kwargs.get("name") or thread.name or str(thread)
+            inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
+            inst._protected = kwargs.get("protected", False)
+            inst._backend_options = kwargs.get("_backend_options")
+            inst._resume = noop
+            inst.get = cls._wrap_inst_get(inst=inst, get=inst.get)
+            cls._instances[thread] = inst
+        return inst
+
+    @staticmethod
+    def _wrap_inst_get(inst: Caller, get: Callable[P, Caller]) -> Callable[P, Caller]:
+        "A wrapper to call `get`; If `get` returns a new instance, the instance is added to inst._children."
+        ref = weakref.ref(inst)
+
+        @functools.wraps(get)
+        def get_wrapped(*args, **kwargs) -> Caller:
+            parent: Caller = ref()  # pyright: ignore[reportAssignmentType]
+            with parent._rlock:
+                name, thread = kwargs.get("name"), kwargs.get("thread")
+                # Search existing children
+                for caller in parent.children:
+                    if caller.name == name or caller.thread == thread:
+                        return caller
+                # Specify preferred backend
+                if "backend" not in kwargs:
+                    kwargs["backend"] = parent.backend
+                    kwargs["backend_options"] = parent.backend_options
+                # Get an instance
+                existing = set(parent._instances.values())
+                if (caller := get(*args, **kwargs)) not in existing:
+                    parent._children.add(caller)
+                    caller._parent_ref = ref
+                del parent
+                return caller
+
+        return get_wrapped
+
+    @classmethod
+    def get(cls, options: CallerGetOptions | None = None, /, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
+        """
+        Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
+
+        Args:
+            options: Options to use in get.
+                - create: If True or NoValue (default), a new instance will be created if no matching instance is found.
+                - daemon: If a thread is started whether the thread should be a daemon thread.
+            **kwargs: Additional keyword arguments used to identify or create the instance. Common options include 'name' and 'thread'.
+
+        Returns:
+            Self: An existing or newly created instance of the class.
+
+        Raises:
+            RuntimeError: If no matching instance is found and 'create' is set to False.
+
+        Important:
+            If this method is called via an existing instance (`parent`), any newly created instance (`child`) will be added `parent.children`.
+            When parent is stopped, all items in `parent.children` are also stopped.
+
+        Notes:
+            - If both 'name' and 'thread' are provided, the method returns the first matching instance.
+            - If no matching instance is found and 'create' is True or NoValue, a new instance is created using the provided kwargs.
+            - If 'kwargs' is empty when creating a new instance, the main thread is used by default.
+        """
+        if not kwargs:
+            name, thread = None, threading.current_thread()
+        else:
+            name, thread = kwargs.get("name"), kwargs.get("thread")
+            if thread and name:
+                msg = "One of 'thread' or 'name' must be specified and not both!"
+                raise ValueError(msg)
+        with cls._rlock:
+            # Search for an existing instance
+            if name or thread:
+                for caller in cls._instances.values():
+                    if caller.thread == thread or caller.name == name:
+                        if caller.running or (caller.thread is not threading.current_thread()):
+                            return caller
+                        name, thread = None, caller.thread
+                        break
+            options = {} if options is None else options
+            if (not options.get("create", True) and (thread not in cls._instances)) or (
+                thread and thread is not threading.current_thread()
+            ):
+                msg = f"Caller instance not found for {kwargs=}"
+                raise RuntimeError(msg)
+
+            async def run_caller_in_context(caller: Self) -> None:
+                # run the caller in context
+                async with caller:
+                    if not pen.done():
+                        pen.set_result(caller)
+                    await caller.stopped
+
+            def async_kernel_caller(options: dict) -> None:
+                # A thread that runs the caller
+                try:
+                    if token := options.get("token"):
+                        # A 'shadow' thead to run the caller from the 'current thread'
+                        pen.set_result(caller)
+                        mark_thread_pydev_do_not_trace()
+                        anyio.from_thread.run(run_caller_in_context, caller, token=token)
+                    else:
+                        anyio.run(run_caller_in_context, caller, **options)
+                except (BaseExceptionGroup, BaseException) as e:
+                    if not pen.done():
+                        pen.set_exception(e)
+                    if not "shutdown" not in str(e):
+                        raise
+
+            # options for `async_kernel_caller`
+            if thread:
+                args = [{"token": current_token()}]
+            else:
+                kernel = async_kernel.Kernel()
+                backend = kwargs.get("backend") or current_async_library(failsafe=True)
+                backend = Backend(value=backend or kernel.anyio_backend)
+                backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
+                args = [{"backend": backend, "backend_options": backend_options}]
+            # Create and start the caller
+            pen: Pending[Self] = Pending()
+            daemon = options.get("daemon", True)
+            thread_ = threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=daemon)
+            kwargs["thread"] = thread = thread or thread_
+            caller = cls._instances.get(thread) or cls(**kwargs)
+        thread_.start()
+
+        return pen.wait_sync()
 
     def stop(self, *, force=False) -> None:
         """
@@ -590,15 +362,225 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if self._protected and not force:
             return
-        self._stopped = True
+        self._continue = False
         self._instances.pop(self.thread, None)
+        for item in self._queue:
+            if isinstance(item, tuple):
+                item[1].set_exception(PendingCancelled())
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
-        if self in self._to_thread_pool:
-            self._to_thread_pool.remove(self)
+        with contextlib.suppress(ValueError):
+            self._worker_pool.remove(self)
         if self._running and self.thread is not threading.current_thread():
-            self._stopped_event.wait()
+            self.stopped.wait()
+
+    @asynccontextmanager
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        if self.stopped:
+            msg = f"Already stopped and restarting is not allowed: {self}"
+            raise RuntimeError(msg)
+        self._running = True
+        async with anyio.create_task_group() as tg:
+            try:
+                await tg.start(self._scheduler, tg)
+                yield self
+            finally:
+                self.stop(force=True)
+                while self._children:
+                    with contextlib.suppress(Exception):
+                        # This call will block this thread until the child thread has stopped.
+                        self._children.pop().stop(force=True)
+                if self._parent_ref and (parent := self._parent_ref()):
+                    parent.children.discard(self)
+                self.stopped.set()
+
+    async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
+        """
+        Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
+
+        This method sets up a PUB socket for sending iopub messages, processes queued tasks (either callables or tuples with runnables),
+        and handles coroutine execution. It waits for new tasks when the queue is empty and ensures proper cleanup and exception
+        handling on shutdown.
+
+        Args:
+            tg: The task group used to manage concurrent tasks.
+            task_status: Used to signal when the scheduler has started.
+
+        Raises:
+            Exception: Logs and handles exceptions raised during direct callable execution.
+            PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
+        """
+        socket = Context.instance().socket(SocketType.PUB)
+        socket.linger = 500
+        socket.connect(self.iopub_url)
+        self.iopub_sockets[self.thread] = socket
+        task_status.started()
+
+        try:
+            while self._continue:
+                if self._queue:
+                    item, result = self._queue.popleft(), None
+                    if callable(item):
+                        try:
+                            result = item()
+                            if inspect.iscoroutine(result):
+                                await result
+                        except Exception as e:
+                            self.log.exception("Direct call failed", exc_info=e)
+                    else:
+                        item[0].run(tg.start_soon, self._call_scheduled, item[1])
+                    del item, result
+                else:
+                    event = create_async_event()
+                    self._resume = event.set
+                    if self._continue and not self._queue:
+                        await event
+                    self._resume = noop
+        finally:
+            self._running = False
+            socket.close()
+            self.iopub_sockets.pop(self.thread, None)
+            tg.cancel_scope.cancel()
+
+    async def _call_scheduled(self, pen: Pending) -> None:
+        """
+        Asynchronously executes the function associated with the given instance, handling cancellation, delays, and exceptions.
+
+        Args:
+            pen: The [async_kernel.Pending][] object containing metadata about the function to execute, its arguments, and execution state.
+
+        Workflow:
+            - Sets the current instance in a context variable.
+            - If the instance is cancelled before starting, sets a PendingCancelled error.
+            - Otherwise, enters a cancellation scope:
+                - Registers a canceller for the instance.
+                - Waits for a specified delay if present in metadata.
+                - Calls the function (sync or async) with provided arguments.
+                - Sets the result or exception on the instance as appropriate.
+            - Handles cancellation and other exceptions, logging errors as needed.
+            - Resets the context variable after execution.
+        """
+        md = pen.metadata
+        token = self._pending_var.set(pen)
+        try:
+            if pen.cancelled():
+                if not pen.done():
+                    pen.set_exception(PendingCancelled("Cancelled before started."))
+            else:
+                with anyio.CancelScope() as scope:
+                    pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                    # Call later.
+                    if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
+                        await anyio.sleep(delay)
+                    # Call now.
+                    try:
+                        result = md["func"](*md["args"], **md["kwargs"])
+                        if inspect.iscoroutine(result):
+                            result = await result
+                        pen.set_result(result)
+                    # Cancelled.
+                    except anyio.get_cancelled_exc_class() as e:
+                        if not pen.cancelled():
+                            pen.cancel()
+                        pen.set_exception(e)
+                    # Catch exceptions.
+                    except Exception as e:
+                        pen.set_exception(e)
+        except Exception as e:
+            pen.set_exception(e)
+        finally:
+            self._pending_var.reset(token)
+
+    @classmethod
+    def current_pending(cls) -> Pending[Any] | None:
+        """A [classmethod][] that returns the current result when called from inside a function scheduled by Caller."""
+        return cls._pending_var.get()
+
+    @classmethod
+    def all_callers(cls, running_only: bool = True) -> list[Caller]:
+        """
+        A [classmethod][] to get a list of the callers.
+
+        Args:
+            running_only: Restrict the list to callers that are active (running in an async context).
+        """
+        return [caller for caller in Caller._instances.values() if caller._running or not running_only]
+
+    def to_thread(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Pending[T]:
+        """
+        Call func in a worker thread using the same backend as the current instance.
+
+        Args:
+            func: The function.
+            *args: Arguments to use with func.
+            **kwargs: Keyword arguments to use with func.
+
+        Notes:
+            - A minimum number of caller instances are retained for this method.
+            - Async code run inside func should use taskgroups for creating task.
+
+        See also:
+            - [Caller.to_thread_advanced][]
+        """
+        return self.to_thread_advanced({"name": None}, func, *args, **kwargs)
+
+    def to_thread_advanced(
+        self,
+        options: CallerCreateOptions,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Pending[T]:
+        """
+        Call func in a current or new Caller according to the options.
+
+        Args:
+            options: Options to pass to [Caller.get][].
+            func: The function.
+            *args: Arguments to use with func.
+            **kwargs: Keyword arguments to use with func.
+
+        Returns:
+            A result that can be awaited for the  result of func.
+
+        Raises:
+            ValueError: When a name is not supplied.
+
+        Notes:
+            - When `options == {"name": None}` the caller is associated with a pool of workers.
+            - When called via from an instance any new callers are added to the the instances children (done in `_catch_new_instances`).
+        """
+
+        if is_worker := options == {"name": None}:
+            try:
+                caller = self._worker_pool.popleft()
+            except IndexError:
+                caller = self.get(name=None)
+        else:
+            if not options.get("name"):
+                msg = "A name was not provided in {options=}."
+                raise ValueError(msg)
+            caller = self.get(**options)
+        pen = caller.call_soon(func, *args, **kwargs)
+        if is_worker:
+
+            def _to_thread_on_done(_) -> None:
+                if not caller.stopped:
+                    if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
+                        self._worker_pool.append(caller)
+                    else:
+                        caller.stop()
+
+            pen.add_done_callback(_to_thread_on_done)
+        return pen
 
     def schedule_call(
         self,
@@ -608,7 +590,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         kwargs: dict,
         context: contextvars.Context | None = None,
         **metadata: Any,
-    ) -> Future[T]:
+    ) -> Pending[T]:
         """
         Schedule `func` to be called inside a task running in the callers thread (thread-safe).
 
@@ -620,15 +602,15 @@ class Caller(anyio.AsyncContextManagerMixin):
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
-            **metadata: Additional metadata to store in the future.
+            **metadata: Additional metadata to store in the instance.
         """
-        if self._stopped:
-            msg = f"{self} is stopped!"
+        if not self._continue:
+            msg = f"{self} is {'stopped' if self.stopped else 'stopping'}!"
             raise RuntimeError(msg)
-        fut = Future(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        self._queue.append((context or contextvars.copy_context(), fut))
+        pen = Pending(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        self._queue.append((context or contextvars.copy_context(), pen))
         self._resume()
-        return fut
+        return pen
 
     def call_later(
         self,
@@ -637,7 +619,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Future[T]:
+    ) -> Pending[T]:
         """
         Schedule func to be called in caller's event loop copying the current context.
 
@@ -648,8 +630,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with func.
 
         Info:
-            All call arguments are packed into the Futures metadata. The future metadata
-            is cleared when futures result is set.
+            All call arguments are packed into the instance's metadata.
         """
         return self.schedule_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
 
@@ -659,7 +640,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Future[T]:
+    ) -> Pending[T]:
         """
         Schedule func to be called in caller's event loop copying the current context.
 
@@ -696,11 +677,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._queue.append(functools.partial(func, *args, **kwargs))
         self._resume()
 
-    def queue_get(self, func: Callable) -> Future[Never] | None:
-        """Returns future for `func` where the queue is running.
+    def queue_get(self, func: Callable) -> Pending[Never] | None:
+        """Returns `Pending` instance for `func` where the queue is running.
 
         Warning:
-            - This future loops forever until the  loop is closed or func no longer exists.
+            - This instance loops until the instance is closed or func is garbage collected.
             - `queue_close` is the preferred means to shutdown the queue.
         """
         return self._queue_map.get(hash(func))
@@ -727,14 +708,14 @@ class Caller(anyio.AsyncContextManagerMixin):
             - The [context][contextvars.Context] of the initial call is is used for subsequent queue calls.
         """
         key = hash(func)
-        if not (fut_ := self._queue_map.get(key)):
+        if not (pen_ := self._queue_map.get(key)):
             queue = deque()
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
             async def queue_loop(key: int, queue: deque) -> None:
-                fut = self.current_future()
-                assert fut
+                pen = self.current_pending()
+                assert pen
                 try:
                     while True:
                         if queue:
@@ -744,7 +725,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 if inspect.iscoroutine(object=result):
                                     await result
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
-                                if fut.cancelled():
+                                if pen.cancelled():
                                     raise
                                 self.log.exception("Execution %f failed", item, exc_info=e)
                             finally:
@@ -752,16 +733,16 @@ class Caller(anyio.AsyncContextManagerMixin):
                             await anyio.sleep(0)
                         else:
                             event = create_async_event()
-                            fut.metadata["resume"] = event.set
+                            pen.metadata["resume"] = event.set
                             if not queue:
                                 await event
-                            fut.metadata.pop("resume")
+                            pen.metadata.pop("resume")
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = fut_ = self.call_soon(queue_loop, key=key, queue=queue)
-        fut_.metadata["kwargs"]["queue"].append((func, args, kwargs))
-        if resume := fut_.metadata.get("resume"):
+            self._queue_map[key] = pen_ = self.call_soon(queue_loop, key=key, queue=queue)
+        pen_.metadata["kwargs"]["queue"].append((func, args, kwargs))
+        if resume := pen_.metadata.get("resume"):
             resume()
 
     def queue_close(self, func: Callable | int) -> None:
@@ -772,252 +753,59 @@ class Caller(anyio.AsyncContextManagerMixin):
             func: The queue of the function to close.
         """
         key = func if isinstance(func, int) else hash(func)
-        if fut := self._queue_map.pop(key, None):
-            fut.cancel()
+        if pen := self._queue_map.pop(key, None):
+            pen.cancel()
 
-    @classmethod
-    def stop_all(cls, *, _stop_protected: bool = False) -> None:
-        """
-        A [classmethod][] to stop all un-protected callers.
-
-        Args:
-            _stop_protected: A private argument to shutdown protected instances.
-        """
-        for caller in tuple(reversed(cls._instances.values())):
-            caller.stop(force=_stop_protected)
-
-    @classmethod
-    def get_instance(cls, *, create: bool = True, **kwargs: Unpack[CallerGetInstanceOptions]) -> Caller:
-        """
-        Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
-
-        Args:
-            create: If True or NoValue (default), a new instance will be created if no matching instance is found.
-            **kwargs: Additional keyword arguments used to identify or create the instance. Common options include 'name' and 'thread'.
-
-        Returns:
-            Self: An existing or newly created instance of the class.
-
-        Raises:
-            RuntimeError: If no matching instance is found and 'create' is set to False.
-
-        Notes:
-            - If both 'name' and 'thread' are provided, the method returns the first matching instance.
-            - If no matching instance is found and 'create' is True or NoValue, a new instance is created using the provided kwargs.
-            - If 'kwargs' is empty when creating a new instance, the main thread is used by default.
-        """
-        # checks
-        name, thread = kwargs.get("name"), kwargs.get("thread")
-        if thread and name:
-            msg = "One of 'thread' or 'name' must be specified and not both!"
-            raise ValueError(msg)
-        if not kwargs:
-            if c := async_kernel.Kernel().callers.get(SocketID.shell):
-                return c
-            thread = threading.main_thread()
-        with cls._lock:
-            # Search for an existing instance
-            if name or thread:
-                for caller in cls._instances.values():
-                    if caller.thread == thread or caller.name == name:
-                        if caller.running or (caller.thread is not threading.current_thread()):
-                            return caller
-                        break
-                for thread_ in threading.enumerate():
-                    if (thread_.name == name) or (thread_ is thread):
-                        name, thread = None, thread_
-                        break
-                if thread and thread is not threading.current_thread():
-                    msg = f"{thread=} is not current thread!"
-                    raise RuntimeError(msg)
-
-            async def run_caller_in_context(caller: Self) -> None:
-                # run the caller in context
-                async with caller:
-                    if not fut.done():
-                        fut.set_result(caller)
-                    await anyio.sleep_forever()
-
-            def async_kernel_caller(options: dict) -> None:
-                # A thread that runs the caller
-                try:
-                    log, protected = kwargs.get("log"), kwargs.get("protected", False)
-                    caller = cls(thread=thread, log=log, protected=protected, create=create)
-                    assert not caller.running
-                    if thread:
-                        # A 'shadow' thead to run the caller from the 'current thread'
-                        fut.set_result(caller)
-                        mark_thread_pydev_do_not_trace()
-                        anyio.from_thread.run(run_caller_in_context, caller, **options)
-                    else:
-                        anyio.run(run_caller_in_context, caller, **options)
-                except (BaseExceptionGroup, BaseException) as e:
-                    if not fut.done():
-                        fut.set_exception(e)
-                    if not "shutdown" not in str(e):
-                        raise
-
-            # options
-            if thread:
-                assert thread is threading.current_thread()
-                args = [{"token": current_token()}]
-                daemon = True
-            else:
-                kernel = async_kernel.Kernel()
-                backend = kwargs.get("backend", current_async_library(failsafe=True))
-                backend = Backend(value=backend or kernel.anyio_backend)
-                backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
-                daemon = kwargs.get("daemon", True)
-                args = [{"backend": backend, "backend_options": backend_options}]
-
-            # Create and start the caller
-            fut: Future[Self] = Future()
-            threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=daemon).start()
-            return fut.wait_sync()
-
-    @classmethod
-    def to_thread(
-        cls,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Future[T]:
-        """
-        A [classmethod][] to call func in a separate thread.
-
-        Args:
-            func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
-
-        Notes:
-            - A minimum number of caller instances are retained for this method.
-            - Async code run inside func should use taskgroups for creating task.
-
-        See also:
-            - [Caller.to_thread_advanced][]
-        """
-        return cls.to_thread_advanced({"name": None}, func, *args, **kwargs)
-
-    @classmethod
-    def to_thread_advanced(
-        cls,
-        options: CallerGetInstanceOptions,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Future[T]:
-        """
-        A [classmethod][] to call func in a Caller specified by the options.
-
-        A Caller will be created if it isn't found.
-
-        Args:
-            options: Options to pass to [Caller.get_instance][].
-            func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
-
-        Returns:
-            A future that can be awaited for the  result of func.
-
-        Raises:
-            ValueError: When a name is not supplied.
-        Notes:
-            - When `options == {"name": None}` the caller is associated with a pool of workers.
-        """
-        caller = None
-        if is_worker := options == {"name": None}:
-            try:
-                caller = cls._to_thread_pool.popleft()
-            except IndexError:
-                pass
-        elif not options.get("name"):
-            msg = "A name was not provided in {options=}."
-            raise ValueError(msg)
-        if not caller:
-            caller = cls.get_instance(create=True, **options)
-        fut = caller.call_soon(func, *args, **kwargs)
-        if is_worker:
-
-            def _to_thread_on_done(_) -> None:
-                if not caller._stopped:
-                    if len(cls._to_thread_pool) < cls.MAX_IDLE_POOL_INSTANCES:
-                        cls._to_thread_pool.append(caller)
-                    else:
-                        caller.stop()
-
-            fut.add_done_callback(_to_thread_on_done)
-        return fut
-
-    @classmethod
-    def current_future(cls) -> Future[Any] | None:
-        """A [classmethod][] that returns the current future when called from inside a function scheduled by Caller."""
-        return cls._future_var.get()
-
-    @classmethod
-    def all_callers(cls, running_only: bool = True) -> list[Caller]:
-        """
-        A [classmethod][] to get a list of the callers.
-
-        Args:
-            running_only: Restrict the list to callers that are active (running in an async context).
-        """
-        return [caller for caller in Caller._instances.values() if caller._running or not running_only]
-
-    @classmethod
     async def as_completed(
-        cls,
-        items: Iterable[Future[T]] | AsyncGenerator[Future[T]],
+        self,
+        items: Iterable[Pending[T]] | AsyncGenerator[Pending[T]],
         *,
         max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         shield: bool = False,
-    ) -> AsyncGenerator[Future[T], Any]:
+    ) -> AsyncGenerator[Pending[T], Any]:
         """
-        A [classmethod][] iterator to get [Futures][async_kernel.caller.Future] as they complete.
+        A [classmethod][] iterator to get result as they complete.
 
         Args:
-            items: Either a container with existing futures or generator of Futures.
-            max_concurrent: The maximum number of concurrent futures to monitor at a time.
+            items: Either a container with existing results or generator of Pendings.
+            max_concurrent: The maximum number of concurrent results to monitor at a time.
                 This is useful when `items` is a generator utilising [Caller.to_thread][].
                 By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
             shield: Shield existing items from cancellation.
 
         Tip:
-            1. Pass a generator if you wish to limit the number future jobs when calling to_thread/to_task etc.
-            2. Pass a container with all [Futures][async_kernel.caller.Future] when the limiter is not relevant.
+            1. Pass a generator if you wish to limit the number result jobs when calling to_thread/to_task etc.
+            2. Pass a container with all results when the limiter is not relevant.
         """
         resume = noop
-        future_ready = noop
-        done_futures: deque[Future[T]] = deque()
-        futures: set[Future[T]] = set()
+        result_ready = noop
+        done_results: deque[Pending[T]] = deque()
+        results: set[Pending[T]] = set()
         done = False
-        current_future = cls.current_future()
+        current_pending = self.current_pending()
         if isinstance(items, set | list | tuple):
             max_concurrent_ = 0
         else:
-            max_concurrent_ = cls.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
+            max_concurrent_ = self.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
 
-        def future_done(fut: Future[T]) -> None:
-            done_futures.append(fut)
-            future_ready()
+        def result_done(pen: Pending[T]) -> None:
+            done_results.append(pen)
+            result_ready()
 
         async def iter_items():
             nonlocal done, resume
             gen = items if isinstance(items, AsyncGenerator) else iter(items)
             try:
                 while True:
-                    fut = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
-                    assert fut is not current_future, "Would result in deadlock"
-                    fut.add_done_callback(future_done)
-                    if not fut.done():
-                        futures.add(fut)
-                        if max_concurrent_ and (len(futures) == max_concurrent_):
+                    pen = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
+                    assert pen is not current_pending, "Would result in deadlock"
+                    pen.add_done_callback(result_done)
+                    if not pen.done():
+                        results.add(pen)
+                        if max_concurrent_ and (len(results) == max_concurrent_):
                             event = create_async_event()
                             resume = event.set
-                            if len(futures) == max_concurrent_:
+                            if len(results) == max_concurrent_:
                                 await event
                             resume = noop
 
@@ -1026,47 +814,46 @@ class Caller(anyio.AsyncContextManagerMixin):
             finally:
                 done = True
                 resume()
-                future_ready()
+                result_ready()
 
-        fut_ = cls().call_soon(iter_items)
+        pen_ = self.call_soon(iter_items)
         try:
-            while not done or futures:
-                if done_futures:
-                    fut = done_futures.popleft()
-                    futures.discard(fut)
-                    # Ensure all Future done callbacks are complete.
-                    await fut.wait(result=False)
-                    yield fut
+            while not done or results:
+                if done_results:
+                    pen = done_results.popleft()
+                    results.discard(pen)
+                    # Ensure all done callbacks are complete.
+                    await pen.wait(result=False)
+                    yield pen
                 else:
-                    if max_concurrent_ and len(futures) < max_concurrent_:
+                    if max_concurrent_ and len(results) < max_concurrent_:
                         resume()
                     event = create_async_event()
-                    future_ready = event.set
-                    if not done or futures:
+                    result_ready = event.set
+                    if not done or results:
                         await event
-                    future_ready = noop
+                    result_ready = noop
         finally:
-            fut_.cancel()
-            for fut in futures:
-                fut.remove_done_callback(future_done)
+            pen_.cancel()
+            for pen in results:
+                pen.remove_done_callback(result_done)
                 if not shield:
-                    fut.cancel("Cancelled by as_completed")
+                    pen.cancel("Cancelled by as_completed")
 
-    @classmethod
     async def wait(
-        cls,
-        items: Iterable[Future[T]],
+        self,
+        items: Iterable[Pending[T]],
         *,
         timeout: float | None = None,
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
-    ) -> tuple[set[T], set[Future[T]]]:
+    ) -> tuple[set[T], set[Pending[T]]]:
         """
-        A [classmethod][] to wait for the futures given by items to complete.
+        A [classmethod][] to wait for the results given by items to complete.
 
-        Returns two sets of the futures: (done, pending).
+        Returns two sets of the results: (done, pending).
 
         Args:
-            items: An iterable of futures to wait for.
+            items: An iterable of results to wait for.
             timeout: The maximum time before returning.
             return_when: The same options as available for [asyncio.wait][].
 
@@ -1076,15 +863,15 @@ class Caller(anyio.AsyncContextManagerMixin):
             ```
         Info:
             - This does not raise a TimeoutError!
-            - Futures that aren't done when the timeout occurs are returned in the second set.
+            - Pendings that aren't done when the timeout occurs are returned in the second set.
         """
         done = set()
         if pending := set(items):
             with anyio.move_on_after(timeout):
-                async for fut in cls.as_completed(pending.copy(), shield=True):
-                    _ = (pending.discard(fut), done.add(fut))
+                async for pen in self.as_completed(pending.copy(), shield=True):
+                    _ = (pending.discard(pen), done.add(pen))
                     if return_when == "FIRST_COMPLETED":
                         break
-                    if return_when == "FIRST_EXCEPTION" and (fut.cancelled() or fut.exception()):
+                    if return_when == "FIRST_EXCEPTION" and (pen.cancelled() or pen.exception()):
                         break
         return done, pending
