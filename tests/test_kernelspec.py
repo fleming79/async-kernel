@@ -39,5 +39,5 @@ def test_write_kernel_spec(kernel_name: KernelName, kernel_factory, tmp_path):
 
 
 def test_write_kernel_spec_fails():
-    with pytest.raises(ModuleNotFoundError):
+    with pytest.raises(ValueError, match="not enough values to unpack"):
         write_kernel_spec(kernel_name="never-works", kernel_factory="not a factory")

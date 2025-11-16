@@ -12,8 +12,9 @@ import textwrap
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import traitlets
 from jupyter_client.kernelspec import KernelSpec
+
+from async_kernel.common import import_item
 
 # path to kernelspec resources
 RESOURCES = Path(__file__).parent.joinpath("resources")
@@ -202,4 +203,4 @@ def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
             return factory
         finally:
             sys.path.remove(path)
-    return traitlets.import_item(kernel_factory or "async_kernel.Kernel")
+    return import_item(kernel_factory or "async_kernel.Kernel")
