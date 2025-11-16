@@ -25,8 +25,10 @@ def anyio_backend(request):
 @pytest.mark.anyio
 class TestCaller:
     def test_no_thread(self):
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError, match="unknown async library, or not in async context"):
             Caller.get()
+        with pytest.raises(RuntimeError, match="`thread` is a required argument"):
+            Caller()
 
     def test_get_checks(self, caller: Caller):
         with pytest.raises(ValueError, match="One of 'thread' or 'name' must be specified and not both!"):
@@ -44,6 +46,7 @@ class TestCaller:
             child_caller = caller.get(name="child", protected=True)
             assert child_caller in caller.children
             assert len(caller.children) == 2
+            assert caller.get(name="child") is child_caller
 
         assert len(caller.children) == 0
 
@@ -51,6 +54,8 @@ class TestCaller:
         assert Caller.get(thread=caller.thread) is caller
         assert Caller.get(thread=threading.current_thread()) is caller
         assert Caller.get(name=caller.name) is caller
+        with pytest.raises(RuntimeError, match="A caller already exist for thread="):
+            Caller(thread=caller.thread)
 
     @pytest.mark.parametrize("mode", ["name", "thread"])
     async def test_start_after(self, anyio_backend: Backend, mode: Literal["name", "thread"]):
@@ -68,9 +73,10 @@ class TestCaller:
         done = Event()
         thread = threading.Thread(target=done.wait, daemon=True)
         thread.start()
-        with pytest.raises(RuntimeError, match="Cannot create a caller from a different thread!"):
+        with pytest.raises(RuntimeError, match="Caller instance not found for kwargs="):
             Caller.get(thread=thread)
         done.set()
+
 
     async def test_get_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():

@@ -217,7 +217,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
 
         if not (thread := kwargs.get("thread")):
-            msg = "Thread is required! Use `Caller.get()` instead."
+            msg = "`thread` is a required argument when creating an instance! Use `Caller.get()`."
             raise RuntimeError(msg) from None
         with cls._rlock:
             if thread in cls._instances:
@@ -245,24 +245,16 @@ class Caller(anyio.AsyncContextManagerMixin):
             parent: Caller = ref()  # pyright: ignore[reportAssignmentType]
             with parent._rlock:
                 name, thread = kwargs.get("name"), kwargs.get("thread")
-                existing = set(parent._instances.values())
-
                 # Search existing children
                 for caller in parent.children:
                     if caller.name == name or caller.thread == thread:
                         return caller
-
-                # Search other existing instances
-                for caller in existing:
-                    if caller.name == name or caller.thread == thread:
-                        return caller
-
                 # Specify preferred backend
                 if "backend" not in kwargs:
                     kwargs["backend"] = parent.backend
                     kwargs["backend_options"] = parent.backend_options
-
-                # Get a new instance
+                # Get an instance
+                existing = set(parent._instances.values())
                 if (caller := get(*args, **kwargs)) not in existing:
                     parent._children.add(caller)
                     caller._parent_ref = ref
@@ -304,14 +296,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             if thread and name:
                 msg = "One of 'thread' or 'name' must be specified and not both!"
                 raise ValueError(msg)
-        if thread and thread is not threading.current_thread():
-            if thread is threading.main_thread():
-                # return utils.call_in_main_thread(cls.get, thread=threading.main_thread())
-                # TODO:
-                raise NotImplementedError
-            msg = "Cannot create a caller from a different thread!"
-            raise RuntimeError(msg)
-
         with cls._rlock:
             # Search for an existing instance
             if name or thread:
@@ -321,13 +305,12 @@ class Caller(anyio.AsyncContextManagerMixin):
                             return caller
                         name, thread = None, caller.thread
                         break
-                if thread and thread is not threading.current_thread():
-                    msg = f"{thread=} is not current thread!"
-                    raise RuntimeError(msg)
 
             options = {} if options is None else options
 
-            if not options.get("create", True) and thread not in cls._instances:
+            if (not options.get("create", True) and (thread not in cls._instances)) or (
+                thread and thread is not threading.current_thread()
+            ):
                 msg = f"Caller instance not found for {kwargs=}"
                 raise RuntimeError(msg)
 
@@ -354,7 +337,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not "shutdown" not in str(e):
                         raise
 
-            # options
+            # options for `async_kernel_caller`
             if thread:
                 args = [{"token": current_token()}]
             else:
@@ -363,7 +346,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 backend = Backend(value=backend or kernel.anyio_backend)
                 backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
                 args = [{"backend": backend, "backend_options": backend_options}]
-
             # Create and start the caller
             pen: Pending[Self] = Pending()
             thread_ = threading.Thread(
@@ -391,7 +373,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
-        if self in self._worker_pool:
+        with contextlib.suppress(ValueError):
             self._worker_pool.remove(self)
         if self._running and self.thread is not threading.current_thread():
             self.stopped.wait()
