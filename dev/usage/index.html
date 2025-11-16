@@ -725,6 +725,10 @@ viewing the latest version.
       
         
       
+        
+      
+        
+      
     
     
     
@@ -791,7 +795,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.caller
+    caller
   
 
     
@@ -819,7 +823,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.comm
+    comm
   
 
     
@@ -847,7 +851,35 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.command
+    command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    common
   
 
     
@@ -875,7 +907,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.debugger
+    debugger
   
 
     
@@ -903,7 +935,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.kernel
+    kernel
   
 
     
@@ -931,7 +963,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.kernelspec
+    kernelspec
   
 
     
@@ -959,7 +991,35 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.asyncshell
+    asyncshell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/pending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pending
   
 
     
@@ -987,7 +1047,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.typing
+    typing
   
 
     
@@ -1015,7 +1075,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.utils
+    utils
   
 
     
@@ -1218,6 +1278,53 @@ viewing the latest version.
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#blocking-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blocking calls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caller
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Caller">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#callerget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caller.get
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1285,8 +1392,48 @@ viewing the latest version.
 
 
 <h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
-<p>If you have used ipykernel before, then you know how to use async-kernel. The
-major difference is that async kernel is built to run asynchronously.</p>
+<p>Async kernel provides a Jupyter kernel that can be used in:</p>
+<ul>
+<li>Jupyter</li>
+<li>VS code</li>
+<li>Other places that can us a python kernel without a gui event loop</li>
+</ul>
+<p>Normal Execute requests are queued for execution and will be run sequentially.
+Awaiting in cells is fully supported and will not block shell messaging.</p>
+<p>Please refer to the notebooks which demonstrate some usage examples.</p>
+<h2 id="blocking-calls">Blocking calls<a class="headerlink" href="#blocking-calls" title="Permanent link">&para;</a></h2>
+<p>Unless you deliberately want to block the shells event loop; blocking calls should be run in a separate thread.</p>
+<p>To run code in another thread there are a few options:</p>
+<ol>
+<li>Use <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync">anyio</a></li>
+<li>Use Async kernel's <a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">Caller.get().to_thread</a></li>
+<li>Use the backend's library<ul>
+<li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread">asyncio</a></li>
+<li><a class="autorefs autorefs-external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.to_thread.run_sync">trio</a></li>
+</ul>
+</li>
+</ol>
+<h2 id="caller">Caller<a class="headerlink" href="#caller" title="Permanent link">&para;</a></h2>
+<p>Caller was developed to enable scheduling for [async_kernel.Kernel] but is also has wider usage.</p>
+<p>There is caller instance exists per thread (assuming there is only one event-loop-per-thread).</p>
+<h3 id="callerget"><code>Caller.get</code><a class="headerlink" href="#callerget" title="Permanent link">&para;</a></h3>
+<p><a class="autorefs autorefs-internal" title=" get" href="../reference/caller/#async_kernel.caller.Caller.get">Caller.get</a> is the primary method to obtain a <strong>running</strong> kernel.</p>
+<p>When using <code>get</code> via a caller instance rather than as a class method, any newly created instances
+are considered children and will be stopped if the caller is stopped.</p>
+<p>=== To get a caller from inside an event loop use:</p>
+<pre><code>```python
+caller = Caller.get()
+```
+</code></pre>
+<p>=== New thread specify the backend:</p>
+<div class="highlight"><pre><span></span><code><span class="n">asyncio_caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;asyncio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;asyncio&quot;</span><span class="p">)</span>
+<span class="n">trio_caller</span> <span class="o">=</span> <span class="n">asyncio_caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;trio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">trio_caller</span> <span class="ow">in</span> <span class="n">asyncio_caller</span><span class="o">.</span><span class="n">children</span>
+
+<span class="n">asyncio_caller</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="k">await</span> <span class="n">asyncio_caller</span><span class="o">.</span><span class="n">stopped</span>
+<span class="k">assert</span> <span class="n">trio_caller</span><span class="o">.</span><span class="n">stopped</span>
+</code></pre></div>
 
 
 
@@ -1309,7 +1456,7 @@ major difference is that async kernel is built to run asynchronously.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 2, 2025 01:44:56 UTC"><span class="timeago" datetime="2025-09-02T01:44:56+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 2, 2025 01:44:56 UTC">2025-09-02</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 16, 2025 11:07:35 UTC"><span class="timeago" datetime="2025-11-16T11:07:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 16, 2025 11:07:35 UTC">2025-11-16</span>
   </span>
 
     
@@ -1486,8 +1633,6 @@ major difference is that async kernel is built to run asynchronously.</p>
         <script src="../js/timeago.min.js"></script>
       
         <script src="../js/timeago_mkdocs_material.js"></script>
-      
-        <script src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js"></script>
       
         <script src="../js/open_in_new_tab.js"></script>
       

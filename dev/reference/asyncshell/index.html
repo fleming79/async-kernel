@@ -16,7 +16,7 @@
         <link rel="prev" href="../kernelspec/">
       
       
-        <link rel="next" href="../typing/">
+        <link rel="next" href="../pending/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>async_kernel.asyncshell - async-kernel</title>
+        <title>asyncshell - async-kernel</title>
       
     
     
@@ -136,7 +136,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              async_kernel.asyncshell
+              asyncshell
             
           </span>
         </div>
@@ -722,6 +722,10 @@ viewing the latest version.
       
         
       
+        
+      
+        
+      
     
     
     
@@ -791,7 +795,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.caller
+    caller
   
 
     
@@ -819,7 +823,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.comm
+    comm
   
 
     
@@ -847,7 +851,35 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.command
+    command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    common
   
 
     
@@ -875,7 +907,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.debugger
+    debugger
   
 
     
@@ -903,7 +935,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.kernel
+    kernel
   
 
     
@@ -931,7 +963,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.kernelspec
+    kernelspec
   
 
     
@@ -966,7 +998,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.asyncshell
+    asyncshell
   
 
     
@@ -984,7 +1016,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.asyncshell
+    asyncshell
   
 
     
@@ -1239,6 +1271,34 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
+      <a href="../pending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pending
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../typing/" class="md-nav__link">
         
   
@@ -1246,7 +1306,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.typing
+    typing
   
 
     
@@ -1274,7 +1334,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    async_kernel.utils
+    utils
   
 
     
@@ -1765,7 +1825,7 @@ viewing the latest version.
   
 
 
-  <h1>async_kernel.asyncshell</h1>
+  <h1>asyncshell</h1>
 
 <div class="doc doc-object doc-module">
 
@@ -1840,28 +1900,6 @@ viewing the latest version.
             <p class="doc doc-class-bases">
               Bases: <code><span title="IPython.core.displayhook.DisplayHook">DisplayHook</span></code></p>
 
-            <div style="display: none">
-              <a class="autorefs autorefs-internal" title=" AsyncDisplayHook (async_kernel.asyncshell.AsyncDisplayHook)" href="#async_kernel.asyncshell.AsyncDisplayHook" id="mermaid-link-async_kernel.asyncshell.AsyncDisplayHook"></a>
-            </div>
-            <pre class="mermaid"><code id="mermaid-diagram-async_kernel.asyncshell.AsyncDisplayHook">
-              flowchart TD
-              async_kernel.asyncshell.AsyncDisplayHook[AsyncDisplayHook]
-
-              
-
-              click async_kernel.asyncshell.AsyncDisplayHook href "" "async_kernel.asyncshell.AsyncDisplayHook"
-            </code></pre>
-            <script>
-              var diagram = document.getElementById('mermaid-diagram-async_kernel.asyncshell.AsyncDisplayHook');
-              diagram.innerHTML = diagram.innerHTML.replace(/click ([\w.]+) href "" "\1"/g, function(match, nodeID, offset) {
-                try {
-                  const link = document.getElementById("mermaid-link-" + nodeID).href;
-                  return `click ${nodeID} href "${link}" "${nodeID}"`
-                } catch (e) {
-                  return '';
-                }
-              });
-            </script>
 
 
         <p>A displayhook subclass that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
@@ -1947,10 +1985,10 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">50</span>
-<span class="normal">51</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">51</span>
 <span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start_displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the display hook.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1979,10 +2017,10 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
-<span class="normal">56</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
 <span class="normal">57</span>
-<span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">58</span>
+<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_output_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write the output prompt.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_count</span>
@@ -2011,11 +2049,11 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">60</span>
-<span class="normal">61</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">61</span>
 <span class="normal">62</span>
 <span class="normal">63</span>
-<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">64</span>
+<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_format_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="p">,</span> <span class="n">md_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write format data to the message.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_dict</span>
@@ -2045,12 +2083,12 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">66</span>
-<span class="normal">67</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">67</span>
 <span class="normal">68</span>
 <span class="normal">69</span>
 <span class="normal">70</span>
-<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">71</span>
+<span class="normal">72</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">finish_displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Finish up all displayhook activities.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
@@ -2086,28 +2124,6 @@ representations of the object.</p>
             <p class="doc doc-class-bases">
               Bases: <code><span title="IPython.core.displaypub.DisplayPublisher">DisplayPublisher</span></code></p>
 
-            <div style="display: none">
-              <a class="autorefs autorefs-internal" title=" AsyncDisplayPublisher (async_kernel.asyncshell.AsyncDisplayPublisher)" href="#async_kernel.asyncshell.AsyncDisplayPublisher" id="mermaid-link-async_kernel.asyncshell.AsyncDisplayPublisher"></a>
-            </div>
-            <pre class="mermaid"><code id="mermaid-diagram-async_kernel.asyncshell.AsyncDisplayPublisher">
-              flowchart TD
-              async_kernel.asyncshell.AsyncDisplayPublisher[AsyncDisplayPublisher]
-
-              
-
-              click async_kernel.asyncshell.AsyncDisplayPublisher href "" "async_kernel.asyncshell.AsyncDisplayPublisher"
-            </code></pre>
-            <script>
-              var diagram = document.getElementById('mermaid-diagram-async_kernel.asyncshell.AsyncDisplayPublisher');
-              diagram.innerHTML = diagram.innerHTML.replace(/click ([\w.]+) href "" "\1"/g, function(match, nodeID, offset) {
-                try {
-                  const link = document.getElementById("mermaid-link-" + nodeID).href;
-                  return `click ${nodeID} href "${link}" "${nodeID}"`
-                } catch (e) {
-                  return '';
-                }
-              });
-            </script>
 
 
         <p>A display publisher that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
@@ -2153,9 +2169,9 @@ representations of the object.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">shell</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_hooks</span> <span class="o">=</span> <span class="p">[]</span>
 </code></pre></div></td></tr></table></div>
@@ -2245,8 +2261,7 @@ Transient data should not be persisted to documents.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 83</span>
-<span class="normal"> 84</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 84</span>
 <span class="normal"> 85</span>
 <span class="normal"> 86</span>
 <span class="normal"> 87</span>
@@ -2277,7 +2292,8 @@ Transient data should not be persisted to documents.</p>
 <span class="normal">112</span>
 <span class="normal">113</span>
 <span class="normal">114</span>
-<span class="normal">115</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">115</span>
+<span class="normal">116</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">publish</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportIncompatibleMethodOverride]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
@@ -2352,8 +2368,7 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">117</span>
-<span class="normal">118</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">118</span>
 <span class="normal">119</span>
 <span class="normal">120</span>
 <span class="normal">121</span>
@@ -2362,7 +2377,8 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
-<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">127</span>
+<span class="normal">128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">clear_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Clear output associated with the current execution (cell).</span>
@@ -2400,13 +2416,13 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
-<span class="normal">130</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
 <span class="normal">134</span>
-<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">135</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a hook for when publish is called.</span>
 
 <span class="sd">    The hook should return the message or None.</span>
@@ -2442,28 +2458,6 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
             <p class="doc doc-class-bases">
               Bases: <code><a class="autorefs autorefs-external" title="IPython.core.interactiveshell.InteractiveShell" href="https://ipython.readthedocs.io/en/stable/api/generated/IPython.core.interactiveshell.html#IPython.core.interactiveshell.InteractiveShell">InteractiveShell</a></code></p>
 
-            <div style="display: none">
-              <a class="autorefs autorefs-internal" title=" AsyncInteractiveShell (async_kernel.asyncshell.AsyncInteractiveShell)" href="#async_kernel.asyncshell.AsyncInteractiveShell" id="mermaid-link-async_kernel.asyncshell.AsyncInteractiveShell"></a>
-            </div>
-            <pre class="mermaid"><code id="mermaid-diagram-async_kernel.asyncshell.AsyncInteractiveShell">
-              flowchart TD
-              async_kernel.asyncshell.AsyncInteractiveShell[AsyncInteractiveShell]
-
-              
-
-              click async_kernel.asyncshell.AsyncInteractiveShell href "" "async_kernel.asyncshell.AsyncInteractiveShell"
-            </code></pre>
-            <script>
-              var diagram = document.getElementById('mermaid-diagram-async_kernel.asyncshell.AsyncInteractiveShell');
-              diagram.innerHTML = diagram.innerHTML.replace(/click ([\w.]+) href "" "\1"/g, function(match, nodeID, offset) {
-                try {
-                  const link = document.getElementById("mermaid-link-" + nodeID).href;
-                  return `click ${nodeID} href "${link}" "${nodeID}"`
-                } catch (e) {
-                  return '';
-                }
-              });
-            </script>
 
 
         <p>An IPython InteractiveShell adapted to work with <a class="autorefs autorefs-internal" title=" Kernel" href="../kernel/#async_kernel.kernel.Kernel">Async kernel</a>.</p>
@@ -2498,7 +2492,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../kernel/#">async_kernel.kernel</a>
+      <a href="../kernel/#">kernel</a>
   </span>
 
             <ul class="doc doc-backlink-list">
@@ -2527,7 +2521,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../kernel/#">async_kernel.kernel</a>
+      <a href="../kernel/#">kernel</a>
   </span>
 
             <span class="doc doc-backlink-crumb">
@@ -2774,15 +2768,11 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#">async_kernel.asyncshell</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
+      <a href="#">asyncshell</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;run_cell</a>
+      <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
   </span>
 
       </li>
@@ -2793,8 +2783,7 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
@@ -2824,7 +2813,8 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
-<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">275</span>
+<span class="normal">276</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_cell_async</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">raw_cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2881,11 +2871,11 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">290</span>
-<span class="normal">291</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">291</span>
 <span class="normal">292</span>
 <span class="normal">293</span>
-<span class="normal">294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">294</span>
+<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_magics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize magics.&quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_magics</span><span class="p">()</span>
@@ -2933,7 +2923,7 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#">async_kernel.asyncshell</a>
+      <a href="#">asyncshell</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
@@ -2948,8 +2938,7 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">296</span>
-<span class="normal">297</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
 <span class="normal">300</span>
@@ -2962,7 +2951,8 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 <span class="normal">307</span>
 <span class="normal">308</span>
 <span class="normal">309</span>
-<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">310</span>
+<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">enable_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Enable a given gui.</span>
@@ -3066,7 +3056,7 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../kernelspec/" class="md-footer__link md-footer__link--prev" aria-label="Previous: async_kernel.kernelspec">
+          <a href="../kernelspec/" class="md-footer__link md-footer__link--prev" aria-label="Previous: kernelspec">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3076,20 +3066,20 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
                 Previous
               </span>
               <div class="md-ellipsis">
-                async_kernel.kernelspec
+                kernelspec
               </div>
             </div>
           </a>
         
         
           
-          <a href="../typing/" class="md-footer__link md-footer__link--next" aria-label="Next: async_kernel.typing">
+          <a href="../pending/" class="md-footer__link md-footer__link--next" aria-label="Next: pending">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                async_kernel.typing
+                pending
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3198,8 +3188,6 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
         <script src="../../js/timeago.min.js"></script>
       
         <script src="../../js/timeago_mkdocs_material.js"></script>
-      
-        <script src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js"></script>
       
         <script src="../../js/open_in_new_tab.js"></script>
       
