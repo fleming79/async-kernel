@@ -512,7 +512,7 @@ class Kernel(HasTraits):
         self.callers[SocketID.control] = caller.get(name="Control", protected=True)
         try:
             async with caller:
-                await self._start_threads_and_open_sockets()
+                self._start_hb_iopub_shell_control_threads()
                 with self._bind_socket(SocketID.stdin):
                     assert len(self._sockets) == len(SocketID)
                     self._write_connection_file()
@@ -557,13 +557,9 @@ class Kernel(HasTraits):
         else:
             signal.default_int_handler(signum, frame)
 
-    async def _start_threads_and_open_sockets(self) -> None:
-        heartbeat_ready = Event()
-        pub_proxy_ready = Event()
-        control_ready = Event()
-        shell_ready = Event()
+    def _start_hb_iopub_shell_control_threads(self) -> None:
 
-        def heartbeat(ready=heartbeat_ready.set):
+        def heartbeat(ready) -> None:
             # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
             utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(SocketID.heartbeat) as socket:
@@ -573,7 +569,7 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     return
 
-        def pub_proxy(ready=pub_proxy_ready.set):
+        def pub_proxy(ready) -> None:
             # We use an internal proxy to collect pub messages for distribution.
             # Each thread needs to open its own socket to publish to the internal proxy.
             # When thread-safe sockets become available, this could be changed...
@@ -588,17 +584,15 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        threading.Thread(target=heartbeat, name="heartbeat", daemon=True).start()
-        heartbeat_ready.wait()
-
-        threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True).start()
-        pub_proxy_ready.wait()
-
+        hb_ready, iopub_ready, control_ready, shell_ready = (Event(), Event(), Event(), Event())
+        threading.Thread(target=heartbeat, name="heartbeat", args=[hb_ready.set], daemon=True).start()
+        hb_ready.wait()
+        threading.Thread(target=pub_proxy, name="iopub proxy", args=[iopub_ready.set], daemon=True).start()
+        iopub_ready.wait()
         threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready.set), daemon=True).start()
         control_ready.wait()
-
         threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, shell_ready.set), daemon=True).start()
-        await shell_ready
+        shell_ready.wait()
 
     @contextlib.contextmanager
     def _bind_socket(self, socket_id: SocketID) -> Generator[Any | Socket[Any], Any, None]:
