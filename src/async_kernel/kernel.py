@@ -709,7 +709,8 @@ class Kernel(HasTraits):
 
         Args:
             socket_id: The identifier for the socket to listen on (either control or shell).
-            started: A callback function to be called once the socket is bound and ready to receive messages.
+            ready: An event for the message loop to indicate it is ready.
+            start: An event to wait for before the loop is entered.
 
         Behavior:
             - Binds a ROUTER socket for the specified socket_id.
