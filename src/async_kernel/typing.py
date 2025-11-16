@@ -336,6 +336,8 @@ class CallerCreateOptions(TypedDict):
     "Options to use when calling [anyio.run][] inside the new thread (1. Inherited. 2. From [async_kernel.kernel.Kernel.anyio_backend_options][])."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (False)."
+    zmq_context: NotRequired[zmq.Context]
+    "A zmq Context to use "
 
 
 class CallerGetOptions(TypedDict):

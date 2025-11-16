@@ -17,11 +17,11 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack
 
 import anyio
 import anyio.from_thread
+import zmq
 from aiologic import Event, RLock
 from aiologic.lowlevel import create_async_event, current_async_library
 from anyio.lowlevel import current_token
 from typing_extensions import override
-from zmq import Context, Socket, SocketType
 
 import async_kernel
 from async_kernel.common import Fixed
@@ -109,6 +109,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _protected = False
     _running = False
     _continue = True
+    _zmq_context: zmq.Context | None = None
 
     _parent_ref: weakref.ref[Caller] | None = None
 
@@ -124,7 +125,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     log: logging.LoggerAdapter[Any]
     ""
-    iopub_sockets: ClassVar[weakref.WeakKeyDictionary[threading.Thread, Socket]] = weakref.WeakKeyDictionary()
+    iopub_sockets: ClassVar[weakref.WeakKeyDictionary[threading.Thread, zmq.Socket]] = weakref.WeakKeyDictionary()
     ""
     iopub_url: ClassVar = "inproc://iopub"
     ""
@@ -152,6 +153,11 @@ class Caller(anyio.AsyncContextManagerMixin):
     def protected(self) -> bool:
         "Returns `True` if the caller is protected from stopping."
         return self._protected
+
+    @property
+    def zmq_context(self) -> zmq.Context | None:
+        "A zmq socket, which if present indicates that an iopub socket is loaded."
+        return self._zmq_context
 
     @property
     def running(self):
@@ -229,7 +235,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._name = kwargs.get("name") or thread.name or str(thread)
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
             inst._protected = kwargs.get("protected", False)
-            inst._backend_options = kwargs.get("_backend_options")
+            inst._backend_options = kwargs.get("backend_options")
+            inst._zmq_context = kwargs.get("zmq_context")
             inst._resume = noop
             inst.get = cls._wrap_inst_get(inst=inst, get=inst.get)
             cls._instances[thread] = inst
@@ -253,6 +260,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if "backend" not in kwargs:
                     kwargs["backend"] = parent.backend
                     kwargs["backend_options"] = parent.backend_options
+                if "zmq_context" not in kwargs:
+                    kwargs["zmq_context"] = parent._zmq_context
                 # Get an instance
                 existing = set(parent._instances.values())
                 if (caller := get(*args, **kwargs)) not in existing:
@@ -382,10 +391,20 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise RuntimeError(msg)
         self._running = True
         async with anyio.create_task_group() as tg:
+            await tg.start(self._scheduler, tg)
+            if self._zmq_context:
+                socket = self._zmq_context.socket(zmq.SocketType.PUB)
+                socket.linger = 500
+                socket.connect(self.iopub_url)
+                self.iopub_sockets[self.thread] = socket
+            else:
+                socket = None
             try:
-                await tg.start(self._scheduler, tg)
                 yield self
             finally:
+                if socket:
+                    self.iopub_sockets.pop(self.thread, None)
+                    socket.close()
                 self.stop(force=True)
                 while self._children:
                     with contextlib.suppress(Exception):
@@ -411,12 +430,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             Exception: Logs and handles exceptions raised during direct callable execution.
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
-        socket = Context.instance().socket(SocketType.PUB)
-        socket.linger = 500
-        socket.connect(self.iopub_url)
-        self.iopub_sockets[self.thread] = socket
         task_status.started()
-
         try:
             while self._continue:
                 if self._queue:
@@ -439,8 +453,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self._resume = noop
         finally:
             self._running = False
-            socket.close()
-            self.iopub_sockets.pop(self.thread, None)
             tg.cancel_scope.cancel()
 
     async def _call_scheduled(self, pen: Pending) -> None:
