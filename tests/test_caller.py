@@ -100,6 +100,9 @@ class TestCaller:
         caller.call_direct(lambda: pen)
         assert await caller.call_soon(lambda: pen) is pen
 
+    async def test_zmq_context(self, caller: Caller):
+        assert caller.zmq_context is None
+
     async def test_repr_caller_result(self, caller):
         async def test_func(a, b, c):
             pass
