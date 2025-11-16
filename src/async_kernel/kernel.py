@@ -513,23 +513,24 @@ class Kernel(HasTraits):
         try:
             async with caller:
                 await self._start_threads_and_open_sockets()
-                assert len(self._sockets) == len(SocketID)
-                self._write_connection_file()
-                print(f"Kernel started: {self!r}")
-                with self._iopub():
-                    with anyio.CancelScope() as scope:
-                        self._stop = lambda: caller.call_direct(scope.cancel, "Stopping kernel")
-                        try:
-                            self.event_started.set()
-                            self.comm_manager.kernel = self
-                            yield self
-                        except BaseException:
-                            if not scope.cancel_called:
-                                raise
-                        finally:
-                            self.comm_manager.kernel = None
-                            self.event_stopped.set()
-                            self.callers.clear()
+                with self._bind_socket(SocketID.stdin):
+                    assert len(self._sockets) == len(SocketID)
+                    self._write_connection_file()
+                    print(f"Kernel started: {self!r}")
+                    with self._iopub():
+                        with anyio.CancelScope() as scope:
+                            self._stop = lambda: caller.call_direct(scope.cancel, "Stopping kernel")
+                            try:
+                                self.event_started.set()
+                                self.comm_manager.kernel = self
+                                yield self
+                            except BaseException:
+                                if not scope.cancel_called:
+                                    raise
+                            finally:
+                                self.comm_manager.kernel = None
+                                self.event_stopped.set()
+                                self.callers.clear()
         finally:
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
@@ -587,12 +588,6 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        async def run_in_shell_event_loop(ready=shell_ready.set):
-            with self._bind_socket(SocketID.stdin):
-                thread = threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, ready), daemon=True)
-                thread.start()
-                await anyio.sleep_forever()
-
         threading.Thread(target=heartbeat, name="heartbeat", daemon=True).start()
         heartbeat_ready.wait()
 
@@ -602,7 +597,7 @@ class Kernel(HasTraits):
         threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready.set), daemon=True).start()
         control_ready.wait()
 
-        self.callers[SocketID.shell].call_soon(run_in_shell_event_loop)
+        threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, shell_ready.set), daemon=True).start()
         await shell_ready
 
     @contextlib.contextmanager
