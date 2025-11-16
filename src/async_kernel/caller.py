@@ -491,7 +491,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Pending[T]:
         """
-        A call func in a separate thread using the same backend.
+        Call func in a worker thread using the same backend as the current instance.
 
         Args:
             func: The function.

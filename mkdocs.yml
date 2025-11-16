@@ -99,6 +99,7 @@ plugins:
             - https://anyio.readthedocs.io/en/stable/objects.inv
             - http://aiologic.readthedocs.io/latest/objects.inv
             - https://wrapt.readthedocs.io/en/master/objects.inv
+            - https://trio.readthedocs.io/en/stable/objects.inv
           options:
             docstring_style: google
             docstring_options:
@@ -171,17 +172,17 @@ nav:
       - Commands: commands.md
   - Reference:
       - reference/index.md
-      - "async_kernel.caller": reference/caller.md
-      - "async_kernel.comm": reference/comm.md
-      - "async_kernel.command": reference/command.md
-      - "async_kernel.common": reference/common.md
-      - "async_kernel.debugger": reference/debugger.md
-      - "async_kernel.kernel": reference/kernel.md
-      - "async_kernel.kernelspec": reference/kernelspec.md
-      - "async_kernel.asyncshell": reference/asyncshell.md
-      - "async_kernel.pending": reference/pending.md
-      - "async_kernel.typing": reference/typing.md
-      - "async_kernel.utils": reference/utils.md
+      - "caller": reference/caller.md
+      - "comm": reference/comm.md
+      - "command": reference/command.md
+      - "commony": reference/common.md
+      - "debugger": reference/debugger.md
+      - "kernel": reference/kernel.md
+      - "kernelspec": reference/kernelspec.md
+      - "asyncshell": reference/asyncshell.md
+      - "pending": reference/pending.md
+      - "typing": reference/typing.md
+      - "utils": reference/utils.md
 
   - About:
       - about/index.md

@@ -28,7 +28,7 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             Caller.get()
 
-    def test_get_instance_checks(self, caller: Caller):
+    def test_get_checks(self, caller: Caller):
         with pytest.raises(ValueError, match="One of 'thread' or 'name' must be specified and not both!"):
             Caller.get(name="testing", thread="thread")  # pyright: ignore[reportArgumentType]
 
@@ -72,7 +72,7 @@ class TestCaller:
             Caller.get(thread=thread)
         done.set()
 
-    async def test_get_instance_non_main_thread(self, anyio_backend: Backend):
+    async def test_get_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():
             thread = threading.current_thread()
             assert thread is not threading.main_thread()
@@ -245,16 +245,16 @@ class TestCaller:
         with pytest.raises(ValueError, match="A name was not provided"):
             caller.to_thread_advanced({}, lambda: None)
 
-    async def test_get_instance_no_instance(self, anyio_backend: Backend):
+    async def test_get_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
             Caller.get(name=None, create=False)
 
-    async def test_get_instance_start_main_thread(self, anyio_backend: Backend):
+    async def test_get_start_main_thread(self, anyio_backend: Backend):
         # Check a caller can be started in the main thread synchronously.
         caller = Caller.get()
         assert await caller.call_soon(lambda: 1 + 1) == 2
 
-    async def test_get_instance_current_thread(self, anyio_backend: Backend):
+    async def test_get_current_thread(self, anyio_backend: Backend):
         # Test starting in the async event loop of a non-main-thread
         pen = Pending[Caller]()
         done = Event()
