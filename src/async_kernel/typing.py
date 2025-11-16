@@ -343,8 +343,6 @@ class CallerCreateOptions(TypedDict):
 class CallerGetOptions(TypedDict):
     create: NotRequired[bool]
     "Use this when searching for an existing instance (True)."
-    daemon: NotRequired[bool]
-    "Passed to [threading.Thread][] if a new thread is started (True)."
 
 
 DebugMessage = dict[str, Any]

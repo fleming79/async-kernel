@@ -280,7 +280,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             options: Options to use in get.
                 - create: If True or NoValue (default), a new instance will be created if no matching instance is found.
-                - daemon: If a thread is started whether the thread should be a daemon thread.
             **kwargs: Additional keyword arguments used to identify or create the instance. Common options include 'name' and 'thread'.
 
         Returns:
@@ -355,8 +354,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 args = [{"backend": backend, "backend_options": backend_options}]
             # Create and start the caller
             pen: Pending[Self] = Pending()
-            daemon = options.get("daemon", True)
-            thread_ = threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=daemon)
+            thread_ = threading.Thread(target=async_kernel_caller, name=name, args=args)
             kwargs["thread"] = thread = thread or thread_
             caller = cls._instances.get(thread) or cls(**kwargs)
         thread_.start()
