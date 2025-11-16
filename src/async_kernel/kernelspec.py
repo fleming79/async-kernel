@@ -14,8 +14,6 @@ from typing import TYPE_CHECKING, Any
 
 from jupyter_client.kernelspec import KernelSpec
 
-from async_kernel.common import import_item
-
 # path to kernelspec resources
 RESOURCES = Path(__file__).parent.joinpath("resources")
 
