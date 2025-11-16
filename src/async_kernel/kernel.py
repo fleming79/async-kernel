@@ -817,19 +817,11 @@ class Kernel(HasTraits):
                             return RunMode.task
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
-                return RunMode.queue
-            case _, MsgType.inspect_request | MsgType.complete_request | MsgType.is_complete_request:
+            case _, MsgType.inspect_request | MsgType.history_request:
                 return RunMode.thread
-            case _, MsgType.history_request:
-                return RunMode.thread
-            case _, MsgType.comm_msg:
-                return RunMode.queue
-            case _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
-                return RunMode.queue
-            case _, MsgType.debug_request:
-                return RunMode.queue
             case _:
-                return RunMode.queue
+                pass
+        return RunMode.queue
 
     def all_concurrency_run_modes(
         self,

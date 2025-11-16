@@ -74,7 +74,7 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
     url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
     assert url.endswith(str(kernel._ports[SocketID.iopub]))  # pyright: ignore[reportPrivateUsage]
     ctx = zmq.Context()
-    thread = threading.Thread(target=pubio_subscribe, daemon=True)
+    thread = threading.Thread(target=pubio_subscribe)
     thread.start()
     try:
         time.sleep(0.05)
@@ -593,7 +593,7 @@ async def test_get_run_mode_tag(client: AsyncKernelClient):
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 3893443255
+    assert murmur2_x86(str(data), 1) == 3226918757
 
 
 async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
