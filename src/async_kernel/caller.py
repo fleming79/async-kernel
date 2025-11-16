@@ -365,6 +365,28 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         return pen.wait_sync()
 
+    def stop(self, *, force=False) -> Event | None:
+        """
+        Stop the caller, cancelling all pending tasks and close the thread.
+
+        If the instance is protected, this is no-op unless force is used.
+        """
+        if self._protected and not force:
+            return None
+        self._continue = False
+        self._instances.pop(self.thread, None)
+        for item in self._queue:
+            if isinstance(item, tuple):
+                item[1].set_exception(PendingCancelled())
+        for func in tuple(self._queue_map):
+            self.queue_close(func)
+        self._resume()
+        if self in self._worker_pool:
+            self._worker_pool.remove(self)
+        if self._running and self.thread is not threading.current_thread():
+            self.stopped.wait()
+        return self.stopped
+
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         if self.stopped:
@@ -435,12 +457,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         await event
                     self._resume = noop
         finally:
-            self._instances.pop(self.thread, None)
-            self._resume = noop
             self._running = False
-            for item in self._queue:
-                if isinstance(item, tuple):
-                    item[1].set_exception(PendingCancelled())
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
             tg.cancel_scope.cancel()
@@ -584,24 +601,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             pen.add_done_callback(_to_thread_on_done)
         return pen
 
-    def stop(self, *, force=False) -> Event | None:
-        """
-        Stop the caller, cancelling all pending tasks and close the thread.
-
-        If the instance is protected, this is no-op unless force is used.
-        """
-        if self._protected and not force:
-            return None
-        self._continue = False
-        self._instances.pop(self.thread, None)
-        for func in tuple(self._queue_map):
-            self.queue_close(func)
-        self._resume()
-        if self in self._worker_pool:
-            self._worker_pool.remove(self)
-        if self._running and self.thread is not threading.current_thread():
-            self.stopped.wait()
-        return self.stopped
 
     def schedule_call(
         self,
