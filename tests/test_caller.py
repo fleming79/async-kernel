@@ -77,7 +77,6 @@ class TestCaller:
             Caller.get(thread=thread)
         done.set()
 
-
     async def test_get_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():
             thread = threading.current_thread()
