@@ -19,8 +19,6 @@ extra:
 
 extra_css:
   - stylesheets/extra.css
-extra_javascript:
-  - https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js
 theme:
   name: material
   custom_dir: docs/overrides
@@ -100,6 +98,7 @@ plugins:
             - https://jupyter-client.readthedocs.io/en/stable/objects.inv
             - https://anyio.readthedocs.io/en/stable/objects.inv
             - http://aiologic.readthedocs.io/latest/objects.inv
+            - https://wrapt.readthedocs.io/en/master/objects.inv
           options:
             docstring_style: google
             docstring_options:
@@ -133,8 +132,6 @@ plugins:
             unwrap_annotated: true
             skip_local_inventory: true
             backlinks: tree
-            show_inheritance_diagram: true
-            inheritance_diagram_direction: TD
 
 markdown_extensions:
   - attr_list
@@ -177,11 +174,12 @@ nav:
       - "async_kernel.caller": reference/caller.md
       - "async_kernel.comm": reference/comm.md
       - "async_kernel.command": reference/command.md
+      - "async_kernel.common": reference/common.md
       - "async_kernel.debugger": reference/debugger.md
       - "async_kernel.kernel": reference/kernel.md
       - "async_kernel.kernelspec": reference/kernelspec.md
       - "async_kernel.asyncshell": reference/asyncshell.md
-      - "async_kernel.result": reference/pending.md
+      - "async_kernel.pending": reference/pending.md
       - "async_kernel.typing": reference/typing.md
       - "async_kernel.utils": reference/utils.md
 

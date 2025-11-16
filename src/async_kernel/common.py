@@ -3,7 +3,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import weakref
-from typing import TYPE_CHECKING, Generic, Self
+from typing import TYPE_CHECKING, Any, Generic, Self
 
 from aiologic import BinarySemaphore
 
@@ -12,8 +12,10 @@ from async_kernel.typing import FixedCreate, FixedCreated, S, T
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+__all__ = ["Fixed", "import_item"]
 
-def import_item(dottedname: str):
+
+def import_item(dottedname: str) -> Any:
     """Import an item from a module, given its dotted name.
 
     Example:
@@ -34,13 +36,16 @@ class Fixed(Generic[S, T]):
     to dynamically load or import the managed class.  The managed instance
     is created on first access and then cached for subsequent access.
 
-    Usage:
-
-        TODO
-
     Type Hints:
         ``S``: Type of the owner class.
         ``T``: Type of the managed class.
+
+    Usage:
+        ```python
+        class MyClass:
+            my_fixed_dict: Fixed[Self, dict] = Fixed(dict)
+            my_fixed_id: Fixed[Self, int] = Fixed(lambda c: id(c["owner"]))
+        ```
     """
 
     __slots__ = ["create", "created", "instances", "lock", "name"]

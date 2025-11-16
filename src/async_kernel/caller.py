@@ -24,7 +24,7 @@ from typing_extensions import override
 from zmq import Context, Socket, SocketType
 
 import async_kernel
-from async_kernel.fixed import Fixed
+from async_kernel.common import Fixed
 from async_kernel.kernelspec import Backend
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import CallerCreateOptions, NoValue, T
@@ -225,7 +225,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @staticmethod
     def _catch_new_instances(parent: Caller, func: Callable[P, Caller]) -> Callable[P, Caller]:
-        "If the result of callable reurns a new instance it gets added to parent._children."
+        "A wrapper to call `func`; If `func` returns a new instance, the instance is added to parent._children."
         ref = weakref.ref(parent)
 
         @functools.wraps(func)
@@ -240,7 +240,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return call_catch_new_instances
 
     @classmethod
-    def get(cls, *, create: bool = True, daemon=True, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
+    def get(cls, *, create: bool = True, daemon: bool = True, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
         """
         Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
 
