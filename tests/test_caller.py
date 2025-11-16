@@ -263,7 +263,7 @@ class TestCaller:
 
     async def test_get_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
-            Caller.get(name=None, create=False)
+            Caller.get({"create": False}, name=None)
 
     async def test_get_start_main_thread(self, anyio_backend: Backend):
         # Check a caller can be started in the main thread synchronously.

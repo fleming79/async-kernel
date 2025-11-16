@@ -327,15 +327,22 @@ class CallerCreateOptions(TypedDict):
     name: NotRequired[str | None]
     """The name to use for the caller."""
     thread: NotRequired[threading.Thread | None]
-    "The thread of the caller."
+    "The thread of the caller. (current thread)"
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use to log exceptions."
     backend: NotRequired[Backend | Literal["trio", "asyncio"]]
-    "The anyio backend to use."
+    "The anyio backend to use (1. Inherited. 2. current_async_library 3. From  [async_kernel.kernel.Kernel.anyio_backend][])."
     backend_options: NotRequired[dict | None]
-    "Options to use when calling [anyio.run][] inside the new thread."
+    "Options to use when calling [anyio.run][] inside the new thread (1. Inherited. 2. From [async_kernel.kernel.Kernel.anyio_backend_options][])."
     protected: NotRequired[bool]
-    "The caller should be protected against accidental closure."
+    "The caller should be protected against accidental closure (False)."
+
+
+class CallerGetOptions(TypedDict):
+    create: NotRequired[bool]
+    "Use this when searching for an existing instance (True)."
+    daemon: NotRequired[bool]
+    "Passed to [threading.Thread][] if a new thread is started (True)."
 
 
 DebugMessage = dict[str, Any]

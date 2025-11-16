@@ -27,7 +27,7 @@ import async_kernel
 from async_kernel.common import Fixed
 from async_kernel.kernelspec import Backend
 from async_kernel.pending import Pending, PendingCancelled
-from async_kernel.typing import CallerCreateOptions, NoValue, T
+from async_kernel.typing import CallerCreateOptions, CallerGetOptions, NoValue, T
 from async_kernel.utils import mark_thread_pydev_do_not_trace
 
 with contextlib.suppress(ImportError):
@@ -75,9 +75,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         - Utilities for running functions in separate threads (`to_thread`, `to_thread_advanced`).
         - Methods for waiting on and iterating over multiple pending instances as they complete.
         - IOpub socket per Caller instance.
+        - Threads
 
     Usage:
-        - Use `Caller.get()` to get or create a Caller for the 'MainThread' or a named thread.
+        - Use `Caller.get()` to get or create a Caller instances.
+        - Use `caller.get()` (same method from a caller instance) for inherited stopping.
         - Use `call_soon`, `call_later`, or `schedule_call` to schedule work.
         - Use `queue_call` for per-function task queues.
         - Use `to_thread` to run work in a separate thread.
@@ -114,6 +116,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _worker_pool: Fixed[Self, deque[Caller]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
     _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | Callable[[], Any]]] = Fixed(deque)
+
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.LoggerAdapter[Any]
@@ -269,7 +272,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return get_wrapped
 
     @classmethod
-    def get(cls, *, create: bool = True, daemon: bool = True, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
+    def get(cls, options: CallerGetOptions | None = None, /, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
         """
         Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
 
@@ -321,7 +324,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                     msg = f"{thread=} is not current thread!"
                     raise RuntimeError(msg)
 
-            if not create and thread not in cls._instances:
+            options = {} if options is None else options
+
+            if not options.get("create", True) and thread not in cls._instances:
                 msg = f"Caller instance not found for {kwargs=}"
                 raise RuntimeError(msg)
 
@@ -360,7 +365,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             # Create and start the caller
             pen: Pending[Self] = Pending()
-            thread_ = threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=daemon)
+            thread_ = threading.Thread(
+                target=async_kernel_caller, name=name, args=args, daemon=options.get("daemon", True)
+            )
             kwargs["thread"] = thread = thread or thread_
             caller = cls._instances.get(thread) or cls(**kwargs)
         thread_.start()
