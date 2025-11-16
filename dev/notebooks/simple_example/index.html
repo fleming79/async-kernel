@@ -2088,7 +2088,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		ControlThread	</pre>
+<pre>   ✓	   🔐		Control	</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2115,12 +2115,12 @@ await demo()</div>
 <span class="ansi-green-fg">     10</span>     b = ipw.Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Continue</span><span class="ansi-yellow-fg">"</span>)
 <span class="ansi-green-fg">     11</span>     display(b)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:221</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
-<span class="ansi-green-fg">    219</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
-<span class="ansi-green-fg">    220</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">221</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    222</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
-<span class="ansi-green-fg">    223</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:227</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
+<span class="ansi-green-fg">    225</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
+<span class="ansi-green-fg">    226</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">227</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    228</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
+<span class="ansi-green-fg">    229</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
 
 <span class="ansi-red-fg">RuntimeError</span>: `thread` is a required argument when creating an instance! Use `Caller.get()`.</pre>
 </div>
@@ -2209,7 +2209,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		ControlThread	</pre>
+<pre>   ✓	   🔐		Control	</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2236,12 +2236,12 @@ await demo()</div>
 <span class="ansi-green-fg">     10</span>     b = ipw.Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Continue</span><span class="ansi-yellow-fg">"</span>)
 <span class="ansi-green-fg">     11</span>     display(b)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:221</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
-<span class="ansi-green-fg">    219</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
-<span class="ansi-green-fg">    220</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">221</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    222</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
-<span class="ansi-green-fg">    223</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:227</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
+<span class="ansi-green-fg">    225</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
+<span class="ansi-green-fg">    226</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">227</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    228</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
+<span class="ansi-green-fg">    229</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
 
 <span class="ansi-red-fg">RuntimeError</span>: `thread` is a required argument when creating an instance! Use `Caller.get()`.</pre>
 </div>
@@ -2330,7 +2330,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		ControlThread	</pre>
+<pre>   ✓	   🔐		Control	</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2370,12 +2370,12 @@ await demo()</div>
 <span class="ansi-green-fg">     10</span>     b = ipw.Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Continue</span><span class="ansi-yellow-fg">"</span>)
 <span class="ansi-green-fg">     11</span>     display(b)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:221</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
-<span class="ansi-green-fg">    219</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
-<span class="ansi-green-fg">    220</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">221</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    222</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
-<span class="ansi-green-fg">    223</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:227</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
+<span class="ansi-green-fg">    225</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
+<span class="ansi-green-fg">    226</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">227</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    228</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
+<span class="ansi-green-fg">    229</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
 
 <span class="ansi-red-fg">RuntimeError</span>: `thread` is a required argument when creating an instance! Use `Caller.get()`.</pre>
 </div>
