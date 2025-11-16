@@ -151,6 +151,22 @@ class TestCaller:
             await anyio.to_thread.run_sync(_in_thread)
         assert caller not in Caller.all_callers()
 
+    async def test_usage_example(self, anyio_backend: Backend):
+        asyncio_caller = Caller.get(name="asyncio backend", backend="asyncio")
+        trio_caller = asyncio_caller.get(name="trio backend", backend="trio")
+        assert trio_caller in asyncio_caller.children
+
+        asyncio_caller.stop()
+        await asyncio_caller.stopped
+        assert trio_caller.stopped
+
+    @pytest.mark.parametrize("b_end", Backend)
+    async def test_to_thread_advanced(self, caller: Caller, b_end: Backend):
+        my_thread = await caller.to_thread_advanced({"name": "my thread", "backend": b_end}, Caller.get)
+        assert my_thread in caller.children
+        assert my_thread.name == "my thread"
+        assert my_thread.backend == b_end
+
     async def test_call_soon_cancelled_early(self, caller: Caller):
         pen = caller.call_soon(anyio.sleep_forever)
         pen.cancel()

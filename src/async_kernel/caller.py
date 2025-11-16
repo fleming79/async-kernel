@@ -30,6 +30,12 @@ from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import CallerCreateOptions, NoValue, T
 from async_kernel.utils import mark_thread_pydev_do_not_trace
 
+with contextlib.suppress(ImportError):
+    # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
+    import sniffio
+
+    sniffio.current_async_library = current_async_library
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import CoroutineType
@@ -92,10 +98,11 @@ class Caller(anyio.AsyncContextManagerMixin):
     "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.Caller.to_thread])."
 
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
-    _lock: ClassVar = RLock()
+    _rlock: ClassVar = RLock()
 
     _thread: threading.Thread
     _name: str
+    _continue = True
     _protected = False
     _running = False
     _backend: Backend
@@ -114,6 +121,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     ""
     iopub_url: ClassVar = "inproc://iopub"
     ""
+    _stop = Fixed(Event)
     stopped = Fixed(Event)
     "A thread-safe Event for when the caller is stopped."
 
@@ -159,7 +167,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     @override
     def __repr__(self) -> str:
         children = "🧒 [" + ", ".join(repr(c.name) for c in self._children) + "]" if self._children else ""
-        return f"Caller<{self.name} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')} {children}>"
+        return f"Caller<{self.name} {self.backend} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')} {children}>"
 
     def __new__(cls, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """
@@ -207,7 +215,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if not (thread := kwargs.get("thread")):
             msg = "Thread is required! Use `Caller.get()` instead."
             raise RuntimeError(msg) from None
-        with cls._lock:
+        with cls._rlock:
             if thread in cls._instances:
                 msg = f"A caller already exist for {thread=}. You can use the classmethod `Caller.get()` to access it."
                 raise RuntimeError(msg)
@@ -219,25 +227,44 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._protected = kwargs.get("protected", False)
             inst._backend_options = kwargs.get("_backend_options")
             inst._resume = noop
-            inst.get = cls._catch_new_instances(parent=inst, func=inst.get)
+            inst.get = cls._wrap_inst_get(inst=inst, get=inst.get)
             cls._instances[thread] = inst
         return inst
 
     @staticmethod
-    def _catch_new_instances(parent: Caller, func: Callable[P, Caller]) -> Callable[P, Caller]:
-        "A wrapper to call `func`; If `func` returns a new instance, the instance is added to parent._children."
-        ref = weakref.ref(parent)
+    def _wrap_inst_get(inst: Caller, get: Callable[P, Caller]) -> Callable[P, Caller]:
+        "A wrapper to call `get`; If `get` returns a new instance, the instance is added to inst._children."
+        ref = weakref.ref(inst)
 
-        @functools.wraps(func)
-        def call_catch_new_instances(*args, **kwargs) -> Caller:
+        @functools.wraps(get)
+        def get_wrapped(*args, **kwargs) -> Caller:
             parent: Caller = ref()  # pyright: ignore[reportAssignmentType]
-            existing = set(parent._instances.values())
-            if (child := func(*args, **kwargs)) not in existing:
-                parent._children.add(child)
-            del parent
-            return child
+            with parent._rlock:
+                name, thread = kwargs.get("name"), kwargs.get("thread")
+                existing = set(parent._instances.values())
 
-        return call_catch_new_instances
+                # Search existing children
+                for caller in parent.children:
+                    if caller.name == name or caller.thread == thread:
+                        return caller
+
+                # Search other existing instances
+                for caller in existing:
+                    if caller.name == name or caller.thread == thread:
+                        return caller
+
+                # Specify preferred backend
+                if "backend" not in kwargs:
+                    kwargs["backend"] = parent.backend
+                    kwargs["backend_options"] = parent.backend_options
+
+                # Get a new instance
+                if (caller := get(*args, **kwargs)) not in existing:
+                    parent._children.add(caller)
+                del parent
+                return caller
+
+        return get_wrapped
 
     @classmethod
     def get(cls, *, create: bool = True, daemon: bool = True, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
@@ -279,7 +306,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             msg = "Cannot create a caller from a different thread!"
             raise RuntimeError(msg)
 
-        with cls._lock:
+        with cls._rlock:
             # Search for an existing instance
             if name or thread:
                 for caller in cls._instances.values():
@@ -349,11 +376,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                 await tg.start(self._scheduler, tg)
                 yield self
             finally:
+                self.stop(force=True)
                 self._instances.pop(self.thread, None)
                 with anyio.CancelScope():
                     await self._shutdown_children()
-                    self.stop(force=True)
-                    await self.stopped
+                    self.stopped.set()
 
     async def _shutdown_children(self, force=True):
         if self._children:
@@ -388,7 +415,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         task_status.started()
 
         try:
-            while not self.stopped:
+            while self._continue:
                 if self._queue:
                     item, result = self._queue.popleft(), None
                     if callable(item):
@@ -404,7 +431,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 else:
                     event = create_async_event()
                     self._resume = event.set
-                    if not self.stopped and not self._queue:
+                    if self._continue and not self._queue:
                         await event
                     self._resume = noop
         finally:
@@ -416,7 +443,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                     item[1].set_exception(PendingCancelled())
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
-            self.stopped.set()
             tg.cancel_scope.cancel()
 
     async def _call_scheduled(self, pen: Pending) -> None:
@@ -516,9 +542,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Pending[T]:
         """
-        Call func in a new Caller specified by the options.
-
-        A Caller will be created if it isn't found.
+        Call func in a current or new Caller according to the options.
 
         Args:
             options: Options to pass to [Caller.get][].
@@ -531,15 +555,17 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Raises:
             ValueError: When a name is not supplied.
+
         Notes:
             - When `options == {"name": None}` the caller is associated with a pool of workers.
+            - When called via from an instance any new callers are added to the the instances children (done in `_catch_new_instances`).
         """
 
         if is_worker := options == {"name": None}:
             try:
                 caller = self._worker_pool.popleft()
             except IndexError:
-                caller = self.get(name=None, backend=self.backend, backend_options=self.backend_options)
+                caller = self.get(name=None)
         else:
             if not options.get("name"):
                 msg = "A name was not provided in {options=}."
@@ -566,8 +592,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if self._protected and not force:
             return None
+        self._continue = False
         self._instances.pop(self.thread, None)
-        self.stopped.set()
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
@@ -599,8 +625,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             context: The context to use, if not provided the current context is used.
             **metadata: Additional metadata to store in the instance.
         """
-        if self.stopped:
-            msg = f"{self} is stopped!"
+        if not self._continue:
+            msg = f"{self} is {'stopped' if self.stopped else 'stopping'}!"
             raise RuntimeError(msg)
         pen = Pending(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), pen))

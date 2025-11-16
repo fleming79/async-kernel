@@ -503,12 +503,11 @@ class Kernel(HasTraits):
             raise RuntimeError(msg)
         assert self.shell
         self.anyio_backend = Backend(current_async_library())
+        self.callers[SocketID.shell] = caller = Caller(thread=threading.current_thread(), log=self.log, protected=True)
+        self.callers[SocketID.control] = caller.get(name="ControlThread", protected=True)
         try:
-            async with Caller(thread=threading.current_thread(), log=self.log, protected=True) as caller:
+            async with caller:
                 # Callers
-                self.callers[SocketID.shell] = caller
-                self.callers[SocketID.control] = caller.get(name="ControlThread", protected=True)
-
                 await self._start_threads_and_open_sockets()
                 assert len(self._sockets) == len(SocketID)
                 self._write_connection_file()

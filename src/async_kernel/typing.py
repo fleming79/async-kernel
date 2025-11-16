@@ -330,7 +330,7 @@ class CallerCreateOptions(TypedDict):
     "The thread of the caller."
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use to log exceptions."
-    backend: NotRequired[Backend]
+    backend: NotRequired[Backend | Literal["trio", "asyncio"]]
     "The anyio backend to use."
     backend_options: NotRequired[dict | None]
     "Options to use when calling [anyio.run][] inside the new thread."
