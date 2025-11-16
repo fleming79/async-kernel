@@ -102,13 +102,14 @@ class Caller(anyio.AsyncContextManagerMixin):
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
     _rlock: ClassVar = RLock()
 
-    _thread: threading.Thread
     _name: str
-    _continue = True
-    _protected = False
-    _running = False
+    _thread: threading.Thread
     _backend: Backend
     _backend_options: dict[str, Any] | None
+    _protected = False
+    _running = False
+    _continue = True
+
     _parent_ref: weakref.ref[Caller] | None = None
 
     # Fixed
@@ -116,6 +117,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     _worker_pool: Fixed[Self, deque[Caller]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
     _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | Callable[[], Any]]] = Fixed(deque)
+    stopped = Fixed(Event)
+    "A thread-safe Event for when the caller is stopped."
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
@@ -125,9 +128,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     ""
     iopub_url: ClassVar = "inproc://iopub"
     ""
-    _stop = Fixed(Event)
-    stopped = Fixed(Event)
-    "A thread-safe Event for when the caller is stopped."
 
     @property
     def name(self) -> str:
@@ -305,9 +305,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             return caller
                         name, thread = None, caller.thread
                         break
-
             options = {} if options is None else options
-
             if (not options.get("create", True) and (thread not in cls._instances)) or (
                 thread and thread is not threading.current_thread()
             ):
@@ -348,9 +346,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 args = [{"backend": backend, "backend_options": backend_options}]
             # Create and start the caller
             pen: Pending[Self] = Pending()
-            thread_ = threading.Thread(
-                target=async_kernel_caller, name=name, args=args, daemon=options.get("daemon", True)
-            )
+            daemon = options.get("daemon", True)
+            thread_ = threading.Thread(target=async_kernel_caller, name=name, args=args, daemon=daemon)
             kwargs["thread"] = thread = thread or thread_
             caller = cls._instances.get(thread) or cls(**kwargs)
         thread_.start()

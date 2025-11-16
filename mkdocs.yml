@@ -175,7 +175,7 @@ nav:
       - "caller": reference/caller.md
       - "comm": reference/comm.md
       - "command": reference/command.md
-      - "commony": reference/common.md
+      - "common": reference/common.md
       - "debugger": reference/debugger.md
       - "kernel": reference/kernel.md
       - "kernelspec": reference/kernelspec.md
