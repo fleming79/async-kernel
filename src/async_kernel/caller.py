@@ -107,6 +107,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _running = False
     _backend: Backend
     _backend_options: dict[str, Any] | None
+    _parent_ref: weakref.ref[Caller] | None = None
 
     # Fixed
     _children: Fixed[Self, set[Caller]] = Fixed(set)
@@ -261,6 +262,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 # Get a new instance
                 if (caller := get(*args, **kwargs)) not in existing:
                     parent._children.add(caller)
+                    caller._parent_ref = ref
                 del parent
                 return caller
 
@@ -365,14 +367,14 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         return pen.wait_sync()
 
-    def stop(self, *, force=False) -> Event | None:
+    def stop(self, *, force=False) -> None:
         """
         Stop the caller, cancelling all pending tasks and close the thread.
 
         If the instance is protected, this is no-op unless force is used.
         """
         if self._protected and not force:
-            return None
+            return
         self._continue = False
         self._instances.pop(self.thread, None)
         for item in self._queue:
@@ -385,7 +387,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._worker_pool.remove(self)
         if self._running and self.thread is not threading.current_thread():
             self.stopped.wait()
-        return self.stopped
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -399,20 +400,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                 yield self
             finally:
                 self.stop(force=True)
-                self._instances.pop(self.thread, None)
-                with anyio.CancelScope():
-                    await self._shutdown_children()
-                    self.stopped.set()
-
-    async def _shutdown_children(self, force=True):
-        if self._children:
-            # Shutdown children waiting for them to shutdown.
-            wait_stopped: set[Event] = set()
-            while self._children:
-                if (stopped := self._children.pop().stop(force=force)) is not None:
-                    wait_stopped.add(stopped)
-            while wait_stopped:
-                await wait_stopped.pop()
+                while self._children:
+                    with contextlib.suppress(Exception):
+                        # This call will block this thread until the child thread has stopped.
+                        self._children.pop().stop(force=True)
+                if self._parent_ref and (parent := self._parent_ref()):
+                    parent.children.discard(self)
+                self.stopped.set()
 
     async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         """
@@ -600,7 +594,6 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             pen.add_done_callback(_to_thread_on_done)
         return pen
-
 
     def schedule_call(
         self,
