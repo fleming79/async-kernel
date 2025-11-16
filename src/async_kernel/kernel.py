@@ -479,8 +479,11 @@ class Kernel(HasTraits):
                     await wait_exit()
 
         try:
-            backend = Backend.trio if "trio" in self.kernel_name.lower() else Backend.asyncio
-            anyio.run(_run, backend=backend, backend_options=self.anyio_backend_options.get(backend))
+            if not self.trait_has_value("anyio_backend") and "trio" in self.kernel_name.lower():
+                self.anyio_backend = Backend.trio
+            backend = self.anyio_backend
+            backend_options = self.anyio_backend_options.get(backend)
+            anyio.run(_run, backend=backend, backend_options=backend_options)
         finally:
             self.stop()
 
