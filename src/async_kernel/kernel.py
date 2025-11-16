@@ -38,11 +38,12 @@ from jupyter_client.session import Session
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CaselessStrEnum, Dict, HasTraits, Instance, Set, Tuple, Unicode, UseEnum
 from typing_extensions import override
-from zmq import Context, Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
+from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
 from async_kernel import Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell
+from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
 from async_kernel.kernelspec import Backend, KernelName
@@ -206,6 +207,7 @@ class Kernel(HasTraits):
     _stop_on_error_time: float = 0
     _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
     _settings: Dict[str, Any] = Dict()
+    _zmq_context = Fixed(zmq.Context)
     _sockets: Dict[SocketID, zmq.Socket] = Dict()
     callers: Dict[Literal[SocketID.shell, SocketID.control], Caller] = Dict()
     "The caller associated with the kernel once it has started."
@@ -503,11 +505,13 @@ class Kernel(HasTraits):
             raise RuntimeError(msg)
         assert self.shell
         self.anyio_backend = Backend(current_async_library())
-        self.callers[SocketID.shell] = caller = Caller(thread=threading.current_thread(), log=self.log, protected=True)
-        self.callers[SocketID.control] = caller.get(name="ControlThread", protected=True)
+        # Callers
+        thread = threading.current_thread()
+        caller = Caller(name="Shell", protected=True, thread=thread, log=self.log, zmq_context=self._zmq_context)
+        self.callers[SocketID.shell] = caller
+        self.callers[SocketID.control] = caller.get(name="Control", protected=True)
         try:
             async with caller:
-                # Callers
                 await self._start_threads_and_open_sockets()
                 assert len(self._sockets) == len(SocketID)
                 self._write_connection_file()
@@ -529,7 +533,7 @@ class Kernel(HasTraits):
         finally:
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
-            Context.instance().term()
+            self._zmq_context.term()
             print(f"Kernel stopped: {self!r}")
 
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
@@ -561,8 +565,7 @@ class Kernel(HasTraits):
         def heartbeat(ready=heartbeat_ready.set):
             # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
             utils.mark_thread_pydev_do_not_trace()
-            socket: Socket = Context.instance().socket(zmq.ROUTER)
-            with self._bind_socket(SocketID.heartbeat, socket):
+            with self._bind_socket(SocketID.heartbeat) as socket:
                 ready()
                 try:
                     zmq.proxy(socket, socket)
@@ -575,10 +578,9 @@ class Kernel(HasTraits):
             # When thread-safe sockets become available, this could be changed...
             # Ref: https://zguide.zeromq.org/docs/chapter2/#Working-with-Messages (fig 14)
             utils.mark_thread_pydev_do_not_trace()
-            frontend: zmq.Socket = Context.instance().socket(zmq.XSUB)
+            frontend: zmq.Socket = self._zmq_context.socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
-            iopub_socket: zmq.Socket = Context.instance().socket(zmq.XPUB)
-            with self._bind_socket(SocketID.iopub, iopub_socket):
+            with self._bind_socket(SocketID.iopub) as iopub_socket:
                 ready()
                 try:
                     zmq.proxy(frontend, iopub_socket)
@@ -586,8 +588,7 @@ class Kernel(HasTraits):
                     frontend.close(linger=500)
 
         async def run_in_shell_event_loop(ready=shell_ready.set):
-            stdin_socket = Context.instance().socket(SocketType.ROUTER)
-            with self._bind_socket(SocketID.stdin, stdin_socket):
+            with self._bind_socket(SocketID.stdin):
                 thread = threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, ready), daemon=True)
                 thread.start()
                 await anyio.sleep_forever()
@@ -605,7 +606,7 @@ class Kernel(HasTraits):
         await shell_ready
 
     @contextlib.contextmanager
-    def _bind_socket(self, socket_id: SocketID, socket: zmq.Socket) -> Generator[None, Any, None]:
+    def _bind_socket(self, socket_id: SocketID) -> Generator[Any | Socket[Any], Any, None]:
         """
         Bind a zmq.Socket storing a reference to the socket and the port
         details and closing the socket on leaving the context.
@@ -613,13 +614,19 @@ class Kernel(HasTraits):
         if socket_id in self._sockets:
             msg = f"{socket_id=} is already loaded"
             raise RuntimeError(msg)
+        match socket_id:
+            case SocketID.shell | SocketID.control | SocketID.heartbeat | SocketID.stdin:
+                socket_type = zmq.ROUTER
+            case SocketID.iopub:
+                socket_type = zmq.XPUB
+        socket: zmq.Socket = self._zmq_context.socket(socket_type)
         socket.linger = 500
         port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self._ports.get(socket_id, 0))  # pyright: ignore[reportArgumentType]
         self._ports[socket_id] = port
         self.log.debug("%s socket on port: %i", socket_id, port)
         self._sockets[socket_id] = socket
         try:
-            yield
+            yield socket
         finally:
             socket.close(linger=500)
             self._sockets.pop(socket_id)
@@ -733,9 +740,8 @@ class Kernel(HasTraits):
         msg: Message
         ident: list[bytes]
         caller = self.callers[socket_id]
-        socket: Socket[Literal[SocketType.ROUTER]] = Context.instance().socket(SocketType.ROUTER)
         lock = BinarySemaphore()
-        with self._bind_socket(socket_id, socket):
+        with self._bind_socket(socket_id) as socket:
             started()
             time.sleep(self._stabilisation_delay)
             while True:
