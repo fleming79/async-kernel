@@ -277,8 +277,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         Retrieve an existing instance of the class based on the provided 'name' or 'thread', or create a new one if specified.
 
         Args:
-            create: If True or NoValue (default), a new instance will be created if no matching instance is found.
-            daemon: If a thread is started whether the thread should be a daemon thread.
+            options: Options to use in get.
+                - create: If True or NoValue (default), a new instance will be created if no matching instance is found.
+                - daemon: If a thread is started whether the thread should be a daemon thread.
             **kwargs: Additional keyword arguments used to identify or create the instance. Common options include 'name' and 'thread'.
 
         Returns:
