@@ -102,8 +102,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _backend_options: dict[str, Any] | None
 
     # Fixed
-    children: Fixed[Self, set[Caller]] = Fixed(set)
-    # _stopped_callbacks: Fixed[Self, deque[Callable[[Self], Any]]] = Fixed(deque)
+    _children: Fixed[Self, set[Caller]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Caller]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
     _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | Callable[[], Any]]] = Fixed(deque)
@@ -147,9 +146,20 @@ class Caller(anyio.AsyncContextManagerMixin):
         "Returns `True` when the caller is available to run requests."
         return self._running
 
+    @property
+    def children(self) -> set[Caller]:
+        """A copy of the set of instances that were created by the caller.
+
+        Notes:
+            - When the parent is stopped, all children are stopped.
+            - All children are stopped prior to the parent exiting its async context.
+        """
+        return self._children.copy()
+
     @override
     def __repr__(self) -> str:
-        return f"Caller<{self.name} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')}>"
+        children = "🧒 [" + ", ".join(repr(c.name) for c in self._children) + "]" if self._children else ""
+        return f"Caller<{self.name} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')} {children}>"
 
     def __new__(cls, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """
@@ -166,9 +176,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Notes:
             - There is only one caller instance per thread.
-            - [Caller.get][] is the recommended way to get a running caller.
-            - A caller reatains its own pool of workers.
-            - When a caller is shutdown the workers are shutdown.
+            - [Caller.get][] is the recommended way to get a *running* caller.
+            - A caller retains its own pool of workers.
+            - When a caller is shutdown its children are shutdown.
             - `Caller` instances started using [Caller.to_thread][] and [Caller.to_thread_advanced][]
                 are considered children and stopped with the caller when it closes.
 
@@ -190,7 +200,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             === "Start a new thread"
 
             ```python
-                my_caller = Caller.get(name="My new caller thread")
+            my_caller = Caller.get(name="My new caller thread")
             ```
         """
 
@@ -209,8 +219,25 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._protected = kwargs.get("protected", False)
             inst._backend_options = kwargs.get("_backend_options")
             inst._resume = noop
+            inst.get = cls._catch_new_instances(parent=inst, func=inst.get)
             cls._instances[thread] = inst
         return inst
+
+    @staticmethod
+    def _catch_new_instances(parent: Caller, func: Callable[P, Caller]) -> Callable[P, Caller]:
+        "If the result of callable reurns a new instance it gets added to parent._children."
+        ref = weakref.ref(parent)
+
+        @functools.wraps(func)
+        def call_catch_new_instances(*args, **kwargs) -> Caller:
+            parent: Caller = ref()  # pyright: ignore[reportAssignmentType]
+            existing = set(parent._instances.values())
+            if (child := func(*args, **kwargs)) not in existing:
+                parent._children.add(child)
+            del parent
+            return child
+
+        return call_catch_new_instances
 
     @classmethod
     def get(cls, *, create: bool = True, daemon=True, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
@@ -227,6 +254,10 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Raises:
             RuntimeError: If no matching instance is found and 'create' is set to False.
+
+        Important:
+            If this method is called via an existing instance (`parent`), any newly created instance (`child`) will be added `parent.children`.
+            When parent is stopped, all items in `parent.children` are also stopped.
 
         Notes:
             - If both 'name' and 'thread' are provided, the method returns the first matching instance.
@@ -319,10 +350,20 @@ class Caller(anyio.AsyncContextManagerMixin):
                 yield self
             finally:
                 self._instances.pop(self.thread, None)
-                while self.children:
-                    self.children.pop().stop(force=self.protected)
-                self.stop(force=True)
-                await self.stopped
+                with anyio.CancelScope():
+                    await self._shutdown_children()
+                    self.stop(force=True)
+                    await self.stopped
+
+    async def _shutdown_children(self, force=True):
+        if self._children:
+            # Shutdown children waiting for them to shutdown.
+            wait_stopped: set[Event] = set()
+            while self._children:
+                if (stopped := self._children.pop().stop(force=force)) is not None:
+                    wait_stopped.add(stopped)
+            while wait_stopped:
+                await wait_stopped.pop()
 
     async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         """
@@ -376,11 +417,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             socket.close()
             self.iopub_sockets.pop(self.thread, None)
             self.stopped.set()
-            # while self._stopped_callbacks:
-            #     try:
-            #         self._stopped_callbacks.popleft()(self)
-            #     except Exception:
-            #         pass
             tg.cancel_scope.cancel()
 
     async def _call_scheduled(self, pen: Pending) -> None:
@@ -509,8 +545,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 msg = "A name was not provided in {options=}."
                 raise ValueError(msg)
             caller = self.get(**options)
-        self.children.add(caller)
-
         pen = caller.call_soon(func, *args, **kwargs)
         if is_worker:
 
@@ -524,14 +558,14 @@ class Caller(anyio.AsyncContextManagerMixin):
             pen.add_done_callback(_to_thread_on_done)
         return pen
 
-    def stop(self, *, force=False) -> None:
+    def stop(self, *, force=False) -> Event | None:
         """
         Stop the caller, cancelling all pending tasks and close the thread.
 
         If the instance is protected, this is no-op unless force is used.
         """
         if self._protected and not force:
-            return
+            return None
         self._instances.pop(self.thread, None)
         self.stopped.set()
         for func in tuple(self._queue_map):
@@ -541,6 +575,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._worker_pool.remove(self)
         if self._running and self.thread is not threading.current_thread():
             self.stopped.wait()
+        return self.stopped
 
     def schedule_call(
         self,
@@ -835,4 +870,3 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if return_when == "FIRST_EXCEPTION" and (pen.cancelled() or pen.exception()):
                         break
         return done, pending
-

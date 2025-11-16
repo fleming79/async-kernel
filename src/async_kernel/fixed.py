@@ -43,7 +43,7 @@ class Fixed(Generic[S, T]):
         ``T``: Type of the managed class.
     """
 
-    __slots__ = ["create", "created", "instances", 'lock', "name"]
+    __slots__ = ["create", "created", "instances", "lock", "name"]
 
     def __init__(
         self,

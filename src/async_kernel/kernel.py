@@ -507,8 +507,7 @@ class Kernel(HasTraits):
             async with Caller(thread=threading.current_thread(), log=self.log, protected=True) as caller:
                 # Callers
                 self.callers[SocketID.shell] = caller
-                self.callers[SocketID.control] = Caller.get(name="ControlThread", protected=True)
-                caller.children.add(self.callers[SocketID.control])
+                self.callers[SocketID.control] = caller.get(name="ControlThread", protected=True)
 
                 await self._start_threads_and_open_sockets()
                 assert len(self._sockets) == len(SocketID)

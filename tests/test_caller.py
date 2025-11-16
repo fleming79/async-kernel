@@ -24,7 +24,6 @@ def anyio_backend(request):
 
 @pytest.mark.anyio
 class TestCaller:
-
     def test_no_thread(self):
         with pytest.raises(RuntimeError):
             Caller.get()
@@ -35,10 +34,17 @@ class TestCaller:
 
     async def test_worker_lifecycle(self, anyio_backend: Backend):
         async with Caller(thread=threading.current_thread()) as caller:
+            assert not caller.protected
+            # worker thread
             assert await caller.to_thread(lambda: 2 + 1) == 3
             assert len(caller.children) == 1
             worker = next(iter(caller.children))
             assert "async_kernel_caller" in worker.name
+            # Child thread
+            child_caller = caller.get(name="child", protected=True)
+            assert child_caller in caller.children
+            assert len(caller.children) == 2
+
         assert len(caller.children) == 0
 
     async def test_already_exists(self, caller: Caller):

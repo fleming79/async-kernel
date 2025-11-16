@@ -87,7 +87,6 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
         ctx.term()
 
 
-
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
     with pytest.raises(RuntimeError):
         kernel.load_connection_info({})
