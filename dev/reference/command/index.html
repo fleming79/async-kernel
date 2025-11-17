@@ -1815,8 +1815,8 @@ program is interrupted.</p>
 <span class="sd">        SystemExit: If an error occurs during kernel execution or if the</span>
 <span class="sd">            program is interrupted.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Async kernel&quot;</span>
     <span class="n">kernel_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">get_kernel_dir</span><span class="p">()</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Async kernel&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
         <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
