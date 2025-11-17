@@ -262,9 +262,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                     kwargs["backend_options"] = parent.backend_options
                 if "zmq_context" not in kwargs:
                     kwargs["zmq_context"] = parent._zmq_context
+                if "name" in kwargs:
+                    kwargs["force_new"] = True
                 # Get an instance
                 existing = set(parent._instances.values())
-                if (caller := get(*args, **kwargs)) not in existing:
+                if (caller := get({"force_new": "name" in kwargs}, **kwargs)) not in existing:  # pyright: ignore[reportCallIssue]
                     parent._children.add(caller)
                     caller._parent_ref = ref
                 del parent
@@ -306,14 +308,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                 raise ValueError(msg)
         with cls._rlock:
             # Search for an existing instance
+            options = {} if options is None else options
             if name or thread:
                 for caller in cls._instances.values():
-                    if caller.thread == thread or caller.name == name:
+                    if caller.thread == thread or (caller.name == name and not options.get("force_new")):
                         if caller.running or (caller.thread is not threading.current_thread()):
                             return caller
                         name, thread = None, caller.thread
                         break
-            options = {} if options is None else options
             if (not options.get("create", True) and (thread not in cls._instances)) or (
                 thread and thread is not threading.current_thread()
             ):

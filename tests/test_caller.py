@@ -43,12 +43,19 @@ class TestCaller:
             worker = next(iter(caller.children))
             assert "async_kernel_caller" in worker.name
             # Child thread
-            child_caller = caller.get(name="child", protected=True)
-            assert child_caller in caller.children
+            c1 = caller.get(name="child", protected=True)
+            assert c1 in caller.children
             assert len(caller.children) == 2
-            assert caller.get(name="child") is child_caller
+            assert caller.get(name="child") is c1
+            # A child's child
+            c2 = c1.get(name="child")
+            assert c2 in c1.children
+            assert c2 not in caller.children
+            assert c1.get(name="child") is c2
 
         assert len(caller.children) == 0
+        assert c1.stopped
+        assert c2.stopped
 
     async def test_already_exists(self, caller: Caller):
         assert Caller.get(thread=caller.thread) is caller

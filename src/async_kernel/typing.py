@@ -342,6 +342,8 @@ class CallerCreateOptions(TypedDict):
 class CallerGetOptions(TypedDict):
     create: NotRequired[bool]
     "Use this when searching for an existing instance (True)."
+    force_new: NotRequired[Any]
+    """Forces a new instance irrespective if an existing instance exists with the same name."""
 
 
 DebugMessage = dict[str, Any]
