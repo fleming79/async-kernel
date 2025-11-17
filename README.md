@@ -10,13 +10,13 @@
 [![codecov](https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85)](https://codecov.io/github/fleming79/async-kernel)
 
 Async kernel is an asynchronous Python [Jupyter kernel](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
-with [configurable](#run-mode) concurrent message handling.
+with [concurrent message handling](#run-mode).
 
 ## Highlights
 
-- [Concurrent message handling](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/)
-- [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
+- [Concurrent message handling](https://fleming79.github.io/async-kernel/latest/notebooks/simple_example/)
 - [Configurable backend](https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec)
+- [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
     - [anyio](https://pypi.org/project/anyio/)
         - [`asyncio` backend](https://docs.python.org/3/library/asyncio.html) (default)[^uv-loop]
         - [`trio` backend](https://pypi.org/project/trio/)
@@ -26,7 +26,7 @@ with [configurable](#run-mode) concurrent message handling.
     - magic
     - code completions
     - history
-- Thread-safe classes (utilising [aiologic](https://aiologic.readthedocs.io/latest/) synchronisation primitives).
+- Thread-safe execution and cancellation (utilising [aiologic](https://aiologic.readthedocs.io/latest/) synchronisation primitives).
     - [Caller](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller) - code execution in a chosen event loop
     - [Pending](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending) - wait/await/cancel the pending result
 - GUI event loops
@@ -61,16 +61,16 @@ for concurrent message handling.
 
 There are two callers:
 
-- `Shell` - run in the `MainThread` [^non-main-thread] for handling for user related requests (including comm messages).
-- `Control` - runs in a separate thread for handling control related request (including debug).
+- `Shell` - runs in the `MainThread` handling user related requests[^non-main-thread].
+- `Control` - runs in a separate thread handling control related requests.
 
 ### Messaging
 
-Messages are received in a separate thread (per-channel) which schedules execution on the associated caller after determining the RunMode.
+Messages are received in a separate thread (per-channel) then handled in the associated thread (shell/control) concurrently according to the determined run mode.
 
 ### Run mode
 
-Run mode is Enumeration of the execution modes available:
+The run modes available are:
 
 - `RunMode.direct` → [`Caller.call_direct`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct):
   Run the request in the scheduler.
@@ -81,7 +81,7 @@ Run mode is Enumeration of the execution modes available:
 - `RunMode.thread` → [`Caller.to_thread`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.to_thread):
   Run the request in a separate worker thread.
 
-The is a table of the currently assigned run modes.
+These are the currently assigned run modes.
 
 | MsgType             | shell  | control |
 | ------------------- | ------ | ------- |
@@ -99,7 +99,7 @@ The is a table of the currently assigned run modes.
 | kernel_info_request | queue  | queue   |
 | shutdown_request    | None   | queue   |
 
-See also:
+#### Further detail
 
 - [`MsgType`](https://fleming79.github.io/async-kernel/latest/reference/typing/#async_kernel.typing.MsgType) docs.
 - [`Kernel.receive_msg_loop`](https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.receive_msg_loop) docs.
