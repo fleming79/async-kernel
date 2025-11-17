@@ -96,8 +96,10 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     assert "not found!" in out
 
 
-def test_start_kernel_success(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--kernel_name=async", "--backend=asyncio", "--no-skip"])
+def test_start_kernel_success(monkeypatch):
+    monkeypatch.setattr(
+        sys, "argv", ["prog", "-f", ".", "--kernel_name=async", "--backend=asyncio", "--no-print_kernel_messages"]
+    )
     started = False
 
     async def wait_exit():
@@ -110,9 +112,6 @@ def test_start_kernel_success(monkeypatch, capsys):
         command_line(wait_exit)
     assert e.value.code == 0
     assert started
-    out = capsys.readouterr().out
-    assert "Kernel started" in out
-    assert "Kernel stopped" in out
 
 
 async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, kernel_name, transport):
