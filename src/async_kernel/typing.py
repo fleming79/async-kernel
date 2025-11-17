@@ -61,10 +61,10 @@ class SocketID(enum.StrEnum):
 
 class RunMode(enum.StrEnum):
     """
-    An Enum of the run modes available for altering how message requests are run.
+    An Enum of the run modes available for handling [Messages][async_kernel.typing.Message].
 
-    When [receive_msg_loop][async_kernel.Kernel.receive_msg_loop] receives a message it uses
-    [get_run_mode[async_kernel.Kernel.get_run_mode] to get the run mode.
+    [receive_msg_loop][async_kernel.Kernel.receive_msg_loop] uses [get_run_mode][async_kernel.Kernel.get_run_mode]
+    to map the message type and channel (`shell` or `control`) to the `RunMode`.
 
     Cell overrides:
         The user can also specify an execution mode in execute requests.
@@ -267,8 +267,7 @@ class Message(TypedDict, Generic[T]):
     """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
     
     See also:
-
-    - [ExecuteContent][]
+        - [ExecuteContent][]
     """
     buffers: list[bytearray | bytes]
     ""

@@ -94,8 +94,17 @@ def bind_socket(
     """
     Bind the socket to a port using the settings.
 
-    max_attempts: The maximum number of attempts to bind the socket. If un-specified,
-    defaults to 100 if port missing, else 2 attempts.
+    'url = <transport>://<ip>:<port>'
+
+    Args:
+        socket: The socket to bind.
+        transport: The type of transport.
+        ip: Inserted in the url.
+        port: The port to bind. If `0` will bind to a random port.
+        max_attempts: The maximum number of attempts to bind the socket. If un-specified,
+            defaults to 100 if port missing, else 2 attempts.
+
+    Returns: The port that was bound.
     """
     if socket.TYPE == SocketType.ROUTER:
         # ref: https://github.com/ipython/ipykernel/issues/270
@@ -136,7 +145,9 @@ def wrap_handler(
     runner: Callable[[HandlerType, BinarySemaphore, Job]], lock: BinarySemaphore, handler: HandlerType
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
     """
-    A cache of run handlers.
+    Returns a function that calls and awaits runner with the corresponding lock and handler.
+
+    This function is cached meaning that for the same arguments, the same function is returned.
 
     Args:
         runner: The function that calls and awaits the handler.
@@ -213,14 +224,19 @@ class Kernel(HasTraits):
     "The caller associated with the kernel once it has started."
     _ports: Dict[SocketID, int] = Dict()
     _execution_count = traitlets.Int(0)
+
+    # Public traits
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
     "The anyio configured backend used to run the event loops."
+
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
+
     help_links = Tuple()
     ""
     quiet = traitlets.Bool(True)
     "Only send stdout/stderr to output stream."
+
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
     """
     JSON file in which to store connection info [default: kernel-<pid>.json]
@@ -229,6 +245,7 @@ class Kernel(HasTraits):
     clients to this kernel. By default, this file will be created in the security dir
     of the current profile, but can be specified by absolute path.
     """
+
     kernel_name: str | Unicode = Unicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
@@ -239,21 +256,28 @@ class Kernel(HasTraits):
     If the IP address is something other than localhost, then Consoles on other machines 
     will be able to connect to the Kernel, so be careful!
     """
+
     log = Instance(logging.LoggerAdapter)
     "The logging adapter."
+
     shell = Instance(AsyncInteractiveShell, ())
     "The interactive shell."
+
     session = Instance(Session, ())
     "Handles serialization and sending of messages."
+
     debugger = Instance(Debugger, ())
     "Handles (debug requests)[https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request]."
+
     comm_manager: Instance[CommManager] = Instance("async_kernel.comm.CommManager")
     ""
+
     transport: CaselessStrEnum[str] = CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
     )
     event_started = Instance(Event, (), read_only=True)
     "An event that occurs when the kernel is started."
+
     event_stopped = Instance(Event, (), read_only=True)
     "An event that occurs when the kernel is stopped."
 
@@ -701,6 +725,45 @@ class Kernel(HasTraits):
             # Reset IO
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
 
+    def iopub_send(
+        self,
+        msg_or_type: dict[str, Any] | str,
+        content: Content | None = None,
+        metadata: dict[str, Any] | None = None,
+        parent: dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        ident: bytes | list[bytes] | None = None,
+        buffers: list[bytes] | None = None,
+    ) -> None:
+        """Send a message on the zmq iopub socket."""
+        if socket := Caller.iopub_sockets.get(thread := threading.current_thread()):
+            msg = self.session.send(
+                stream=socket,
+                msg_or_type=msg_or_type,
+                content=content,
+                metadata=metadata,
+                parent=parent if parent is not NoValue else utils.get_parent(),  # pyright: ignore[reportArgumentType]
+                ident=ident,
+                buffers=buffers,
+            )
+            if msg:
+                self.log.debug(
+                    "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
+                )
+        elif (caller := self.callers.get(SocketID.control)) and caller.thread is not thread:
+            caller.call_direct(
+                self.iopub_send,
+                msg_or_type=msg_or_type,
+                content=content,
+                metadata=metadata,
+                parent=parent if parent is not NoValue else None,
+                ident=ident,
+                buffers=buffers,
+            )
+
+    def topic(self, topic) -> bytes:
+        """prefixed topic for IOPub messages."""
+        return (f"kernel.{topic}").encode()
+
     def receive_msg_loop(
         self, socket_id: Literal[SocketID.control, SocketID.shell], ready: Event, start: Event
     ) -> None:
@@ -740,7 +803,6 @@ class Kernel(HasTraits):
                 try:
                     ident, msg = self.session.recv(socket, mode=zmq.BLOCKY, copy=False)  # pyright: ignore[reportAssignmentType]
                     msg_type = MsgType(msg["header"]["msg_type"])
-                    handler = wrap_handler(self.run_handler, lock, self.get_handler(msg_type))
                     job: Job = {
                         "socket_id": socket_id,
                         "socket": socket,
@@ -749,6 +811,7 @@ class Kernel(HasTraits):
                         "received_time": time.monotonic(),
                     }
                     run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
+                    handler = wrap_handler(self.run_handler, lock, self.get_handler(msg_type))
                     self.schedule_job(caller, lock, handler, run_mode, job)
                     self.log.debug("%s %s %s %s %s", socket_id, msg_type, run_mode, handler, msg)
                 except zmq.ContextTerminated:
@@ -756,27 +819,6 @@ class Kernel(HasTraits):
                 except Exception as e:
                     self.log.debug("Bad message on %s: %s", socket_id, e)
                     continue
-
-    def schedule_job(self, caller: Caller, lock: BinarySemaphore, handler: HandlerType, run_mode: RunMode, job: Job, /):
-        """
-        Schedules a job to be executed by the handler using the specified run mode.
-
-        Args:
-            caller: The caller instance responsible for scheduling.
-            lock: A binary semaphore for synchronization (not used in this method).
-            handler: The function or callable to execute for the job.
-            run_mode: The mode in which to run the job.
-            job: The job instance or data to be passed to the handler.
-        """
-        match run_mode:
-            case RunMode.direct:
-                caller.call_direct(handler, job)
-            case RunMode.queue:
-                caller.queue_call(handler, job)
-            case RunMode.task:
-                caller.call_soon(handler, job)
-            case RunMode.thread:
-                caller.to_thread(handler, job)
 
     def get_run_mode(
         self,
@@ -823,29 +865,6 @@ class Kernel(HasTraits):
                 pass
         return RunMode.queue
 
-    def all_concurrency_run_modes(
-        self,
-        socket_ids: Iterable[Literal[SocketID.shell, SocketID.control]] = (SocketID.shell, SocketID.control),
-        msg_types: Iterable[MsgType] = MsgType,
-    ) -> dict[
-        Literal["SocketID", "MsgType", "RunMode"],
-        tuple[SocketID, MsgType, RunMode | None],
-    ]:
-        """
-        Generates a dictionary containing all combinations of SocketID, and MsgType,
-        along with their corresponding RunMode (if available).
-        """
-        data: list[Any] = []
-        for socket_id in socket_ids:
-            for msg_type in msg_types:
-                try:
-                    mode = self.get_run_mode(msg_type, socket_id=socket_id)
-                except ValueError:
-                    mode = None
-                data.append((socket_id, msg_type, mode))
-        data_ = zip(*data, strict=True)
-        return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
-
     def get_handler(self, msg_type: MsgType) -> HandlerType:
         if not callable(f := getattr(self, msg_type, None)):
             msg = f"A handler was not found for {msg_type=}"
@@ -854,13 +873,16 @@ class Kernel(HasTraits):
 
     async def run_handler(self, handler: HandlerType, lock: BinarySemaphore, job: Job[dict]) -> None:
         """
-        Asynchronously runs a message handler for a given job, managing reply sending and execution state.
+        Asynchronously run a message handler for a given job, managing reply sending and execution state.
 
         Args:
-            handler: The coroutine function to handle the job. Should accept a Job and return a dict or None.
-                        - If the handler returns `None` no reply is sent
-                        - otherwise the return value (dict expected) set as the `content` in a reply Message.
-                        - If `status` is not provided in the content it is added as {'status': 'ok'}.
+            handler: A coroutine function to handle the job / message.
+
+                - It is a method on the kernel whose name corresponds to the [message type that it handles][async_kernel.typing.MsgType].
+                - The handler should return a dict to use as 'content'in a reply.
+                - If status is not included in the dict it gets added automatically as `{'status': 'ok'}`.
+                - If a reply is not expected the handler should return `None`.
+
             lock: An async semaphore used to synchronize reply sending.
             job: The job dictionary containing message, socket, and identification information.
 
@@ -875,7 +897,6 @@ class Kernel(HasTraits):
         Notes:
             - Replies are sent even if exceptions occur in the handler.
             - The reply message type is derived from the original request type.
-            - The function ensures proper synchronization when sending replies.
         """
 
         async def send_reply(job: Job[dict], content: dict, /) -> None:
@@ -907,44 +928,49 @@ class Kernel(HasTraits):
                 msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
             )
 
-    def iopub_send(
-        self,
-        msg_or_type: dict[str, Any] | str,
-        content: Content | None = None,
-        metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        ident: bytes | list[bytes] | None = None,
-        buffers: list[bytes] | None = None,
-    ) -> None:
-        """Send a message on the zmq iopub socket."""
-        if socket := Caller.iopub_sockets.get(thread := threading.current_thread()):
-            msg = self.session.send(
-                stream=socket,
-                msg_or_type=msg_or_type,
-                content=content,
-                metadata=metadata,
-                parent=parent if parent is not NoValue else utils.get_parent(),  # pyright: ignore[reportArgumentType]
-                ident=ident,
-                buffers=buffers,
-            )
-            if msg:
-                self.log.debug(
-                    "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
-                )
-        elif (caller := self.callers.get(SocketID.control)) and caller.thread is not thread:
-            caller.call_direct(
-                self.iopub_send,
-                msg_or_type=msg_or_type,
-                content=content,
-                metadata=metadata,
-                parent=parent if parent is not NoValue else None,
-                ident=ident,
-                buffers=buffers,
-            )
+    def schedule_job(self, caller: Caller, lock: BinarySemaphore, handler: HandlerType, run_mode: RunMode, job: Job, /):
+        """
+        Schedules a job to be executed by the handler using the specified run mode.
 
-    def topic(self, topic) -> bytes:
-        """prefixed topic for IOPub messages."""
-        return (f"kernel.{topic}").encode()
+        Args:
+            caller: The caller instance responsible for scheduling.
+            lock: A binary semaphore for synchronization (not used in this method).
+            handler: The function or callable to execute for the job.
+            run_mode: The mode in which to run the job.
+            job: The job instance or data to be passed to the handler.
+        """
+        match run_mode:
+            case RunMode.direct:
+                caller.call_direct(handler, job)
+            case RunMode.queue:
+                caller.queue_call(handler, job)
+            case RunMode.task:
+                caller.call_soon(handler, job)
+            case RunMode.thread:
+                caller.to_thread(handler, job)
+
+    def all_concurrency_run_modes(
+        self,
+        socket_ids: Iterable[Literal[SocketID.shell, SocketID.control]] = (SocketID.shell, SocketID.control),
+        msg_types: Iterable[MsgType] = MsgType,
+    ) -> dict[
+        Literal["SocketID", "MsgType", "RunMode"],
+        tuple[SocketID, MsgType, RunMode | None],
+    ]:
+        """
+        Generates a dictionary containing all combinations of SocketID, and MsgType, along with their
+        corresponding RunMode (if available).
+        """
+        data: list[Any] = []
+        for socket_id in socket_ids:
+            for msg_type in msg_types:
+                try:
+                    mode = self.get_run_mode(msg_type, socket_id=socket_id)
+                except ValueError:
+                    mode = None
+                data.append((socket_id, msg_type, mode))
+        data_ = zip(*data, strict=True)
+        return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
