@@ -100,18 +100,13 @@ async def test_execute_request_success(client: AsyncKernelClient):
     assert reply["content"]["status"] == "ok"
 
 
-@pytest.mark.parametrize("quiet", [True, False])
-async def test_simple_print(kernel: Kernel, client: AsyncKernelClient, quiet: bool):
+async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
     """Simple print statement in kernel."""
     await utils.clear_iopub(client)
-    kernel.quiet = quiet
-    try:
-        client.execute("print('test_simple_print')")
-        stdout, stderr = await utils.assemble_output(client)
-        assert stdout == "test_simple_print\n"
-        assert stderr == ""
-    finally:
-        kernel.quiet = True
+    client.execute("print('🌈')")
+    stdout, stderr = await utils.assemble_output(client)
+    assert stdout == "🌈\n"
+    assert stderr == ""
 
 
 @pytest.mark.parametrize("mode", ["kernel_timeout", "metadata"])

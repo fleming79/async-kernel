@@ -60,8 +60,8 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         SystemExit: If an error occurs during kernel execution or if the
             program is interrupted.
     """
-    title = "Async kernel"
     kernel_dir: Path = get_kernel_dir()
+    title = "Async kernel"
     parser = argparse.ArgumentParser(
         description="=" * len(title)
         + f"\n{title}\n"

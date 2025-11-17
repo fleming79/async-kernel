@@ -18,7 +18,7 @@ def anyio_backend(kernel_name: KernelName):
 
 
 async def test_start_kernel_in_context(anyio_backend: Backend, kernel_name: KernelName):
-    async with Kernel() as kernel:
+    async with Kernel({"print_kernel_messages": False}) as kernel:
         assert kernel.kernel_name == kernel_name
         connection_file = kernel.connection_file
         # Test prohibit nested async context.
@@ -33,6 +33,6 @@ async def test_start_kernel_in_context(anyio_backend: Backend, kernel_name: Kern
             kernel._bind_socket(SocketID.shell),  # pyright: ignore[reportPrivateUsage]
         ):
             pass
-    async with Kernel({"connection_file": connection_file}):
+    async with Kernel({"connection_file": connection_file, "print_kernel_messages": False}):
         # Test we can re-enter the kernel.
         pass

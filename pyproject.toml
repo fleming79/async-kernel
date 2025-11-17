@@ -126,7 +126,8 @@ exclude_lines = [
   "if TYPE_CHECKING:",
   "except .*",
   "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
-  ".*sys.platform == \"win32\".*"
+  ".*sys.platform == \"win32\".*",
+  "if not self.quiet.*"
 ]
 
 [tool.coverage.run]

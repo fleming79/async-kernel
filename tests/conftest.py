@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 import threading
 from collections.abc import AsyncGenerator
@@ -46,6 +45,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     kernel.connection_file = connection_file
     os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
     kernel.transport = transport
+    kernel.print_kernel_messages = False
     if request.param == "MainThread":
         async with kernel:
             yield kernel
@@ -88,26 +88,28 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
     assert anyio_backend == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     command = make_argv(connection_file=connection_file, kernel_name=kernel_name, transport=transport)
-    process = subprocess.Popen(command)
-    try:
-        client = AsyncKernelClient()
-        while not connection_file.exists() or not connection_file.stat().st_size:
-            await anyio.sleep(0.1)
-        await anyio.sleep(0.01)
-        client.load_connection_file(connection_file)
-        client.start_channels()
-        msg_id = client.kernel_info()
-        await utils.get_reply(client, msg_id)
-        await utils.clear_iopub(client, timeout=0.1)
+    process = await anyio.open_process([*command, "--no-print_kernel_messages"])
+    async with process:
         try:
-            yield client
+            client = AsyncKernelClient()
+            while not connection_file.exists() or not connection_file.stat().st_size:
+                await anyio.sleep(0.1)
+            await anyio.sleep(0.01)
+            client.load_connection_file(connection_file)
+            client.start_channels()
+            msg_id = client.kernel_info()
+            await utils.get_reply(client, msg_id)
+            await utils.clear_iopub(client, timeout=0.1)
+            try:
+                yield client
+            finally:
+                client.shutdown()
+                client.stop_channels()
+                with anyio.CancelScope(shield=True), anyio.fail_after(utils.TIMEOUT):
+                    assert await process.wait() == 0
         finally:
-            client.shutdown()
-            client.stop_channels()
-            assert process.wait(utils.TIMEOUT) == 0
-    finally:
-        if process.returncode is None:
-            process.kill()
+            if process.returncode is None:
+                process.kill()
 
     assert not connection_file.exists(), "cleanup_connection_file not called by atexit ..."
 

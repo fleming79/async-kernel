@@ -237,6 +237,9 @@ class Kernel(HasTraits):
     quiet = traitlets.Bool(True)
     "Only send stdout/stderr to output stream."
 
+    print_kernel_messages = traitlets.Bool(True)
+    "When enabled the kernel will print startup, shutdown and terminal errors."
+
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
     """
     JSON file in which to store connection info [default: kernel-<pid>.json]
@@ -542,7 +545,8 @@ class Kernel(HasTraits):
                 with self._bind_socket(SocketID.stdin):
                     assert len(self._sockets) == len(SocketID)
                     self._write_connection_file()
-                    print(f"Kernel started: {self!r}")
+                    if self.print_kernel_messages:
+                        print(f"Kernel started: {self!r}")
                     with self._iopub():
                         with anyio.CancelScope() as scope:
                             self._stop = lambda: caller.call_direct(scope.cancel, "Stopping kernel")
@@ -562,7 +566,8 @@ class Kernel(HasTraits):
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
             self._zmq_context.term()
-            print(f"Kernel stopped: {self!r}")
+            if self.print_kernel_messages:
+                print(f"Kernel stopped: {self!r}")
 
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
         "Handle interrupt signals."
@@ -1163,7 +1168,8 @@ class Kernel(HasTraits):
     def excepthook(self, etype, evalue, tb) -> None:
         """Handle an exception."""
         # write uncaught traceback to 'real' stderr, not zmq-forwarder
-        traceback.print_exception(etype, evalue, tb, file=sys.__stderr__)
+        if self.print_kernel_messages:
+            traceback.print_exception(etype, evalue, tb, file=sys.__stderr__)
 
     def unraisablehook(self, unraisable: sys.UnraisableHookArgs, /) -> None:
         "Handle unraisable exceptions (during gc for instance)."
