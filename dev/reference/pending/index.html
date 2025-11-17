@@ -1840,7 +1840,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Pending is thread-safe hybrid synchronous and asynchronous cancellable Future.</p>
+            <p>A thread-safe, awaitable object representing a pending asynchronous result.</p>
           </div>
         </li>
     </ul>
@@ -1909,6 +1909,18 @@ viewing the latest version.
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.pending.Pending.result"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;result</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.pending.Pending.wait"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.pending.Pending.wait_sync"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait_sync</a>
   </span>
 
       </li>
@@ -2029,8 +2041,28 @@ viewing the latest version.
 
 
 
-        <p>Pending is thread-safe hybrid synchronous and asynchronous cancellable Future.</p>
+        <p>A thread-safe, awaitable object representing a pending asynchronous result.</p>
+<p>The <code>Pending</code> class provides a mechanism for waiting on a result or exception to be set,
+either asynchronously or synchronously. It supports cancellation, metadata storage, and
+callback registration for completion events.</p>
 
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="async_kernel.pending.Pending.**metadata">**metadata</span></code></b>
+          –
+          <div class="doc-md-description">
+            <p>Arbitrary keyword arguments to associate as metadata with the instance.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="properties" open>
+  <summary>Properties</summary>
+  <p>metadata (dict[str, Any]): Metadata passed during creation.</p>
+</details>
           
 
 
@@ -2180,14 +2212,14 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title=" wait (async_kernel.pending.Pending.wait)" href="#async_kernel.pending.Pending.wait">wait</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Wait for a result or exception to be set (thread-safe) returning the result if specified.</p>
+              <p>Wait for a result or exception to be set (thread-safe) returning the pending if specified.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title=" wait_sync (async_kernel.pending.Pending.wait_sync)" href="#async_kernel.pending.Pending.wait_sync">wait_sync</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Wait synchronously for the a result or exception to be set  (thread-safe) blocking the current thread.</p>
+              <p>Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -2215,7 +2247,7 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title=" cancelled (async_kernel.pending.Pending.cancelled)" href="#async_kernel.pending.Pending.cancelled">cancelled</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Return True if the result is cancelled.</p>
+              <p>Return True if the pending is cancelled.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -2236,7 +2268,7 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title=" add_done_callback (async_kernel.pending.Pending.add_done_callback)" href="#async_kernel.pending.Pending.add_done_callback">add_done_callback</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Add a callback for when the result is done (not thread-safe).</p>
+              <p>Add a callback for when the pending is done (not thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -2264,33 +2296,12 @@ viewing the latest version.
 
 
 
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" REPR_OMIT (async_kernel.pending.Pending.REPR_OMIT)" href="#async_kernel.pending.Pending.REPR_OMIT">REPR_OMIT</a></code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Keys of metadata to omit when creating a repr of the instance.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" metadata (async_kernel.pending.Pending.metadata)" href="#async_kernel.pending.Pending.metadata">metadata</a></code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The metadata passed as keyword arguments to the instance during creation.</p>
-          </div>
-        </li>
-    </ul>
-
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_done_callbacks</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_mappings</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)]</span> <span class="o">=</span> <span class="n">metadata</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2388,7 +2399,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Wait for a result or exception to be set (thread-safe) returning the result if specified.</p>
+        <p>Wait for a result or exception to be set (thread-safe) returning the pending if specified.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2425,21 +2436,37 @@ viewing the latest version.
         </li>
     </ul>
 
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError">TimeoutError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>When the timeout expires and a result or exception has not been set.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>result=True</code> and the pending has been cancelled.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#Exception">Exception</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>result=True</code> and an exception was set on the pending.</p>
+          </div>
+        </li>
+    </ul>
+
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
@@ -2448,14 +2475,34 @@ viewing the latest version.
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
-<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wait for a result or exception to be set (thread-safe) returning the result if specified.</span>
+<span class="sd">    Wait for a result or exception to be set (thread-safe) returning the pending if specified.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        timeout: Timeout in seconds.</span>
 <span class="sd">        shield: Shield the instance from external cancellation.</span>
 <span class="sd">        result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Pending.result][]).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TimeoutError: When the timeout expires and a result or exception has not been set.</span>
+<span class="sd">        PendingCancelled: If `result=True` and the pending has been cancelled.</span>
+<span class="sd">        Exception: If `result=True` and an exception was set on the pending.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done_callbacks</span><span class="p">:</span>
@@ -2491,7 +2538,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Wait synchronously for the a result or exception to be set  (thread-safe) blocking the current thread.</p>
+        <p>Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2525,7 +2572,21 @@ viewing the latest version.
               <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError">TimeoutError</a></code>
             –
           <div class="doc-md-description">
-            <p>When the timeout expires and a result has not been set.</p>
+            <p>When the timeout expires and a result or exception has not been set.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>result=True</code> and the pending has been cancelled.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#Exception">Exception</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If <code>result=True</code> and an exception was set on the pending.</p>
           </div>
         </li>
     </ul>
@@ -2539,22 +2600,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
@@ -2562,16 +2608,35 @@ viewing the latest version.
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
-<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">wait_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">wait_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wait synchronously for the a result or exception to be set  (thread-safe) blocking the current thread.</span>
+<span class="sd">    Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        timeout: Timeout in seconds.</span>
 <span class="sd">        result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Pending.result][]).</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        TimeoutError: When the timeout expires and a result has not been set.</span>
+<span class="sd">        TimeoutError: When the timeout expires and a result or exception has not been set.</span>
+<span class="sd">        PendingCancelled: If `result=True` and the pending has been cancelled.</span>
+<span class="sd">        Exception: If `result=True` and an exception was set on the pending.</span>
 
 <span class="sd">    Warning:</span>
 <span class="sd">        **Blocking the thread in which the result or exception is set will cause in deadlock.**</span>
@@ -2638,9 +2703,9 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Set the result (thread-safe).&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_set_done</span><span class="p">(</span><span class="s2">&quot;result&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2695,9 +2760,9 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Set the exception (thread-safe).&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_set_done</span><span class="p">(</span><span class="s2">&quot;exception&quot;</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2749,27 +2814,27 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
-<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Cancel the instance.</span>
 
@@ -2809,16 +2874,16 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Return True if the result is cancelled.</p>
+        <p>Return True if the pending is cancelled.</p>
 
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the result is cancelled.&quot;&quot;&quot;</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the pending is cancelled.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_cancelled&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">str</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2849,7 +2914,7 @@ viewing the latest version.
 <a href="#async_kernel.pending.Pending.set_canceller(canceller)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None], <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
           –
           <div class="doc-md-description">
-            <p>A callback that performs the cancellation of the result.
+            <p>A callback that performs the cancellation of the pending.
 - It must accept the cancellation message as the first argument.
 - The cancellation call is not thread-safe.</p>
           </div>
@@ -2860,7 +2925,7 @@ viewing the latest version.
 <details class="notes" open>
   <summary>Notes</summary>
   <ul>
-<li><code>set_result</code> must be called to mark the result as completed.</li>
+<li><code>set_result</code> must be called to mark the pending as completed.</li>
 </ul>
 </details>
 
@@ -2877,24 +2942,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
@@ -2902,17 +2950,34 @@ viewing the latest version.
 <span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
-<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_canceller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canceller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_canceller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canceller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set a callback to handle cancellation.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        canceller: A callback that performs the cancellation of the result.</span>
+<span class="sd">        canceller: A callback that performs the cancellation of the pending.</span>
 <span class="sd">            - It must accept the cancellation message as the first argument.</span>
 <span class="sd">            - The cancellation call is not thread-safe.</span>
 
 <span class="sd">    Notes:</span>
-<span class="sd">        - `set_result` must be called to mark the result as completed.</span>
+<span class="sd">        - `set_result` must be called to mark the pending as completed.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        ```python</span>
@@ -2953,11 +3018,11 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns True if a result or exception has been set.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2981,27 +3046,27 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Add a callback for when the result is done (not thread-safe).</p>
-<p>If the result is already done it will called immediately.</p>
+        <p>Add a callback for when the pending is done (not thread-safe).</p>
+<p>If the pending is already done it will called immediately.</p>
 
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Add a callback for when the result is done (not thread-safe).</span>
+<span class="sd">    Add a callback for when the pending is done (not thread-safe).</span>
 
-<span class="sd">    If the result is already done it will called immediately.</span>
+<span class="sd">    If the pending is already done it will called immediately.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_done_callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
@@ -3033,17 +3098,17 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="nb">object</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="nb">object</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove all instances of a callback from the callbacks list.</span>
 
@@ -3082,14 +3147,14 @@ viewing the latest version.
               <code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
             –
           <div class="doc-md-description">
-            <p>If the result has been cancelled.</p>
+            <p>If the pending has been cancelled.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
               <code><a class="autorefs autorefs-internal" title=" InvalidStateError (async_kernel.pending.InvalidStateError)" href="#async_kernel.pending.InvalidStateError">InvalidStateError</a></code>
             –
           <div class="doc-md-description">
-            <p>If the result isn't done yet.</p>
+            <p>If the pending isn't done yet.</p>
           </div>
         </li>
     </ul>
@@ -3136,25 +3201,25 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the result.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        PendingCancelled: If the result has been cancelled.</span>
-<span class="sd">        InvalidStateError: If the result isn&#39;t done yet.</span>
+<span class="sd">        PendingCancelled: If the pending has been cancelled.</span>
+<span class="sd">        InvalidStateError: If the pending isn&#39;t done yet.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cancelled</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">InvalidStateError</span>
@@ -3205,19 +3270,19 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exception</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exception</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the exception.</span>
 
