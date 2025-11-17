@@ -242,7 +242,9 @@ class Kernel(HasTraits):
 
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
     """
-    JSON file in which to store connection info [default: kernel-<pid>.json]
+    JSON file in which to store connection info 
+    
+    `"kernel-<pid>.json"`
 
     This file will contain the IP, ports, and authentication key needed to connect
     clients to this kernel. By default, this file will be created in the security dir
@@ -270,10 +272,10 @@ class Kernel(HasTraits):
     "Handles serialization and sending of messages."
 
     debugger = Instance(Debugger, ())
-    "Handles (debug requests)[https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request]."
+    "Handles [debug requests](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."
 
     comm_manager: Instance[CommManager] = Instance("async_kernel.comm.CommManager")
-    ""
+    "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
     transport: CaselessStrEnum[str] = CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
@@ -451,7 +453,7 @@ class Kernel(HasTraits):
 
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
-        ""
+        "A dict of detail sent in reply to for a 'kernel_info_request'."
         return {
             "protocol_version": async_kernel.kernel_protocol_version,
             "implementation": "async_kernel",
