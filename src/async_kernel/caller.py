@@ -109,7 +109,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _protected = False
     _running = False
     _continue = True
-    _zmq_context: zmq.Context | None = None
+    _zmq_context: zmq.Context[Any] | None = None
 
     _parent_ref: weakref.ref[Caller] | None = None
 
@@ -243,12 +243,17 @@ class Caller(anyio.AsyncContextManagerMixin):
         return inst
 
     @staticmethod
-    def _wrap_inst_get(inst: Caller, get: Callable[P, Caller]) -> Callable[P, Caller]:
-        "A wrapper to call `get`; If `get` returns a new instance, the instance is added to inst._children."
+    def _wrap_inst_get(inst: Caller, get: Callable[..., Caller]) -> Callable[..., Caller]:
+        """
+        A wrapper to call `get`; If `get` returns a new instance, the instance is added to inst._children.
+
+        Additional contsraints:
+            - Only the name of children are check, f
+        """
         ref = weakref.ref(inst)
 
         @functools.wraps(get)
-        def get_wrapped(*args, **kwargs) -> Caller:
+        def get_wrapped(options: CallerGetOptions | None = None, **kwargs: Unpack[CallerCreateOptions]) -> Caller:
             parent: Caller = ref()  # pyright: ignore[reportAssignmentType]
             with parent._rlock:
                 name, thread = kwargs.get("name"), kwargs.get("thread")
@@ -256,19 +261,25 @@ class Caller(anyio.AsyncContextManagerMixin):
                 for caller in parent.children:
                     if caller.name == name or caller.thread == thread:
                         return caller
-                # Specify preferred backend
+
+                # Get a new or existing instance
+
                 if "backend" not in kwargs:
                     kwargs["backend"] = parent.backend
                     kwargs["backend_options"] = parent.backend_options
-                if "zmq_context" not in kwargs:
+                if "zmq_context" not in kwargs and parent._zmq_context:
                     kwargs["zmq_context"] = parent._zmq_context
-                if "name" in kwargs:
-                    kwargs["force_new"] = True
-                # Get an instance
-                existing = set(parent._instances.values())
-                if (caller := get({"force_new": "name" in kwargs}, **kwargs)) not in existing:  # pyright: ignore[reportCallIssue]
+
+                options = options.copy() if options else {}
+                if "mode" not in options and kwargs.get("name") != "MainThread":
+                    # Force new ignores 'name' but respects thread.
+                    options["mode"] = "force_new"
+
+                existing = frozenset(parent._instances.values())
+                caller = get(options, **kwargs)
+                if caller not in existing:
                     parent._children.add(caller)
-                    caller._parent_ref = ref
+                caller._parent_ref = ref
                 del parent
                 return caller
 
@@ -308,15 +319,15 @@ class Caller(anyio.AsyncContextManagerMixin):
                 raise ValueError(msg)
         with cls._rlock:
             # Search for an existing instance
-            options = {} if options is None else options
+            mode = options.get("mode") if options else "create"
             if name or thread:
                 for caller in cls._instances.values():
-                    if caller.thread == thread or (caller.name == name and not options.get("force_new")):
+                    if caller.thread == thread or (caller.name == name and mode != "force_new"):
                         if caller.running or (caller.thread is not threading.current_thread()):
                             return caller
                         name, thread = None, caller.thread
                         break
-            if (not options.get("create", True) and (thread not in cls._instances)) or (
+            if (mode == "existing" and (thread not in cls._instances)) or (
                 thread and thread is not threading.current_thread()
             ):
                 msg = f"Caller instance not found for {kwargs=}"

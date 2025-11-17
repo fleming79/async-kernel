@@ -335,15 +335,19 @@ class CallerCreateOptions(TypedDict):
     "Options to use when calling [anyio.run][] inside the new thread (1. Inherited. 2. From [async_kernel.kernel.Kernel.anyio_backend_options][])."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (False)."
-    zmq_context: NotRequired[zmq.Context]
+    zmq_context: NotRequired[zmq.Context[Any]]
     "A zmq Context to use "
 
 
 class CallerGetOptions(TypedDict):
-    create: NotRequired[bool]
-    "Use this when searching for an existing instance (True)."
-    force_new: NotRequired[Any]
-    """Forces a new instance irrespective if an existing instance exists with the same name."""
+    mode: NotRequired[Literal["create", "force_new", "existing"]]
+    """The mode for the caller to use.
+
+    mode:
+        create: [Default] A new instance is created if no existing instances exist with matching 'thread' or 'name'.
+        force_new: Ignores the 'name' when searching existing instances.
+        existing: Prevents creation on new instances. 
+    """
 
 
 DebugMessage = dict[str, Any]

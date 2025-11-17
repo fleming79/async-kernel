@@ -52,6 +52,7 @@ class TestCaller:
             assert c2 in c1.children
             assert c2 not in caller.children
             assert c1.get(name="child") is c2
+            assert c1.get(name="MainThread") is caller
 
         assert len(caller.children) == 0
         assert c1.stopped
@@ -278,7 +279,7 @@ class TestCaller:
 
     async def test_get_no_instance(self, anyio_backend: Backend):
         with pytest.raises(RuntimeError):
-            Caller.get({"create": False}, name=None)
+            Caller.get({"mode": "existing"}, name=None)
 
     async def test_get_start_main_thread(self, anyio_backend: Backend):
         # Check a caller can be started in the main thread synchronously.
