@@ -217,8 +217,6 @@ class Kernel(HasTraits):
     "The anyio configured backend used to run the event loops."
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
-    _stabilisation_delay = traitlets.Float(0.1)
-    "The sleep time before entering the message loop to allow the kernel to stabilise."
     help_links = Tuple()
     ""
     quiet = traitlets.Bool(True)
@@ -481,8 +479,11 @@ class Kernel(HasTraits):
                     await wait_exit()
 
         try:
-            backend = Backend.trio if "trio" in self.kernel_name.lower() else Backend.asyncio
-            anyio.run(_run, backend=backend, backend_options=self.anyio_backend_options.get(backend))
+            if not self.trait_has_value("anyio_backend") and "trio" in self.kernel_name.lower():
+                self.anyio_backend = Backend.trio
+            backend = self.anyio_backend
+            backend_options = self.anyio_backend_options.get(backend)
+            anyio.run(_run, backend=backend, backend_options=backend_options)
         finally:
             self.stop()
 
@@ -510,9 +511,10 @@ class Kernel(HasTraits):
         caller = Caller(name="Shell", protected=True, thread=thread, log=self.log, zmq_context=self._zmq_context)
         self.callers[SocketID.shell] = caller
         self.callers[SocketID.control] = caller.get(name="Control", protected=True)
+        start = Event()
         try:
             async with caller:
-                await self._start_threads_and_open_sockets()
+                self._start_hb_iopub_shell_control_threads(start)
                 with self._bind_socket(SocketID.stdin):
                     assert len(self._sockets) == len(SocketID)
                     self._write_connection_file()
@@ -523,6 +525,7 @@ class Kernel(HasTraits):
                             try:
                                 self.event_started.set()
                                 self.comm_manager.kernel = self
+                                start.set()
                                 yield self
                             except BaseException:
                                 if not scope.cancel_called:
@@ -557,23 +560,18 @@ class Kernel(HasTraits):
         else:
             signal.default_int_handler(signum, frame)
 
-    async def _start_threads_and_open_sockets(self) -> None:
-        heartbeat_ready = Event()
-        pub_proxy_ready = Event()
-        control_ready = Event()
-        shell_ready = Event()
-
-        def heartbeat(ready=heartbeat_ready.set):
+    def _start_hb_iopub_shell_control_threads(self, start: Event) -> None:
+        def heartbeat(ready: Event) -> None:
             # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
             utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(SocketID.heartbeat) as socket:
-                ready()
+                ready.set()
                 try:
                     zmq.proxy(socket, socket)
                 except zmq.ContextTerminated:
                     return
 
-        def pub_proxy(ready=pub_proxy_ready.set):
+        def pub_proxy(ready: Event) -> None:
             # We use an internal proxy to collect pub messages for distribution.
             # Each thread needs to open its own socket to publish to the internal proxy.
             # When thread-safe sockets become available, this could be changed...
@@ -582,23 +580,21 @@ class Kernel(HasTraits):
             frontend: zmq.Socket = self._zmq_context.socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
             with self._bind_socket(SocketID.iopub) as iopub_socket:
-                ready()
+                ready.set()
                 try:
                     zmq.proxy(frontend, iopub_socket)
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        threading.Thread(target=heartbeat, name="heartbeat", daemon=True).start()
-        heartbeat_ready.wait()
-
-        threading.Thread(target=pub_proxy, name="iopub proxy", daemon=True).start()
-        pub_proxy_ready.wait()
-
-        threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready.set), daemon=True).start()
+        hb_ready, iopub_ready, control_ready, shell_ready = (Event(), Event(), Event(), Event())
+        threading.Thread(target=heartbeat, name="heartbeat", args=[hb_ready]).start()
+        hb_ready.wait()
+        threading.Thread(target=pub_proxy, name="iopub proxy", args=[iopub_ready]).start()
+        iopub_ready.wait()
+        threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready, start)).start()
         control_ready.wait()
-
-        threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, shell_ready.set), daemon=True).start()
-        await shell_ready
+        threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, shell_ready, start)).start()
+        shell_ready.wait()
 
     @contextlib.contextmanager
     def _bind_socket(self, socket_id: SocketID) -> Generator[Any | Socket[Any], Any, None]:
@@ -706,14 +702,15 @@ class Kernel(HasTraits):
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
 
     def receive_msg_loop(
-        self, socket_id: Literal[SocketID.control, SocketID.shell], started: Callable[[], None]
+        self, socket_id: Literal[SocketID.control, SocketID.shell], ready: Event, start: Event
     ) -> None:
         """
         Continuously receives and processes messages from a ZeroMQ ROUTER socket in a loop.
 
         Args:
             socket_id: The identifier for the socket to listen on (either control or shell).
-            started: A callback function to be called once the socket is bound and ready to receive messages.
+            ready: An event for the message loop to indicate it is ready.
+            start: An event to wait for before the loop is entered.
 
         Behavior:
             - Binds a ROUTER socket for the specified socket_id.
@@ -737,8 +734,8 @@ class Kernel(HasTraits):
         caller = self.callers[socket_id]
         lock = BinarySemaphore()
         with self._bind_socket(socket_id) as socket:
-            started()
-            time.sleep(self._stabilisation_delay)
+            ready.set()
+            start.wait()
             while True:
                 try:
                     ident, msg = self.session.recv(socket, mode=zmq.BLOCKY, copy=False)  # pyright: ignore[reportAssignmentType]
@@ -820,19 +817,11 @@ class Kernel(HasTraits):
                             return RunMode.task
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
-                return RunMode.queue
-            case _, MsgType.inspect_request | MsgType.complete_request | MsgType.is_complete_request:
+            case _, MsgType.inspect_request | MsgType.history_request:
                 return RunMode.thread
-            case _, MsgType.history_request:
-                return RunMode.thread
-            case _, MsgType.comm_msg:
-                return RunMode.queue
-            case _, MsgType.kernel_info_request | MsgType.comm_info_request | MsgType.comm_open | MsgType.comm_close:
-                return RunMode.queue
-            case _, MsgType.debug_request:
-                return RunMode.queue
             case _:
-                return RunMode.queue
+                pass
+        return RunMode.queue
 
     def all_concurrency_run_modes(
         self,

@@ -71,7 +71,7 @@ class TestCaller:
 
     def test_forbid_other_thread_start(self) -> None:
         done = Event()
-        thread = threading.Thread(target=done.wait, daemon=True)
+        thread = threading.Thread(target=done.wait)
         thread.start()
         with pytest.raises(RuntimeError, match="Caller instance not found for kwargs="):
             Caller.get(thread=thread)
@@ -85,7 +85,7 @@ class TestCaller:
             assert caller.thread is thread
             assert (await caller.call_soon(lambda: 1 + 1)) == 2
 
-        thread = threading.Thread(target=anyio.run, args=[get_caller], daemon=True)
+        thread = threading.Thread(target=anyio.run, args=[get_caller])
         thread.start()
         thread.join()
 
@@ -227,7 +227,7 @@ class TestCaller:
 
             anyio.run(_run, backend=anyio_backend)
 
-        the_thread = threading.Thread(target=_thread_task, daemon=True)
+        the_thread = threading.Thread(target=_thread_task)
         the_thread.start()
         ready.wait()
         assert isinstance(finished_event, Event)
@@ -291,7 +291,7 @@ class TestCaller:
 
             anyio.run(async_loop_before_caller_started, backend=anyio_backend)
 
-        thread = threading.Thread(target=caller_not_already_running, daemon=True)
+        thread = threading.Thread(target=caller_not_already_running)
         thread.start()
         caller = await pen
         assert caller.name == thread.name

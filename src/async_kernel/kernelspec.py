@@ -12,7 +12,6 @@ import textwrap
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import traitlets
 from jupyter_client.kernelspec import KernelSpec
 
 # path to kernelspec resources
@@ -191,6 +190,7 @@ def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
     Returns:
         The kernel factory.
     """
+
     if CUSTOM_KERNEL_MARKER in kernel_factory:
         path, factory_name = kernel_factory.split(CUSTOM_KERNEL_MARKER)
         try:
@@ -202,4 +202,6 @@ def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
             return factory
         finally:
             sys.path.remove(path)
-    return traitlets.import_item(kernel_factory or "async_kernel.Kernel")
+    from async_kernel.common import import_item  # noqa: PLC0415
+
+    return import_item(kernel_factory or "async_kernel.Kernel")
