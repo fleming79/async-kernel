@@ -9,7 +9,7 @@
 [![Built with Material for MkDocs](https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&logo=MaterialForMkDocs&logoColor=white)](https://squidfunk.github.io/mkdocs-material/)
 [![codecov](https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85)](https://codecov.io/github/fleming79/async-kernel)
 
-Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) that enables concurrent handling of messages and execution.
+Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) that enables concurrent message handling and execution.
 
 ## Highlights
 
@@ -25,9 +25,9 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
     - magic
     - code completions
     - history
-- Thread safe (thanks to [aiologic](https://aiologic.readthedocs.io/latest/))
-    - `Caller` for starting and scheduling of code execution in its event loop
-    - `Pending` for a pending result
+- Thread safe (thanks to [aiologic](https://aiologic.readthedocs.io/latest/)) classes.
+    - [Caller](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller) - to schedule execution in the chosen event loop
+    - [Pending](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending) - to wait/await/cancel the result of execution
 - GUI event loops
     - [x] inline
     - [x] ipympl
@@ -55,8 +55,8 @@ async-kernel -a async-trio
 
 Async kernel provides two event loops (one per channel):
 
-- `shell`: The shell event loop runs in the thread where it is started; normally the `MainThread` (it is possible to run the shell in other threads)
-- `control`: The control event loop always starts in a new thread named 'ControlThread'
+- `Shell`: The shell event loop runs in the thread where it is started; normally the `MainThread` [^non-main-thread]
+- `Control`: The control event loop always starts in a new thread named 'ControlThread'
 
 ### Messaging
 
@@ -97,3 +97,5 @@ Async kernel started as a [fork](https://github.com/ipython/ipykernel/commit/832
 of [IPyKernel](https://github.com/ipython/ipykernel). Thank you to the original contributors of IPyKernel that made Async kernel possible.
 
 [^uv-loop]: Uvloop is not a dependency of async-kernel but will be used if it has been installed.
+
+[^non-main-thread]: The Shell can run in other threads with the associated limitations with regard to signalling and interrupts.
