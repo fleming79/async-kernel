@@ -279,7 +279,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 caller = get(options, **kwargs)
                 if caller not in existing:
                     parent._children.add(caller)
-                caller._parent_ref = ref
+                    caller._parent_ref = ref
                 del parent
                 return caller
 
