@@ -725,6 +725,45 @@ class Kernel(HasTraits):
             # Reset IO
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = self._original_io
 
+    def iopub_send(
+        self,
+        msg_or_type: dict[str, Any] | str,
+        content: Content | None = None,
+        metadata: dict[str, Any] | None = None,
+        parent: dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        ident: bytes | list[bytes] | None = None,
+        buffers: list[bytes] | None = None,
+    ) -> None:
+        """Send a message on the zmq iopub socket."""
+        if socket := Caller.iopub_sockets.get(thread := threading.current_thread()):
+            msg = self.session.send(
+                stream=socket,
+                msg_or_type=msg_or_type,
+                content=content,
+                metadata=metadata,
+                parent=parent if parent is not NoValue else utils.get_parent(),  # pyright: ignore[reportArgumentType]
+                ident=ident,
+                buffers=buffers,
+            )
+            if msg:
+                self.log.debug(
+                    "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
+                )
+        elif (caller := self.callers.get(SocketID.control)) and caller.thread is not thread:
+            caller.call_direct(
+                self.iopub_send,
+                msg_or_type=msg_or_type,
+                content=content,
+                metadata=metadata,
+                parent=parent if parent is not NoValue else None,
+                ident=ident,
+                buffers=buffers,
+            )
+
+    def topic(self, topic) -> bytes:
+        """prefixed topic for IOPub messages."""
+        return (f"kernel.{topic}").encode()
+
     def receive_msg_loop(
         self, socket_id: Literal[SocketID.control, SocketID.shell], ready: Event, start: Event
     ) -> None:
@@ -781,27 +820,6 @@ class Kernel(HasTraits):
                     self.log.debug("Bad message on %s: %s", socket_id, e)
                     continue
 
-    def schedule_job(self, caller: Caller, lock: BinarySemaphore, handler: HandlerType, run_mode: RunMode, job: Job, /):
-        """
-        Schedules a job to be executed by the handler using the specified run mode.
-
-        Args:
-            caller: The caller instance responsible for scheduling.
-            lock: A binary semaphore for synchronization (not used in this method).
-            handler: The function or callable to execute for the job.
-            run_mode: The mode in which to run the job.
-            job: The job instance or data to be passed to the handler.
-        """
-        match run_mode:
-            case RunMode.direct:
-                caller.call_direct(handler, job)
-            case RunMode.queue:
-                caller.queue_call(handler, job)
-            case RunMode.task:
-                caller.call_soon(handler, job)
-            case RunMode.thread:
-                caller.to_thread(handler, job)
-
     def get_run_mode(
         self,
         msg_type: MsgType,
@@ -846,29 +864,6 @@ class Kernel(HasTraits):
             case _:
                 pass
         return RunMode.queue
-
-    def all_concurrency_run_modes(
-        self,
-        socket_ids: Iterable[Literal[SocketID.shell, SocketID.control]] = (SocketID.shell, SocketID.control),
-        msg_types: Iterable[MsgType] = MsgType,
-    ) -> dict[
-        Literal["SocketID", "MsgType", "RunMode"],
-        tuple[SocketID, MsgType, RunMode | None],
-    ]:
-        """
-        Generates a dictionary containing all combinations of SocketID, and MsgType, along with their
-        corresponding RunMode (if available).
-        """
-        data: list[Any] = []
-        for socket_id in socket_ids:
-            for msg_type in msg_types:
-                try:
-                    mode = self.get_run_mode(msg_type, socket_id=socket_id)
-                except ValueError:
-                    mode = None
-                data.append((socket_id, msg_type, mode))
-        data_ = zip(*data, strict=True)
-        return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
         if not callable(f := getattr(self, msg_type, None)):
@@ -933,44 +928,49 @@ class Kernel(HasTraits):
                 msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
             )
 
-    def iopub_send(
-        self,
-        msg_or_type: dict[str, Any] | str,
-        content: Content | None = None,
-        metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        ident: bytes | list[bytes] | None = None,
-        buffers: list[bytes] | None = None,
-    ) -> None:
-        """Send a message on the zmq iopub socket."""
-        if socket := Caller.iopub_sockets.get(thread := threading.current_thread()):
-            msg = self.session.send(
-                stream=socket,
-                msg_or_type=msg_or_type,
-                content=content,
-                metadata=metadata,
-                parent=parent if parent is not NoValue else utils.get_parent(),  # pyright: ignore[reportArgumentType]
-                ident=ident,
-                buffers=buffers,
-            )
-            if msg:
-                self.log.debug(
-                    "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
-                )
-        elif (caller := self.callers.get(SocketID.control)) and caller.thread is not thread:
-            caller.call_direct(
-                self.iopub_send,
-                msg_or_type=msg_or_type,
-                content=content,
-                metadata=metadata,
-                parent=parent if parent is not NoValue else None,
-                ident=ident,
-                buffers=buffers,
-            )
+    def schedule_job(self, caller: Caller, lock: BinarySemaphore, handler: HandlerType, run_mode: RunMode, job: Job, /):
+        """
+        Schedules a job to be executed by the handler using the specified run mode.
 
-    def topic(self, topic) -> bytes:
-        """prefixed topic for IOPub messages."""
-        return (f"kernel.{topic}").encode()
+        Args:
+            caller: The caller instance responsible for scheduling.
+            lock: A binary semaphore for synchronization (not used in this method).
+            handler: The function or callable to execute for the job.
+            run_mode: The mode in which to run the job.
+            job: The job instance or data to be passed to the handler.
+        """
+        match run_mode:
+            case RunMode.direct:
+                caller.call_direct(handler, job)
+            case RunMode.queue:
+                caller.queue_call(handler, job)
+            case RunMode.task:
+                caller.call_soon(handler, job)
+            case RunMode.thread:
+                caller.to_thread(handler, job)
+
+    def all_concurrency_run_modes(
+        self,
+        socket_ids: Iterable[Literal[SocketID.shell, SocketID.control]] = (SocketID.shell, SocketID.control),
+        msg_types: Iterable[MsgType] = MsgType,
+    ) -> dict[
+        Literal["SocketID", "MsgType", "RunMode"],
+        tuple[SocketID, MsgType, RunMode | None],
+    ]:
+        """
+        Generates a dictionary containing all combinations of SocketID, and MsgType, along with their
+        corresponding RunMode (if available).
+        """
+        data: list[Any] = []
+        for socket_id in socket_ids:
+            for msg_type in msg_types:
+                try:
+                    mode = self.get_run_mode(msg_type, socket_id=socket_id)
+                except ValueError:
+                    mode = None
+                data.append((socket_id, msg_type, mode))
+        data_ = zip(*data, strict=True)
+        return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
