@@ -9,7 +9,8 @@
 [![Built with Material for MkDocs](https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&logo=MaterialForMkDocs&logoColor=white)](https://squidfunk.github.io/mkdocs-material/)
 [![codecov](https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85)](https://codecov.io/github/fleming79/async-kernel)
 
-Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) that enables concurrent message handling and execution.
+Async kernel is an asynchronous Python [Jupyter kernel](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
+with [configurable](#run-mode) concurrent message handling.
 
 ## Highlights
 
@@ -25,9 +26,9 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
     - magic
     - code completions
     - history
-- Thread safe (thanks to [aiologic](https://aiologic.readthedocs.io/latest/)) classes.
-    - [Caller](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller) - to schedule execution in the chosen event loop
-    - [Pending](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending) - to wait/await/cancel the result of execution
+- Thread-safe classes (utilising [aiologic](https://aiologic.readthedocs.io/latest/) synchronisation primitives).
+    - [Caller](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller) - code execution in a chosen event loop
+    - [Pending](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending) - wait/await/cancel the pending result
 - GUI event loops
     - [x] inline
     - [x] ipympl
@@ -42,36 +43,45 @@ Async kernel is a Python [Jupyter kernel](https://docs.jupyter.org/en/latest/pro
 pip install async-kernel
 ```
 
-### Trio
+### Trio backend
 
-To add a kernel spec for `trio`.
+To add a kernel spec for a `trio` backend.
 
 ```bash
 pip install trio
 async-kernel -a async-trio
 ```
 
+See also: [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
+
 ## Asynchronous event loops
 
-Async kernel provides two event loops (one per channel):
+Async kernel uses [`Caller`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
+for concurrent message handling.
 
-- `Shell`: The shell event loop runs in the thread where it is started; normally the `MainThread` [^non-main-thread]
-- `Control`: The control event loop always starts in a new thread named 'ControlThread'
+There are two callers:
+
+- `Shell` - run in the `MainThread` [^non-main-thread] for handling for user related requests (including comm messages).
+- `Control` - runs in a separate thread for handling control related request (including debug).
 
 ### Messaging
 
-Messages are received in a separate thread (per-channel) and scheduled in in the channels event loop.
+Messages are received in a separate thread (per-channel) which schedules execution on the associated caller after determining the RunMode.
 
 ### Run mode
 
-The run mode is defined per-message type and channel and is one of the following:
+Run mode is Enumeration of the execution modes available:
 
-- `queue`
-- `thread`
-- `task`
-- `direct`
+- `RunMode.direct` → [`Caller.call_direct`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct):
+  Run the request in the scheduler.
+- `RunMode.queue` → [`Caller.queue_call`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.queue_call):
+  Run the request in a queue dedicated to the handler & channel.
+- `RunMode.task` → [`Caller.call_soon`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_soon):
+  Run the request in a separate task.
+- `RunMode.thread` → [`Caller.to_thread`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.to_thread):
+  Run the request in a separate worker thread.
 
-The currently defined run modes are:
+The is a table of the currently assigned run modes.
 
 | MsgType             | shell  | control |
 | ------------------- | ------ | ------- |
@@ -89,7 +99,11 @@ The currently defined run modes are:
 | kernel_info_request | queue  | queue   |
 | shutdown_request    | None   | queue   |
 
-For further detail see the [notebook on concurrency](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/).
+See also:
+
+- [`MsgType`](https://fleming79.github.io/async-kernel/latest/reference/typing/#async_kernel.typing.MsgType) docs.
+- [`Kernel.receive_msg_loop`](https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.receive_msg_loop) docs.
+- [Concurrency](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/) notebook.
 
 ## Origin
 
