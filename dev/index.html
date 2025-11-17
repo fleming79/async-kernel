@@ -1542,12 +1542,12 @@ viewing the latest version.
 <a href="https://squidfunk.github.io/mkdocs-material/"><img alt="Built with Material for MkDocs" src="https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&amp;logo=MaterialForMkDocs&amp;logoColor=white" /></a>
 <a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a></p>
 <p>Async kernel is an asynchronous Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter kernel</a>
-with <a href="#run-mode">configurable</a> concurrent message handling.</p>
+with <a href="#run-mode">concurrent message handling</a>.</p>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/">Concurrent message handling</a></li>
-<li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a><ul>
+<li><a href="https://fleming79.github.io/async-kernel/latest/notebooks/simple_example/">Concurrent message handling</a></li>
+<li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a></li>
+<li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a><ul>
 <li><a href="https://pypi.org/project/anyio/">anyio</a><ul>
 <li><a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code> backend</a> (default)<sup id="fnref:uv-loop"><a class="footnote-ref" href="#fn:uv-loop">1</a></sup></li>
 <li><a href="https://pypi.org/project/trio/"><code>trio</code> backend</a></li>
@@ -1563,7 +1563,7 @@ with <a href="#run-mode">configurable</a> concurrent message handling.</p>
 <li>history</li>
 </ul>
 </li>
-<li>Thread-safe classes (utilising <a href="https://aiologic.readthedocs.io/latest/">aiologic</a> synchronisation primitives).<ul>
+<li>Thread-safe execution and cancellation (utilising <a href="https://aiologic.readthedocs.io/latest/">aiologic</a> synchronisation primitives).<ul>
 <li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Caller</a> - code execution in a chosen event loop</li>
 <li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending">Pending</a> - wait/await/cancel the pending result</li>
 </ul>
@@ -1591,13 +1591,13 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 for concurrent message handling.</p>
 <p>There are two callers:</p>
 <ul>
-<li><code>Shell</code> - run in the <code>MainThread</code> <sup id="fnref:non-main-thread"><a class="footnote-ref" href="#fn:non-main-thread">2</a></sup> for handling for user related requests (including comm messages).</li>
-<li><code>Control</code> - runs in a separate thread for handling control related request (including debug).</li>
+<li><code>Shell</code> - runs in the <code>MainThread</code> handling user related requests<sup id="fnref:non-main-thread"><a class="footnote-ref" href="#fn:non-main-thread">2</a></sup>.</li>
+<li><code>Control</code> - runs in a separate thread handling control related requests.</li>
 </ul>
 <h3 id="messaging">Messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h3>
-<p>Messages are received in a separate thread (per-channel) which schedules execution on the associated caller after determining the RunMode.</p>
+<p>Messages are received in a separate thread (per-channel) then handled in the associated thread (shell/control) concurrently according to the determined run mode.</p>
 <h3 id="run-mode">Run mode<a class="headerlink" href="#run-mode" title="Permanent link">&para;</a></h3>
-<p>Run mode is Enumeration of the execution modes available:</p>
+<p>The run modes available are:</p>
 <ul>
 <li><code>RunMode.direct</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct"><code>Caller.call_direct</code></a>:
   Run the request in the scheduler.</li>
@@ -1608,7 +1608,7 @@ for concurrent message handling.</p>
 <li><code>RunMode.thread</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.to_thread"><code>Caller.to_thread</code></a>:
   Run the request in a separate worker thread.</li>
 </ul>
-<p>The is a table of the currently assigned run modes.</p>
+<p>These are the currently assigned run modes.</p>
 <table>
 <thead>
 <tr>
@@ -1685,7 +1685,7 @@ for concurrent message handling.</p>
 </tr>
 </tbody>
 </table>
-<p>See also:</p>
+<h4 id="further-detail">Further detail<a class="headerlink" href="#further-detail" title="Permanent link">&para;</a></h4>
 <ul>
 <li><a href="https://fleming79.github.io/async-kernel/latest/reference/typing/#async_kernel.typing.MsgType"><code>MsgType</code></a> docs.</li>
 <li><a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.receive_msg_loop"><code>Kernel.receive_msg_loop</code></a> docs.</li>
