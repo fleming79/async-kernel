@@ -31,7 +31,17 @@ class InvalidStateError(RuntimeError):
 
 class Pending(Awaitable[T]):
     """
-    Pending is thread-safe hybrid synchronous and asynchronous cancellable Future.
+    A thread-safe, awaitable object representing a pending asynchronous result.
+
+    The `Pending` class provides a mechanism for waiting on a result or exception to be set,
+    either asynchronously or synchronously. It supports cancellation, metadata storage, and
+    callback registration for completion events.
+
+    Attributes:
+        **metadata: Arbitrary keyword arguments to associate as metadata with the instance.
+
+    Properties:
+        metadata (dict[str, Any]): Metadata passed during creation.
     """
 
     __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
@@ -92,12 +102,17 @@ class Pending(Awaitable[T]):
 
     async def wait(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
         """
-        Wait for a result or exception to be set (thread-safe) returning the result if specified.
+        Wait for a result or exception to be set (thread-safe) returning the pending if specified.
 
         Args:
             timeout: Timeout in seconds.
             shield: Shield the instance from external cancellation.
             result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Pending.result][]).
+
+        Raises:
+            TimeoutError: When the timeout expires and a result or exception has not been set.
+            PendingCancelled: If `result=True` and the pending has been cancelled.
+            Exception: If `result=True` and an exception was set on the pending.
         """
         try:
             if not self._done or self._done_callbacks:
@@ -121,14 +136,16 @@ class Pending(Awaitable[T]):
 
     def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
         """
-        Wait synchronously for the a result or exception to be set  (thread-safe) blocking the current thread.
+        Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.
 
         Args:
             timeout: Timeout in seconds.
             result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Pending.result][]).
 
         Raises:
-            TimeoutError: When the timeout expires and a result has not been set.
+            TimeoutError: When the timeout expires and a result or exception has not been set.
+            PendingCancelled: If `result=True` and the pending has been cancelled.
+            Exception: If `result=True` and an exception was set on the pending.
 
         Warning:
             **Blocking the thread in which the result or exception is set will cause in deadlock.**
@@ -187,7 +204,7 @@ class Pending(Awaitable[T]):
         return self.cancelled()
 
     def cancelled(self) -> bool:
-        """Return True if the result is cancelled."""
+        """Return True if the pending is cancelled."""
         return isinstance(getattr(self, "_cancelled", None), str)
 
     def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
@@ -195,12 +212,12 @@ class Pending(Awaitable[T]):
         Set a callback to handle cancellation.
 
         Args:
-            canceller: A callback that performs the cancellation of the result.
+            canceller: A callback that performs the cancellation of the pending.
                 - It must accept the cancellation message as the first argument.
                 - The cancellation call is not thread-safe.
 
         Notes:
-            - `set_result` must be called to mark the result as completed.
+            - `set_result` must be called to mark the pending as completed.
 
         Example:
             ```python
@@ -225,9 +242,9 @@ class Pending(Awaitable[T]):
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
         """
-        Add a callback for when the result is done (not thread-safe).
+        Add a callback for when the pending is done (not thread-safe).
 
-        If the result is already done it will called immediately.
+        If the pending is already done it will called immediately.
         """
         if not self._done:
             self._done_callbacks.append(fn)
@@ -251,8 +268,8 @@ class Pending(Awaitable[T]):
         Return the result.
 
         Raises:
-            PendingCancelled: If the result has been cancelled.
-            InvalidStateError: If the result isn't done yet.
+            PendingCancelled: If the pending has been cancelled.
+            InvalidStateError: If the pending isn't done yet.
         """
         if not self._done and not self.cancelled():
             raise InvalidStateError
