@@ -108,8 +108,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _backend: Backend
     _backend_options: dict[str, Any] | None
     _protected = False
-    _running = False
-    _continue = True
+    _running: bool | None = None
     _zmq_context: zmq.Context[Any] | None = None
 
     _parent_ref: weakref.ref[Self] | None = None
@@ -163,7 +162,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     @property
     def running(self):
         "Returns `True` when the caller is available to run requests."
-        return self._running
+        return self._running is True
 
     @property
     def children(self) -> set[Self]:
@@ -391,7 +390,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if self._protected and not force:
             return
-        self._continue = False
+        self._running = False
         self._instances.pop(self.thread, None)
         self._worker_pool.clear()
         while self._queue:
@@ -453,7 +452,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         task_status.started()
         try:
-            while self._continue:
+            while self._running:
                 if self._queue:
                     item, result = self._queue.popleft(), None
                     if callable(item):
@@ -469,11 +468,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                 else:
                     event = create_async_event()
                     self._resume = event.set
-                    if self._continue and not self._queue:
+                    if self._running and not self._queue:
                         await event
                     self._resume = noop
         finally:
-            self._running = False
             tg.cancel_scope.cancel()
 
     async def _call_scheduled(self, pen: Pending) -> None:
@@ -606,7 +604,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if is_worker:
 
             def _to_thread_on_done(_) -> None:
-                if not caller.stopped and self._continue:
+                if not caller.stopped and self._running:
                     if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
                         self._worker_pool.append(caller)
                     else:
@@ -637,7 +635,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             context: The context to use, if not provided the current context is used.
             **metadata: Additional metadata to store in the instance.
         """
-        if not self._continue:
+        if self._running is False:
             msg = f"{self} is {'stopped' if self.stopped else 'stopping'}!"
             raise RuntimeError(msg)
         pen = Pending(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
