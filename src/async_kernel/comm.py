@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import comm
 from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from traitlets import Dict, HasTraits, Instance, observe
 from typing_extensions import override
 
-from async_kernel import Kernel
+from async_kernel import utils
+
+if TYPE_CHECKING:
+    from async_kernel import Kernel
 
 __all__ = ["Comm"]
 
@@ -78,7 +81,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
     """
 
     _instance = None
-    kernel: Instance[Kernel | None] = Instance(Kernel, allow_none=True)  # pyright: ignore[reportAssignmentType]
+    kernel: Instance[Kernel | None] = Instance("async_kernel.Kernel", allow_none=True)
     comms: Dict[str, BaseComm] = Dict()  # pyright: ignore[reportIncompatibleVariableOverride]
     targets: Dict[str, comm.base_comm.CommTargetCallback] = Dict()  # pyright: ignore[reportIncompatibleVariableOverride]
 
@@ -105,27 +108,24 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
             comm.kernel = kernel
         return super().register_comm(comm)
 
+    @staticmethod
+    def patch_ipykernel():
+        """
+        Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
 
-comm_manager = CommManager()
+        1.  `comm.create_comm` to [Comm][].
+        1. `comm.get_com_manager` to [CommManager][].
+        """
+        comm.create_comm = Comm
+        comm.get_comm_manager = get_comm_manager
+
+        # # Monkey patch ipykernel for modules that use it such as pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
+        with contextlib.suppress(ImportError):
+            import ipykernel.comm  # noqa: PLC0415
+
+            ipykernel.comm.Comm = Comm
+            ipykernel.comm.CommManager = CommManager
 
 
 def get_comm_manager():
-    return comm_manager
-
-
-def set_comm():
-    """
-    Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
-
-    1.  `comm.create_comm` to [Comm][].
-    1. `comm.get_com_manager` to [CommManager][].
-    """
-    comm.create_comm = Comm
-    comm.get_comm_manager = get_comm_manager
-
-    # # Monkey patch ipykernel for modules that use it such as pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
-    with contextlib.suppress(ImportError):
-        import ipykernel.comm  # noqa: PLC0415
-
-        ipykernel.comm.Comm = Comm
-        ipykernel.comm.CommManager = CommManager
+    return utils.get_kernel().comm_manager
