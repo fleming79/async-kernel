@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0-rc.1] - 2025-11-18
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Caller - instance checks names of children rather than all instances. [#204](https://github.com/fleming79/async-kernel/pull/204)
+
+- Caller restructuring adding new features and breaking changes plus added 'Fixed' class and renamed Future to Pending. [#197](https://github.com/fleming79/async-kernel/pull/197)
+
+- Caller enhancements and breaking changes [#195](https://github.com/fleming79/async-kernel/pull/195)
+
+- Remove unnecessary context copy and call from queue_call. [#194](https://github.com/fleming79/async-kernel/pull/194)
+
+### <!-- 1 --> 🚀 Features
+
+- Added Caller.zmq_context [#198](https://github.com/fleming79/async-kernel/pull/198)
+
+- Use queue run mode instead of direct which is no slower, but probably 'safer'. [#193](https://github.com/fleming79/async-kernel/pull/193)
+
+### <!-- 5 --> 📝 Documentation
+
+- Docs [#203](https://github.com/fleming79/async-kernel/pull/203)
+
+- Update readme. [#202](https://github.com/fleming79/async-kernel/pull/202)
+
+- Docs and shuffle code inside the kernel [#200](https://github.com/fleming79/async-kernel/pull/200)
+
+- Update mkdocs and mkdocstrings python - have released insiders features. [#192](https://github.com/fleming79/async-kernel/pull/192)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Add the trait Kernel.print_kernel_messages which when set to false prevents messages from being printed. [#201](https://github.com/fleming79/async-kernel/pull/201)
+
+- General tidy and remove unrequired tests. [#199](https://github.com/fleming79/async-kernel/pull/199)
+
 ## [0.8.0] - 2025-11-12
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -20,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maintenance and documentation. [#187](https://github.com/fleming79/async-kernel/pull/187)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.8.0 [#191](https://github.com/fleming79/async-kernel/pull/191)
 
 - Prepare for release v0.7.2 [#189](https://github.com/fleming79/async-kernel/pull/189)
 
@@ -493,6 +529,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.9.0-rc.1]: https://github.com/fleming79/async-kernel/compare/v0.8.0..v0.9.0-rc.1
 [0.8.0]: https://github.com/fleming79/async-kernel/compare/v0.7.1..v0.8.0
 [0.7.1]: https://github.com/fleming79/async-kernel/compare/v0.7.0..v0.7.1
 [0.7.0]: https://github.com/fleming79/async-kernel/compare/v0.7.0-rc.2..v0.7.0
