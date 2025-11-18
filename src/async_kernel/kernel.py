@@ -24,6 +24,7 @@ from pathlib import Path
 from types import CoroutineType
 from typing import TYPE_CHECKING, Any, Literal, Self
 
+import aiologic
 import anyio
 import IPython.core.completer
 import traitlets
@@ -212,7 +213,7 @@ class Kernel(HasTraits):
 
     _instance: Self | None = None
     _initialised = False
-    _interrupt_requested = False
+    _interrupt_requested: bool | Literal["FORCE"] = False
     _last_interrupt_frame = None
     _stop_on_error_time: float = 0
     _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
@@ -562,25 +563,53 @@ class Kernel(HasTraits):
             if self.print_kernel_messages:
                 print(f"Kernel stopped: {self!r}")
 
+    def _interrupt_now(self, *, force=False):
+        """
+        Request an interrupt of the currently running shell thread.
+
+        If called from the main thread, sets the interrupt request flag and sends a SIGINT signal
+        to the current process. On Windows, uses `signal.raise_signal`; on other platforms, uses `os.kill`.
+        If `force` is True, sets the interrupt request flag to "FORCE".
+
+        Args:
+            force: If True, requests a forced interrupt. Defaults to False.
+        """
+        # Restricted this to when the shell is running in the main thread.
+        if self.callers[SocketID.shell].thread is threading.main_thread():
+            self._interrupt_requested = "FORCE" if force else True
+            if sys.platform == "win32":
+                signal.raise_signal(signal.SIGINT)
+                time.sleep(0)
+            else:
+                os.kill(os.getpid(), signal.SIGINT)
+
+    @aiologic.lowlevel.enable_signal_safety
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
         "Handle interrupt signals."
-        if self._interrupt_requested:
-            self._interrupt_requested = False
-            if frame and frame.f_locals is self.shell.user_ns:
-                raise KernelInterruptError
-            if self._last_interrupt_frame is frame:
-                # A blocking call that is not an execute_request
-                raise KernelInterruptError
-            self._last_interrupt_frame = frame
 
-            def clear_last_interrupt_frame():
-                if self._last_interrupt_frame is frame:
-                    self._last_interrupt_frame = None
+        match self._interrupt_requested:
+            case "FORCE":
+                self._interrupt_requested = False
+                raise KernelInterruptError
+            case True:
+                if frame and frame.f_locals is self.shell.user_ns:
+                    self._interrupt_requested = False
+                    raise KernelInterruptError
+                self._last_interrupt_frame = frame
 
-            if caller := self.callers.get(SocketID.shell):
-                caller.call_direct(clear_last_interrupt_frame)
-        else:
-            signal.default_int_handler(signum, frame)
+                def clear_last_interrupt_frame():
+                    if self._last_interrupt_frame is frame:
+                        self._last_interrupt_frame = None
+
+                def re_raise():
+                    if self._last_interrupt_frame is frame:
+                        self._interrupt_now(force=True)
+
+                # Race to check if the main thread should be interrupted.
+                self.callers[SocketID.shell].call_direct(clear_last_interrupt_frame)
+                self.callers[SocketID.control].call_later(1, re_raise)
+            case False:
+                signal.default_int_handler(signum, frame)
 
     def _start_hb_iopub_shell_control_threads(self, start: Event) -> None:
         def heartbeat(ready: Event) -> None:
@@ -1139,13 +1168,7 @@ class Kernel(HasTraits):
 
     async def interrupt_request(self, job: Job[Content], /) -> Content:
         """Handle a [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only)."""
-        self._interrupt_requested = True
-        if self.callers[SocketID.shell].thread is threading.main_thread():
-            if sys.platform == "win32":
-                signal.raise_signal(signal.SIGINT)
-                time.sleep(0)
-            else:
-                os.kill(os.getpid(), signal.SIGINT)
+        self._interrupt_now()
         for interrupter in tuple(self._interrupts):
             interrupter()
         return {}

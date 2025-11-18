@@ -381,15 +381,14 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
     code = f"""
     import time
     from async_kernel import Caller
-    await Caller.get().call_soon(time.sleep, {utils.TIMEOUT * 2})
+    await Caller().call_soon(time.sleep, {utils.TIMEOUT * 2})
     """
     client = subprocess_kernels_client
     msg_id = client.execute(code)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
     await anyio.sleep(0.5)
-    for _ in range(2):  # Blocking calls in tasks need to be interrupted twice
-        await utils.send_control_message(client, MsgType.interrupt_request)
+    await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
     assert reply["content"]["ename"] == "KernelInterruptError"
