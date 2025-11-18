@@ -2049,7 +2049,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Running	Protected			Name</pre>
+<pre>     Name    Running Protected                         Thread                         </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2062,7 +2062,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>──────────────────────────────────────────────────────────────────────</pre>
+<pre>───────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2075,7 +2075,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		MainThread	← current thread</pre>
+<pre>Shell           ✓       🔐    &lt;_MainThread(MainThread, started 139664869326976)&gt; ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2088,7 +2088,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		Control	</pre>
+<pre>Control         ✓       🔐    &lt;Thread(Control, started 139664797898432)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2096,33 +2096,30 @@ await demo()</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>
 </pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Button(description='Continue', style=ButtonStyle())</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Waiting 1</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre></pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">RuntimeError</span>                              Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(0,135,0)">print</span>(utils.get_tags())
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> demo()
-
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[1]</span><span class="ansi-green-fg">, line 9</span>, in <span class="ansi-cyan-fg">demo</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">      7</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">demo</span>():
-<span class="ansi-green-fg">      8</span>     get_ipython().run_line_magic(<span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">callers</span><span class="ansi-yellow-fg">'</span>, <span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">'</span>)
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     caller = <span class="ansi-yellow-bg">Caller</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>  <span style="color: rgb(95,135,135)"># Use caller set the event in the waiting thread</span>
-<span class="ansi-green-fg">     10</span>     b = ipw.Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Continue</span><span class="ansi-yellow-fg">"</span>)
-<span class="ansi-green-fg">     11</span>     display(b)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:227</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
-<span class="ansi-green-fg">    225</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
-<span class="ansi-green-fg">    226</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">227</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    228</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
-<span class="ansi-green-fg">    229</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
-
-<span class="ansi-red-fg">RuntimeError</span>: `thread` is a required argument when creating an instance! Use `Caller.get()`.</pre>
+<pre></pre>
 </div>
 </div>
 </div>
@@ -2170,7 +2167,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Running	Protected			Name</pre>
+<pre>     Name    Running Protected                         Thread                         </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2183,7 +2180,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>──────────────────────────────────────────────────────────────────────</pre>
+<pre>───────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2196,7 +2193,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		MainThread	← current thread</pre>
+<pre>Shell           ✓       🔐    &lt;_MainThread(MainThread, started 139664869326976)&gt; ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2209,7 +2206,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		Control	</pre>
+<pre>Control         ✓       🔐    &lt;Thread(Control, started 139664797898432)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2217,33 +2214,30 @@ await demo()</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>
 </pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Button(description='Continue', style=ButtonStyle())</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Waiting 1</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre></pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">RuntimeError</span>                              Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)">##task</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> demo()
-
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[1]</span><span class="ansi-green-fg">, line 9</span>, in <span class="ansi-cyan-fg">demo</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">      7</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">demo</span>():
-<span class="ansi-green-fg">      8</span>     get_ipython().run_line_magic(<span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">callers</span><span class="ansi-yellow-fg">'</span>, <span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">'</span>)
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     caller = <span class="ansi-yellow-bg">Caller</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>  <span style="color: rgb(95,135,135)"># Use caller set the event in the waiting thread</span>
-<span class="ansi-green-fg">     10</span>     b = ipw.Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Continue</span><span class="ansi-yellow-fg">"</span>)
-<span class="ansi-green-fg">     11</span>     display(b)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:227</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
-<span class="ansi-green-fg">    225</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
-<span class="ansi-green-fg">    226</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">227</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    228</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
-<span class="ansi-green-fg">    229</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
-
-<span class="ansi-red-fg">RuntimeError</span>: `thread` is a required argument when creating an instance! Use `Caller.get()`.</pre>
+<pre></pre>
 </div>
 </div>
 </div>
@@ -2291,7 +2285,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Running	Protected			Name</pre>
+<pre>                Name                Running Protected                                 Thread                                </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2304,7 +2298,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>──────────────────────────────────────────────────────────────────────</pre>
+<pre>─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2317,7 +2311,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		MainThread	</pre>
+<pre>Shell                                  ✓       🔐    &lt;_MainThread(MainThread, started 139664869326976)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2330,7 +2324,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		Control	</pre>
+<pre>Control                                ✓       🔐    &lt;Thread(Control, started 139664797898432)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2343,7 +2337,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-3 (async_kernel_caller)	← current thread</pre>
+<pre>Thread-3 (async_kernel_caller)         ✓            &lt;Thread(Thread-3 (async_kernel_caller), started 139664316946112)&gt; ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2351,33 +2345,30 @@ await demo()</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>
 </pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Button(description='Continue', style=ButtonStyle())</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Waiting 1</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre></pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">RuntimeError</span>                              Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 2</span>
-<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)">##thread</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> demo()
-
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[1]</span><span class="ansi-green-fg">, line 9</span>, in <span class="ansi-cyan-fg">demo</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">      7</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">demo</span>():
-<span class="ansi-green-fg">      8</span>     get_ipython().run_line_magic(<span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">callers</span><span class="ansi-yellow-fg">'</span>, <span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">'</span>)
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">9</span>     caller = <span class="ansi-yellow-bg">Caller</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>  <span style="color: rgb(95,135,135)"># Use caller set the event in the waiting thread</span>
-<span class="ansi-green-fg">     10</span>     b = ipw.Button(description=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Continue</span><span class="ansi-yellow-fg">"</span>)
-<span class="ansi-green-fg">     11</span>     display(b)
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/caller.py:227</span>, in <span class="ansi-cyan-fg">Caller.__new__</span><span class="ansi-blue-fg">(cls, **kwargs)</span>
-<span class="ansi-green-fg">    225</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> (thread := kwargs.get(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thread</span><span class="ansi-yellow-fg">"</span>)):
-<span class="ansi-green-fg">    226</span>     msg = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">`thread` is a required argument when creating an instance! Use `Caller.get()`.</span><span class="ansi-yellow-fg">"</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">227</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">RuntimeError</span>(msg) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    228</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> <span style="color: rgb(0,135,0)">cls</span>._rlock:
-<span class="ansi-green-fg">    229</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> thread <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">cls</span>._instances:
-
-<span class="ansi-red-fg">RuntimeError</span>: `thread` is a required argument when creating an instance! Use `Caller.get()`.</pre>
+<pre></pre>
 </div>
 </div>
 </div>

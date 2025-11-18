@@ -714,17 +714,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#caller-of-the-current-thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Caller of the current thread
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1400,17 +1389,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#caller-of-the-current-thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Caller of the current thread
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1959,31 +1937,17 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="caller">Caller<a class="anchor-link" href="#caller">¶</a></h1><p><code>Caller</code> is a class that makes it easy to call code in different threads/tasks.</p>
-<p>One caller instance is created per thread, and each of those instances can be retrieved by name using the <code>Caller.get</code> class method or in the thread in which it is running simply by <code>Caller()</code>.</p>
-<p><code>Caller</code> is used by the <a href="#usage-by-the-kernel">kernel</a> internally for running code, but can also be used directly by the user. Each caller starts its own iopub zmq socket.</p>
+<p>One caller instance is created per thread, and each of those instances can be retrieved by name using the <code>Caller.get</code> provided there is a running asynchronous event loop.</p>
 <h2 id="threads">Threads<a class="anchor-link" href="#threads">¶</a></h2><p>The caller manages a pool of worker threads (not related to anyio worker threads) or you can specify the name of a new thread which you can manage yourself. Each thread has its own anyio event loop in which the code will be called.</p>
 <p>Most methods that perform execution return an <code>async_kernel.Pending</code> instance. The result can be obtained by awaiting it.</p>
 <h2 id="usage-by-the-kernel">Usage by the kernel<a class="anchor-link" href="#usage-by-the-kernel">¶</a></h2><p>The kernel uses two <code>Caller</code> instances; one each for <code>shell</code> and <code>control</code>. The shell thread event loop is normally the <code>MainThread</code>,
 but is the thread wherever the kernel is started. The control event loop is always named <code>ControlThread</code> and is in the children of the shell caller.
 The caller instances are stored on the kernel at <code>kernel.callers[SocketID]</code>.</p>
-<h2 id="caller-of-the-current-thread">Caller of the current thread<a class="anchor-link" href="#caller-of-the-current-thread">¶</a></h2><p>To get the caller for the current thread use Caller(). It will raise a Runtime error if the thread doesn't have a running instance.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To get the caller for the main thread.</p>
-<p>Ensure you're running an <strong>async kernel</strong>.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2001,9 +1965,11 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="o">%</span><span class="n">callers</span>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># A magic method provided by async kernel</span>
+<span class="o">%</span><span class="n">callers</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">%callers</div>
+<div class="clipboard-copy-txt" id="cell-1"># A magic method provided by async kernel
+%callers</div>
 </div>
 </div>
 </div>
@@ -2015,7 +1981,7 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Running	Protected			Name</pre>
+<pre>     Name    Running Protected                         Thread                         </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2028,7 +1994,7 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>──────────────────────────────────────────────────────────────────────</pre>
+<pre>───────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2041,7 +2007,7 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		MainThread	← current thread</pre>
+<pre>Shell           ✓       🔐    &lt;_MainThread(MainThread, started 139639059558528)&gt; ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2054,7 +2020,7 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		Control	</pre>
+<pre>Control         ✓       🔐    &lt;Thread(Control, started 139638916249280)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2062,40 +2028,13 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>
 </pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-2"></div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2103,7 +2042,7 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 <div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2117,7 +2056,7 @@ The caller instances are stored on the kernel at <code>kernel.callers[SocketID]<
 
 <span class="n">Caller</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">from async_kernel import Caller
+<div class="clipboard-copy-txt" id="cell-2">from async_kernel import Caller
 
 Caller.get()</div>
 </div>
@@ -2138,7 +2077,7 @@ Caller.get()</div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2149,7 +2088,7 @@ Caller.get()</div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error" id="cell-id=6">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error" id="cell-id=4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2164,7 +2103,7 @@ Caller.get()</div>
 </div>
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2205,7 +2144,7 @@ Caller.get()</div>
     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">fut</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">import random
+<div class="clipboard-copy-txt" id="cell-3">import random
 import time
 
 import ipywidgets as ipw
@@ -2246,25 +2185,25 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;Thread-4 (async_kernel_caller) asyncio 🏃 &gt;', style=HTMLStyle(description_wi…</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>HTML(value='', description='Caller&lt;Thread-3 (async_kernel_caller) asyncio 🏃 &gt;', style=HTMLStyle(description_wi…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;Thread-6 (async_kernel_caller) asyncio 🏃 &gt;', style=HTMLStyle(description_wi…</pre>
+<pre>HTML(value='', description='Caller&lt;Thread-5 (async_kernel_caller) asyncio 🏃 &gt;', style=HTMLStyle(description_wi…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;Thread-5 (async_kernel_caller) asyncio 🏃 &gt;', style=HTMLStyle(description_wi…</pre>
+<pre>HTML(value='', description='Caller&lt;Thread-4 (async_kernel_caller) asyncio 🏃 &gt;', style=HTMLStyle(description_wi…</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>HTML(value='', description='Caller&lt;Thread-6 (async_kernel_caller) asyncio 🏃 &gt;', style=HTMLStyle(description_wi…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2313,7 +2252,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2321,7 +2260,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2333,7 +2272,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 </div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="o">%</span><span class="n">callers</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">%callers</div>
+<div class="clipboard-copy-txt" id="cell-4">%callers</div>
 </div>
 </div>
 </div>
@@ -2345,7 +2284,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Running	Protected			Name</pre>
+<pre>                 Name                Running Protected                                 Thread                                 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2358,7 +2297,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>──────────────────────────────────────────────────────────────────────</pre>
+<pre>───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2371,7 +2310,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		MainThread	← current thread</pre>
+<pre>Shell                                   ✓       🔐    &lt;_MainThread(MainThread, started 139639059558528)&gt; ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2384,7 +2323,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓	   🔐		Control	</pre>
+<pre>Control                                 ✓       🔐    &lt;Thread(Control, started 139638916249280)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2397,7 +2336,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-3 (async_kernel_caller)	</pre>
+<pre>Thread-3 (async_kernel_caller)          ✓            &lt;Thread(Thread-3 (async_kernel_caller), started 139638496814784)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2410,7 +2349,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-4 (async_kernel_caller)	</pre>
+<pre>Thread-4 (async_kernel_caller)          ✓            &lt;Thread(Thread-4 (async_kernel_caller), started 139638480033472)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2423,7 +2362,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-5 (async_kernel_caller)	</pre>
+<pre>Thread-5 (async_kernel_caller)          ✓            &lt;Thread(Thread-5 (async_kernel_caller), started 139638178051776)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2436,7 +2375,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-6 (async_kernel_caller)	</pre>
+<pre>Thread-6 (async_kernel_caller)          ✓            &lt;Thread(Thread-6 (async_kernel_caller), started 139638161270464)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2449,7 +2388,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-7 (async_kernel_caller)	</pre>
+<pre>Thread-7 (async_kernel_caller)          ✓            &lt;Thread(Thread-7 (async_kernel_caller), started 139638144489152)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2462,7 +2401,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-8 (async_kernel_caller)	</pre>
+<pre>Thread-8 (async_kernel_caller)          ✓            &lt;Thread(Thread-8 (async_kernel_caller), started 139637909616320)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2475,7 +2414,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-9 (async_kernel_caller)	</pre>
+<pre>Thread-9 (async_kernel_caller)          ✓            &lt;Thread(Thread-9 (async_kernel_caller), started 139637892835008)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2488,7 +2427,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-10 (async_kernel_caller)	</pre>
+<pre>Thread-10 (async_kernel_caller)         ✓            &lt;Thread(Thread-10 (async_kernel_caller), started 139637876053696)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2501,7 +2440,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-11 (async_kernel_caller)	</pre>
+<pre>Thread-11 (async_kernel_caller)         ✓            &lt;Thread(Thread-11 (async_kernel_caller), started 139637641180864)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2514,7 +2453,7 @@ async for fut in Caller.get().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>   ✓			Thread-12 (async_kernel_caller)	</pre>
+<pre>Thread-12 (async_kernel_caller)         ✓            &lt;Thread(Thread-12 (async_kernel_caller), started 139637624399552)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2557,7 +2496,7 @@ async for fut in Caller.get().as_completed(run_forever()):
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 16, 2025 11:07:35 UTC"><span class="timeago" datetime="2025-11-16T11:07:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 16, 2025 11:07:35 UTC">2025-11-16</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 18, 2025 04:30:07 UTC"><span class="timeago" datetime="2025-11-18T04:30:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 18, 2025 04:30:07 UTC">2025-11-18</span>
   </span>
 
     
