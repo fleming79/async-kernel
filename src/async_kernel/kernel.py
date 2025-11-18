@@ -29,7 +29,7 @@ import IPython.core.completer
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import current_async_library
+from aiologic.lowlevel import async_checkpoint, current_async_library
 from IPython.core.error import StdinNotImplementedError
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client import write_connection_file
@@ -43,6 +43,7 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 import async_kernel
 from async_kernel import Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell
+from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
@@ -63,8 +64,6 @@ from async_kernel.typing import (
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable
     from types import CoroutineType, FrameType
-
-    from async_kernel.comm import CommManager
 
 
 __all__ = ["Kernel", "KernelInterruptError"]
@@ -274,7 +273,7 @@ class Kernel(HasTraits):
     debugger = Instance(Debugger, ())
     "Handles [debug requests](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."
 
-    comm_manager: Instance[CommManager] = Instance("async_kernel.comm.CommManager")
+    comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
     transport: CaselessStrEnum[str] = CaselessStrEnum(
@@ -381,13 +380,6 @@ class Kernel(HasTraits):
     @traitlets.default("connection_file")
     def _default_connection_file(self) -> Path:
         return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
-
-    @traitlets.default("comm_manager")
-    def _default_comm_manager(self) -> CommManager:
-        from async_kernel import comm  # noqa: PLC0415
-
-        comm.set_comm()
-        return comm.get_comm_manager()
 
     @traitlets.default("shell")
     def _default_shell(self) -> AsyncInteractiveShell:
@@ -551,10 +543,11 @@ class Kernel(HasTraits):
                     with self._iopub():
                         with anyio.CancelScope() as scope:
                             self._stop = lambda: caller.call_direct(scope.cancel, "Stopping kernel")
+                            self.comm_manager.patch_ipykernel()
                             try:
-                                self.event_started.set()
                                 self.comm_manager.kernel = self
                                 start.set()
+                                self.event_started.set()
                                 yield self
                             except BaseException:
                                 if not scope.cancel_called:
@@ -1053,7 +1046,8 @@ class Kernel(HasTraits):
                 try:
                     self._stop_on_error_time = math.inf
                     self.log.info("An error occurred in a non-silent execution request")
-                    await anyio.sleep(0)
+                    with anyio.CancelScope(shield=True):
+                        await async_checkpoint()
                 finally:
                     self._stop_on_error_time = time.monotonic()
         return content

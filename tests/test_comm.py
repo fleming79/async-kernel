@@ -57,7 +57,6 @@ async def test_comm_manager(kernel: Kernel, mocker) -> None:
     manager.register_target("foo", foo)
     manager.register_target("fizz", fizz)
 
-    kernel.comm_manager = manager
     publish_msg = mocker.patch.object(Comm, "publish_msg")
     comm = Comm()
     comm.on_msg(on_msg)
