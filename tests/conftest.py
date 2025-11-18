@@ -127,5 +127,5 @@ def job() -> Job[ExecuteContent]:
 
 @pytest.fixture
 async def caller(anyio_backend: Backend):
-    async with Caller(thread=threading.current_thread()) as caller:
+    async with Caller("new") as caller:
         yield caller

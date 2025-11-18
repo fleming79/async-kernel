@@ -1,7 +1,6 @@
 import gc
 import inspect
 import re
-import threading
 import weakref
 
 import anyio
@@ -47,7 +46,7 @@ class TestPending:
         result = await pen
         assert result == 42
         assert done_called
-        async with Caller(thread=threading.current_thread()):
+        async with Caller("new"):
             pen.add_done_callback(callback)
             await after_done
 

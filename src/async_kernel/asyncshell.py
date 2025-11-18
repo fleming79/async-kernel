@@ -5,7 +5,7 @@ import json
 import pathlib
 import sys
 import threading
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import anyio
 import IPython.core.release
@@ -338,14 +338,18 @@ class KernelMagics(Magics):
     @line_magic
     def callers(self, _) -> None:
         "Print a table of [Callers][async_kernel.Caller], indicating its status including:  -running - protected - on the current thread."
-        lines = ["\t".join(["Running", "Protected", "\t", "Name"]), "─" * 70]
-        for caller in Caller.all_callers(running_only=False):
-            symbol = "   ✓" if caller.running else "   ✗"
-            current_thread: Literal["← current thread", ""] = (
-                "← current thread" if caller.thread is threading.current_thread() else ""
-            )
-            protected = "   🔐" if caller.protected else ""
-            lines.append("\t".join([symbol, protected, "", caller.thread.name, current_thread]))
+        callers = Caller.all_callers(running_only=False)
+        n = max(len(c.name) for c in callers) + 6
+        m = max(len(repr(c.thread)) for c in callers) + 6
+        lines = ["".join(["Name".center(n), "Running ", "Protected", "Thread".center(m)]), "─" * (n + m + 22)]
+        for caller in callers:
+            running = ("✓" if caller.running else "✗").center(8)
+            protected = ("🔐" if caller.protected else " ").center(8)
+            name = caller.name + " " * (n - len(caller.name))
+            thread = repr(caller.thread)
+            if caller.thread is threading.current_thread():
+                thread += " ← current"
+            lines.append("".join([name, running.center(8), protected, thread]))
         print(*lines, sep="\n")
 
 
