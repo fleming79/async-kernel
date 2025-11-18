@@ -393,14 +393,15 @@ class Caller(anyio.AsyncContextManagerMixin):
             return
         self._continue = False
         self._instances.pop(self.thread, None)
-        for item in self._queue:
+        self._worker_pool.clear()
+        while self._queue:
+            item = self._queue.pop()
             if isinstance(item, tuple):
-                item[1].set_exception(PendingCancelled())
+                item[1].cancel()
+                item[1].set_result(None)
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
-        with contextlib.suppress(ValueError):
-            self._worker_pool.remove(self)
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -605,7 +606,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if is_worker:
 
             def _to_thread_on_done(_) -> None:
-                if not caller.stopped:
+                if not caller.stopped and self._continue:
                     if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
                         self._worker_pool.append(caller)
                     else:
