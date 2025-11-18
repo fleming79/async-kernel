@@ -401,8 +401,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._resume()
         with contextlib.suppress(ValueError):
             self._worker_pool.remove(self)
-        if self._running and self.thread is not threading.current_thread():
-            self.stopped.wait()
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -426,10 +424,12 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.iopub_sockets.pop(self.thread, None)
                     socket.close()
                 self.stop(force=True)
-                while self._children:
-                    with contextlib.suppress(Exception):
-                        # This call will block this thread until the child thread has stopped.
-                        self._children.pop().stop(force=True)
+                for c in tuple(self._children):
+                    c.stop(force=True)
+                if self._children:
+                    with anyio.CancelScope(shield=True):
+                        while self._children:
+                            await self._children.pop().stopped
                 if self._parent_ref and (parent := self._parent_ref()):
                     parent.children.discard(self)
                 self.stopped.set()
