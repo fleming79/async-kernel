@@ -1640,7 +1640,7 @@ is created on first access and then cached for subsequent access.</p>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">created</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakKeyDictionary</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
