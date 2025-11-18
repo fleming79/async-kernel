@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import os
 from collections import deque as deque_ref
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
 from async_kernel.common import Fixed, import_item
+
+if TYPE_CHECKING:
+    from async_kernel.typing import FixedCreate, FixedCreated
 
 
 class TestImportItem:
@@ -80,18 +84,35 @@ class TestFixed:
     def test_created_callback(self):
         called = {}
 
+        def created_callback(c: FixedCreated[MyClass, dict]):
+            called.update(c)
+            called["during_get_okay"] = c["owner"].fixed is c["obj"]
+
         class MyClass:
-            fixed = Fixed(dict, created=lambda ctx: called.update(ctx))
+            fixed = Fixed(dict, created=created_callback)
 
         obj = MyClass()
         val = obj.fixed
         assert called["owner"] is obj
         assert called["obj"] is val
         assert called["name"] == "fixed"
+        assert called["during_get_okay"]
+
+    def test_create_reenter(self):
+        def reenter(c: FixedCreate[MyClass]):
+            assert not c["owner"].fixed
+            return True
+
+        class MyClass:
+            fixed = Fixed(reenter)
+
+        obj = MyClass()
+        with pytest.raises(RuntimeError, match="the current task is already holding this lock"):
+            assert obj.fixed
 
     def test_set_forbidden(self):
         class MyClass:
-            fixed = Fixed(dict)
+            fixed: Fixed[Any, dict[str, object]] = Fixed(dict)
 
         obj = MyClass()
         with pytest.raises(AttributeError):
