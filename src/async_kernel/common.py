@@ -5,7 +5,7 @@ import inspect
 import weakref
 from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
-from aiologic import BinarySemaphore
+from aiologic import Lock
 
 from async_kernel.typing import FixedCreate, FixedCreated, S, T
 
@@ -68,7 +68,7 @@ class Fixed(Generic[S, T]):
             raise TypeError(msg)
         self.created = created
         self.instances = weakref.WeakKeyDictionary()
-        self.lock = BinarySemaphore()
+        self.lock = Lock()
 
     def __set_name__(self, owner_cls: type[S], name: str) -> None:
         self.name = name
@@ -84,14 +84,14 @@ class Fixed(Generic[S, T]):
                     return self.instances[obj]
                 instance: T = self.create({"name": self.name, "owner": obj})  # pyright: ignore[reportAssignmentType]
                 self.instances[obj] = instance
-                if self.created:
-                    try:
-                        self.created({"owner": obj, "obj": instance, "name": self.name})
-                    except Exception:
-                        if log := getattr(obj, "log", None):
-                            msg = f"Callback `created` failed for {obj.__class__}.{self.name}"
-                            log.exception(msg, extra={"obj": self.created})
-                return instance
+            if self.created:
+                try:
+                    self.created({"owner": obj, "obj": instance, "name": self.name})
+                except Exception:
+                    if log := getattr(obj, "log", None):
+                        msg = f"Callback `created` failed for {obj.__class__}.{self.name}"
+                        log.exception(msg, extra={"obj": self.created})
+            return instance
 
     def __set__(self, obj: S, value: Self) -> Never:
         # Note: above we use `Self` for the `value` type hint to give a useful typing error
