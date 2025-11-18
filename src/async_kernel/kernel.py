@@ -261,28 +261,31 @@ class Kernel(HasTraits):
     will be able to connect to the Kernel, so be careful!
     """
 
+    transport: CaselessStrEnum[str] = CaselessStrEnum(
+        ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
+    )
+    "Transport for sockets."
+
     log = Instance(logging.LoggerAdapter)
     "The logging adapter."
 
-    shell = Instance(AsyncInteractiveShell, ())
+    # Public fixed
+    shell = Fixed(lambda _: AsyncInteractiveShell.instance())
     "The interactive shell."
 
-    session = Instance(Session, ())
+    session = Fixed(Session)
     "Handles serialization and sending of messages."
 
-    debugger = Instance(Debugger, ())
+    debugger = Fixed(Debugger)
     "Handles [debug requests](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."
 
     comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
-    transport: CaselessStrEnum[str] = CaselessStrEnum(
-        ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp", config=True
-    )
-    event_started = Instance(Event, (), read_only=True)
+    event_started = Fixed(Event)
     "An event that occurs when the kernel is started."
 
-    event_stopped = Instance(Event, (), read_only=True)
+    event_stopped = Fixed(Event)
     "An event that occurs when the kernel is stopped."
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -380,10 +383,6 @@ class Kernel(HasTraits):
     @traitlets.default("connection_file")
     def _default_connection_file(self) -> Path:
         return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
-
-    @traitlets.default("shell")
-    def _default_shell(self) -> AsyncInteractiveShell:
-        return AsyncInteractiveShell.instance()
 
     @traitlets.default("anyio_backend_options")
     def _default_anyio_backend_options(self):
