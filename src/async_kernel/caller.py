@@ -759,7 +759,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
                                 if pen.cancelled():
                                     raise
-                                self.log.exception("Execution %f failed", item, exc_info=e)
+                                self.log.exception("Execution %s failed", item, exc_info=e)
                             finally:
                                 del item, result
                             await anyio.sleep(0)
