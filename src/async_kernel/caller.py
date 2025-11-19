@@ -331,20 +331,20 @@ class Caller(anyio.AsyncContextManagerMixin):
             - If a new Caller is created, it is started in a new thread or context as appropriate.
         """
         with cls._rlock:
+            main, current = threading.main_thread(), threading.current_thread()
             if (name := kwargs.get("name")) and (name.lower() == "mainthread"):
                 msg = f'{name=} is reserved! To get the caller for the main thread use `Caller.get("MainThread")`'
                 raise RuntimeError(msg)
             if mode == "MainThread":
-                kwargs = {"thread": threading.main_thread()}
-            thread = threading.current_thread() if not kwargs else kwargs.get("thread")
+                kwargs = {"thread": main}
+            thread = current if not kwargs else kwargs.get("thread")
             if thread and (caller := cls._instances.get(thread)):
                 return caller
-            if (mode == "existing") or (thread and (thread is not threading.current_thread())):
+            if mode == "existing":
                 msg = f"Caller instance not found for {kwargs=}"
                 raise RuntimeError(msg)
 
             async def run_caller_in_context(caller: Self) -> None:
-                # run the caller in context
                 async with caller:
                     if not pen.done():
                         pen.set_result(caller)
@@ -353,7 +353,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             def async_kernel_caller(options: dict) -> None:
                 try:
                     if token := options.get("token"):
-                        # A 'shadow' thead to run the caller from the 'current thread'
                         pen.set_result(caller_)
                         mark_thread_pydev_do_not_trace()
                         anyio.from_thread.run(run_caller_in_context, caller_, token=token)
@@ -365,8 +364,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not "shutdown" not in str(e):
                         raise
 
-            if thread:
+            if thread is current:
                 args = [{"token": current_token()}]
+            elif thread:
+                msg = "Unable to obtain token for another threads event loop!"
+                raise RuntimeError(msg)
             else:
                 kernel = async_kernel.Kernel()
                 backend = kwargs.get("backend") or current_async_library(failsafe=True)
