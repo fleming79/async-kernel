@@ -794,7 +794,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         items: Iterable[Pending[T]] | AsyncGenerator[Pending[T]],
         *,
         max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        shield: bool = False,
+        cancel_unfinished: bool = True,
     ) -> AsyncGenerator[Pending[T], Any]:
         """
         A [classmethod][] iterator to get result as they complete.
@@ -804,7 +804,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             max_concurrent: The maximum number of concurrent results to monitor at a time.
                 This is useful when `items` is a generator utilising [Caller.to_thread][].
                 By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
-            shield: Shield existing items from cancellation.
+            cancel_unfinished: Cancel any `pending` when exiting.
 
         Tip:
             1. Pass a generator if you wish to limit the number result jobs when calling to_thread/to_task etc.
@@ -870,7 +870,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             pen_.cancel()
             for pen in results:
                 pen.remove_done_callback(result_done)
-                if not shield:
+                if cancel_unfinished:
                     pen.cancel("Cancelled by as_completed")
 
     async def wait(
@@ -901,7 +901,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         done = set()
         if pending := set(items):
             with anyio.move_on_after(timeout):
-                async for pen in self.as_completed(pending.copy(), shield=True):
+                async for pen in self.as_completed(pending.copy(), cancel_unfinished=False):
                     _ = (pending.discard(pen), done.add(pen))
                     if return_when == "FIRST_COMPLETED":
                         break
