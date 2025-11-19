@@ -3732,12 +3732,8 @@ or if reserved names are used improperly.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -5021,7 +5017,7 @@ need to be performed from within the callers event loop/taskgroup.</p>
     <span class="n"><span title="async_kernel.caller.Caller.as_completed(items)">items</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.caller.Caller.as_completed(max_concurrent)">max_concurrent</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.as_completed(shield)">shield</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.caller.Caller.as_completed(cancel_unfinished)">cancel_unfinished</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -5053,13 +5049,13 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h4 id="async_kernel.caller.Caller.as_completed(shield)" class="doc doc-heading doc-heading-parameter">              <b><code>shield</code></b>
-<a href="#async_kernel.caller.Caller.as_completed(shield)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
-                  <code>False</code>
+<h4 id="async_kernel.caller.Caller.as_completed(cancel_unfinished)" class="doc doc-heading doc-heading-parameter">              <b><code>cancel_unfinished</code></b>
+<a href="#async_kernel.caller.Caller.as_completed(cancel_unfinished)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
 )
           –
           <div class="doc-md-description">
-            <p>Shield existing items from cancellation.</p>
+            <p>Cancel any <code>pending</code> when exiting.</p>
           </div>
         </li>
     </ul>
@@ -5163,7 +5159,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">max_concurrent</span><span class="p">:</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
-    <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">cancel_unfinished</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A [classmethod][] iterator to get result as they complete.</span>
@@ -5173,7 +5169,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="sd">        max_concurrent: The maximum number of concurrent results to monitor at a time.</span>
 <span class="sd">            This is useful when `items` is a generator utilising [Caller.to_thread][].</span>
 <span class="sd">            By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.</span>
-<span class="sd">        shield: Shield existing items from cancellation.</span>
+<span class="sd">        cancel_unfinished: Cancel any `pending` when exiting.</span>
 
 <span class="sd">    Tip:</span>
 <span class="sd">        1. Pass a generator if you wish to limit the number result jobs when calling to_thread/to_task etc.</span>
@@ -5239,7 +5235,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
         <span class="n">pen_</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
             <span class="n">pen</span><span class="o">.</span><span class="n">remove_done_callback</span><span class="p">(</span><span class="n">result_done</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">shield</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cancel_unfinished</span><span class="p">:</span>
                 <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Cancelled by as_completed&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5382,7 +5378,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
     <span class="n">done</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">pending</span> <span class="o">:=</span> <span class="nb">set</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">move_on_after</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">pending</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">pending</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">cancel_unfinished</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
                 <span class="n">_</span> <span class="o">=</span> <span class="p">(</span><span class="n">pending</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">pen</span><span class="p">),</span> <span class="n">done</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pen</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">return_when</span> <span class="o">==</span> <span class="s2">&quot;FIRST_COMPLETED&quot;</span><span class="p">:</span>
                     <span class="k">break</span>
