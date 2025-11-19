@@ -11,6 +11,7 @@ import anyio.to_thread
 import pytest
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
+from anyio.from_thread import start_blocking_portal
 
 from async_kernel.caller import Caller
 from async_kernel.kernelspec import Backend
@@ -77,9 +78,12 @@ class TestCaller:
         done = Event()
         thread = threading.Thread(target=done.wait)
         thread.start()
-        with pytest.raises(RuntimeError, match="Caller instance not found for kwargs="):
-            Caller.get(thread=thread)
-        done.set()
+        try:
+            with pytest.raises(RuntimeError, match="Unable to obtain token for another threads event loop!"):
+                Caller.get(thread=thread)
+        finally:
+            done.set()
+            thread.join()
 
     async def test_get_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():
@@ -92,6 +96,19 @@ class TestCaller:
         thread = threading.Thread(target=anyio.run, args=[get_caller])
         thread.start()
         thread.join()
+
+    @pytest.mark.skip(reason="Unable to obtain tokens from other threads.")
+    async def test_get_main_from_non_main(self, anyio_backend: Backend):
+
+        async def async_func() -> Caller:
+            caller = Caller.get("MainThread")
+            assert (await caller.call_soon(lambda: 1 + 3)) == 4
+            return caller
+
+        with start_blocking_portal() as portal:
+            caller = portal.call(async_func)
+        assert caller is Caller()
+        assert (await caller.call_soon(lambda: 1 + 1)) == 2
 
     async def test_sync(self):
         async with Caller("new") as caller:
