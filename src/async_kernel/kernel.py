@@ -142,7 +142,9 @@ def bind_socket(
 
 @functools.cache
 def wrap_handler(
-    runner: Callable[[HandlerType, BinarySemaphore, Job]], lock: BinarySemaphore, handler: HandlerType
+    runner: Callable[[HandlerType, Job, BinarySemaphore]],
+    handler: HandlerType,
+    lock: BinarySemaphore,
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
     """
     Returns a function that calls and awaits runner with the corresponding lock and handler.
@@ -151,13 +153,13 @@ def wrap_handler(
 
     Args:
         runner: The function that calls and awaits the handler.
-        lock: The lock to use for sending the reply.
         handler: The handler to which the runner is associated.
+        lock: The lock to use for sending the reply.
     """
 
     @functools.wraps(handler)
     async def wrap_handler(job: Job) -> None:
-        await runner(handler, lock, job)
+        await runner(handler, job, lock)
 
     return wrap_handler
 
@@ -830,23 +832,113 @@ class Kernel(HasTraits):
             while True:
                 try:
                     ident, msg = self.session.recv(socket, mode=zmq.BLOCKY, copy=False)  # pyright: ignore[reportAssignmentType]
-                    msg_type = MsgType(msg["header"]["msg_type"])
                     job: Job = {
-                        "socket_id": socket_id,
-                        "socket": socket,
-                        "ident": ident,
-                        "msg": msg,
                         "received_time": time.monotonic(),
+                        "socket_id": socket_id,
+                        "msg": msg,
+                        "ident": ident,
+                        "socket": socket,
                     }
-                    run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
-                    handler = wrap_handler(self.run_handler, lock, self.get_handler(msg_type))
-                    self.schedule_job(caller, lock, handler, run_mode, job)
-                    self.log.debug("%s %s %s %s %s", socket_id, msg_type, run_mode, handler, msg)
+                    self.schedule_job(job, caller, lock)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:
                     self.log.debug("Bad message on %s: %s", socket_id, e)
                     continue
+
+    def schedule_job(self, job: Job, caller: Caller, lock: BinarySemaphore, /):
+        """
+        Schedule a job to be executed by the caller.
+
+        Args:
+            job: The job instance or data to be passed to the handler.
+            caller: A per-channel caller to use for scheduling.
+            lock: A per-socket lock for sending messages, used by [Kernel.run_handler][].
+        """
+        # Debug warning: breakpoints won't work here because `receive_msg_loop` disables debugging with: `utils.mark_thread_pydev_do_not_trace()`
+        msg_type = MsgType(job["msg"]["header"]["msg_type"])
+        handler = wrap_handler(self.run_handler, self.get_handler(msg_type), lock)
+        run_mode = self.get_run_mode(msg_type, socket_id=job["socket_id"], job=job)
+        match run_mode:
+            case RunMode.direct:
+                caller.call_direct(handler, job)
+            case RunMode.queue:
+                caller.queue_call(handler, job)
+            case RunMode.task:
+                caller.call_soon(handler, job)
+            case RunMode.thread:
+                caller.to_thread(handler, job)
+        self.log.debug("%s %s %s %s", msg_type, handler, run_mode, job)
+
+    def get_handler(self, msg_type: MsgType) -> HandlerType:
+        if not callable(f := getattr(self, msg_type, None)):
+            msg = f"A handler was not found for {msg_type=}"
+            raise TypeError(msg)
+        return f  # pyright: ignore[reportReturnType]
+
+    async def run_handler(self, handler: HandlerType, job: Job[dict], lock: BinarySemaphore) -> None:
+        """
+        Asynchronously run a message handler for a given job, managing reply sending and execution state.
+
+        Args:
+            handler: A coroutine function to handle the job / message.
+
+                - It is a method on the kernel whose name corresponds to the [message type that it handles][async_kernel.typing.MsgType].
+                - The handler should return a dict to use as 'content'in a reply.
+                - If status is not included in the dict it gets added automatically as `{'status': 'ok'}`.
+                - If a reply is not expected the handler should return `None`.
+
+            job: The job dictionary containing message, socket, and identification information.
+            lock: An async semaphore used to synchronize reply sending.
+
+        Workflow:
+            - Sets the current job context variable.
+            - Sends a "busy" status message on the IOPub channel.
+            - Awaits the handler; if it returns content, sends a reply using the provided lock.
+            - On exception, sends an error reply and logs the exception.
+            - Resets the job context variable.
+            - Sends an "idle" status message on the IOPub channel.
+
+        Notes:
+            - Replies are sent even if exceptions occur in the handler.
+            - The reply message type is derived from the original request type.
+        """
+
+        async def send_reply(job: Job[dict], content: dict, /) -> None:
+            if "status" not in content:
+                content["status"] = "ok"
+            # Although we aren't sending from the thread where the socket belongs this still appears to be reliable.
+            async with lock:
+                msg = self.session.send(
+                    stream=job["socket"],
+                    msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
+                    content=content,
+                    parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
+                    ident=job["ident"],
+                )
+                if msg:
+                    self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
+
+        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        try:
+            self.iopub_send(
+                msg_or_type="status",
+                content={"execution_state": "busy"},
+                ident=self.topic("status"),
+            )
+            if (content := await handler(job)) is not None:
+                await send_reply(job, content)
+        except Exception as e:
+            await send_reply(job, error_to_content(e))
+            self.log.exception("Exception in message handler:", exc_info=e)
+        finally:
+            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
+            self.iopub_send(
+                msg_or_type="status",
+                parent=job["msg"],
+                content={"execution_state": "idle"},
+                ident=self.topic("status"),
+            )
 
     def get_run_mode(
         self,
@@ -892,90 +984,6 @@ class Kernel(HasTraits):
             case _:
                 pass
         return RunMode.queue
-
-    def get_handler(self, msg_type: MsgType) -> HandlerType:
-        if not callable(f := getattr(self, msg_type, None)):
-            msg = f"A handler was not found for {msg_type=}"
-            raise TypeError(msg)
-        return f  # pyright: ignore[reportReturnType]
-
-    async def run_handler(self, handler: HandlerType, lock: BinarySemaphore, job: Job[dict]) -> None:
-        """
-        Asynchronously run a message handler for a given job, managing reply sending and execution state.
-
-        Args:
-            handler: A coroutine function to handle the job / message.
-
-                - It is a method on the kernel whose name corresponds to the [message type that it handles][async_kernel.typing.MsgType].
-                - The handler should return a dict to use as 'content'in a reply.
-                - If status is not included in the dict it gets added automatically as `{'status': 'ok'}`.
-                - If a reply is not expected the handler should return `None`.
-
-            lock: An async semaphore used to synchronize reply sending.
-            job: The job dictionary containing message, socket, and identification information.
-
-        Workflow:
-            - Sets the current job context variable.
-            - Sends a "busy" status message on the IOPub channel.
-            - Awaits the handler; if it returns content, sends a reply using the provided lock.
-            - On exception, sends an error reply and logs the exception.
-            - Resets the job context variable.
-            - Sends an "idle" status message on the IOPub channel.
-
-        Notes:
-            - Replies are sent even if exceptions occur in the handler.
-            - The reply message type is derived from the original request type.
-        """
-
-        async def send_reply(job: Job[dict], content: dict, /) -> None:
-            if "status" not in content:
-                content["status"] = "ok"
-            # Although we aren't sending from the thread where the socket belongs this still appears to be reliable.
-            async with lock:
-                msg = self.session.send(
-                    stream=job["socket"],
-                    msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
-                    content=content,
-                    parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
-                    ident=job["ident"],
-                )
-                if msg:
-                    self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
-
-        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        try:
-            self.iopub_send(msg_or_type="status", content={"execution_state": "busy"}, ident=self.topic("status"))
-            if (content := await handler(job)) is not None:
-                await send_reply(job, content)
-        except Exception as e:
-            await send_reply(job, error_to_content(e))
-            self.log.exception("Exception in message handler:", exc_info=e)
-        finally:
-            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
-            self.iopub_send(
-                msg_or_type="status", parent=job["msg"], content={"execution_state": "idle"}, ident=self.topic("status")
-            )
-
-    def schedule_job(self, caller: Caller, lock: BinarySemaphore, handler: HandlerType, run_mode: RunMode, job: Job, /):
-        """
-        Schedules a job to be executed by the handler using the specified run mode.
-
-        Args:
-            caller: The caller instance responsible for scheduling.
-            lock: A binary semaphore for synchronization (not used in this method).
-            handler: The function or callable to execute for the job.
-            run_mode: The mode in which to run the job.
-            job: The job instance or data to be passed to the handler.
-        """
-        match run_mode:
-            case RunMode.direct:
-                caller.call_direct(handler, job)
-            case RunMode.queue:
-                caller.queue_call(handler, job)
-            case RunMode.task:
-                caller.call_soon(handler, job)
-            case RunMode.thread:
-                caller.to_thread(handler, job)
 
     def all_concurrency_run_modes(
         self,
