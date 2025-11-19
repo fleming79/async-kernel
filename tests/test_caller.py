@@ -99,7 +99,6 @@ class TestCaller:
 
     @pytest.mark.skip(reason="Unable to obtain tokens from other threads.")
     async def test_get_main_from_non_main(self, anyio_backend: Backend):
-
         async def async_func() -> Caller:
             caller = Caller.get("MainThread")
             assert (await caller.call_soon(lambda: 1 + 3)) == 4
