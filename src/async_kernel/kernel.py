@@ -637,15 +637,17 @@ class Kernel(HasTraits):
                 except zmq.ContextTerminated:
                     frontend.close(linger=500)
 
-        hb_ready, iopub_ready, control_ready, shell_ready = (Event(), Event(), Event(), Event())
+        hb_ready, iopub_ready = (Event(), Event())
         threading.Thread(target=heartbeat, name="heartbeat", args=[hb_ready]).start()
         hb_ready.wait()
         threading.Thread(target=pub_proxy, name="iopub proxy", args=[iopub_ready]).start()
         iopub_ready.wait()
-        threading.Thread(target=self.receive_msg_loop, args=(SocketID.control, control_ready, start)).start()
-        control_ready.wait()
-        threading.Thread(target=self.receive_msg_loop, args=(SocketID.shell, shell_ready, start)).start()
-        shell_ready.wait()
+        # message loops
+        for socket_id in [SocketID.shell, SocketID.control]:
+            ready = Event()
+            name = f"{socket_id}-receive_msg_loop"
+            threading.Thread(target=self.receive_msg_loop, name=name, args=(socket_id, ready, start)).start()
+            ready.wait()
 
     @contextlib.contextmanager
     def _bind_socket(self, socket_id: SocketID) -> Generator[Any | Socket[Any], Any, None]:
@@ -817,8 +819,7 @@ class Kernel(HasTraits):
             - Handles and logs exceptions during message processing.
             - Breaks the loop on `zmq.ContextTerminated`.
         """
-        if not utils.LAUNCHED_BY_DEBUGPY:
-            utils.mark_thread_pydev_do_not_trace()
+        utils.mark_thread_pydev_do_not_trace()
         msg: Message
         ident: list[bytes]
         caller = self.callers[socket_id]
