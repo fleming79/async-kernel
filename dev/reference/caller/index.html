@@ -3732,8 +3732,12 @@ or if reserved names are used improperly.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
   </span>
 
       </li>
@@ -4883,7 +4887,7 @@ need to be performed from within the callers event loop/taskgroup.</p>
                             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Execution </span><span class="si">%s</span><span class="s2"> failed&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
                         <span class="k">finally</span><span class="p">:</span>
                             <span class="k">del</span> <span class="n">item</span><span class="p">,</span> <span class="n">result</span>
-                        <span class="k">await</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="k">await</span> <span class="n">async_checkpoint</span><span class="p">()</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">event</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">()</span>
                         <span class="n">pen</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;resume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span>
@@ -5154,7 +5158,8 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="normal">871</span>
 <span class="normal">872</span>
 <span class="normal">873</span>
-<span class="normal">874</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
+<span class="normal">874</span>
+<span class="normal">875</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5206,6 +5211,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_concurrent_</span><span class="p">:</span>
                             <span class="k">await</span> <span class="n">event</span>
                         <span class="n">resume</span> <span class="o">=</span> <span class="n">noop</span>
+                        <span class="k">await</span> <span class="n">async_checkpoint</span><span class="p">()</span>
 
         <span class="k">except</span> <span class="p">(</span><span class="ne">StopAsyncIteration</span><span class="p">,</span> <span class="ne">StopIteration</span><span class="p">):</span>
             <span class="k">return</span>
@@ -5316,8 +5322,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">876</span>
-<span class="normal">877</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">877</span>
 <span class="normal">878</span>
 <span class="normal">879</span>
 <span class="normal">880</span>
@@ -5350,7 +5355,8 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="normal">907</span>
 <span class="normal">908</span>
 <span class="normal">909</span>
-<span class="normal">910</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
+<span class="normal">910</span>
+<span class="normal">911</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
