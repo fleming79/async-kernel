@@ -115,7 +115,7 @@ class Pending(Awaitable[T]):
             Exception: If `result=True` and an exception was set on the pending.
         """
         try:
-            if not self._done:
+            if not self._done or self._done_callbacks:
                 event = create_async_event()
                 self._done_callbacks.appendleft(lambda _: event.set())
                 with anyio.fail_after(timeout):
@@ -123,9 +123,6 @@ class Pending(Awaitable[T]):
                         await event
             else:
                 await async_checkpoint()
-                with anyio.fail_after(timeout):
-                    while self._done_callbacks:
-                        await async_checkpoint()
             return self.result() if result else None
         finally:
             if not self._done and not shield:
