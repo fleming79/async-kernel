@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
 from aiologic import Event
-from aiologic.lowlevel import create_async_event
+from aiologic.lowlevel import async_checkpoint, create_async_event, green_checkpoint
 from typing_extensions import override
 
 from async_kernel.typing import T
@@ -115,12 +115,17 @@ class Pending(Awaitable[T]):
             Exception: If `result=True` and an exception was set on the pending.
         """
         try:
-            if not self._done or self._done_callbacks:
+            if not self._done:
                 event = create_async_event()
                 self._done_callbacks.appendleft(lambda _: event.set())
                 with anyio.fail_after(timeout):
                     if not self._done or self._done_callbacks:
                         await event
+            else:
+                await async_checkpoint()
+                with anyio.fail_after(timeout):
+                    while self._done_callbacks:
+                        await async_checkpoint()
             return self.result() if result else None
         finally:
             if not self._done and not shield:
@@ -152,13 +157,14 @@ class Pending(Awaitable[T]):
         """
         if not self._done:
             done = Event()
-            self.add_done_callback(lambda _: done.set())
+            self._done_callbacks.appendleft(lambda _: done.set())
             if not self._done:
                 done.wait(timeout)
             if not self._done:
                 msg = f"Timeout waiting for {self}"
                 raise TimeoutError(msg)
-
+        else:
+            green_checkpoint()
         return self.result() if result else None
 
     def _set_done(self, mode: Literal["result", "exception"], value) -> None:

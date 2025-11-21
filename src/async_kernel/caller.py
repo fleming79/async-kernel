@@ -19,7 +19,7 @@ import anyio
 import anyio.from_thread
 import zmq
 from aiologic import Event, RLock
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from anyio.lowlevel import current_token
 from typing_extensions import override
 
@@ -763,7 +763,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 self.log.exception("Execution %s failed", item, exc_info=e)
                             finally:
                                 del item, result
-                            await anyio.sleep(0)
+                            await async_checkpoint()
                         else:
                             event = create_async_event()
                             pen.metadata["resume"] = event.set
@@ -841,6 +841,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if len(results) == max_concurrent_:
                                 await event
                             resume = noop
+                            await async_checkpoint()
 
             except (StopAsyncIteration, StopIteration):
                 return
