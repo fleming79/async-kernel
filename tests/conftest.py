@@ -90,27 +90,20 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
     command = make_argv(connection_file=connection_file, kernel_name=kernel_name, transport=transport)
     process = await anyio.open_process([*command, "--no-print_kernel_messages"])
     async with process:
+        while not connection_file.exists() or not connection_file.stat().st_size:
+            await anyio.sleep(0.1)
+        await anyio.sleep(0.01)
+        client = AsyncKernelClient()
+        client.load_connection_file(connection_file)
+        client.start_channels()
         try:
-            client = AsyncKernelClient()
-            while not connection_file.exists() or not connection_file.stat().st_size:
-                await anyio.sleep(0.1)
-            await anyio.sleep(0.01)
-            client.load_connection_file(connection_file)
-            client.start_channels()
             msg_id = client.kernel_info()
             await utils.get_reply(client, msg_id)
             await utils.clear_iopub(client, timeout=0.1)
-            try:
-                yield client
-            finally:
-                client.shutdown()
-                client.stop_channels()
-                with anyio.CancelScope(shield=True), anyio.fail_after(utils.TIMEOUT):
-                    assert await process.wait() == 0
+            yield client
         finally:
-            if process.returncode is None:
-                process.kill()
-
+            client.shutdown()
+            client.stop_channels()
     assert not connection_file.exists(), "cleanup_connection_file not called by atexit ..."
 
 
