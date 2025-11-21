@@ -65,7 +65,8 @@ docs = ["mkdocs-material",
     "mkdocs-git-revision-date-localized-plugin",
     "jupyterlab",
     "ipywidgets",
-    "pandas"
+    "pandas",
+    "ruff"
 ]
 uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32'"
 ]
@@ -76,11 +77,8 @@ test = [
     "pytest-rerunfailures",
     "pytest>=8.4,<9",
     "trio>=0.31.0",
-    "hatch"
     ]
 dev = [
-    "basedpyright",
-    "ruff",
     "debugpy",
     "ipykernel",
     {include-group = "uvloop"},

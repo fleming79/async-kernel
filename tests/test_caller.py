@@ -567,24 +567,26 @@ class TestCaller:
             with pytest.raises(RuntimeError):
                 await pen
 
-    async def test_as_completed_cancelled(self, caller: Caller):
-        n = 4
-        ready = CountdownEvent(n)
+    async def test_as_completed_cancelled(self, anyio_backend: Backend):
+        async with Caller("new") as caller:
+            n = 20
+            ready = CountdownEvent(n)
 
-        async def test_func():
-            ready.down()
-            if ready.value:
-                await anyio.sleep_forever()
-            return ready
+            async def test_func():
+                ready.down()
+                if ready.value:
+                    await anyio.sleep_forever()
+                return ready
 
-        items = {caller.to_thread(test_func) for _ in range(n)}
-        with anyio.CancelScope() as scope:
-            async for _ in caller.as_completed(items):
-                await ready
-                scope.cancel()
-        for item in items:
-            if not item.cancelled():
-                assert item.result() is ready
-            else:
-                with pytest.raises(PendingCancelled):
-                    await item
+            items = {caller.to_thread(test_func) for _ in range(n)}
+            with anyio.CancelScope() as scope:
+                async for _ in caller.as_completed(items):
+                    await ready
+                    scope.cancel()
+            for item in items:
+                if not item.cancelled():
+                    assert item.result() is ready
+                else:
+                    with pytest.raises(PendingCancelled):
+                        await item
+            await caller.wait(items, return_when="ALL_COMPLETED")

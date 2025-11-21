@@ -344,7 +344,7 @@ class KernelMagics(Magics):
         lines = ["".join(["Name".center(n), "Running ", "Protected", "Thread".center(m)]), "─" * (n + m + 22)]
         for caller in callers:
             running = ("✓" if caller.running else "✗").center(8)
-            protected = ("🔐" if caller.protected else " ").center(8)
+            protected = "   🔐    " if caller.protected else "         "
             name = caller.name + " " * (n - len(caller.name))
             thread = repr(caller.thread)
             if caller.thread is threading.current_thread():
