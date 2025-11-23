@@ -530,7 +530,7 @@ class Kernel(HasTraits):
         assert self.shell
         self.anyio_backend = Backend(current_async_library())
         # Callers
-        caller = Caller("new", name="Shell", protected=True, log=self.log, zmq_context=self._zmq_context)
+        caller = Caller("async-context", name="Shell", protected=True, log=self.log, zmq_context=self._zmq_context)
         self.callers[SocketID.shell] = caller
         self.callers[SocketID.control] = caller.get(name="Control", protected=True)
         start = Event()
@@ -1041,7 +1041,7 @@ class Kernel(HasTraits):
                 parent=job["msg"],
                 ident=self.topic("execute_input"),
             )
-        caller = Caller.get()
+        caller = Caller()
         err = None
         with anyio.CancelScope() as scope:
 

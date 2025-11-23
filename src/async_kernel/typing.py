@@ -339,15 +339,6 @@ class CallerCreateOptions(TypedDict):
     "A zmq Context to use "
 
 
-CallerGetModeType = Literal["auto", "existing", "MainThread"]
-"""The mode to use in [async_kernel.caller.Caller.get][].
-
-- "auto": (Default) A new instance is created if no existing instance is found.
-- "existing": Only checks for existing instances. 
-- "MainThread": Shorthand for kwargs = `{"thread":threading.main_thread()}`
-"""
-
-
 DebugMessage = dict[str, Any]
 """
 A TypeAlias for a debug message.

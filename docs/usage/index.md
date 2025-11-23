@@ -38,7 +38,6 @@ It has a few unique features worth mentioning:
 
 - [async_kernel.Caller.get][]
     - Retrieves existing or creates a caller instance according the 'thread' or 'name'.
-    - Is both a [classmethod][] and `method` depending of if it is called on the 'Class' or 'instance'.
 - [async_kernel.Caller.to_thread][]
     - runs an event loop matching the backend of the originator.
     - maintains a pool of worker threads per caller, which in turn can have its own pool of workers.
@@ -59,13 +58,13 @@ are considered children and will be stopped if the caller is stopped.
 === "To get a caller from inside an event loop use"
 
     ```python
-    caller = Caller.get()
+    caller = Caller()
     ```
 
 === "New thread specify the backend"
 
     ```python
-    asyncio_caller = Caller.get(name="asyncio backend", backend="asyncio")
+    asyncio_caller = Caller().get(name="asyncio backend", backend="asyncio")
     trio_caller = asyncio_caller.get(name="trio backend", backend="trio")
     assert trio_caller in asyncio_caller.children
 

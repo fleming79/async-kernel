@@ -120,5 +120,5 @@ def job() -> Job[ExecuteContent]:
 
 @pytest.fixture
 async def caller(anyio_backend: Backend):
-    async with Caller("new") as caller:
+    async with Caller("async-context") as caller:
         yield caller

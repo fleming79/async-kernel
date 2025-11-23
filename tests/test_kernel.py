@@ -517,8 +517,8 @@ print("{mode.name}")
 @pytest.mark.parametrize(
     "code",
     [
-        "from async_kernel import Caller; Caller.get().call_later(str, 0, 123)",
-        "from async_kernel import Caller; Caller.get().call_soon(print, 'hello')",
+        "from async_kernel import Caller; Caller().call_later(str, 0, 123)",
+        "from async_kernel import Caller; Caller().call_soon(print, 'hello')",
     ],
 )
 async def test_namespace_default(client: AsyncKernelClient, code: str):
