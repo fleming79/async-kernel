@@ -1533,6 +1533,17 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#async_kernel.typing.CallerState" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CallerState
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#async_kernel.typing.MsgHeader" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2626,6 +2637,17 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#async_kernel.typing.CallerState" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CallerState
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#async_kernel.typing.MsgHeader" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3173,6 +3195,13 @@ viewing the latest version.
           –
           <div class="doc-md-description">
             <p>Tags recognised by the kernel.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title=" CallerState (async_kernel.typing.CallerState)" href="#async_kernel.typing.CallerState">CallerState</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>The State of a <a class="autorefs autorefs-internal" title=" Caller" href="../caller/#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -3762,20 +3791,9 @@ viewing the latest version.
       <a href="../kernel/#async_kernel.kernel.Kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Kernel</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="../kernel/#async_kernel.kernel.Kernel.run_handler"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;run_handler</a>
   </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../kernel/#async_kernel.kernel.Kernel.schedule_job"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_job</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -4286,28 +4304,6 @@ Tag:
       </li>
   </ul>
 
-        <b class="doc doc-backlink-type">Used by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../kernel/#">kernel</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../kernel/#async_kernel.kernel.Kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Kernel</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../kernel/#async_kernel.kernel.Kernel.schedule_job"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_job</a>
-  </span>
-
-      </li>
-  </ul>
-
   </div>
 
 
@@ -4516,8 +4512,7 @@ Tag:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
-<span class="normal"> 93</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
 <span class="normal"> 94</span>
 <span class="normal"> 95</span>
 <span class="normal"> 96</span>
@@ -4525,7 +4520,8 @@ Tag:
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
-<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">101</span>
+<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_mode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Get a RunMode from the code if it is found.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
@@ -5520,6 +5516,87 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
     </div>
 
 </div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="async_kernel.typing.CallerState" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">async_kernel.typing.CallerState</span>
+
+
+<a href="#async_kernel.typing.CallerState" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
+
+
+
+        <p>The State of a <a class="autorefs autorefs-internal" title=" Caller" href="../caller/#async_kernel.caller.Caller">async_kernel.caller.Caller</a>.</p>
+
+          
+
+
+  <div class="doc doc-backlinks">
+        <b class="doc doc-backlink-type">Returned by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../caller/#">caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../caller/#async_kernel.caller.Caller.stop"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stop</a>
+  </span>
+
+      </li>
+  </ul>
+
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
 
 
 

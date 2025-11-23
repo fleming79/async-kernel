@@ -1308,10 +1308,10 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#callerget" class="md-nav__link">
+  <a href="#caller_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Caller.get
+        Caller()
       
     </span>
   </a>
@@ -1420,7 +1420,6 @@ in a given thread's event loop.</p>
 <ul>
 <li><a class="autorefs autorefs-internal" title=" get" href="../reference/caller/#async_kernel.caller.Caller.get">async_kernel.Caller.get</a><ul>
 <li>Retrieves existing or creates a caller instance according the 'thread' or 'name'.</li>
-<li>Is both a <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#classmethod">classmethod</a> and <code>method</code> depending of if it is called on the 'Class' or 'instance'.</li>
 </ul>
 </li>
 <li><a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a><ul>
@@ -1434,26 +1433,45 @@ in a given thread's event loop.</p>
 <li>The context of the original call is retained until the queue is stopped with <a class="autorefs autorefs-internal" title=" queue_close" href="../reference/caller/#async_kernel.caller.Caller.queue_close">async_kernel.caller.Caller.queue_close</a>.</li>
 </ul>
 </li>
+<li>The result of <a class="autorefs autorefs-internal" title=" call_soon" href="../reference/caller/#async_kernel.caller.Caller.call_soon">async_kernel.Caller.call_soon</a>, <a class="autorefs autorefs-internal" title=" call_later" href="../reference/caller/#async_kernel.caller.Caller.call_later">async_kernel.Caller.call_later</a> and <a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a>
+  return a <a class="autorefs autorefs-internal" title=" Pending" href="../reference/pending/#async_kernel.pending.Pending">async_kernel.Pending</a> which can be used to wait/await for the result of execution.</li>
 </ul>
-<p>There is caller instance exists per thread (assuming there is only one event-loop-per-thread).</p>
-<h3 id="callerget"><code>Caller.get</code><a class="headerlink" href="#callerget" title="Permanent link">&para;</a></h3>
-<p><a class="autorefs autorefs-internal" title=" get" href="../reference/caller/#async_kernel.caller.Caller.get">Caller.get</a> is the primary method to obtain a <strong>running</strong> kernel.</p>
-<p>When using <code>get</code> via a caller instance rather than as a class method, any newly created instances
-are considered children and will be stopped if the caller is stopped.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="to-get-a-caller-from-inside-an-event-loop-use" name="__tabbed_1" type="radio" /><input id="new-thread-specify-the-backend" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="to-get-a-caller-from-inside-an-event-loop-use">To get a caller from inside an event loop use</label><label for="new-thread-specify-the-backend">New thread specify the backend</label></div>
+<p>There is only ever one caller instance per thread (assuming there is only one event-loop-per-thread).</p>
+<h3 id="caller_1"><code>Caller()</code><a class="headerlink" href="#caller_1" title="Permanent link">&para;</a></h3>
+<p><a class="autorefs autorefs-internal" title=" __new__" href="../reference/caller/#async_kernel.caller.Caller.__new__">Caller()</a> is means to obtain a specific kernel.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="sync" name="__tabbed_1" type="radio" /><input id="async-context" name="__tabbed_1" type="radio" /><input id="sync-thread-specify-backend" name="__tabbed_1" type="radio" /><input id="child-threads" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="sync">Sync</label><label for="async-context">Async context</label><label for="sync-thread-specify-backend">Sync thread specify backend</label><label for="child-threads">Child threads</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
 </code></pre></div>
+<ul>
+<li>Useful where the caller should stay open for the life of the thread.</li>
+</ul>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="n">asyncio_caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;asyncio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;asyncio&quot;</span><span class="p">)</span>
-<span class="n">trio_caller</span> <span class="o">=</span> <span class="n">asyncio_caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;trio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">trio_caller</span> <span class="ow">in</span> <span class="n">asyncio_caller</span><span class="o">.</span><span class="n">children</span>
-
-<span class="n">asyncio_caller</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-<span class="k">await</span> <span class="n">asyncio_caller</span><span class="o">.</span><span class="n">stopped</span>
-<span class="k">assert</span> <span class="n">trio_caller</span><span class="o">.</span><span class="n">stopped</span>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;async-context&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">caller</span><span class="p">:</span>
+    <span class="n">caller</span><span class="o">.</span><span class="n">thread</span>
+</code></pre></div>
+<ul>
+<li>When the context is exited, the caller and its children are stopped immediately.</li>
+<li>A new caller context can be started after exiting.</li>
+<li>This is recommended in testing where you have control of the thread and context.</li>
+</ul>
+</div>
+<div class="tabbed-block">
+<p><div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="n">caller</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</code></pre></div>
+-  The caller is not stopped automatically.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;async-context&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">caller</span><span class="p">:</span>
+    <span class="n">child_1</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">child_2</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;asyncio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;asyncio&quot;</span><span class="p">)</span>
+    <span class="n">child_3</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;trio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">caller</span><span class="o">.</span><span class="n">children</span> <span class="o">==</span> <span class="p">{</span><span class="n">child_1</span><span class="p">,</span> <span class="n">child_2</span><span class="p">,</span> <span class="n">child_3</span><span class="p">}</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">caller</span><span class="o">.</span><span class="n">children</span>
 </code></pre></div>
 </div>
 </div>
@@ -1480,7 +1498,7 @@ are considered children and will be stopped if the caller is stopped.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 17, 2025 10:34:33 UTC"><span class="timeago" datetime="2025-11-17T10:34:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 17, 2025 10:34:33 UTC">2025-11-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 23, 2025 08:45:57 UTC"><span class="timeago" datetime="2025-11-23T08:45:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 23, 2025 08:45:57 UTC">2025-11-23</span>
   </span>
 
     
