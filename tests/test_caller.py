@@ -590,3 +590,22 @@ class TestCaller:
                     with pytest.raises(PendingCancelled):
                         await item
             await caller.wait(items, return_when="ALL_COMPLETED")
+
+    async def test_as_completed_awaitables(self, caller: Caller):
+        async def f(i: int):
+            await anyio.sleep(i * 0.001)
+            return i
+
+        results = set()
+        async for pen in caller.as_completed(f(i) for i in range(2)):
+            results.add(await pen)
+        assert results == {0, 1}
+
+    async def test_wait_awaitables(self, caller: Caller):
+        async def f(i: int):
+            await anyio.sleep(i * 0.001)
+            return i
+
+        done, pending = await caller.wait(f(i) for i in range(2))
+        assert not pending
+        assert {pen.result() for pen in done} == {0, 1}
