@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CallerCreateOptions",
+    "CallerState",
     "Content",
     "DebugMessage",
     "ExecuteContent",
@@ -234,6 +235,16 @@ class Tags(enum.StrEnum):
     """
 
 
+class CallerState(enum.Enum):
+    "The State of a [async_kernel.caller.Caller][]."
+
+    initial = enum.auto()
+    auto_starting = enum.auto()
+    running = enum.auto()
+    stopping = enum.auto()
+    stopped = enum.auto()
+
+
 class MsgHeader(TypedDict):
     "A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."
 
@@ -337,15 +348,6 @@ class CallerCreateOptions(TypedDict):
     "The caller should be protected against accidental closure (False)."
     zmq_context: NotRequired[zmq.Context[Any]]
     "A zmq Context to use "
-
-
-CallerGetModeType = Literal["auto", "existing", "MainThread"]
-"""The mode to use in [async_kernel.caller.Caller.get][].
-
-- "auto": (Default) A new instance is created if no existing instance is found.
-- "existing": Only checks for existing instances. 
-- "MainThread": Shorthand for kwargs = `{"thread":threading.main_thread()}`
-"""
 
 
 DebugMessage = dict[str, Any]

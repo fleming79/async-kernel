@@ -23,7 +23,7 @@ jobs:
           - "3.12"
           - "3.13"
           - "3.14"
-          - "3.14t"
+          # - "3.14t" #  re-enabled when free-threading becomes more widely supported.
     steps:
       - name: Checkout
         uses: actions/checkout@v5

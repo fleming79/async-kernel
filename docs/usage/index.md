@@ -38,7 +38,6 @@ It has a few unique features worth mentioning:
 
 - [async_kernel.Caller.get][]
     - Retrieves existing or creates a caller instance according the 'thread' or 'name'.
-    - Is both a [classmethod][] and `method` depending of if it is called on the 'Class' or 'instance'.
 - [async_kernel.Caller.to_thread][]
     - runs an event loop matching the backend of the originator.
     - maintains a pool of worker threads per caller, which in turn can have its own pool of workers.
@@ -46,30 +45,50 @@ It has a few unique features worth mentioning:
     - A dedicated queue is created specific to the [hash][] of the function.
     - Only one call will run at a time.
     - The context of the original call is retained until the queue is stopped with [async_kernel.caller.Caller.queue_close][].
+- The result of [async_kernel.Caller.call_soon][], [async_kernel.Caller.call_later][] and [async_kernel.Caller.to_thread][]
+  return a [async_kernel.Pending][] which can be used to wait/await for the result of execution.
 
-There is caller instance exists per thread (assuming there is only one event-loop-per-thread).
+There is only ever one caller instance per thread (assuming there is only one event-loop-per-thread).
 
-### `Caller.get`
+### `Caller()`
 
-[Caller.get][async_kernel.caller.Caller.get] is the primary method to obtain a **running** kernel.
+[Caller()][async_kernel.caller.Caller.__new__] is means to obtain a specific kernel.
 
-When using `get` via a caller instance rather than as a class method, any newly created instances
-are considered children and will be stopped if the caller is stopped.
-
-=== "To get a caller from inside an event loop use"
+=== "Sync"
 
     ```python
-    caller = Caller.get()
+    caller = Caller()
     ```
 
-=== "New thread specify the backend"
+    - Useful where the caller should stay open for the life of the thread.
+
+=== "Async context"
 
     ```python
-    asyncio_caller = Caller.get(name="asyncio backend", backend="asyncio")
-    trio_caller = asyncio_caller.get(name="trio backend", backend="trio")
-    assert trio_caller in asyncio_caller.children
+    async with Caller("async-context") as caller:
+        caller.thread
+    ```
 
-    asyncio_caller.stop()
-    await asyncio_caller.stopped
-    assert trio_caller.stopped
+    - When the context is exited, the caller and its children are stopped immediately.
+    - A new caller context can be started after exiting.
+    - This is recommended in testing where you have control of the thread and context.
+
+=== "Sync thread specify backend"
+
+    ```python
+    caller = Caller(backend="trio")
+    ...
+    caller.stop()
+    ```
+    -  The caller is not stopped automatically.
+
+=== "Child threads"
+
+    ```python
+    async with Caller("async-context") as caller:
+        child_1 = caller.get()
+        child_2 = caller.get(name="asyncio backend", backend="asyncio")
+        child_3 = caller.get(name="trio backend", backend="trio")
+        assert caller.children == {child_1, child_2, child_3}
+    assert not caller.children
     ```
