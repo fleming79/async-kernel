@@ -277,6 +277,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
         with cls._rlock:
+            # Existing instances.
             main, current = threading.main_thread(), threading.current_thread()
             if (name := kwargs.get("name")) and (name.lower() == "mainthread"):
                 msg = f'{name=} is reserved! To get the caller for the main thread use `Caller("MainThread")`'
@@ -293,44 +294,52 @@ class Caller(anyio.AsyncContextManagerMixin):
                 msg = f"Caller instance not found for {kwargs=}"
                 raise RuntimeError(msg)
 
-            def async_kernel_caller(options: dict) -> None:
-                async def run_caller_in_context() -> None:
-                    async with caller:
-                        if not pen.done():
-                            pen.set_result(caller)
-                        await caller.stopped
-
-                try:
-                    if token := options.get("token"):
-                        pen.set_result(caller)
-                        mark_thread_pydev_do_not_trace()
-                        anyio.from_thread.run(run_caller_in_context, token=token)
-                    else:
-                        anyio.run(run_caller_in_context, **options)
-                except (BaseExceptionGroup, BaseException) as e:
-                    if not pen.done():
-                        pen.set_exception(e)
-                    if not "shutdown" not in str(e):
-                        raise
-
-            if thread is current:
-                args = [{"token": current_token()}]
-            elif thread:
-                msg = "Unable to obtain token for another threads event loop!"
-                raise RuntimeError(msg)
-            else:
-                kernel = async_kernel.Kernel()
-                backend = kwargs.get("backend") or current_async_library(failsafe=True)
-                backend = Backend(value=backend or kernel.anyio_backend)
-                backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
-                args = [{"backend": backend, "backend_options": backend_options}]
-            # Create and start the caller
+            # New instances:
             pen: Pending[Self] = Pending()
-            thread_ = threading.Thread(target=async_kernel_caller, name=kwargs.get("name"), args=args)
-            kwargs["thread"] = thread = thread or thread_
-            caller = cls._instances.get(thread) or cls("async-context", **kwargs)
+            if thread:
+                # `anyio.from_thread.run`.
+                thread_name = f"async_kernel_caller in {thread.name}"
+                if thread is not current:
+                    msg = "Unable to obtain token for another threads event loop!"
+                    raise RuntimeError(msg)
+                pen.metadata["token"] = current_token()
+            else:
+                # `anyio.run`.
+                thread_name = name or "async_kernel_caller"
+                kernel = async_kernel.Kernel()
+                backend = Backend(kwargs.get("backend") or current_async_library(failsafe=True) or kernel.anyio_backend)
+                backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
+                kwargs.update(backend=backend, backend_options=backend_options)
+
+            # Create a new thread to run the scheduler in the async context.
+            thread_ = threading.Thread(target=cls._open_async_context, name=thread_name, args=[pen])
+            kwargs["thread"] = thread if "token" in pen.metadata else thread_
+            pen.metadata["caller"] = cls("async-context", **kwargs)
         thread_.start()
         return pen.wait_sync()
+
+    @classmethod
+    def _open_async_context(cls, pen: Pending[Self]) -> None:
+        caller: Self = pen.metadata["caller"]
+
+        async def run_caller_in_context() -> None:
+            async with caller:
+                if not pen.done():
+                    pen.set_result(caller)
+                await caller.stopped
+
+        try:
+            if token := pen.metadata.get("token"):
+                pen.set_result(caller)
+                mark_thread_pydev_do_not_trace()
+                anyio.from_thread.run(run_caller_in_context, token=token)
+            else:
+                anyio.run(run_caller_in_context, backend=caller.backend, backend_options=caller.backend_options)
+        except (BaseExceptionGroup, BaseException) as e:
+            if not pen.done():
+                pen.set_exception(e)
+            if not "shutdown" not in str(e):
+                raise
 
     def stop(self, *, force=False) -> None:
         """
