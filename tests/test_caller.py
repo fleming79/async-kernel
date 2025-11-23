@@ -11,7 +11,6 @@ import anyio.to_thread
 import pytest
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
-from anyio.from_thread import start_blocking_portal
 
 from async_kernel.caller import Caller
 from async_kernel.kernelspec import Backend
@@ -77,7 +76,7 @@ class TestCaller:
         thread = threading.Thread(target=done.wait)
         thread.start()
         try:
-            with pytest.raises(RuntimeError, match="Unable to obtain token for another threads event loop!"):
+            with pytest.raises(RuntimeError, match="A caller does not exist for"):
                 Caller(thread=thread)
         finally:
             done.set()
@@ -95,17 +94,12 @@ class TestCaller:
         thread.start()
         thread.join()
 
-    @pytest.mark.skip(reason="Unable to obtain tokens from other threads.")
-    async def test_get_main_from_non_main(self, anyio_backend: Backend):
-        async def async_func() -> Caller:
-            caller = Caller("MainThread")
-            assert (await caller.call_soon(lambda: 1 + 3)) == 4
-            return caller
-
-        with start_blocking_portal() as portal:
-            caller = portal.call(async_func)
-        assert caller is Caller()
-        assert (await caller.call_soon(lambda: 1 + 1)) == 2
+    def test_no_event_loop(self):
+        assert current_async_library(failsafe=True) is None
+        caller = Caller(backend="asyncio")
+        assert caller.thread is not threading.current_thread()
+        assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
+        caller.stop()
 
     async def test_sync(self):
         async with Caller("async-context") as caller:
@@ -179,9 +173,10 @@ class TestCaller:
 
     async def test_usage_example(self, anyio_backend: Backend):
         async with Caller("async-context") as caller:
-            asyncio_caller = Caller().get(name="asyncio backend", backend="asyncio")
-            trio_caller = caller.get(name="trio backend", backend="trio")
-            assert caller.children == {asyncio_caller, trio_caller}
+            child_1 = caller.get()
+            child_2 = caller.get(name="asyncio backend", backend="asyncio")
+            child_3 = caller.get(name="trio backend", backend="trio")
+            assert caller.children == {child_1, child_2, child_3}
         assert not caller.children
 
     async def test_async_enter_missing_modifier(self, anyio_backend: Backend):
@@ -377,9 +372,9 @@ class TestCaller:
     async def test_gc(self, anyio_backend: Backend):
         event_finalize_called = Event()
         async with Caller("async-context") as caller:
+            assert await caller.call_soon(lambda: 1 + 1) == 2
             weakref.finalize(caller, event_finalize_called.set)
             del caller
-        await anyio.sleep(0.1)
         await event_finalize_called
 
     async def test_queue_cancel(self, caller: Caller):
