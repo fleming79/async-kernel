@@ -289,12 +289,15 @@ class Caller(anyio.AsyncContextManagerMixin):
                 raise RuntimeError(msg)
             if mode == "MainThread":
                 kwargs = {"thread": main}
-            thread = current if not kwargs else kwargs.get("thread")
-            if thread and (caller_ := cls._instances.get(thread)):
-                if name and name != caller_.name:
-                    msg = f"The thread and caller's name do not match! {name=} {caller_=}"
-                    raise ValueError(msg)
-                return caller_
+            if thread := current if not kwargs else kwargs.get("thread"):
+                if caller_ := cls._instances.get(thread):
+                    if name and name != caller_.name:
+                        msg = f"The thread and caller's name do not match! {name=} {caller_=}"
+                        raise ValueError(msg)
+                    return caller_
+                if thread is not current:
+                    msg = f"A caller does not exist for {thread=}!"
+                    raise RuntimeError(msg)
             if mode == "existing":
                 msg = f"Caller instance not found for {kwargs=}"
                 raise RuntimeError(msg)
@@ -304,9 +307,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             if thread:
                 # `anyio.from_thread.run`.
                 thread_name = f"async_kernel_caller in {thread.name}"
-                if thread is not current:
-                    msg = "Unable to obtain token for another threads event loop!"
-                    raise RuntimeError(msg)
                 pen.metadata["token"] = current_token()
             else:
                 # `anyio.run`.
