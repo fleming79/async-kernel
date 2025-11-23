@@ -177,10 +177,18 @@ class TestCaller:
             await anyio.to_thread.run_sync(_in_thread)
         assert caller not in Caller.all_callers()
 
-    async def test_usage_example(self, caller: Caller):
-        asyncio_caller = Caller().get(name="asyncio backend", backend="asyncio")
-        trio_caller = asyncio_caller.get(name="trio backend", backend="trio")
-        assert trio_caller in asyncio_caller.children
+    async def test_usage_example(self, anyio_backend: Backend):
+        async with Caller("async-context") as caller:
+            asyncio_caller = Caller().get(name="asyncio backend", backend="asyncio")
+            trio_caller = caller.get(name="trio backend", backend="trio")
+            assert caller.children == {asyncio_caller, trio_caller}
+        assert not caller.children
+
+    async def test_async_enter_missing_modifier(self, anyio_backend: Backend):
+        with pytest.raises(RuntimeError, match="Already starting! Did you mean to use"):
+            async with Caller():
+                pass
+        Caller().stop()
 
     @pytest.mark.parametrize("b_end", Backend)
     async def test_to_thread_advanced(self, caller: Caller, b_end: Backend):
@@ -306,6 +314,21 @@ class TestCaller:
         assert caller.name == thread.name
         assert (await caller.call_soon(lambda: 2 + 2)) == 4
         done.set()
+
+    async def test_stop_early(self, anyio_backend: Backend):
+        caller = Caller()
+        caller.stop()
+        await caller.stopped
+
+    async def test_await_stopped(self, anyio_backend: Backend):
+        caller = Caller()
+        caller.call_soon(anyio.sleep_forever)
+        assert await caller.call_soon(lambda: 1 + 1) == 2
+        caller.stop()
+        try:
+            assert await caller.stopped
+        except anyio.get_cancelled_exc_class():
+            raise RuntimeError from None
 
     async def test_execution_queue(self, caller: Caller):
         N = 10

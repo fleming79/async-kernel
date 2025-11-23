@@ -27,7 +27,7 @@ import async_kernel
 from async_kernel.common import Fixed
 from async_kernel.kernelspec import Backend
 from async_kernel.pending import Pending, PendingCancelled
-from async_kernel.typing import CallerCreateOptions, NoValue, T
+from async_kernel.typing import CallerCreateOptions, CallerState, NoValue, T
 from async_kernel.utils import mark_thread_pydev_do_not_trace
 
 with contextlib.suppress(ImportError):
@@ -108,10 +108,17 @@ class Caller(anyio.AsyncContextManagerMixin):
     _backend: Backend
     _backend_options: dict[str, Any] | None
     _protected = False
-    _running: bool | None = None
+    _state: CallerState = CallerState.initial
+    _state_reprs: ClassVar[dict] = {
+        CallerState.initial: "❗ not running",
+        CallerState.auto_starting: "starting",
+        CallerState.running: "🏃 running",
+        CallerState.stopping: "🏁 stopping",
+        CallerState.stopped: "🏁 stopped",
+    }
     _zmq_context: zmq.Context[Any] | None = None
 
-    _parent_ref: weakref.ref[Self] | None = None
+    _parent_thread: threading.Thread | None = None
 
     # Fixed
     _children: Fixed[Self, set[Self]] = Fixed(set)
@@ -125,7 +132,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     log: logging.LoggerAdapter[Any]
     ""
-    iopub_sockets: ClassVar[weakref.WeakKeyDictionary[threading.Thread, zmq.Socket]] = weakref.WeakKeyDictionary()
+    iopub_sockets: ClassVar[dict[threading.Thread, zmq.Socket]] = {}
     ""
     iopub_url: ClassVar = "inproc://iopub"
     ""
@@ -162,7 +169,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     @property
     def running(self):
         "Returns `True` when the caller is available to run requests."
-        return self._running is True
+        return self._state is CallerState.running
 
     @property
     def children(self) -> set[Self]:
@@ -176,8 +183,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @override
     def __repr__(self) -> str:
-        children = "🧒 [" + ", ".join(repr(c.name) for c in self._children) + "]" if self._children else ""
-        return f"Caller<{self.name} {self.backend} {'🏃' if self.running else ('🏁 stopped' if self.stopped else '❗ not running')} {children}>"
+        n = len(self._children)
+        children = "" if not n else ("1 child" if n == 1 else f"{n} children")
+        return f"Caller<{self.name} {self.backend} {self._state_reprs.get(self._state)} {children}>"
 
     def __new__(
         cls,
@@ -312,7 +320,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             thread_ = threading.Thread(target=cls._open_async_context, name=thread_name, args=[pen])
             kwargs["thread"] = thread if "token" in pen.metadata else thread_
             pen.metadata["caller"] = cls("async-context", **kwargs)
-        thread_.start()
+            pen.metadata["caller"]._state = CallerState.auto_starting
+            thread_.start()
         return pen.wait_sync()
 
     @classmethod
@@ -320,10 +329,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         caller: Self = pen.metadata["caller"]
 
         async def run_caller_in_context() -> None:
-            async with caller:
-                if not pen.done():
-                    pen.set_result(caller)
-                await caller.stopped
+            if caller._state is CallerState.auto_starting:
+                caller._state = CallerState.initial
+                async with caller:
+                    if not pen.done():
+                        pen.set_result(caller)
+                    await caller.stopped
 
         try:
             if token := pen.metadata.get("token"):
@@ -338,15 +349,20 @@ class Caller(anyio.AsyncContextManagerMixin):
             if not "shutdown" not in str(e):
                 raise
 
-    def stop(self, *, force=False) -> None:
+    def stop(self, *, force=False) -> CallerState:
         """
         Stop the caller, cancelling all pending tasks and close the thread.
 
         If the instance is protected, this is no-op unless force is used.
         """
-        if self._protected and not force:
-            return
-        self._running = False
+        if (self._protected and not force) or self._state in {CallerState.stopped, CallerState.stopping}:
+            return self._state
+        if self._state is CallerState.auto_starting:
+            self._state = CallerState.stopped
+            self.stopped.set()
+        else:
+            assert self._state is CallerState.running
+            self._state = CallerState.stopping
         self._instances.pop(self.thread, None)
         self._worker_pool.clear()
         while self._queue:
@@ -357,13 +373,17 @@ class Caller(anyio.AsyncContextManagerMixin):
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
+        return self._state
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        if self.stopped:
-            msg = f"Already stopped and restarting is not allowed: {self}"
+        if self._state is CallerState.auto_starting:
+            msg = 'Already starting! Did you mean to use Caller("async-context")?'
             raise RuntimeError(msg)
-        self._running = True
+        if self._state in {CallerState.stopped, CallerState.stopping}:
+            msg = f"Restarting is not allowed: {self}"
+            raise RuntimeError(msg)
+        self._state = CallerState.running
         async with anyio.create_task_group() as tg:
             await tg.start(self._scheduler, tg)
             if self._zmq_context:
@@ -382,13 +402,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                 self.stop(force=True)
                 for c in tuple(self._children):
                     c.stop(force=True)
-                if self._children:
-                    with anyio.CancelScope(shield=True):
+                with anyio.CancelScope(shield=True):
+                    if self._children:
                         while self._children:
                             await self._children.pop().stopped
-                if self._parent_ref and (parent := self._parent_ref()):
-                    parent.children.discard(self)
-                self.stopped.set()
+                    if self._parent_thread and (parent := self._instances.get(self._parent_thread)):
+                        parent.children.discard(self)
+                    self._state = CallerState.stopped
+                    self.stopped.set()
 
     async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         """
@@ -408,7 +429,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         task_status.started()
         try:
-            while self._running:
+            while self._state is CallerState.running:
                 if self._queue:
                     item, result = self._queue.popleft(), None
                     if callable(item):
@@ -424,7 +445,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 else:
                     event = create_async_event()
                     self._resume = event.set
-                    if self._running and not self._queue:
+                    if self._state is CallerState.running and not self._queue:
                         await event
                     self._resume = noop
         finally:
@@ -492,7 +513,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             running_only: Restrict the list to callers that are active (running in an async context).
         """
-        return [caller for caller in Caller._instances.values() if caller._running or not running_only]
+        return [caller for caller in Caller._instances.values() if caller.running or not running_only]
 
     def get(
         self, mode: Literal["auto", "existing", "MainThread"] = "auto", /, **kwargs: Unpack[CallerCreateOptions]
@@ -521,7 +542,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             caller = self._get_instance(mode, **kwargs)
             if caller not in existing:
                 self._children.add(caller)
-                caller._parent_ref = weakref.ref(self)
+                caller._parent_thread = self.thread
             return caller
 
     def to_thread(
@@ -590,7 +611,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if is_worker:
 
             def _to_thread_on_done(_) -> None:
-                if not caller.stopped and self._running:
+                if not caller.stopped and self.running:
                     if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
                         self._worker_pool.append(caller)
                     else:
@@ -621,8 +642,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             context: The context to use, if not provided the current context is used.
             **metadata: Additional metadata to store in the instance.
         """
-        if self._running is False:
-            msg = f"{self} is {'stopped' if self.stopped else 'stopping'}!"
+        if self._state in {CallerState.stopping, CallerState.stopped}:
+            msg = f"{self} is {self._state.name}!"
             raise RuntimeError(msg)
         pen = Pending(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), pen))

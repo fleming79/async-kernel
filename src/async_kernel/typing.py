@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CallerCreateOptions",
+    "CallerState",
     "Content",
     "DebugMessage",
     "ExecuteContent",
@@ -232,6 +233,16 @@ class Tags(enum.StrEnum):
     Warning:
         The code block will return as 'ok' and there will be no message recorded.
     """
+
+
+class CallerState(enum.Enum):
+    "The State of a [async_kernel.caller.Caller][]."
+
+    initial = enum.auto()
+    auto_starting = enum.auto()
+    running = enum.auto()
+    stopping = enum.auto()
+    stopped = enum.auto()
 
 
 class MsgHeader(TypedDict):
