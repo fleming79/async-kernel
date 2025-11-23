@@ -625,3 +625,12 @@ class TestCaller:
         done, pending = await caller.wait(f(i) for i in range(2))
         assert not pending
         assert {pen.result() for pen in done} == {0, 1}
+
+    async def test_idle_worker_shutdown(self, caller: Caller, mocker):
+        mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
+        pen1 = caller.to_thread(threading.current_thread)
+        pen2 = caller.to_thread(threading.current_thread)
+        w1 = Caller(thread=await pen1)
+        w2 = Caller(thread=await pen2)
+        await w1.stopped
+        await w2.stopped

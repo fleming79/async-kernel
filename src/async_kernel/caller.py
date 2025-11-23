@@ -6,6 +6,7 @@ import functools
 import inspect
 import logging
 import reprlib
+import sys
 import threading
 import time
 import weakref
@@ -100,11 +101,18 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     MAX_IDLE_POOL_INSTANCES = 10
     "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.Caller.to_thread])."
+    IDLE_WORKER_SHUTDOWN_DURATION = 0 if "pytest" in sys.modules else 60
+    """
+    The minimum duration for a worker to remain in the worker pool before it is shutdown.
+    
+    Set to 0 to disable (default when running tests).
+    """
 
     _instances: ClassVar[dict[threading.Thread, Self]] = {}
     _rlock: ClassVar = RLock()
 
     _name: str
+    _idle_time: float = 0.0
     _thread: threading.Thread
     _backend: Backend
     _backend_options: dict[str, Any] | None
@@ -327,6 +335,31 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pen.set_exception(e)
             if not "shutdown" not in str(e):
                 raise
+
+    @classmethod
+    def _start_idle_worker_cleanup_thead(cls) -> None:
+        "A single thread to shutdown idle workers that have not been used for an extended duration."
+        if cls.IDLE_WORKER_SHUTDOWN_DURATION > 0 and not hasattr(cls, "_thread_cleanup_idle_workers"):
+
+            def _cleanup_workers():
+                mark_thread_pydev_do_not_trace()
+                n = 0
+                cutoff = time.monotonic()
+                time.sleep(cls.IDLE_WORKER_SHUTDOWN_DURATION)
+                for caller in tuple(cls._instances.values()):
+                    for worker in frozenset(caller._worker_pool):
+                        n += 1
+                        if worker._idle_time < cutoff:
+                            with contextlib.suppress(IndexError), cls._rlock:
+                                caller._worker_pool.remove(worker)
+                                worker.stop()
+                if n:
+                    _cleanup_workers()
+                else:
+                    del cls._thread_cleanup_idle_workers
+
+            cls._thread_cleanup_idle_workers = threading.Thread(target=_cleanup_workers, daemon=True)
+            cls._thread_cleanup_idle_workers.start()
 
     def stop(self, *, force=False) -> CallerState:
         """
@@ -599,7 +632,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             def _to_thread_on_done(_) -> None:
                 if not caller.stopped and self.running:
                     if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
+                        caller._idle_time = time.monotonic()
                         self._worker_pool.append(caller)
+                        self._start_idle_worker_cleanup_thead()
                     else:
                         caller.stop()
 
