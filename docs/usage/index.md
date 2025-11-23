@@ -45,23 +45,37 @@ It has a few unique features worth mentioning:
     - A dedicated queue is created specific to the [hash][] of the function.
     - Only one call will run at a time.
     - The context of the original call is retained until the queue is stopped with [async_kernel.caller.Caller.queue_close][].
+- The result of [async_kernel.Caller.call_soon][], [async_kernel.Caller.call_later][] and [async_kernel.Caller.to_thread][]
+  return a [async_kernel.Pending][] which can be used to wait/await for the result of execution.
 
-There is caller instance exists per thread (assuming there is only one event-loop-per-thread).
+There is only ever one caller instance per thread (assuming there is only one event-loop-per-thread).
 
-### `Caller.get`
+### `Caller()`
 
-[Caller.get][async_kernel.caller.Caller.get] is the primary method to obtain a **running** kernel.
+[Caller()][async_kernel.caller.Caller.__new__] is means to obtain a specific kernel.
 
-When using `get` via a caller instance rather than as a class method, any newly created instances
-are considered children and will be stopped if the caller is stopped.
+A child thread caller can be obtained by using the
 
-=== "To get a caller from inside an event loop use"
+=== "A thread with a running event loop"
 
     ```python
     caller = Caller()
     ```
 
-=== "New thread specify the backend"
+    - Useful where the caller should stay open for the life of the thread.
+
+=== "A thread with a running event loop (async context)"
+
+    ```python
+    async with Caller("async-context") as caller:
+        ...
+    ```
+
+    - When the context is exited, the caller and its children are stopped immediately.
+    - A new caller context can be started after exiting.
+    - This is recommended in testing where you have control of the thread and context.
+
+=== "New thread specifying the backend"
 
     ```python
     asyncio_caller = Caller().get(name="asyncio backend", backend="asyncio")

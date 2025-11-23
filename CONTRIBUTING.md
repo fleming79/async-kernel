@@ -53,9 +53,9 @@ uv run pytest -vv --cov --cov-fail-under=100
     1. linux is the only platform that reliably supports the `transport` type `ipc` for zmq sockets which is supported by async kerenel.
     1. Coverage on Python 3.11 doesn't correctly gather data for subprocesses giving invalid coverage reports.
 
-### Pre-commit
+### Pre-commit (prek)
 
-Pre-commit(prek) runs a number of checks on the code and will also re-format it.
+Pre-commit (prek) runs a number of checks on the code and will also re-format it.
 
 Pre-commit will run automatically on submission of a PR but you can also run it locally as a tool with:
 
@@ -117,7 +117,7 @@ uv run mkdocs build -s
     uv run async-kernel -a async-docs --shell.execute_request_timeout=0.1
     ```
 
-    defines a new kernel spec with the name "async-docs" that sets the `shell.execute_request_timeout` to 100ms.
+    Defines a new kernel spec with the name "async-docs" that sets the `shell.execute_request_timeout` to 100ms.
 
     The "async-docs" named kernel spec is used by [mkdocs-jupyter](#notebooks) to convert the notebooks
     for inclusion in the usage section of the documentation.

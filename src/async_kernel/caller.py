@@ -58,10 +58,7 @@ def noop():
 
 class Caller(anyio.AsyncContextManagerMixin):
     """
-    Caller is a execution scheduler for running code in the AnyIO event loop of the thread to which the caller is associated.
-
-    It provides similar features to a "task group" but with standard methods meaning the methods can also be called
-    in standard functions/descriptors.
+    `Caller` is a scheduler for running code in the asynchronous event loop of the thread to which the caller is associated.
 
     This class manages the execution of callables in a thread-safe manner, providing mechanisms for
     scheduling, queuing, and managing the lifecycle of tasks and their associated threads and event loops.
@@ -82,11 +79,11 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     Usage:
         - Use `Caller()` to get or create a Caller instances.
-        - Use `caller.get()` (same method from a caller instance) for inherited stopping.
+        - Use `get` for inherited stopping.
         - Use `call_soon`, `call_later`, or `schedule_call` to schedule work.
         - Use `queue_call` for per-function task queues.
         - Use `to_thread` to run work in a separate thread.
-        - Use `as_completed` and `wait` to manage multiple Pendings.
+        - Use `as_completed` and `wait` to manage multiple pendings.
         - Use `async with Caller("async-context") = caller:` to use Caller as an
             asynchronous context manager (useful to provide pytest fixtures for example).
 
@@ -442,7 +439,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Workflow:
             - Sets the current instance in a context variable.
-            - If the instance is cancelled before starting, sets a PendingCancelled error.
+            - If the instance is cancelled before starting, sets a `PendingCancelled` error.
             - Otherwise, enters a cancellation scope:
                 - Registers a canceller for the instance.
                 - Waits for a specified delay if present in metadata.
