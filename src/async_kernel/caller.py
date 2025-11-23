@@ -616,7 +616,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         if is_worker := options == {"name": None}:
             try:
-                caller = self._worker_pool.popleft()
+                while not (caller_ := self._worker_pool.popleft()).running:
+                    pass
+                caller = caller_
             except IndexError:
                 caller = self.get(name=None)
         else:
