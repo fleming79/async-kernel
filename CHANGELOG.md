@@ -5,11 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0-rc.4] - 2025-11-23
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Make Caller() the preferred way to obtain a running caller. [#217](https://github.com/fleming79/async-kernel/pull/217)
+
+- Kernel refactoring - moving code around for better readability. [#215](https://github.com/fleming79/async-kernel/pull/215)
+
+### <!-- 1 --> 🚀 Features
+
+- Added time based idle worker cleanup. [#219](https://github.com/fleming79/async-kernel/pull/219)
+
+- Caller.as_completed and Caller.wait can now wait for any awaitables. [#218](https://github.com/fleming79/async-kernel/pull/218)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Test with free threading python [#216](https://github.com/fleming79/async-kernel/pull/216)
+
 ## [0.9.0-rc.3] - 2025-11-19
 
 ### <!-- 0 --> 🏗️ Breaking changes
 
 - Caller.wait - renamed argument 'shield' to 'cancel_unfinished' and inverted the logic. [#213](https://github.com/fleming79/async-kernel/pull/213)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.9.0-rc.3 [#214](https://github.com/fleming79/async-kernel/pull/214)
 
 ## [0.9.0-rc.2] - 2025-11-19
 
@@ -555,6 +577,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.9.0-rc.4]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.3..v0.9.0-rc.4
 [0.9.0-rc.3]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.2..v0.9.0-rc.3
 [0.9.0-rc.2]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.1..v0.9.0-rc.2
 [0.9.0-rc.1]: https://github.com/fleming79/async-kernel/compare/v0.8.0..v0.9.0-rc.1
