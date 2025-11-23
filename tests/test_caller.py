@@ -625,3 +625,26 @@ class TestCaller:
         done, pending = await caller.wait(f(i) for i in range(2))
         assert not pending
         assert {pen.result() for pen in done} == {0, 1}
+
+    async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
+        pen1 = caller.to_thread(threading.current_thread)
+        w1 = Caller(thread=await pen1)
+        assert w1 in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        w1.stop()
+        pen2 = caller.to_thread(threading.current_thread)
+        await w1.stopped
+        assert w1 not in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        w2 = Caller(thread=await pen2)
+        assert not w2.stopped
+        w2.stop()
+        await w2.stopped
+        assert not caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+
+    async def test_idle_worker_shutdown(self, caller: Caller, mocker):
+        mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
+        pen1 = caller.to_thread(threading.current_thread)
+        pen2 = caller.to_thread(threading.current_thread)
+        w1 = Caller(thread=await pen1)
+        w2 = Caller(thread=await pen2)
+        await w1.stopped
+        await w2.stopped
