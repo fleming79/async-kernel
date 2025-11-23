@@ -66,7 +66,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     specification of the AnyIO supported backend.
 
     Key Features:
-        - One Caller instance per thread, accessible via class methods.
+        - One Caller instance per thread.
         - Thread-safe scheduling of synchronous and asynchronous functions.
         - Support for delayed and immediate execution (`call_later`, `call_soon`).
         - Per-function execution queues with lifecycle management (`queue_call`, `queue_close`).
@@ -194,25 +194,25 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
         """
-        Creates or retrieves an instance of the caller according to the mode and thread.
-
-        When thread is not specified, the current thread is used.
+        Creates or retrieves an instance of the caller.
 
         Args:
             modifier: Modifies which instance is returned and whether it should be started.
+
                 - `None`: (Default) A new instance is created if no existing instance is found.
                 - `"existing"`: Only checks for existing instances.
                 - `"MainThread"`: Shorthand for kwargs = `{"thread":threading.main_thread()}`
                 - `"async-context"`: The only way to directly create a new instance.
-                    An async context be entered to start the callers scheduler.
+                    The scheduler will run whilst its async-context has been entered.
 
             **kwargs: Additional options for caller creation, which may include:
-                - thread: The thread to associate with the caller. Defaults to the current thread.
-                - backend: The backend to use. Defaults to the current async library.
-                - name: Name for the caller instance. Defaults to the thread's name.
+
+                - name: Name for the caller instance.
+                - thread: The thread to associate with the caller.
+                - backend: The backend to use. Defaults to the current async library or the Kernel's.
+                - backend_options: Additional options for the backend.
                 - log: LoggerAdapter for the instance.
                 - protected: Whether the instance is protected. Defaults to False.
-                - backend_options: Additional options for the backend.
                 - zmq_context: ZeroMQ context to use.
 
         Returns:
@@ -223,36 +223,14 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Notes:
             - There is only **one caller per thread**.
-            - A caller retains its own pool of workers.
+            - A caller retains its own pool of workers and child threads.
             - When a caller is shutdown its children are shutdown.
-            - New instances are added an instances children create when called via the instance methods:
-                - [x] [caller.to_thread][Caller.to_thread]
-                - [x] [caller.to_thread_advanced][Caller.to_thread_advanced]
-                - [x] [caller.get][Caller.get] (called via the instance)
-                - [ ] [Caller.get][Caller.get] (called via the class)
+            - New instances created duing [Caller.get][] get added to its children.
+                The following methods use [Caller.get][]:
+                - [caller.to_thread][Caller.to_thread]
+                - [caller.to_thread_advanced][Caller.to_thread_advanced]
+                - [caller.get][Caller.get] (called via the instance)
             - The 'name' of children is always unique and can be used to retrieve it with the above selected methods.
-
-        Uasge:
-
-            === "As a context manager"
-
-                ```python
-                async with Caller("async-context") as caller:
-                    ...
-                ```
-
-            === "From a thread with a backend eventloop"
-
-                ```python
-                caller = Caller()
-                ```
-
-            === "Start a new thread"
-
-            ```python
-            my_caller = Caller().get(name="My new caller thread")
-            ```
-
         """
 
         thread = kwargs.get("thread") or threading.current_thread()

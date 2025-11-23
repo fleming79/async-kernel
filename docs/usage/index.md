@@ -54,9 +54,7 @@ There is only ever one caller instance per thread (assuming there is only one ev
 
 [Caller()][async_kernel.caller.Caller.__new__] is means to obtain a specific kernel.
 
-A child thread caller can be obtained by using the
-
-=== "A thread with a running event loop"
+=== "Sync"
 
     ```python
     caller = Caller()
@@ -64,25 +62,33 @@ A child thread caller can be obtained by using the
 
     - Useful where the caller should stay open for the life of the thread.
 
-=== "A thread with a running event loop (async context)"
+=== "Async context"
 
     ```python
     async with Caller("async-context") as caller:
-        ...
+        caller.thread
     ```
 
     - When the context is exited, the caller and its children are stopped immediately.
     - A new caller context can be started after exiting.
     - This is recommended in testing where you have control of the thread and context.
 
-=== "New thread specifying the backend"
+=== "Sync thread specify backend"
 
     ```python
-    asyncio_caller = Caller().get(name="asyncio backend", backend="asyncio")
-    trio_caller = asyncio_caller.get(name="trio backend", backend="trio")
-    assert trio_caller in asyncio_caller.children
+    caller = Caller(backend="trio")
+    ...
+    caller.stop()
+    ```
+    -  The caller is not stopped automatically.
 
-    asyncio_caller.stop()
-    await asyncio_caller.stopped
-    assert trio_caller.stopped
+=== "Child threads"
+
+    ```python
+    async with Caller("async-context") as caller:
+        child_1 = caller.get()
+        child_2 = caller.get(name="asyncio backend", backend="asyncio")
+        child_3 = caller.get(name="trio backend", backend="trio")
+        assert caller.children == {child_1, child_2, child_3}
+    assert not caller.children
     ```
