@@ -173,14 +173,14 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._state is CallerState.running
 
     @property
-    def children(self) -> set[Self]:
-        """A copy of the set of instances that were created by the caller.
+    def children(self) -> frozenset[Self]:
+        """A frozenset copy of the instances that were created by the caller.
 
         Notes:
             - When the parent is stopped, all children are stopped.
             - All children are stopped prior to the parent exiting its async context.
         """
-        return self._children.copy()
+        return frozenset(self._children)
 
     @override
     def __repr__(self) -> str:
@@ -386,7 +386,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         while self._children:
                             await self._children.pop().stopped
                     if self._parent_thread and (parent := self._instances.get(self._parent_thread)):
-                        parent.children.discard(self)
+                        parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
 
