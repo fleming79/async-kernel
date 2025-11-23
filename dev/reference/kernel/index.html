@@ -3352,12 +3352,8 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.CallerCreateOptions"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CallerCreateOptions</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.CallerCreateOptions.backend_options"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;backend_options</a>
+      <a href="../typing/#async_kernel.typing.CallerCreateOptions"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CallerCreateOptions</a>
   </span>
 
       </li>
@@ -5383,8 +5379,12 @@ corresponding RunMode (if available).</p>
       <a href="../asyncshell/#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.execute_request_timeout"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request_timeout</a>
   </span>
 
       </li>
@@ -5393,12 +5393,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -5494,7 +5490,7 @@ corresponding RunMode (if available).</p>
             <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">],</span>
             <span class="n">ident</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">(</span><span class="s2">&quot;execute_input&quot;</span><span class="p">),</span>
         <span class="p">)</span>
-    <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
     <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
 
