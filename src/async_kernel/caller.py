@@ -351,6 +351,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                 item[1].set_result(None)
         for func in tuple(self._queue_map):
             self.queue_close(func)
+        if self._parent_thread and (parent := self._instances.get(self._parent_thread)):
+            try:
+                parent._worker_pool.remove(self)
+            except ValueError:
+                pass
         self._resume()
         return self._state
 
@@ -578,7 +583,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         if is_worker := options == {"name": None}:
             try:
-                caller = self._worker_pool.popleft()
+                while not (caller_ := self._worker_pool.popleft()).running:
+                    pass
+                caller = caller_
             except IndexError:
                 caller = self.get(name=None)
         else:
