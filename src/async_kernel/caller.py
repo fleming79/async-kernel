@@ -10,16 +10,17 @@ import threading
 import time
 import weakref
 from collections import deque
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, cast
 
 import anyio
 import anyio.from_thread
 import zmq
 from aiologic import Event, RLock
 from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
 
@@ -774,7 +775,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     async def as_completed(
         self,
-        items: Iterable[Pending[T]] | AsyncGenerator[Pending[T]],
+        items: Iterable[Awaitable[T]] | AsyncGenerator[Awaitable[T]],
         *,
         max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         cancel_unfinished: bool = True,
@@ -815,6 +816,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 while True:
                     pen = await anext(gen) if isinstance(gen, AsyncGenerator) else next(gen)
                     assert pen is not current_pending, "Would result in deadlock"
+                    if not isinstance(pen, Pending):
+                        pen = cast("Pending[T]", self.call_soon(await_for, pen))
                     pen.add_done_callback(result_done)
                     if not pen.done():
                         results.add(pen)
@@ -859,11 +862,11 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     async def wait(
         self,
-        items: Iterable[Pending[T]],
+        items: Iterable[Awaitable[T]],
         *,
         timeout: float | None = None,
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
-    ) -> tuple[set[T], set[Pending[T]]]:
+    ) -> tuple[set[Pending[T]], set[Pending[T]]]:
         """
         A [classmethod][] to wait for the results given by items to complete.
 
@@ -882,8 +885,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             - This does not raise a TimeoutError!
             - Pendings that aren't done when the timeout occurs are returned in the second set.
         """
+        pending: set[Pending[T]]
         done = set()
-        if pending := set(items):
+        pending = {item if isinstance(item, Pending) else self.call_soon(await_for, item) for item in items}
+        if pending:
             with anyio.move_on_after(timeout):
                 async for pen in self.as_completed(pending.copy(), cancel_unfinished=False):
                     _ = (pending.discard(pen), done.add(pen))
