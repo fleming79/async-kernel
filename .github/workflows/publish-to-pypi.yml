@@ -25,7 +25,7 @@ jobs:
     outputs:
       TAG: ${{ steps.tag_info.outputs.tag }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           # Fetch full history for setuptools-scm
@@ -105,7 +105,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           # Fetch full history for setuptools-scm
