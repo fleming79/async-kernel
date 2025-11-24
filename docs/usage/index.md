@@ -20,7 +20,7 @@ Please refer to the notebooks which demonstrate some usage examples.
 
 ## Blocking code
 
-Blocking code should be run in outside the shell thread using one of the following:
+Blocking code should be run in a separate thread using one of the following:
 
 1. [anyio][anyio.to_thread.run_sync]
 2. [async_kernel.Caller.to_thread][]
@@ -30,57 +30,80 @@ Blocking code should be run in outside the shell thread using one of the followi
 
 ## Caller
 
-Caller was originally developed to simplify message handling the the [Kernel][async_kernel.kernel.Kernel].
-It is now a capable tool with a convenient interface for executing synchronous and asynchronous code
-in a given thread's event loop.
+[Caller][async_kernel.caller.Caller] was originally developed to simplify message handling in the
+[Kernel][async_kernel.kernel.Kernel]. It is now a capable tool in its own right with a convenient
+interface for executing synchronous and asynchronous code in a given thread's event loop.
 
-It has a few unique features worth mentioning:
+Job scheduling is synchronous, and for methods that return a [Pending][async_kernel.pending.Pending],
+the execution result can be cancelled, awaited from any thread or waited synchronously blocking the
+thread until the Pending is done.
 
-- [async_kernel.Caller.get][]
-    - Retrieves existing or creates a caller instance according the 'thread' or 'name'.
-- [async_kernel.Caller.to_thread][]
-    - runs an event loop matching the backend of the originator.
-    - maintains a pool of worker threads per caller, which in turn can have its own pool of workers.
-- [async_kernel.Caller.queue_call][]
-    - A dedicated queue is created specific to the [hash][] of the function.
-    - Only one call will run at a time.
-    - The context of the original call is retained until the queue is stopped with [async_kernel.caller.Caller.queue_close][].
-- The result of [async_kernel.Caller.call_soon][], [async_kernel.Caller.call_later][] and [async_kernel.Caller.to_thread][]
-  return a [async_kernel.Pending][] which can be used to wait/await for the result of execution.
+### Get a Caller
 
-There is only ever one caller instance per thread (assuming there is only one event-loop-per-thread).
+If there is an event loop in the current thread, it is recommended to use:
 
-### `Caller()`
+```python
+caller = Caller()
+```
 
-[Caller()][async_kernel.caller.Caller.__new__] is means to obtain a specific kernel.
+### `Caller.get`
 
-=== "Sync"
+Once you have a Caller instance you can use [caller.get][async_kernel.caller.Caller.get]
+to create child callers that belong to the parent. When the parent is stopped the
+children are stopped.
 
-    ```python
-    caller = Caller()
-    ```
+The following options are copied from the parent or can be specified.
 
-    - Useful where the caller should stay open for the life of the thread.
+- 'zmq_context'
+- 'backend'
+- 'backend_options' (only if the backend matches)
 
-=== "Async context"
+### `Caller.to_thread`
+
+[Caller.to_thread][async_kernel.caller.Caller.to_thread] internally uses `Caller.get` to
+create its workers. A worker uses the same 'backend' and 'zmq_context' as its parent. The parent
+maintains a pool of idle workers, and starts additional workers on demand. There is no constraint
+on the number of workers a parent constraint.
+
+#### worker lifespan
+
+The `to_thread` call is synchronous and returns a Pending for the result of execution. When the
+Pending is done the worker becomes 'idle'. The following settings affect what happens to the idle worker:
+
+- [Caller.MAX_IDLE_POOL_INSTANCES][async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES]:
+  When a worker becomes idle it will stop immediately if the number of idle workers equals this value.
+- [Caller.IDLE_WORKER_SHUTDOWN_DURATION][async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION]:
+  If this value is greater than zero a thread is started that periodically checks and stops workers
+  that have been idle for a duration exceeding this value.
+
+```python
+my_worker = caller.get("my own worker", backend="trio")
+```
+
+When called inside a thread without a running event loop, a new thread can be started with
+an event loop.
+
+```python
+caller = Caller(name="my event loop", backend="asyncio")
+```
+
+=== "Async context current thread"
 
     ```python
     async with Caller("manual") as caller:
-        caller.thread
+        pass
     ```
-
-    - When the context is exited, the caller and its children are stopped immediately.
-    - A new caller context can be started after exiting.
-    - This is recommended in testing where you have control of the thread and context.
+    - A caller must **not** already be running in the current thread.
+    - When the async context is exited the caller and its children are stopped immediately.
+    - A context can be entered again with a new caller instance.
+    - This can be useful in testing where a fixture can be used to get a running caller.
 
 === "Sync thread specify backend"
 
     ```python
-    caller = Caller(backend="trio")
-    ...
-    caller.stop()
+    caller = Caller(name="My trio thread", backend="trio")
     ```
-    -  The caller is not stopped automatically.
+    -  The caller should be stopped when it is no longer required.
 
 === "Child threads"
 
@@ -92,3 +115,5 @@ There is only ever one caller instance per thread (assuming there is only one ev
         assert caller.children == {child_1, child_2, child_3}
     assert not caller.children
     ```
+
+    - Child threads are shutdown with the 'parent'.

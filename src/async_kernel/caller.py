@@ -84,7 +84,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.Caller.to_thread])."
     IDLE_WORKER_SHUTDOWN_DURATION = 0 if "pytest" in sys.modules else 60
     """
-    The minimum duration for a worker to remain in the worker pool before it is shutdown.
+    The minimum duration in seconds for a worker to remain in the worker pool before it is shutdown.
     
     Set to 0 to disable (default when running tests).
     """
@@ -182,10 +182,41 @@ class Caller(anyio.AsyncContextManagerMixin):
         cls,
         modifier: Literal["auto", "existing", "MainThread", "manual"] = "auto",
         /,
-        name="",
+        name: str = "",
         thread: threading.Thread | None = None,
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
+        """
+        Create or retrieve a Caller instance associated with a thread.
+
+        Args:
+            modifier: Specifies how the Caller instance should be created or retrieved.
+
+                - "auto": Automatically create or retrieve the instance.
+                - "existing": Retrieve an existing instance for the thread.
+                - "MainThread": Use the main thread for the Caller.
+                - "manual": Manually create a new instance for the current thread.
+
+            name: Name for the Caller instance. If "MainThread", raises an error.
+
+            thread: The thread to associate with the Caller.
+
+            **kwargs: Additional options for Caller creation, such as:
+
+                - backend: The async backend to use.
+                - backend_options: Options for the backend.
+                - protected: Whether the Caller is protected.
+                - zmq_context: ZeroMQ context.
+                - log: Logger instance.
+
+        Returns:
+            Self: The created or retrieved Caller instance.
+
+        Raises:
+            RuntimeError: If the name is reserved, an instance already exists for the thread,
+                          or a caller does not exist for the specified thread.
+            ValueError: If the thread and caller's name do not match.
+        """
         with cls._lock:
             if name and (name.lower() == "mainthread"):
                 msg = f'{name=} is reserved! To get the caller for the main thread use `Caller("MainThread")`'
