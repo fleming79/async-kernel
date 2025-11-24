@@ -35,7 +35,7 @@ class TestCaller:
             assert await caller.to_thread(lambda: 2 + 1) == 3
             assert len(caller.children) == 1
             worker = next(iter(caller.children))
-            assert "async_kernel_caller" in worker.name
+            assert worker.thread.name == "async_kernel_caller"
             # Child thread
             c1 = caller.get(name="child", protected=True)
             assert c1 in caller.children
@@ -298,7 +298,6 @@ class TestCaller:
         thread = threading.Thread(target=caller_not_already_running)
         thread.start()
         caller = await pen
-        assert caller.name == thread.name
         assert (await caller.call_soon(lambda: 2 + 2)) == 4
         done.set()
 
