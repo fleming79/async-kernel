@@ -101,14 +101,14 @@ class Caller(anyio.AsyncContextManagerMixin):
     _state: CallerState = CallerState.initial
     _state_reprs: ClassVar[dict] = {
         CallerState.initial: "❗ not running",
-        CallerState.start_sync: "starting",
+        CallerState.start_sync: "starting sync",
         CallerState.running: "🏃 running",
         CallerState.stopping: "🏁 stopping",
         CallerState.stopped: "🏁 stopped",
     }
     _zmq_context: zmq.Context[Any] | None = None
 
-    _parent_thread: threading.Thread | None = None
+    _parent_ref: weakref.ref[Self] | None = None
 
     # Fixed
     _child_lock = Fixed(BinarySemaphore)
@@ -172,11 +172,19 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         return frozenset(self._children)
 
+    @property
+    def parent(self) -> Self | None:
+        "The parent if it exists."
+        if (ref := self._parent_ref) and (inst := ref()) and not inst.stopped:
+            return inst
+        return None
+
     @override
     def __repr__(self) -> str:
         n = len(self._children)
         children = "" if not n else ("1 child" if n == 1 else f"{n} children")
-        return f"Caller<{self.name or self.thread.name} {self.backend} {self._state_reprs.get(self._state)} {children}>"
+        name = self.name or self.thread.name
+        return f"Caller<{name!s} {self.backend} {self._state_reprs.get(self._state)} {children}>"
 
     def __new__(
         cls,
@@ -323,7 +331,13 @@ class Caller(anyio.AsyncContextManagerMixin):
             assert self._state is CallerState.running
             self._state = CallerState.stopping
         self._instances.pop(self.thread, None)
-        self._worker_pool.clear()
+        if parent := self.parent:
+            try:
+                parent._worker_pool.remove(self)
+            except ValueError:
+                pass
+        for child in self.children:
+            child.stop(force=True)
         while self._queue:
             item = self._queue.pop()
             if isinstance(item, tuple):
@@ -331,11 +345,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 item[1].set_result(None)
         for func in tuple(self._queue_map):
             self.queue_close(func)
-        if self._parent_thread and (parent := self._instances.get(self._parent_thread)):
-            try:
-                parent._worker_pool.remove(self)
-            except ValueError:
-                pass
         self._resume()
         return self._state
 
@@ -364,13 +373,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.iopub_sockets.pop(self.thread, None)
                     socket.close()
                 self.stop(force=True)
-                for c in tuple(self._children):
-                    c.stop(force=True)
                 with anyio.CancelScope(shield=True):
-                    if self._children:
-                        while self._children:
-                            await self._children.pop().stopped
-                    if self._parent_thread and (parent := self._instances.get(self._parent_thread)):
+                    while self._children:
+                        await self._children.pop().stopped
+                    if parent := self.parent:
                         parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
@@ -530,7 +536,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             caller = self.__class__(name=name, **kwargs)
             if caller not in existing:
                 self._children.add(caller)
-                caller._parent_thread = self.thread
+                caller._parent_ref = weakref.ref(self)
             return caller
 
     def schedule_call(

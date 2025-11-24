@@ -37,18 +37,18 @@ class TestCaller:
             worker = next(iter(caller.children))
             assert worker.thread.name == "async_kernel_caller"
             # Child thread
-            c1 = caller.get(name="child", protected=True)
+            c1 = caller.get(name="c1", protected=True)
             assert c1 in caller.children
             assert len(caller.children) == 2
-            assert caller.get(name="child") is c1
+            assert caller.get(name="c1") is c1
             wrong_backend = next(b for b in Backend if b != anyio_backend)
             with pytest.raises(RuntimeError, match="Backend mismatch!"):
-                caller.get(name="child", backend=wrong_backend)
+                caller.get(name="c1", backend=wrong_backend)
             # A child's child
-            c2 = c1.get(name="child")
+            c2 = c1.get(name="c2")
             assert c2 in c1.children
             assert c2 not in caller.children
-            assert c1.get(name="child") is c2
+            assert c1.get(name="c2") is c2
             assert Caller("MainThread") is caller
 
         assert len(caller.children) == 0
