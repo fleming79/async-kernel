@@ -238,7 +238,7 @@ class CallerState(enum.Enum):
     "The State of a [async_kernel.caller.Caller][]."
 
     initial = enum.auto()
-    auto_start = enum.auto()
+    start_sync = enum.auto()
     running = enum.auto()
     stopping = enum.auto()
     stopped = enum.auto()

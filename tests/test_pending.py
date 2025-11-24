@@ -46,7 +46,7 @@ class TestPending:
         result = await pen
         assert result == 42
         assert done_called
-        async with Caller("async-context"):
+        async with Caller("manual"):
             pen.add_done_callback(callback)
             await after_done
 

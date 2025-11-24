@@ -65,7 +65,7 @@ There is only ever one caller instance per thread (assuming there is only one ev
 === "Async context"
 
     ```python
-    async with Caller("async-context") as caller:
+    async with Caller("manual") as caller:
         caller.thread
     ```
 
@@ -85,7 +85,7 @@ There is only ever one caller instance per thread (assuming there is only one ev
 === "Child threads"
 
     ```python
-    async with Caller("async-context") as caller:
+    async with Caller("manual") as caller:
         child_1 = caller.get()
         child_2 = caller.get(name="asyncio backend", backend="asyncio")
         child_3 = caller.get(name="trio backend", backend="trio")

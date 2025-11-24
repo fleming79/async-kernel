@@ -89,7 +89,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         - Use `Caller.queue_call` for per-function task queues.
         - Use `Caller.to_thread` to run work in an associated child worker thread.
         - Use `as_completed` and `wait` to manage multiple pendings.
-        - Use `async with Caller("async-context") = caller:` to use Caller as an
+        - Use `async with Caller("manual") = caller:` to use Caller as an
             asynchronous context manager (useful to provide pytest fixtures for example).
 
     Raises:
@@ -122,7 +122,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _state: CallerState = CallerState.initial
     _state_reprs: ClassVar[dict] = {
         CallerState.initial: "❗ not running",
-        CallerState.auto_start: "starting",
+        CallerState.start_sync: "starting",
         CallerState.running: "🏃 running",
         CallerState.stopping: "🏁 stopping",
         CallerState.stopped: "🏁 stopped",
@@ -201,7 +201,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def __new__(
         cls,
-        modifier: Literal["auto", "existing", "MainThread", "async-context"] = "auto",
+        modifier: Literal["auto", "existing", "MainThread", "manual"] = "auto",
         /,
         name="",
         thread: threading.Thread | None = None,
@@ -216,7 +216,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                 - `None`: (Default) A new instance is created if no existing instance is found.
                 - `"existing"`: Only checks for existing instances.
                 - `"MainThread"`: Shorthand for kwargs = `{"thread":threading.main_thread()}`
-                - `"async-context"`: The only way to directly create a new instance.
+                - `"manual"`: Will always return a new instantance that is not running.
+                    It must be started by either:
+                        1. Entering the async context (`async with Caller("manual") as caller:`).
+                        2. Starting it synchronously with a token.
+                    start it themselves by either entering the async context or calling `start_sync`.
                     The scheduler will run whilst its async-context has been entered.
             - name: A name to use for the new instance.
                 - If a 'thread' is specified it is used to check against the name of the caller.
@@ -236,7 +240,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             Self: An instance of the caller.
 
         Raises:
-            RuntimeError: If a caller already exists for the specified thread when `mode=="async-context"`.
+            RuntimeError: If a caller already exists for the specified thread when `modifier=="manual"`.
 
         Notes:
             - There is only **one caller per thread**.
@@ -263,7 +267,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if name and name != caller.name:
                         msg = f"The thread and caller's name do not match! {name=} {caller=}"
                         raise ValueError(msg)
-                    if modifier == "async-context":
+                    if modifier == "manual":
                         msg = f"An instance already exists for {thread=}"
                         raise RuntimeError(msg)
                     return caller
@@ -274,13 +278,21 @@ class Caller(anyio.AsyncContextManagerMixin):
                     msg = f"Caller instance not found for {thread=}"
                     raise RuntimeError(msg)
 
-            # create a new instance
-            inst = super().__new__(cls)
-
             # Determine the backend
             kernel = async_kernel.Kernel()
             backend = Backend(kwargs.get("backend") or current_async_library(failsafe=True) or kernel.anyio_backend)
             backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
+
+            if modifier == "manual":
+                thread = thread or threading.current_thread()
+                assert thread is threading.current_thread(), "Manual"
+                assert kwargs.get("backend", backend) == backend
+
+            # create a new instance
+            inst = super().__new__(cls)
+            inst._resume = noop
+            if thread:
+                inst._thread = thread
 
             # Store settings
             inst._name = name
@@ -291,44 +303,50 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._zmq_context = kwargs.get("zmq_context")
 
             # Finalize the caller
-            inst._resume = noop
-            if modifier == "async-context":
-                inst._thread = threading.current_thread()
-            else:
-                if thread:
-                    inst._thread = thread
-                inst._autostart()
+            if modifier != "manual":
+                inst.start_sync()
             assert inst._thread not in cls._instances
             cls._instances[inst._thread] = inst
+
         return inst
 
-    def _autostart(self):
-        def open_async_context() -> None:
-            async def run_caller_in_context() -> None:
-                if self._state is CallerState.auto_start:
-                    self._state = CallerState.initial
-                    async with self:
-                        await self.stopped
+    def start_sync(self):
+        "Start synchronously."
+        async def run_caller_in_context() -> None:
+            if self._state is CallerState.start_sync:
+                self._state = CallerState.initial
+                async with self:
+                    ready.set()
+                    await self.stopped
 
-            try:
-                if token:
-                    mark_thread_pydev_do_not_trace()
+        assert self._state is CallerState.initial
+        self._state = CallerState.start_sync
+        ready = Event()
+        if thread := getattr(self, "thread", None):
+            assert thread is threading.current_thread()
+            token = current_token()
+
+            def to_thread():
+                mark_thread_pydev_do_not_trace()
+                try:
+                    ready.set()
                     anyio.from_thread.run(run_caller_in_context, token=token)
-                else:
-                    anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
-            except (BaseExceptionGroup, BaseException) as e:
-                if not "shutdown" not in str(e):
-                    raise
+                except (BaseExceptionGroup, BaseException) as e:
+                    if not "shutdown" not in str(e):
+                        raise
 
-        thread: threading.Thread | None = getattr(self, "_thread", None)
-        token = current_token() if thread is threading.current_thread() else None
-        thread_name = f"async_kernel_caller in {thread.name}" if thread else self.name or "async_kernel_caller"
+            threading.Thread(target=to_thread, daemon=False).start()
+            ready.wait()
 
-        # Create a new thread to run the scheduler in the async context.
-        t = threading.Thread(target=open_async_context, name=thread_name)
-        self._thread = thread or t
-        self._state = CallerState.auto_start
-        t.start()
+        else:
+
+            def run_event_loop():
+                anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
+
+            # Create a new thread to run the scheduler in the async context.
+            self._thread = t = threading.Thread(target=run_event_loop, name=self.name or "async_kernel_caller")
+            t.start()
+            ready.wait()
 
     @classmethod
     def _start_idle_worker_cleanup_thead(cls) -> None:
@@ -363,7 +381,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if (self._protected and not force) or self._state in {CallerState.stopped, CallerState.stopping}:
             return self._state
-        if self._state is CallerState.auto_start:
+        if self._state is CallerState.start_sync:
             self._state = CallerState.stopped
             self.stopped.set()
         else:
@@ -388,8 +406,8 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        if self._state is CallerState.auto_start:
-            msg = 'Already starting! Did you mean to use Caller("async-context")?'
+        if self._state is CallerState.start_sync:
+            msg = 'Already starting! Did you mean to use Caller("manual")?'
             raise RuntimeError(msg)
         if self._state in {CallerState.stopped, CallerState.stopping}:
             msg = f"Restarting is not allowed: {self}"

@@ -530,7 +530,7 @@ class Kernel(HasTraits):
         assert self.shell
         self.anyio_backend = Backend(current_async_library())
         # Callers
-        caller = Caller("async-context", name="Shell", protected=True, log=self.log, zmq_context=self._zmq_context)
+        caller = Caller("manual", name="Shell", protected=True, log=self.log, zmq_context=self._zmq_context)
         self.callers[SocketID.shell] = caller
         self.callers[SocketID.control] = caller.get(name="Control", protected=True)
         start = Event()
