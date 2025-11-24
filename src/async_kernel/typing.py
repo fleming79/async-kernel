@@ -8,7 +8,6 @@ from typing_extensions import Sentinel, override
 
 if TYPE_CHECKING:
     import logging
-    import threading
     from collections.abc import Mapping
 
     import zmq
@@ -332,12 +331,6 @@ class FixedCreated(TypedDict, Generic[S, T]):
 
 
 class CallerCreateOptions(TypedDict):
-    "Options for creating a new [Caller][async_kernel.caller.Caller]."
-
-    name: NotRequired[str | None]
-    """The name to use for the caller."""
-    thread: NotRequired[threading.Thread | None]
-    "The thread of the caller. (current thread)"
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use to log exceptions."
     backend: NotRequired[Backend | Literal["trio", "asyncio"]]
@@ -347,7 +340,7 @@ class CallerCreateOptions(TypedDict):
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (False)."
     zmq_context: NotRequired[zmq.Context[Any]]
-    "A zmq Context to use "
+    "A zmq Context to use."
 
 
 DebugMessage = dict[str, Any]

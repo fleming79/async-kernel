@@ -74,24 +74,26 @@ class Caller(anyio.AsyncContextManagerMixin):
         - Per-function execution queues with lifecycle management (`queue_call`, `queue_close`).
         - Integration with AnyIO's async context management and task groups.
         - Mechanisms for stopping, protecting, and pooling Caller instances.
-        - Utilities for running functions in separate threads (`to_thread`, `to_thread_advanced`).
+        - Utilities for running functions in separate threads (`to_thread`).
         - Methods for waiting on and iterating over multiple pending instances as they complete.
         - IOpub socket per Caller instance.
         - Threads
 
     Usage:
-        - Use `Caller()` to get or create a Caller instances.
-        - Use `get` for inherited stopping.
-        - Use `call_soon`, `call_later`, or `schedule_call` to schedule work.
-        - Use `queue_call` for per-function task queues.
-        - Use `to_thread` to run work in a separate thread.
+        - Use `Caller()` to get or create a Caller instance for the current thread; will fail if there is no running event loop.
+            - `Caller("MainThread")`: A caller for the main thread; If called from the non-main thread it will fail if the caller
+                for the main thread is not already running.
+            - `Caller(name="My custom event loop", backend='asyncio')`: A new thread (always) with the specified backend; Duplicate names are permitted.
+        - Use `Caller.get` for inherited stopping.
+        - Use `Caller.call_soon`, `Caller.call_later`, or `Caller.schedule_call` to schedule work on the caller instance.
+        - Use `Caller.queue_call` for per-function task queues.
+        - Use `Caller.to_thread` to run work in an associated child worker thread.
         - Use `as_completed` and `wait` to manage multiple pendings.
         - Use `async with Caller("async-context") = caller:` to use Caller as an
             asynchronous context manager (useful to provide pytest fixtures for example).
 
     Raises:
-        RuntimeError: For invalid operations such as duplicate Caller creation or missing instances.
-        anyio.ClosedResourceError: When scheduling on a stopped Caller.
+        RuntimeError: For invalid operations such as duplicate Caller creation or missing instances or when scheduling on a stopped Caller.
 
     Notes:
         - It is safe to use the underlying libraries taskgroups
@@ -198,8 +200,10 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def __new__(
         cls,
-        modifier: None | Literal["existing", "MainThread", "async-context"] = None,
+        modifier: Literal["auto", "existing", "MainThread", "async-context"] = "auto",
         /,
+        name: str | None = None,
+        thread: threading.Thread | None = None,
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
         """
@@ -213,6 +217,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 - `"MainThread"`: Shorthand for kwargs = `{"thread":threading.main_thread()}`
                 - `"async-context"`: The only way to directly create a new instance.
                     The scheduler will run whilst its async-context has been entered.
+            - name: A name to use for the new instance.
+                - If a 'thread' is specified it is used to check against the name of the caller.
+            - thread: The thread to which the caller should be associated.
 
             **kwargs: Additional options for caller creation, which may include:
 
@@ -236,23 +243,21 @@ class Caller(anyio.AsyncContextManagerMixin):
             - When a caller is shutdown its children are shutdown.
             - New instances created duing [Caller.get][] get added to its children.
                 The following methods use [Caller.get][]:
-                - [caller.to_thread][Caller.to_thread]
-                - [caller.to_thread_advanced][Caller.to_thread_advanced]
-                - [caller.get][Caller.get] (called via the instance)
+                - [caller.to_thread][Caller.to_thread] - A pool of worker threads running the same backend and zmq context.
+                - [caller.get][Caller.get] (called via the instance).
             - The 'name' of children is always unique and can be used to retrieve it with the above selected methods.
         """
-
-        thread = kwargs.get("thread") or threading.current_thread()
         if modifier != "async-context":
-            return cls._get_instance(modifier or "auto", **kwargs)
+            return cls._get_instance(modifier, name=name, thread=thread, **kwargs)
         with cls._rlock:
+            thread = thread or threading.current_thread()
             if thread in cls._instances:
-                msg = f"A caller already exists for {thread=}"
+                msg = f"An instance already exists for {thread=}"
                 raise RuntimeError(msg)
             inst = super().__new__(cls)
             inst._backend = Backend(kwargs.get("backend") or current_async_library())
             inst._thread = thread
-            inst._name = kwargs.get("name") or thread.name or str(thread)
+            inst._name = str(name or thread.name or thread)
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
             inst._protected = kwargs.get("protected", False)
             inst._backend_options = kwargs.get("backend_options")
@@ -266,17 +271,21 @@ class Caller(anyio.AsyncContextManagerMixin):
         cls,
         mode: Literal["auto", "existing", "MainThread"],
         /,
+        name: str | None = None,
+        thread: threading.Thread | None = None,
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
         with cls._rlock:
             # Existing instances.
             main, current = threading.main_thread(), threading.current_thread()
-            if (name := kwargs.get("name")) and (name.lower() == "mainthread"):
+            if name and (name.lower() == "mainthread"):
                 msg = f'{name=} is reserved! To get the caller for the main thread use `Caller("MainThread")`'
                 raise RuntimeError(msg)
             if mode == "MainThread":
-                kwargs = {"thread": main}
-            if thread := current if not kwargs else kwargs.get("thread"):
+                thread = main
+            elif not thread and not kwargs:
+                thread = current
+            if thread:
                 if caller_ := cls._instances.get(thread):
                     if name and name != caller_.name:
                         msg = f"The thread and caller's name do not match! {name=} {caller_=}"
@@ -305,8 +314,8 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             # Create a new thread to run the scheduler in the async context.
             thread_ = threading.Thread(target=cls._open_async_context, name=thread_name, args=[pen])
-            kwargs["thread"] = thread if "token" in pen.metadata else thread_
-            pen.metadata["caller"] = cls("async-context", **kwargs)
+            thread = thread if "token" in pen.metadata else thread_
+            pen.metadata["caller"] = cls("async-context", name=name, thread=thread, **kwargs)
             pen.metadata["caller"]._state = CallerState.auto_starting
             thread_.start()
         return pen.wait_sync()
@@ -533,111 +542,39 @@ class Caller(anyio.AsyncContextManagerMixin):
         return [caller for caller in Caller._instances.values() if caller.running or not running_only]
 
     def get(
-        self, mode: Literal["auto", "existing", "MainThread"] = "auto", /, **kwargs: Unpack[CallerCreateOptions]
+        self,
+        mode: Literal["auto", "existing"] = "auto",
+        /,
+        name: str | None = None,
+        **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
         """
         Get a new or existing caller as a child of the current caller.
 
         Notes:
-            - If 'mode' is not "MainThread" and 'thread' is not specified in kwargs, the method attempts to find an existing child with the given 'name'.
+            - The method attempts to find an existing child with the given 'name' if name is a non-empty string.
             - If no suitable child is found, it sets default backend and context options if not provided.
             - Ensures that new instances are tracked as children and maintains parent references.
         """
-
         with self._rlock:
-            if mode != "MainThread" and "thread" not in kwargs:
-                if name := kwargs.get("name"):
-                    for caller in self.children:
-                        if caller.name == name:
-                            return caller
-                if "backend" not in kwargs:
-                    kwargs["backend"] = self.backend
-                    kwargs["backend_options"] = self.backend_options
-                if "zmq_context" not in kwargs and self._zmq_context:
-                    kwargs["zmq_context"] = self._zmq_context
+            if name:
+                for caller in self.children:
+                    if caller.name == name:
+                        if (backend := kwargs.get("backend")) and caller.backend != backend:
+                            msg = f"Backend mismatch! {backend=} {caller.backend=}"
+                            raise RuntimeError(msg)
+                        return caller
+            if "backend" not in kwargs:
+                kwargs["backend"] = self.backend
+                kwargs["backend_options"] = self.backend_options
+            if "zmq_context" not in kwargs and self._zmq_context:
+                kwargs["zmq_context"] = self._zmq_context
             existing = frozenset(self._instances.values())
-            caller = self._get_instance(mode, **kwargs)
+            caller = self._get_instance(mode, name=name, **kwargs)
             if caller not in existing:
                 self._children.add(caller)
                 caller._parent_thread = self.thread
             return caller
-
-    def to_thread(
-        self,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Pending[T]:
-        """
-        Call func in a worker thread using the same backend as the current instance.
-
-        Args:
-            func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
-
-        Notes:
-            - A minimum number of caller instances are retained for this method.
-            - Async code run inside func should use taskgroups for creating task.
-
-        See also:
-            - [Caller.to_thread_advanced][]
-        """
-        return self.to_thread_advanced({"name": None}, func, *args, **kwargs)
-
-    def to_thread_advanced(
-        self,
-        options: CallerCreateOptions,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
-        /,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Pending[T]:
-        """
-        Call func in a current or new Caller according to the options.
-
-        Args:
-            options: Options to pass to [Caller.get][].
-            func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
-
-        Returns:
-            A result that can be awaited for the  result of func.
-
-        Raises:
-            ValueError: When a name is not supplied.
-
-        Notes:
-            - When `options == {"name": None}` the caller is associated with a pool of workers.
-            - When called via from an instance any new callers are added to the the instances children (done in `_catch_new_instances`).
-        """
-
-        if is_worker := options == {"name": None}:
-            try:
-                caller = self._worker_pool.popleft()
-            except IndexError:
-                caller = self.get(name=None)
-        else:
-            if not options.get("name"):
-                msg = "A name was not provided in {options=}."
-                raise ValueError(msg)
-            caller = self.get(**options)
-        pen = caller.call_soon(func, *args, **kwargs)
-        if is_worker:
-
-            def _to_thread_on_done(_) -> None:
-                if not caller.stopped and self.running:
-                    if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
-                        caller._idle_time = time.monotonic()
-                        self._worker_pool.append(caller)
-                        self._start_idle_worker_cleanup_thead()
-                    else:
-                        caller.stop()
-
-            pen.add_done_callback(_to_thread_on_done)
-        return pen
 
     def schedule_call(
         self,
@@ -733,6 +670,43 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         self._queue.append(functools.partial(func, *args, **kwargs))
         self._resume()
+
+    def to_thread(
+        self,
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Pending[T]:
+        """
+        Call func in a worker thread using the same backend as the current instance.
+
+        Args:
+            func: The function.
+            *args: Arguments to use with func.
+            **kwargs: Keyword arguments to use with func.
+
+        Notes:
+            - A minimum number of caller instances are retained for this method.
+            - Async code run inside func should use taskgroups for creating task.
+        """
+
+        def _to_thread_on_done(_) -> None:
+            if not caller.stopped and self.running:
+                if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
+                    caller._idle_time = time.monotonic()
+                    self._worker_pool.append(caller)
+                    self._start_idle_worker_cleanup_thead()
+                else:
+                    caller.stop()
+
+        try:
+            caller = self._worker_pool.popleft()
+        except IndexError:
+            caller = self.get()
+        pen = caller.call_soon(func, *args, **kwargs)
+        pen.add_done_callback(_to_thread_on_done)
+        return pen
 
     def queue_get(self, func: Callable) -> Pending[Never] | None:
         """Returns `Pending` instance for `func` where the queue is running.

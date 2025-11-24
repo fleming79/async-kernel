@@ -41,12 +41,15 @@ class TestCaller:
             assert c1 in caller.children
             assert len(caller.children) == 2
             assert caller.get(name="child") is c1
+            wrong_backend = next(b for b in Backend if b != anyio_backend)
+            with pytest.raises(RuntimeError, match="Backend mismatch!"):
+                caller.get(name="child", backend=wrong_backend)
             # A child's child
             c2 = c1.get(name="child")
             assert c2 in c1.children
             assert c2 not in caller.children
             assert c1.get(name="child") is c2
-            assert c1.get("MainThread") is caller
+            assert Caller("MainThread") is caller
 
         assert len(caller.children) == 0
         assert c1.stopped
@@ -56,7 +59,7 @@ class TestCaller:
         assert Caller(thread=caller.thread) is caller
         assert Caller(thread=threading.current_thread()) is caller
         assert Caller("MainThread") is caller
-        with pytest.raises(RuntimeError, match="A caller already exists for thread="):
+        with pytest.raises(RuntimeError, match="An instance already exists for thread="):
             Caller("async-context")
 
     async def test_start_after(self, anyio_backend: Backend):
@@ -185,13 +188,6 @@ class TestCaller:
                 pass
         Caller().stop()
 
-    @pytest.mark.parametrize("b_end", Backend)
-    async def test_to_thread_advanced(self, caller: Caller, b_end: Backend):
-        my_thread = await caller.to_thread_advanced({"name": "my thread", "backend": b_end}, Caller)
-        assert my_thread in caller.children
-        assert my_thread.name == "my thread"
-        assert my_thread.backend == b_end
-
     async def test_call_soon_cancelled_early(self, caller: Caller):
         pen = caller.call_soon(anyio.sleep_forever)
         pen.cancel()
@@ -276,10 +272,6 @@ class TestCaller:
 
         caller.call_soon(finished.set)
         thread.join()
-
-    async def test_to_thread_advanced_no_name(self, caller: Caller):
-        with pytest.raises(ValueError, match="A name was not provided"):
-            caller.to_thread_advanced({}, lambda: None)
 
     async def test_get_no_instance(self):
         with pytest.raises(RuntimeError):
@@ -417,7 +409,7 @@ class TestCaller:
         async with caller:
             assert await pen == 6
 
-    async def test_name_missmatch(self, caller: Caller):
+    async def test_name_mismatch(self, caller: Caller):
         with pytest.raises(ValueError, match="The thread and caller's name do not match!"):
             Caller(name="wrong name", thread=threading.current_thread())
 
