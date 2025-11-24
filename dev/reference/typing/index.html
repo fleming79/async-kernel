@@ -1899,17 +1899,6 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.typing.CallerCreateOptions.thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.typing.CallerCreateOptions.log" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3003,17 +2992,6 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.typing.CallerCreateOptions.thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.typing.CallerCreateOptions.log" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3250,7 +3228,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title=" CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Options for creating a new <a class="autorefs autorefs-internal" title=" Caller" href="../caller/#async_kernel.caller.Caller">Caller</a>.</p>
+            <p>Options to use when creating an instance of a <a class="autorefs autorefs-internal" title=" Caller" href="../caller/#async_kernel.caller.Caller">Caller</a>.</p>
           </div>
         </li>
     </ul>
@@ -4512,7 +4490,8 @@ Tag:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
+<span class="normal"> 93</span>
 <span class="normal"> 94</span>
 <span class="normal"> 95</span>
 <span class="normal"> 96</span>
@@ -4520,8 +4499,7 @@ Tag:
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_mode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Get a RunMode from the code if it is found.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
@@ -7085,7 +7063,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
 
 
 
-        <p>Options for creating a new <a class="autorefs autorefs-internal" title=" Caller" href="../caller/#async_kernel.caller.Caller">Caller</a>.</p>
+        <p>Options to use when creating an instance of a <a class="autorefs autorefs-internal" title=" Caller" href="../caller/#async_kernel.caller.Caller">Caller</a>.</p>
 
           
 
@@ -7119,12 +7097,6 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
   </span>
 
       </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../caller/#async_kernel.caller.Caller.to_thread_advanced"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_thread_advanced</a>
-  </span>
-
-      </li>
   </ul>
 
       </li>
@@ -7149,18 +7121,10 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
     <ul>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title=" name (async_kernel.typing.CallerCreateOptions.name)" href="#async_kernel.typing.CallerCreateOptions.name">name</a></code></b>
-              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None]</code>)
+              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
           –
           <div class="doc-md-description">
-            <p>The name to use for the caller.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" thread (async_kernel.typing.CallerCreateOptions.thread)" href="#async_kernel.typing.CallerCreateOptions.thread">thread</a></code></b>
-              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-external" title="threading.Thread" href="https://docs.python.org/3/library/threading.html#threading.Thread">Thread</a> | None]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The thread of the caller. (current thread)</p>
+            <p>The name for the new caller instance.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -7168,7 +7132,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
               (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-external" title="logging.LoggerAdapter" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter">LoggerAdapter</a>]</code>)
           –
           <div class="doc-md-description">
-            <p>A logging adapter to use to log exceptions.</p>
+            <p>A logging adapter to use for the caller.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -7176,7 +7140,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
               (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<span title="async_kernel.kernelspec.Backend">Backend</span> | <a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;trio&#39;, &#39;asyncio&#39;]]</code>)
           –
           <div class="doc-md-description">
-            <p>The anyio backend to use (1. Inherited. 2. current_async_library 3. From  <a class="autorefs autorefs-internal" title=" anyio_backend" href="../kernel/#async_kernel.kernel.Kernel.anyio_backend">async_kernel.kernel.Kernel.anyio_backend</a>).</p>
+            <p>The backend to specify when calling <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -7184,7 +7148,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
               (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None]</code>)
           –
           <div class="doc-md-description">
-            <p>Options to use when calling <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a> inside the new thread (1. Inherited. 2. From <a class="autorefs autorefs-internal" title=" anyio_backend_options" href="../kernel/#async_kernel.kernel.Kernel.anyio_backend_options">async_kernel.kernel.Kernel.anyio_backend_options</a>).</p>
+            <p>Options to pass when calling <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -7200,7 +7164,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
               (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<span title="zmq.Context">Context</span>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</code>)
           –
           <div class="doc-md-description">
-            <p>A zmq Context to use</p>
+            <p>A zmq Context to use.</p>
           </div>
         </li>
     </ul>
@@ -7229,37 +7193,12 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
   </span>
 
 <a href="#async_kernel.typing.CallerCreateOptions.name" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>The name to use for the caller.</p>
-
-          
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.typing.CallerCreateOptions.thread" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">thread</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.typing.CallerCreateOptions.thread" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">thread</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="threading.Thread" href="https://docs.python.org/3/library/threading.html#threading.Thread">Thread</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The thread of the caller. (current thread)</p>
+        <p>The name for the new caller instance.</p>
 
           
     </div>
@@ -7284,7 +7223,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
 
     <div class="doc doc-contents ">
 
-        <p>A logging adapter to use to log exceptions.</p>
+        <p>A logging adapter to use for the caller.</p>
 
           
     </div>
@@ -7309,7 +7248,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
 
     <div class="doc doc-contents ">
 
-        <p>The anyio backend to use (1. Inherited. 2. current_async_library 3. From  <a class="autorefs autorefs-internal" title=" anyio_backend" href="../kernel/#async_kernel.kernel.Kernel.anyio_backend">async_kernel.kernel.Kernel.anyio_backend</a>).</p>
+        <p>The backend to specify when calling <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.</p>
 
           
     </div>
@@ -7334,7 +7273,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
 
     <div class="doc doc-contents ">
 
-        <p>Options to use when calling <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a> inside the new thread (1. Inherited. 2. From <a class="autorefs autorefs-internal" title=" anyio_backend_options" href="../kernel/#async_kernel.kernel.Kernel.anyio_backend_options">async_kernel.kernel.Kernel.anyio_backend_options</a>).</p>
+        <p>Options to pass when calling <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.</p>
 
           
     </div>
@@ -7384,7 +7323,7 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
 
     <div class="doc doc-contents ">
 
-        <p>A zmq Context to use</p>
+        <p>A zmq Context to use.</p>
 
           
     </div>
