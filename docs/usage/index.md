@@ -58,15 +58,14 @@ The options are:
 
 - "CurrentThread": A caller for the current thread. An event loop must be running in the current thread for this to work.
 - "MainThread": A caller for the main thread. An event loop must be running in the main thread and if called from inside
-    a different thread, the caller must have already been created in the main thread.
+  a different thread, the caller must have already been created in the main thread.
 - "NewThread": A new thread is always created.
 - "manual": A new thread is created. The scheduler must be started manually by either entering the async context
-    or calling [Caller.start_sync][async_kernel.caller.Caller.start_sync].
-
+  or calling [Caller.start_sync][async_kernel.caller.Caller.start_sync].
 
 ### `Caller.get`
 
-Caller.get [caller.get][async_kernel.caller.Caller.get] can be used to create child callers that belong to the parent. 
+Caller.get [caller.get][async_kernel.caller.Caller.get] can be used to create child callers that belong to the parent.
 When the parent is stopped the children are stopped.
 
 The following options are copied from the parent or can be specified.

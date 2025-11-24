@@ -122,7 +122,7 @@ class Pending(Awaitable[T]):
                     if not self._done or self._done_callbacks:
                         await event
             else:
-                await async_checkpoint()
+                await async_checkpoint(force=True)
             return self.result() if result else None
         finally:
             if not self._done and not shield:
@@ -161,7 +161,7 @@ class Pending(Awaitable[T]):
                 msg = f"Timeout waiting for {self}"
                 raise TimeoutError(msg)
         else:
-            green_checkpoint()
+            green_checkpoint(force=True)
         return self.result() if result else None
 
     def _set_done(self, mode: Literal["result", "exception"], value) -> None:

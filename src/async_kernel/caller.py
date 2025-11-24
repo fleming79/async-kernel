@@ -731,7 +731,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 self.log.exception("Execution %s failed", item, exc_info=e)
                             finally:
                                 del item, result
-                            await async_checkpoint()
+                            await async_checkpoint(force=True)
                         else:
                             event = create_async_event()
                             pen.metadata["resume"] = event.set
@@ -811,7 +811,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if len(results) == max_concurrent_:
                                 await event
                             resume = noop
-                            await async_checkpoint()
+                            await async_checkpoint(force=True)
 
             except (StopAsyncIteration, StopIteration):
                 return

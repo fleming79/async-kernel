@@ -1084,7 +1084,7 @@ class Kernel(HasTraits):
                     self._stop_on_error_time = math.inf
                     self.log.info("An error occurred in a non-silent execution request")
                     with anyio.CancelScope(shield=True):
-                        await async_checkpoint()
+                        await async_checkpoint(force=True)
                 finally:
                     self._stop_on_error_time = time.monotonic()
         return content
