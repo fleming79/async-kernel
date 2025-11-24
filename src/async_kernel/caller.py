@@ -188,29 +188,23 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def __new__(
         cls,
-        modifier: Literal["auto", "existing", "MainThread", "manual"] = "auto",
+        modifier: Literal["CurrentThread", "MainThread", "NewThread", "manual"] = "CurrentThread",
         /,
-        name: str = "",
-        thread: threading.Thread | None = None,
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
         """
-        Create or retrieve a Caller instance associated with a thread.
+        Create or retrieve a Caller instance.
 
         Args:
             modifier: Specifies how the Caller instance should be created or retrieved.
 
-                - "auto": Automatically create or retrieve the instance.
-                - "existing": Retrieve an existing instance for the thread.
+                - "CurrentThread": Automatically create or retrieve the instance.
                 - "MainThread": Use the main thread for the Caller.
+                - "NewThread": Create a new thread.
                 - "manual": Manually create a new instance for the current thread.
 
-            name: Name for the Caller instance. If "MainThread", raises an error.
-
-            thread: The thread to associate with the Caller.
-
             **kwargs: Additional options for Caller creation, such as:
-
+                - name: The name to use.
                 - backend: The async backend to use.
                 - backend_options: Options for the backend.
                 - protected: Whether the Caller is protected.
@@ -226,34 +220,31 @@ class Caller(anyio.AsyncContextManagerMixin):
             ValueError: If the thread and caller's name do not match.
         """
         with cls._lock:
-            if name and (name.lower() == "mainthread"):
-                msg = f'{name=} is reserved! To get the caller for the main thread use `Caller("MainThread")`'
-                raise RuntimeError(msg)
-            if modifier == "MainThread":
-                thread = threading.main_thread()
-            elif not thread and not kwargs:
-                thread = threading.current_thread()
+            match modifier:
+                case "CurrentThread" | "manual":
+                    thread = threading.current_thread()
+                case "MainThread":
+                    thread = threading.main_thread()
+                case "NewThread":
+                    thread = None
 
+            name, backend = kwargs.get("name", ""), kwargs.get("backend")
             # Locate existing
-            if thread:
-                if caller := cls._instances.get(thread):
-                    if name and name != caller.name:
-                        msg = f"The thread and caller's name do not match! {name=} {caller=}"
-                        raise ValueError(msg)
-                    if modifier == "manual":
-                        msg = f"An instance already exists for {thread=}"
-                        raise RuntimeError(msg)
-                    return caller
-                if thread is not threading.current_thread():
-                    msg = f"A caller does not exist for {thread=}!"
+            if thread and (caller := cls._instances.get(thread)):
+                if modifier == "manual":
+                    msg = f"An instance already exists for {thread=}"
                     raise RuntimeError(msg)
-                if modifier == "existing":
-                    msg = f"Caller instance not found for {thread=}"
-                    raise RuntimeError(msg)
+                if name and name != caller.name:
+                    msg = f"The thread and caller's name do not match! {name=} {caller=}"
+                    raise ValueError(msg)
+                if backend and backend != caller.backend:
+                    msg = f"The backend does not match! {backend=} {caller.backend=}"
+                    raise ValueError(msg)
+                return caller
 
             # Determine the backend
             kernel = async_kernel.Kernel()
-            backend = Backend(kwargs.get("backend") or current_async_library(failsafe=True) or kernel.anyio_backend)
+            backend = Backend(backend or current_async_library(failsafe=True) or kernel.anyio_backend)
             backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
             if modifier == "manual":
                 thread = thread or threading.current_thread()
@@ -493,6 +484,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             cls._thread_cleanup_idle_workers.start()
 
     @classmethod
+    def get_current(cls, thread: threading.Thread) -> Self | None:
+        "A [classmethod][] to get the caller instance from the corresponding thread if it exists."
+        with cls._lock:
+            return cls._instances.get(thread)
+
+    @classmethod
     def current_pending(cls) -> Pending[Any] | None:
         """A [classmethod][] that returns the current result when called from inside a function scheduled by Caller."""
         return cls._pending_var.get()
@@ -507,17 +504,30 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         return [caller for caller in Caller._instances.values() if caller.running or not running_only]
 
-    def get(self, name="", **kwargs: Unpack[CallerCreateOptions]) -> Self:
+    def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """
-        Get a new or existing caller as a child of the current caller.
+        Retrieves an existing child caller by name and backend, or creates a new one if not found.
+
+        Args:
+            **kwargs: Options for creating or retrieving a caller instance.
+                - name: The name of the child caller to retrieve.
+                - backend: The backend to match or assign to the caller.
+                - backend_options: Options for the backend.
+                - zmq_context: ZeroMQ context to use.
+
+        Returns:
+            Self: The retrieved or newly created caller instance.
+
+        Raises:
+            RuntimeError: If a caller with the specified name exists but the backend does not match.
 
         Notes:
-            - The method attempts to find an existing child with the given 'name' if name is provided.
-            - If no suitable child is found, it sets default backend and context options if not provided.
-            - Ensures that new instances are tracked as children and maintains parent references.
+            - The returned caller is added to `children` and stopped with this instance.
+            - If 'backend' and 'zmq_context' are not specified they are copied from this instance.
         """
+
         with self._child_lock:
-            if name:
+            if name := kwargs.get("name"):
                 for caller in self.children:
                     if caller.name == name:
                         if (backend := kwargs.get("backend")) and caller.backend != backend:
@@ -530,7 +540,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             if "zmq_context" not in kwargs and self._zmq_context:
                 kwargs["zmq_context"] = self._zmq_context
             existing = frozenset(self._instances.values())
-            caller = self.__class__(name=name, **kwargs)
+            caller = self.__class__("NewThread", **kwargs)
             if caller not in existing:
                 self._children.add(caller)
                 caller._parent_ref = weakref.ref(self)

@@ -56,8 +56,7 @@ class TestCaller:
         assert c2.stopped
 
     async def test_already_exists(self, caller: Caller):
-        assert Caller(thread=caller.thread) is caller
-        assert Caller(thread=threading.current_thread()) is caller
+        assert Caller.get_current(caller.thread)
         assert Caller("MainThread") is caller
         with pytest.raises(RuntimeError, match="An instance already exists for thread="):
             Caller("manual")
@@ -69,21 +68,6 @@ class TestCaller:
         async with caller:
             assert caller.running
             assert await pen == 5
-
-    def test_forbidden_name(self):
-        with pytest.raises(RuntimeError, match="name='MainThread' is reserved!"):
-            Caller(name="MainThread")
-
-    def test_forbid_other_thread_start(self) -> None:
-        done = Event()
-        thread = threading.Thread(target=done.wait)
-        thread.start()
-        try:
-            with pytest.raises(RuntimeError, match="A caller does not exist for"):
-                Caller(thread=thread)
-        finally:
-            done.set()
-            thread.join()
 
     async def test_get_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():
@@ -99,7 +83,7 @@ class TestCaller:
 
     def test_no_event_loop(self):
         assert current_async_library(failsafe=True) is None
-        caller = Caller(backend="asyncio")
+        caller = Caller("NewThread")
         assert caller.thread is not threading.current_thread()
         assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
         caller.stop()
@@ -239,7 +223,8 @@ class TestCaller:
         thread.start()
         await ready
         assert isinstance(finished, Event)
-        caller = Caller(thread=thread)
+        caller = Caller.get_current(thread)
+        assert caller
         if check_result == "result":
             expr = "10"
             context = contextlib.nullcontext()
@@ -272,10 +257,6 @@ class TestCaller:
 
         caller.call_soon(finished.set)
         thread.join()
-
-    async def test_get_no_instance(self):
-        with pytest.raises(RuntimeError):
-            Caller("existing", name="Test")
 
     async def test_get_start_main_thread(self, anyio_backend: Backend):
         # Check a caller can be started in the main thread synchronously.
@@ -410,7 +391,12 @@ class TestCaller:
 
     async def test_name_mismatch(self, caller: Caller):
         with pytest.raises(ValueError, match="The thread and caller's name do not match!"):
-            Caller(name="wrong name", thread=threading.current_thread())
+            Caller(name="wrong name")
+
+    async def test_backend_mismatch(self, caller: Caller):
+        wrong_backend = next(b for b in Backend if b != caller.backend)
+        with pytest.raises(ValueError, match="The backend does not match!"):
+            Caller(backend=wrong_backend)
 
     async def test_prevent_multi_entry(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
@@ -619,13 +605,15 @@ class TestCaller:
 
     async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
         pen1 = caller.to_thread(threading.current_thread)
-        w1 = Caller(thread=await pen1)
+        w1 = Caller.get_current(await pen1)
+        assert w1
         assert w1 in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
         w1.stop()
         pen2 = caller.to_thread(threading.current_thread)
         await w1.stopped
         assert w1 not in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
-        w2 = Caller(thread=await pen2)
+        w2 = Caller.get_current(await pen2)
+        assert w2
         assert not w2.stopped
         w2.stop()
         await w2.stopped
@@ -634,8 +622,10 @@ class TestCaller:
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
         pen1 = caller.to_thread(threading.current_thread)
+        w1 = Caller.get_current(await pen1)
         pen2 = caller.to_thread(threading.current_thread)
-        w1 = Caller(thread=await pen1)
-        w2 = Caller(thread=await pen2)
+        w2 = Caller.get_current(await pen2)
+        assert w1
+        assert w2
         await w1.stopped
         await w2.stopped

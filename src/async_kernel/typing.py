@@ -331,12 +331,16 @@ class FixedCreated(TypedDict, Generic[S, T]):
 
 
 class CallerCreateOptions(TypedDict):
+    "Options to use when creating an instance of a [Caller][async_kernel.caller.Caller]."
+
+    name: NotRequired[str]
+    "The name for the new caller instance."
     log: NotRequired[logging.LoggerAdapter]
-    "A logging adapter to use to log exceptions."
+    "A logging adapter to use for the caller."
     backend: NotRequired[Backend | Literal["trio", "asyncio"]]
-    "The anyio backend to use (1. Inherited. 2. current_async_library 3. From  [async_kernel.kernel.Kernel.anyio_backend][])."
+    "The backend to specify when calling [anyio.run][]."
     backend_options: NotRequired[dict | None]
-    "Options to use when calling [anyio.run][] inside the new thread (1. Inherited. 2. From [async_kernel.kernel.Kernel.anyio_backend_options][])."
+    "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (False)."
     zmq_context: NotRequired[zmq.Context[Any]]
