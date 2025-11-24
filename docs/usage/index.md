@@ -46,11 +46,28 @@ If there is an event loop in the current thread, it is recommended to use:
 caller = Caller()
 ```
 
+### Modifier
+
+A modifier can be passed as the first arg to modify which caller instance is returned:
+
+```python
+caller = Caller("MainThread")
+```
+
+The options are:
+
+- "CurrentThread": A caller for the current thread. An event loop must be running in the current thread for this to work.
+- "MainThread": A caller for the main thread. An event loop must be running in the main thread and if called from inside
+    a different thread, the caller must have already been created in the main thread.
+- "NewThread": A new thread is always created.
+- "manual": A new thread is created. The scheduler must be started manually by either entering the async context
+    or calling [Caller.start_sync][async_kernel.caller.Caller.start_sync].
+
+
 ### `Caller.get`
 
-Once you have a Caller instance you can use [caller.get][async_kernel.caller.Caller.get]
-to create child callers that belong to the parent. When the parent is stopped the
-children are stopped.
+Caller.get [caller.get][async_kernel.caller.Caller.get] can be used to create child callers that belong to the parent. 
+When the parent is stopped the children are stopped.
 
 The following options are copied from the parent or can be specified.
 
@@ -60,10 +77,9 @@ The following options are copied from the parent or can be specified.
 
 ### `Caller.to_thread`
 
-[Caller.to_thread][async_kernel.caller.Caller.to_thread] internally uses `Caller.get` to
-create its workers. A worker uses the same 'backend' and 'zmq_context' as its parent. The parent
-maintains a pool of idle workers, and starts additional workers on demand. There is no constraint
-on the number of workers a parent constraint.
+[Caller.to_thread][async_kernel.caller.Caller.to_thread] performs execute requests in a dedicated caller
+using the same backend and zmq context as the parent. A pool of workers is retained to handle to thread
+calls, but are shutdown when no longer required.
 
 #### worker lifespan
 
@@ -86,34 +102,3 @@ an event loop.
 ```python
 caller = Caller(name="my event loop", backend="asyncio")
 ```
-
-=== "Async context current thread"
-
-    ```python
-    async with Caller("manual") as caller:
-        pass
-    ```
-    - A caller must **not** already be running in the current thread.
-    - When the async context is exited the caller and its children are stopped immediately.
-    - A context can be entered again with a new caller instance.
-    - This can be useful in testing where a fixture can be used to get a running caller.
-
-=== "Sync thread specify backend"
-
-    ```python
-    caller = Caller(name="My trio thread", backend="trio")
-    ```
-    -  The caller should be stopped when it is no longer required.
-
-=== "Child threads"
-
-    ```python
-    async with Caller("manual") as caller:
-        child_1 = caller.get()
-        child_2 = caller.get(name="asyncio backend", backend="asyncio")
-        child_3 = caller.get(name="trio backend", backend="trio")
-        assert caller.children == {child_1, child_2, child_3}
-    assert not caller.children
-    ```
-
-    - Child threads are shutdown with the 'parent'.
