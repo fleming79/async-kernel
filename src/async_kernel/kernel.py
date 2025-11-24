@@ -530,7 +530,7 @@ class Kernel(HasTraits):
         assert self.shell
         self.anyio_backend = Backend(current_async_library())
         # Callers
-        caller = Caller("async-context", name="Shell", protected=True, log=self.log, zmq_context=self._zmq_context)
+        caller = Caller("manual", name="Shell", protected=True, log=self.log, zmq_context=self._zmq_context)
         self.callers[SocketID.shell] = caller
         self.callers[SocketID.control] = caller.get(name="Control", protected=True)
         start = Event()
@@ -1084,7 +1084,7 @@ class Kernel(HasTraits):
                     self._stop_on_error_time = math.inf
                     self.log.info("An error occurred in a non-silent execution request")
                     with anyio.CancelScope(shield=True):
-                        await async_checkpoint()
+                        await async_checkpoint(force=True)
                 finally:
                     self._stop_on_error_time = time.monotonic()
         return content

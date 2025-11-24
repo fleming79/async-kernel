@@ -104,6 +104,9 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
         finally:
             client.shutdown()
             client.stop_channels()
+    for _ in range(2):
+        if connection_file.exists():
+            await anyio.sleep(1)
     assert not connection_file.exists(), "cleanup_connection_file not called by atexit ..."
 
 
@@ -120,5 +123,5 @@ def job() -> Job[ExecuteContent]:
 
 @pytest.fixture
 async def caller(anyio_backend: Backend):
-    async with Caller("async-context") as caller:
+    async with Caller("manual") as caller:
         yield caller
