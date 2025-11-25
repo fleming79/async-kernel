@@ -357,10 +357,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             try:
                 yield self
             finally:
+                self.stop(force=True)
                 if socket:
                     self.iopub_sockets.pop(self.thread, None)
                     socket.close()
-                self.stop(force=True)
                 with anyio.CancelScope(shield=True):
                     while self._children:
                         await self._children.pop().stopped
