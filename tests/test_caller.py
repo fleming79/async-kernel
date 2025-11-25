@@ -183,6 +183,10 @@ class TestCaller:
         async def set_event():
             event.set()
 
+        def fail():
+            raise RuntimeError
+
+        caller.call_direct(fail)
         caller.call_direct(set_event)
         with anyio.fail_after(1):
             await event

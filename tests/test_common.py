@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import os
+import time
 from collections import deque as deque_ref
 from typing import TYPE_CHECKING, Any
 
+import anyio
+import anyio.to_thread
 import pytest
 
 from async_kernel.common import Fixed, import_item
 
 if TYPE_CHECKING:
-    from async_kernel.typing import FixedCreate, FixedCreated
+    from async_kernel.typing import Backend, FixedCreate, FixedCreated
 
 
 class TestImportItem:
@@ -73,6 +76,22 @@ class TestFixed:
         val2 = obj.fixed_val
         assert val1 == val2
         assert isinstance(val1, int)
+
+    async def test_double_access(self, anyio_backend: Backend):
+        def func(c):
+            c["owner"].i += 1
+            time.sleep(0.1)
+
+        class MyClass:
+            i = 0
+            slow = Fixed(func)
+
+        obj = MyClass()
+
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(anyio.to_thread.run_sync, lambda: obj.slow)
+            tg.start_soon(anyio.to_thread.run_sync, lambda: obj.slow)
+        assert obj.i == 1
 
     def test_with_str_import(self):
         class MyClass:
