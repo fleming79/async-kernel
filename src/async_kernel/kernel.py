@@ -491,15 +491,12 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """Start the kernel in an already running anyio event loop."""
-        if self._sockets:
-            msg = "Already started"
-            raise RuntimeError(msg)
         assert self.shell
         self.anyio_backend = Backend(current_async_library())
         # Callers
         caller = Caller("manual", name="Shell", protected=True, log=self.log, zmq_context=self._zmq_context)
         self.callers[SocketID.shell] = caller
-        self.callers[SocketID.control] = caller.get(name="Control", protected=True)
+        self.callers[SocketID.control] = caller.get(name="Control", log=self.log, protected=True)
         start = Event()
         try:
             async with caller:
