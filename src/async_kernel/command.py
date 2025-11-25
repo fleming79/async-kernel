@@ -10,13 +10,8 @@ import anyio
 
 import async_kernel
 from async_kernel.kernel import Kernel
-from async_kernel.kernelspec import (
-    KernelName,
-    get_kernel_dir,
-    import_kernel_factory,
-    remove_kernel_spec,
-    write_kernel_spec,
-)
+from async_kernel.kernelspec import get_kernel_dir, import_kernel_factory, remove_kernel_spec, write_kernel_spec
+from async_kernel.typing import KernelName
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable

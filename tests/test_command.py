@@ -12,7 +12,9 @@ import pytest
 import async_kernel
 from async_kernel import kernel as kernel_module
 from async_kernel.command import command_line
-from async_kernel.kernelspec import Backend, make_argv
+from async_kernel.kernel import Kernel
+from async_kernel.kernelspec import make_argv
+from async_kernel.typing import Backend
 from tests import utils
 
 if TYPE_CHECKING:
@@ -51,7 +53,9 @@ def test_prints_version_info(monkeypatch, capsys):
 
 def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
-        sys, "argv", ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=async_kernel.Kernel"]
+        sys,
+        "argv",
+        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=async_kernel.kernel.Kernel"],
     )
     command_line()
     out = capsys.readouterr().out
@@ -67,7 +71,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "async_kernel",
             "-f",
             "{connection_file}",
-            "--kernel_factory=async_kernel.Kernel",
+            "--kernel_factory=async_kernel.kernel.Kernel",
             "--kernel_name=async-trio",
         ],
         "env": {},
@@ -106,7 +110,7 @@ def test_start_kernel_success(monkeypatch):
         nonlocal started
         started = True
         with pytest.raises(RuntimeError):
-            async_kernel.Kernel().run()
+            Kernel().run()
 
     with pytest.raises(SystemExit) as e:
         command_line(wait_exit)

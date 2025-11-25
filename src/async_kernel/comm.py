@@ -11,7 +11,7 @@ from typing_extensions import override
 from async_kernel import utils
 
 if TYPE_CHECKING:
-    from async_kernel import Kernel
+    from async_kernel.kernel import Kernel
 
 __all__ = ["Comm"]
 
@@ -81,7 +81,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
     """
 
     _instance = None
-    kernel: Instance[Kernel | None] = Instance("async_kernel.Kernel", allow_none=True)
+    kernel: Instance[Kernel | None] = Instance("async_kernel.kernel.Kernel", allow_none=True)
     comms: Dict[str, BaseComm] = Dict()  # pyright: ignore[reportIncompatibleVariableOverride]
     targets: Dict[str, comm.base_comm.CommTargetCallback] = Dict()  # pyright: ignore[reportIncompatibleVariableOverride]
 

@@ -34,13 +34,13 @@ __all__ = ["AsyncDisplayHook", "AsyncDisplayPublisher", "AsyncInteractiveShell"]
 
 class AsyncDisplayHook(DisplayHook):
     """
-    A displayhook subclass that publishes data using [async_kernel.Kernel.iopub_send][].
+    A displayhook subclass that publishes data using [async_kernel.kernel.Kernel.iopub_send][].
 
     This is intended to work with an InteractiveShell instance. It sends a dict of different
     representations of the object.
     """
 
-    kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
+    kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
     content: Dict[str, Any] = Dict()
 
     @property
@@ -73,7 +73,7 @@ class AsyncDisplayHook(DisplayHook):
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
-    """A display publisher that publishes data using [async_kernel.Kernel.iopub_send][]."""
+    """A display publisher that publishes data using [async_kernel.kernel.Kernel.iopub_send][]."""
 
     topic: ClassVar = b"display_data"
 
@@ -142,10 +142,10 @@ class AsyncDisplayPublisher(DisplayPublisher):
 
 class AsyncInteractiveShell(InteractiveShell):
     """
-    An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.Kernel].
+    An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
-        - All [execute requests][async_kernel.Kernel.execute_request] are run asynchronously.
+        - All [execute requests][async_kernel.kernel.Kernel.execute_request] are run asynchronously.
         - Supports a soft timeout specified via metadata `{"timeout":<value in seconds>}`[^1].
         - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
@@ -163,7 +163,7 @@ class AsyncInteractiveShell(InteractiveShell):
     _main_mod_cache = Dict()
 
     execute_request_timeout = CFloat(default_value=None, allow_none=True)
-    "A timeout in seconds to complete [execute requests][async_kernel.Kernel.execute_request]."
+    "A timeout in seconds to complete [execute requests][async_kernel.kernel.Kernel.execute_request]."
 
     run_cell = None  # pyright: ignore[reportAssignmentType]
     "**Not supported** -  use [run_cell_async][async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async] instead."
@@ -257,7 +257,7 @@ class AsyncInteractiveShell(InteractiveShell):
         """
         Run a complete IPython cell asynchronously.
 
-        This function runs [execute requests][async_kernel.Kernel.execute_request] for the kernel
+        This function runs [execute requests][async_kernel.kernel.Kernel.execute_request] for the kernel
         wrapping [InteractiveShell][IPython.core.interactiveshell.InteractiveShell.run_cell_async].
         """
         with anyio.fail_after(delay=utils.get_execute_request_timeout()):

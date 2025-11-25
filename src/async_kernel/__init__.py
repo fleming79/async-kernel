@@ -3,7 +3,6 @@ from importlib.metadata import version
 
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.kernel import Kernel
 from async_kernel.pending import Pending
 
 __version__ = version(distribution_name="async-kernel")
@@ -22,7 +21,6 @@ kernel_protocol_version_info = {
 
 __all__ = [
     "Caller",
-    "Kernel",
     "Pending",
     "__version__",
     "kernel_protocol_version",

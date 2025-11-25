@@ -6,13 +6,14 @@ import shutil
 import pytest
 from jupyter_client.kernelspec import KernelSpec
 
-from async_kernel.kernelspec import KernelName, write_kernel_spec
+from async_kernel.kernelspec import write_kernel_spec
+from async_kernel.typing import KernelName
 
 
 @pytest.mark.parametrize(
     ("kernel_name", "kernel_factory"),
     [
-        (KernelName.trio, "async_kernel.Kernel"),
+        (KernelName.trio, "async_kernel.kernel.Kernel"),
         ("function_factory", "function"),
     ],
 )
@@ -20,7 +21,7 @@ def test_write_kernel_spec(kernel_name: KernelName, kernel_factory, tmp_path):
     if kernel_factory == "function":
 
         def my_kernel_factory(settings):
-            from async_kernel import Kernel  # noqa: PLC0415
+            from async_kernel.kernel import Kernel  # noqa: PLC0415
 
             class MyKernel(Kernel):
                 pass

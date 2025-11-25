@@ -5,9 +5,6 @@ import threading
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
-import traitlets
-
-import async_kernel
 from async_kernel.typing import Message, MetadataKeys
 
 if TYPE_CHECKING:
@@ -44,7 +41,9 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
 
 def get_kernel() -> Kernel:
     "Get the current kernel."
-    return async_kernel.Kernel()
+    from async_kernel.kernel import Kernel  # noqa: PLC0415
+
+    return Kernel()
 
 
 def get_job() -> Job[dict] | dict:
@@ -83,7 +82,7 @@ def get_execute_request_timeout(job: Job | None = None, /) -> float | None:
 def get_execution_count() -> int:
     "Gets the execution count for the current context, defaults to the current kernel count."
 
-    return _execution_count_var.get(None) or async_kernel.Kernel()._execution_count  # pyright: ignore[reportPrivateUsage]
+    return _execution_count_var.get(None) or get_kernel()._execution_count  # pyright: ignore[reportPrivateUsage]
 
 
 def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
@@ -106,6 +105,8 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
         An empty dict indicates the value was not set.
 
     """
+    import traitlets  # noqa: PLC0415
+
     if len(bits := name.split(".")) > 1:
         try:
             obj = getattr(obj, bits[0])

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import enum
 import inspect
 import json
 import re
@@ -20,21 +19,11 @@ RESOURCES = Path(__file__).parent.joinpath("resources")
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from async_kernel import Kernel
+    from async_kernel.kernel import Kernel
 
     KernelFactoryType = Callable[[dict[str, Any]], Kernel]
 
-__all__ = ["Backend", "KernelName", "get_kernel_dir", "make_argv", "write_kernel_spec"]
-
-
-class Backend(enum.StrEnum):
-    asyncio = "asyncio"
-    trio = "trio"
-
-
-class KernelName(enum.StrEnum):
-    asyncio = "async"
-    trio = "async-trio"
+__all__ = ["get_kernel_dir", "make_argv", "write_kernel_spec"]
 
 
 CUSTOM_KERNEL_MARKER = "↤"
@@ -43,8 +32,8 @@ CUSTOM_KERNEL_MARKER = "↤"
 def make_argv(
     *,
     connection_file: str = "{connection_file}",
-    kernel_name: KernelName | str = KernelName.asyncio,
-    kernel_factory: str | KernelFactoryType = "async_kernel.Kernel",
+    kernel_name: str = "async",
+    kernel_factory: str | KernelFactoryType = "async_kernel.kernel.Kernel",
     fullpath: bool = True,
     **kwargs: dict[str, Any],
 ) -> list[str]:
@@ -73,11 +62,11 @@ def make_argv(
 def write_kernel_spec(
     path: Path | str | None = None,
     *,
-    kernel_name: KernelName | str,
+    kernel_name: str = "asyncio",
     display_name: str = "",
     fullpath: bool = False,
     prefix: str = "",
-    kernel_factory: str | KernelFactoryType = "async_kernel.Kernel",
+    kernel_factory: str | KernelFactoryType = "async_kernel.kernel.Kernel",
     connection_file: str = "{connection_file}",
     **kwargs: dict[str, Any],
 ) -> Path:
@@ -136,7 +125,7 @@ def write_kernel_spec(
                 f.write(textwrap.dedent(inspect.getsource(kernel_factory)))
             kernel_factory = f"{path}{CUSTOM_KERNEL_MARKER}{kernel_factory.__name__}"
         # validate
-        if kernel_factory != "async_kernel.Kernel":
+        if kernel_factory != "async_kernel.kernel.Kernel":
             import_kernel_factory(kernel_factory)
         shutil.copytree(src=RESOURCES, dst=path, dirs_exist_ok=True)
         spec = KernelSpec()
@@ -204,4 +193,4 @@ def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
             sys.path.remove(path)
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    return import_item(kernel_factory or "async_kernel.Kernel")
+    return import_item(kernel_factory or "async_kernel.kernel.Kernel")

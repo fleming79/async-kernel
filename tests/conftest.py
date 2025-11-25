@@ -11,8 +11,8 @@ from jupyter_client.asynchronous.client import AsyncKernelClient
 import async_kernel.utils
 from async_kernel import Caller
 from async_kernel.kernel import Kernel
-from async_kernel.kernelspec import Backend, KernelName, make_argv
-from async_kernel.typing import ExecuteContent, Job, Message, MsgHeader, MsgType, SocketID
+from async_kernel.kernelspec import make_argv
+from async_kernel.typing import Backend, ExecuteContent, Job, KernelName, Message, MsgHeader, MsgType, SocketID
 from tests import utils
 
 if TYPE_CHECKING:

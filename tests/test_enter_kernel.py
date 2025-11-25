@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from async_kernel import Kernel
-from async_kernel.kernelspec import Backend, KernelName
-from async_kernel.typing import SocketID
+from async_kernel.kernel import Kernel
+from async_kernel.typing import Backend, KernelName, SocketID
 
 
 @pytest.fixture(scope="module", params=list(KernelName))

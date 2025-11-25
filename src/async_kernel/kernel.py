@@ -48,12 +48,13 @@ from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
 from async_kernel.iostream import OutStream
-from async_kernel.kernelspec import Backend, KernelName
 from async_kernel.typing import (
+    Backend,
     Content,
     ExecuteContent,
     HandlerType,
     Job,
+    KernelName,
     Message,
     MsgType,
     NoValue,
@@ -173,7 +174,7 @@ class KernelInterruptError(InterruptedError):
 
 class Kernel(HasTraits):
     """
-    A Jupyter kernel that supports [concurrent execution][async_kernel.Kernel.get_run_mode] providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
+    A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
     Info:
         Only one instance of a kernel is created at a time per subprocess. The instance can be obtained

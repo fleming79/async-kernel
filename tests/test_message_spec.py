@@ -11,7 +11,7 @@ from tests import utils
 if TYPE_CHECKING:
     from jupyter_client.asynchronous.client import AsyncKernelClient
 
-    from async_kernel import Kernel
+    from async_kernel.kernel import Kernel
 
 
 async def test_execute(client: AsyncKernelClient, kernel: Kernel):

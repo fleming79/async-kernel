@@ -8,8 +8,8 @@ import pytest
 from aiologic import Event
 
 from async_kernel.caller import Caller
-from async_kernel.kernelspec import Backend
 from async_kernel.pending import InvalidStateError, Pending, PendingCancelled
+from async_kernel.typing import Backend
 
 
 @pytest.fixture(params=Backend, scope="module")
