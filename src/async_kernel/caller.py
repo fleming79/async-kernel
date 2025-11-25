@@ -273,14 +273,14 @@ class Caller(anyio.AsyncContextManagerMixin):
     def start_sync(self):
         "Start synchronously."
 
-        async def run_caller_in_context() -> None:
-            if self._state is CallerState.start_sync:
-                self._state = CallerState.initial
-                async with self:
-                    await anyio.sleep_forever()
-
         if self._state is CallerState.initial:
             self._state = CallerState.start_sync
+
+            async def run_caller_in_context() -> None:
+                if self._state is CallerState.start_sync:
+                    self._state = CallerState.initial
+                    async with self:
+                        await anyio.sleep_forever()
 
             if thread := getattr(self, "thread", None):
                 # An event loop for the current thread.
