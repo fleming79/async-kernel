@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-11-25
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Maintenance [#227](https://github.com/fleming79/async-kernel/pull/227)
+
+- Compat layer isn't required. [#226](https://github.com/fleming79/async-kernel/pull/226)
+
 ## [0.9.0-rc.4] - 2025-11-25
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -24,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Caller.as_completed and Caller.wait can now wait for any awaitables. [#218](https://github.com/fleming79/async-kernel/pull/218)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.9.0-rc.4 [#225](https://github.com/fleming79/async-kernel/pull/225)
 
 - Remove rudundant code in Caller.__new__. [#224](https://github.com/fleming79/async-kernel/pull/224)
 
@@ -587,6 +597,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.9.0]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.4..v0.9.0
 [0.9.0-rc.4]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.3..v0.9.0-rc.4
 [0.9.0-rc.3]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.2..v0.9.0-rc.3
 [0.9.0-rc.2]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.1..v0.9.0-rc.2
