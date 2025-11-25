@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.0-rc.4] - 2025-11-23
+## [0.9.0-rc.4] - 2025-11-25
 
 ### <!-- 0 --> 🏗️ Breaking changes
+
+- Caller refactoring and breaking changes; renamed 'async-context' to 'manual' and removed Caller.to_thread_advanced. [#222](https://github.com/fleming79/async-kernel/pull/222)
 
 - Make Caller() the preferred way to obtain a running caller. [#217](https://github.com/fleming79/async-kernel/pull/217)
 
@@ -15,11 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### <!-- 1 --> 🚀 Features
 
+- Towards making async_kernel.Callable usable on pyodide. [#223](https://github.com/fleming79/async-kernel/pull/223)
+
 - Added time based idle worker cleanup. [#219](https://github.com/fleming79/async-kernel/pull/219)
 
 - Caller.as_completed and Caller.wait can now wait for any awaitables. [#218](https://github.com/fleming79/async-kernel/pull/218)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Remove rudundant code in Caller.__new__. [#224](https://github.com/fleming79/async-kernel/pull/224)
+
+- Bump actions/checkout from 5 to 6 in the actions group [#221](https://github.com/fleming79/async-kernel/pull/221)
+
+- Prepare for release v0.9.0-rc.4 [#220](https://github.com/fleming79/async-kernel/pull/220)
 
 - Test with free threading python [#216](https://github.com/fleming79/async-kernel/pull/216)
 
