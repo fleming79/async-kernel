@@ -21,7 +21,7 @@ async def test_start_kernel_in_context(anyio_backend: Backend, kernel_name: Kern
         assert kernel.kernel_name == kernel_name
         connection_file = kernel.connection_file
         # Test prohibit nested async context.
-        with pytest.raises(RuntimeError, match="Already started"):
+        with pytest.raises(RuntimeError, match="this Kernel has already been entered"):
             async with kernel:
                 pass
         with pytest.raises(RuntimeError):
