@@ -469,17 +469,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
         async def _run() -> None:
             async with self:
-                with contextlib.suppress(anyio.get_cancelled_exc_class()):
-                    await wait_exit()
+                await wait_exit()
 
-        try:
-            if not self.trait_has_value("anyio_backend") and "trio" in self.kernel_name.lower():
-                self.anyio_backend = Backend.trio
-            backend = self.anyio_backend
-            backend_options = self.anyio_backend_options.get(backend)
-            anyio.run(_run, backend=backend, backend_options=backend_options)
-        finally:
-            self.stop()
+        if not self.trait_has_value("anyio_backend") and "trio" in self.kernel_name.lower():
+            self.anyio_backend = Backend.trio
+        backend = self.anyio_backend
+        backend_options = self.anyio_backend_options.get(backend)
+        anyio.run(_run, backend=backend, backend_options=backend_options)
 
     @staticmethod
     def stop() -> None:
