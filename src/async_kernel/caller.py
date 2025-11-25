@@ -52,7 +52,7 @@ truncated_rep.maxother = 100
 truncated_rep.fillvalue = "…"
 
 
-def noop():
+def noop() -> None:
     pass
 
 
@@ -218,6 +218,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             ValueError: If the thread and caller's name do not match.
         """
         with cls._lock:
+            name, backend = kwargs.get("name", ""), kwargs.get("backend")
             match modifier:
                 case "CurrentThread" | "manual":
                     thread = threading.current_thread()
@@ -226,7 +227,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 case "NewThread":
                     thread = None
 
-            name, backend = kwargs.get("name", ""), kwargs.get("backend")
             # Locate existing
             if thread and (caller := cls._instances.get(thread)):
                 if modifier == "manual":
@@ -240,18 +240,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                     raise ValueError(msg)
                 return caller
 
-            # Determine the backend
-            backend = Backend(backend or current_async_library(failsafe=True) or Backend.asyncio)
-            if modifier == "manual":
-                thread = thread or threading.current_thread()
-                assert thread is threading.current_thread(), "Manual"
-                assert kwargs.get("backend", backend) == backend
-
             # create a new instance
             inst = super().__new__(cls)
             inst._resume = noop
             inst._name = name
-            inst._backend = backend
+            inst._backend = Backend(backend or current_async_library(failsafe=True) or Backend.asyncio)
             inst._backend_options = kwargs.get("backend_options")
             inst._protected = kwargs.get("protected", False)
             inst._zmq_context = kwargs.get("zmq_context")
@@ -266,7 +259,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             cls._instances[inst._thread] = inst
         return inst
 
-    def start_sync(self):
+    def start_sync(self) -> None:
         "Start synchronously."
 
         if self._state is CallerState.initial:
@@ -294,7 +287,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 threading.Thread(target=to_thread, daemon=False).start()
             else:
                 # An event loop in a new thread.
-                def run_event_loop():
+                def run_event_loop() -> None:
                     anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
 
                 name = self.name or "async_kernel_caller"
