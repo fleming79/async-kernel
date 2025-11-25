@@ -8,15 +8,14 @@
     "version": "v0.9",
     "title": "v0.9",
     "aliases": [
-      "pre-release"
+      "pre-release",
+      "latest"
     ]
   },
   {
     "version": "v0.8",
     "title": "v0.8",
-    "aliases": [
-      "latest"
-    ]
+    "aliases": []
   },
   {
     "version": "v0.7",
