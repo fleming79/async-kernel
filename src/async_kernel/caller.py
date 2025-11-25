@@ -26,7 +26,6 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.compat import zmq
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, T
 
@@ -40,6 +39,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import CoroutineType
 
+    import zmq
     from anyio.abc import TaskGroup, TaskStatus
 
     from async_kernel.typing import P
@@ -338,7 +338,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async with anyio.create_task_group() as tg:
             await tg.start(self._scheduler, tg)
             if self._zmq_context:
-                socket = self._zmq_context.socket(zmq.SocketType.PUB)
+                socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 500
                 socket.connect(self.iopub_url)
                 self.iopub_sockets[self.thread] = socket
