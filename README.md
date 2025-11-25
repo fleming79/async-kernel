@@ -40,7 +40,7 @@ with [concurrent message handling](#run-mode).
 ## Installation
 
 ```bash
-pip install async-kernel
+pip install async-kernel[kernel]
 ```
 
 ### Trio backend

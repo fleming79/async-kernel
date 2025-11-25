@@ -12,9 +12,9 @@ if TYPE_CHECKING:
 
     import zmq
 
-    from async_kernel.kernelspec import Backend
 
 __all__ = [
+    "Backend",
     "CallerCreateOptions",
     "CallerState",
     "Content",
@@ -24,6 +24,7 @@ __all__ = [
     "FixedCreated",
     "HandlerType",
     "Job",
+    "KernelName",
     "Message",
     "MetadataKeys",
     "MsgHeader",
@@ -42,6 +43,16 @@ S = TypeVar("S")
 T = TypeVar("T")
 D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
+
+
+class Backend(enum.StrEnum):
+    asyncio = "asyncio"
+    trio = "trio"
+
+
+class KernelName(enum.StrEnum):
+    asyncio = "async"
+    trio = "async-trio"
 
 
 class SocketID(enum.StrEnum):
@@ -63,7 +74,7 @@ class RunMode(enum.StrEnum):
     """
     An Enum of the run modes available for handling [Messages][async_kernel.typing.Message].
 
-    [receive_msg_loop][async_kernel.Kernel.receive_msg_loop] uses [get_run_mode][async_kernel.Kernel.get_run_mode]
+    [receive_msg_loop][async_kernel.kernel.Kernel.receive_msg_loop] uses [get_run_mode][async_kernel.kernel.Kernel.get_run_mode]
     to map the message type and channel (`shell` or `control`) to the `RunMode`.
 
     Cell overrides:
@@ -127,44 +138,44 @@ class MsgType(enum.StrEnum):
     """
 
     kernel_info_request = "kernel_info_request"
-    "[async_kernel.Kernel.kernel_info_request][]"
+    "[async_kernel.kernel.Kernel.kernel_info_request][]"
 
     comm_info_request = "comm_info_request"
-    "[async_kernel.Kernel.comm_info_request][]"
+    "[async_kernel.kernel.Kernel.comm_info_request][]"
 
     execute_request = "execute_request"
-    "[async_kernel.Kernel.execute_request][]"
+    "[async_kernel.kernel.Kernel.execute_request][]"
 
     complete_request = "complete_request"
-    "[async_kernel.Kernel.complete_request][]"
+    "[async_kernel.kernel.Kernel.complete_request][]"
 
     is_complete_request = "is_complete_request"
-    "[async_kernel.Kernel.is_complete_request][]"
+    "[async_kernel.kernel.Kernel.is_complete_request][]"
 
     inspect_request = "inspect_request"
-    "[async_kernel.Kernel.inspect_request][]"
+    "[async_kernel.kernel.Kernel.inspect_request][]"
 
     history_request = "history_request"
-    "[async_kernel.Kernel.history_request][]"
+    "[async_kernel.kernel.Kernel.history_request][]"
 
     comm_open = "comm_open"
-    "[async_kernel.Kernel.comm_open][]"
+    "[async_kernel.kernel.Kernel.comm_open][]"
 
     comm_msg = "comm_msg"
-    "[async_kernel.Kernel.comm_msg][]"
+    "[async_kernel.kernel.Kernel.comm_msg][]"
 
     comm_close = "comm_close"
-    "[async_kernel.Kernel.comm_close][]"
+    "[async_kernel.kernel.Kernel.comm_close][]"
 
     # Control
     interrupt_request = "interrupt_request"
-    "[async_kernel.Kernel.interrupt_request][] (control channel only)"
+    "[async_kernel.kernel.Kernel.interrupt_request][] (control channel only)"
 
     shutdown_request = "shutdown_request"
-    "[async_kernel.Kernel.shutdown_request][] (control channel only)"
+    "[async_kernel.kernel.Kernel.shutdown_request][] (control channel only)"
 
     debug_request = "debug_request"
-    "[async_kernel.Kernel.debug_request][] (control channel only)"
+    "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
 
 
 class MetadataKeys(enum.StrEnum):

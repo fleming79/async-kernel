@@ -20,7 +20,7 @@ from async_kernel.pending import Pending
 if TYPE_CHECKING:
     from anyio.abc import TaskGroup
 
-    from async_kernel import Kernel
+    from async_kernel.kernel import Kernel
     from async_kernel.typing import DebugMessage
 
 if "PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING" not in os.environ:
@@ -66,7 +66,7 @@ class VariableExplorer(HasTraits):
     Origin: [IPyKernel][ipykernel.debugger.VariableExplorer]
     """
 
-    kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
+    kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
 
     def __init__(self):
         """Initialize the explorer."""
@@ -114,7 +114,7 @@ class DebugpyClient(HasTraits):
     tcp_buffer = b""
     _result_responses: Dict[int, Pending] = Dict()
     capabilities = Dict()
-    kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
+    kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
     _socketstream: anyio.abc.SocketStream | None = None
     _send_lock = Instance(Lock, ())
 
@@ -195,7 +195,7 @@ class Debugger(HasTraits):
     variable_explorer = Instance(VariableExplorer, ())
     debugpy_client = Instance(DebugpyClient)
     log = Instance(logging.LoggerAdapter)
-    kernel: Instance[Kernel] = Instance("async_kernel.Kernel", ())
+    kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
     taskgroup: TaskGroup | None = None
     init_event = Instance(Event, ())
 
@@ -441,7 +441,7 @@ class Debugger(HasTraits):
                 "command": "evaluate",
                 "seq": self.next_seq(),
                 "arguments": {
-                    "expression": f"import async_kernel;async_kernel.Kernel().shell.user_ns['{dst_var_name}'] = {src_var_name}",
+                    "expression": f"import async_kernel;async_kernel.kernel.Kernel().shell.user_ns['{dst_var_name}'] = {src_var_name}",
                     "frameId": src_frame_id,
                     "context": "repl",
                 },

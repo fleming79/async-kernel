@@ -13,8 +13,8 @@ from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller
-from async_kernel.kernelspec import Backend
 from async_kernel.pending import Pending, PendingCancelled
+from async_kernel.typing import Backend
 
 
 @pytest.fixture(params=Backend, scope="module")

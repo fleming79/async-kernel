@@ -18,19 +18,17 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, c
 
 import anyio
 import anyio.from_thread
-import zmq
 from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
 
-import async_kernel
+from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.kernelspec import Backend
+from async_kernel.compat import zmq
 from async_kernel.pending import Pending, PendingCancelled
-from async_kernel.typing import CallerCreateOptions, CallerState, NoValue, T
-from async_kernel.utils import mark_thread_pydev_do_not_trace
+from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, T
 
 with contextlib.suppress(ImportError):
     # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
@@ -243,9 +241,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 return caller
 
             # Determine the backend
-            kernel = async_kernel.Kernel()
-            backend = Backend(backend or current_async_library(failsafe=True) or kernel.anyio_backend)
-            backend_options = kwargs.get("backend_options", kernel.anyio_backend_options.get(backend))
+            backend = Backend(backend or current_async_library(failsafe=True) or Backend.asyncio)
             if modifier == "manual":
                 thread = thread or threading.current_thread()
                 assert thread is threading.current_thread(), "Manual"
@@ -256,7 +252,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._resume = noop
             inst._name = name
             inst._backend = backend
-            inst._backend_options = backend_options
+            inst._backend_options = kwargs.get("backend_options")
             inst._protected = kwargs.get("protected", False)
             inst._zmq_context = kwargs.get("zmq_context")
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
@@ -288,7 +284,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 token = current_token()
 
                 def to_thread():
-                    mark_thread_pydev_do_not_trace()
+                    utils.mark_thread_pydev_do_not_trace()
                     try:
                         anyio.from_thread.run(run_caller_in_context, token=token)
                     except (BaseExceptionGroup, BaseException) as e:
@@ -301,7 +297,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 def run_event_loop():
                     anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
 
-                self._thread = t = threading.Thread(target=run_event_loop, name=self.name or "async_kernel_caller")
+                name = self.name or "async_kernel_caller"
+                self._thread = t = threading.Thread(target=run_event_loop, name=name, daemon=True)
                 t.start()
 
     def stop(self, *, force=False) -> CallerState:
@@ -464,7 +461,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if cls.IDLE_WORKER_SHUTDOWN_DURATION > 0 and not hasattr(cls, "_thread_cleanup_idle_workers"):
 
             def _cleanup_workers():
-                mark_thread_pydev_do_not_trace()
+                utils.mark_thread_pydev_do_not_trace()
                 n = 0
                 cutoff = time.monotonic()
                 time.sleep(cls.IDLE_WORKER_SHUTDOWN_DURATION)

@@ -1,4 +1,4 @@
-from async_kernel import Kernel
+from async_kernel.kernel import Kernel
 from async_kernel.typing import MetadataKeys, MsgType, RunMode, Tags
 
 

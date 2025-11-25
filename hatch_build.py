@@ -14,10 +14,10 @@ class CustomHook(BuildHookInterface):
 
         sys.path.insert(0, str(here.joinpath("src", "async_kernel")))
 
-        from kernelspec import KernelName, write_kernel_spec  # noqa: PLC0415
+        from kernelspec import write_kernel_spec  # noqa: PLC0415
 
         if TYPE_CHECKING:
-            from async_kernel.kernelspec import KernelName, write_kernel_spec  # noqa: PLC0415, TC004
+            from async_kernel.kernelspec import write_kernel_spec  # noqa: PLC0415, TC004
 
         spec_folder = here.joinpath("data_kernelspec", "async")
-        write_kernel_spec(spec_folder, kernel_name=KernelName.asyncio)
+        write_kernel_spec(spec_folder)

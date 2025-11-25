@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from async_kernel.comm import Comm, CommManager
 
 if TYPE_CHECKING:
-    from async_kernel import Kernel
+    from async_kernel.kernel import Kernel
 
 
 async def test_comm(kernel: Kernel) -> None:
