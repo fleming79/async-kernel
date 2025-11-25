@@ -1308,10 +1308,43 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#caller_1" class="md-nav__link">
+  <a href="#get-a-caller" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Caller()
+        Get a Caller
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modifier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#callerget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caller.get
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#callerto_thread" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caller.to_thread
       
     </span>
   </a>
@@ -1402,7 +1435,7 @@ viewing the latest version.
 Awaiting in cells is fully supported and will not block shell messaging.</p>
 <p>Please refer to the notebooks which demonstrate some usage examples.</p>
 <h2 id="blocking-code">Blocking code<a class="headerlink" href="#blocking-code" title="Permanent link">&para;</a></h2>
-<p>Blocking code should be run in outside the shell thread using one of the following:</p>
+<p>Blocking code should be run in a separate thread using one of the following:</p>
 <ol>
 <li><a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync">anyio</a></li>
 <li><a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a></li>
@@ -1413,69 +1446,58 @@ Awaiting in cells is fully supported and will not block shell messaging.</p>
 </li>
 </ol>
 <h2 id="caller">Caller<a class="headerlink" href="#caller" title="Permanent link">&para;</a></h2>
-<p>Caller was originally developed to simplify message handling the the <a class="autorefs autorefs-internal" title=" Kernel" href="../reference/kernel/#async_kernel.kernel.Kernel">Kernel</a>.
-It is now a capable tool with a convenient interface for executing synchronous and asynchronous code
-in a given thread's event loop.</p>
-<p>It has a few unique features worth mentioning:</p>
-<ul>
-<li><a class="autorefs autorefs-internal" title=" get" href="../reference/caller/#async_kernel.caller.Caller.get">async_kernel.Caller.get</a><ul>
-<li>Retrieves existing or creates a caller instance according the 'thread' or 'name'.</li>
-</ul>
-</li>
-<li><a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a><ul>
-<li>runs an event loop matching the backend of the originator.</li>
-<li>maintains a pool of worker threads per caller, which in turn can have its own pool of workers.</li>
-</ul>
-</li>
-<li><a class="autorefs autorefs-internal" title=" queue_call" href="../reference/caller/#async_kernel.caller.Caller.queue_call">async_kernel.Caller.queue_call</a><ul>
-<li>A dedicated queue is created specific to the <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#hash">hash</a> of the function.</li>
-<li>Only one call will run at a time.</li>
-<li>The context of the original call is retained until the queue is stopped with <a class="autorefs autorefs-internal" title=" queue_close" href="../reference/caller/#async_kernel.caller.Caller.queue_close">async_kernel.caller.Caller.queue_close</a>.</li>
-</ul>
-</li>
-<li>The result of <a class="autorefs autorefs-internal" title=" call_soon" href="../reference/caller/#async_kernel.caller.Caller.call_soon">async_kernel.Caller.call_soon</a>, <a class="autorefs autorefs-internal" title=" call_later" href="../reference/caller/#async_kernel.caller.Caller.call_later">async_kernel.Caller.call_later</a> and <a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a>
-  return a <a class="autorefs autorefs-internal" title=" Pending" href="../reference/pending/#async_kernel.pending.Pending">async_kernel.Pending</a> which can be used to wait/await for the result of execution.</li>
-</ul>
-<p>There is only ever one caller instance per thread (assuming there is only one event-loop-per-thread).</p>
-<h3 id="caller_1"><code>Caller()</code><a class="headerlink" href="#caller_1" title="Permanent link">&para;</a></h3>
-<p><a class="autorefs autorefs-internal" title=" __new__" href="../reference/caller/#async_kernel.caller.Caller.__new__">Caller()</a> is means to obtain a specific kernel.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="sync" name="__tabbed_1" type="radio" /><input id="async-context" name="__tabbed_1" type="radio" /><input id="sync-thread-specify-backend" name="__tabbed_1" type="radio" /><input id="child-threads" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="sync">Sync</label><label for="async-context">Async context</label><label for="sync-thread-specify-backend">Sync thread specify backend</label><label for="child-threads">Child threads</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
+<p><a class="autorefs autorefs-internal" title=" Caller" href="../reference/caller/#async_kernel.caller.Caller">Caller</a> was originally developed to simplify message handling in the
+<a class="autorefs autorefs-internal" title=" Kernel" href="../reference/kernel/#async_kernel.kernel.Kernel">Kernel</a>. It is now a capable tool in its own right with a convenient
+interface for executing synchronous and asynchronous code in a given thread's event loop.</p>
+<p>Job scheduling is synchronous, and for methods that return a <a class="autorefs autorefs-internal" title=" Pending" href="../reference/pending/#async_kernel.pending.Pending">Pending</a>,
+the execution result can be cancelled, awaited from any thread or waited synchronously blocking the
+thread until the Pending is done.</p>
+<h3 id="get-a-caller">Get a Caller<a class="headerlink" href="#get-a-caller" title="Permanent link">&para;</a></h3>
+<p>If there is an event loop in the current thread, it is recommended to use:</p>
 <div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
 </code></pre></div>
+<h3 id="modifier">Modifier<a class="headerlink" href="#modifier" title="Permanent link">&para;</a></h3>
+<p>A modifier can be passed as the first arg to modify which caller instance is returned:</p>
+<div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;MainThread&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The options are:</p>
 <ul>
-<li>Useful where the caller should stay open for the life of the thread.</li>
+<li>"CurrentThread": A caller for the current thread. An event loop must be running in the current thread for this to work.</li>
+<li>"MainThread": A caller for the main thread. An event loop must be running in the main thread and if called from inside
+  a different thread, the caller must have already been created in the main thread.</li>
+<li>"NewThread": A new thread is always created.</li>
+<li>"manual": A new thread is created. The scheduler must be started manually by either entering the async context
+  or calling <a class="autorefs autorefs-internal" title=" start_sync" href="../reference/caller/#async_kernel.caller.Caller.start_sync">Caller.start_sync</a>.</li>
 </ul>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;async-context&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">caller</span><span class="p">:</span>
-    <span class="n">caller</span><span class="o">.</span><span class="n">thread</span>
-</code></pre></div>
+<h3 id="callerget"><code>Caller.get</code><a class="headerlink" href="#callerget" title="Permanent link">&para;</a></h3>
+<p>Caller.get <a class="autorefs autorefs-internal" title=" get" href="../reference/caller/#async_kernel.caller.Caller.get">caller.get</a> can be used to create child callers that belong to the parent.
+When the parent is stopped the children are stopped.</p>
+<p>The following options are copied from the parent or can be specified.</p>
 <ul>
-<li>When the context is exited, the caller and its children are stopped immediately.</li>
-<li>A new caller context can be started after exiting.</li>
-<li>This is recommended in testing where you have control of the thread and context.</li>
+<li>'zmq_context'</li>
+<li>'backend'</li>
+<li>'backend_options' (only if the backend matches)</li>
 </ul>
-</div>
-<div class="tabbed-block">
-<p><div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
-<span class="o">...</span>
-<span class="n">caller</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<h3 id="callerto_thread"><code>Caller.to_thread</code><a class="headerlink" href="#callerto_thread" title="Permanent link">&para;</a></h3>
+<p><a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">Caller.to_thread</a> performs execute requests in a dedicated caller
+using the same backend and zmq context as the parent. A pool of workers is retained to handle to thread
+calls, but are shutdown when no longer required.</p>
+<h4 id="worker-lifespan">worker lifespan<a class="headerlink" href="#worker-lifespan" title="Permanent link">&para;</a></h4>
+<p>The <code>to_thread</code> call is synchronous and returns a Pending for the result of execution. When the
+Pending is done the worker becomes 'idle'. The following settings affect what happens to the idle worker:</p>
+<ul>
+<li><a class="autorefs autorefs-internal" title=" MAX_IDLE_POOL_INSTANCES" href="../reference/caller/#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES">Caller.MAX_IDLE_POOL_INSTANCES</a>:
+  When a worker becomes idle it will stop immediately if the number of idle workers equals this value.</li>
+<li><a class="autorefs autorefs-internal" title=" IDLE_WORKER_SHUTDOWN_DURATION" href="../reference/caller/#async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION">Caller.IDLE_WORKER_SHUTDOWN_DURATION</a>:
+  If this value is greater than zero a thread is started that periodically checks and stops workers
+  that have been idle for a duration exceeding this value.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">my_worker</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;my own worker&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
 </code></pre></div>
--  The caller is not stopped automatically.</p>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;async-context&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">caller</span><span class="p">:</span>
-    <span class="n">child_1</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-    <span class="n">child_2</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;asyncio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;asyncio&quot;</span><span class="p">)</span>
-    <span class="n">child_3</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;trio backend&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">caller</span><span class="o">.</span><span class="n">children</span> <span class="o">==</span> <span class="p">{</span><span class="n">child_1</span><span class="p">,</span> <span class="n">child_2</span><span class="p">,</span> <span class="n">child_3</span><span class="p">}</span>
-<span class="k">assert</span> <span class="ow">not</span> <span class="n">caller</span><span class="o">.</span><span class="n">children</span>
+<p>When called inside a thread without a running event loop, a new thread can be started with
+an event loop.</p>
+<div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my event loop&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;asyncio&quot;</span><span class="p">)</span>
 </code></pre></div>
-</div>
-</div>
-</div>
 
 
 
@@ -1498,7 +1520,7 @@ in a given thread's event loop.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 23, 2025 08:45:57 UTC"><span class="timeago" datetime="2025-11-23T08:45:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 23, 2025 08:45:57 UTC">2025-11-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 24, 2025 23:55:53 UTC"><span class="timeago" datetime="2025-11-24T23:55:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 24, 2025 23:55:53 UTC">2025-11-24</span>
   </span>
 
     

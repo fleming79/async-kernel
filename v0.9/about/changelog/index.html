@@ -1262,15 +1262,15 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#090-rc4-2025-11-23" class="md-nav__link">
+  <a href="#090-rc4-2025-11-25" class="md-nav__link">
     <span class="md-ellipsis">
       
-        0.9.0-rc.4 - 2025-11-23
+        0.9.0-rc.4 - 2025-11-25
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.9.0-rc.4 - 2025-11-23">
+    <nav class="md-nav" aria-label="0.9.0-rc.4 - 2025-11-25">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2706,15 +2706,15 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#090-rc4-2025-11-23" class="md-nav__link">
+  <a href="#090-rc4-2025-11-25" class="md-nav__link">
     <span class="md-ellipsis">
       
-        0.9.0-rc.4 - 2025-11-23
+        0.9.0-rc.4 - 2025-11-25
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.9.0-rc.4 - 2025-11-23">
+    <nav class="md-nav" aria-label="0.9.0-rc.4 - 2025-11-25">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -4151,9 +4151,12 @@ viewing the latest version.
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
-<h2 id="090-rc4-2025-11-23"><a href="https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.3..v0.9.0-rc.4">0.9.0-rc.4</a> - 2025-11-23<a class="headerlink" href="#090-rc4-2025-11-23" title="Permanent link">&para;</a></h2>
+<h2 id="090-rc4-2025-11-25"><a href="https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.3..v0.9.0-rc.4">0.9.0-rc.4</a> - 2025-11-25<a class="headerlink" href="#090-rc4-2025-11-25" title="Permanent link">&para;</a></h2>
 <h3 id="breaking-changes"><!-- 0 --> 🏗️ Breaking changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
+<li>
+<p>Caller refactoring and breaking changes; renamed 'async-context' to 'manual' and removed Caller.to_thread_advanced. <a href="https://github.com/fleming79/async-kernel/pull/222">#222</a></p>
+</li>
 <li>
 <p>Make Caller() the preferred way to obtain a running caller. <a href="https://github.com/fleming79/async-kernel/pull/217">#217</a></p>
 </li>
@@ -4164,6 +4167,9 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <h3 id="features"><!-- 1 --> 🚀 Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
+<p>Towards making async_kernel.Callable usable on pyodide. <a href="https://github.com/fleming79/async-kernel/pull/223">#223</a></p>
+</li>
+<li>
 <p>Added time based idle worker cleanup. <a href="https://github.com/fleming79/async-kernel/pull/219">#219</a></p>
 </li>
 <li>
@@ -4172,7 +4178,18 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 </ul>
 <h3 id="miscellaneous"><!-- 6 --> 🌀 Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Test with free threading python <a href="https://github.com/fleming79/async-kernel/pull/216">#216</a></li>
+<li>
+<p>Remove rudundant code in Caller.<strong>new</strong>. <a href="https://github.com/fleming79/async-kernel/pull/224">#224</a></p>
+</li>
+<li>
+<p>Bump actions/checkout from 5 to 6 in the actions group <a href="https://github.com/fleming79/async-kernel/pull/221">#221</a></p>
+</li>
+<li>
+<p>Prepare for release v0.9.0-rc.4 <a href="https://github.com/fleming79/async-kernel/pull/220">#220</a></p>
+</li>
+<li>
+<p>Test with free threading python <a href="https://github.com/fleming79/async-kernel/pull/216">#216</a></p>
+</li>
 </ul>
 <h2 id="090-rc3-2025-11-19"><a href="https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.2..v0.9.0-rc.3">0.9.0-rc.3</a> - 2025-11-19<a class="headerlink" href="#090-rc3-2025-11-19" title="Permanent link">&para;</a></h2>
 <h3 id="breaking-changes_1"><!-- 0 --> 🏗️ Breaking changes<a class="headerlink" href="#breaking-changes_1" title="Permanent link">&para;</a></h3>
