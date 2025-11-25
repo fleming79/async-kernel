@@ -1899,8 +1899,8 @@ viewing the latest version.
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">make_argv</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" connection_file (async_kernel.kernelspec.make_argv(connection_file))" href="#async_kernel.kernelspec.make_argv(connection_file)">connection_file</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_name (async_kernel.kernelspec.make_argv(kernel_name))" href="#async_kernel.kernelspec.make_argv(kernel_name)">kernel_name</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.kernelspec.KernelName">KernelName</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="n"><span title="async_kernel.kernelspec.KernelName.asyncio">asyncio</span></span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_factory (async_kernel.kernelspec.make_argv(kernel_factory))" href="#async_kernel.kernelspec.make_argv(kernel_factory)">kernel_factory</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.KernelFactoryType">KernelFactoryType</span></span> <span class="o">=</span> <span class="s2">&quot;async_kernel.Kernel&quot;</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_name (async_kernel.kernelspec.make_argv(kernel_name))" href="#async_kernel.kernelspec.make_argv(kernel_name)">kernel_name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_factory (async_kernel.kernelspec.make_argv(kernel_factory))" href="#async_kernel.kernelspec.make_argv(kernel_factory)">kernel_factory</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.KernelFactoryType">KernelFactoryType</span></span> <span class="o">=</span> <span class="s2">&quot;async_kernel.kernel.Kernel&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" fullpath (async_kernel.kernelspec.make_argv(fullpath))" href="#async_kernel.kernelspec.make_argv(fullpath)">fullpath</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title=" **kwargs (async_kernel.kernelspec.make_argv(**kwargs))" href="#async_kernel.kernelspec.make_argv(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span>
@@ -1928,7 +1928,7 @@ It will always call <a class="autorefs autorefs-internal" title=" command_line"
         <li class="doc-section-item field-body">
 <h3 id="async_kernel.kernelspec.make_argv(kernel_factory)" class="doc doc-heading doc-heading-parameter">              <b><code>kernel_factory</code></b>
 <a href="#async_kernel.kernelspec.make_argv(kernel_factory)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <span title="async_kernel.kernelspec.KernelFactoryType">KernelFactoryType</span></code>, default:
-                  <code>&#39;async_kernel.Kernel&#39;</code>
+                  <code>&#39;async_kernel.kernel.Kernel&#39;</code>
 )
           –
           <div class="doc-md-description">
@@ -1938,8 +1938,8 @@ callable that returns a non-started kernel.</p>
         </li>
         <li class="doc-section-item field-body">
 <h3 id="async_kernel.kernelspec.make_argv(kernel_name)" class="doc doc-heading doc-heading-parameter">              <b><code>kernel_name</code></b>
-<a href="#async_kernel.kernelspec.make_argv(kernel_name)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><span title="async_kernel.kernelspec.KernelName">KernelName</span> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
-                  <code><span title="async_kernel.kernelspec.KernelName.asyncio">asyncio</span></code>
+<a href="#async_kernel.kernelspec.make_argv(kernel_name)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;async&#39;</code>
 )
           –
           <div class="doc-md-description">
@@ -1984,7 +1984,18 @@ callable that returns a non-started kernel.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
 <span class="normal">46</span>
@@ -2000,22 +2011,11 @@ callable that returns a non-started kernel.</p>
 <span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_argv</span><span class="p">(</span>
+<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_argv</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">connection_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="n">kernel_name</span><span class="p">:</span> <span class="n">KernelName</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">KernelName</span><span class="o">.</span><span class="n">asyncio</span><span class="p">,</span>
-    <span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">KernelFactoryType</span> <span class="o">=</span> <span class="s2">&quot;async_kernel.Kernel&quot;</span><span class="p">,</span>
+    <span class="n">kernel_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
+    <span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">KernelFactoryType</span> <span class="o">=</span> <span class="s2">&quot;async_kernel.kernel.Kernel&quot;</span><span class="p">,</span>
     <span class="n">fullpath</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -2056,11 +2056,11 @@ callable that returns a non-started kernel.</p>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_kernel_spec</span><span class="p">(</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" path (async_kernel.kernelspec.write_kernel_spec(path))" href="#async_kernel.kernelspec.write_kernel_spec(path)">path</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_name (async_kernel.kernelspec.write_kernel_spec(kernel_name))" href="#async_kernel.kernelspec.write_kernel_spec(kernel_name)">kernel_name</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.kernelspec.KernelName">KernelName</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_name (async_kernel.kernelspec.write_kernel_spec(kernel_name))" href="#async_kernel.kernelspec.write_kernel_spec(kernel_name)">kernel_name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;asyncio&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" display_name (async_kernel.kernelspec.write_kernel_spec(display_name))" href="#async_kernel.kernelspec.write_kernel_spec(display_name)">display_name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" fullpath (async_kernel.kernelspec.write_kernel_spec(fullpath))" href="#async_kernel.kernelspec.write_kernel_spec(fullpath)">fullpath</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" prefix (async_kernel.kernelspec.write_kernel_spec(prefix))" href="#async_kernel.kernelspec.write_kernel_spec(prefix)">prefix</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_factory (async_kernel.kernelspec.write_kernel_spec(kernel_factory))" href="#async_kernel.kernelspec.write_kernel_spec(kernel_factory)">kernel_factory</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.KernelFactoryType">KernelFactoryType</span></span> <span class="o">=</span> <span class="s2">&quot;async_kernel.Kernel&quot;</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title=" kernel_factory (async_kernel.kernelspec.write_kernel_spec(kernel_factory))" href="#async_kernel.kernelspec.write_kernel_spec(kernel_factory)">kernel_factory</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.KernelFactoryType">KernelFactoryType</span></span> <span class="o">=</span> <span class="s2">&quot;async_kernel.kernel.Kernel&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" connection_file (async_kernel.kernelspec.write_kernel_spec(connection_file))" href="#async_kernel.kernelspec.write_kernel_spec(connection_file)">connection_file</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title=" **kwargs (async_kernel.kernelspec.write_kernel_spec(**kwargs))" href="#async_kernel.kernelspec.write_kernel_spec(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span>
@@ -2085,7 +2085,9 @@ callable that returns a non-started kernel.</p>
         </li>
         <li class="doc-section-item field-body">
 <h3 id="async_kernel.kernelspec.write_kernel_spec(kernel_name)" class="doc doc-heading doc-heading-parameter">              <b><code>kernel_name</code></b>
-<a href="#async_kernel.kernelspec.write_kernel_spec(kernel_name)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><span title="async_kernel.kernelspec.KernelName">KernelName</span> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
+<a href="#async_kernel.kernelspec.write_kernel_spec(kernel_name)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;asyncio&#39;</code>
+)
           –
           <div class="doc-md-description">
             <p>The name of the kernel to use.</p>
@@ -2114,7 +2116,7 @@ callable that returns a non-started kernel.</p>
         <li class="doc-section-item field-body">
 <h3 id="async_kernel.kernelspec.write_kernel_spec(kernel_factory)" class="doc doc-heading doc-heading-parameter">              <b><code>kernel_factory</code></b>
 <a href="#async_kernel.kernelspec.write_kernel_spec(kernel_factory)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <span title="async_kernel.kernelspec.KernelFactoryType">KernelFactoryType</span></code>, default:
-                  <code>&#39;async_kernel.Kernel&#39;</code>
+                  <code>&#39;async_kernel.kernel.Kernel&#39;</code>
 )
           –
           <div class="doc-md-description">
@@ -2215,7 +2217,18 @@ Warning:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 73</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
 <span class="normal"> 74</span>
 <span class="normal"> 75</span>
 <span class="normal"> 76</span>
@@ -2293,25 +2306,14 @@ Warning:
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
+<span class="normal">151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">kernel_name</span><span class="p">:</span> <span class="n">KernelName</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">kernel_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;asyncio&quot;</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">fullpath</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">KernelFactoryType</span> <span class="o">=</span> <span class="s2">&quot;async_kernel.Kernel&quot;</span><span class="p">,</span>
+    <span class="n">kernel_factory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">KernelFactoryType</span> <span class="o">=</span> <span class="s2">&quot;async_kernel.kernel.Kernel&quot;</span><span class="p">,</span>
     <span class="n">connection_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
@@ -2370,7 +2372,7 @@ Warning:
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">kernel_factory</span><span class="p">)))</span>
             <span class="n">kernel_factory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}{</span><span class="n">CUSTOM_KERNEL_MARKER</span><span class="si">}{</span><span class="n">kernel_factory</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="c1"># validate</span>
-        <span class="k">if</span> <span class="n">kernel_factory</span> <span class="o">!=</span> <span class="s2">&quot;async_kernel.Kernel&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">kernel_factory</span> <span class="o">!=</span> <span class="s2">&quot;async_kernel.kernel.Kernel&quot;</span><span class="p">:</span>
             <span class="n">import_kernel_factory</span><span class="p">(</span><span class="n">kernel_factory</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">RESOURCES</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">dirs_exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="n">KernelSpec</span><span class="p">()</span>
@@ -2434,14 +2436,14 @@ Warning:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The path to where kernel specs are stored for Jupyter.</span>
 

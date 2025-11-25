@@ -1850,14 +1850,14 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title=" AsyncDisplayHook (async_kernel.asyncshell.AsyncDisplayHook)" href="#async_kernel.asyncshell.AsyncDisplayHook">AsyncDisplayHook</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A displayhook subclass that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
+            <p>A displayhook subclass that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.kernel.Kernel.iopub_send</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title=" AsyncDisplayPublisher (async_kernel.asyncshell.AsyncDisplayPublisher)" href="#async_kernel.asyncshell.AsyncDisplayPublisher">AsyncDisplayPublisher</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A display publisher that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
+            <p>A display publisher that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.kernel.Kernel.iopub_send</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -1902,7 +1902,7 @@ viewing the latest version.
 
 
 
-        <p>A displayhook subclass that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
+        <p>A displayhook subclass that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.kernel.Kernel.iopub_send</a>.</p>
 <p>This is intended to work with an InteractiveShell instance. It sends a dict of different
 representations of the object.</p>
 
@@ -2126,7 +2126,7 @@ representations of the object.</p>
 
 
 
-        <p>A display publisher that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.Kernel.iopub_send</a>.</p>
+        <p>A display publisher that publishes data using <a class="autorefs autorefs-internal" title=" iopub_send" href="../kernel/#async_kernel.kernel.Kernel.iopub_send">async_kernel.kernel.Kernel.iopub_send</a>.</p>
 
           
 
@@ -2749,12 +2749,8 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
       <a href="#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;run_cell</a>
+      <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
   </span>
 
       </li>
@@ -2811,7 +2807,7 @@ wrapping <a class="autorefs autorefs-external" href="https://ipython.readthedocs
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run a complete IPython cell asynchronously.</span>
 
-<span class="sd">    This function runs [execute requests][async_kernel.Kernel.execute_request] for the kernel</span>
+<span class="sd">    This function runs [execute requests][async_kernel.kernel.Kernel.execute_request] for the kernel</span>
 <span class="sd">    wrapping [InteractiveShell][IPython.core.interactiveshell.InteractiveShell.run_cell_async].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">fail_after</span><span class="p">(</span><span class="n">delay</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_execute_request_timeout</span><span class="p">()):</span>
