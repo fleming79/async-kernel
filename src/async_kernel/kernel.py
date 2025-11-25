@@ -172,7 +172,7 @@ class KernelInterruptError(InterruptedError):
     # Other event loops don't appear to have this issue.
 
 
-class Kernel(HasTraits):
+class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     """
     A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
@@ -341,36 +341,6 @@ class Kernel(HasTraits):
         info = [f"{k}={v}" for k, v in self.settings.items()]
         return f"{self.__class__.__name__}<{', '.join(info)}>"
 
-    async def __aenter__(self) -> Self:
-        """
-        Start the kernel in the current asynchronous context.
-
-        - Only one instance can (should) run at a time.
-        - An instance can only be started once.
-        - A new instance can be started after a previous instance has stopped and the context exited.
-
-        Example:
-            ```python
-            async with Kernel() as kernel:
-                await anyio.sleep_forever()
-            ```
-        """
-        assert not self.event_stopped
-        async with contextlib.AsyncExitStack() as stack:
-            sys.excepthook = self.excepthook
-            sys.unraisablehook = self.unraisablehook
-            with contextlib.suppress(ValueError):
-                signal.signal(signal.SIGINT, self._signal_handler)
-            await stack.enter_async_context(self._start_in_context())
-            self.__stack = stack.pop_all()
-        return self
-
-    async def __aexit__(self, exc_type, exc_value, exc_tb) -> None:
-        try:
-            await self.__stack.__aexit__(exc_type, exc_value, exc_tb)
-        finally:
-            Kernel._instance = None
-
     @traitlets.default("log")
     def _default_log(self) -> LoggerAdapter[Logger]:
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
@@ -523,7 +493,7 @@ class Kernel(HasTraits):
             stop()
 
     @asynccontextmanager
-    async def _start_in_context(self) -> AsyncGenerator[Self, Any]:
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """Start the kernel in an already running anyio event loop."""
         if self._sockets:
             msg = "Already started"
@@ -546,6 +516,12 @@ class Kernel(HasTraits):
                     with self._iopub():
                         with anyio.CancelScope() as scope:
                             self._stop = lambda: caller.call_direct(scope.cancel, "Stopping kernel")
+                            sys.excepthook = self.excepthook
+                            sys.unraisablehook = self.unraisablehook
+                            try:
+                                sig = signal.signal(signal.SIGINT, self._signal_handler)
+                            except ValueError:
+                                sig = None
                             self.comm_manager.patch_ipykernel()
                             try:
                                 self.comm_manager.kernel = self
@@ -556,6 +532,8 @@ class Kernel(HasTraits):
                                 if not scope.cancel_called:
                                     raise
                             finally:
+                                if sig:
+                                    signal.signal(signal.SIGINT, sig)
                                 self.comm_manager.kernel = None
                                 self.event_stopped.set()
                                 self.callers.clear()

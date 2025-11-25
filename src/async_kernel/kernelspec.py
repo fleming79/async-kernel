@@ -62,7 +62,7 @@ def make_argv(
 def write_kernel_spec(
     path: Path | str | None = None,
     *,
-    kernel_name: str = "asyncio",
+    kernel_name: str = "async",
     display_name: str = "",
     fullpath: bool = False,
     prefix: str = "",
