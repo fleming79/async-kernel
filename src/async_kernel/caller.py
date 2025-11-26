@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import contextvars
 import functools
@@ -58,8 +59,7 @@ def noop() -> None:
 
 class Caller(anyio.AsyncContextManagerMixin):
     """
-    Caller is an advanced asynchronous context manager and scheduler for managing function calls,
-    task execution, and worker threads within an async kernel environment.
+    Caller is an advanced asynchronous context manager and scheduler for managing function calls within an async kernel environment.
 
     Features:
         - Manages a pool of worker threads and async contexts for efficient scheduling and execution.
@@ -213,8 +213,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             Self: The created or retrieved Caller instance.
 
         Raises:
-            RuntimeError: If the name is reserved, an instance already exists for the thread,
-                          or a caller does not exist for the specified thread.
+            RuntimeError: If the backend is not provided and backend can't be determined.
             ValueError: If the thread and caller's name do not match.
         """
         with cls._lock:
@@ -244,7 +243,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst = super().__new__(cls)
             inst._resume = noop
             inst._name = name
-            inst._backend = Backend(backend or current_async_library(failsafe=True) or Backend.asyncio)
+            inst._backend = Backend(backend or current_async_library())
             inst._backend_options = kwargs.get("backend_options")
             inst._protected = kwargs.get("protected", False)
             inst._zmq_context = kwargs.get("zmq_context")
@@ -274,17 +273,22 @@ class Caller(anyio.AsyncContextManagerMixin):
             if thread := getattr(self, "thread", None):
                 # An event loop for the current thread.
                 assert thread is threading.current_thread()
-                token = current_token()
 
-                def to_thread():
-                    utils.mark_thread_pydev_do_not_trace()
-                    try:
-                        anyio.from_thread.run(run_caller_in_context, token=token)
-                    except (BaseExceptionGroup, BaseException) as e:
-                        if not "shutdown" not in str(e):
-                            raise
+                if self.backend == Backend.asyncio:
+                    self._task = asyncio.create_task(run_caller_in_context())
+                else:
+                    # trio
+                    token = current_token()
 
-                threading.Thread(target=to_thread, daemon=False).start()
+                    def to_thread():
+                        utils.mark_thread_pydev_do_not_trace()
+                        try:
+                            anyio.from_thread.run(run_caller_in_context, token=token)
+                        except (BaseExceptionGroup, BaseException) as e:
+                            if not "shutdown" not in str(e):
+                                raise
+
+                    threading.Thread(target=to_thread, daemon=False).start()
             else:
                 # An event loop in a new thread.
                 def run_event_loop() -> None:
