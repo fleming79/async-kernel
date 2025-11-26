@@ -37,6 +37,14 @@ dependencies = [
     "anyio>=4.11",
     "typing_extensions>=4.5",
     "aiologic>=0.15.0",
+    # These aren't required on pyodide. async_kernel.Kernel needs zmq sockets & threading.
+    # Pyodide provides its own async kernel.
+    "comm>=0.2; sys_platform != 'emscripten'",
+    "pyzmq>=27.0; sys_platform != 'emscripten'",
+    "jupyter_client>=8.6; sys_platform != 'emscripten'",
+    "ipython>=9.0; sys_platform != 'emscripten'",
+    "traitlets>=5.14; sys_platform != 'emscripten'",
+    "matplotlib-inline>0.1; sys_platform != 'emscripten'",
 ]
 
 [project.urls]
@@ -49,16 +57,6 @@ Changelog = "https://fleming79.github.io/async-kernel/latest/about/changelog/"
 
 [project.scripts]
 async-kernel = "async_kernel.command:command_line"
-
-[project.optional-dependencies]
-kernel = [
-  "comm>=0.2",
-    "pyzmq>=27.0",
-    "jupyter_client>=8.6",
-    "ipython>=9.0",
-    "traitlets>=5.14",
-    "matplotlib-inline>0.1",
-]
 
 [dependency-groups]
 docs = ["mkdocs-material",
