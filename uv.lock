@@ -115,17 +115,13 @@ source = { editable = "." }
 dependencies = [
     { name = "aiologic" },
     { name = "anyio" },
+    { name = "comm", marker = "sys_platform != 'emscripten'" },
+    { name = "ipython", marker = "sys_platform != 'emscripten'" },
+    { name = "jupyter-client", marker = "sys_platform != 'emscripten'" },
+    { name = "matplotlib-inline", marker = "sys_platform != 'emscripten'" },
+    { name = "pyzmq", marker = "sys_platform != 'emscripten'" },
+    { name = "traitlets", marker = "sys_platform != 'emscripten'" },
     { name = "typing-extensions" },
-]
-
-[package.optional-dependencies]
-kernel = [
-    { name = "comm" },
-    { name = "ipython" },
-    { name = "jupyter-client" },
-    { name = "matplotlib-inline" },
-    { name = "pyzmq" },
-    { name = "traitlets" },
 ]
 
 [package.dev-dependencies]
@@ -174,15 +170,14 @@ uvloop = [
 requires-dist = [
     { name = "aiologic", specifier = ">=0.15.0" },
     { name = "anyio", specifier = ">=4.11" },
-    { name = "comm", marker = "extra == 'kernel'", specifier = ">=0.2" },
-    { name = "ipython", marker = "extra == 'kernel'", specifier = ">=9.0" },
-    { name = "jupyter-client", marker = "extra == 'kernel'", specifier = ">=8.6" },
-    { name = "matplotlib-inline", marker = "extra == 'kernel'", specifier = ">0.1" },
-    { name = "pyzmq", marker = "extra == 'kernel'", specifier = ">=27.0" },
-    { name = "traitlets", marker = "extra == 'kernel'", specifier = ">=5.14" },
+    { name = "comm", marker = "sys_platform != 'emscripten'", specifier = ">=0.2" },
+    { name = "ipython", marker = "sys_platform != 'emscripten'", specifier = ">=9.0" },
+    { name = "jupyter-client", marker = "sys_platform != 'emscripten'", specifier = ">=8.6" },
+    { name = "matplotlib-inline", marker = "sys_platform != 'emscripten'", specifier = ">0.1" },
+    { name = "pyzmq", marker = "sys_platform != 'emscripten'", specifier = ">=27.0" },
+    { name = "traitlets", marker = "sys_platform != 'emscripten'", specifier = ">=5.14" },
     { name = "typing-extensions", specifier = ">=4.5" },
 ]
-provides-extras = ["kernel"]
 
 [package.metadata.requires-dev]
 cov = [
