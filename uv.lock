@@ -176,7 +176,7 @@ requires-dist = [
     { name = "matplotlib-inline", marker = "sys_platform != 'emscripten'", specifier = ">0.1" },
     { name = "pyzmq", marker = "sys_platform != 'emscripten'", specifier = ">=27.0" },
     { name = "traitlets", marker = "sys_platform != 'emscripten'", specifier = ">=5.14" },
-    { name = "typing-extensions", specifier = ">=4.5" },
+    { name = "typing-extensions", specifier = ">=4.14" },
 ]
 
 [package.metadata.requires-dev]
