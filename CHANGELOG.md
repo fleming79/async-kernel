@@ -5,9 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] - 2025-11-27
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Fix typing_extensions min version. [#232](https://github.com/fleming79/async-kernel/pull/232)
+
 ## [0.9.1] - 2025-11-27
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.9.1 [#231](https://github.com/fleming79/async-kernel/pull/231)
 
 - Move 'kernel' optional dependencies into normal dependencies. [#230](https://github.com/fleming79/async-kernel/pull/230)
 
@@ -607,6 +615,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.9.2]: https://github.com/fleming79/async-kernel/compare/v0.9.1..v0.9.2
 [0.9.1]: https://github.com/fleming79/async-kernel/compare/v0.9.0..v0.9.1
 [0.9.0]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.4..v0.9.0
 [0.9.0-rc.4]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.3..v0.9.0-rc.4
