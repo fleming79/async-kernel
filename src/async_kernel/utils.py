@@ -5,12 +5,13 @@ import threading
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
+import async_kernel
 from async_kernel.typing import Message, MetadataKeys
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from async_kernel.kernel import Kernel
+    from async_kernel import Kernel
     from async_kernel.typing import Job
 
 __all__ = [
@@ -41,9 +42,7 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
 
 def get_kernel() -> Kernel:
     "Get the current kernel."
-    from async_kernel.kernel import Kernel  # noqa: PLC0415
-
-    return Kernel()
+    return async_kernel.Kernel()
 
 
 def get_job() -> Job[dict] | dict:
@@ -87,13 +86,10 @@ def get_execution_count() -> int:
 
 def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
     """
-    Set a nested attribute of an object.
+    Replace an existing nested attribute/trait of an object.
 
     If the attribute name contains dots, it is interpreted as a nested attribute.
     For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.
-
-    This is primarily intended for use with [command.command_line][]
-    to set the nesteded attributes on on kernels.
 
     Args:
         obj: The object to set the attribute on.
@@ -103,7 +99,6 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
     Returns:
         The mapping of the name to the set value if the value has been set.
         An empty dict indicates the value was not set.
-
     """
     import traitlets  # noqa: PLC0415
 

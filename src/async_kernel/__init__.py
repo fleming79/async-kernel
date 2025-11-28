@@ -1,5 +1,8 @@
 import sys
 from importlib.metadata import version
+from typing import TYPE_CHECKING
+
+import aiologic.meta
 
 from async_kernel import utils
 from async_kernel.caller import Caller
@@ -18,9 +21,15 @@ kernel_protocol_version_info = {
     "file_extension": ".py",
 }
 
+if TYPE_CHECKING:
+    from .kernel import Kernel  # noqa: TC004
+
+# Dynamic import
+aiologic.meta.export_dynamic(globals(), "Kernel", ".kernel.Kernel")
 
 __all__ = [
     "Caller",
+    "Kernel",
     "Pending",
     "__version__",
     "kernel_protocol_version",
