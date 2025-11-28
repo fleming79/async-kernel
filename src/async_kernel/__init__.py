@@ -22,17 +22,19 @@ kernel_protocol_version_info = {
 }
 
 if TYPE_CHECKING:
-    from .kernel import Kernel  # noqa: TC004
+    from async_kernel.kernel import Kernel  # noqa: F401
 
 # Dynamic import
 aiologic.meta.export_dynamic(globals(), "Kernel", ".kernel.Kernel")
 
 __all__ = [
     "Caller",
-    "Kernel",
     "Pending",
     "__version__",
     "kernel_protocol_version",
     "kernel_protocol_version_info",
     "utils",
 ]
+if sys.platform != "emscripten":
+    # Kernel needs zmq and threading. Both are not supported on Pyodide.
+    __all__.append("Kernel")  # noqa: PYI056
