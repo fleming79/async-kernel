@@ -36,7 +36,7 @@ requires-python = ">=3.11"
 dependencies = [
     "anyio>=4.11",
     "typing_extensions>=4.14",
-    "aiologic>=0.15.0",
+    "aiologic>=0.16.0",
     # These aren't required on pyodide. async_kernel.Kernel needs zmq sockets & threading.
     # Pyodide provides its own async kernel.
     "comm>=0.2; sys_platform != 'emscripten'",

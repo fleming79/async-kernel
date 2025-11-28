@@ -4,6 +4,7 @@ import contextlib
 from typing import TYPE_CHECKING, Self
 
 import comm
+from aiologic.meta import import_module
 from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from traitlets import Dict, HasTraits, Instance, observe
 from typing_extensions import override
@@ -109,22 +110,24 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
         return super().register_comm(comm)
 
     @staticmethod
-    def patch_ipykernel():
+    def patch_comm():
         """
         Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
 
         1.  `comm.create_comm` to [Comm][].
         1. `comm.get_com_manager` to [CommManager][].
+
+        Also patches ipykernel.comm if ipykernel is installed.
         """
         comm.create_comm = Comm
         comm.get_comm_manager = get_comm_manager
 
-        # # Monkey patch ipykernel for modules that use it such as pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
+        # Monkey patch ipykernel in case other libraries use its comm module directly. Eg: pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
         with contextlib.suppress(ImportError):
-            import ipykernel.comm  # noqa: PLC0415
+            ipykernel_comm = import_module("ipykernel.comm")
 
-            ipykernel.comm.Comm = Comm
-            ipykernel.comm.CommManager = CommManager
+            for k, v in {"Comm": Comm, "CommManager": CommManager}.items():
+                setattr(ipykernel_comm, k, v)
 
 
 def get_comm_manager():

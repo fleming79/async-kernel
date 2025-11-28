@@ -515,7 +515,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                                 sig = signal.signal(signal.SIGINT, self._signal_handler)
                             except ValueError:
                                 sig = None
-                            self.comm_manager.patch_ipykernel()
+                            self.comm_manager.patch_comm()
                             try:
                                 self.comm_manager.kernel = self
                                 start.set()
