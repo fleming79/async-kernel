@@ -36,7 +36,7 @@ class TestImportItem:
             import_item("nonexistent.module.Class")
 
     def test_invalid_object(self):
-        with pytest.raises(AttributeError):
+        with pytest.raises(ImportError):
             import_item("os.path.nonexistent_function")
 
     def test_builtin(self):

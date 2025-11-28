@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import importlib
 import inspect
 import weakref
 from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
+import aiologic.meta
 from aiologic import Lock
 
 from async_kernel.typing import FixedCreate, FixedCreated, S, T
@@ -23,8 +23,8 @@ def import_item(dottedname: str) -> Any:
         import_item("os.path.join")
         ```
     """
-    modulename, objname = dottedname.rsplit(".", maxsplit=1)
-    return getattr(importlib.import_module(modulename), objname)
+    module, name0 = dottedname.rsplit(".", maxsplit=1)
+    return aiologic.meta.import_from(module, name0)
 
 
 class Fixed(Generic[S, T]):
