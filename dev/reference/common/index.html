@@ -1762,8 +1762,8 @@ is created on first access and then cached for subsequent access.</p>
 <span class="sd">        import_item(&quot;os.path.join&quot;)</span>
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">modulename</span><span class="p">,</span> <span class="n">objname</span> <span class="o">=</span> <span class="n">dottedname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">modulename</span><span class="p">),</span> <span class="n">objname</span><span class="p">)</span>
+    <span class="n">module</span><span class="p">,</span> <span class="n">name0</span> <span class="o">=</span> <span class="n">dottedname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">aiologic</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name0</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
