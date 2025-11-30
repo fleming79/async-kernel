@@ -18,7 +18,7 @@ import threading
 import time
 import traceback
 import uuid
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from logging import Logger, LoggerAdapter
 from pathlib import Path
 from types import CoroutineType
@@ -350,6 +350,18 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         info = [f"{k}={v}" for k, v in self.settings.items()]
         subshell = f"subshell_id={self.subshell_id!s} " if self.subshell_id else "Main"
         return f"{self.__class__.__name__}<{subshell}{', '.join(info)}>"
+
+    @contextmanager
+    def subshell_id_ctx(self) -> Generator[Self, Any, None]:
+        """Set the context for the current subshell_id.
+
+        Use this when working with a subshell.
+        """
+        token = utils._subshell_id_var.set(self.subshell_id)
+        try:
+            yield self
+        finally:
+            utils._subshell_id_var.reset(token)
 
     @traitlets.default("log")
     def _default_log(self) -> LoggerAdapter[Logger]:
@@ -917,8 +929,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 if msg:
                     kernel.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
-        token = utils._job_var.set(job)
         kernel: Kernel = self if subshell_id is None else self.get_subshell(subshell_id)
+        token_job_var = utils._job_var.set(job)
+        token_subshell_id = utils._subshell_id_var.set(kernel.subshell_id)
         try:
             kernel.iopub_send(
                 msg_or_type="status",
@@ -931,7 +944,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             await send_reply(job, error_to_content(e))
             kernel.log.exception("Exception in message handler:", exc_info=e)
         finally:
-            utils._job_var.reset(token)
+            utils._job_var.reset(token_job_var)
+            utils._subshell_id_var.reset(token_subshell_id)
             kernel.iopub_send(
                 msg_or_type="status",
                 parent=job["msg"],
@@ -1400,3 +1414,11 @@ class Kernel_Proxy(wrapt.BaseObjectProxy):
             self._self_deleted = True
             self.__wrapped__._subshells.pop(self._self_subshell_id, None)
             self._self_shell.stop()
+
+    @contextmanager
+    def subshell_id_ctx(self) -> Generator[Self, Any, None]:
+        token = utils._subshell_id_var.set(self.subshell_id)
+        try:
+            yield self
+        finally:
+            utils._subshell_id_var.reset(token)

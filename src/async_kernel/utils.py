@@ -29,7 +29,8 @@ __all__ = [
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
-_job_var = ContextVar("job")
+_job_var: ContextVar[Job] = ContextVar("job")
+_subshell_id_var: ContextVar[str | None] = ContextVar("_subshell_id_var")
 _execution_count_var: ContextVar[int] = ContextVar("execution_count")
 _execute_request_timeout: ContextVar[float | None] = ContextVar("execute_request_timeout", default=None)
 
@@ -57,6 +58,10 @@ def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
 
 def get_subshell_id() -> str | None:
     "Get the subshell id in the current context."
+    try:
+        return _subshell_id_var.get()
+    except LookupError:
+        pass
     if msg := get_parent():
         return msg["header"].get("subshell_id")
     return None

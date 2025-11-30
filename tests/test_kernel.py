@@ -99,7 +99,6 @@ def test_wrap_handler(kernel: Kernel):
     assert m is not s
     assert m is wrap_handler(None, kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
 
-
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
     with pytest.raises(RuntimeError):
         kernel.load_connection_info({})
@@ -629,3 +628,15 @@ async def test_subshell(kernel: Kernel):
     kernel.stop_subshell(subshell.subshell_id)
     del subshell
     await deleted
+
+
+async def test_subshell_context(kernel: Kernel):
+    subshell = kernel.create_subshell()
+    with subshell.subshell_id_ctx():
+        assert async_kernel.utils.get_subshell_id() == subshell.subshell_id
+        with kernel.subshell_id_ctx():
+            assert async_kernel.utils.get_subshell_id() is None
+            with subshell.subshell_id_ctx():
+                assert async_kernel.utils.get_subshell_id() == subshell.subshell_id
+            assert async_kernel.utils.get_subshell_id() is None
+        assert async_kernel.utils.get_subshell_id() == subshell.subshell_id
