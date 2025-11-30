@@ -69,9 +69,7 @@ def get_subshell_id() -> str | None:
 
 def get_kernel() -> Kernel:
     "Get the current kernel or its subshell proxy if it is within an active context."
-    kernel = async_kernel.Kernel()
-    subshell_id = get_subshell_id()
-    return kernel.get_subshell(subshell_id) if subshell_id else kernel
+    return async_kernel.Kernel()
 
 
 def get_metadata(job: Job | None = None, /) -> Mapping[str, Any]:

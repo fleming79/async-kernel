@@ -6,15 +6,15 @@ import pathlib
 import sys
 import threading
 import time
-import weakref
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 import anyio
 import pytest
 import zmq
-from aiologic import BinarySemaphore, Event
+from aiologic import BinarySemaphore
 
 import async_kernel.utils
+from async_kernel.asyncshell import SubshellItem
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
 from async_kernel.compiler import murmur2_x86
@@ -91,13 +91,12 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
 
 
 def test_wrap_handler(kernel: Kernel):
-    proxy = kernel.create_subshell()
-    assert proxy.subshell_id in kernel._subshells
     lock = BinarySemaphore()
     m = wrap_handler(None, kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
-    s = wrap_handler("subshell id", proxy.run_handler, proxy.get_handler(MsgType.execute_request), lock)
+    s = wrap_handler("subshell id", kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
     assert m is not s
     assert m is wrap_handler(None, kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
+
 
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
     with pytest.raises(RuntimeError):
@@ -613,30 +612,15 @@ async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
 
 
 async def test_subshell(kernel: Kernel):
-    deleted = Event()
-    subshell = kernel.create_subshell()
-    assert isinstance(subshell.subshell_id, str)
-    assert subshell.subshell_id == subshell.subshell_id
-    assert subshell.subshell_id in kernel._subshells
+    subshell_id = kernel.shell.create_subshell()
 
-    # Check overrides
-    assert subshell.shell.history_manager is not kernel.shell.history_manager
-    assert subshell.shell.user_ns is not kernel.shell.user_ns
-    assert subshell.shell.user_global_ns is kernel.shell.user_global_ns
+    items = kernel.shell._per_subshell_items[subshell_id]
+    user_global_ns = kernel.shell.user_global_ns
+    assert user_global_ns is kernel.shell.user_ns
 
-    weakref.finalize(subshell, deleted.set)
-    kernel.stop_subshell(subshell.subshell_id)
-    del subshell
-    await deleted
-
-
-async def test_subshell_context(kernel: Kernel):
-    subshell = kernel.create_subshell()
-    with subshell.subshell_id_ctx():
-        assert async_kernel.utils.get_subshell_id() == subshell.subshell_id
-        with kernel.subshell_id_ctx():
-            assert async_kernel.utils.get_subshell_id() is None
-            with subshell.subshell_id_ctx():
-                assert async_kernel.utils.get_subshell_id() == subshell.subshell_id
-            assert async_kernel.utils.get_subshell_id() is None
-        assert async_kernel.utils.get_subshell_id() == subshell.subshell_id
+    with kernel.shell.subshell_context(subshell_id):
+        assert kernel.shell.user_ns is items[SubshellItem.user_ns]
+        assert kernel.shell.user_ns_hidden is items[SubshellItem.user_ns_hidden]
+        assert kernel.shell.history_manager is items[SubshellItem.history_manager]
+        assert kernel.shell.history_manager is items[SubshellItem.history_manager]
+        assert kernel.shell.user_global_ns is user_global_ns

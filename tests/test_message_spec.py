@@ -268,7 +268,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     reply = await utils.get_reply(client, msg_id, channel="control")
     utils.validate_message(reply, "create_subshell_reply", msg_id)
     subshell_id = reply["content"]["subshell_id"]
-    assert subshell_id in kernel._subshells  # pyright: ignore[reportPrivateUsage]
+    assert subshell_id in kernel.shell._per_subshell_items  # pyright: ignore[reportPrivateUsage]
 
     # List
     msg = client.session.msg(MsgType.list_subshell_request, {})
@@ -284,4 +284,4 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     msg_id = msg["header"]["msg_id"]
     reply = await utils.get_reply(client, msg_id, channel="control")
     utils.validate_message(reply, "delete_subshell_reply", msg_id)
-    assert subshell_id not in kernel._subshells  # pyright: ignore[reportPrivateUsage]
+    assert subshell_id not in kernel.shell._per_subshell_items  # pyright: ignore[reportPrivateUsage]

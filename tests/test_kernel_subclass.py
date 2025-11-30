@@ -21,5 +21,4 @@ async def test_kernel_subclass(anyio_backend: Backend):
         assert isinstance(kernel, MyKernel)
         assert isinstance(Kernel(), MyKernel)
         assert isinstance(async_kernel.utils.get_kernel(), MyKernel)
-        assert isinstance(kernel.create_subshell(), MyKernel)
     assert not MyKernel._instance  # pyright: ignore[reportPrivateUsage]

@@ -18,7 +18,7 @@ import threading
 import time
 import traceback
 import uuid
-from contextlib import asynccontextmanager, contextmanager
+from contextlib import asynccontextmanager
 from logging import Logger, LoggerAdapter
 from pathlib import Path
 from types import CoroutineType
@@ -28,12 +28,10 @@ import aiologic
 import anyio
 import IPython.core.completer
 import traitlets
-import wrapt
 import zmq
 from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import async_checkpoint, current_async_library
 from IPython.core.error import StdinNotImplementedError
-from IPython.core.history import HistoryManager
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
@@ -231,7 +229,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
     _ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
     _execution_count = traitlets.Int(0)
-    _subshells: Fixed[Self, dict[str, Kernel_Proxy]] = Fixed(dict)
 
     callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
@@ -350,18 +347,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         info = [f"{k}={v}" for k, v in self.settings.items()]
         subshell = f"subshell_id={self.subshell_id!s} " if self.subshell_id else "Main"
         return f"{self.__class__.__name__}<{subshell}{', '.join(info)}>"
-
-    @contextmanager
-    def subshell_id_ctx(self) -> Generator[Self, Any, None]:
-        """Set the context for the current subshell_id.
-
-        Use this when working with a subshell.
-        """
-        token = utils._subshell_id_var.set(self.subshell_id)
-        try:
-            yield self
-        finally:
-            utils._subshell_id_var.reset(token)
 
     @traitlets.default("log")
     def _default_log(self) -> LoggerAdapter[Logger]:
@@ -560,10 +545,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                                 self.callers.clear()
         finally:
             Kernel._instance = None
+            self.shell._shutdown_all_subshells()
             AsyncInteractiveShell.clear_instance()
             self._zmq_context.term()
-            while self._subshells:
-                self._subshells.popitem()[1].stop()
             if self.print_kernel_messages:
                 print(f"Kernel stopped: {self!r}")
 
@@ -929,9 +913,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 if msg:
                     kernel.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
-        kernel: Kernel = self if subshell_id is None else self.get_subshell(subshell_id)
+        kernel = self
         token_job_var = utils._job_var.set(job)
-        token_subshell_id = utils._subshell_id_var.set(kernel.subshell_id)
+        token_subshell_id = utils._subshell_id_var.set(subshell_id)
         try:
             kernel.iopub_send(
                 msg_or_type="status",
@@ -1074,23 +1058,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 is used to 'capture' output when its context has been acquired.
         """
         return utils.get_parent()
-
-    def create_subshell(self) -> Self:
-        "Create a subshell."
-        return Kernel_Proxy()  # pyright: ignore[reportReturnType]
-
-    def get_subshell(self, subshell_id: str) -> Self:
-        "Get an existing subshell."
-        return self._subshells[subshell_id]  # pyright: ignore[reportReturnType]
-
-    def stop_subshell(self, subshell_id: str) -> None:
-        "Stop a subshell."
-        if proxy := self._subshells.pop(subshell_id):
-            proxy.stop()
-
-    def list_subshells(self) -> list[str]:
-        "List the current subshells."
-        return list(self._subshells)
 
 
 @final
@@ -1305,120 +1272,15 @@ class Handlers:
     async def create_subshell_request(kernel: Kernel, job: Job[Content], /) -> Content:
         """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only)."""
 
-        return {"subshell_id": kernel.create_subshell().subshell_id}
+        return {"subshell_id": kernel.shell.create_subshell()}
 
     @staticmethod
     async def delete_subshell_request(kernel: Kernel, job: Job[Content], /) -> Content:
         """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only)."""
-        kernel.stop_subshell(job["msg"]["content"]["subshell_id"])
+        kernel.shell.delete_subshell(job["msg"]["content"]["subshell_id"])
         return {}
 
     @staticmethod
     async def list_subshell_request(kernel: Kernel, job: Job[Content], /) -> Content:
         """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells) (control only)."""
-        return {"subshell_id": list(kernel.list_subshells())}
-
-
-class AsyncInteractiveShell_Proxy(wrapt.BaseObjectProxy):
-    """
-    A proxy class for an interactive shell, providing controlled access to user namespaces and history management.
-
-    This class wraps an underlying shell object, exposing its user namespace, global namespace, and history manager
-    through properties. It also provides a mechanism to stop the shell and clear the user namespace.
-
-    Properties:
-        user_ns (dict): Returns the current user namespace.
-        user_global_ns (dict): Returns the global user namespace.
-        history_manager (HistoryManager): Returns the history manager instance.
-
-    Methods:
-        stop(): Stops the shell and clears the user namespace if not already stopped.
-    """
-
-    _self_stopped = False
-
-    def __init__(self) -> None:
-        shell = Kernel().shell
-        super().__init__(shell)
-        self._self_user_ns = {}
-        self._self_user_global_ns = shell.user_global_ns
-        self._self_history_manager = HistoryManager(shell=self, parent=self)
-
-    @property
-    def user_ns(self) -> dict[str, Any]:
-        return self._self_user_ns
-
-    @property
-    def user_global_ns(self) -> dict[str, Any]:
-        return self._self_user_global_ns
-
-    @property
-    def history_manager(self) -> HistoryManager:
-        return self._self_history_manager
-
-    def stop(self):
-        if not self._self_stopped:
-            self._self_stopped = True
-            self._self_user_ns.clear()
-
-
-class Kernel_Proxy(wrapt.BaseObjectProxy):
-    """
-    A proxy class for the Kernel object, providing a unique subshell context and execution count management.
-
-
-    This class wraps a Kernel instance and manages its own execution count and subshell ID.
-    It also provides access to an associated AsyncInteractiveShell_Proxy instance.
-
-    Attributes:
-        _execution_count (int): The execution count for this proxy instance.
-        shell (AsyncInteractiveShell_Proxy): The interactive shell proxy associated with this kernel proxy.
-        subshell_id (str): The unique identifier for this subshell proxy.
-
-    Methods:
-        stop(): Cleans up the proxy by removing itself from the kernel's subshell proxies and stopping its shell.
-
-    Ref:
-        - [*Jupyter kernel subshell*](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#jupyter-kernel-subshells)
-    """
-
-    if TYPE_CHECKING:
-        __wrapped__: Kernel
-    _self_deleted = False
-    _self_execution_count = 0
-
-    @property
-    def _execution_count(self):
-        return self._self_execution_count
-
-    @_execution_count.setter
-    def _execution_count(self, value):
-        self._self_execution_count = value
-
-    @property
-    def shell(self) -> AsyncInteractiveShell_Proxy:
-        return self._self_shell
-
-    @property
-    def subshell_id(self) -> str:
-        return self._self_subshell_id
-
-    def __init__(self) -> None:
-        self._self_subshell_id = str(uuid.uuid4())
-        self._self_shell = AsyncInteractiveShell_Proxy()
-        super().__init__(Kernel())
-        self.__wrapped__._subshells[self._self_subshell_id] = self
-
-    def stop(self):
-        if not self._self_deleted:
-            self._self_deleted = True
-            self.__wrapped__._subshells.pop(self._self_subshell_id, None)
-            self._self_shell.stop()
-
-    @contextmanager
-    def subshell_id_ctx(self) -> Generator[Self, Any, None]:
-        token = utils._subshell_id_var.set(self.subshell_id)
-        try:
-            yield self
-        finally:
-            utils._subshell_id_var.reset(token)
+        return {"subshell_id": list(kernel.shell.list_subshells())}

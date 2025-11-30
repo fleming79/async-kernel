@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 import builtins
+import enum
 import json
 import pathlib
 import sys
 import threading
-from typing import TYPE_CHECKING, Any, ClassVar
+import uuid
+from collections.abc import Callable
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, ClassVar, Self
 
 import anyio
 import IPython.core.release
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
+from IPython.core.history import HistoryManager
 from IPython.core.interactiveshell import ExecutionResult, InteractiveShell, InteractiveShellABC
 from IPython.core.magic import Magics, line_magic, magics_class
 from jupyter_client.jsonutil import json_default
@@ -25,7 +30,7 @@ from async_kernel.compiler import XCachingCompiler
 from async_kernel.typing import MetadataKeys, Tags
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Generator
 
     from async_kernel.kernel import Kernel
 
@@ -141,6 +146,14 @@ class AsyncDisplayPublisher(DisplayPublisher):
             self._hooks.remove(hook)
 
 
+class SubshellItem(enum.Enum):
+    "Items that have per-subshell instances."
+
+    user_ns = enum.auto()
+    user_ns_hidden = enum.auto()
+    history_manager = enum.auto()
+
+
 class AsyncInteractiveShell(InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].
@@ -160,13 +173,13 @@ class AsyncInteractiveShell(InteractiveShell):
     display_pub: Instance[AsyncDisplayPublisher]
     compiler_class = Type(XCachingCompiler)
     compile: Instance[XCachingCompiler]
-    user_ns_hidden = Dict()
     _main_mod_cache = Dict()
+    _per_subshell_items: Dict[str | None, Any] = Dict()
 
     execute_request_timeout = CFloat(default_value=None, allow_none=True)
     "A timeout in seconds to complete [execute requests][async_kernel.kernel.Handlers.execute_request]."
 
-    run_cell = None  # pyright: ignore[reportAssignmentType]
+    run_cell: Callable[..., ExecutionResult] = None  # pyright: ignore[reportAssignmentType]
     "**Not supported** -  use [run_cell_async][async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async] instead."
     should_run_async = None  # pyright: ignore[reportAssignmentType]
     loop_runner_map = None
@@ -210,6 +223,10 @@ class AsyncInteractiveShell(InteractiveShell):
     def init_sys_modules(self) -> None:
         return
 
+    @override
+    def init_history(self) -> None:
+        return
+
     @property
     @override
     def execution_count(self) -> int:
@@ -222,26 +239,57 @@ class AsyncInteractiveShell(InteractiveShell):
     @property
     @override
     def user_ns(self) -> dict[Any, Any]:
-        if not hasattr(self, "_user_ns"):
-            self.user_ns = {}
-        return self._user_ns
+        return self._get_subshell_item(SubshellItem.user_ns, utils.get_subshell_id())
 
     @user_ns.setter
-    def user_ns(self, ns: dict) -> None:
-        assert hasattr(ns, "clear")
-        assert isinstance(ns, dict)
-        self._user_ns = ns
+    def user_ns(self, ns) -> None:
+        ns = dict(ns)
+        self.user_ns_hidden.clear()
+        self.user_ns.clear()
         self.init_user_ns()
+        self.user_ns.update(ns)
+
+    @property
+    def user_ns_hidden(self):  # pyright: ignore[reportImplicitOverride]
+        return self._get_subshell_item(SubshellItem.user_ns_hidden, utils.get_subshell_id())
 
     @property
     @override
     def user_global_ns(self) -> dict[Any, Any]:
-        return self.user_ns
+        # `user_global_ns` is always the `user_ns` for the main shell.
+        return self._get_subshell_item(SubshellItem.user_ns, None)
 
     @property
     @override
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
+
+    @property
+    @override
+    def history_manager(self):
+        return self._get_subshell_item(SubshellItem.history_manager, utils.get_subshell_id())
+
+    @history_manager.setter
+    def history_manager(self, value):
+        if self._atexit_once_called:
+            self._shutdown_all_subshells()
+        else:
+            raise RuntimeError
+
+    def _get_subshell_item(self, key: SubshellItem, subshell_id: str | None):
+        "Gets the instance according to the subshell id, creating new instances on demand"
+        if not (data := self._per_subshell_items.get(subshell_id)):
+            # Creates the instances in a dict for subs
+            self._per_subshell_items[subshell_id] = data = {}
+            data[SubshellItem.user_ns] = {}
+            data[SubshellItem.user_ns_hidden] = {}
+            data[SubshellItem.history_manager] = HistoryManager(shell=self, parent=self)
+            self.init_user_ns()
+        return data[key]
+
+    def _shutdown_all_subshells(self) -> None:
+        for subshell_id in tuple(self._per_subshell_items):
+            self.delete_subshell(subshell_id, unsafe=True)
 
     @override
     async def run_cell_async(
@@ -311,6 +359,32 @@ class AsyncInteractiveShell(InteractiveShell):
             msg = f"The backend {gui=} is not supported by async-kernel. The currently supported gui options are: {supported_no_eventloop}."
             raise NotImplementedError(msg)
 
+    def create_subshell(self) -> str:
+        subshell_id = str(uuid.uuid4())
+        self._get_subshell_item(SubshellItem.user_ns, subshell_id)
+        return subshell_id
+
+    def list_subshells(self) -> list[str]:
+        return [k for k in self._per_subshell_items if k]
+
+    def delete_subshell(self, subshell_id: str | None, unsafe=False) -> None:
+        if (unsafe or subshell_id) and (data := self._per_subshell_items.pop(subshell_id, None)):
+            data[SubshellItem.history_manager].end_session()
+            data[SubshellItem.user_ns].clear()
+            data[SubshellItem.user_ns_hidden].clear()
+
+    @contextmanager
+    def subshell_context(self, subshell_id: str | None) -> Generator[Self, Any, None]:
+        """Set the context for the current subshell_id.
+
+        Use this when working with a subshell.
+        """
+        token = utils._subshell_id_var.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
+        try:
+            yield self
+        finally:
+            utils._subshell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
+
 
 @magics_class
 class KernelMagics(Magics):
@@ -360,7 +434,7 @@ class KernelMagics(Magics):
         See also:
             - [async_kernel.utils.get_kernel][]
         """
-        subshells = async_kernel.Kernel().list_subshells()
+        subshells = async_kernel.Kernel().shell.list_subshells()
         print(f"{len(subshells)} subshells: {subshells}")
 
 
