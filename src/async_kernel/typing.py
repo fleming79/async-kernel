@@ -133,49 +133,29 @@ class RunMode(enum.StrEnum):
 class MsgType(enum.StrEnum):
     """
     An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).
-
     Some message types are on the [control channel](https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-control-router-dealer-channel) only.
+
+    See also:
+        - [async_kernel.kernel.Handlers][]
     """
 
     kernel_info_request = "kernel_info_request"
-    "[async_kernel.kernel.Kernel.kernel_info_request][]"
-
     comm_info_request = "comm_info_request"
-    "[async_kernel.kernel.Kernel.comm_info_request][]"
-
     execute_request = "execute_request"
-    "[async_kernel.kernel.Kernel.execute_request][]"
-
     complete_request = "complete_request"
-    "[async_kernel.kernel.Kernel.complete_request][]"
-
     is_complete_request = "is_complete_request"
-    "[async_kernel.kernel.Kernel.is_complete_request][]"
-
     inspect_request = "inspect_request"
-    "[async_kernel.kernel.Kernel.inspect_request][]"
-
     history_request = "history_request"
-    "[async_kernel.kernel.Kernel.history_request][]"
-
     comm_open = "comm_open"
-    "[async_kernel.kernel.Kernel.comm_open][]"
-
     comm_msg = "comm_msg"
-    "[async_kernel.kernel.Kernel.comm_msg][]"
-
     comm_close = "comm_close"
-    "[async_kernel.kernel.Kernel.comm_close][]"
-
     # Control
     interrupt_request = "interrupt_request"
-    "[async_kernel.kernel.Kernel.interrupt_request][] (control channel only)"
-
     shutdown_request = "shutdown_request"
-    "[async_kernel.kernel.Kernel.shutdown_request][] (control channel only)"
-
     debug_request = "debug_request"
-    "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
+    create_subshell_request = "create_subshell_request"
+    delete_subshell_request = "delete_subshell_request"
+    list_subshell_request = "list_subshell_request"
 
 
 class MetadataKeys(enum.StrEnum):
@@ -270,6 +250,8 @@ class MsgHeader(TypedDict):
     ""
     version: str
     ""
+    subshell_id: NotRequired[str]
+    "ref: https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#proposed-enhancement-kernel-subshells"
 
 
 class Message(TypedDict, Generic[T]):
@@ -368,7 +350,11 @@ Content = dict[str, Any]
 A TypeAlias for the content in `Message`.
 """
 
-HandlerType = Callable[[Job], Awaitable[Content | None]]
+HandlerType = Callable[[object, Job], Awaitable[Content | None]]
 """
 A TypeAlias for the handler of message requests.
+
+The handler should accept the arguments `kernel, job`:
+    - kernel: The kernel or its proxy for a subshell request.
+    - job: The job to handle.
 """

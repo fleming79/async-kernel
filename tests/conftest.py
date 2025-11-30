@@ -46,7 +46,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
     kernel.transport = transport
     kernel.print_kernel_messages = False
-    if request.param == "MainThread":
+    if request.param.startswith("MainThread"):
         async with kernel:
             yield kernel
     else:

@@ -22,22 +22,24 @@ from contextlib import asynccontextmanager
 from logging import Logger, LoggerAdapter
 from pathlib import Path
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self, final
 
 import aiologic
 import anyio
 import IPython.core.completer
 import traitlets
+import wrapt
 import zmq
 from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import async_checkpoint, current_async_library
 from IPython.core.error import StdinNotImplementedError
+from IPython.core.history import HistoryManager
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CaselessStrEnum, Dict, HasTraits, Instance, Set, Tuple, Unicode, UseEnum
+from traitlets import CaselessStrEnum, Dict, HasTraits, Instance, Tuple, Unicode, UseEnum
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -68,7 +70,9 @@ if TYPE_CHECKING:
     from types import CoroutineType, FrameType
 
 
-__all__ = ["Kernel", "KernelInterruptError"]
+__all__ = ["Handlers", "Kernel", "KernelInterruptError"]
+
+# pyright: reportPrivateUsage=false
 
 
 def error_to_content(error: BaseException, /) -> Content:
@@ -143,7 +147,8 @@ def bind_socket(
 
 @functools.cache
 def wrap_handler(
-    runner: Callable[[HandlerType, Job, BinarySemaphore]],
+    subshell_id: str | None,
+    runner: Callable[[str | None, HandlerType, Job, BinarySemaphore]],
     handler: HandlerType,
     lock: BinarySemaphore,
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
@@ -160,7 +165,7 @@ def wrap_handler(
 
     @functools.wraps(handler)
     async def wrap_handler(job: Job) -> None:
-        await runner(handler, job, lock)
+        await runner(subshell_id, handler, job, lock)
 
     return wrap_handler
 
@@ -215,18 +220,22 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     """
 
     _instance: Self | None = None
+    _stopped = False
     _initialised = False
     _interrupt_requested: bool | Literal["FORCE"] = False
     _last_interrupt_frame = None
     _stop_on_error_time: float = 0
-    _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
-    _settings: Dict[str, Any] = Dict()
+    _interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
+    _settings = Fixed(dict)
     _zmq_context = Fixed(zmq.Context)
-    _sockets: Dict[SocketID, zmq.Socket] = Dict()
-    callers: Dict[Literal[SocketID.shell, SocketID.control], Caller] = Dict()
-    "The caller associated with the kernel once it has started."
-    _ports: Dict[SocketID, int] = Dict()
+    _sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
+    _ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
     _execution_count = traitlets.Int(0)
+    _subshells: Fixed[Self, dict[str, Kernel_Proxy]] = Fixed(dict)
+
+    callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
+    "The caller associated with the kernel once it has started."
+    ""
 
     # Public traits
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
@@ -237,7 +246,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     help_links = Tuple()
     ""
-    quiet = traitlets.Bool(True)
+    quiet = True
     "Only send stdout/stderr to output stream."
 
     print_kernel_messages = traitlets.Bool(True)
@@ -254,7 +263,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     of the current profile, but can be specified by absolute path.
     """
 
-    kernel_name: str | Unicode = Unicode()
+    kernel_name = Unicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
     ip = Unicode()
@@ -321,7 +330,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         if "signature_scheme" in info:
             self.session.signature_scheme = info["signature_scheme"]
 
-    def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
+    def __new__(cls, settings: dict | None = None, /) -> Self:
         #  There is only one instance (including subclasses).
         if not (instance := Kernel._instance):
             Kernel._instance = instance = super().__new__(cls)
@@ -339,7 +348,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     @override
     def __repr__(self) -> str:
         info = [f"{k}={v}" for k, v in self.settings.items()]
-        return f"{self.__class__.__name__}<{', '.join(info)}>"
+        subshell = f"subshell_id={self.subshell_id!s} " if self.subshell_id else "Main"
+        return f"{self.__class__.__name__}<{subshell}{', '.join(info)}>"
 
     @traitlets.default("log")
     def _default_log(self) -> LoggerAdapter[Logger]:
@@ -407,6 +417,10 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return pathlib.Path(proposal.value)
 
     @property
+    def subshell_id(self) -> None:
+        return None
+
+    @property
     def settings(self) -> dict[str, Any]:
         "Settings that have been set to customise the behaviour of the kernel."
         return {k: getattr(self, k) for k in ("kernel_name", "connection_file")} | self._settings
@@ -428,6 +442,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             "help_links": self.help_links,
             "debugger": not utils.LAUNCHED_BY_DEBUGPY,
             "kernel_name": self.kernel_name,
+            "supported_features": ["kernel subshells"],
         }
 
     def load_settings(self, settings: dict[str, Any]) -> None:
@@ -447,7 +462,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         settings_ = self._settings or {"kernel_name": self.kernel_name}
         for k, v in settings.items():
             settings_ |= utils.setattr_nested(self, k, v)
-        self._settings = settings_
+        self._settings.update(settings_)
 
     def run(self, wait_exit: Callable[[], Awaitable] = anyio.sleep_forever, /):
         """
@@ -486,6 +501,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         Instead a new instance should be started.
         """
         if (instance := Kernel._instance) and (stop := getattr(instance, "_stop", None)):
+            instance._stopped = True
             stop()
 
     @asynccontextmanager
@@ -534,6 +550,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
             self._zmq_context.term()
+            while self._subshells:
+                self._subshells.popitem()[1].stop()
             if self.print_kernel_messages:
                 print(f"Kernel stopped: {self!r}")
 
@@ -804,6 +822,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             while True:
                 try:
                     ident, msg = self.session.recv(socket, mode=zmq.BLOCKY, copy=False)  # pyright: ignore[reportAssignmentType]
+                    if self._stopped:
+                        break
                     job: Job = {
                         "received_time": time.monotonic(),
                         "socket_id": socket_id,
@@ -827,9 +847,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             caller: A per-channel caller to use for scheduling.
             lock: A per-socket lock for sending messages, used by [Kernel.run_handler][].
         """
-        # Debug warning: breakpoints won't work here because `receive_msg_loop` disables debugging with: `utils.mark_thread_pydev_do_not_trace()`
+
+        # **WARNING** debugging: breakpoints won't work here because `receive_msg_loop` disables debugging with: `utils.mark_thread_pydev_do_not_trace()`
+
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
-        handler = wrap_handler(self.run_handler, self.get_handler(msg_type), lock)
+        subshell_id = job["msg"]["header"].get("subshell_id")
+
+        handler = wrap_handler(subshell_id, self.run_handler, self.get_handler(msg_type), lock)
         run_mode = self.get_run_mode(msg_type, socket_id=job["socket_id"], job=job)
         match run_mode:
             case RunMode.direct:
@@ -843,12 +867,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self.log.debug("%s %s %s %s", msg_type, handler, run_mode, job)
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
-        if not callable(f := getattr(self, msg_type, None)):
-            msg = f"A handler was not found for {msg_type=}"
-            raise TypeError(msg)
-        return f  # pyright: ignore[reportReturnType]
+        if callable(f := getattr(Handlers, msg_type, None)):
+            return f  # pyright: ignore[reportReturnType]
+        msg = f"A handler was not found for {msg_type=}"
+        raise TypeError(msg)
 
-    async def run_handler(self, handler: HandlerType, job: Job[dict], lock: BinarySemaphore) -> None:
+    async def run_handler(
+        self, subshell_id: str | None, handler: HandlerType, job: Job[dict], lock: BinarySemaphore
+    ) -> None:
         """
         Asynchronously run a message handler for a given job, managing reply sending and execution state.
 
@@ -881,7 +907,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 content["status"] = "ok"
             # Although we aren't sending from the thread where the socket belongs this still appears to be reliable.
             async with lock:
-                msg = self.session.send(
+                msg = kernel.session.send(
                     stream=job["socket"],
                     msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
                     content=content,
@@ -889,27 +915,28 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     ident=job["ident"],
                 )
                 if msg:
-                    self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
+                    kernel.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
-        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        token = utils._job_var.set(job)
+        kernel: Kernel = self if subshell_id is None else self.get_subshell(subshell_id)
         try:
-            self.iopub_send(
+            kernel.iopub_send(
                 msg_or_type="status",
                 content={"execution_state": "busy"},
-                ident=self.topic("status"),
+                ident=kernel.topic(topic="status"),
             )
-            if (content := await handler(job)) is not None:
+            if (content := await handler(kernel, job)) is not None:
                 await send_reply(job, content)
         except Exception as e:
             await send_reply(job, error_to_content(e))
-            self.log.exception("Exception in message handler:", exc_info=e)
+            kernel.log.exception("Exception in message handler:", exc_info=e)
         finally:
-            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
-            self.iopub_send(
+            utils._job_var.reset(token)
+            kernel.iopub_send(
                 msg_or_type="status",
                 parent=job["msg"],
                 content={"execution_state": "idle"},
-                ident=self.topic("status"),
+                ident=kernel.topic("status"),
             )
 
     def get_run_mode(
@@ -937,7 +964,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
         match (socket_id, msg_type):
-            case SocketID.shell, MsgType.shutdown_request | MsgType.debug_request:
+            case (
+                SocketID.shell,
+                MsgType.shutdown_request
+                | MsgType.debug_request
+                | MsgType.create_subshell_request
+                | MsgType.delete_subshell_request
+                | MsgType.list_subshell_request,
+            ):
                 msg = f"{msg_type=} not allowed on shell!"
                 raise ValueError(msg)
             case SocketID.control, MsgType.execute_request:
@@ -979,189 +1013,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 data.append((socket_id, msg_type, mode))
         data_ = zip(*data, strict=True)
         return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
-
-    async def kernel_info_request(self, job: Job[Content], /) -> Content:
-        """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
-        return self.kernel_info
-
-    async def comm_info_request(self, job: Job[Content], /) -> Content:
-        """Handle a [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info)."""
-        c = job["msg"]["content"]
-        target_name = c.get("target_name", None)
-        comms = {
-            k: {"target_name": v.target_name}
-            for (k, v) in tuple(self.comm_manager.comms.items())
-            if v.target_name == target_name or target_name is None
-        }
-        return {"comms": comms}
-
-    async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
-        """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        c = job["msg"]["content"]
-        if (job["received_time"] < self._stop_on_error_time) and not c.get("silent", False):
-            self.log.info("Aborting execute_request: %s", job)
-            return error_to_content(RuntimeError("Aborting due to prior exception")) | {
-                "execution_count": self.execution_count
-            }
-        metadata = job["msg"].get("metadata") or {}
-        if not (silent := c["silent"]):
-            self._execution_count += 1
-            utils._execution_count_var.set(self._execution_count)  # pyright: ignore[reportPrivateUsage]
-            self.iopub_send(
-                msg_or_type="execute_input",
-                content={"code": c["code"], "execution_count": self.execution_count},
-                parent=job["msg"],
-                ident=self.topic("execute_input"),
-            )
-        caller = Caller()
-        err = None
-        with anyio.CancelScope() as scope:
-
-            def cancel():
-                if not silent:
-                    caller.call_direct(scope.cancel, "Interrupted")
-
-            try:
-                self._interrupts.add(cancel)
-                result = await self.shell.run_cell_async(
-                    raw_cell=c["code"],
-                    store_history=c.get("store_history", False),
-                    silent=silent,
-                    transformed_cell=self.shell.transform_cell(c["code"]),
-                    shell_futures=True,
-                )
-            except (Exception, anyio.get_cancelled_exc_class()) as e:
-                # A safeguard to catch exceptions not caught by the shell.
-                err = KernelInterruptError() if self._last_interrupt_frame else e
-            else:
-                err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
-            self._interrupts.discard(cancel)
-        if (err) and (
-            (Tags.suppress_error in metadata.get("tags", ()))
-            or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
-        ):
-            # Suppress the error due to either:
-            # 1. tag
-            # 2. timeout
-            err = None
-        content = {
-            "status": "error" if err else "ok",
-            "execution_count": self.execution_count,
-            "user_expressions": self.shell.user_expressions(c.get("user_expressions", {})),
-        }
-        if err:
-            content |= error_to_content(err)
-            if (not silent) and c.get("stop_on_error"):
-                try:
-                    self._stop_on_error_time = math.inf
-                    self.log.info("An error occurred in a non-silent execution request")
-                    with anyio.CancelScope(shield=True):
-                        await async_checkpoint(force=True)
-                finally:
-                    self._stop_on_error_time = time.monotonic()
-        return content
-
-    async def complete_request(self, job: Job[Content], /) -> Content:
-        """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
-        c = job["msg"]["content"]
-        code: str = c["code"]
-        cursor_pos = c.get("cursor_pos") or len(code)
-        with IPython.core.completer.provisionalcompleter():
-            completions = self.shell.Completer.completions(code, cursor_pos)
-            completions = list(IPython.core.completer.rectify_completions(code, completions))
-        comps = [
-            {
-                "start": comp.start,
-                "end": comp.end,
-                "text": comp.text,
-                "type": comp.type,
-                "signature": comp.signature,
-            }
-            for comp in completions
-        ]
-        s, e = completions[0].start, completions[0].end if completions else (cursor_pos, cursor_pos)
-        matches = [c.text for c in completions]
-        return {
-            "matches": matches,
-            "cursor_end": e,
-            "cursor_start": s,
-            "metadata": {"_jupyter_types_experimental": comps},
-        }
-
-    async def is_complete_request(self, job: Job[Content], /) -> Content:
-        """Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
-        status, indent_spaces = self.shell.input_transformer_manager.check_complete(job["msg"]["content"]["code"])
-        content = {"status": status}
-        if status == "incomplete":
-            content["indent"] = " " * indent_spaces
-        return content
-
-    async def inspect_request(self, job: Job[Content], /) -> Content:
-        """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
-        c = job["msg"]["content"]
-        detail_level = int(c.get("detail_level", 0))
-        omit_sections = set(c.get("omit_sections", []))
-        name = token_at_cursor(c["code"], c["cursor_pos"])
-        content = {"data": {}, "metadata": {}, "found": True}
-        try:
-            bundle = self.shell.object_inspect_mime(name, detail_level=detail_level, omit_sections=omit_sections)
-            content["data"] = bundle
-            if not self.shell.enable_html_pager:
-                content["data"].pop("text/html")
-        except KeyError:
-            content["found"] = False
-        return content
-
-    async def history_request(self, job: Job[Content], /) -> Content:
-        """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
-        c = job["msg"]["content"]
-        history_manager = self.shell.history_manager
-        assert history_manager
-        if c.get("hist_access_type") == "tail":
-            hist = history_manager.get_tail(c["n"], raw=c.get("raw"), output=c.get("output"), include_latest=True)
-        elif c.get("hist_access_type") == "range":
-            hist = history_manager.get_range(
-                c.get("session", 0),
-                c.get("start", 1),
-                c.get("stop", None),
-                raw=c.get("raw", True),
-                output=c.get("output", False),
-            )
-        elif c.get("hist_access_type") == "search":
-            hist = history_manager.search(
-                c.get("pattern"), raw=c.get("raw"), output=c.get("output"), n=c.get("n"), unique=c.get("unique")
-            )
-        else:
-            hist = []
-        return {"history": list(hist)}
-
-    async def comm_open(self, job: Job[Content], /) -> None:
-        """Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
-        self.comm_manager.comm_open(stream=job["socket"], ident=job["ident"], msg=job["msg"])  # pyright: ignore[reportArgumentType]
-
-    async def comm_msg(self, job: Job[Content], /) -> None:
-        """Handle a [comm msg request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages)."""
-        self.comm_manager.comm_msg(stream=job["socket"], ident=job["ident"], msg=job["msg"])  # pyright: ignore[reportArgumentType]
-
-    async def comm_close(self, job: Job[Content], /) -> None:
-        """Handle a [comm close request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms)."""
-        self.comm_manager.comm_close(stream=job["socket"], ident=job["ident"], msg=job["msg"])  # pyright: ignore[reportArgumentType]
-
-    async def interrupt_request(self, job: Job[Content], /) -> Content:
-        """Handle a [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only)."""
-        self._interrupt_now()
-        for interrupter in tuple(self._interrupts):
-            interrupter()
-        return {}
-
-    async def shutdown_request(self, job: Job[Content], /) -> Content:
-        """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
-        self.stop()
-        return {"restart": job["msg"]["content"].get("restart", False)}
-
-    async def debug_request(self, job: Job[Content], /) -> Content:
-        """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only)."""
-        return await self.debugger.process_request(job["msg"]["content"])
 
     def excepthook(self, etype, evalue, tb) -> None:
         """Handle an exception."""
@@ -1209,3 +1060,343 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 is used to 'capture' output when its context has been acquired.
         """
         return utils.get_parent()
+
+    def create_subshell(self) -> Self:
+        "Create a subshell."
+        return Kernel_Proxy()  # pyright: ignore[reportReturnType]
+
+    def get_subshell(self, subshell_id: str) -> Self:
+        "Get an existing subshell."
+        return self._subshells[subshell_id]  # pyright: ignore[reportReturnType]
+
+    def stop_subshell(self, subshell_id: str) -> None:
+        "Stop a subshell."
+        if proxy := self._subshells.pop(subshell_id):
+            proxy.stop()
+
+    def list_subshells(self) -> list[str]:
+        "List the current subshells."
+        return list(self._subshells)
+
+
+@final
+class Handlers:
+    """
+    Handlers for [Jupyter kernel messaging](https://jupyter-client.readthedocs.io/en/stable/messaging.html#messaging-in-jupyter).
+
+    All handlers are a [staticmethod][] and have the signature:
+
+    - `<name>(kernel: Kernel, job: Job[Content], /) -> Content:` - Reply with content
+    - `<name>(kernel: Kernel, job: Job[Content], /) -> None:` - No reply
+
+    """
+
+    @staticmethod
+    async def kernel_info_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
+        return kernel.kernel_info
+
+    @staticmethod
+    async def comm_info_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info)."""
+        c = job["msg"]["content"]
+        target_name = c.get("target_name", None)
+        comms = {
+            k: {"target_name": v.target_name}
+            for (k, v) in tuple(kernel.comm_manager.comms.items())
+            if v.target_name == target_name or target_name is None
+        }
+        return {"comms": comms}
+
+    @staticmethod
+    async def execute_request(kernel: Kernel, job: Job[ExecuteContent], /) -> Content:
+        """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
+        c = job["msg"]["content"]
+        if (job["received_time"] < kernel._stop_on_error_time) and not c.get("silent", False):
+            kernel.log.info("Aborting execute_request: %s", job)
+            return error_to_content(RuntimeError("Aborting due to prior exception")) | {
+                "execution_count": kernel.execution_count
+            }
+        metadata = job["msg"].get("metadata") or {}
+        if not (silent := c["silent"]):
+            kernel._execution_count += 1
+            utils._execution_count_var.set(kernel._execution_count)
+            kernel.iopub_send(
+                msg_or_type="execute_input",
+                content={"code": c["code"], "execution_count": kernel.execution_count},
+                parent=job["msg"],
+                ident=kernel.topic("execute_input"),
+            )
+        caller = Caller()
+        err = None
+        with anyio.CancelScope() as scope:
+
+            def cancel():
+                if not silent:
+                    caller.call_direct(scope.cancel, "Interrupted")
+
+            try:
+                kernel._interrupts.add(cancel)
+                result = await kernel.shell.run_cell_async(
+                    raw_cell=c["code"],
+                    store_history=c.get("store_history", False),
+                    silent=silent,
+                    transformed_cell=kernel.shell.transform_cell(c["code"]),
+                    shell_futures=True,
+                )
+            except (Exception, anyio.get_cancelled_exc_class()) as e:
+                # A safeguard to catch exceptions not caught by the shell.
+                err = KernelInterruptError() if kernel._last_interrupt_frame else e
+            else:
+                err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+            kernel._interrupts.discard(cancel)
+        if (err) and (
+            (Tags.suppress_error in metadata.get("tags", ()))
+            or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
+        ):
+            # Suppress the error due to either:
+            # 1. tag
+            # 2. timeout
+            err = None
+        content = {
+            "status": "error" if err else "ok",
+            "execution_count": kernel.execution_count,
+            "user_expressions": kernel.shell.user_expressions(c.get("user_expressions", {})),
+        }
+        if err:
+            content |= error_to_content(err)
+            if (not silent) and c.get("stop_on_error"):
+                try:
+                    kernel._stop_on_error_time = math.inf
+                    kernel.log.info("An error occurred in a non-silent execution request")
+                    with anyio.CancelScope(shield=True):
+                        await async_checkpoint(force=True)
+                finally:
+                    kernel._stop_on_error_time = time.monotonic()
+        return content
+
+    @staticmethod
+    async def complete_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+        c = job["msg"]["content"]
+        code: str = c["code"]
+        cursor_pos = c.get("cursor_pos") or len(code)
+        with IPython.core.completer.provisionalcompleter():
+            completions = kernel.shell.Completer.completions(code, cursor_pos)
+            completions = list(IPython.core.completer.rectify_completions(code, completions))
+        comps = [
+            {
+                "start": comp.start,
+                "end": comp.end,
+                "text": comp.text,
+                "type": comp.type,
+                "signature": comp.signature,
+            }
+            for comp in completions
+        ]
+        s, e = completions[0].start, completions[0].end if completions else (cursor_pos, cursor_pos)
+        matches = [c.text for c in completions]
+        return {
+            "matches": matches,
+            "cursor_end": e,
+            "cursor_start": s,
+            "metadata": {"_jupyter_types_experimental": comps},
+        }
+
+    @staticmethod
+    async def is_complete_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+        status, indent_spaces = kernel.shell.input_transformer_manager.check_complete(job["msg"]["content"]["code"])
+        content = {"status": status}
+        if status == "incomplete":
+            content["indent"] = " " * indent_spaces
+        return content
+
+    @staticmethod
+    async def inspect_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+        c = job["msg"]["content"]
+        detail_level = int(c.get("detail_level", 0))
+        omit_sections = set(c.get("omit_sections", []))
+        name = token_at_cursor(c["code"], c["cursor_pos"])
+        content = {"data": {}, "metadata": {}, "found": True}
+        try:
+            bundle = kernel.shell.object_inspect_mime(name, detail_level=detail_level, omit_sections=omit_sections)
+            content["data"] = bundle
+            if not kernel.shell.enable_html_pager:
+                content["data"].pop("text/html")
+        except KeyError:
+            content["found"] = False
+        return content
+
+    @staticmethod
+    async def history_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        c = job["msg"]["content"]
+        history_manager = kernel.shell.history_manager
+        assert history_manager
+        if c.get("hist_access_type") == "tail":
+            hist = history_manager.get_tail(c["n"], raw=c.get("raw"), output=c.get("output"), include_latest=True)
+        elif c.get("hist_access_type") == "range":
+            hist = history_manager.get_range(
+                c.get("session", 0),
+                c.get("start", 1),
+                c.get("stop", None),
+                raw=c.get("raw", True),
+                output=c.get("output", False),
+            )
+        elif c.get("hist_access_type") == "search":
+            hist = history_manager.search(
+                c.get("pattern"), raw=c.get("raw"), output=c.get("output"), n=c.get("n"), unique=c.get("unique")
+            )
+        else:
+            hist = []
+        return {"history": list(hist)}
+
+    @staticmethod
+    async def comm_open(kernel: Kernel, job: Job[Content], /) -> None:
+        """Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
+        kernel.comm_manager.comm_open(stream=job["socket"], ident=job["ident"], msg=job["msg"])  # pyright: ignore[reportArgumentType]
+
+    @staticmethod
+    async def comm_msg(kernel: Kernel, job: Job[Content], /) -> None:
+        """Handle a [comm msg request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages)."""
+        kernel.comm_manager.comm_msg(stream=job["socket"], ident=job["ident"], msg=job["msg"])  # pyright: ignore[reportArgumentType]
+
+    @staticmethod
+    async def comm_close(kernel: Kernel, job: Job[Content], /) -> None:
+        """Handle a [comm close request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms)."""
+        kernel.comm_manager.comm_close(stream=job["socket"], ident=job["ident"], msg=job["msg"])  # pyright: ignore[reportArgumentType]
+
+    @staticmethod
+    async def interrupt_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only)."""
+        kernel._interrupt_now()
+        for interrupter in tuple(kernel._interrupts):
+            interrupter()
+        return {}
+
+    @staticmethod
+    async def shutdown_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
+        kernel.stop()
+        return {"restart": job["msg"]["content"].get("restart", False)}
+
+    @staticmethod
+    async def debug_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only)."""
+        return await kernel.debugger.process_request(job["msg"]["content"])
+
+    @staticmethod
+    async def create_subshell_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only)."""
+
+        return {"subshell_id": kernel.create_subshell().subshell_id}
+
+    @staticmethod
+    async def delete_subshell_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only)."""
+        kernel.stop_subshell(job["msg"]["content"]["subshell_id"])
+        return {}
+
+    @staticmethod
+    async def list_subshell_request(kernel: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells) (control only)."""
+        return {"subshell_id": list(kernel.list_subshells())}
+
+
+class AsyncInteractiveShell_Proxy(wrapt.BaseObjectProxy):
+    """
+    A proxy class for an interactive shell, providing controlled access to user namespaces and history management.
+
+    This class wraps an underlying shell object, exposing its user namespace, global namespace, and history manager
+    through properties. It also provides a mechanism to stop the shell and clear the user namespace.
+
+    Properties:
+        user_ns (dict): Returns the current user namespace.
+        user_global_ns (dict): Returns the global user namespace.
+        history_manager (HistoryManager): Returns the history manager instance.
+
+    Methods:
+        stop(): Stops the shell and clears the user namespace if not already stopped.
+    """
+
+    _self_stopped = False
+
+    def __init__(self) -> None:
+        shell = Kernel().shell
+        super().__init__(shell)
+        self._self_user_ns = {}
+        self._self_user_global_ns = shell.user_global_ns
+        self._self_history_manager = HistoryManager(shell=self, parent=self)
+
+    @property
+    def user_ns(self) -> dict[str, Any]:
+        return self._self_user_ns
+
+    @property
+    def user_global_ns(self) -> dict[str, Any]:
+        return self._self_user_global_ns
+
+    @property
+    def history_manager(self) -> HistoryManager:
+        return self._self_history_manager
+
+    def stop(self):
+        if not self._self_stopped:
+            self._self_stopped = True
+            self._self_user_ns.clear()
+
+
+class Kernel_Proxy(wrapt.BaseObjectProxy):
+    """
+    A proxy class for the Kernel object, providing a unique subshell context and execution count management.
+
+
+    This class wraps a Kernel instance and manages its own execution count and subshell ID.
+    It also provides access to an associated AsyncInteractiveShell_Proxy instance.
+
+    Attributes:
+        _execution_count (int): The execution count for this proxy instance.
+        shell (AsyncInteractiveShell_Proxy): The interactive shell proxy associated with this kernel proxy.
+        subshell_id (str): The unique identifier for this subshell proxy.
+
+    Methods:
+        stop(): Cleans up the proxy by removing itself from the kernel's subshell proxies and stopping its shell.
+
+    Ref:
+        - [*Jupyter kernel subshell*](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#jupyter-kernel-subshells)
+    """
+
+    if TYPE_CHECKING:
+        __wrapped__: Kernel
+    _self_deleted = False
+    _self_execution_count = 0
+
+    @property
+    def _execution_count(self):
+        return self._self_execution_count
+
+    @_execution_count.setter
+    def _execution_count(self, value):
+        self._self_execution_count = value
+
+    @property
+    def shell(self) -> AsyncInteractiveShell_Proxy:
+        return self._self_shell
+
+    @property
+    def subshell_id(self) -> str:
+        return self._self_subshell_id
+
+    def __init__(self) -> None:
+        self._self_subshell_id = str(uuid.uuid4())
+        self._self_shell = AsyncInteractiveShell_Proxy()
+        super().__init__(Kernel())
+        self.__wrapped__._subshells[self._self_subshell_id] = self
+
+    def stop(self):
+        if not self._self_deleted:
+            self._self_deleted = True
+            self.__wrapped__._subshells.pop(self._self_subshell_id, None)
+            self._self_shell.stop()

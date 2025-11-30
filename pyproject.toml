@@ -127,7 +127,8 @@ exclude_lines = [
   "except .*",
   "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
   ".*sys.platform == \"win32\".*",
-  "if not self.quiet.*"
+  "if not self.quiet.*",
+  "if self._stopped:"
 ]
 
 [tool.coverage.run]
@@ -181,8 +182,9 @@ ignore = [
   "T201", # `print` found
   "SIM105", # Use `contextlib.suppress(ValueError)` instead of try-except-pass
   "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
-  "ARG001", # Unused function argument
-  "ARG002",  # Unused method argument
+  "ARG001", # Unused function arguments
+  "ARG002",  # Unused method arguments
+  "ARG004",  # Unused staticmethod arguments
   "PTH123", # `open()` should be replaced by `Path.open()`
   "UP031", # Use format specifiers instead of percent format
   "PT023", # Use `@pytest.mark.skip` over `@pytest.mark.skip()`

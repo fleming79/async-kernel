@@ -18,6 +18,7 @@ from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Instance, Type, default, observe
 from typing_extensions import override
 
+import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.compiler import XCachingCompiler
@@ -145,7 +146,7 @@ class AsyncInteractiveShell(InteractiveShell):
     An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
-        - All [execute requests][async_kernel.kernel.Kernel.execute_request] are run asynchronously.
+        - All [execute requests][async_kernel.kernel.Handlers.execute_request] are run asynchronously.
         - Supports a soft timeout specified via metadata `{"timeout":<value in seconds>}`[^1].
         - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
@@ -163,7 +164,7 @@ class AsyncInteractiveShell(InteractiveShell):
     _main_mod_cache = Dict()
 
     execute_request_timeout = CFloat(default_value=None, allow_none=True)
-    "A timeout in seconds to complete [execute requests][async_kernel.kernel.Kernel.execute_request]."
+    "A timeout in seconds to complete [execute requests][async_kernel.kernel.Handlers.execute_request]."
 
     run_cell = None  # pyright: ignore[reportAssignmentType]
     "**Not supported** -  use [run_cell_async][async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async] instead."
@@ -240,7 +241,7 @@ class AsyncInteractiveShell(InteractiveShell):
     @property
     @override
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
-        return {"user_global": self.user_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
+        return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
     @override
     async def run_cell_async(
@@ -257,7 +258,7 @@ class AsyncInteractiveShell(InteractiveShell):
         """
         Run a complete IPython cell asynchronously.
 
-        This function runs [execute requests][async_kernel.kernel.Kernel.execute_request] for the kernel
+        This function runs [execute requests][async_kernel.kernel.Handlers.execute_request] for the kernel
         wrapping [InteractiveShell][IPython.core.interactiveshell.InteractiveShell.run_cell_async].
         """
         with anyio.fail_after(delay=utils.get_execute_request_timeout()):
@@ -351,6 +352,16 @@ class KernelMagics(Magics):
                 thread += " ← current"
             lines.append("".join([name, running.center(8), protected, thread]))
         print(*lines, sep="\n")
+
+    @line_magic
+    def subshell(self, _) -> None:
+        """Print the number of subshells and the `subshell_id` [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
+
+        See also:
+            - [async_kernel.utils.get_kernel][]
+        """
+        subshells = async_kernel.Kernel().list_subshells()
+        print(f"{len(subshells)} subshells: {subshells}")
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)

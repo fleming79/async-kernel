@@ -10,30 +10,32 @@ from async_kernel import utils as ak_utils
 if TYPE_CHECKING:
     from async_kernel.typing import ExecuteContent, Job
 
+# pyright: reportPrivateUsage=false
+
 
 class TestUtils:
     async def test_get_job(self, anyio_backend, job: Job[ExecuteContent]) -> None:
         with pytest.raises(LookupError):
-            ak_utils._job_var.get()  # pyright: ignore[reportPrivateUsage]
+            ak_utils._job_var.get()
         ak_utils.get_job()
-        ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        ak_utils._job_var.set(job)
         assert ak_utils.get_job() is job
 
     async def test_get_execution_count(self, anyio_backend, job: Job[ExecuteContent]):
         assert ak_utils.get_execution_count() == 0
-        ak_utils._execution_count_var.set(3)  # pyright: ignore[reportPrivateUsage]
+        ak_utils._execution_count_var.set(3)
         assert ak_utils.get_execution_count() == 3
 
     async def test_get_metadata(self, anyio_backend, job: Job[ExecuteContent]):
         assert ak_utils.get_metadata() == {}
         assert ak_utils.get_metadata(job) is job["msg"]["metadata"]
-        ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        ak_utils._job_var.set(job)
         assert ak_utils.get_metadata() is job["msg"]["metadata"]
 
     async def test_get_parent(self, anyio_backend, job: Job[ExecuteContent]):
         assert ak_utils.get_parent() is None
         assert ak_utils.get_parent(job) is job["msg"]
-        ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        ak_utils._job_var.set(job)
         assert ak_utils.get_parent(job) is job["msg"]
 
     async def test_get_tags(self, anyio_backend, job: Job[ExecuteContent]):
@@ -44,7 +46,7 @@ class TestUtils:
     async def test_get_execute_request_timeout(self, anyio_backend, job: Job[ExecuteContent]):
         job["msg"]["metadata"] = {"timeout": 3}
         assert ak_utils.get_execute_request_timeout(job) == 3
-        ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        ak_utils._job_var.set(job)
         assert ak_utils.get_execute_request_timeout() == 3
 
     def test_setattr_nested(self):

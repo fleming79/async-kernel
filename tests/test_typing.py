@@ -1,4 +1,4 @@
-from async_kernel.kernel import Kernel
+from async_kernel.kernel import Handlers
 from async_kernel.typing import MetadataKeys, MsgType, RunMode, Tags
 
 
@@ -31,7 +31,7 @@ class TestMetadataKeys:
 
 class TestMsgType:
     def test_all_names(self):
-        assert set(MsgType).intersection(vars(Kernel))
+        assert set(MsgType).intersection(vars(Handlers))
 
 
 class TestTags:

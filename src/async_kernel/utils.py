@@ -11,15 +11,17 @@ from async_kernel.typing import Message, MetadataKeys
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from async_kernel import Kernel
+    from async_kernel.kernel import Kernel
     from async_kernel.typing import Job
 
 __all__ = [
     "get_execute_request_timeout",
     "get_execution_count",
     "get_job",
+    "get_kernel",
     "get_metadata",
     "get_parent",
+    "get_subshell_id",
     "get_tags",
     "mark_thread_pydev_do_not_trace",
     "setattr_nested",
@@ -40,11 +42,6 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
     return
 
 
-def get_kernel() -> Kernel:
-    "Get the current kernel."
-    return async_kernel.Kernel()
-
-
 def get_job() -> Job[dict] | dict:
     "Get the job for the current context."
     try:
@@ -56,6 +53,20 @@ def get_job() -> Job[dict] | dict:
 def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
     "Get the [parent message]() for the current context."
     return (job or get_job()).get("msg")
+
+
+def get_subshell_id() -> str | None:
+    "Get the subshell id in the current context."
+    if msg := get_parent():
+        return msg["header"].get("subshell_id")
+    return None
+
+
+def get_kernel() -> Kernel:
+    "Get the current kernel or its subshell proxy if it is within an active context."
+    kernel = async_kernel.Kernel()
+    subshell_id = get_subshell_id()
+    return kernel.get_subshell(subshell_id) if subshell_id else kernel
 
 
 def get_metadata(job: Job | None = None, /) -> Mapping[str, Any]:

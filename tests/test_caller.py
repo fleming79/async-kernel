@@ -16,6 +16,8 @@ from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend
 
+# pyright: reportPrivateUsage=false
+
 
 @pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
@@ -384,7 +386,7 @@ class TestCaller:
         del obj
 
         await obj_finalized
-        assert not any(caller._queue_map)  # pyright: ignore[reportPrivateUsage]
+        assert not any(caller._queue_map)
 
     async def test_call_early(self, anyio_backend: Backend) -> None:
         caller = Caller("manual")
@@ -556,7 +558,7 @@ class TestCaller:
                 assert len(threads) == 2
             else:
                 assert len(threads) > 2
-            assert len(caller._worker_pool) == 2  # pyright: ignore[reportPrivateUsage]
+            assert len(caller._worker_pool) == 2
 
     async def test_as_completed_error(self, caller: Caller):
         def func():
@@ -613,17 +615,17 @@ class TestCaller:
         pen1 = caller.to_thread(threading.current_thread)
         w1 = Caller.get_current(await pen1)
         assert w1
-        assert w1 in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        assert w1 in caller._worker_pool
         w1.stop()
         pen2 = caller.to_thread(threading.current_thread)
         await w1.stopped
-        assert w1 not in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        assert w1 not in caller._worker_pool
         w2 = Caller.get_current(await pen2)
         assert w2
         assert not w2.stopped
         w2.stop()
         await w2.stopped
-        assert not caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        assert not caller._worker_pool
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)

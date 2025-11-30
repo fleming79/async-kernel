@@ -232,6 +232,21 @@ class ClearOutput(Reference):
     wait = Bool()
 
 
+class CreateSubshellReply(Reply):
+    # ref: https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell
+    subshell_id = Unicode()
+
+
+class DeleteSubshellReply(Reply):
+    # ref: https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell
+    pass
+
+
+class ListSubshellReply(Reply):
+    # ref: https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells
+    subshell_id = List(Unicode())
+
+
 references = {
     "execute_reply": ExecuteReply(),
     "inspect_reply": InspectReply(),
@@ -249,4 +264,7 @@ references = {
     "display_data": DisplayData(),
     "header": RHeader(),
     "clear_output": ClearOutput(),
+    "create_subshell_reply": CreateSubshellReply(),
+    "delete_subshell_reply": DeleteSubshellReply(),
+    "list_subshell_reply": ListSubshellReply(),
 }

@@ -9,7 +9,7 @@ from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from traitlets import Dict, HasTraits, Instance, observe
 from typing_extensions import override
 
-from async_kernel import utils
+import async_kernel
 
 if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
@@ -96,7 +96,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
         super().__init__()
 
     @observe("kernel")
-    def _observe_kernel(self, change: dict):
+    def _observe_kernel(self, change: dict) -> None:
         kernel: Kernel = change["new"]
         for c in self.comms.values():
             if isinstance(c, Comm):
@@ -110,7 +110,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
         return super().register_comm(comm)
 
     @staticmethod
-    def patch_comm():
+    def patch_comm() -> None:
         """
         Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
 
@@ -130,5 +130,5 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
                 setattr(ipykernel_comm, k, v)
 
 
-def get_comm_manager():
-    return utils.get_kernel().comm_manager
+def get_comm_manager() -> CommManager:
+    return async_kernel.Kernel().comm_manager
