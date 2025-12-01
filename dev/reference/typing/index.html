@@ -4369,28 +4369,28 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
           <b><code><a class="autorefs autorefs-internal" title=" queue (async_kernel.typing.RunMode.queue)" href="#async_kernel.typing.RunMode.queue">queue</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" queue_call" href="../caller/#async_kernel.caller.Caller.queue_call">async_kernel.Caller.queue_call</a>.</p>
+            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" queue_call" href="../caller/#async_kernel.caller.Caller.queue_call">async_kernel.caller.Caller.queue_call</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title=" task (async_kernel.typing.RunMode.task)" href="#async_kernel.typing.RunMode.task">task</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_soon" href="../caller/#async_kernel.caller.Caller.call_soon">async_kernel.Caller.call_soon</a>.</p>
+            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_soon" href="../caller/#async_kernel.caller.Caller.call_soon">async_kernel.caller.Caller.call_soon</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title=" thread (async_kernel.typing.RunMode.thread)" href="#async_kernel.typing.RunMode.thread">thread</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a> to start use a 'worker'.</p>
+            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a> to start use a 'worker'.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title=" direct (async_kernel.typing.RunMode.direct)" href="#async_kernel.typing.RunMode.direct">direct</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_direct" href="../caller/#async_kernel.caller.Caller.call_direct">async_kernel.Caller.call_direct</a>.</p>
+            <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_direct" href="../caller/#async_kernel.caller.Caller.call_direct">async_kernel.caller.Caller.call_direct</a>.</p>
           </div>
         </li>
     </ul>
@@ -4425,7 +4425,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
     <div class="doc doc-contents ">
 
-        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" queue_call" href="../caller/#async_kernel.caller.Caller.queue_call">async_kernel.Caller.queue_call</a>.</p>
+        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" queue_call" href="../caller/#async_kernel.caller.Caller.queue_call">async_kernel.caller.Caller.queue_call</a>.</p>
 
           
     </div>
@@ -4451,7 +4451,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
     <div class="doc doc-contents ">
 
-        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_soon" href="../caller/#async_kernel.caller.Caller.call_soon">async_kernel.Caller.call_soon</a>.</p>
+        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_soon" href="../caller/#async_kernel.caller.Caller.call_soon">async_kernel.caller.Caller.call_soon</a>.</p>
 
           
     </div>
@@ -4477,7 +4477,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
     <div class="doc doc-contents ">
 
-        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.Caller.to_thread</a> to start use a 'worker'.</p>
+        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a> to start use a 'worker'.</p>
 
           
     </div>
@@ -4503,7 +4503,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
     <div class="doc doc-contents ">
 
-        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_direct" href="../caller/#async_kernel.caller.Caller.call_direct">async_kernel.Caller.call_direct</a>.</p>
+        <p>Run the message handler using <a class="autorefs autorefs-internal" title=" call_direct" href="../caller/#async_kernel.caller.Caller.call_direct">async_kernel.caller.Caller.call_direct</a>.</p>
 
 
 <details class="warning" open>
@@ -5587,8 +5587,12 @@ see also: <a class="autorefs autorefs-internal" title=" Tags" href="#async_kern
       <a href="#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.typing.MetadataKeys"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MetadataKeys</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.typing.MetadataKeys.suppress_error_message"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;suppress_error_message</a>
   </span>
 
       </li>
