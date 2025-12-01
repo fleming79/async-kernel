@@ -182,6 +182,15 @@ class MsgType(enum.StrEnum):
     debug_request = "debug_request"
     "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
 
+    create_subshell_request = "create_subshell_request"
+    "[async_kernel.kernel.Kernel.create_subshell_request][] (control channel only)"
+
+    delete_subshell_request = "delete_subshell_request"
+    "[async_kernel.kernel.Kernel.delete_subshell_request][] (control channel only)"
+
+    list_subshell_request = "list_subshell_request"
+    "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
+
 
 class MetadataKeys(enum.StrEnum):
     """

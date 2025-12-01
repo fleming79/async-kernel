@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import threading
+from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
@@ -9,17 +10,19 @@ import async_kernel
 from async_kernel.typing import Message, MetadataKeys
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Generator, Mapping
 
-    from async_kernel import Kernel
+    from async_kernel.kernel import Kernel
     from async_kernel.typing import Job
 
 __all__ = [
     "get_execute_request_timeout",
     "get_execution_count",
     "get_job",
+    "get_kernel",
     "get_metadata",
     "get_parent",
+    "get_subshell_id",
     "get_tags",
     "mark_thread_pydev_do_not_trace",
     "setattr_nested",
@@ -27,8 +30,8 @@ __all__ = [
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
-_job_var = ContextVar("job")
-_execution_count_var: ContextVar[int] = ContextVar("execution_count")
+_job_var: ContextVar[Job] = ContextVar("job")
+_subshell_id_var: ContextVar[str | None] = ContextVar("_subshell_id_var", default=None)
 _execute_request_timeout: ContextVar[float | None] = ContextVar("execute_request_timeout", default=None)
 
 
@@ -58,6 +61,28 @@ def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
     return (job or get_job()).get("msg")
 
 
+def get_subshell_id() -> str | None:
+    "Get the subshell id in the current context."
+    return _subshell_id_var.get()
+
+
+@contextmanager
+def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
+    """A context manager for subshell_id.
+
+    Args:
+        subshell_id: An existing subshell id obtained via get_subshell_id, or [async_kernel.asyncshell.AsyncInteractiveShell.create_subshell][].
+    """
+    if subshell_id and subshell_id not in get_kernel().subshell_manager.subshells:
+        msg = f"A subshell with {subshell_id=} does not exist!"
+        raise ValueError(msg)
+    token = _subshell_id_var.set(subshell_id)
+    try:
+        yield
+    finally:
+        _subshell_id_var.reset(token)
+
+
 def get_metadata(job: Job | None = None, /) -> Mapping[str, Any]:
     "Gets [metadata]() for the current context."
     return (job or get_job()).get("msg", {}).get("metadata", {})
@@ -81,7 +106,7 @@ def get_execute_request_timeout(job: Job | None = None, /) -> float | None:
 def get_execution_count() -> int:
     "Gets the execution count for the current context, defaults to the current kernel count."
 
-    return _execution_count_var.get(None) or get_kernel()._execution_count  # pyright: ignore[reportPrivateUsage]
+    return get_kernel().shell.execution_count
 
 
 def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:

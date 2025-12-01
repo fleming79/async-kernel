@@ -21,8 +21,6 @@ class TestUtils:
 
     async def test_get_execution_count(self, anyio_backend, job: Job[ExecuteContent]):
         assert ak_utils.get_execution_count() == 0
-        ak_utils._execution_count_var.set(3)  # pyright: ignore[reportPrivateUsage]
-        assert ak_utils.get_execution_count() == 3
 
     async def test_get_metadata(self, anyio_backend, job: Job[ExecuteContent]):
         assert ak_utils.get_metadata() == {}

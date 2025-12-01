@@ -34,6 +34,7 @@ with [concurrent message handling](#run-mode).
     - [x] ipympl
     - [ ] tk
     - [ ] qt
+- [x] [Jupyter Kernel Subshells](#jupyter-kernel-subshells)
 
 **[Documentation](https://fleming79.github.io/async-kernel/)**
 
@@ -63,6 +64,33 @@ There are two callers:
 
 - `Shell` - runs in the `MainThread` handling user related requests[^non-main-thread].
 - `Control` - runs in a separate thread handling control related requests.
+
+### Jupyter Kernel Subshells
+
+[**JEP92**](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#jupyter-kernel-subshells)
+
+In async kernel, a subshell is a separate shell, with its own:
+
+- `user_ns`
+- completer
+- history
+
+The global namespace is common for the shell and all subshells. Furthermore, the global namespace is the `user_ns` of the main shell.
+
+### Details
+
+- The namespace of subshells is disposed of when the subshell is 'deleted'.
+- Objects in the mainshell are accessible in subshells (to list them use `dir(globals())`).
+- Subshells run in the same thread as the main shell
+
+### Tips
+
+- The namespace of the main shell is accessible with the `globals` function.
+- To run code in a separate thread add the comment `# thread` on the top line in a code block.
+    ```python
+    # thread
+    dir()
+    ```
 
 ### Messaging
 
