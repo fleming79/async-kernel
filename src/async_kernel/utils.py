@@ -31,7 +31,7 @@ __all__ = [
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
 _job_var: ContextVar[Job] = ContextVar("job")
-_subshell_id_var: ContextVar[str | None] = ContextVar("_subshell_id_var", default=None)
+_subshell_id_var: ContextVar[str | None] = ContextVar("_subshell_id_var")
 _execute_request_timeout: ContextVar[float | None] = ContextVar("execute_request_timeout", default=None)
 
 
@@ -61,9 +61,20 @@ def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
     return (job or get_job()).get("msg")
 
 
-def get_subshell_id() -> str | None:
-    "Get the subshell id in the current context."
-    return _subshell_id_var.get()
+def get_subshell_id(job: Job | None = None, /) -> str | None:
+    "Get the subshell id from the job, if a job is passed otherwise the current context."
+    if job:
+        if "subshell_id" in job["msg"]["content"]:
+            return job["msg"]["content"]["subshell_id"]
+        if "subshell_id" in job["msg"]["header"]:
+            return job["msg"]["header"]["subshell_id"]
+        return None
+    try:
+        return _subshell_id_var.get()
+    except LookupError:
+        if job := get_job():  # pyright: ignore[reportAssignmentType]
+            return get_subshell_id(job)
+        return None
 
 
 @contextmanager
