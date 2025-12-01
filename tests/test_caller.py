@@ -54,6 +54,9 @@ class TestCaller:
         assert len(caller.children) == 0
         assert c1.stopped
         assert c2.stopped
+        c3 = Caller("manual")
+        c3.stop()
+        assert c3.stopped
 
     async def test_already_exists(self, caller: Caller):
         assert Caller.get_current(caller.thread)

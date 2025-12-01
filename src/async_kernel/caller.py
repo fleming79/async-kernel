@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, c
 import anyio
 import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library, green_checkpoint
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
@@ -267,7 +267,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             async def run_caller_in_context() -> None:
                 if self._state is CallerState.start_sync:
                     self._state = CallerState.initial
-                    async with self:
+                async with self:
+                    if self._state is CallerState.running:
                         await anyio.sleep_forever()
 
             if thread := getattr(self, "thread", None):
@@ -306,13 +307,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if (self._protected and not force) or self._state in {CallerState.stopped, CallerState.stopping}:
             return self._state
-        if self._state in {CallerState.initial, CallerState.start_sync}:
-            self._state = CallerState.stopped
-            self.stopped.set()
-            green_checkpoint(force=True)
-        else:
-            assert self._state is CallerState.running
-            self._state = CallerState.stopping
+        set_stop = self._state is CallerState.initial
+        self._state = CallerState.stopping
         self._instances.pop(self.thread, None)
         if parent := self.parent:
             try:
@@ -329,6 +325,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
+        if set_stop:
+            self.stopped.set()
+            self._state = CallerState.stopped
         return self._state
 
     @asynccontextmanager
@@ -336,19 +335,19 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._state is CallerState.start_sync:
             msg = 'Already starting! Did you mean to use Caller("manual")?'
             raise RuntimeError(msg)
-        if self._state in {CallerState.stopped, CallerState.stopping}:
+        if self._state is CallerState.stopped:
             msg = f"Restarting is not allowed: {self}"
             raise RuntimeError(msg)
-        self._state = CallerState.running
+        socket = None
         async with anyio.create_task_group() as tg:
-            await tg.start(self._scheduler, tg)
+            if self._state is CallerState.initial:
+                self._state = CallerState.running
+                await tg.start(self._scheduler, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 500
                 socket.connect(self.iopub_url)
                 self.iopub_sockets[self.thread] = socket
-            else:
-                socket = None
             try:
                 yield self
             finally:
