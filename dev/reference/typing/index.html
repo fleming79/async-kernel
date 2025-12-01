@@ -1278,17 +1278,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.RunMode.get_mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_mode
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2398,17 +2387,6 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;direct
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.typing.RunMode.get_mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_mode
       
     </span>
   </a>
@@ -4344,8 +4322,6 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
       <span>Reference</span>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
       <a href="../kernel/#">kernel</a>
   </span>
@@ -4370,23 +4346,6 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
   </ul>
 
       </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#">typing</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.typing.RunMode.get_mode"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_mode</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
   </ul>
 
   </div>
@@ -4400,18 +4359,6 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
 
 
-
-
-<p><span class="doc-section-title">Methods:</span></p>
-    <ul>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" get_mode (async_kernel.typing.RunMode.get_mode)" href="#async_kernel.typing.RunMode.get_mode">get_mode</a></code></b>
-            –
-            <div class="doc-md-description">
-              <p>Get a RunMode from the code if it is found.</p>
-            </div>
-          </li>
-    </ul>
 
 
 
@@ -4573,54 +4520,6 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
 
 
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.typing.RunMode.get_mode" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get_mode</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
-
-<a href="#async_kernel.typing.RunMode.get_mode" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_mode</span><span class="p">(</span><span class="n"><span title="async_kernel.typing.RunMode.get_mode(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" RunMode (async_kernel.typing.RunMode)" href="#async_kernel.typing.RunMode">RunMode</a></span> <span class="o">|</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Get a RunMode from the code if it is found.</p>
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_mode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="s2">&quot;Get a RunMode from the code if it is found.&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">code</span> <span class="o">:=</span> <span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;# &quot;</span><span class="p">,</span> <span class="s2">&quot;##&quot;</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="n">RunMode</span><span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
-        <span class="k">if</span> <span class="n">code</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;RunMode.&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">RunMode</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;RunMode.&quot;</span><span class="p">))</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
 
 
 
