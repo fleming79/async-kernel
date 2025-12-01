@@ -14,7 +14,7 @@ class TestRunMode:
 
     def test_members(self):
         assert list(RunMode) == ["queue", "task", "thread", "direct"]
-        assert list(RunMode) == ["##queue", "##task", "##thread", "##direct"]
+        assert list(RunMode) == ["# queue", "# task", "# thread", "# direct"]
         assert list(RunMode) == [
             "<RunMode.queue: 'queue'>",
             "<RunMode.task: 'task'>",

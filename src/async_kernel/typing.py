@@ -82,6 +82,11 @@ class RunMode(enum.StrEnum):
 
         Top line comment:
             ```python
+            # task
+            ```
+            or
+
+            ```python
             ##task
             ```
         Tag:
@@ -90,11 +95,11 @@ class RunMode(enum.StrEnum):
 
     @override
     def __str__(self):
-        return f"##{self.name}"
+        return f"# {self.name}"
 
     @override
     def __eq__(self, value: object, /) -> bool:
-        return str(value) in (self.name, str(self), repr(self))
+        return str(value) in {self.name, str(self), repr(self)}
 
     @override
     def __hash__(self) -> int:
@@ -104,8 +109,8 @@ class RunMode(enum.StrEnum):
     def get_mode(cls, code: str) -> RunMode | None:
         "Get a RunMode from the code if it is found."
         try:
-            if (code := code.strip().split("\n")[0].strip()).startswith("##"):
-                return RunMode(code.removeprefix("##"))
+            if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
+                return RunMode(code[2:])
             if code.startswith("RunMode."):
                 return RunMode(code.removeprefix("RunMode."))
         except ValueError:
