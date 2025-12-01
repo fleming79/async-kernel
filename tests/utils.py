@@ -62,11 +62,21 @@ def validate_message(msg: Mapping[str, Any], msg_type="", parent=None):
         raise
 
 
-async def execute(client: AsyncKernelClient, /, code="", clear_pub=True, metadata: dict | None = None, **kwargs):
+async def execute(
+    client: AsyncKernelClient,
+    /,
+    code="",
+    clear_pub=True,
+    metadata: dict | None = None,
+    header_extras: dict | None = None,
+    **kwargs,
+):
     """Send an execute_request to the kernel and return the msg_id and content of the reply from the kernel."""
 
     assert isinstance(client, AsyncKernelClient)
     header = client.session.msg_header("execute_request")
+    if header_extras:
+        header = header | header_extras
     msg = client.session.msg(
         "execute_request",
         header=header,

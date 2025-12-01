@@ -843,7 +843,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         # See: **DEBUG WARNING**
 
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
-        subshell_id = job["msg"]["header"].get("subshell_id")
+        subshell_id = utils.get_subshell_id(job)
 
         handler = wrap_handler(subshell_id, self.run_handler, self.get_handler(msg_type), lock)
         run_mode = self.get_run_mode(msg_type, socket_id=job["socket_id"], job=job)
@@ -903,7 +903,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     stream=job["socket"],
                     msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
                     content=content,
-                    parent=job["msg"]["header"],  # pyright: ignore[reportArgumentType]
+                    parent=parent,  # pyright: ignore[reportArgumentType]
                     ident=job["ident"],
                 )
                 if msg:
@@ -912,9 +912,11 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         kernel = self
         token_job_var = utils._job_var.set(job)
         token_subshell_id = utils._subshell_id_var.set(subshell_id)
+        parent = utils.get_parent(job)
         try:
             kernel.iopub_send(
                 msg_or_type="status",
+                parent=parent,
                 content={"execution_state": "busy"},
                 ident=kernel.topic(topic="status"),
             )
@@ -928,7 +930,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             utils._subshell_id_var.reset(token_subshell_id)
             kernel.iopub_send(
                 msg_or_type="status",
-                parent=job["msg"],
+                parent=parent,
                 content={"execution_state": "idle"},
                 ident=kernel.topic("status"),
             )

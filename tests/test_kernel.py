@@ -616,13 +616,18 @@ async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
     await utils.execute(client, code)
 
 
-async def test_subshell(kernel: Kernel):
+async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     subshell_id = kernel.subshell_manager.create_subshell(protected=True)
     subshell = kernel.subshell_manager.subshells[subshell_id]
 
     assert kernel.main_shell.user_ns is kernel.main_shell.user_global_ns
     assert subshell.user_ns is not kernel.main_shell.user_ns
     assert subshell.user_global_ns is kernel.main_shell.user_global_ns
+
+    await utils.execute(client, code="a=10", subshell_id=subshell_id)
+    assert subshell.user_ns["a"] == 10
+    await utils.execute(client, code="b=20", header_extras={"subshell_id": subshell_id})
+    assert subshell.user_ns["b"] == 20
 
     # Switch subshell using context manager.
     with async_kernel.utils.subshell_context(subshell.subshell_id):
