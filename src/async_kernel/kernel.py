@@ -365,7 +365,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @traitlets.default("anyio_backend_options")
     def _default_anyio_backend_options(self):
-        return {Backend.asyncio: {"use_uvloop": True} if importlib.util.find_spec("uvloop") else {}, Backend.trio: None}
+        use_uv = importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")
+        return {Backend.asyncio: {"use_uvloop": True} if use_uv else {}, Backend.trio: None}
 
     @traitlets.default("ip")
     def _default_ip(self) -> str:

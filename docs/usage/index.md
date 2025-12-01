@@ -23,7 +23,7 @@ Please refer to the notebooks which demonstrate some usage examples.
 Blocking code should be run in a separate thread using one of the following:
 
 1. [anyio][anyio.to_thread.run_sync]
-2. [async_kernel.Caller.to_thread][]
+2. [async_kernel.caller.Caller.to_thread][]
 3. Using the backend's library
     - [asyncio.to_thread][]
     - [trio.to_thread.run_sync][]

@@ -106,17 +106,17 @@ class RunMode(enum.StrEnum):
         return hash(self.name)
 
     queue = "queue"
-    "Run the message handler using [async_kernel.Caller.queue_call][]."
+    "Run the message handler using [async_kernel.caller.Caller.queue_call][]."
 
     task = "task"
-    "Run the message handler using [async_kernel.Caller.call_soon][]."
+    "Run the message handler using [async_kernel.caller.Caller.call_soon][]."
 
     thread = "thread"
-    "Run the message handler using [async_kernel.Caller.to_thread][] to start use a 'worker'."
+    "Run the message handler using [async_kernel.caller.Caller.to_thread][] to start use a 'worker'."
 
     direct = "direct"
     """
-    Run the message handler using [async_kernel.Caller.call_direct][].
+    Run the message handler using [async_kernel.caller.Caller.call_direct][].
     
     Warning: 
         - This mode runs directly in the caller scheduler as soon as it is received.

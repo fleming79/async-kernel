@@ -79,7 +79,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     """
 
     MAX_IDLE_POOL_INSTANCES = 10
-    "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.Caller.to_thread])."
+    "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.caller.Caller.to_thread])."
     IDLE_WORKER_SHUTDOWN_DURATION = 0 if "pytest" in sys.modules else 60
     """
     The minimum duration in seconds for a worker to remain in the worker pool before it is shutdown.

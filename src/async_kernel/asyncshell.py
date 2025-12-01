@@ -426,7 +426,7 @@ class KernelMagics(Magics):
 
     @line_magic
     def callers(self, _) -> None:
-        "Print a table of [Callers][async_kernel.Caller], indicating its status including:  -running - protected - on the current thread."
+        "Print a table of [Callers][async_kernel.caller.Caller], indicating its status including:  -running - protected - on the current thread."
         callers = Caller.all_callers(running_only=False)
         n = max(len(c.name) for c in callers) + 6
         m = max(len(repr(c.thread)) for c in callers) + 6
