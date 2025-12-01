@@ -227,7 +227,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _zmq_context = Fixed(zmq.Context)
     _sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
     _ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
-    _completer_lock = Fixed(BinarySemaphore)
 
     callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
@@ -805,6 +804,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             - Handles and logs exceptions during message processing.
             - Breaks the loop on `zmq.ContextTerminated`.
         """
+        # **DEBUG WARNING**: Comment out the following line when debugging this thread.
         utils.mark_thread_pydev_do_not_trace()
         msg: Message
         ident: list[bytes]
@@ -840,7 +840,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             lock: A per-socket lock for sending messages, used by [Kernel.run_handler][].
         """
 
-        # **WARNING** debugging: breakpoints won't work here because `receive_msg_loop` disables debugging with: `utils.mark_thread_pydev_do_not_trace()`
+        # See: **DEBUG WARNING**
 
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
         subshell_id = job["msg"]["header"].get("subshell_id")
@@ -951,6 +951,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         Returns:
             The run mode for the message.
         """
+        # See: **DEBUG WARNING**
 
         # TODO: Are any of these options worth including?
         # if mode_from_metadata := job["msg"]["metadata"].get("run_mode"):
@@ -1099,7 +1100,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         c = job["msg"]["content"]
         code: str = c["code"]
         cursor_pos = c.get("cursor_pos") or len(code)
-        with IPython.core.completer.provisionalcompleter(), self._completer_lock:
+        with IPython.core.completer.provisionalcompleter():
             completions = self.shell.Completer.completions(code, cursor_pos)
             completions = list(IPython.core.completer.rectify_completions(code, completions))
         comps = [
