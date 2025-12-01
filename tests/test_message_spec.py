@@ -184,16 +184,19 @@ async def test_kernel_info_request(client: AsyncKernelClient):
     msg_id = client.kernel_info()
     reply = await utils.get_reply(client, msg_id)
     utils.validate_message(reply, "kernel_info_reply", msg_id)
-    assert not {
-        "implementation",
-        "status",
-        "debugger",
+    keys = list(reply["content"])
+    assert keys == [
         "protocol_version",
+        "implementation",
         "implementation_version",
         "language_info",
-        "help_links",
         "banner",
-    }.difference(reply["content"])
+        "help_links",
+        "debugger",
+        "kernel_name",
+        "supported_features",
+        "status",
+    ]
 
 
 async def test_comm_info_request(client: AsyncKernelClient):
@@ -255,3 +258,30 @@ async def test_display_data(kernel: Kernel, client: AsyncKernelClient, clear: bo
         await utils.check_pub_message(client, msg_id, msg_type="clear_output")
     await utils.check_pub_message(client, msg_id, msg_type="display_data", data={"text/plain": "1"})
     await utils.check_pub_message(client, msg_id, execution_state="idle")
+
+
+async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
+    # Create
+    msg = client.session.msg(MsgType.create_subshell_request, {})
+    client.control_channel.send(msg)
+    msg_id = msg["header"]["msg_id"]
+    reply = await utils.get_reply(client, msg_id, channel="control")
+    utils.validate_message(reply, "create_subshell_reply", msg_id)
+    subshell_id = reply["content"]["subshell_id"]
+    assert subshell_id in kernel.subshell_manager.subshells
+
+    # List
+    msg = client.session.msg(MsgType.list_subshell_request, {})
+    client.control_channel.send(msg)
+    msg_id = msg["header"]["msg_id"]
+    reply = await utils.get_reply(client, msg_id, channel="control")
+    utils.validate_message(reply, "list_subshell_reply", msg_id)
+    assert reply["content"]["subshell_id"] == [subshell_id]
+
+    # Delete
+    msg = client.session.msg(MsgType.delete_subshell_request, {"subshell_id": subshell_id})
+    client.control_channel.send(msg)
+    msg_id = msg["header"]["msg_id"]
+    reply = await utils.get_reply(client, msg_id, channel="control")
+    utils.validate_message(reply, "delete_subshell_reply", msg_id)
+    assert subshell_id not in kernel.subshell_manager.subshells

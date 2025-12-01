@@ -37,13 +37,13 @@ from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CaselessStrEnum, Dict, HasTraits, Instance, Set, Tuple, Unicode, UseEnum
+from traitlets import CaselessStrEnum, Dict, HasTraits, Instance, Tuple, Unicode, UseEnum
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
 from async_kernel import Caller, utils
-from async_kernel.asyncshell import AsyncInteractiveShell
+from async_kernel.asyncshell import AsyncInteractiveShell, SubshellManager
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
@@ -69,6 +69,8 @@ if TYPE_CHECKING:
 
 
 __all__ = ["Kernel", "KernelInterruptError"]
+
+# pyright: reportPrivateUsage=false
 
 
 def error_to_content(error: BaseException, /) -> Content:
@@ -143,7 +145,8 @@ def bind_socket(
 
 @functools.cache
 def wrap_handler(
-    runner: Callable[[HandlerType, Job, BinarySemaphore]],
+    subshell_id: str | None,
+    runner: Callable[[str | None, HandlerType, Job, BinarySemaphore]],
     handler: HandlerType,
     lock: BinarySemaphore,
 ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
@@ -160,7 +163,7 @@ def wrap_handler(
 
     @functools.wraps(handler)
     async def wrap_handler(job: Job) -> None:
-        await runner(handler, job, lock)
+        await runner(subshell_id, handler, job, lock)
 
     return wrap_handler
 
@@ -219,14 +222,17 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _interrupt_requested: bool | Literal["FORCE"] = False
     _last_interrupt_frame = None
     _stop_on_error_time: float = 0
-    _interrupts: traitlets.Container[set[Callable[[], object]]] = Set()
-    _settings: Dict[str, Any] = Dict()
+    _interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
+    _settings = Fixed(dict)
     _zmq_context = Fixed(zmq.Context)
-    _sockets: Dict[SocketID, zmq.Socket] = Dict()
-    callers: Dict[Literal[SocketID.shell, SocketID.control], Caller] = Dict()
+    _sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
+    _ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
+    _completer_lock = Fixed(BinarySemaphore)
+
+    callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
-    _ports: Dict[SocketID, int] = Dict()
-    _execution_count = traitlets.Int(0)
+    ""
+    subshell_manager = Fixed(SubshellManager)
 
     # Public traits
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
@@ -254,7 +260,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     of the current profile, but can be specified by absolute path.
     """
 
-    kernel_name: str | Unicode = Unicode()
+    kernel_name = Unicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
     ip = Unicode()
@@ -274,7 +280,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "The logging adapter."
 
     # Public fixed
-    shell = Fixed(lambda _: AsyncInteractiveShell.instance())
+    main_shell = Fixed(lambda _: AsyncInteractiveShell.instance())
     "The interactive shell."
 
     session = Fixed(Session)
@@ -412,9 +418,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return {k: getattr(self, k) for k in ("kernel_name", "connection_file")} | self._settings
 
     @property
+    def shell(self) -> AsyncInteractiveShell:
+        return self.subshell_manager.get_shell(utils.get_subshell_id())
+
+    @property
     def execution_count(self) -> int:
         "The execution count in context of the current coroutine, else the current value if there isn't one in context."
-        return utils.get_execution_count()
+        return self.shell.execution_count
 
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
@@ -428,6 +438,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             "help_links": self.help_links,
             "debugger": not utils.LAUNCHED_BY_DEBUGPY,
             "kernel_name": self.kernel_name,
+            "supported_features": ["kernel subshells"],
         }
 
     def load_settings(self, settings: dict[str, Any]) -> None:
@@ -447,7 +458,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         settings_ = self._settings or {"kernel_name": self.kernel_name}
         for k, v in settings.items():
             settings_ |= utils.setattr_nested(self, k, v)
-        self._settings = settings_
+        self._settings.update(settings_)
 
     def run(self, wait_exit: Callable[[], Awaitable] = anyio.sleep_forever, /):
         """
@@ -532,6 +543,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                                 self.callers.clear()
         finally:
             Kernel._instance = None
+            self.subshell_manager.stop_all_subshells(force=True)
             AsyncInteractiveShell.clear_instance()
             self._zmq_context.term()
             if self.print_kernel_messages:
@@ -744,7 +756,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 msg_or_type=msg_or_type,
                 content=content,
                 metadata=metadata,
-                parent=parent if parent is not NoValue else utils.get_parent(),  # pyright: ignore[reportArgumentType]
+                parent=parent if parent is not NoValue else self.get_parent(),  # pyright: ignore[reportArgumentType]
                 ident=ident,
                 buffers=buffers,
             )
@@ -827,9 +839,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             caller: A per-channel caller to use for scheduling.
             lock: A per-socket lock for sending messages, used by [Kernel.run_handler][].
         """
-        # Debug warning: breakpoints won't work here because `receive_msg_loop` disables debugging with: `utils.mark_thread_pydev_do_not_trace()`
+
+        # **WARNING** debugging: breakpoints won't work here because `receive_msg_loop` disables debugging with: `utils.mark_thread_pydev_do_not_trace()`
+
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
-        handler = wrap_handler(self.run_handler, self.get_handler(msg_type), lock)
+        subshell_id = job["msg"]["header"].get("subshell_id")
+
+        handler = wrap_handler(subshell_id, self.run_handler, self.get_handler(msg_type), lock)
         run_mode = self.get_run_mode(msg_type, socket_id=job["socket_id"], job=job)
         match run_mode:
             case RunMode.direct:
@@ -843,12 +859,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self.log.debug("%s %s %s %s", msg_type, handler, run_mode, job)
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
-        if not callable(f := getattr(self, msg_type, None)):
-            msg = f"A handler was not found for {msg_type=}"
-            raise TypeError(msg)
-        return f  # pyright: ignore[reportReturnType]
+        if callable(f := getattr(self, msg_type, None)):
+            return f  # pyright: ignore[reportReturnType]
+        msg = f"A handler was not found for {msg_type=}"
+        raise TypeError(msg)
 
-    async def run_handler(self, handler: HandlerType, job: Job[dict], lock: BinarySemaphore) -> None:
+    async def run_handler(
+        self, subshell_id: str | None, handler: HandlerType, job: Job[dict], lock: BinarySemaphore
+    ) -> None:
         """
         Asynchronously run a message handler for a given job, managing reply sending and execution state.
 
@@ -881,7 +899,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 content["status"] = "ok"
             # Although we aren't sending from the thread where the socket belongs this still appears to be reliable.
             async with lock:
-                msg = self.session.send(
+                msg = kernel.session.send(
                     stream=job["socket"],
                     msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
                     content=content,
@@ -889,27 +907,30 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     ident=job["ident"],
                 )
                 if msg:
-                    self.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
+                    kernel.log.debug("*** _send_reply %s*** %s", job["socket_id"], msg)
 
-        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        kernel = self
+        token_job_var = utils._job_var.set(job)
+        token_subshell_id = utils._subshell_id_var.set(subshell_id)
         try:
-            self.iopub_send(
+            kernel.iopub_send(
                 msg_or_type="status",
                 content={"execution_state": "busy"},
-                ident=self.topic("status"),
+                ident=kernel.topic(topic="status"),
             )
             if (content := await handler(job)) is not None:
                 await send_reply(job, content)
         except Exception as e:
             await send_reply(job, error_to_content(e))
-            self.log.exception("Exception in message handler:", exc_info=e)
+            kernel.log.exception("Exception in message handler:", exc_info=e)
         finally:
-            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
-            self.iopub_send(
+            utils._job_var.reset(token_job_var)
+            utils._subshell_id_var.reset(token_subshell_id)
+            kernel.iopub_send(
                 msg_or_type="status",
                 parent=job["msg"],
                 content={"execution_state": "idle"},
-                ident=self.topic("status"),
+                ident=kernel.topic("status"),
             )
 
     def get_run_mode(
@@ -937,7 +958,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
         match (socket_id, msg_type):
-            case SocketID.shell, MsgType.shutdown_request | MsgType.debug_request:
+            case (
+                SocketID.shell,
+                MsgType.shutdown_request
+                | MsgType.debug_request
+                | MsgType.create_subshell_request
+                | MsgType.delete_subshell_request
+                | MsgType.list_subshell_request,
+            ):
                 msg = f"{msg_type=} not allowed on shell!"
                 raise ValueError(msg)
             case SocketID.control, MsgType.execute_request:
@@ -998,18 +1026,17 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
         c = job["msg"]["content"]
+        execution_count = self.execution_count
         if (job["received_time"] < self._stop_on_error_time) and not c.get("silent", False):
             self.log.info("Aborting execute_request: %s", job)
-            return error_to_content(RuntimeError("Aborting due to prior exception")) | {
-                "execution_count": self.execution_count
-            }
+            return error_to_content(RuntimeError("Aborting due to prior exception")) | {"execution_count": None}
+
         metadata = job["msg"].get("metadata") or {}
         if not (silent := c["silent"]):
-            self._execution_count += 1
-            utils._execution_count_var.set(self._execution_count)  # pyright: ignore[reportPrivateUsage]
+            execution_count = self.shell.execution_count_next()
             self.iopub_send(
                 msg_or_type="execute_input",
-                content={"code": c["code"], "execution_count": self.execution_count},
+                content={"code": c["code"], "execution_count": execution_count},
                 parent=job["msg"],
                 ident=self.topic("execute_input"),
             )
@@ -1046,7 +1073,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             err = None
         content = {
             "status": "error" if err else "ok",
-            "execution_count": self.execution_count,
+            "execution_count": execution_count,
             "user_expressions": self.shell.user_expressions(c.get("user_expressions", {})),
         }
         if err:
@@ -1066,7 +1093,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         c = job["msg"]["content"]
         code: str = c["code"]
         cursor_pos = c.get("cursor_pos") or len(code)
-        with IPython.core.completer.provisionalcompleter():
+        with IPython.core.completer.provisionalcompleter(), self._completer_lock:
             completions = self.shell.Completer.completions(code, cursor_pos)
             completions = list(IPython.core.completer.rectify_completions(code, completions))
         comps = [
@@ -1162,6 +1189,20 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only)."""
         return await self.debugger.process_request(job["msg"]["content"])
+
+    async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
+        """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only)."""
+
+        return {"subshell_id": self.subshell_manager.create_subshell()}
+
+    async def delete_subshell_request(self, job: Job[Content], /) -> Content:
+        """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only)."""
+        self.subshell_manager.delete_subshell(job["msg"]["content"]["subshell_id"])
+        return {}
+
+    async def list_subshell_request(self, job: Job[Content], /) -> Content:
+        """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells) (control only)."""
+        return {"subshell_id": list(self.subshell_manager.list_subshells())}
 
     def excepthook(self, etype, evalue, tb) -> None:
         """Handle an exception."""

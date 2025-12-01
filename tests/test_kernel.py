@@ -11,11 +11,13 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import anyio
 import pytest
 import zmq
+from aiologic import BinarySemaphore
 
 import async_kernel.utils
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
 from async_kernel.compiler import murmur2_x86
+from async_kernel.kernel import Kernel
 from async_kernel.typing import ExecuteContent, Job, MsgType, RunMode, SocketID, Tags
 from tests import utils
 
@@ -24,10 +26,10 @@ if TYPE_CHECKING:
 
     from jupyter_client.asynchronous.client import AsyncKernelClient
 
-    from async_kernel.kernel import Kernel
 
+from async_kernel.kernel import bind_socket, wrap_handler
 
-from async_kernel.kernel import bind_socket
+# pyright: reportPrivateUsage=false
 
 
 @pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
@@ -70,9 +72,9 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
             assert msg[-1] == b'{"name": "stdout", "text": "done"}'
 
     n = 10
-    socket = kernel._sockets[SocketID.iopub]  # pyright: ignore[reportPrivateUsage]
+    socket = kernel._sockets[SocketID.iopub]
     url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
-    assert url.endswith(str(kernel._ports[SocketID.iopub]))  # pyright: ignore[reportPrivateUsage]
+    assert url.endswith(str(kernel._ports[SocketID.iopub]))
     ctx = zmq.Context()
     thread = threading.Thread(target=pubio_subscribe)
     thread.start()
@@ -85,6 +87,14 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
         thread.join()
     finally:
         ctx.term()
+
+
+def test_wrap_handler(kernel: Kernel):
+    lock = BinarySemaphore()
+    m = wrap_handler(None, kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
+    s = wrap_handler("subshell id", kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
+    assert m is not s
+    assert m is wrap_handler(None, kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
 
 
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
@@ -113,12 +123,12 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
 async def test_execute_kernel_timeout(client: AsyncKernelClient, kernel: Kernel, mode: str):
     await utils.clear_iopub(client)
     kernel.shell.execute_request_timeout = 0.1 if "kernel" in mode else None
-    last_stop_time = kernel._stop_on_error_time  # pyright: ignore[reportPrivateUsage]
+    last_stop_time = kernel._stop_on_error_time
     metadata: dict[str, float | list] = {"timeout": 0.1}
     try:
         code = "\n".join(["import anyio", "await anyio.sleep_forever()"])
         msg_id, content = await utils.execute(client, code=code, metadata=metadata, clear_pub=False)
-        assert last_stop_time == kernel._stop_on_error_time, "Should not cause cancellation"  # pyright: ignore[reportPrivateUsage]
+        assert last_stop_time == kernel._stop_on_error_time, "Should not cause cancellation"
         assert content["status"] == "ok"
         await utils.check_pub_message(client, msg_id, execution_state="busy")
         await utils.check_pub_message(client, msg_id, msg_type="execute_input")
@@ -133,6 +143,15 @@ async def test_bad_message(client: AsyncKernelClient):
     await utils.send_shell_message(client, "bad_message", reply=False)  # pyright: ignore[reportArgumentType]
     await utils.send_control_message(client, "bad_message", reply=False)  # pyright: ignore[reportArgumentType]
     await utils.execute(client, "")
+
+
+async def test_reset_shell(kernel: Kernel, client: AsyncKernelClient):
+    kernel.shell.reset()
+    assert kernel.shell.execution_count == 0
+    await utils.execute(client, "")
+    assert kernel.shell.execution_count == 1
+    kernel.shell.reset()
+    assert kernel.shell.execution_count == 0
 
 
 @pytest.mark.parametrize("test_mode", ["interrupt", "reply", "allow_stdin=False"])
@@ -343,7 +362,7 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
 
 async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
     event = threading.Event()
-    kernel._interrupts.add(event.set)  # pyright: ignore[reportPrivateUsage]
+    kernel._interrupts.add(event.set)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}
@@ -459,7 +478,7 @@ async def test_debug_static_richInspectVariables(client: AsyncKernelClient, vari
     assert reply["content"]["status"] == "ok"
 
 
-@pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers"])
+@pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers", "%subshell"])
 async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
     await utils.clear_iopub(client)
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
@@ -480,6 +499,7 @@ async def test_shell_required_properites(kernel: Kernel):
 
 
 async def test_shell_can_set_namespace(kernel: Kernel):
+    kernel.shell.user_ns["extra"] = "Something extra"
     kernel.shell.user_ns = {}
     assert set(kernel.shell.user_ns) == {"Out", "_oh", "In", "exit", "_dh", "open", "get_ipython", "_ih", "quit"}
 
@@ -492,10 +512,10 @@ async def test_shell_display_hook_reg(kernel: Kernel):
         val = msg
 
     kernel.shell.display_pub.register_hook(my_hook)
-    assert my_hook in kernel.shell.display_pub._hooks  # pyright: ignore[reportPrivateUsage]
+    assert my_hook in kernel.shell.display_pub._hooks
     kernel.shell.display_pub.publish({"test": True})
     kernel.shell.display_pub.unregister_hook(my_hook)
-    assert my_hook not in kernel.shell.display_pub._hooks  # pyright: ignore[reportPrivateUsage]
+    assert my_hook not in kernel.shell.display_pub._hooks
     assert val
 
 
@@ -587,10 +607,33 @@ async def test_get_run_mode_tag(client: AsyncKernelClient):
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 3226918757
+    assert murmur2_x86(str(data), 1) == 120520143
 
 
 async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
     assert kernel.get_parent() is None
     code = "assert 'header' in get_ipython().kernel.get_parent()"
     await utils.execute(client, code)
+
+
+async def test_subshell(kernel: Kernel):
+    subshell_id = kernel.subshell_manager.create_subshell(protected=True)
+    subshell = kernel.subshell_manager.subshells[subshell_id]
+
+    assert kernel.main_shell.user_ns is kernel.main_shell.user_global_ns
+    assert subshell.user_ns is not kernel.main_shell.user_ns
+    assert subshell.user_global_ns is kernel.main_shell.user_global_ns
+
+    # Switch subshell using context manager.
+    with async_kernel.utils.subshell_context(subshell.subshell_id):
+        assert kernel.shell is subshell
+        with async_kernel.utils.subshell_context(None):
+            assert kernel.shell is kernel.main_shell
+    # delete
+    assert subshell_id in kernel.subshell_manager.subshells
+    kernel.subshell_manager.delete_subshell(subshell_id)
+    assert subshell_id in kernel.subshell_manager.subshells, "Protected should not stop when deleted"
+    kernel.subshell_manager.stop_all_subshells(force=True)
+
+    with pytest.raises(ValueError, match="does not exist!"), async_kernel.utils.subshell_context(subshell.subshell_id):
+        pass
