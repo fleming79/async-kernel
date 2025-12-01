@@ -973,8 +973,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             case _, MsgType.execute_request:
                 if job:
                     if content := job["msg"].get("content", {}):
-                        if (code := content.get("code")) and (mode_ := RunMode.get_mode(code)):
-                            return mode_
+                        if code := content.get("code"):
+                            try:
+                                if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
+                                    return RunMode(code[2:])
+                                if code.startswith("RunMode."):
+                                    return RunMode(code.removeprefix("RunMode."))
+                            except ValueError:
+                                pass
                         if content.get("silent"):
                             return RunMode.task
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):

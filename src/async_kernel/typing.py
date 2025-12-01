@@ -105,17 +105,6 @@ class RunMode(enum.StrEnum):
     def __hash__(self) -> int:
         return hash(self.name)
 
-    @classmethod
-    def get_mode(cls, code: str) -> RunMode | None:
-        "Get a RunMode from the code if it is found."
-        try:
-            if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
-                return RunMode(code[2:])
-            if code.startswith("RunMode."):
-                return RunMode(code.removeprefix("RunMode."))
-        except ValueError:
-            return None
-
     queue = "queue"
     "Run the message handler using [async_kernel.Caller.queue_call][]."
 
