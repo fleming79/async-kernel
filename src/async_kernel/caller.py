@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, c
 import anyio
 import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library, green_checkpoint
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
@@ -309,6 +309,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._state in {CallerState.initial, CallerState.start_sync}:
             self._state = CallerState.stopped
             self.stopped.set()
+            green_checkpoint(force=True)
         else:
             assert self._state is CallerState.running
             self._state = CallerState.stopping
@@ -362,6 +363,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
+                    await async_checkpoint(force=True)
 
     async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         """
