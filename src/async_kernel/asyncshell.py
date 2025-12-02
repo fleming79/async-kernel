@@ -280,14 +280,6 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
-    def execution_count_next(self) -> int:
-        "Increase execution_count by one returning the new count."
-        # In Ipython execution_count gets updated at various places.
-        # To support concurrency this method is provided for th kernel to control this.
-        # Values written directly to execution_count are ignored.
-        count = self._execution_count = self._execution_count + 1
-        return count
-
     async def execute_request(
         self,
         code: str = "",
@@ -311,7 +303,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
         execution_count = self.execution_count
         if not (silent):
-            execution_count = self.execution_count_next()
+            execution_count = self._execution_count = self._execution_count + 1
             self.kernel.iopub_send(
                 msg_or_type="execute_input",
                 content={"code": code, "execution_count": execution_count},
