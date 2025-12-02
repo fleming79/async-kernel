@@ -984,16 +984,23 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
-        return await self.shell.do_complete_request(job["msg"]["content"]["code"], job["msg"]["content"]["cursor_pos"])
+        return await self.shell.do_complete_request(
+            code=job["msg"]["content"].get("code", ""),
+            cursor_pos=job["msg"]["content"].get("cursor_pos", 0),
+        )
 
     async def is_complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
-        return await self.shell.is_complete_request(job["msg"]["content"]["code"])
+        return await self.shell.is_complete_request(job["msg"]["content"].get("code", ""))
 
     async def inspect_request(self, job: Job[Content], /) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         c = job["msg"]["content"]
-        return await self.shell.inspect_request(c["code"], c["cursor_pos"], c.get("detail_level", 0))
+        return await self.shell.inspect_request(
+            code=c.get("code", ""),
+            cursor_pos=c.get("cursor_pos", 0),
+            detail_level=c.get("detail_level", 0),
+        )
 
     async def history_request(self, job: Job[Content], /) -> Content:
         """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
