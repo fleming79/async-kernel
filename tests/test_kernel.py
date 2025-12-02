@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import anyio
 import pytest
 import zmq
-from aiologic import BinarySemaphore
 
 import async_kernel.utils
 from async_kernel.caller import Caller
@@ -27,7 +26,7 @@ if TYPE_CHECKING:
     from jupyter_client.asynchronous.client import AsyncKernelClient
 
 
-from async_kernel.kernel import bind_socket, wrap_handler
+from async_kernel.kernel import bind_socket
 
 # pyright: reportPrivateUsage=false
 
@@ -87,14 +86,6 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
         thread.join()
     finally:
         ctx.term()
-
-
-def test_wrap_handler(kernel: Kernel):
-    lock = BinarySemaphore()
-    m = wrap_handler(None, kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
-    s = wrap_handler("subshell id", kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
-    assert m is not s
-    assert m is wrap_handler(None, kernel.run_handler, kernel.get_handler(MsgType.execute_request), lock)
 
 
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
