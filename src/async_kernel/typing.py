@@ -304,8 +304,6 @@ class Job(TypedDict, Generic[T]):
     "The message received over the socket."
     socket_id: Literal[SocketID.control, SocketID.shell]
     "The channel over which the socket was received."
-    socket: zmq.Socket
-    "The actual socket."
     ident: bytes | list[bytes]
     "The ident associated with the message and its origin."
     received_time: float
