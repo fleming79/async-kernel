@@ -48,6 +48,7 @@ from async_kernel.iostream import OutStream
 from async_kernel.typing import (
     Backend,
     Content,
+    ExecuteContent,
     HandlerType,
     Job,
     KernelName,
@@ -971,14 +972,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         }
         return {"comms": comms}
 
-    async def execute_request(self, job: Job[Content], /) -> Content:
+    async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
         return await self.shell.execute_request(
             parent=job["msg"],
             ident=self.topic("execute_input"),
             received_time=job["received_time"],
             tags=job["msg"].get("metadata", {}).get("tags", ()),
-            **job["msg"]["content"],
+            **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
         )
 
     async def complete_request(self, job: Job[Content], /) -> Content:

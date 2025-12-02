@@ -286,7 +286,7 @@ class AsyncInteractiveShell(InteractiveShell):
         code: str = "",
         silent: bool = False,
         store_history: bool = True,
-        user_expressions: dict | None = None,
+        user_expressions: dict[str, str] | None = None,
         allow_stdin: bool = True,
         stop_on_error: bool = True,
         parent: Message | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
