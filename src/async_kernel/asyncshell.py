@@ -5,17 +5,21 @@ import json
 import pathlib
 import sys
 import threading
+import time
 import uuid
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Self, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
 import IPython.core.release
+from aiologic.lowlevel import async_checkpoint
+from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
 from IPython.core.interactiveshell import ExecutionResult, InteractiveShell, InteractiveShellABC
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_magic, magics_class
+from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client.jsonutil import json_default
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Instance, Type, default, observe, traitlets
@@ -25,15 +29,24 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.typing import MetadataKeys, Tags
+from async_kernel.typing import Content, Message, MetadataKeys, NoValue, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from IPython.core.history import HistoryManager
+
     from async_kernel.kernel import Kernel
 
 
-__all__ = ["AsyncDisplayHook", "AsyncDisplayPublisher", "AsyncInteractiveShell"]
+__all__ = ["AsyncDisplayHook", "AsyncDisplayPublisher", "AsyncInteractiveShell", "KernelInterruptError"]
+
+
+class KernelInterruptError(InterruptedError):
+    "Raised to interrupt the kernel."
+
+    # We subclass from InterruptedError so if the backend is a SelectorEventLoop it can catch the exception.
+    # Other event loops don't appear to have this issue.
 
 
 class AsyncDisplayHook(DisplayHook):
@@ -149,10 +162,11 @@ class AsyncInteractiveShell(InteractiveShell):
     An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
-        - All [execute requests][async_kernel.kernel.Kernel.execute_request] are run asynchronously.
+        - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
         - Supports a soft timeout specified via metadata `{"timeout":<value in seconds>}`[^1].
         - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
+        - `user_ns` and `user_global_ns` are same dictionary which is fixed.
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
@@ -170,11 +184,14 @@ class AsyncInteractiveShell(InteractiveShell):
     _user_ns: Fixed[Self, dict] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
     _main_mod_cache = Fixed(dict)
 
+    _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
+    "Details associated with the latest stop on error."
+
     execute_request_timeout = CFloat(default_value=None, allow_none=True)
-    "A timeout in seconds to complete [execute requests][async_kernel.kernel.Kernel.execute_request]."
+    "A timeout in seconds to complete [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request]."
 
     run_cell: Callable[..., ExecutionResult] = None  # pyright: ignore[reportAssignmentType]
-    "**Not supported** -  use [run_cell_async][async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async] instead."
+    "**Not supported** -  use [execute_request][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] instead."
     should_run_async = None  # pyright: ignore[reportAssignmentType]
     loop_runner_map = None
     loop_runner = None
@@ -264,46 +281,164 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
-    def execution_count_next(self) -> int:
-        "Increase execution_count by one returning the new count."
-        # In Ipython execution_count gets updated at various places.
-        # To support concurrency this method is provided for th kernel to control this.
-        # Values written directly to execution_count are ignored.
-        count = self._execution_count = self._execution_count + 1
-        return count
-
-    @override
-    async def run_cell_async(
+    async def execute_request(
         self,
-        raw_cell: str,
-        store_history=False,
-        silent=False,
-        shell_futures=True,
-        *,
-        transformed_cell: str | None = None,
-        preprocessing_exc_tuple: tuple | None = None,
-        cell_id: str | None = None,
-    ) -> ExecutionResult:
-        """
-        Run a complete IPython cell asynchronously.
+        code: str = "",
+        silent: bool = False,
+        store_history: bool = True,
+        user_expressions: dict[str, str] | None = None,
+        allow_stdin: bool = True,
+        stop_on_error: bool = True,
+        parent: Message | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        ident: bytes | list[bytes] | None = None,
+        received_time: float = 0.0,
+        tags: tuple[Tags, ...] = (),
+        **_ignored,
+    ) -> Content:
+        """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
 
-        This function runs [execute requests][async_kernel.kernel.Kernel.execute_request] for the kernel
-        wrapping [InteractiveShell][IPython.core.interactiveshell.InteractiveShell.run_cell_async].
-        """
-        with anyio.fail_after(delay=utils.get_execute_request_timeout()):
-            result: ExecutionResult = await super().run_cell_async(
-                raw_cell=raw_cell,
-                store_history=store_history,
-                silent=silent,
-                shell_futures=shell_futures,
-                transformed_cell=transformed_cell,
-                preprocessing_exc_tuple=preprocessing_exc_tuple,
-                cell_id=cell_id,
+        if (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
+            return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
+                "execution_count": self._stop_on_error_info.get("execution_count", 0)
+            }
+
+        execution_count = self.execution_count
+        if not (silent):
+            execution_count = self._execution_count = self._execution_count + 1
+            self.kernel.iopub_send(
+                msg_or_type="execute_input",
+                content={"code": code, "execution_count": execution_count},
+                parent=parent,
+                ident=ident,
             )
-        self.events.trigger("post_execute")
-        if not silent:
-            self.events.trigger("post_run_cell", result)
-        return result
+        caller = Caller()
+        err = None
+        with anyio.CancelScope() as scope:
+
+            def cancel():
+                if not silent:
+                    caller.call_direct(scope.cancel, "Interrupted")
+
+            result = None
+            try:
+                self.kernel.interrupts.add(cancel)
+                with anyio.fail_after(delay=utils.get_execute_request_timeout()):
+                    result = await self.run_cell_async(
+                        raw_cell=code,
+                        store_history=store_history,
+                        silent=silent,
+                        transformed_cell=self.transform_cell(code),
+                        shell_futures=True,
+                    )
+            except (Exception, anyio.get_cancelled_exc_class()) as e:
+                # A safeguard to catch exceptions not caught by the shell.
+                err = KernelInterruptError() if self.kernel._last_interrupt_frame else e  # pyright: ignore[reportPrivateUsage]
+            else:
+                err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+            finally:
+                self.events.trigger("post_execute")
+                if not silent:
+                    self.events.trigger("post_run_cell", result)
+
+            self.kernel.interrupts.discard(cancel)
+        if (err) and (
+            (Tags.suppress_error in tags)
+            or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
+        ):
+            # Suppress the error due to either:
+            # 1. tag
+            # 2. timeout
+            err = None
+        content = {
+            "status": "error" if err else "ok",
+            "execution_count": execution_count,
+            "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
+        }
+        if err:
+            content |= utils.error_to_content(err)
+            if (not silent) and stop_on_error:
+                with anyio.CancelScope(shield=True):
+                    await async_checkpoint(force=True)
+                self._stop_on_error_info["time"] = time.monotonic()
+                self._stop_on_error_info["execution_count"] = execution_count
+                self.log.info("An error occurred in a non-silent execution request")
+        return content
+
+    async def do_complete_request(self, code: str, cursor_pos: int | None = None, **_ignored) -> Content:
+        """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+
+        cursor_pos = cursor_pos or len(code)
+        with provisionalcompleter():
+            completions = self.Completer.completions(code, cursor_pos)
+            completions = list(rectify_completions(code, completions))
+        comps = [
+            {
+                "start": comp.start,
+                "end": comp.end,
+                "text": comp.text,
+                "type": comp.type,
+                "signature": comp.signature,
+            }
+            for comp in completions
+        ]
+        s, e = completions[0].start, completions[0].end if completions else (cursor_pos, cursor_pos)
+        matches = [c.text for c in completions]
+        return {
+            "matches": matches,
+            "cursor_end": e,
+            "cursor_start": s,
+            "metadata": {"_jupyter_types_experimental": comps},
+            "status": "ok",
+        }
+
+    async def is_complete_request(self, code: str) -> Content:
+        """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+        status, indent_spaces = self.input_transformer_manager.check_complete(code)
+        content = {"status": status}
+        if status == "incomplete":
+            content["indent"] = " " * indent_spaces
+        return content
+
+    async def inspect_request(self, code: str, cursor_position: int, detail_level: Literal[0, 1]) -> Content:
+        """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+        content = {"data": {}, "metadata": {}, "found": True}
+        try:
+            oname = token_at_cursor(code, cursor_position)
+            bundle = self.object_inspect_mime(oname, detail_level=detail_level)
+            content["data"] = bundle
+            if not self.enable_html_pager:
+                content["data"].pop("text/html")
+        except KeyError:
+            content["found"] = False
+        return content
+
+    async def history_request(
+        self,
+        *,
+        output: bool = False,
+        raw: bool = True,
+        hist_access_type: str,
+        session: int = 0,
+        start: int = 1,
+        stop: int | None = None,
+        n: int = 10,
+        pattern: str = "*",
+        unique: bool = False,
+        **_ignored,
+    ) -> Content:
+        """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        history_manager: HistoryManager = self.history_manager  # pyright: ignore[reportAssignmentType]
+        assert history_manager
+        match hist_access_type:
+            case "tail":
+                hist = history_manager.get_tail(n=n, raw=raw, output=output, include_latest=False)
+            case "range":
+                hist = history_manager.get_range(session, start, stop, raw, output)
+            case "search":
+                hist = history_manager.search(pattern=pattern, raw=raw, output=output, n=n, unique=unique)
+            case _:
+                hist = []
+        return {"history": list(hist), "status": "ok"}
 
     @override
     def _showtraceback(self, etype, evalue, stb) -> None:
