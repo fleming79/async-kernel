@@ -162,10 +162,11 @@ class AsyncInteractiveShell(InteractiveShell):
     An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
-        - All [execute requests][async_kernel.kernel.Kernel.execute_request] are run asynchronously.
+        - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
         - Supports a soft timeout specified via metadata `{"timeout":<value in seconds>}`[^1].
         - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
+        - `user_ns` and `user_global_ns` are same dictionary which is fixed.
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
@@ -187,10 +188,10 @@ class AsyncInteractiveShell(InteractiveShell):
     "Details associated with the latest stop on error."
 
     execute_request_timeout = CFloat(default_value=None, allow_none=True)
-    "A timeout in seconds to complete [execute requests][async_kernel.kernel.Kernel.execute_request]."
+    "A timeout in seconds to complete [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request]."
 
     run_cell: Callable[..., ExecutionResult] = None  # pyright: ignore[reportAssignmentType]
-    "**Not supported** -  use [run_cell_async][async_kernel.asyncshell.AsyncInteractiveShell.run_cell_async] instead."
+    "**Not supported** -  use [execute_request][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] instead."
     should_run_async = None  # pyright: ignore[reportAssignmentType]
     loop_runner_map = None
     loop_runner = None
