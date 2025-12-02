@@ -288,40 +288,6 @@ class AsyncInteractiveShell(InteractiveShell):
         count = self._execution_count = self._execution_count + 1
         return count
 
-    @override
-    async def run_cell_async(
-        self,
-        raw_cell: str,
-        store_history=False,
-        silent=False,
-        shell_futures=True,
-        *,
-        transformed_cell: str | None = None,
-        preprocessing_exc_tuple: tuple | None = None,
-        cell_id: str | None = None,
-    ) -> ExecutionResult:
-        """
-        Run a complete IPython cell asynchronously.
-
-        This function runs [execute requests][async_kernel.kernel.Kernel.execute_request] for the kernel
-        wrapping [InteractiveShell][IPython.core.interactiveshell.InteractiveShell.run_cell_async].
-        """
-        with anyio.fail_after(delay=utils.get_execute_request_timeout()):
-            result: ExecutionResult = await super().run_cell_async(
-                raw_cell=raw_cell,
-                store_history=store_history,
-                silent=silent,
-                shell_futures=shell_futures,
-                transformed_cell=transformed_cell,
-                preprocessing_exc_tuple=preprocessing_exc_tuple,
-                cell_id=cell_id,
-            )
-        self.events.trigger("post_execute")
-        if not silent:
-            self.events.trigger("post_run_cell", result)
-        return result
-
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
     async def execute_request(
         self,
         code: str = "",
@@ -333,6 +299,7 @@ class AsyncInteractiveShell(InteractiveShell):
         parent: Message | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
         received_time: float = 0.0,
+        tags: tuple[Tags, ...] = (),
         **_ignored,
     ) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
@@ -359,23 +326,30 @@ class AsyncInteractiveShell(InteractiveShell):
                 if not silent:
                     caller.call_direct(scope.cancel, "Interrupted")
 
+            result = None
             try:
                 self.kernel.interrupts.add(cancel)
-                result = await self.run_cell_async(
-                    raw_cell=code,
-                    store_history=store_history,
-                    silent=silent,
-                    transformed_cell=self.transform_cell(code),
-                    shell_futures=True,
-                )
+                with anyio.fail_after(delay=utils.get_execute_request_timeout()):
+                    result = await self.run_cell_async(
+                        raw_cell=code,
+                        store_history=store_history,
+                        silent=silent,
+                        transformed_cell=self.transform_cell(code),
+                        shell_futures=True,
+                    )
             except (Exception, anyio.get_cancelled_exc_class()) as e:
                 # A safeguard to catch exceptions not caught by the shell.
                 err = KernelInterruptError() if self.kernel._last_interrupt_frame else e  # pyright: ignore[reportPrivateUsage]
             else:
                 err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+            finally:
+                self.events.trigger("post_execute")
+                if not silent:
+                    self.events.trigger("post_run_cell", result)
+
             self.kernel.interrupts.discard(cancel)
         if (err) and (
-            (Tags.suppress_error in utils.get_tags())
+            (Tags.suppress_error in tags)
             or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
         ):
             # Suppress the error due to either:

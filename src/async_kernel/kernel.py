@@ -386,11 +386,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return self.subshell_manager.get_shell(utils.get_subshell_id())
 
     @property
-    def execution_count(self) -> int:
-        "The execution count in context of the current coroutine, else the current value if there isn't one in context."
-        return self.shell.execution_count
-
-    @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
         "A dict of detail sent in reply to for a 'kernel_info_request'."
         return {
@@ -982,6 +977,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             parent=job["msg"],
             ident=self.topic("execute_input"),
             received_time=job["received_time"],
+            tags=job["msg"].get("metadata", {}).get("tags", ()),
             **job["msg"]["content"],
         )
 
