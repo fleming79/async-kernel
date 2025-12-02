@@ -364,7 +364,7 @@ class AsyncInteractiveShell(InteractiveShell):
                 self.log.info("An error occurred in a non-silent execution request")
         return content
 
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None, **_ignored) -> Content:
+    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
 
         cursor_pos = cursor_pos or len(code)
@@ -399,11 +399,11 @@ class AsyncInteractiveShell(InteractiveShell):
             content["indent"] = " " * indent_spaces
         return content
 
-    async def inspect_request(self, code: str, cursor_position: int, detail_level: Literal[0, 1]) -> Content:
+    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         content = {"data": {}, "metadata": {}, "found": True}
         try:
-            oname = token_at_cursor(code, cursor_position)
+            oname = token_at_cursor(code, cursor_pos)
             bundle = self.object_inspect_mime(oname, detail_level=detail_level)
             content["data"] = bundle
             if not self.enable_html_pager:
