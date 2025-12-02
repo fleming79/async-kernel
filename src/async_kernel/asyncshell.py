@@ -22,7 +22,7 @@ from IPython.core.magic import Magics, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client.jsonutil import json_default
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CFloat, Dict, Instance, Type, default, observe, traitlets
+from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
 from typing_extensions import override
 
 from async_kernel import utils
@@ -181,14 +181,17 @@ class AsyncInteractiveShell(InteractiveShell):
     kernel = Fixed(lambda _: utils.get_kernel())
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
+
     _user_ns: Fixed[Self, dict] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
     _main_mod_cache = Fixed(dict)
-
+    _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
-    "Details associated with the latest stop on error."
 
     execute_request_timeout = CFloat(default_value=None, allow_none=True)
     "A timeout in seconds to complete [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request]."
+
+    stop_on_error_time_offset = Float(0.0)
+    "An offset to add to the cancellation time to catch late arriving execute requests."
 
     run_cell: Callable[..., ExecutionResult] = None  # pyright: ignore[reportAssignmentType]
     "**Not supported** -  use [execute_request][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] instead."
@@ -302,6 +305,13 @@ class AsyncInteractiveShell(InteractiveShell):
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
 
+        if Tags.suppress_error in tags or Tags.raises_exception in tags:
+            stop_on_error = False
+        if Tags.stop_on_error in tags:
+            stop_on_error = True
+        if Tags.no_stop_on_error in tags:
+            stop_on_error = False
+
         execution_count = self.execution_count
         if not (silent):
             execution_count = self._execution_count = self._execution_count + 1
@@ -322,6 +332,8 @@ class AsyncInteractiveShell(InteractiveShell):
             result = None
             try:
                 self.kernel.interrupts.add(cancel)
+                if stop_on_error:
+                    self._stop_on_error_pool.add(cancel)
                 with anyio.fail_after(delay=utils.get_execute_request_timeout()):
                     result = await self.run_cell_async(
                         raw_cell=code,
@@ -335,12 +347,16 @@ class AsyncInteractiveShell(InteractiveShell):
                 err = KernelInterruptError() if self.kernel._last_interrupt_frame else e  # pyright: ignore[reportPrivateUsage]
             else:
                 err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+                if not err and Tags.raises_exception in tags:
+                    msg = "An expected exception was not raised!"
+                    err = RuntimeError(msg)
+                    stop_on_error = Tags.no_stop_on_error not in tags
             finally:
+                self._stop_on_error_pool.discard(cancel)
+                self.kernel.interrupts.discard(cancel)
                 self.events.trigger("post_execute")
                 if not silent:
                     self.events.trigger("post_run_cell", result)
-
-            self.kernel.interrupts.discard(cancel)
         if (err) and (
             (Tags.suppress_error in tags)
             or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
@@ -359,9 +375,12 @@ class AsyncInteractiveShell(InteractiveShell):
             if (not silent) and stop_on_error:
                 with anyio.CancelScope(shield=True):
                     await async_checkpoint(force=True)
-                self._stop_on_error_info["time"] = time.monotonic()
-                self._stop_on_error_info["execution_count"] = execution_count
-                self.log.info("An error occurred in a non-silent execution request")
+                    self._stop_on_error_info["time"] = time.monotonic() + (self.stop_on_error_time_offset)
+                    self._stop_on_error_info["execution_count"] = execution_count
+                    self.log.info("An error occurred in a non-silent execution request")
+                    if stop_on_error:
+                        for c in frozenset(self._stop_on_error_pool):
+                            c()
         return content
 
     async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
@@ -503,6 +522,7 @@ class SubshellManager:
     def create_subshell(self, *, protected=False) -> str:
         subshell = AsyncInteractiveSubshell(parent=self.kernel.shell)
         subshell.protected = protected
+        subshell.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
         self.subshells[subshell.subshell_id] = subshell
         return subshell.subshell_id
 

@@ -239,6 +239,13 @@ class Tags(enum.StrEnum):
     def __hash__(self) -> int:
         return hash(self.name)
 
+    raises_exception = "raises-exception"
+    """
+    Indicates the cell should expect an exception. 
+    
+    It will raise an error if an exception did not occur.
+    """
+
     suppress_error = "suppress-error"
     """
     Suppress exceptions that occur during execution of the code cell.
@@ -246,6 +253,12 @@ class Tags(enum.StrEnum):
     Warning:
         The code block will return as 'ok' and there will be no message recorded.
     """
+
+    stop_on_error = "stop-on-error"
+    "Force `stop_on_error=True`"
+
+    no_stop_on_error = "no-stop-on-error"
+    "Force `stop_on_error=False`"
 
 
 class CallerState(enum.Enum):

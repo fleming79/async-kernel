@@ -595,6 +595,35 @@ async def test_get_run_mode_tag(client: AsyncKernelClient):
     assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
+@pytest.mark.parametrize("mode", ["raises", "not raised"])
+async def test_tag_raises_exception(client: AsyncKernelClient, mode: Literal["raises", "not raised"]):
+    match mode:
+        case "raises":
+            code = f'raise RuntimeError("{mode}")'
+        case "not raised":
+            code = "pass"
+    _, content = await utils.execute(client, code, metadata={"tags": [Tags.raises_exception]})
+    assert content["status"] == "error"
+    assert mode in content["evalue"]
+
+
+@pytest.mark.parametrize("tag", [Tags.no_stop_on_error, Tags.stop_on_error])
+async def test_tag_stop_on_error(
+    kernel: Kernel, client: AsyncKernelClient, tag: Literal[Tags.no_stop_on_error, Tags.stop_on_error], mocker
+):
+    try:
+        kernel.shell.stop_on_error_time_offset = 10
+        _, content = await utils.execute(client, "fail", metadata={"tags": [Tags.raises_exception, tag]})
+        assert content["status"] == "error"
+        _, content = await utils.execute(client, "a=10")
+        if tag == Tags.no_stop_on_error:
+            assert content["status"] == "ok"
+        else:
+            assert content["status"] == "error"
+    finally:
+        kernel.shell.stop_on_error_time_offset = 0
+
+
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required

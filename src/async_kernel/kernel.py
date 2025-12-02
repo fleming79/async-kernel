@@ -749,7 +749,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             utils.mark_thread_pydev_do_not_trace()
 
         session, log, message_handler = self.session, self.log, self.msg_handler
-
         with self._bind_socket(socket_id) as socket:
             lock = BinarySemaphore()
 
