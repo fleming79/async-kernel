@@ -7,15 +7,17 @@ import sys
 import threading
 import uuid
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Self, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
 import IPython.core.release
+from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
 from IPython.core.interactiveshell import ExecutionResult, InteractiveShell, InteractiveShellABC
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_magic, magics_class
+from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client.jsonutil import json_default
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Instance, Type, default, observe, traitlets
@@ -25,10 +27,12 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.typing import MetadataKeys, Tags
+from async_kernel.typing import Content, MetadataKeys, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from IPython.core.history import HistoryManager
 
     from async_kernel.kernel import Kernel
 
@@ -304,6 +308,80 @@ class AsyncInteractiveShell(InteractiveShell):
         if not silent:
             self.events.trigger("post_run_cell", result)
         return result
+
+    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
+        """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+
+        cursor_pos = cursor_pos or len(code)
+        with provisionalcompleter():
+            completions = self.Completer.completions(code, cursor_pos)
+            completions = list(rectify_completions(code, completions))
+        comps = [
+            {
+                "start": comp.start,
+                "end": comp.end,
+                "text": comp.text,
+                "type": comp.type,
+                "signature": comp.signature,
+            }
+            for comp in completions
+        ]
+        s, e = completions[0].start, completions[0].end if completions else (cursor_pos, cursor_pos)
+        matches = [c.text for c in completions]
+        return {
+            "matches": matches,
+            "cursor_end": e,
+            "cursor_start": s,
+            "metadata": {"_jupyter_types_experimental": comps},
+            "status": "ok",
+        }
+
+    async def is_complete_request(self, code: str) -> Content:
+        """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+        status, indent_spaces = self.input_transformer_manager.check_complete(code)
+        content = {"status": status}
+        if status == "incomplete":
+            content["indent"] = " " * indent_spaces
+        return content
+
+    async def inspect_request(self, code: str, cursor_position: int, detail_level: Literal[0, 1]) -> Content:
+        """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+        content = {"data": {}, "metadata": {}, "found": True}
+        try:
+            bundle = self.object_inspect_mime(token_at_cursor(code, cursor_position), detail_level=detail_level)
+            content["data"] = bundle
+            if not self.enable_html_pager:
+                content["data"].pop("text/html")
+        except KeyError:
+            content["found"] = False
+        return content
+
+    async def history_request(
+        self,
+        *,
+        output: bool = False,
+        raw: bool = True,
+        hist_access_type: str,
+        session: int = 0,
+        start: int = 1,
+        stop: int | None = None,
+        n: int = 10,
+        pattern: str = "*",
+        unique: bool = False,
+    ) -> Content:
+        """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        history_manager: HistoryManager = self.history_manager  # pyright: ignore[reportAssignmentType]
+        assert history_manager
+        match hist_access_type:
+            case "tail":
+                hist = history_manager.get_tail(n=n, raw=raw, output=output, include_latest=False)
+            case "range":
+                hist = history_manager.get_range(session, start, stop, raw, output)
+            case "search":
+                hist = history_manager.search(pattern=pattern, raw=raw, output=output, n=n, unique=unique)
+            case _:
+                hist = []
+        return {"history": list(hist), "status": "ok"}
 
     @override
     def _showtraceback(self, etype, evalue, stb) -> None:

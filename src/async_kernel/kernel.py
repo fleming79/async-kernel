@@ -26,13 +26,11 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 
 import aiologic
 import anyio
-import IPython.core.completer
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import async_checkpoint, current_async_library
 from IPython.core.error import StdinNotImplementedError
-from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
@@ -1066,77 +1064,20 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
-        c = job["msg"]["content"]
-        code: str = c["code"]
-        cursor_pos = c.get("cursor_pos") or len(code)
-        with IPython.core.completer.provisionalcompleter():
-            completions = self.shell.Completer.completions(code, cursor_pos)
-            completions = list(IPython.core.completer.rectify_completions(code, completions))
-        comps = [
-            {
-                "start": comp.start,
-                "end": comp.end,
-                "text": comp.text,
-                "type": comp.type,
-                "signature": comp.signature,
-            }
-            for comp in completions
-        ]
-        s, e = completions[0].start, completions[0].end if completions else (cursor_pos, cursor_pos)
-        matches = [c.text for c in completions]
-        return {
-            "matches": matches,
-            "cursor_end": e,
-            "cursor_start": s,
-            "metadata": {"_jupyter_types_experimental": comps},
-        }
+        return await self.shell.do_complete_request(job["msg"]["content"]["code"], job["msg"]["content"]["cursor_pos"])
 
     async def is_complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
-        status, indent_spaces = self.shell.input_transformer_manager.check_complete(job["msg"]["content"]["code"])
-        content = {"status": status}
-        if status == "incomplete":
-            content["indent"] = " " * indent_spaces
-        return content
+        return await self.shell.is_complete_request(job["msg"]["content"]["code"])
 
     async def inspect_request(self, job: Job[Content], /) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         c = job["msg"]["content"]
-        detail_level = int(c.get("detail_level", 0))
-        omit_sections = set(c.get("omit_sections", []))
-        name = token_at_cursor(c["code"], c["cursor_pos"])
-        content = {"data": {}, "metadata": {}, "found": True}
-        try:
-            bundle = self.shell.object_inspect_mime(name, detail_level=detail_level, omit_sections=omit_sections)
-            content["data"] = bundle
-            if not self.shell.enable_html_pager:
-                content["data"].pop("text/html")
-        except KeyError:
-            content["found"] = False
-        return content
+        return await self.shell.inspect_request(c["code"], c["cursor_pos"], c.get("detail_level", 0))
 
     async def history_request(self, job: Job[Content], /) -> Content:
         """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
-        c = job["msg"]["content"]
-        history_manager = self.shell.history_manager
-        assert history_manager
-        if c.get("hist_access_type") == "tail":
-            hist = history_manager.get_tail(c["n"], raw=c.get("raw"), output=c.get("output"), include_latest=True)
-        elif c.get("hist_access_type") == "range":
-            hist = history_manager.get_range(
-                c.get("session", 0),
-                c.get("start", 1),
-                c.get("stop", None),
-                raw=c.get("raw", True),
-                output=c.get("output", False),
-            )
-        elif c.get("hist_access_type") == "search":
-            hist = history_manager.search(
-                c.get("pattern"), raw=c.get("raw"), output=c.get("output"), n=c.get("n"), unique=c.get("unique")
-            )
-        else:
-            hist = []
-        return {"history": list(hist)}
+        return await self.shell.history_request(**job["msg"]["content"])
 
     async def comm_open(self, job: Job[Content], /) -> None:
         """Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
