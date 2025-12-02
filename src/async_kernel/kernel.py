@@ -9,7 +9,6 @@ import getpass
 import importlib.util
 import json
 import logging
-import math
 import os
 import pathlib
 import signal
@@ -29,7 +28,7 @@ import anyio
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, current_async_library
+from aiologic.lowlevel import current_async_library
 from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
@@ -41,7 +40,7 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
 from async_kernel import Caller, utils
-from async_kernel.asyncshell import AsyncInteractiveShell, SubshellManager
+from async_kernel.asyncshell import AsyncInteractiveShell, KernelInterruptError, SubshellManager
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
@@ -49,7 +48,6 @@ from async_kernel.iostream import OutStream
 from async_kernel.typing import (
     Backend,
     Content,
-    ExecuteContent,
     HandlerType,
     Job,
     KernelName,
@@ -58,7 +56,6 @@ from async_kernel.typing import (
     NoValue,
     RunMode,
     SocketID,
-    Tags,
 )
 
 if TYPE_CHECKING:
@@ -69,20 +66,6 @@ if TYPE_CHECKING:
 __all__ = ["Kernel", "KernelInterruptError"]
 
 # pyright: reportPrivateUsage=false
-
-
-def error_to_content(error: BaseException, /) -> Content:
-    """
-    Convert the error to a dict.
-
-    ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply
-    """
-    return {
-        "status": "error",
-        "ename": type(error).__name__,
-        "evalue": str(error),
-        "traceback": traceback.format_exception(error),
-    }
 
 
 def bind_socket(
@@ -155,13 +138,6 @@ def cache_wrap_handler(
     return wrap_handler
 
 
-class KernelInterruptError(InterruptedError):
-    "Raised to interrupt the kernel."
-
-    # We subclass from InterruptedError so if the backend is a SelectorEventLoop it can catch the exception.
-    # Other event loops don't appear to have this issue.
-
-
 class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     """
     A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
@@ -208,12 +184,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _initialised = False
     _interrupt_requested: bool | Literal["FORCE"] = False
     _last_interrupt_frame = None
-    _stop_on_error_time: float = 0
-    _interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _settings = Fixed(dict)
     _zmq_context = Fixed(zmq.Context)
     _sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
     _ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
+
+    interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
+    "A set for callables can be added to run code when a kernel interrupt is initiated (control thread)."
 
     callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
@@ -770,8 +747,10 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self, socket_id: Literal[SocketID.control, SocketID.shell], ready: Event, start: Event
     ) -> None:
         "Opens a zmq socket for socket_id, receives messages and calls the message handler."
-        # **DEBUG WARNING**: To debug here disable the following line note: tests in test_debugger.py  will fail.
-        utils.mark_thread_pydev_do_not_trace()
+
+        # **DEBUG WARNING**: Disable the following line to debug messages  note: tests in test_debugger.py  will fail.
+        if not utils.LAUNCHED_BY_DEBUGPY:
+            utils.mark_thread_pydev_do_not_trace()
 
         session, log, message_handler = self.session, self.log, self.msg_handler
 
@@ -887,7 +866,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             if (content := await handler(job)) is not None:
                 await send_reply(job, content)
         except Exception as e:
-            await send_reply(job, error_to_content(e))
+            await send_reply(job, utils.error_to_content(e))
             self.log.exception("Exception in message handler:", exc_info=e)
         finally:
             utils._job_var.reset(token_job_var)
@@ -997,70 +976,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         }
         return {"comms": comms}
 
-    async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
+    async def execute_request(self, job: Job[Content], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        c = job["msg"]["content"]
-        execution_count = self.execution_count
-        if (job["received_time"] < self._stop_on_error_time) and not c.get("silent", False):
-            self.log.info("Aborting execute_request: %s", job)
-            return error_to_content(RuntimeError("Aborting due to prior exception")) | {"execution_count": None}
-
-        metadata = job["msg"].get("metadata") or {}
-        if not (silent := c["silent"]):
-            execution_count = self.shell.execution_count_next()
-            self.iopub_send(
-                msg_or_type="execute_input",
-                content={"code": c["code"], "execution_count": execution_count},
-                parent=job["msg"],
-                ident=self.topic("execute_input"),
-            )
-        caller = Caller()
-        err = None
-        with anyio.CancelScope() as scope:
-
-            def cancel():
-                if not silent:
-                    caller.call_direct(scope.cancel, "Interrupted")
-
-            try:
-                self._interrupts.add(cancel)
-                result = await self.shell.run_cell_async(
-                    raw_cell=c["code"],
-                    store_history=c.get("store_history", False),
-                    silent=silent,
-                    transformed_cell=self.shell.transform_cell(c["code"]),
-                    shell_futures=True,
-                )
-            except (Exception, anyio.get_cancelled_exc_class()) as e:
-                # A safeguard to catch exceptions not caught by the shell.
-                err = KernelInterruptError() if self._last_interrupt_frame else e
-            else:
-                err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
-            self._interrupts.discard(cancel)
-        if (err) and (
-            (Tags.suppress_error in metadata.get("tags", ()))
-            or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
-        ):
-            # Suppress the error due to either:
-            # 1. tag
-            # 2. timeout
-            err = None
-        content = {
-            "status": "error" if err else "ok",
-            "execution_count": execution_count,
-            "user_expressions": self.shell.user_expressions(c.get("user_expressions", {})),
-        }
-        if err:
-            content |= error_to_content(err)
-            if (not silent) and c.get("stop_on_error"):
-                try:
-                    self._stop_on_error_time = math.inf
-                    self.log.info("An error occurred in a non-silent execution request")
-                    with anyio.CancelScope(shield=True):
-                        await async_checkpoint(force=True)
-                finally:
-                    self._stop_on_error_time = time.monotonic()
-        return content
+        return await self.shell.execute_request(
+            parent=job["msg"],
+            ident=self.topic("execute_input"),
+            received_time=job["received_time"],
+            **job["msg"]["content"],
+        )
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
@@ -1092,10 +1015,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self.comm_manager.comm_close(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
     async def interrupt_request(self, job: Job[Content], /) -> Content:
-        """Handle a [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only)."""
+        """Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only)."""
         self._interrupt_now()
-        for interrupter in tuple(self._interrupts):
-            interrupter()
+        while self.interrupts:
+            try:
+                self.interrupts.pop()()
+            except Exception:
+                pass
         return {}
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:

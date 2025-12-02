@@ -114,12 +114,12 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
 async def test_execute_kernel_timeout(client: AsyncKernelClient, kernel: Kernel, mode: str):
     await utils.clear_iopub(client)
     kernel.shell.execute_request_timeout = 0.1 if "kernel" in mode else None
-    last_stop_time = kernel._stop_on_error_time
+    last_stop_time = kernel.shell._stop_on_error_info
     metadata: dict[str, float | list] = {"timeout": 0.1}
     try:
         code = "\n".join(["import anyio", "await anyio.sleep_forever()"])
         msg_id, content = await utils.execute(client, code=code, metadata=metadata, clear_pub=False)
-        assert last_stop_time == kernel._stop_on_error_time, "Should not cause cancellation"
+        assert last_stop_time == kernel.shell._stop_on_error_info, "Should not cause cancellation"
         assert content["status"] == "ok"
         await utils.check_pub_message(client, msg_id, execution_state="busy")
         await utils.check_pub_message(client, msg_id, msg_type="execute_input")
@@ -353,7 +353,7 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
 
 async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
     event = threading.Event()
-    kernel._interrupts.add(event.set)
+    kernel.interrupts.add(event.set)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}

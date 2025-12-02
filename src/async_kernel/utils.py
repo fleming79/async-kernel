@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import sys
 import threading
+import traceback
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
 import async_kernel
-from async_kernel.typing import Message, MetadataKeys
+from async_kernel.typing import Content, Message, MetadataKeys
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Mapping
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
     from async_kernel.typing import Job
 
 __all__ = [
+    "error_to_content",
     "get_execute_request_timeout",
     "get_execution_count",
     "get_job",
@@ -140,3 +142,17 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
             setattr(obj, name, eval(value))
         return {name: getattr(obj, name)}
     return {}
+
+
+def error_to_content(error: BaseException, /) -> Content:
+    """
+    Convert the error to a dict.
+
+    ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply
+    """
+    return {
+        "status": "error",
+        "ename": type(error).__name__,
+        "evalue": str(error),
+        "traceback": traceback.format_exception(error),
+    }
