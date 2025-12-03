@@ -197,6 +197,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "The caller associated with the kernel once it has started."
     ""
     subshell_manager = Fixed(SubshellManager)
+    ""
 
     # Public traits
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]

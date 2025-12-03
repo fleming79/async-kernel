@@ -79,7 +79,7 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
     """A context manager for subshell_id.
 
     Args:
-        subshell_id: An existing subshell id obtained via get_subshell_id, or [async_kernel.asyncshell.AsyncInteractiveShell.create_subshell][].
+        subshell_id: An existing subshell id obtained via get_subshell_id.
     """
     if subshell_id and subshell_id not in get_kernel().subshell_manager.subshells:
         msg = f"A subshell with {subshell_id=} does not exist!"
@@ -100,7 +100,7 @@ def get_metadata(job: Job | None = None, /) -> dict[str, Any]:
 
 
 def get_tags(job: Job | None = None, /) -> list[str]:
-    "Gets the [tags]() for the current context."
+    "Gets the tags for the current context."
     try:
         return get_metadata(job)["tags"]
     except Exception:
@@ -112,11 +112,11 @@ _TagType = TypeVar("_TagType", str, float, int, bool)
 
 def get_tag_value(tag: Tags, default: _TagType, /, *, tags: list[str] | None = None) -> _TagType:
     """
-    Get the first tag value from a collection of tags that is matches the tag.
+    Get the value for the tag from a collection of tags.
 
     Args:
         tag: The tag to get the value from.
-        default: The default value, which is used to determine the type of conversion for the tag.
+        default: The default value if a tag is not found. The default is also used to determine the type for conversion of the value.
         tags: A list of tags to search. When not provide [get_tags][] is used.
 
     The tag value is the value trailing behind <tag>=<value>. The value is transformed according to

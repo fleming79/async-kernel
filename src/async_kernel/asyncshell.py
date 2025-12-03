@@ -35,11 +35,12 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from IPython.core.history import HistoryManager
+    from traitlets.config import Configurable
 
     from async_kernel.kernel import Kernel
 
 
-__all__ = ["AsyncDisplayHook", "AsyncDisplayPublisher", "AsyncInteractiveShell", "KernelInterruptError"]
+__all__ = ["AsyncInteractiveShell"]
 
 
 class KernelInterruptError(InterruptedError):
@@ -51,7 +52,7 @@ class KernelInterruptError(InterruptedError):
 
 class AsyncDisplayHook(DisplayHook):
     """
-    A displayhook subclass that publishes data using [async_kernel.kernel.Kernel.iopub_send][].
+    A displayhook subclass that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send].
 
     This is intended to work with an InteractiveShell instance. It sends a dict of different
     representations of the object.
@@ -90,7 +91,7 @@ class AsyncDisplayHook(DisplayHook):
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
-    """A display publisher that publishes data using [async_kernel.kernel.Kernel.iopub_send][]."""
+    """A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send]."""
 
     topic: ClassVar = b"display_data"
 
@@ -201,6 +202,10 @@ class AsyncInteractiveShell(InteractiveShell):
     autoindent = False
     debug = None
     "**Not supported - use the built in debugger instead.**"
+
+    @override
+    def __init__(self, parent: None | Configurable = None) -> None:
+        super().__init__(parent=parent)
 
     def _get_default_ns(self):
         # Copied from `InteractiveShell.init_user_ns`
@@ -498,9 +503,18 @@ class AsyncInteractiveShell(InteractiveShell):
 
 
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
+    ""
+
     protected = traitlets.Bool()
     subshell_id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
     user_global_ns: Fixed[Self, dict[Any, Any]] = Fixed(lambda c: c["owner"].kernel.shell.user_global_ns)  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    @override
+    def __init__(self, *, protected=False) -> None:
+        super().__init__(parent=self.kernel.main_shell)
+        self.protected = protected
+        self.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
+        self.kernel.subshell_manager.subshells[self.subshell_id] = self
 
     def stop(self, *, force=False) -> None:
         "Stop this subshell."
@@ -512,15 +526,23 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
 
 class SubshellManager:
+    """
+    Manages all instances of [subshells][async_kernel.asyncshell.AsyncInteractiveSubshell].
+
+    Warning:
+
+        **Do NOT instantiate directly.** Instead access the instance via [async_kernel.kernel.Kernel.subshell_manager][].
+    """
+
+    __slots__ = ["__weakref__"]
+
     kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
     subshells: Fixed[Self, dict[str, AsyncInteractiveSubshell]] = Fixed(dict)
+    default_subshell_class = AsyncInteractiveSubshell
 
     def create_subshell(self, *, protected=False) -> str:
-        subshell = AsyncInteractiveSubshell(parent=self.kernel.shell)
-        subshell.protected = protected
-        subshell.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
-        self.subshells[subshell.subshell_id] = subshell
-        return subshell.subshell_id
+        "Create a new instance of the default subshell class."
+        return self.default_subshell_class(protected=protected).subshell_id
 
     def list_subshells(self) -> list[str]:
         return list(self.subshells)
@@ -533,15 +555,25 @@ class SubshellManager:
         def get_shell(self, subshell_id: None = ...) -> AsyncInteractiveShell: ...
 
     def get_shell(self, subshell_id: str | None = None) -> AsyncInteractiveShell | AsyncInteractiveSubshell:
-        "Get a subshell or the main shell"
+        """
+        Get a subshell or the main shell.
+
+        Args:
+            subshell_id: The id of an existing subshell.
+        """
         return (self.subshells[subshell_id] if subshell_id else None) or self.kernel.main_shell
 
     def delete_subshell(self, subshell_id: str) -> None:
-        "Stop a subshell unless it is protected"
+        """
+        Stop a subshell unless it is protected.
+
+        Args:
+            subshell_id: The id of an existing subshell to stop.
+        """
         if subshell := self.subshells.get(subshell_id):
             subshell.stop()
 
-    def stop_all_subshells(self, *, force=False) -> None:
+    def stop_all_subshells(self, *, force: bool = False) -> None:
         """Stop all current subshells.
 
         Args:
