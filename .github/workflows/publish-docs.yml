@@ -40,7 +40,7 @@ jobs:
       - name: Install the project
         run: |
           uv sync --group docs
-          uv run async-kernel -a async-docs --shell.execute_request_timeout=0.1    # The 'async-docs' kernel is specified as the kernel for mkdocs-jupyter
+          uv run async-kernel -a async-docs --shell.timeout=0.1    # The 'async-docs' kernel is specified as the kernel for mkdocs-jupyter
 
       - name: Version info
         id: version

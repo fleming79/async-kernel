@@ -92,5 +92,5 @@ jobs:
         timeout-minutes: 5
         run: |
           uv sync --group docs
-          uv run async-kernel -a async-docs --shell.execute_request_timeout=0.1          
+          uv run async-kernel -a async-docs --shell.timeout=0.1          
           uv run mkdocs build -s

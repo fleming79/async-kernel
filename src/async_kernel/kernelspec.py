@@ -85,7 +85,7 @@ def write_kernel_spec(
             This can be sys.prefix for installation inside virtual or conda envs.
         **kwargs: Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
-            For example `..., **{'shell.execute_request_timeout'=0.1})`.
+            For example `..., **{'shell.timeout'=0.1})`.
 
     Example passing a callable kernel_factory:
 

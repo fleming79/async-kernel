@@ -1,49 +1,64 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import pytest
 from traitlets import HasTraits, Instance, Int, default
 
 from async_kernel import utils as ak_utils
+from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
     from async_kernel.typing import ExecuteContent, Job
 
 
+@pytest.mark.anyio
 class TestUtils:
-    async def test_get_job(self, anyio_backend, job: Job[ExecuteContent]) -> None:
+    async def test_get_job(self, job: Job[ExecuteContent]) -> None:
         with pytest.raises(LookupError):
             ak_utils._job_var.get()  # pyright: ignore[reportPrivateUsage]
         ak_utils.get_job()
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_job() is job
 
-    async def test_get_execution_count(self, anyio_backend, job: Job[ExecuteContent]):
+    async def test_get_execution_count(self, job: Job[ExecuteContent]):
         assert ak_utils.get_execution_count() == 0
 
-    async def test_get_metadata(self, anyio_backend, job: Job[ExecuteContent]):
+    async def test_get_metadata(self, job: Job[ExecuteContent]):
         assert ak_utils.get_metadata() == {}
         assert ak_utils.get_metadata(job) is job["msg"]["metadata"]
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_metadata() is job["msg"]["metadata"]
 
-    async def test_get_parent(self, anyio_backend, job: Job[ExecuteContent]):
+    async def test_get_parent(self, job: Job[ExecuteContent]):
         assert ak_utils.get_parent() is None
         assert ak_utils.get_parent(job) is job["msg"]
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_parent(job) is job["msg"]
 
-    async def test_get_tags(self, anyio_backend, job: Job[ExecuteContent]):
-        job["msg"]["metadata"]["tags"] = tags = []  # pyright: ignore[reportIndexIssue]
+    async def test_get_tags(self, job: Job[ExecuteContent]):
+        job["msg"]["metadata"]["tags"] = tags = []
         assert ak_utils.get_tags() == []
         assert ak_utils.get_tags(job) is tags
 
-    async def test_get_execute_request_timeout(self, anyio_backend, job: Job[ExecuteContent]):
-        job["msg"]["metadata"] = {"timeout": 3}
-        assert ak_utils.get_execute_request_timeout(job) == 3
-        ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        assert ak_utils.get_execute_request_timeout() == 3
+    @pytest.mark.parametrize(
+        ("tag", "default", "str_tag", "expected_value"),
+        [
+            (Tags.timeout, 0.0, "timeout=1.3", 1.3),  # float
+            (Tags.timeout, 0.0, "", 0.0),  # float
+            (Tags.timeout, 0, "timeout=0.0", 0),  # int
+            (Tags.stop_on_error, True, "stop_on_error", True),  # bool
+            (Tags.suppress_error, "", "suppress-error=Msg", "Msg"),  # str
+            (Tags.raises_exception, True, "raises-exception", True),  # bool
+            (Tags.raises_exception, True, "raises-exception=false", False),  # bool
+            (Tags.raises_exception, True, "raises-exception=False", False),  # bool
+            (Tags.raises_exception, False, "raises-exception=True", True),  # bool
+        ],
+    )
+    async def test_get_tag_value(self, tag: Tags, default: Any, str_tag: str, expected_value: Any):
+        value = ak_utils.get_tag_value(tag, default, tags=[str_tag])
+        assert value == expected_value
+        assert type(value) is type(expected_value)
 
     def test_setattr_nested(self):
         class TestObj:

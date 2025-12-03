@@ -29,7 +29,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.typing import Content, Message, MetadataKeys, NoValue, Tags
+from async_kernel.typing import Content, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -163,7 +163,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     Notable differences:
         - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
-        - Supports a soft timeout specified via metadata `{"timeout":<value in seconds>}`[^1].
+        - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
         - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
         - `user_ns` and `user_global_ns` are same dictionary which is fixed.
@@ -187,7 +187,7 @@ class AsyncInteractiveShell(InteractiveShell):
     _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
 
-    execute_request_timeout = CFloat(default_value=None, allow_none=True)
+    timeout = CFloat(0.0)
     "A timeout in seconds to complete [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request]."
 
     stop_on_error_time_offset = Float(0.0)
@@ -292,34 +292,33 @@ class AsyncInteractiveShell(InteractiveShell):
         user_expressions: dict[str, str] | None = None,
         allow_stdin: bool = True,
         stop_on_error: bool = True,
-        parent: Message | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        ident: bytes | list[bytes] | None = None,
-        received_time: float = 0.0,
-        tags: tuple[Tags, ...] = (),
         **_ignored,
     ) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-
-        if (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
+        if (utils.get_job().get("received_time", 0.0) < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
 
-        if Tags.suppress_error in tags or Tags.raises_exception in tags:
-            stop_on_error = False
-        if Tags.stop_on_error in tags:
-            stop_on_error = True
-        if Tags.no_stop_on_error in tags:
+        tags: list[str] = utils.get_tags()
+        timeout: float = utils.get_timeout(tags=tags)
+        suppress_error: bool = Tags.suppress_error in tags
+        raises_exception: bool = Tags.raises_exception in tags
+        stop_on_error_override: bool = Tags.stop_on_error in tags
+
+        if stop_on_error_override:
+            stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
+        elif suppress_error or raises_exception:
             stop_on_error = False
 
-        execution_count = self.execution_count
-        if not (silent):
+        if silent:
+            execution_count: int = self.execution_count
+        else:
             execution_count = self._execution_count = self._execution_count + 1
             self.kernel.iopub_send(
                 msg_or_type="execute_input",
                 content={"code": code, "execution_count": execution_count},
-                parent=parent,
-                ident=ident,
+                ident=self.kernel.topic("execute_input"),
             )
         caller = Caller()
         err = None
@@ -334,7 +333,7 @@ class AsyncInteractiveShell(InteractiveShell):
                 self.kernel.interrupts.add(cancel)
                 if stop_on_error:
                     self._stop_on_error_pool.add(cancel)
-                with anyio.fail_after(delay=utils.get_execute_request_timeout()):
+                with anyio.fail_after(delay=timeout or None):
                     result = await self.run_cell_async(
                         raw_cell=code,
                         store_history=store_history,
@@ -350,17 +349,13 @@ class AsyncInteractiveShell(InteractiveShell):
                 if not err and Tags.raises_exception in tags:
                     msg = "An expected exception was not raised!"
                     err = RuntimeError(msg)
-                    stop_on_error = Tags.no_stop_on_error not in tags
             finally:
                 self._stop_on_error_pool.discard(cancel)
                 self.kernel.interrupts.discard(cancel)
                 self.events.trigger("post_execute")
                 if not silent:
                     self.events.trigger("post_run_cell", result)
-        if (err) and (
-            (Tags.suppress_error in tags)
-            or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
-        ):
+        if (err) and (suppress_error or (isinstance(err, anyio.get_cancelled_exc_class()) and (timeout != 0))):
             # Suppress the error due to either:
             # 1. tag
             # 2. timeout
@@ -462,10 +457,10 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def _showtraceback(self, etype, evalue, stb) -> None:
         if Tags.suppress_error in utils.get_tags():
-            if msg := utils.get_metadata().get(MetadataKeys.suppress_error_message, "⚠"):
+            if msg := utils.get_tag_value(Tags.suppress_error, "⚠"):
                 print(msg)
             return
-        if utils.get_execute_request_timeout() is not None and etype is anyio.get_cancelled_exc_class():
+        if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
         self.kernel.iopub_send(
             msg_or_type="error",
@@ -477,6 +472,7 @@ class AsyncInteractiveShell(InteractiveShell):
         super().reset(new_session, aggressive)
         if new_session:
             self._execution_count = 0
+            self._stop_on_error_info.clear()
 
     @override
     def init_magics(self) -> None:

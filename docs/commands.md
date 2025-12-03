@@ -83,7 +83,7 @@ or, with compact notation to set a Boolean value as a Boolean flag.
     Set the execute request timeout trait on the kernel shell.
 
     ```console
-    --shell.execute_request_timeout=0.1
+    --shell.timeout=0.1
     ```
 
 === "Kernel Boolean attribute as a flag"
