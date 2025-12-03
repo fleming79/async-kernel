@@ -1892,7 +1892,7 @@ viewing the latest version.
 
 
 <h2 id="async_kernel.kernelspec.make_argv" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">async_kernel.kernelspec.make_argv</span>
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">make_argv</span>
 
 
 <a href="#async_kernel.kernelspec.make_argv" class="headerlink" title="Permanent link">&para;</a></h2>
@@ -2049,7 +2049,7 @@ callable that returns a non-started kernel.</p>
 
 
 <h2 id="async_kernel.kernelspec.write_kernel_spec" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">async_kernel.kernelspec.write_kernel_spec</span>
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">write_kernel_spec</span>
 
 
 <a href="#async_kernel.kernelspec.write_kernel_spec" class="headerlink" title="Permanent link">&para;</a></h2>
@@ -2154,7 +2154,7 @@ This can be sys.prefix for installation inside virtual or conda envs.</p>
           <div class="doc-md-description">
             <p>Pass additional settings to set on the instance of the <code>Kernel</code> when it is instantiated.
 Each setting should correspond to the dotted path to the attribute relative to the kernel.
-For example <code>..., **{'shell.execute_request_timeout'=0.1})</code>.</p>
+For example <code>..., **{'shell.timeout'=0.1})</code>.</p>
           </div>
         </li>
     </ul>
@@ -2332,7 +2332,7 @@ Warning:
 <span class="sd">            This can be sys.prefix for installation inside virtual or conda envs.</span>
 <span class="sd">        **kwargs: Pass additional settings to set on the instance of the `Kernel` when it is instantiated.</span>
 <span class="sd">            Each setting should correspond to the dotted path to the attribute relative to the kernel.</span>
-<span class="sd">            For example `..., **{&#39;shell.execute_request_timeout&#39;=0.1})`.</span>
+<span class="sd">            For example `..., **{&#39;shell.timeout&#39;=0.1})`.</span>
 
 <span class="sd">    Example passing a callable kernel_factory:</span>
 
@@ -2406,7 +2406,7 @@ Warning:
 
 
 <h2 id="async_kernel.kernelspec.get_kernel_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">async_kernel.kernelspec.get_kernel_dir</span>
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_kernel_dir</span>
 
 
 <a href="#async_kernel.kernelspec.get_kernel_dir" class="headerlink" title="Permanent link">&para;</a></h2>

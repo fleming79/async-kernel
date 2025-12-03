@@ -1746,7 +1746,7 @@ uv<span class="w"> </span>sync
 </code></pre></div>
 <p>Additional steps to build documentation (optional):</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
-uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
+uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">0</span>.1
 </code></pre></div>
 <h3 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest
@@ -1797,7 +1797,7 @@ in the future.</p>
 <p>The 'docs' group specified extra packages are required to build documentation.</p>
 <h4 id="sync-docs-group">Sync 'docs' group<a class="headerlink" href="#sync-docs-group" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
-uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
+uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">0</span>.1
 </code></pre></div>
 <h4 id="test-the-docs">Test the docs<a class="headerlink" href="#test-the-docs" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>-s
@@ -1805,9 +1805,9 @@ uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"
 <details class="info">
 <summary>Info</summary>
 <p>The command:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--shell.execute_request_timeout<span class="o">=</span><span class="m">0</span>.1
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">0</span>.1
 </code></pre></div>
-<p>Defines a new kernel spec with the name "async-docs" that sets the <code>shell.execute_request_timeout</code> to 100ms.</p>
+<p>Defines a new kernel spec with the name "async-docs" that sets the <code>shell.timeout</code> to 100ms.</p>
 <p>The "async-docs" named kernel spec is used by <a href="#notebooks">mkdocs-jupyter</a> to convert the notebooks
 for inclusion in the usage section of the documentation.</p>
 </details>
