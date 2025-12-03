@@ -108,6 +108,28 @@ async def test_execute_stop_on_error(client: AsyncKernelClient):
     assert content["status"] == "ok"
 
 
+async def test_execute_stop_on_error_task(client: AsyncKernelClient):
+    """Execute request should not abort execution queue with stop_on_error False."""
+
+    bad_code = "\n".join(
+        [
+            # sleep to ensure subsequent message is waiting in the queue to be aborted
+            # async sleep to ensure coroutines are processing while this happens
+            "import anyio",
+            "await anyio.sleep(0.1)",
+            "raise ValueError()",
+        ]
+    )
+    msg_id_1 = client.execute("# task\nimport anyio\nawait anyio.sleep_forever()")
+    msg_id_bad_code = client.execute(bad_code)
+
+    content = await utils.get_shell_message(client, msg_id_bad_code, "execute_reply")
+    assert content.get("status") == "error"
+    assert "ValueError" in "".join(content["traceback"])
+    content = await utils.get_shell_message(client, msg_id_1, "execute_reply")
+    assert "await anyio.sleep_forever()" in "".join(content["traceback"])
+
+
 async def test_user_expressions(client: AsyncKernelClient):
     msg_id = client.execute(code="x=1", user_expressions={"foo": "x+1"})
     reply = await utils.get_reply(client, msg_id)  # execute

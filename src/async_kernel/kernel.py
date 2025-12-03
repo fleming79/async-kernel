@@ -197,6 +197,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "The caller associated with the kernel once it has started."
     ""
     subshell_manager = Fixed(SubshellManager)
+    ""
 
     # Public traits
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
@@ -749,7 +750,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             utils.mark_thread_pydev_do_not_trace()
 
         session, log, message_handler = self.session, self.log, self.msg_handler
-
         with self._bind_socket(socket_id) as socket:
             lock = BinarySemaphore()
 
@@ -974,19 +974,12 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        return await self.shell.execute_request(
-            parent=job["msg"],
-            ident=self.topic("execute_input"),
-            received_time=job["received_time"],
-            tags=job["msg"].get("metadata", {}).get("tags", ()),
-            **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
-        )
+        return await self.shell.execute_request(**job["msg"]["content"])  # pyright: ignore[reportArgumentType]
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
         return await self.shell.do_complete_request(
-            code=job["msg"]["content"].get("code", ""),
-            cursor_pos=job["msg"]["content"].get("cursor_pos", 0),
+            code=job["msg"]["content"].get("code", ""), cursor_pos=job["msg"]["content"].get("cursor_pos", 0)
         )
 
     async def is_complete_request(self, job: Job[Content], /) -> Content:

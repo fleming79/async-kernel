@@ -8,7 +8,6 @@ from typing_extensions import Sentinel, override
 
 if TYPE_CHECKING:
     import logging
-    from collections.abc import Mapping
 
     import zmq
 
@@ -26,7 +25,6 @@ __all__ = [
     "Job",
     "KernelName",
     "Message",
-    "MetadataKeys",
     "MsgHeader",
     "MsgType",
     "NoValue",
@@ -89,8 +87,6 @@ class RunMode(enum.StrEnum):
             ```python
             ##task
             ```
-        Tag:
-            see: [async_kernel.typing.MetadataKeys][].
     """
 
     @override
@@ -181,48 +177,9 @@ class MsgType(enum.StrEnum):
     "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
 
 
-class MetadataKeys(enum.StrEnum):
-    """
-    This is an enum of keys for [metadata in kernel messages](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
-    that are used in async_kernel.
-
-    Notes:
-        Metadata can be edited in Jupyter lab "Advanced tools" and Tags can be added using "common tools" in the [right side bar](https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar).
-    """
-
-    @override
-    def __eq__(self, value: object, /) -> bool:
-        return str(value) in (self.name, str(self))
-
-    @override
-    def __hash__(self) -> int:
-        return hash(self.name)
-
-    tags = "tags"
-    """
-    The `tags` metadata key corresponds to is a list of strings. 
-    
-    The list can be edited by the user in a notebook.
-    see also: [Tags][async_kernel.typing.Tags].
-    """
-    timeout = "timeout"
-    """
-    The `timeout` metadata key is used to specify a timeout for execution of the code.
-    
-    The value should be a floating point value of the timeout in seconds.
-    """
-    suppress_error_message = "suppress-error-message"
-    """
-    A message to print when the error has been suppressed using [async_kernel.typing.Tags.suppress_error][]. 
-    
-    Notes:
-        - The default message is '⚠'.
-    """
-
-
 class Tags(enum.StrEnum):
     """
-    Tags recognised by the kernel.
+    Tags recognised by the [shell][async_kernel.asyncshell.AsyncInteractiveShell].
 
     Info:
         Tags are can be added per cell.
@@ -233,18 +190,75 @@ class Tags(enum.StrEnum):
 
     @override
     def __eq__(self, value: object, /) -> bool:
-        return str(value) in (self.name, str(self))
+        return str(value).replace("-", "_").split("=")[0] == self.name
 
     @override
     def __hash__(self) -> int:
         return hash(self.name)
 
+    def get_bool(self, value: str | Tags, default: bool = True) -> bool:
+        try:
+            return value.split("=")[1].lower() == "true"
+        except Exception:
+            return default
+
+    def get_float(self, value: str | Tags, default: float = 0.0) -> float:
+        try:
+            return float(value.split("=")[1])
+        except Exception:
+            return default
+
+    def get_string(self, value: str | Tags, default: str = "") -> str:
+        try:
+            return value.split("=")[1]
+        except Exception:
+            return default
+
+    raises_exception = "raises-exception"
+    """
+    Indicates the cell should expect an exception to be raised. 
+    
+    Notes:
+        - When an exception is raised, stop_on_error is False/
+        - When an exception is **not** raised an exception will be raise and stop_on_error is True.
+    """
+
     suppress_error = "suppress-error"
     """
     Suppress exceptions that occur during execution of the code cell.
-    
+
+    The default message is '⚠'
+
+    Examples:
+
+        - suppress-error 
+        - suppress-error=The suppression message.
+
     Warning:
-        The code block will return as 'ok' and there will be no message recorded.
+        The code block will return as 'ok' (not published).
+    """
+
+    stop_on_error = "stop-on-error"
+    """
+    Override `stop_on_error`.
+
+    Examples:
+
+        - True
+            - stop_on_error=true
+            - stop_on_error=True
+        - False
+            - stop_on_error=False
+    """
+
+    timeout = "timeout="
+    """
+    Specify a timeout in seconds for code execution to complete.
+
+    Examples:
+
+        - timeout=0.0 (no timeout)
+        - timeout=0.1 (100 ms)
     """
 
 
@@ -284,7 +298,7 @@ class Message(TypedDict, Generic[T]):
     parent_header: MsgHeader
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"
 
-    metadata: Mapping[MetadataKeys | str, Any]
+    metadata: dict[str, Any]
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"
 
     content: T | Content

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import sys
 import threading
 import traceback
@@ -7,34 +8,39 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
+from typing_extensions import TypeVar
+
 import async_kernel
-from async_kernel.typing import Content, Message, MetadataKeys
+from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Mapping
+    from collections.abc import Generator
 
     from async_kernel.kernel import Kernel
-    from async_kernel.typing import Job
+    from async_kernel.typing import Content, Job, Message
 
 __all__ = [
     "error_to_content",
-    "get_execute_request_timeout",
+    "error_to_content",
     "get_execution_count",
     "get_job",
     "get_kernel",
     "get_metadata",
     "get_parent",
     "get_subshell_id",
+    "get_tag_value",
     "get_tags",
+    "get_timeout",
     "mark_thread_pydev_do_not_trace",
     "setattr_nested",
+    "subshell_context",
 ]
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
 _job_var: ContextVar[Job] = ContextVar("job")
 _subshell_id_var: ContextVar[str | None] = ContextVar("_subshell_id_var", default=None)
-_execute_request_timeout: ContextVar[float | None] = ContextVar("execute_request_timeout", default=None)
+_execute_request_timeout: ContextVar[float | None] = ContextVar("timeout", default=None)
 
 
 def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:
@@ -73,7 +79,7 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
     """A context manager for subshell_id.
 
     Args:
-        subshell_id: An existing subshell id obtained via get_subshell_id, or [async_kernel.asyncshell.AsyncInteractiveShell.create_subshell][].
+        subshell_id: An existing subshell id obtained via get_subshell_id.
     """
     if subshell_id and subshell_id not in get_kernel().subshell_manager.subshells:
         msg = f"A subshell with {subshell_id=} does not exist!"
@@ -85,24 +91,54 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
         _subshell_id_var.reset(token)
 
 
-def get_metadata(job: Job | None = None, /) -> Mapping[str, Any]:
-    "Gets [metadata]() for the current context."
-    return (job or get_job()).get("msg", {}).get("metadata", {})
+def get_metadata(job: Job | None = None, /) -> dict[str, Any]:
+    "Gets the metadata for the current context."
+    try:
+        return (job or _job_var.get())["msg"]["metadata"]
+    except Exception:
+        return {}
 
 
 def get_tags(job: Job | None = None, /) -> list[str]:
-    "Gets the [tags]() for the current context."
-    return get_metadata(job).get("tags", [])
-
-
-def get_execute_request_timeout(job: Job | None = None, /) -> float | None:
-    "Gets the execute_request_timeout for the current context."
+    "Gets the tags for the current context."
     try:
-        if timeout := get_metadata(job).get(MetadataKeys.timeout):
-            return float(timeout)
-        return get_kernel().shell.execute_request_timeout
+        return get_metadata(job)["tags"]
     except Exception:
-        return None
+        return []
+
+
+_TagType = TypeVar("_TagType", str, float, int, bool)
+
+
+def get_tag_value(tag: Tags, default: _TagType, /, *, tags: list[str] | None = None) -> _TagType:
+    """
+    Get the value for the tag from a collection of tags.
+
+    Args:
+        tag: The tag to get the value from.
+        default: The default value if a tag is not found. The default is also used to determine the type for conversion of the value.
+        tags: A list of tags to search. When not provide [get_tags][] is used.
+
+    The tag value is the value trailing behind <tag>=<value>. The value is transformed according to
+    the type of the default.
+    """
+    for t in tags if tags is not None else get_tags():
+        if t == tag:
+            if isinstance(default, float):
+                return tag.get_float(t, default)
+            if isinstance(default, bool):
+                return tag.get_bool(t, default)
+            if isinstance(default, str):
+                return tag.get_string(t, default)
+            return int(tag.get_float(t, default))
+    return default
+
+
+def get_timeout(*, tags: list[str] | None = None) -> float:
+    "Gets the timeout from tags or using the current context."
+    if math.isnan(timeout := get_tag_value(Tags.timeout, math.nan, tags=tags)):
+        return get_kernel().shell.timeout
+    return max(timeout, 0.0)
 
 
 def get_execution_count() -> int:

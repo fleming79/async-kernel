@@ -22,24 +22,25 @@ from IPython.core.magic import Magics, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_client.jsonutil import json_default
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CFloat, Dict, Instance, Type, default, observe, traitlets
+from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
 from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.typing import Content, Message, MetadataKeys, NoValue, Tags
+from async_kernel.typing import Content, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from IPython.core.history import HistoryManager
+    from traitlets.config import Configurable
 
     from async_kernel.kernel import Kernel
 
 
-__all__ = ["AsyncDisplayHook", "AsyncDisplayPublisher", "AsyncInteractiveShell", "KernelInterruptError"]
+__all__ = ["AsyncInteractiveShell"]
 
 
 class KernelInterruptError(InterruptedError):
@@ -51,7 +52,7 @@ class KernelInterruptError(InterruptedError):
 
 class AsyncDisplayHook(DisplayHook):
     """
-    A displayhook subclass that publishes data using [async_kernel.kernel.Kernel.iopub_send][].
+    A displayhook subclass that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send].
 
     This is intended to work with an InteractiveShell instance. It sends a dict of different
     representations of the object.
@@ -90,7 +91,7 @@ class AsyncDisplayHook(DisplayHook):
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
-    """A display publisher that publishes data using [async_kernel.kernel.Kernel.iopub_send][]."""
+    """A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send]."""
 
     topic: ClassVar = b"display_data"
 
@@ -163,7 +164,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     Notable differences:
         - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
-        - Supports a soft timeout specified via metadata `{"timeout":<value in seconds>}`[^1].
+        - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
         - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
         - `user_ns` and `user_global_ns` are same dictionary which is fixed.
@@ -181,14 +182,17 @@ class AsyncInteractiveShell(InteractiveShell):
     kernel = Fixed(lambda _: utils.get_kernel())
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
+
     _user_ns: Fixed[Self, dict] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
     _main_mod_cache = Fixed(dict)
-
+    _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
-    "Details associated with the latest stop on error."
 
-    execute_request_timeout = CFloat(default_value=None, allow_none=True)
+    timeout = CFloat(0.0)
     "A timeout in seconds to complete [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request]."
+
+    stop_on_error_time_offset = Float(0.0)
+    "An offset to add to the cancellation time to catch late arriving execute requests."
 
     run_cell: Callable[..., ExecutionResult] = None  # pyright: ignore[reportAssignmentType]
     "**Not supported** -  use [execute_request][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] instead."
@@ -198,6 +202,10 @@ class AsyncInteractiveShell(InteractiveShell):
     autoindent = False
     debug = None
     "**Not supported - use the built in debugger instead.**"
+
+    @override
+    def __init__(self, parent: None | Configurable = None) -> None:
+        super().__init__(parent=parent)
 
     def _get_default_ns(self):
         # Copied from `InteractiveShell.init_user_ns`
@@ -289,27 +297,33 @@ class AsyncInteractiveShell(InteractiveShell):
         user_expressions: dict[str, str] | None = None,
         allow_stdin: bool = True,
         stop_on_error: bool = True,
-        parent: Message | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        ident: bytes | list[bytes] | None = None,
-        received_time: float = 0.0,
-        tags: tuple[Tags, ...] = (),
         **_ignored,
     ) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-
-        if (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
+        if (utils.get_job().get("received_time", 0.0) < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
 
-        execution_count = self.execution_count
-        if not (silent):
+        tags: list[str] = utils.get_tags()
+        timeout: float = utils.get_timeout(tags=tags)
+        suppress_error: bool = Tags.suppress_error in tags
+        raises_exception: bool = Tags.raises_exception in tags
+        stop_on_error_override: bool = Tags.stop_on_error in tags
+
+        if stop_on_error_override:
+            stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
+        elif suppress_error or raises_exception:
+            stop_on_error = False
+
+        if silent:
+            execution_count: int = self.execution_count
+        else:
             execution_count = self._execution_count = self._execution_count + 1
             self.kernel.iopub_send(
                 msg_or_type="execute_input",
                 content={"code": code, "execution_count": execution_count},
-                parent=parent,
-                ident=ident,
+                ident=self.kernel.topic("execute_input"),
             )
         caller = Caller()
         err = None
@@ -322,7 +336,9 @@ class AsyncInteractiveShell(InteractiveShell):
             result = None
             try:
                 self.kernel.interrupts.add(cancel)
-                with anyio.fail_after(delay=utils.get_execute_request_timeout()):
+                if stop_on_error:
+                    self._stop_on_error_pool.add(cancel)
+                with anyio.fail_after(delay=timeout or None):
                     result = await self.run_cell_async(
                         raw_cell=code,
                         store_history=store_history,
@@ -335,16 +351,16 @@ class AsyncInteractiveShell(InteractiveShell):
                 err = KernelInterruptError() if self.kernel._last_interrupt_frame else e  # pyright: ignore[reportPrivateUsage]
             else:
                 err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+                if not err and Tags.raises_exception in tags:
+                    msg = "An expected exception was not raised!"
+                    err = RuntimeError(msg)
             finally:
+                self._stop_on_error_pool.discard(cancel)
+                self.kernel.interrupts.discard(cancel)
                 self.events.trigger("post_execute")
                 if not silent:
                     self.events.trigger("post_run_cell", result)
-
-            self.kernel.interrupts.discard(cancel)
-        if (err) and (
-            (Tags.suppress_error in tags)
-            or (isinstance(err, anyio.get_cancelled_exc_class()) and (utils.get_execute_request_timeout() is not None))
-        ):
+        if (err) and (suppress_error or (isinstance(err, anyio.get_cancelled_exc_class()) and (timeout != 0))):
             # Suppress the error due to either:
             # 1. tag
             # 2. timeout
@@ -359,9 +375,12 @@ class AsyncInteractiveShell(InteractiveShell):
             if (not silent) and stop_on_error:
                 with anyio.CancelScope(shield=True):
                     await async_checkpoint(force=True)
-                self._stop_on_error_info["time"] = time.monotonic()
-                self._stop_on_error_info["execution_count"] = execution_count
-                self.log.info("An error occurred in a non-silent execution request")
+                    self._stop_on_error_info["time"] = time.monotonic() + (self.stop_on_error_time_offset)
+                    self._stop_on_error_info["execution_count"] = execution_count
+                    self.log.info("An error occurred in a non-silent execution request")
+                    if stop_on_error:
+                        for c in frozenset(self._stop_on_error_pool):
+                            c()
         return content
 
     async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
@@ -443,10 +462,10 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def _showtraceback(self, etype, evalue, stb) -> None:
         if Tags.suppress_error in utils.get_tags():
-            if msg := utils.get_metadata().get(MetadataKeys.suppress_error_message, "⚠"):
+            if msg := utils.get_tag_value(Tags.suppress_error, "⚠"):
                 print(msg)
             return
-        if utils.get_execute_request_timeout() is not None and etype is anyio.get_cancelled_exc_class():
+        if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
         self.kernel.iopub_send(
             msg_or_type="error",
@@ -458,6 +477,7 @@ class AsyncInteractiveShell(InteractiveShell):
         super().reset(new_session, aggressive)
         if new_session:
             self._execution_count = 0
+            self._stop_on_error_info.clear()
 
     @override
     def init_magics(self) -> None:
@@ -483,9 +503,18 @@ class AsyncInteractiveShell(InteractiveShell):
 
 
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
+    ""
+
     protected = traitlets.Bool()
     subshell_id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
     user_global_ns: Fixed[Self, dict[Any, Any]] = Fixed(lambda c: c["owner"].kernel.shell.user_global_ns)  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    @override
+    def __init__(self, *, protected=False) -> None:
+        super().__init__(parent=self.kernel.main_shell)
+        self.protected = protected
+        self.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
+        self.kernel.subshell_manager.subshells[self.subshell_id] = self
 
     def stop(self, *, force=False) -> None:
         "Stop this subshell."
@@ -497,14 +526,23 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
 
 class SubshellManager:
+    """
+    Manages all instances of [subshells][async_kernel.asyncshell.AsyncInteractiveSubshell].
+
+    Warning:
+
+        **Do NOT instantiate directly.** Instead access the instance via [async_kernel.kernel.Kernel.subshell_manager][].
+    """
+
+    __slots__ = ["__weakref__"]
+
     kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
     subshells: Fixed[Self, dict[str, AsyncInteractiveSubshell]] = Fixed(dict)
+    default_subshell_class = AsyncInteractiveSubshell
 
     def create_subshell(self, *, protected=False) -> str:
-        subshell = AsyncInteractiveSubshell(parent=self.kernel.shell)
-        subshell.protected = protected
-        self.subshells[subshell.subshell_id] = subshell
-        return subshell.subshell_id
+        "Create a new instance of the default subshell class."
+        return self.default_subshell_class(protected=protected).subshell_id
 
     def list_subshells(self) -> list[str]:
         return list(self.subshells)
@@ -517,15 +555,25 @@ class SubshellManager:
         def get_shell(self, subshell_id: None = ...) -> AsyncInteractiveShell: ...
 
     def get_shell(self, subshell_id: str | None = None) -> AsyncInteractiveShell | AsyncInteractiveSubshell:
-        "Get a subshell or the main shell"
+        """
+        Get a subshell or the main shell.
+
+        Args:
+            subshell_id: The id of an existing subshell.
+        """
         return (self.subshells[subshell_id] if subshell_id else None) or self.kernel.main_shell
 
     def delete_subshell(self, subshell_id: str) -> None:
-        "Stop a subshell unless it is protected"
+        """
+        Stop a subshell unless it is protected.
+
+        Args:
+            subshell_id: The id of an existing subshell to stop.
+        """
         if subshell := self.subshells.get(subshell_id):
             subshell.stop()
 
-    def stop_all_subshells(self, *, force=False) -> None:
+    def stop_all_subshells(self, *, force: bool = False) -> None:
         """Stop all current subshells.
 
         Args:

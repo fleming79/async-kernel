@@ -110,12 +110,15 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
     assert stderr == ""
 
 
-@pytest.mark.parametrize("mode", ["kernel_timeout", "metadata"])
-async def test_execute_kernel_timeout(client: AsyncKernelClient, kernel: Kernel, mode: str):
+@pytest.mark.parametrize("mode", ["shell_timeout", "tags"])
+async def test_execute_shell_timeout(client: AsyncKernelClient, kernel: Kernel, mode: str):
     await utils.clear_iopub(client)
-    kernel.shell.execute_request_timeout = 0.1 if "kernel" in mode else None
+    if mode == "shell_timeout":
+        kernel.shell.timeout = 0.1
+        metadata = {}
+    else:
+        metadata = {"tags": ["timeout=0.1"]}
     last_stop_time = kernel.shell._stop_on_error_info
-    metadata: dict[str, float | list] = {"timeout": 0.1}
     try:
         code = "\n".join(["import anyio", "await anyio.sleep_forever()"])
         msg_id, content = await utils.execute(client, code=code, metadata=metadata, clear_pub=False)
@@ -127,7 +130,7 @@ async def test_execute_kernel_timeout(client: AsyncKernelClient, kernel: Kernel,
         await utils.check_pub_message(client, msg_id, msg_type="error", **expected)
         await utils.check_pub_message(client, msg_id, execution_state="idle")
     finally:
-        kernel.shell.execute_request_timeout = None
+        kernel.shell.timeout = 0.0
 
 
 async def test_bad_message(client: AsyncKernelClient):
@@ -593,6 +596,31 @@ async def test_get_run_mode_tag(client: AsyncKernelClient):
     )
     assert content["status"] == "ok"
     assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
+
+
+@pytest.mark.parametrize("mode", ["raises", "not raised"])
+async def test_tag_raises_exception(client: AsyncKernelClient, mode: Literal["raises", "not raised"]):
+    match mode:
+        case "raises":
+            code = f'raise RuntimeError("{mode}")'
+        case "not raised":
+            code = "pass"
+    _, content = await utils.execute(client, code, metadata={"tags": [Tags.raises_exception]})
+    assert content["status"] == "error"
+    assert mode in content["evalue"]
+
+
+@pytest.mark.parametrize(("value", "expected"), [("stop-on-error=True", "error"), ("stop-on-error=False", "ok")])
+async def test_tag_stop_on_error(kernel: Kernel, client: AsyncKernelClient, value: str, expected: str):
+    try:
+        kernel.shell.stop_on_error_time_offset = utils.TIMEOUT
+        _, content = await utils.execute(client, "fail", metadata={"tags": [Tags.raises_exception, value]})
+        assert content["status"] == "error"
+        _, content = await utils.execute(client, "a=10")
+        assert content["status"] == expected
+    finally:
+        kernel.shell.stop_on_error_time_offset = 0
+        kernel.shell._stop_on_error_info.clear()
 
 
 async def test_all_concurrency_run_modes(kernel: Kernel):

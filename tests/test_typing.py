@@ -1,5 +1,5 @@
 from async_kernel.kernel import Kernel
-from async_kernel.typing import MetadataKeys, MsgType, RunMode, Tags
+from async_kernel.typing import MsgType, RunMode, Tags
 
 
 class TestRunMode:
@@ -23,12 +23,6 @@ class TestRunMode:
         ]
 
 
-class TestMetadataKeys:
-    def test_str(self):
-        assert str(MetadataKeys.suppress_error_message) == MetadataKeys.suppress_error_message
-        assert MetadataKeys.suppress_error_message == MetadataKeys.suppress_error_message.name
-
-
 class TestMsgType:
     def test_all_names(self):
         assert set(MsgType).intersection(vars(Kernel))
@@ -38,6 +32,7 @@ class TestTags:
     def test_equality(self):
         assert Tags.suppress_error == str(Tags.suppress_error)
         assert Tags.suppress_error == Tags.suppress_error.name
+        assert Tags.timeout == Tags.timeout.name
 
     def test_hash(self):
         assert hash(Tags.suppress_error) == hash(Tags.suppress_error)
