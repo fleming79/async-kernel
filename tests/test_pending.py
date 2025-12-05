@@ -145,7 +145,7 @@ class TestPending:
     async def test_wait_cancelled_shield(self, caller: Caller, anyio_backend: Backend):
         pen = Pending()
         with pytest.raises(TimeoutError):
-            await pen.wait(timeout=0.001, shield=True)
+            await pen.wait(timeout=0.001, protect=True)
         assert not pen.cancelled()
         with pytest.raises(TimeoutError):
             await pen.wait(timeout=0.001)

@@ -94,19 +94,19 @@ class Pending(Awaitable[T]):
 
         @overload
         async def wait(
-            self, *, timeout: float | None = ..., shield: bool = False | ..., result: Literal[True] = True
+            self, *, timeout: float | None = ..., protect: bool = False | ..., result: Literal[True] = True
         ) -> T: ...
 
         @overload
-        async def wait(self, *, timeout: float | None = ..., shield: bool = ..., result: Literal[False]) -> None: ...
+        async def wait(self, *, timeout: float | None = ..., protect: bool = ..., result: Literal[False]) -> None: ...
 
-    async def wait(self, *, timeout: float | None = None, shield: bool = False, result: bool = True) -> T | None:
+    async def wait(self, *, timeout: float | None = None, protect: bool = False, result: bool = True) -> T | None:
         """
         Wait for a result or exception to be set (thread-safe) returning the pending if specified.
 
         Args:
             timeout: Timeout in seconds.
-            shield: Shield the instance from external cancellation.
+            protect: Protect the instance from external cancellation.
             result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Pending.result][]).
 
         Raises:
@@ -125,7 +125,7 @@ class Pending(Awaitable[T]):
                 await async_checkpoint(force=True)
             return self.result() if result else None
         finally:
-            if not self._done and not shield:
+            if not self._done and not protect:
                 self.cancel("Cancelled with waiter cancellation.")
 
     if TYPE_CHECKING:
