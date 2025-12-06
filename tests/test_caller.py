@@ -330,6 +330,17 @@ class TestCaller:
             caller.queue_close(func)
             assert not caller.queue_get(func)
 
+    async def test_queue_call_result(self, caller: Caller):
+        def pass_through(n):
+            return n
+
+        pen = Pending()
+        for i in range(10):
+            pen = caller.queue_call(pass_through, i)
+        assert await pen == 9
+        del pass_through
+        assert pen.cancelled(), "Should be garbage collected immediately"
+
     @pytest.mark.parametrize("anyio_backend", [Backend.asyncio])
     async def test_asyncio_queue_call_cancelled(self, caller: Caller):
         # Test queue_call can catch a CancelledError raised by the user
@@ -342,8 +353,8 @@ class TestCaller:
 
         caller.queue_call(func, "CancelledError")
         okay = Event()
-        caller.queue_call(func, okay.set)
-        await okay
+        await caller.queue_call(func, okay.set)
+        assert okay
 
     async def test_execution_queue_from_thread(self, caller: Caller):
         event = Event()
