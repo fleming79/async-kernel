@@ -262,6 +262,15 @@ class Tags(enum.StrEnum):
     """
 
 
+class PendingTrackerState(enum.Enum):
+    "The state of a [async_kernel.pending.PendingManager][]."
+
+    idle = enum.auto()
+    active = enum.auto()
+    exiting = enum.auto()
+    stopped = enum.auto()
+
+
 class CallerState(enum.Enum):
     "The State of a [async_kernel.caller.Caller][]."
 
@@ -354,6 +363,13 @@ class FixedCreated(TypedDict, Generic[S, T]):
     name: str
     owner: S
     obj: T
+
+
+class PendingCreateOptions(TypedDict):
+    "Options to pass when creating a new [Pending][async_kernel.pending.Pending]."
+
+    allow_tracking: NotRequired[bool]
+    "Add the pending to all [pending trackers][async_kernel.pending.PendingTracker] (True)."
 
 
 class CallerCreateOptions(TypedDict):

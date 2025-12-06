@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any
 from typing_extensions import TypeVar
 
 import async_kernel
+from async_kernel.asyncshell import SubshellPendingManager
 from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
@@ -39,7 +40,6 @@ __all__ = [
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
 _job_var: ContextVar[Job] = ContextVar("job")
-_subshell_id_var: ContextVar[str | None] = ContextVar("_subshell_id_var", default=None)
 _execute_request_timeout: ContextVar[float | None] = ContextVar("timeout", default=None)
 
 
@@ -71,24 +71,22 @@ def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
 
 def get_subshell_id() -> str | None:
     "Get the `subshell_id` for the current context."
-    return _subshell_id_var.get()
+    return SubshellPendingManager._contextvar.get()  # pyright: ignore[reportPrivateUsage]
 
 
 @contextmanager
 def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
-    """A context manager for subshell_id.
+    """A context manager to work in the context of a shell or subshell.
 
     Args:
-        subshell_id: An existing subshell id obtained via get_subshell_id.
+        subshell_id: An existing subshell or the main shell if subshell_id is None.
     """
-    if subshell_id and subshell_id not in get_kernel().subshell_manager.subshells:
-        msg = f"A subshell with {subshell_id=} does not exist!"
-        raise ValueError(msg)
-    token = _subshell_id_var.set(subshell_id)
+    shell = get_kernel().subshell_manager.get_shell(subshell_id)  # use the shell for validation.
+    token = SubshellPendingManager._contextvar.set(shell.subshell_id)  # pyright: ignore[reportPrivateUsage]
     try:
         yield
     finally:
-        _subshell_id_var.reset(token)
+        SubshellPendingManager._contextvar.reset(token)  # pyright: ignore[reportPrivateUsage]
 
 
 def get_metadata(job: Job | None = None, /) -> dict[str, Any]:
