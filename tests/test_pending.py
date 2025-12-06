@@ -6,15 +6,27 @@ import weakref
 import anyio
 import pytest
 from aiologic import Event
+from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
-from async_kernel.pending import InvalidStateError, Pending, PendingCancelled
-from async_kernel.typing import Backend
+from async_kernel.pending import InvalidStateError, Pending, PendingCancelled, PendingManager
+from async_kernel.typing import Backend, PendingTrackerState
 
 
 @pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
     return request.param
+
+
+@pytest.fixture
+async def pm(anyio_backend: Backend):
+    assert PendingManager.current() is None
+    pm = PendingManager()
+    pm.activate()
+    assert PendingManager.current() is None
+    yield pm
+    if pm.state is PendingTrackerState.active and (countdown := pm.deactivate()):
+        await countdown
 
 
 @pytest.mark.anyio
@@ -49,6 +61,19 @@ class TestPending:
         async with Caller("manual"):
             pen.add_done_callback(callback)
             await after_done
+
+    async def test_set_result_reset(self, caller: Caller):
+        pen_resetting = Pending()
+        for _ in range(10):
+            proceed = Event()
+            pen2 = caller.call_soon(lambda: (proceed.set(), pen_resetting.wait())[1])  # noqa: B023
+            await proceed
+            caller.call_soon(pen_resetting.set_result, 1, reset=True)
+            assert await pen2 == 1
+            assert not pen_resetting.done()
+        pen_resetting.set_exception(RuntimeError("should not continue"))
+        with pytest.raises(InvalidStateError):
+            pen_resetting.set_result(2)
 
     async def test_set_and_wait_exception(self, anyio_backend: Backend):
         pen = Pending()
@@ -133,8 +158,9 @@ class TestPending:
 
     async def test_cancel(self, anyio_backend: Backend):
         pen = Pending()
-        assert pen.cancel()
-        with pytest.raises(PendingCancelled):
+        assert pen.cancel("message 1")
+        assert pen.cancel("message 2")
+        with pytest.raises(PendingCancelled, match="message 1\nmessage 2"):
             pen.exception()
 
     async def test_set_from_non_thread(self, caller: Caller, anyio_backend: Backend):
@@ -142,7 +168,7 @@ class TestPending:
         caller.to_thread(pen.set_result, value=123)
         assert (await pen) == 123
 
-    async def test_wait_cancelled_shield(self, caller: Caller, anyio_backend: Backend):
+    async def test_wait_cancelled_protect(self, caller: Caller, anyio_backend: Backend):
         pen = Pending()
         with pytest.raises(TimeoutError):
             await pen.wait(timeout=0.001, protect=True)
@@ -154,10 +180,10 @@ class TestPending:
     def test_repr(self):
         a = "long string" * 100
         b = {f"name {i}": "long_string" * 100 for i in range(100)}
-        pen = Pending()
+        pen = Pending({"allow_tracking": False})
         pen.metadata.update(a=a, b=b)
         matches = [
-            f"<Pending {indicator} at {id(pen)} {{'a': 'long stringl…nglong string', 'b': {{…}}}} >"
+            f"<Pending {indicator} at {id(pen)} options:{{'allow_tracking': False}} metadata:{{'a': 'long stringl…nglong string', 'b': {{…}}}} >"
             for indicator in ("🏃", "⛔ 🏃", "⛔ 🏁")
         ]
         assert re.match(matches[0], repr(pen))
@@ -205,3 +231,119 @@ class TestPending:
         pen = caller.call_soon(anyio.sleep_forever)
         with pytest.raises(TimeoutError):
             pen.wait_sync(timeout=0.01)
+
+
+class TestPendingManager:
+    async def test_context(self, pm: PendingManager, caller: Caller) -> None:
+        token = pm.start_tracking()
+        assert pm is PendingManager.current()
+        pm.stop_tracking(token)
+        assert PendingManager.current() is None
+
+    async def test_pool_deactivate(self, pm: PendingManager, caller: Caller) -> None:
+        token = pm.start_tracking()
+        pen = caller.call_soon(anyio.sleep_forever)
+        for _ in range(5):
+            caller.call_soon(anyio.sleep_forever)
+        assert pen in pm.pending
+        pm.stop_tracking(token)
+        pending = pm.pending
+        assert pm.deactivate(cancel_pending=False) is None
+        assert pm.state is PendingTrackerState.stopped
+        token = pm.activate()
+        for pen in pending:
+            assert not pen.done()
+            pm.track(pen)
+        done_event = pm.deactivate(cancel_pending=True)
+        assert done_event is not None
+        assert done_event.value == 6
+        assert pm.state is PendingTrackerState.exiting
+        await done_event
+        assert pm.state is PendingTrackerState.stopped
+        assert pen.done()
+        assert not pm.pending
+
+    async def test_pool_ignores_pending_errors(self, pm: PendingManager, caller: Caller) -> None:
+        token = pm.start_tracking()
+        proceed = Event()
+        pen1 = caller.call_soon(await_for, proceed)  # pyright: ignore[reportArgumentType]
+        pen2 = caller.call_soon(lambda: 1 / 0)
+        await pen2.wait(result=False)
+        proceed.set()
+        await pen1
+        pen2 = caller.call_soon(anyio.sleep_forever)
+        assert pm.pending == {pen2}
+        with pytest.raises(TimeoutError), anyio.fail_after(0.01):
+            await pen2
+        await pen2.wait(result=False)
+        assert not pm.pending
+        assert pm.state is PendingTrackerState.active
+        pm.stop_tracking(token)
+
+    async def test_state(self, pm: PendingManager, caller: Caller):
+        count = 0
+        n = 2
+
+        async def recursive():
+            nonlocal count
+            count += 1
+            if count < n:
+                ctx_ = PendingManager.current()
+                assert ctx_
+                return caller.call_soon(recursive)
+            return count
+
+        with pytest.raises(InvalidStateError):
+            pm.activate()
+
+        pm.start_tracking()
+        pm.track(pen := caller.call_soon(recursive))
+        while isinstance(pen, Pending):
+            pen = await pen
+        assert pen == n
+        assert count == n
+        assert not pm.pending
+
+        caller.call_soon(lambda: 1)
+        count_event = pm.deactivate(cancel_pending=True)
+        assert count_event is not None
+        assert count_event.value == 1
+
+        with pytest.raises(InvalidStateError):
+            pm.track(Pending())
+
+        await count_event
+
+        with pytest.raises(InvalidStateError):
+            pm.start_tracking()
+        with pytest.raises(InvalidStateError):
+            pm.deactivate()
+
+    async def test_discard(self, pm: PendingManager, caller: Caller):
+        pm.track(pen1 := caller.call_soon(lambda: 1 + 1))
+        pm.track(pen2 := Pending())
+        assert await pen1 == 2
+        pm.discard(pen2)
+
+    async def test_subclass(self, pm: PendingManager, caller: Caller):
+        pm_token = pm.start_tracking()
+        assert PendingManager.current() is pm
+
+        class PendingManagerSubclass(PendingManager):
+            pass
+
+        pm2 = PendingManagerSubclass().activate()
+        assert PendingManagerSubclass.current() is None
+        pm2_token = pm2.start_tracking()
+
+        assert PendingManagerSubclass.current() is pm2
+        assert PendingManager.current() is pm
+
+        pm.stop_tracking(pm_token)
+        assert PendingManager.current() is None
+
+        with pytest.raises(ValueError, match="was created by a different ContextVar"):
+            pm.stop_tracking(pm2_token)
+
+        pm2.stop_tracking(pm2_token)
+        assert PendingManagerSubclass.current() is None
