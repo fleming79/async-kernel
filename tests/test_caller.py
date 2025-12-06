@@ -342,8 +342,8 @@ class TestCaller:
 
         caller.queue_call(func, "CancelledError")
         okay = Event()
-        caller.queue_call(func, okay.set)
-        await okay
+        await caller.queue_call(func, okay.set)
+        assert okay
 
     async def test_execution_queue_from_thread(self, caller: Caller):
         event = Event()

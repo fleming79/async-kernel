@@ -1,19 +1,22 @@
 from __future__ import annotations
 
 import contextlib
+import contextvars
 import reprlib
+import uuid
 from collections import deque
-from collections.abc import Awaitable, Callable, Generator
+from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
-from aiologic import Event
+from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import async_checkpoint, create_async_event, green_checkpoint
 from typing_extensions import override
 
-from async_kernel.typing import T
+from async_kernel.common import Fixed
+from async_kernel.typing import PendingCreateOptions, PendingTrackerState, T
 
-__all__ = ["InvalidStateError", "Pending", "PendingCancelled"]
+__all__ = ["InvalidStateError", "Pending", "PendingCancelled", "PendingContext", "PendingManager"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -44,7 +47,16 @@ class Pending(Awaitable[T]):
         metadata (dict[str, Any]): Metadata passed during creation.
     """
 
-    __slots__ = ["__weakref__", "_cancelled", "_canceller", "_done", "_done_callbacks", "_exception", "_result"]
+    __slots__ = [
+        "__weakref__",
+        "_cancelled",
+        "_canceller",
+        "_done",
+        "_done_callbacks",
+        "_exception",
+        "_options",
+        "_result",
+    ]
 
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
     "Keys of metadata to omit when creating a repr of the instance."
@@ -52,11 +64,12 @@ class Pending(Awaitable[T]):
     _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
     "A mapping of instance's id its metadata."
 
-    _cancelled: str
+    _cancelled: str | None
     _canceller: Callable[[str | None], Any]
     _exception: Exception
     _done: bool
     _result: T
+    _options: PendingCreateOptions | None
 
     @property
     def metadata(self) -> dict[str, Any]:
@@ -65,25 +78,36 @@ class Pending(Awaitable[T]):
         """
         return self._metadata_mappings[id(self)]
 
-    def __init__(self, **metadata) -> None:
+    def __init__(self, options: PendingCreateOptions | None = None, /, **metadata) -> None:
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
         self._metadata_mappings[id(self)] = metadata
         self._done = False
+        self._cancelled = None
+        self._options = options
+        if options is None or options.get("allow_tracking", True):
+            PendingTracker.add_to_pending_trackers(self)
 
     def __del__(self):
         self._metadata_mappings.pop(id(self), None)
 
     @override
     def __repr__(self) -> str:
-        rep = "<Pending" + (" ⛔" if self.cancelled() else "") + (" 🏁" if self._done else " 🏃")
+        rep = (
+            "<Pending"
+            + ((" ⛔" + (f"message={self._cancelled!s}" if self._cancelled else "")) if self.cancelled() else "")
+            + (" 🏁" if self._done else " 🏃")
+        )
         rep = f"{rep} at {id(self)}"
+        if self._options:
+            rep = f"{rep} options:{truncated_rep.repr(self._options)}"
         with contextlib.suppress(Exception):
-            md = self.metadata
-            if "func" in md:
-                items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
-                rep += f" | {md['func']} {' | '.join(items) if items else ''}"
-            else:
-                rep += f" {truncated_rep.repr(md)}" if md else ""
+            if md := self.metadata:
+                rep = f"{rep} metadata:"
+                if "func" in md:
+                    items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
+                    rep += f" | {md['func']} {' | '.join(items) if items else ''}"
+                else:
+                    rep += f"{truncated_rep.repr(md)}"
         return rep + " >"
 
     @override
@@ -124,9 +148,10 @@ class Pending(Awaitable[T]):
             else:
                 await async_checkpoint(force=True)
             return self.result() if result else None
-        finally:
-            if not self._done and not protect:
-                self.cancel("Cancelled with waiter cancellation.")
+        except (anyio.get_cancelled_exc_class(), TimeoutError) as e:
+            if not protect:
+                self.cancel(f"Cancelled due to cancellation error {e}.")
+            raise
 
     if TYPE_CHECKING:
 
@@ -176,12 +201,25 @@ class Pending(Awaitable[T]):
             except Exception:
                 pass
 
-    def set_result(self, value: T) -> None:
-        "Set the result (thread-safe)."
+    def set_result(self, value: T, *, reset: bool = False) -> None:
+        """
+        Set the result (low-level-thread-safe).
+
+        Args:
+            value: The result.
+            reset: Revert to being not done.
+
+        Warning:
+            - When using reset ensure to proivide sufficient time for any waiters to retrieve the result.
+        """
         self._set_done("result", value)
+        if reset:
+            self._done = False
 
     def set_exception(self, exception: BaseException) -> None:
-        "Set the exception (thread-safe)."
+        """
+        Set the exception (low-level-thread-safe).
+        """
         self._set_done("exception", exception)
 
     def cancel(self, msg: str | None = None) -> bool:
@@ -198,8 +236,7 @@ class Pending(Awaitable[T]):
         Returns: If it has been cancelled.
         """
         if not self._done:
-            cancelled = getattr(self, "_cancelled", "")
-            if msg and isinstance(cancelled, str):
+            if (cancelled := self._cancelled or "") and msg:
                 msg = f"{cancelled}\n{msg}"
             self._cancelled = msg or cancelled
             if canceller := getattr(self, "_canceller", None):
@@ -208,11 +245,11 @@ class Pending(Awaitable[T]):
 
     def cancelled(self) -> bool:
         """Return True if the pending is cancelled."""
-        return isinstance(getattr(self, "_cancelled", None), str)
+        return self._cancelled is not None
 
     def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
         """
-        Set a callback to handle cancellation.
+        Set a callback to handle cancellation (low-level).
 
         Args:
             canceller: A callback that performs the cancellation of the pending.
@@ -274,11 +311,14 @@ class Pending(Awaitable[T]):
             PendingCancelled: If the pending has been cancelled.
             InvalidStateError: If the pending isn't done yet.
         """
-        if not self._done and not self.cancelled():
-            raise InvalidStateError
-        if e := self.exception():
-            raise e
-        return self._result
+        if self._cancelled is not None:
+            self.exception()
+        try:
+            return self._result
+        except AttributeError:
+            if e := self.exception():
+                raise e from None
+            raise InvalidStateError from None
 
     def exception(self) -> BaseException | None:
         """
@@ -288,8 +328,194 @@ class Pending(Awaitable[T]):
             PendingCancelled: If the instance has been cancelled.
             InvalidStateError: If the instance isn't done yet.
         """
-        if hasattr(self, "_cancelled"):
+        if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
         if not self._done:
             raise InvalidStateError
         return getattr(self, "_exception", None)
+
+
+class PendingTracker:
+    _active_classes: ClassVar[set[type[Self]]] = set()
+    _active_contexts: ClassVar[dict[str, Self]] = {}
+    _contextvar: ClassVar[contextvars.ContextVar[str | None]] = contextvars.ContextVar("PendingManager", default=None)
+
+    _state = PendingTrackerState.idle
+    _pending: Fixed[Self, set[Pending[Any]]] = Fixed(set)
+    _count_event = Fixed(CountdownEvent)
+
+    context_id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
+    "The context id (per instance)."
+
+    @property
+    def state(self) -> PendingTrackerState:
+        return self._state
+
+    @property
+    def pending(self) -> set[Pending[Any]]:
+        return self._pending.copy()
+
+    def __init_subclass__(cls) -> None:
+        # Each subclass is assigned a new context variable.
+        cls._contextvar = contextvars.ContextVar(f"{cls.__module__}.{cls.__name__}", default=None)
+        return super().__init_subclass__()
+
+    def _set_context(self) -> contextvars.Token[str | None]:
+        assert self._state in {PendingTrackerState.active, PendingTrackerState.active}
+        self._active_classes.add(self.__class__)
+        self._active_contexts[self.context_id] = self
+        return self._contextvar.set(self.context_id)
+
+    @classmethod
+    def add_to_pending_trackers(cls, pen: Pending) -> None:
+        "Add to all active pending trackers in the current context."
+        # Called by `Pending` when a new instance for each new instance.
+        for cls_ in cls._active_classes:
+            if (id_ := cls_._contextvar.get()) and (pm := cls._active_contexts.get(id_)):
+                pm.add_pending(pen)
+
+    @classmethod
+    def current(cls) -> Self | None:
+        "The current instance of this class for the current context."
+        if (id_ := cls._contextvar.get()) and (current := cls._active_contexts.get(id_)):
+            if current._state is PendingTrackerState.exiting:
+                msg = f"The current {cls.__name__} is exiting!"
+                raise InvalidStateError(msg)
+            return current
+        return None
+
+    def add_pending(self, pen: Pending) -> None:
+        "Add a `Pending` to the managers 'pending' set."
+        if not pen.done():
+            if self._state not in {PendingTrackerState.idle, PendingTrackerState.active}:
+                msg = "{self.__class__.__name__} is not active!"
+                raise InvalidStateError(msg)
+            if pen not in self._pending:
+                pen.add_done_callback(self.remove_pending)
+                self._pending.add(pen)
+                self._count_event.up()
+
+    def remove_pending(self, pen: Pending) -> None:
+        "Remove a `Pending` from the 'pending' set."
+        try:
+            self._pending.remove(pen)
+            self._count_event.down()
+            if (
+                self._count_event.value
+                and (self._state is PendingTrackerState.active)
+                and (pen.cancelled() or pen.exception())
+            ):
+                for pen in self._pending.copy():
+                    pen.cancel(f"The async context of {self.__class__} has been cancelled")
+            if self._state is PendingTrackerState.exiting and not self._count_event.value:
+                self._state = PendingTrackerState.stopped
+        except KeyError:
+            pass
+
+    def discard_pending(self, pen: Pending) -> None:
+        "Discard a `Pending` from the 'pending' set."
+        if pen.remove_done_callback(self.remove_pending):
+            self.remove_pending(pen)
+
+
+class PendingManager(PendingTracker):
+    """
+    PendingManager is a context-aware manager for tracking [Pending][async_kernel.pending.Pending].
+
+    This class maintains a registry of Pending created within a given context, allowing for activation,
+    deactivation, and context management using Python's contextvars. It supports manual addition and
+    removal of Pending, and can automatically cancel outstanding tasks when deactivated.
+    """
+
+    def activate(self) -> Self:
+        """
+        Enter the active state to begin tracking pending.
+        """
+
+        if self._state not in {PendingTrackerState.idle, PendingTrackerState.stopped}:
+            raise InvalidStateError
+        self._state = PendingTrackerState.active
+        self._active_contexts[self.context_id] = self
+        self._active_classes.add(self.__class__)
+        return self
+
+    def deactivate(self, *, cancel_pending: bool = False) -> CountdownEvent | None:
+        """
+        Leave the active state and remove pending.
+
+
+        Args:
+            cancel_pending: Cancel all `Pending` in the current 'pending' set.
+
+        Returns:
+            CountdownEvent: If there are pending that have not finished cancellation.
+        """
+        if self._state is not PendingTrackerState.active:
+            raise InvalidStateError
+        self._state = PendingTrackerState.exiting
+        self._active_contexts.pop(self.context_id)
+        for pen in self._pending.copy():
+            if cancel_pending:
+                pen.cancel(f"The async context of {self.__class__} has been cancelled")
+            else:
+                self.discard_pending(pen)
+        if self._count_event.value:
+            return self._count_event
+        self._state = PendingTrackerState.stopped
+        return None
+
+    def start_tracking(self) -> contextvars.Token[str | None]:
+        """
+        Start tracking `Pending` in the  current context.
+        """
+        if self.state is not PendingTrackerState.active:
+            raise InvalidStateError
+        return self._set_context()
+
+    def stop_tracking(self, token: contextvars.Token[str | None]) -> None:
+        """
+        Stop tracking using the  token returned using start tracking.
+        """
+        self._contextvar.reset(token)
+
+
+class PendingContext(PendingTracker, anyio.AsyncContextManagerMixin):
+    """
+    PendingContext is an asynchronous context manager that works roughly like a taskgroup.
+
+    Features:
+        - New pending created within the context (including sub-threads) are tracked.
+        - The context will exit after all tracked pending are done.
+        - Cancelled or failed pending initiate cancellation of unfinished pending.
+
+    Usage:
+        Enter the async context and create new pending, such as  with  [Caller][async_kernel.caller.Caller].
+
+        ```python
+        async with PendingContext() as pc:
+            Caller().to_thread(...)
+            Caller().call_soon(...)
+            Caller().queue_call(...)
+        ```
+
+    Raises:
+        InvalidStateError: If the context is entered in an invalid state.
+        NotImplementedError: For disabled methods.
+    """
+
+    @contextlib.asynccontextmanager
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        self._state = PendingTrackerState.active
+        token = self._set_context()
+        try:
+            yield self
+            await self._count_event
+        finally:
+            self._state = PendingTrackerState.exiting
+            self._contextvar.reset(token)
+            if self._count_event.value:
+                for pen in self._pending.copy():
+                    pen.cancel()
+                with anyio.CancelScope(shield=True):
+                    await self._count_event
+            self._state = PendingTrackerState.stopped

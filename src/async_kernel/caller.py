@@ -15,7 +15,7 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, Unpack, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast
 
 import anyio
 import anyio.from_thread
@@ -28,7 +28,7 @@ from typing_extensions import override
 from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.pending import Pending, PendingCancelled
-from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, T
+from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, PendingCreateOptions, T
 
 with contextlib.suppress(ImportError):
     # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
@@ -544,10 +544,11 @@ class Caller(anyio.AsyncContextManagerMixin):
     def schedule_call(
         self,
         func: Callable[..., CoroutineType[Any, Any, T] | T],
-        /,
         args: tuple,
         kwargs: dict,
+        pending_create_options: PendingCreateOptions | None = None,
         context: contextvars.Context | None = None,
+        /,
         **metadata: Any,
     ) -> Pending[T]:
         """
@@ -560,13 +561,14 @@ class Caller(anyio.AsyncContextManagerMixin):
             func: The function to be called. If it returns a coroutine, it will be awaited and its result will be returned.
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
+            pending_create_options: Options are passed to [Pending][async_kernel.pending.Pending].
             context: The context to use, if not provided the current context is used.
             **metadata: Additional metadata to store in the instance.
         """
         if self._state in {CallerState.stopping, CallerState.stopped}:
             msg = f"{self} is {self._state.name}!"
             raise RuntimeError(msg)
-        pen = Pending(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        pen = Pending(pending_create_options, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), pen))
         self._resume()
         return pen
@@ -673,11 +675,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         pen.add_done_callback(_to_thread_on_done)
         return pen
 
-    def queue_get(self, func: Callable) -> Pending[Never] | None:
+    def queue_get(self, func: Callable) -> Pending[None] | None:
         """Returns `Pending` instance for `func` where the queue is running.
 
         Warning:
             - This instance loops until the instance is closed or func is garbage collected.
+            - The pending has been modified such that waiting it will wait for the queue to be empty.
             - `queue_close` is the preferred means to shutdown the queue.
         """
         return self._queue_map.get(hash(func))
@@ -688,7 +691,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> None:
+    ) -> Pending[T]:
         """
         Queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).
 
@@ -697,11 +700,19 @@ class Caller(anyio.AsyncContextManagerMixin):
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
 
+        Warning:
+            - Do not assume the result matches the function call.
+            - The returned pending returns the last result of the queue call once the queue becomes empty.
+
         Notes:
-            - The queue executor loop will stay open until one of the following occurs:
-                1. The method [Caller.queue_close][] is called with `func`.
-                2. If `func` is a method is deleted and garbage collected (using [weakref.finalize][]).
-            - The [context][contextvars.Context] of the initial call is is used for subsequent queue calls.
+            - The queue runs in a *task* wrapped with a [async_kernel.pending.Pending][] that remains running until one of the following occurs:
+                1. The pending is cancelled.
+                2. The method [Caller.queue_close][] is called with `func` or `func`'s hash.
+                3. `func` is deleted (utilising [weakref.finalize][]).
+            - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.
+
+        Returns:
+            Pending: The pending where the queue loop is running.
         """
         key = hash(func)
         if not (pen_ := self._queue_map.get(key)):
@@ -709,13 +720,14 @@ class Caller(anyio.AsyncContextManagerMixin):
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
 
-            async def queue_loop(key: int, queue: deque) -> None:
+            async def queue_loop() -> None:
                 pen = self.current_pending()
                 assert pen
+                item = result = None
                 try:
                     while True:
                         if queue:
-                            item, result = queue.popleft(), None
+                            item = queue.popleft()
                             try:
                                 result = item[0](*item[1], **item[2])
                                 if inspect.iscoroutine(object=result):
@@ -724,22 +736,27 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 if pen.cancelled():
                                     raise
                                 self.log.exception("Execution %s failed", item, exc_info=e)
-                            finally:
-                                del item, result
                             await async_checkpoint(force=True)
                         else:
-                            event = create_async_event()
-                            pen.metadata["resume"] = event.set
+                            # Use checkpoints to catch new queue items
+                            await async_checkpoint(force=True)
                             if not queue:
-                                await event
+                                event = create_async_event()
+                                pen.metadata["resume"] = event.set
+                                await async_checkpoint(force=True)
+                                if not queue:
+                                    pen.set_result(result, reset=True)  # pyright: ignore[reportPossiblyUnboundVariable]
+                                    del item, result  # pyright: ignore[reportPossiblyUnboundVariable]
+                                    await event
                             pen.metadata.pop("resume")
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = pen_ = self.call_soon(queue_loop, key=key, queue=queue)
-        pen_.metadata["kwargs"]["queue"].append((func, args, kwargs))
+            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue)
+        pen_.metadata["queue"].append((func, args, kwargs))
         if resume := pen_.metadata.get("resume"):
             resume()
+        return pen_  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
         """
