@@ -39,26 +39,35 @@ def transport(request):
 def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
     ctx = zmq.Context()
     ip = tmp_path / "mypath" if transport == "ipc" else "0.0.0.0"
-    with ctx:
-        with ctx.socket(zmq.SocketType.ROUTER) as socket:
+    try:
+        socket = ctx.socket(zmq.SocketType.ROUTER)
+        try:
             port = bind_socket(socket, transport, ip)  # pyright: ignore[reportArgumentType]
-        with ctx.socket(zmq.SocketType.ROUTER) as socket:
+        finally:
+            socket.close(linger=0)
+        socket = ctx.socket(zmq.SocketType.ROUTER)
+        try:
             assert bind_socket(socket, transport, ip, port) == port  # pyright: ignore[reportArgumentType]
             if transport == "tcp":
                 with pytest.raises(RuntimeError):
                     bind_socket(socket, transport, ip, max_attempts=0)  # pyright: ignore[reportArgumentType]
                 with pytest.raises(ValueError, match="Invalid transport"):
                     bind_socket(socket, "", ip, max_attempts=1)  # pyright: ignore[reportArgumentType]
+        finally:
+            socket.close(linger=0)
+    finally:
+        ctx.term()
 
 
 @pytest.mark.parametrize("mode", ["direct", "proxy"])
 async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
     def pubio_subscribe():
         """Consume messages."""
-        with ctx.socket(zmq.SocketType.SUB) as socket:
-            socket.linger = 0
-            socket.connect(url)
-            socket.setsockopt(zmq.SocketOption.SUBSCRIBE, b"")
+
+        socket = ctx.socket(zmq.SocketType.SUB)
+        socket.connect(url)
+        socket.setsockopt(zmq.SocketOption.SUBSCRIBE, b"")
+        try:
             i = 0
             while i < n:
                 msg = socket.recv_multipart()
@@ -69,15 +78,17 @@ async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
             print("done")
             msg = socket.recv_multipart()
             assert msg[-1] == b'{"name": "stdout", "text": "done"}'
+        finally:
+            socket.close(linger=0)
 
     n = 10
     socket = kernel._sockets[SocketID.iopub]
     url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
     assert url.endswith(str(kernel._ports[SocketID.iopub]))
     ctx = zmq.Context()
-    thread = threading.Thread(target=pubio_subscribe)
-    thread.start()
     try:
+        thread = threading.Thread(target=pubio_subscribe)
+        thread.start()
         time.sleep(0.05)
         if mode == "proxy":
             socket = Caller.iopub_sockets[kernel.callers[SocketID.control].thread]
