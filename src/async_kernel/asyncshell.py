@@ -401,7 +401,7 @@ class AsyncInteractiveShell(InteractiveShell):
             }
             for comp in completions
         ]
-        s, e = completions[0].start, completions[0].end if completions else (cursor_pos, cursor_pos)
+        s, e = (completions[0].start, completions[0].end) if completions else (cursor_pos, cursor_pos)
         matches = [c.text for c in completions]
         return {
             "matches": matches,

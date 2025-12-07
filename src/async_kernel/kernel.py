@@ -792,6 +792,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         """Schedule a message to be executed."""
         # receive_msg_loop - DEBUG WARNING
 
+        # Note: There should not be any pending trackers in this context.
+
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
         socket_id = job["socket_id"]
 
