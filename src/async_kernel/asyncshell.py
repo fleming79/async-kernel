@@ -6,7 +6,6 @@ import pathlib
 import sys
 import threading
 import time
-import uuid
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
@@ -29,15 +28,14 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.typing import Content, Tags
+from async_kernel.pending import PendingManager
+from async_kernel.typing import Content, NoValue, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from IPython.core.history import HistoryManager
     from traitlets.config import Configurable
-
-    from async_kernel.kernel import Kernel
 
 
 __all__ = ["AsyncInteractiveShell"]
@@ -180,6 +178,8 @@ class AsyncInteractiveShell(InteractiveShell):
     compiler_class = Type(XCachingCompiler)
     compile: Instance[XCachingCompiler]
     kernel = Fixed(lambda _: utils.get_kernel())
+    pending_manager = Fixed(PendingManager)
+    subshell_id = Fixed(lambda _: None)
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
 
@@ -206,6 +206,7 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def __init__(self, parent: None | Configurable = None) -> None:
         super().__init__(parent=parent)
+        self.pending_manager.activate()
 
     def _get_default_ns(self):
         # Copied from `InteractiveShell.init_user_ns`
@@ -475,6 +476,8 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def reset(self, new_session=True, aggressive=False):
         super().reset(new_session, aggressive)
+        for pen in self.pending_manager.pending:
+            pen.cancel()
         if new_session:
             self._execution_count = 0
             self._stop_on_error_info.clear()
@@ -502,12 +505,17 @@ class AsyncInteractiveShell(InteractiveShell):
             raise NotImplementedError(msg)
 
 
+class SubshellPendingManager(PendingManager):
+    "A pending manager for subshells."
+
+
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
     ""
 
     protected = traitlets.Bool()
-    subshell_id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
-    user_global_ns: Fixed[Self, dict[Any, Any]] = Fixed(lambda c: c["owner"].kernel.shell.user_global_ns)  # pyright: ignore[reportIncompatibleVariableOverride]
+    pending_manager = Fixed(SubshellPendingManager)
+    subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.context_id)
+    user_global_ns: Fixed[Self, dict[Any, Any]] = Fixed(lambda c: c["owner"].kernel.main_shell.user_global_ns)  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @override
     def __init__(self, *, protected=False) -> None:
@@ -520,6 +528,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
         "Stop this subshell."
         if force or not self.protected:
             self.kernel.subshell_manager.subshells.pop(self.subshell_id, None)
+            self.pending_manager.deactivate(cancel_pending=True)
             if hm := self.history_manager:
                 hm.end_session()
                 self.history_manager = None
@@ -536,7 +545,7 @@ class SubshellManager:
 
     __slots__ = ["__weakref__"]
 
-    kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
+    main_shell: Fixed[Self, AsyncInteractiveShell] = Fixed(lambda _: utils.get_kernel().main_shell)
     subshells: Fixed[Self, dict[str, AsyncInteractiveSubshell]] = Fixed(dict)
     default_subshell_class = AsyncInteractiveSubshell
 
@@ -554,14 +563,23 @@ class SubshellManager:
         @overload
         def get_shell(self, subshell_id: None = ...) -> AsyncInteractiveShell: ...
 
-    def get_shell(self, subshell_id: str | None = None) -> AsyncInteractiveShell | AsyncInteractiveSubshell:
+    def get_shell(
+        self,
+        subshell_id: str | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+    ) -> AsyncInteractiveShell | AsyncInteractiveSubshell:
         """
         Get a subshell or the main shell.
 
         Args:
             subshell_id: The id of an existing subshell.
         """
-        return (self.subshells[subshell_id] if subshell_id else None) or self.kernel.main_shell
+        if subshell_id is NoValue:
+            subshell_id = utils.get_subshell_id()
+        try:
+            return self.subshells[subshell_id] if subshell_id else self.main_shell
+        except KeyError:
+            msg = f"Subshell with {subshell_id=} does not exist!"
+            raise RuntimeError(msg) from None
 
     def delete_subshell(self, subshell_id: str) -> None:
         """

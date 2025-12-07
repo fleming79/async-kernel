@@ -40,7 +40,7 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
 from async_kernel import Caller, utils
-from async_kernel.asyncshell import AsyncInteractiveShell, KernelInterruptError, SubshellManager
+from async_kernel.asyncshell import AsyncInteractiveShell, KernelInterruptError, SubshellManager, SubshellPendingManager
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
@@ -65,8 +65,6 @@ if TYPE_CHECKING:
 
 
 __all__ = ["Kernel", "KernelInterruptError"]
-
-# pyright: reportPrivateUsage=false
 
 
 def bind_socket(
@@ -385,7 +383,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @property
     def shell(self) -> AsyncInteractiveShell:
-        return self.subshell_manager.get_shell(utils.get_subshell_id())
+        return self.subshell_manager.get_shell()
 
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
@@ -779,7 +777,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                             subshell_id = msg["header"]["subshell_id"]  # pyright: ignore[reportOptionalSubscript]
                         except KeyError:
                             subshell_id = None
-                    job: Job = {"received_time": time.monotonic(), "socket_id": socket_id, "msg": msg, "ident": ident}  # pyright: ignore[reportAssignmentType]
+                    job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
                     message_handler(subshell_id, job, send_reply)
 
                 except zmq.ContextTerminated:
@@ -850,8 +848,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             - Replies are sent even if exceptions occur in the handler.
             - The reply message type is derived from the original request type.
         """
-        token_job_var = utils._job_var.set(job)
-        token_subshell_id = utils._subshell_id_var.set(subshell_id)
+        job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        subshell_token = SubshellPendingManager._contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
+
         try:
             self.iopub_send(
                 msg_or_type="status",
@@ -865,8 +864,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             await send_reply(job, utils.error_to_content(e))
             self.log.exception("Exception in message handler:", exc_info=e)
         finally:
-            utils._job_var.reset(token_job_var)
-            utils._subshell_id_var.reset(token_subshell_id)
+            utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
+            SubshellPendingManager._contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
             self.iopub_send(
                 msg_or_type="status",
                 parent=job["msg"],

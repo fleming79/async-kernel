@@ -650,14 +650,25 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
 
     # Switch subshell using context manager.
     with async_kernel.utils.subshell_context(subshell.subshell_id):
+        assert async_kernel.utils.get_subshell_id() == subshell.subshell_id
         assert kernel.shell is subshell
         with async_kernel.utils.subshell_context(None):
             assert kernel.shell is kernel.main_shell
+            assert async_kernel.utils.get_subshell_id() is None
+        # Test reset
+        pen = Caller().call_soon(anyio.sleep_forever)
+        assert await Caller().call_soon(lambda: async_kernel.utils.get_kernel().shell) is subshell
+        kernel.shell.reset()
+        assert pen.cancelled()
+
     # delete
     assert subshell_id in kernel.subshell_manager.subshells
     kernel.subshell_manager.delete_subshell(subshell_id)
     assert subshell_id in kernel.subshell_manager.subshells, "Protected should not stop when deleted"
     kernel.subshell_manager.stop_all_subshells(force=True)
 
-    with pytest.raises(ValueError, match="does not exist!"), async_kernel.utils.subshell_context(subshell.subshell_id):
+    with (
+        pytest.raises(RuntimeError, match="does not exist!"),
+        async_kernel.utils.subshell_context(subshell.subshell_id),
+    ):
         pass
