@@ -649,3 +649,8 @@ class TestCaller:
         assert w2
         await w1.stopped
         await w2.stopped
+
+    async def test_pending_group(self, caller: Caller):
+        async with caller.create_pending_group() as pg:
+            assert pg.caller.call_soon(lambda: None) in pg.pending
+        assert not pg.pending

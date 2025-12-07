@@ -28,6 +28,7 @@ __all__ = [
     "MsgHeader",
     "MsgType",
     "NoValue",
+    "PendingCreateOptions",
     "RunMode",
     "SocketID",
     "Tags",
@@ -369,7 +370,7 @@ class PendingCreateOptions(TypedDict):
     "Options to pass when creating a new [Pending][async_kernel.pending.Pending]."
 
     allow_tracking: NotRequired[bool]
-    "Add the pending to all [pending trackers][async_kernel.pending.PendingTracker] (True)."
+    "Add the pending to all [pending trackers][async_kernel.pending.PendingTracker] (default=`True`)."
 
 
 class CallerCreateOptions(TypedDict):
@@ -384,7 +385,7 @@ class CallerCreateOptions(TypedDict):
     backend_options: NotRequired[dict | None]
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]
-    "The caller should be protected against accidental closure (False)."
+    "The caller should be protected against accidental closure (default=`False`)."
     zmq_context: NotRequired[zmq.Context[Any]]
     "A zmq Context to use."
 

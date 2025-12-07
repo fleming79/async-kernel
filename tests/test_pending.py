@@ -9,7 +9,7 @@ from aiologic import Event
 from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
-from async_kernel.pending import InvalidStateError, Pending, PendingCancelled, PendingManager
+from async_kernel.pending import InvalidStateError, Pending, PendingCancelled, PendingGroup, PendingManager
 from async_kernel.typing import Backend, PendingTrackerState
 
 
@@ -288,8 +288,8 @@ class TestPendingManager:
             nonlocal count
             count += 1
             if count < n:
-                ctx_ = PendingManager.current()
-                assert ctx_
+                pc = PendingManager.current()
+                assert pc
                 return caller.call_soon(recursive)
             return count
 
@@ -347,3 +347,123 @@ class TestPendingManager:
 
         pm2.stop_tracking(pm2_token)
         assert PendingManagerSubclass.current() is None
+
+
+class TestPendingGroup:
+    async def test_pending_manager_async(self, caller: Caller) -> None:
+        assert PendingGroup.current() is None
+        async with PendingGroup() as pm:
+            assert pm is PendingGroup.current()
+            pen1 = caller.call_soon(lambda: 1)
+            assert pen1 in pm.pending
+            assert pm._count_event.value == 1  # pyright: ignore[reportPrivateUsage]
+        assert pen1 not in pm.pending
+        assert pm._count_event.value == 0  # pyright: ignore[reportPrivateUsage]
+        assert pm.state is PendingTrackerState.stopped
+
+    async def test_async_reenter(self, caller: Caller) -> None:
+        assert PendingGroup.current() is None
+        async with PendingGroup() as pm:
+            pen1 = caller.call_soon(lambda: 1)
+            assert pen1 in pm.pending
+        assert pen1.result() == 1
+        async with pm:
+            pen2 = caller.call_soon(lambda: 2)
+            with pytest.raises(RuntimeError, match="this PendingGroup has already been entered"):
+                async with pm:
+                    pass
+        assert pen2.result() == 2
+        assert not pm.pending
+        async with pm:
+            pen3 = caller.call_soon(lambda: 3)
+            assert pen3 in pm.pending
+            assert await pen3 == 3
+            assert not pm.pending
+
+    async def test_state(self, caller: Caller):
+        count = 0
+        n = 2
+
+        async def recursive():
+            nonlocal count
+            count += 1
+            if count < n:
+                return caller.call_soon(recursive)
+            return count
+
+        async with PendingGroup():
+            pen = caller.call_soon(recursive)
+        assert count == n
+        while isinstance(pen, Pending):
+            pen = pen.result()
+        assert pen == n
+
+    async def test_cancellation(self, caller: Caller):
+        with anyio.move_on_after(0.1):
+            async with PendingGroup() as pm:
+                pen = caller.call_soon(anyio.sleep_forever)
+        assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
+        assert not pm.pending  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    async def test_invalid_state(self, caller: Caller):
+        pm = PendingGroup()
+        ok = False
+
+        async def add_when_cancelled():
+            nonlocal ok
+            try:
+                await anyio.sleep_forever()
+            except anyio.get_cancelled_exc_class():
+                with pytest.raises(InvalidStateError):
+                    caller.call_soon(anyio.sleep_forever)
+                ok = True
+                raise
+
+        with anyio.move_on_after(0.1):
+            async with pm:
+                caller.call_soon(add_when_cancelled)
+        assert ok
+        assert pm.state is PendingTrackerState.stopped
+
+    async def test_wait_exception(self, caller: Caller):
+        with pytest.raises(PendingCancelled):  # noqa: PT012
+            async with PendingGroup():
+                pen = caller.call_soon(anyio.sleep_forever)
+                Pending().set_exception(RuntimeError("stop"))
+        assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    async def test_cancelled_by_pending(self, caller: Caller):
+        with pytest.raises(PendingCancelled):  # noqa: PT012
+            async with PendingGroup() as pg:
+                assert caller.call_soon(lambda: 1 / 0) in pg.pending
+                await anyio.sleep_forever()
+        assert pg.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    async def test_discard(self, caller: Caller):
+        async with PendingGroup() as pg:
+            pen = Pending()
+            pg.discard(pen)
+            assert pen not in pg.pending
+
+    async def test_subclass(self, caller: Caller):
+        class PendingManagerSubclass(PendingGroup):
+            pass
+
+        async with PendingManagerSubclass() as pcsub:
+            assert PendingManagerSubclass.current() is pcsub
+            async with PendingGroup() as pm:
+                assert PendingGroup.current() is pm
+                assert PendingManagerSubclass.current() is pcsub
+
+    async def test_shield(self, caller: Caller):
+        ok = False
+        async with caller.create_pending_group():
+            with anyio.move_on_after(0.1):
+                try:
+                    await anyio.sleep_forever()
+                except anyio.get_cancelled_exc_class():
+                    async with caller.create_pending_group(shield=True) as pg:
+                        assert await caller.call_soon(lambda: 1) == 1
+                        ok = True
+                    assert not pg.cancelled()
+        assert ok

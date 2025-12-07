@@ -27,7 +27,7 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.pending import Pending, PendingCancelled
+from async_kernel.pending import Pending, PendingCancelled, PendingGroup
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, PendingCreateOptions, T
 
 with contextlib.suppress(ImportError):
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller"]
+__all__ = ["Caller", "PendingGroup"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -893,3 +893,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if return_when == "FIRST_EXCEPTION" and (pen.cancelled() or pen.exception()):
                         break
         return done, pending
+
+    def create_pending_group(self, *, shield: bool = False):
+        "Create a new [pending group][async_kernel.pending.PendingGroup]."
+        return PendingGroup(shield=shield)

@@ -5,7 +5,7 @@ import contextvars
 import reprlib
 import uuid
 from collections import deque
-from collections.abc import Awaitable, Callable, Generator
+from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
@@ -13,10 +13,11 @@ from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import async_checkpoint, create_async_event, green_checkpoint
 from typing_extensions import override
 
+import async_kernel
 from async_kernel.common import Fixed
 from async_kernel.typing import PendingCreateOptions, PendingTrackerState, T
 
-__all__ = ["InvalidStateError", "Pending", "PendingCancelled", "PendingManager"]
+__all__ = ["InvalidStateError", "Pending", "PendingCancelled", "PendingGroup", "PendingManager", "PendingTracker"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -78,7 +79,20 @@ class Pending(Awaitable[T]):
         """
         return self._metadata_mappings[id(self)]
 
-    def __init__(self, options: PendingCreateOptions | None = None, /, **metadata) -> None:
+    def __init__(self, options: PendingCreateOptions | None = None, /, **metadata: Any) -> None:
+        """
+        Initializes a new Pending object with optional creation options and metadata.
+
+        Args:
+            options: Options for creating the Pending object. If None, defaults are used.
+            **metadata: Arbitrary keyword arguments containing metadata to associate with this Pending instance.
+
+        Behavior:
+            - Initializes internal state for tracking completion and cancellation.
+            - Stores provided metadata in a class-level mapping.
+            - If options is None or [allow_tracking][async_kernel.typing.PendingCreateOptions.allow_tracking]
+                is True in options, registers this instance with all active PendingTrackers.
+        """
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
         self._metadata_mappings[id(self)] = metadata
         self._done = False
@@ -336,6 +350,10 @@ class Pending(Awaitable[T]):
 
 
 class PendingTracker:
+    """
+    The base class for tracking [Pending][async_kernel.pending.Pending].
+    """
+
     _active_classes: ClassVar[set[type[Self]]] = set()
     _active_contexts: ClassVar[dict[str, Self]] = {}
     _contextvar: ClassVar[contextvars.ContextVar[str | None]] = contextvars.ContextVar("PendingManager", default=None)
@@ -368,7 +386,12 @@ class PendingTracker:
 
     @classmethod
     def add_to_pending_trackers(cls, pen: Pending) -> None:
-        "Add to all active pending trackers in the current context."
+        """
+        Add to all active pending trackers (including subclasses of PendingTracker) in the current context.
+
+        This method gets called automatically by [Pending][async_kernel.pending.Pending.__init__]
+        for all new instances (except for those that opt-out).
+        """
         # Called by `Pending` when a new instance for each new instance.
         for cls_ in cls._active_classes:
             if (id_ := cls_._contextvar.get()) and (pm := cls._active_contexts.get(id_)):
@@ -464,3 +487,85 @@ class PendingManager(PendingTracker):
         Stop tracking using the  token returned using start tracking.
         """
         self._contextvar.reset(token)
+
+
+class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
+    """
+    An asynchronous context manager that automatically registers pending created in its context.
+
+    Any pending created within the context (except those that explicitly [opt-out][async_kernel.typing.PendingCreateOptions.allow_tracking])
+    are automatically added to the group.
+
+    If any pending fails, is cancelled (with the result/exception set) or the pending group is cancelled;
+    the context will exit, and all pending will be cancelled.
+
+    Features:
+        - The context will exit after all tracked pending are done or removed.
+        - Cancelled or failed pending will cancel all other pending in the group.
+        - Pending can be manually removed from the group while the group is active.
+
+    Args:
+        shield: [Shield][anyio.CancelScope.shield] from external cancellation.
+
+    Usage:
+        Enter the async context and create new pending.
+
+        ```python
+        async with PendingGroup() as pg:
+            assert pg.caller.to_thread(lambda: None) in pg.pending
+        ```
+    """
+
+    _cancel_scope: anyio.CancelScope | None
+    _cancelled: str | None = None
+
+    caller = Fixed(lambda _: async_kernel.Caller())
+
+    def __init__(self, *, shield: bool = False) -> None:
+        self.caller  # noqa: B018
+        self._shield = shield
+        super().__init__()
+
+    @contextlib.asynccontextmanager
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        if self._cancelled is None:
+            self._cancel_scope = anyio.CancelScope(shield=self._shield)
+            self._state = PendingTrackerState.active
+            token = self._set_context()
+            try:
+                with self._cancel_scope:
+                    yield self
+                    await self._count_event
+            finally:
+                self._cancel_scope = None
+                self._state = PendingTrackerState.exiting
+                self._contextvar.reset(token)
+                if self._count_event.value:
+                    for pen in self._pending.copy():
+                        pen.cancel()
+                    with anyio.CancelScope(shield=True):
+                        await self._count_event
+                self._state = PendingTrackerState.stopped
+
+        if self._cancelled is not None:
+            raise PendingCancelled(self._cancelled)
+
+    @override
+    def remove(self, pen: Pending) -> None:
+        "Remove pen from the group."
+        super().remove(pen)
+        if pen.done() and self._state is PendingTrackerState.active and (pen.cancelled() or pen.exception()):
+            msg = f"{pen} tracked by {self} failed or was cancelled"
+            for pen_ in self._pending.copy():
+                pen_.cancel(msg)
+            self.cancel(msg)
+
+    def cancel(self, msg: str | None = None) -> None:
+        "Cancel the pending group (thread-safe)."
+        self._cancelled = "\n".join(((self._cancelled if self._cancelled else ""), msg or ""))
+        if scope := self._cancel_scope:
+            self.caller.call_direct(scope.cancel, msg)
+
+    def cancelled(self) -> bool:
+        """Return True if the pending group is cancelled."""
+        return bool(self._cancelled)
