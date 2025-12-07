@@ -717,7 +717,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if not (pen_ := self._queue_map.get(key)):
             queue = deque()
             with contextlib.suppress(TypeError):
-                weakref.finalize(func.__self__ if inspect.ismethod(func) else func, lambda: self.queue_close(key))
+                weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
 
             async def queue_loop() -> None:
                 pen = self.current_pending()

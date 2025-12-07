@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os
 import time
+import weakref
 from collections import deque as deque_ref
 from typing import TYPE_CHECKING, Any
 
 import anyio
 import anyio.to_thread
 import pytest
+from aiologic import Event
 
 from async_kernel.common import Fixed, import_item
 
@@ -50,10 +52,25 @@ class TestImportItem:
         assert item is TypeVarRef
 
 
+@pytest.mark.anyio
 class TestFixed:
     class Owner:
         def __init__(self):
             self.log = None  # For created callback error handling
+
+    async def test_gc(self):
+        collected = Event()
+
+        class MyClass:
+            fixed_dict = Fixed(dict)
+
+        m = MyClass()
+        assert isinstance(m.fixed_dict, dict)
+        assert len(MyClass.fixed_dict.instances) == 1  # pyright: ignore[reportAttributeAccessIssue]
+        weakref.finalize(m, collected.set)
+        del m
+        await collected
+        assert len(MyClass.fixed_dict.instances) == 0  # pyright: ignore[reportAttributeAccessIssue]
 
     def test_with_class(self):
         class MyClass:
