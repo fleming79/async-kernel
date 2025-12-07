@@ -299,11 +299,13 @@ async def test_execute_request_stop_on_error(client: AsyncKernelClient):
 async def test_complete_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.complete_request, {"code": "hello", "cursor_pos": 0})
     assert reply["header"]["msg_type"] == "complete_reply"
+    assert reply["content"]["status"] == "ok"
 
 
 async def test_inspect_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.inspect_request, {"code": "hello", "cursor_pos": 0})
     assert reply["header"]["msg_type"] == "inspect_reply"
+    assert reply["content"]["status"] == "ok"
 
 
 async def test_history_request(client: AsyncKernelClient, kernel: Kernel):
@@ -315,23 +317,28 @@ async def test_history_request(client: AsyncKernelClient, kernel: Kernel):
         client, MsgType.history_request, {"hist_access_type": "", "output": "", "raw": ""}
     )
     assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["content"]["status"] == "ok"
     reply = await utils.send_shell_message(
         client, MsgType.history_request, {"hist_access_type": "tail", "output": "", "raw": ""}
     )
     assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["content"]["status"] == "ok"
     reply = await utils.send_shell_message(
         client, MsgType.history_request, {"hist_access_type": "range", "output": "", "raw": ""}
     )
     assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["content"]["status"] == "ok"
     reply = await utils.send_shell_message(
         client, MsgType.history_request, {"hist_access_type": "search", "output": "", "raw": ""}
     )
     assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["content"]["status"] == "ok"
 
 
 async def test_comm_info_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.comm_info_request)
     assert reply["header"]["msg_type"] == "comm_info_reply"
+    assert reply["content"]["status"] == "ok"
 
 
 async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
@@ -351,6 +358,7 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
     comm = cast("Comm", comm)
     reply = await utils.send_shell_message(client, MsgType.comm_info_request)
     assert reply["header"]["msg_type"] == "comm_info_reply"
+    assert reply["content"]["status"] == "ok"
     assert reply["content"]["comms"].get("comm id") == {"target_name": "my target"}
 
     msg_received = mocker.patch.object(comm, "handle_msg")
