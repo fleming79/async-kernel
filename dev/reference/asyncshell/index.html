@@ -3193,7 +3193,7 @@ viewing the latest version.
             <span class="p">}</span>
             <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">completions</span>
         <span class="p">]</span>
-        <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">end</span> <span class="k">if</span> <span class="n">completions</span> <span class="k">else</span> <span class="p">(</span><span class="n">cursor_pos</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
+        <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">completions</span> <span class="k">else</span> <span class="p">(</span><span class="n">cursor_pos</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
         <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">completions</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;matches&quot;</span><span class="p">:</span> <span class="n">matches</span><span class="p">,</span>
@@ -3461,20 +3461,9 @@ viewing the latest version.
       <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;run_cell</a>
   </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell.timeout"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;timeout</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -3740,7 +3729,7 @@ viewing the latest version.
         <span class="p">}</span>
         <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">completions</span>
     <span class="p">]</span>
-    <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">end</span> <span class="k">if</span> <span class="n">completions</span> <span class="k">else</span> <span class="p">(</span><span class="n">cursor_pos</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
+    <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">completions</span> <span class="k">else</span> <span class="p">(</span><span class="n">cursor_pos</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
     <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">completions</span><span class="p">]</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;matches&quot;</span><span class="p">:</span> <span class="n">matches</span><span class="p">,</span>
