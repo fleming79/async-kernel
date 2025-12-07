@@ -902,6 +902,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
         match (socket_id, msg_type):
+            case _, MsgType.comm_msg:
+                return RunMode.queue
             case (
                 SocketID.shell,
                 MsgType.shutdown_request
@@ -929,11 +931,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                             return RunMode.task
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
+                return RunMode.queue
+            case _, MsgType.debug_request:
+                return RunMode.queue
             case _, MsgType.inspect_request | MsgType.history_request:
                 return RunMode.thread
             case _:
                 pass
-        return RunMode.queue
+        return RunMode.direct
 
     def all_concurrency_run_modes(
         self,

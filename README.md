@@ -111,21 +111,24 @@ The run modes available are:
 
 These are the currently assigned run modes.
 
-| MsgType             | shell  | control |
-| ------------------- | ------ | ------- |
-| comm_close          | queue  | queue   |
-| comm_info_request   | queue  | queue   |
-| comm_msg            | queue  | queue   |
-| comm_open           | queue  | queue   |
-| complete_request    | queue  | queue   |
-| debug_request       | None   | queue   |
-| execute_request     | queue  | task    |
-| history_request     | thread | thread  |
-| inspect_request     | thread | thread  |
-| interrupt_request   | queue  | queue   |
-| is_complete_request | queue  | queue   |
-| kernel_info_request | queue  | queue   |
-| shutdown_request    | None   | queue   |
+| SocketID                | shell  | control |
+| ----------------------- | ------ | ------- |
+| comm_close              | direct | direct  |
+| comm_info_request       | direct | direct  |
+| comm_msg                | queue  | queue   |
+| comm_open               | direct | direct  |
+| complete_request        | direct | direct  |
+| create_subshell_request | None   | direct  |
+| debug_request           | None   | queue   |
+| delete_subshell_request | None   | direct  |
+| execute_request         | queue  | task    |
+| history_request         | thread | thread  |
+| inspect_request         | thread | thread  |
+| interrupt_request       | direct | direct  |
+| is_complete_request     | direct | direct  |
+| kernel_info_request     | direct | direct  |
+| list_subshell_request   | None   | direct  |
+| shutdown_request        | None   | direct  |
 
 #### Further detail
 
