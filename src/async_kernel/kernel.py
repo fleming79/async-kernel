@@ -902,18 +902,10 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
         match (socket_id, msg_type):
-            case (
-                SocketID.shell,
-                MsgType.shutdown_request
-                | MsgType.debug_request
-                | MsgType.create_subshell_request
-                | MsgType.delete_subshell_request
-                | MsgType.list_subshell_request,
-            ):
-                msg = f"{msg_type=} not allowed on shell!"
-                raise ValueError(msg)
+            case _, MsgType.comm_msg:
+                return RunMode.queue
             case SocketID.control, MsgType.execute_request:
-                return RunMode.task
+                return RunMode.queue
             case _, MsgType.execute_request:
                 if job:
                     if content := job["msg"].get("content", {}):
@@ -929,11 +921,32 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                             return RunMode.task
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
-            case _, MsgType.inspect_request | MsgType.history_request:
+                return RunMode.queue
+            case (
+                SocketID.shell,
+                MsgType.shutdown_request
+                | MsgType.debug_request
+                | MsgType.create_subshell_request
+                | MsgType.delete_subshell_request
+                | MsgType.list_subshell_request,
+            ):
+                msg = f"{msg_type=} not allowed on shell!"
+                raise ValueError(msg)
+            case _, MsgType.debug_request:
+                return RunMode.queue
+            case (
+                _,
+                MsgType.complete_request
+                | MsgType.inspect_request
+                | MsgType.history_request
+                | MsgType.create_subshell_request
+                | MsgType.delete_subshell_request
+                | MsgType.is_complete_request,
+            ):
                 return RunMode.thread
             case _:
                 pass
-        return RunMode.queue
+        return RunMode.direct
 
     def all_concurrency_run_modes(
         self,
