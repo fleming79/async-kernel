@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import contextvars
-import functools
 import inspect
 import logging
 import reprlib
@@ -113,7 +112,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _children: Fixed[Self, set[Self]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
-    _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | Callable[[], Any]]] = Fixed(deque)
+    _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | tuple[Callable, tuple, dict]]] = Fixed(deque)
     stopped = Fixed(Event)
     "A thread-safe Event for when the caller is stopped."
 
@@ -319,7 +318,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             child.stop(force=True)
         while self._queue:
             item = self._queue.pop()
-            if isinstance(item, tuple):
+            if len(item) == 2:
                 item[1].cancel()
                 item[1].set_result(None)
         for func in tuple(self._queue_map):
@@ -385,9 +384,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             while self._state is CallerState.running:
                 if self._queue:
                     item, result = self._queue.popleft(), None
-                    if callable(item):
+                    if len(item) == 3:
                         try:
-                            result = item()
+                            result = item[0](*item[1], **item[2])
                             if inspect.iscoroutine(result):
                                 await result
                         except Exception as e:
@@ -635,7 +634,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **Use this method for lightweight calls only!**
 
         """
-        self._queue.append(functools.partial(func, *args, **kwargs))
+        self._queue.append((func, args, kwargs))
         self._resume()
 
     def to_thread(
