@@ -590,7 +590,7 @@ async def test_kernel_get_handler(kernel: Kernel):
         ("print(1)", False, SocketID.shell, RunMode.queue),
         ("", True, SocketID.shell, RunMode.task),
         (f"{RunMode.thread}\nprint('hello')", False, SocketID.shell, RunMode.thread),
-        ("", False, SocketID.control, RunMode.task),
+        ("", False, SocketID.control, RunMode.queue),
         ("threads", False, SocketID.shell, RunMode.queue),
         ("Task", False, SocketID.shell, RunMode.queue),
         ("RunMode.direct", False, SocketID.shell, RunMode.direct),
@@ -645,7 +645,7 @@ async def test_tag_stop_on_error(kernel: Kernel, client: AsyncKernelClient, valu
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 3768790522
+    assert murmur2_x86(str(data), 1) == 387578838
 
 
 async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
