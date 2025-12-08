@@ -3480,9 +3480,20 @@ viewing the latest version.
       <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;run_cell</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.asyncshell.AsyncInteractiveShell.timeout"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;timeout</a>
   </span>
+
+      </li>
+  </ul>
 
       </li>
   </ul>
@@ -4139,6 +4150,8 @@ viewing the latest version.
       <span>Reference</span>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
       <a href="#">asyncshell</a>
   </span>
@@ -4150,6 +4163,23 @@ viewing the latest version.
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.asyncshell.SubshellManager.get_shell"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_shell</a>
   </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../kernel/#">kernel</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../kernel/#async_kernel.kernel.Kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Kernel</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.shell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shell</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
   </ul>
@@ -5295,7 +5325,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;__weakref__&quot;</span><span class="p">]</span>
 
     <span class="n">main_shell</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">AsyncInteractiveShell</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">main_shell</span><span class="p">)</span>
-    <span class="n">subshells</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">subshells</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">default_subshell_class</span> <span class="o">=</span> <span class="n">AsyncInteractiveSubshell</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -5346,7 +5376,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="sd">        Args:</span>
 <span class="sd">            force: Passed to [async_kernel.asyncshell.AsyncInteractiveSubshell.stop][].</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">subshell</span> <span class="ow">in</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subshells</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+        <span class="k">for</span> <span class="n">subshell</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subshells</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
             <span class="n">subshell</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -5575,7 +5605,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        force: Passed to [async_kernel.asyncshell.AsyncInteractiveSubshell.stop][].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">subshell</span> <span class="ow">in</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subshells</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+    <span class="k">for</span> <span class="n">subshell</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subshells</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
         <span class="n">subshell</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
