@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
 from aiologic import CountdownEvent, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, green_checkpoint
+from aiologic.lowlevel import async_checkpoint, create_async_event, enable_signal_safety, green_checkpoint
 from typing_extensions import override
 
 import async_kernel
@@ -236,6 +236,7 @@ class Pending(Awaitable[T]):
         """
         self._set_done("exception", exception)
 
+    @enable_signal_safety
     def cancel(self, msg: str | None = None) -> bool:
         """
         Cancel the instance.

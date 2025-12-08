@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import os
 import time
 import weakref
@@ -69,7 +70,9 @@ class TestFixed:
         assert len(MyClass.fixed_dict.instances) == 1  # pyright: ignore[reportAttributeAccessIssue]
         weakref.finalize(m, collected.set)
         del m
-        await collected
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
         assert len(MyClass.fixed_dict.instances) == 0  # pyright: ignore[reportAttributeAccessIssue]
 
     def test_with_class(self):

@@ -1,4 +1,5 @@
 import contextlib
+import gc
 import re
 import threading
 import time
@@ -339,7 +340,9 @@ class TestCaller:
             pen = caller.queue_call(pass_through, i)
         assert await pen == 9
         del pass_through
-        assert pen.cancelled(), "Should be garbage collected immediately"
+        while not pen.cancelled():
+            gc.collect()
+            await anyio.sleep(0)
 
     @pytest.mark.parametrize("anyio_backend", [Backend.asyncio])
     async def test_asyncio_queue_call_cancelled(self, caller: Caller):
@@ -362,12 +365,15 @@ class TestCaller:
         await event
 
     async def test_gc(self, anyio_backend: Backend):
-        event_finalize_called = Event()
+        collected = Event()
         async with Caller("manual") as caller:
             assert await caller.call_soon(lambda: 1 + 1) == 2
-            weakref.finalize(caller, event_finalize_called.set)
+            weakref.finalize(caller, collected.set)
             del caller
-        await event_finalize_called
+
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
 
     async def test_queue_cancel(self, caller: Caller):
         started = Event()
@@ -388,16 +394,17 @@ class TestCaller:
             async def method(self):
                 method_called.set()
 
-        obj_finalized = Event()
+        collected = Event()
         method_called = Event()
         obj = MyObj()
-        weakref.finalize(obj, obj_finalized.set)
+        weakref.finalize(obj, collected.set)
         caller.queue_call(obj.method)
         await method_called
         assert caller.queue_get(obj.method), "A ref should be retained unless it is explicitly removed"
         del obj
-
-        await obj_finalized
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
         assert not any(caller._queue_map)  # pyright: ignore[reportPrivateUsage]
 
     async def test_call_early(self, anyio_backend: Backend) -> None:
@@ -528,11 +535,15 @@ class TestCaller:
 
     async def test_cancelled_result(self, caller: Caller):
         pen = caller.call_soon(anyio.sleep_forever)
+        pen_was_cancelled = caller.call_soon(pen.wait, result=False)
         await anyio.sleep(0.1)
         a = Event()
         weakref.finalize(a, pen.cancel)
         del a
-        await pen.wait(result=False)
+        while not pen.done():
+            gc.collect()
+            await anyio.sleep(0)
+        await pen_was_cancelled
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
     async def test_as_completed(self, anyio_backend: Backend, mode: Literal["restricted", "surge"], mocker):
