@@ -1063,7 +1063,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
         """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only)."""
 
-        return {"subshell_id": self.subshell_manager.create_subshell()}
+        return {"subshell_id": self.subshell_manager.create_subshell().subshell_id}
 
     async def delete_subshell_request(self, job: Job[Content], /) -> Content:
         """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only)."""
