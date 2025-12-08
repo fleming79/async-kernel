@@ -3476,24 +3476,9 @@ viewing the latest version.
       <a href="#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell.run_cell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;run_cell</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell.timeout"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;timeout</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -4160,9 +4145,20 @@ viewing the latest version.
       <a href="#async_kernel.asyncshell.SubshellManager"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SubshellManager</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.asyncshell.SubshellManager.create_subshell"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_subshell</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.asyncshell.SubshellManager.get_shell"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_shell</a>
   </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -5328,9 +5324,9 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
     <span class="n">subshells</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">default_subshell_class</span> <span class="o">=</span> <span class="n">AsyncInteractiveSubshell</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
         <span class="s2">&quot;Create a new instance of the default subshell class.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_subshell_class</span><span class="p">(</span><span class="n">protected</span><span class="o">=</span><span class="n">protected</span><span class="p">)</span><span class="o">.</span><span class="n">subshell_id</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_subshell_class</span><span class="p">(</span><span class="n">protected</span><span class="o">=</span><span class="n">protected</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">list_subshells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subshells</span><span class="p">)</span>
@@ -5402,7 +5398,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
 
 <a href="#async_kernel.asyncshell.SubshellManager.create_subshell" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_subshell</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.SubshellManager.create_subshell(protected)">protected</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_subshell</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.SubshellManager.create_subshell(protected)">protected</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" AsyncInteractiveSubshell (async_kernel.asyncshell.AsyncInteractiveSubshell)" href="#async_kernel.asyncshell.AsyncInteractiveSubshell">AsyncInteractiveSubshell</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5415,9 +5411,9 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">552</span>
 <span class="normal">553</span>
-<span class="normal">554</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">554</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
     <span class="s2">&quot;Create a new instance of the default subshell class.&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_subshell_class</span><span class="p">(</span><span class="n">protected</span><span class="o">=</span><span class="n">protected</span><span class="p">)</span><span class="o">.</span><span class="n">subshell_id</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_subshell_class</span><span class="p">(</span><span class="n">protected</span><span class="o">=</span><span class="n">protected</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

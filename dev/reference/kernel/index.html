@@ -5297,7 +5297,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only).&quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subshell_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">create_subshell</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subshell_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">create_subshell</span><span class="p">()</span><span class="o">.</span><span class="n">subshell_id</span><span class="p">}</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">delete_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only).&quot;&quot;&quot;</span>
@@ -7392,12 +7392,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.kernel_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_info_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7453,12 +7449,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_info_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7528,12 +7520,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7589,12 +7577,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;complete_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7654,12 +7638,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.is_complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;is_complete_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7715,12 +7695,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.inspect_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inspect_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7786,12 +7762,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.history_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7847,12 +7819,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_open"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_open</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -8026,12 +7994,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.interrupt_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupt_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -8099,12 +8063,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.shutdown_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shutdown_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -8162,24 +8122,9 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.debug_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug_request</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.list_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;list_subshell_request</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -8234,12 +8179,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.create_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;create_subshell_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -8256,7 +8197,7 @@ corresponding RunMode (if available).</p>
 <span class="normal">1066</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only).&quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subshell_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">create_subshell</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subshell_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">create_subshell</span><span class="p">()</span><span class="o">.</span><span class="n">subshell_id</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -8297,12 +8238,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.delete_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;delete_subshell_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
