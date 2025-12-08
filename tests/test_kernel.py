@@ -659,7 +659,7 @@ async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
 
 
 async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
-    subshell_id = kernel.subshell_manager.create_subshell(protected=True)
+    subshell_id = kernel.subshell_manager.create_subshell(protected=True).subshell_id
     subshell = kernel.subshell_manager.subshells[subshell_id]
 
     assert kernel.main_shell.user_ns is kernel.main_shell.user_global_ns

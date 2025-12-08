@@ -549,9 +549,9 @@ class SubshellManager:
     subshells: dict[str, AsyncInteractiveSubshell] = {}
     default_subshell_class = AsyncInteractiveSubshell
 
-    def create_subshell(self, *, protected=False) -> str:
+    def create_subshell(self, *, protected=False) -> AsyncInteractiveSubshell:
         "Create a new instance of the default subshell class."
-        return self.default_subshell_class(protected=protected).subshell_id
+        return self.default_subshell_class(protected=protected)
 
     def list_subshells(self) -> list[str]:
         return list(self.subshells)
