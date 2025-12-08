@@ -386,6 +386,11 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return self.subshell_manager.get_shell()
 
     @property
+    def caller(self) -> Caller:
+        "The caller for the shell channel."
+        return self.callers[SocketID.shell]
+
+    @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
         "A dict of detail sent in reply to for a 'kernel_info_request'."
         return {

@@ -120,6 +120,9 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
     assert stdout == "🌈\n"
     assert stderr == ""
 
+async def test_caller(kernel: Kernel):
+    assert isinstance(kernel.caller, Caller)
+
 
 @pytest.mark.parametrize("mode", ["shell_timeout", "tags"])
 async def test_execute_shell_timeout(client: AsyncKernelClient, kernel: Kernel, mode: str):
