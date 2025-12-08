@@ -70,8 +70,8 @@ docs = ["mkdocs-material",
     "pandas",
     "ruff"
 ]
-uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32'",
-"winloop; sys_platform == 'win32'"
+uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and implementation_name == 'cpython'",
+"winloop; sys_platform == 'win32' and implementation_name == 'cpython'"
 ]
 test = [
     "pytest-cov>=7.0.0",
@@ -83,7 +83,7 @@ test = [
     ]
 dev = [
     "debugpy",
-    "ipykernel",
+    "ipykernel; implementation_name == 'cpython'",
     {include-group = "uvloop"},
     {include-group = "test"}
 ]

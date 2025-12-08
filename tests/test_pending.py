@@ -193,7 +193,7 @@ class TestPending:
         assert re.match(matches[2], repr(pen))
 
     async def test_gc(self, caller: Caller, anyio_backend: Backend):
-        finalized = Event()
+        collected = Event()
         ok = False
 
         def isolated():
@@ -204,7 +204,7 @@ class TestPending:
                     ok = True
 
             t = Cls()
-            weakref.finalize(t, finalized.set)
+            weakref.finalize(t, collected.set)
             pen = caller.call_soon(t.func)
             id_ = id(pen)
             assert hash(pen.metadata["func"]) == hash(t.func)
@@ -215,8 +215,9 @@ class TestPending:
 
         r, id_ = isolated()
         assert id_ in Pending._metadata_mappings  # pyright: ignore[reportPrivateUsage]
-        with anyio.move_on_after(1):
-            await finalized
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
         assert r() is None, f"References found {gc.get_referrers(r())}"
         assert ok
         assert id_ not in Pending._metadata_mappings  # pyright: ignore[reportPrivateUsage]

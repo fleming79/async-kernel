@@ -132,15 +132,15 @@ cov = [
 ]
 dev = [
     { name = "debugpy" },
-    { name = "ipykernel" },
+    { name = "ipykernel", marker = "implementation_name == 'cpython'" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "trio" },
-    { name = "uvloop", marker = "python_full_version < '3.14' and sys_platform != 'win32'" },
-    { name = "winloop", marker = "sys_platform == 'win32'" },
+    { name = "uvloop", marker = "python_full_version < '3.14' and implementation_name == 'cpython' and sys_platform != 'win32'" },
+    { name = "winloop", marker = "implementation_name == 'cpython' and sys_platform == 'win32'" },
 ]
 docs = [
     { name = "ipywidgets" },
@@ -163,8 +163,8 @@ test = [
     { name = "trio" },
 ]
 uvloop = [
-    { name = "uvloop", marker = "python_full_version < '3.14' and sys_platform != 'win32'" },
-    { name = "winloop", marker = "sys_platform == 'win32'" },
+    { name = "uvloop", marker = "python_full_version < '3.14' and implementation_name == 'cpython' and sys_platform != 'win32'" },
+    { name = "winloop", marker = "implementation_name == 'cpython' and sys_platform == 'win32'" },
 ]
 
 [package.metadata]
@@ -189,15 +189,15 @@ cov = [
 ]
 dev = [
     { name = "debugpy" },
-    { name = "ipykernel" },
+    { name = "ipykernel", marker = "implementation_name == 'cpython'" },
     { name = "pytest", specifier = ">=8.4,<9" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-mock" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-timeout" },
     { name = "trio", specifier = ">=0.31.0" },
-    { name = "uvloop", marker = "python_full_version < '3.14' and sys_platform != 'win32'" },
-    { name = "winloop", marker = "sys_platform == 'win32'" },
+    { name = "uvloop", marker = "python_full_version < '3.14' and implementation_name == 'cpython' and sys_platform != 'win32'" },
+    { name = "winloop", marker = "implementation_name == 'cpython' and sys_platform == 'win32'" },
 ]
 docs = [
     { name = "ipywidgets" },
@@ -220,8 +220,8 @@ test = [
     { name = "trio", specifier = ">=0.31.0" },
 ]
 uvloop = [
-    { name = "uvloop", marker = "python_full_version < '3.14' and sys_platform != 'win32'" },
-    { name = "winloop", marker = "sys_platform == 'win32'" },
+    { name = "uvloop", marker = "python_full_version < '3.14' and implementation_name == 'cpython' and sys_platform != 'win32'" },
+    { name = "winloop", marker = "implementation_name == 'cpython' and sys_platform == 'win32'" },
 ]
 
 [[package]]
