@@ -546,7 +546,7 @@ class SubshellManager:
     __slots__ = ["__weakref__"]
 
     main_shell: Fixed[Self, AsyncInteractiveShell] = Fixed(lambda _: utils.get_kernel().main_shell)
-    subshells: Fixed[Self, dict[str, AsyncInteractiveSubshell]] = Fixed(dict)
+    subshells: dict[str, AsyncInteractiveSubshell] = {}
     default_subshell_class = AsyncInteractiveSubshell
 
     def create_subshell(self, *, protected=False) -> str:
@@ -597,7 +597,7 @@ class SubshellManager:
         Args:
             force: Passed to [async_kernel.asyncshell.AsyncInteractiveSubshell.stop][].
         """
-        for subshell in frozenset(self.subshells.values()):
+        for subshell in set(self.subshells.values()):
             subshell.stop(force=force)
 
 
