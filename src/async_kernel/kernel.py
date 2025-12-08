@@ -748,7 +748,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     ) -> None:
         "Opens a zmq socket for socket_id, receives messages and calls the message handler."
 
-        # **DEBUG WARNING**: Disable the following line to debug messages  note: tests in test_debugger.py  will fail.
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
@@ -783,8 +782,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                         except KeyError:
                             subshell_id = None
                     job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(subshell_id, job, send_reply)
-
+                    message_handler(subshell_id, socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:
@@ -792,16 +790,16 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     continue
 
     def msg_handler(
-        self, subshell_id: str | None, job: Job, send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]], /
+        self,
+        subshell_id: str | None,
+        socket_id: Literal[SocketID.shell, SocketID.control],
+        msg_type: MsgType,
+        job: Job,
+        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
+        /,
     ):
         """Schedule a message to be executed."""
-        # receive_msg_loop - DEBUG WARNING
-
-        # Note: There should not be any pending trackers in this context.
-
-        msg_type = MsgType(job["msg"]["header"]["msg_type"])
-        socket_id = job["socket_id"]
-
+        # Note: There are never any active pending trackers in this context.
         handler = cache_wrap_handler(subshell_id, send_reply, self.run_handler, self.get_handler(msg_type))
         run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
         match run_mode:
