@@ -76,16 +76,15 @@ class Fixed(Generic[S, T]):
     def __get__(self, obj: S, objtype: type[S] | None = None) -> T:
         if obj is None:
             return self  # pyright: ignore[reportReturnType]
-        key = id(obj)
         try:
-            return self.instances[key]
+            return self.instances[id(obj)]
         except KeyError:
             with self.lock:
                 try:
-                    return self.instances[key]
+                    return self.instances[id(obj)]
                 except KeyError:
+                    key = id(obj)
                     instance: T = self.create({"name": self.name, "owner": obj})  # pyright: ignore[reportAssignmentType]
-
                     self.instances[key] = instance
                     weakref.finalize(obj, self.instances.pop, key)
             if self.created:
