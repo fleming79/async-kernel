@@ -67,7 +67,7 @@ class Fixed(Generic[S, T]):
             msg = f"{obj=} is invalid! Use a lambda instead eg: lambda _: {obj}"  # pyright: ignore[reportUnreachable]
             raise TypeError(msg)
         self.created = created
-        self.instances = weakref.WeakKeyDictionary()
+        self.instances = {}
         self.lock = Lock()
 
     def __set_name__(self, owner_cls: type[S], name: str) -> None:
@@ -76,14 +76,18 @@ class Fixed(Generic[S, T]):
     def __get__(self, obj: S, objtype: type[S] | None = None) -> T:
         if obj is None:
             return self  # pyright: ignore[reportReturnType]
+        key = id(obj)
         try:
-            return self.instances[obj]
+            return self.instances[key]
         except KeyError:
             with self.lock:
-                if obj in self.instances:
-                    return self.instances[obj]
-                instance: T = self.create({"name": self.name, "owner": obj})  # pyright: ignore[reportAssignmentType]
-                self.instances[obj] = instance
+                try:
+                    return self.instances[key]
+                except KeyError:
+                    instance: T = self.create({"name": self.name, "owner": obj})  # pyright: ignore[reportAssignmentType]
+
+                    self.instances[key] = instance
+                    weakref.finalize(obj, self.instances.pop, key)
             if self.created:
                 try:
                     self.created({"owner": obj, "obj": instance, "name": self.name})
