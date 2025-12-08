@@ -27,18 +27,6 @@ class Comm(BaseComm):
         - publish_msg is no-op when kernel is unset.
     """
 
-    __slots__ = [
-        "_close_callback",
-        "_close_data",
-        "_closed",
-        "_msg_callback",
-        "_open_data",
-        "comm_id",
-        "primary",
-        "target_module",
-        "target_name",
-        "topic",
-    ]
     kernel: Kernel | None = None
 
     @override
