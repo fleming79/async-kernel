@@ -2810,12 +2810,8 @@ the context will exit, and all pending will be cancelled.</p>
       <a href="../asyncshell/#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;callers</a>
+      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
   </span>
 
       </li>
@@ -4647,7 +4643,7 @@ the context will exit, and all pending will be cancelled.</p>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen_</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)):</span>
             <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
             <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
-                <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__self__</span> <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="k">else</span> <span class="n">func</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_close</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+                <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__self__</span> <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="k">else</span> <span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_close</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
 
             <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">queue_loop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_pending</span><span class="p">()</span>
@@ -6359,8 +6355,12 @@ use this method in the background,  they should be used in preference to this me
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
   </span>
 
       </li>
@@ -6648,12 +6648,8 @@ need to be performed from within the callers event loop/taskgroup.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -6922,8 +6918,12 @@ need to be performed from within the callers event loop/taskgroup.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
   </span>
 
       </li>
@@ -7038,7 +7038,7 @@ need to be performed from within the callers event loop/taskgroup.</p>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen_</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)):</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
         <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
-            <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__self__</span> <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="k">else</span> <span class="n">func</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_close</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+            <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__self__</span> <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="k">else</span> <span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_close</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
 
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">queue_loop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_pending</span><span class="p">()</span>
