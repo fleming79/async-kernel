@@ -120,6 +120,7 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
     assert stdout == "🌈\n"
     assert stderr == ""
 
+
 async def test_caller(kernel: Kernel):
     assert isinstance(kernel.caller, Caller)
 

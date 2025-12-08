@@ -195,7 +195,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "The caller associated with the kernel once it has started."
     ""
     subshell_manager = Fixed(SubshellManager)
-    ""
+    "Dedicated to management of sub shells."
 
     # Public traits
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
@@ -383,6 +383,12 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @property
     def shell(self) -> AsyncInteractiveShell:
+        """
+        The shell given the current context.
+
+        Notes:
+            - The `subshell_id` of the main shell is `None`.
+        """
         return self.subshell_manager.get_shell()
 
     @property
@@ -504,10 +510,11 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                                     signal.signal(signal.SIGINT, sig)
                                 self.comm_manager.kernel = None
                                 self.event_stopped.set()
-                                self.callers.clear()
         finally:
-            Kernel._instance = None
+            self.shell.reset(new_session=False)
             self.subshell_manager.stop_all_subshells(force=True)
+            self.callers.clear()
+            Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
             self._zmq_context.term()
             if self.print_kernel_messages:
