@@ -112,7 +112,10 @@ async def assemble_output(client: AsyncKernelClient, timeout=TIMEOUT, exit_at_id
     done = False
     with anyio.move_on_after(timeout):
         while True:
-            msg = await client.get_iopub_msg()
+            try:
+                msg = await client.get_iopub_msg()
+            except ValueError:
+                continue
             msg_type = msg["msg_type"]
             content = msg["content"]
             if exit_at_idle:

@@ -195,7 +195,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "The caller associated with the kernel once it has started."
     ""
     subshell_manager = Fixed(SubshellManager)
-    ""
+    "Dedicated to management of sub shells."
 
     # Public traits
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
@@ -383,7 +383,18 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @property
     def shell(self) -> AsyncInteractiveShell:
+        """
+        The shell given the current context.
+
+        Notes:
+            - The `subshell_id` of the main shell is `None`.
+        """
         return self.subshell_manager.get_shell()
+
+    @property
+    def caller(self) -> Caller:
+        "The caller for the shell channel."
+        return self.callers[SocketID.shell]
 
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
@@ -499,10 +510,11 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                                     signal.signal(signal.SIGINT, sig)
                                 self.comm_manager.kernel = None
                                 self.event_stopped.set()
-                                self.callers.clear()
         finally:
-            Kernel._instance = None
+            self.shell.reset(new_session=False)
             self.subshell_manager.stop_all_subshells(force=True)
+            self.callers.clear()
+            Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
             self._zmq_context.term()
             if self.print_kernel_messages:
@@ -743,7 +755,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     ) -> None:
         "Opens a zmq socket for socket_id, receives messages and calls the message handler."
 
-        # **DEBUG WARNING**: Disable the following line to debug messages  note: tests in test_debugger.py  will fail.
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
@@ -778,8 +789,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                         except KeyError:
                             subshell_id = None
                     job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(subshell_id, job, send_reply)
-
+                    message_handler(subshell_id, socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:
@@ -787,16 +797,16 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     continue
 
     def msg_handler(
-        self, subshell_id: str | None, job: Job, send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]], /
+        self,
+        subshell_id: str | None,
+        socket_id: Literal[SocketID.shell, SocketID.control],
+        msg_type: MsgType,
+        job: Job,
+        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
+        /,
     ):
         """Schedule a message to be executed."""
-        # receive_msg_loop - DEBUG WARNING
-
-        # Note: There should not be any pending trackers in this context.
-
-        msg_type = MsgType(job["msg"]["header"]["msg_type"])
-        socket_id = job["socket_id"]
-
+        # Note: There are never any active pending trackers in this context.
         handler = cache_wrap_handler(subshell_id, send_reply, self.run_handler, self.get_handler(msg_type))
         run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
         match run_mode:
