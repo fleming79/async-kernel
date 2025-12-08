@@ -40,7 +40,13 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel
 from async_kernel import Caller, utils
-from async_kernel.asyncshell import AsyncInteractiveShell, KernelInterruptError, SubshellManager, SubshellPendingManager
+from async_kernel.asyncshell import (
+    AsyncInteractiveShell,
+    AsyncInteractiveSubshell,
+    KernelInterruptError,
+    SubshellManager,
+    SubshellPendingManager,
+)
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
@@ -382,7 +388,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return {k: getattr(self, k) for k in ("kernel_name", "connection_file")} | self._settings
 
     @property
-    def shell(self) -> AsyncInteractiveShell:
+    def shell(self) -> AsyncInteractiveShell | AsyncInteractiveSubshell:
         """
         The shell given the current context.
 
