@@ -530,11 +530,9 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
     def stop(self, *, force=False) -> None:
         "Stop this subshell."
         if force or not self.protected:
-            self.kernel.subshell_manager.subshells.pop(self.subshell_id, None)
             self.pending_manager.deactivate(cancel_pending=True)
-            if hm := self.history_manager:
-                hm.end_session()
-                self.history_manager = None
+            self.reset(new_session=False)
+            self.kernel.subshell_manager.subshells.pop(self.subshell_id, None)
 
 
 class SubshellManager:

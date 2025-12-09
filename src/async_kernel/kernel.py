@@ -5,6 +5,7 @@ import builtins
 import contextlib
 import errno
 import functools
+import gc
 import getpass
 import importlib.util
 import json
@@ -525,6 +526,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             self._zmq_context.term()
             if self.print_kernel_messages:
                 print(f"Kernel stopped: {self!r}")
+            gc.collect()
 
     def _interrupt_now(self, *, force=False):
         """
