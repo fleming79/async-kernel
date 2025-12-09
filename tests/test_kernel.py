@@ -665,7 +665,7 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     assert kernel.main_shell.user_ns is kernel.main_shell.user_global_ns
     assert subshell.user_ns is not kernel.main_shell.user_ns
     assert subshell.user_global_ns is kernel.main_shell.user_global_ns
-
+    kernel.main_shell.user_ns["a"] = 1
     await utils.execute(client, code="a=10", subshell_id=subshell_id)
     assert subshell.user_ns["a"] == 10
     await utils.execute(client, code="b=20", header_extras={"subshell_id": subshell_id})
@@ -689,7 +689,7 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     kernel.subshell_manager.delete_subshell(subshell_id)
     assert subshell_id in kernel.subshell_manager.subshells, "Protected should not stop when deleted"
     kernel.subshell_manager.stop_all_subshells(force=True)
-
+    assert kernel.main_shell.user_ns["a"] == 1
     with (
         pytest.raises(RuntimeError, match="does not exist!"),
         async_kernel.utils.subshell_context(subshell.subshell_id),

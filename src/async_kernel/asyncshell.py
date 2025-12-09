@@ -166,12 +166,13 @@ class AsyncInteractiveShell(InteractiveShell):
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
         - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
-        - `user_ns` and `user_global_ns` are same dictionary which is fixed.
+        - `user_ns` and `user_global_ns` are same dictionary which is a fixed `LastUpdatedDict`.
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
 
     _execution_count = 0
+    _resetting = False
     displayhook_class = Type(AsyncDisplayHook)
     display_pub_class = Type(AsyncDisplayPublisher)
     displayhook: Instance[AsyncDisplayHook]
@@ -478,12 +479,17 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def reset(self, new_session=True, aggressive=False):
-        super().reset(new_session, aggressive)
-        for pen in self.pending_manager.pending:
-            pen.cancel()
-        if new_session:
-            self._execution_count = 0
-            self._stop_on_error_info.clear()
+        if not self._resetting:
+            self._resetting = True
+            try:
+                super().reset(new_session, aggressive)
+                for pen in self.pending_manager.pending:
+                    pen.cancel()
+                if new_session:
+                    self._execution_count = 0
+                    self._stop_on_error_info.clear()
+            finally:
+                self._resetting = False
 
     @override
     def init_magics(self) -> None:
@@ -518,7 +524,13 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
     protected = traitlets.Bool()
     pending_manager = Fixed(SubshellPendingManager)
     subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.context_id)
-    user_global_ns: Fixed[Self, dict[Any, Any]] = Fixed(lambda c: c["owner"].kernel.main_shell.user_global_ns)  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    @property
+    @override
+    def user_global_ns(self) -> dict:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return (
+            self.kernel.main_shell.user_global_ns.copy() if self._resetting else self.kernel.main_shell.user_global_ns
+        )
 
     @override
     def __init__(self, *, protected=False) -> None:
