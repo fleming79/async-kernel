@@ -35,7 +35,7 @@ from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CaselessStrEnum, Dict, HasTraits, Instance, Tuple, Unicode, UseEnum
+from traitlets import CaselessStrEnum, CUnicode, Dict, HasTraits, Instance, Tuple, Unicode, UseEnum
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -230,7 +230,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     of the current profile, but can be specified by absolute path.
     """
 
-    kernel_name = Unicode()
+    kernel_name = CUnicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
     ip = Unicode()
@@ -520,12 +520,12 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         finally:
             self.shell.reset(new_session=False)
             self.subshell_manager.stop_all_subshells(force=True)
-            self.callers.clear()
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
             self._zmq_context.term()
             if self.print_kernel_messages:
                 print(f"Kernel stopped: {self!r}")
+            self.callers.clear()
             gc.collect()
 
     def _interrupt_now(self, *, force=False):
@@ -1065,7 +1065,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
         """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only)."""
 
-        return {"subshell_id": self.subshell_manager.create_subshell().subshell_id}
+        return {"subshell_id": self.subshell_manager.create_subshell(protected=False).subshell_id}
 
     async def delete_subshell_request(self, job: Job[Content], /) -> Content:
         """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only)."""

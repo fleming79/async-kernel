@@ -206,6 +206,10 @@ class AsyncInteractiveShell(InteractiveShell):
     "**Not supported - use the built in debugger instead.**"
 
     @override
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}  kernel name: {self.kernel.kernel_name!r}>"
+
+    @override
     def __init__(self, parent: None | Configurable = None) -> None:
         super().__init__(parent=parent)
         self.pending_manager.activate()
@@ -519,11 +523,37 @@ class SubshellPendingManager(PendingManager):
 
 
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
-    ""
+    """
+    An asynchronous interactive subshell for managing isolated execution contexts within an async kernel.
 
-    protected = traitlets.Bool()
+    Each subshell has a unique `user_ns`, but shares its `user_global_ns` with the main shell
+    (which is also the `user_ns` of the main shell).
+
+    Call [`subshell.stop(force=True)`][async_kernel.asyncshell.AsyncInteractiveSubshell.stop] to stop a
+    protected subshell when it is no longer required.
+
+    Attributes:
+        stopped: Indicates whether the subshell has been stopped.
+        protected: If True, prevents the subshell from being stopped unless forced.
+        pending_manager: Tracks pending started in the context of the subshell.
+        subshell_id: Unique identifier for the subshell.
+
+    Methods:
+        stop: Stops the subshell, deactivating pending operations and removing it from the manager.
+
+    See also:
+        - [async_kernel.utils.get_subshell_id][]
+        - [async_kernel.utils.subshell_context][]
+    """
+
+    stopped = traitlets.Bool(read_only=True)
+    protected = traitlets.Bool(read_only=True)
     pending_manager = Fixed(SubshellPendingManager)
     subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.context_id)
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} kernel name: {self.kernel.kernel_name!r}  subshell id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
 
     @property
     @override
@@ -533,9 +563,9 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
         )
 
     @override
-    def __init__(self, *, protected=False) -> None:
+    def __init__(self, *, protected: bool = True) -> None:
         super().__init__(parent=self.kernel.main_shell)
-        self.protected = protected
+        self.set_trait("protected", protected)
         self.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
         self.kernel.subshell_manager.subshells[self.subshell_id] = self
 
@@ -545,6 +575,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
             self.pending_manager.deactivate(cancel_pending=True)
             self.reset(new_session=False)
             self.kernel.subshell_manager.subshells.pop(self.subshell_id, None)
+            self.set_trait("stopped", True)
 
 
 class SubshellManager:
@@ -562,8 +593,16 @@ class SubshellManager:
     subshells: dict[str, AsyncInteractiveSubshell] = {}
     default_subshell_class = AsyncInteractiveSubshell
 
-    def create_subshell(self, *, protected=False) -> AsyncInteractiveSubshell:
-        "Create a new instance of the default subshell class."
+    def create_subshell(self, *, protected: bool = True) -> AsyncInteractiveSubshell:
+        """
+        Create a new instance of the default subshell class.
+
+        Call [`subshell.stop(force=True)`][async_kernel.asyncshell.AsyncInteractiveSubshell.stop] to stop a
+        protected subshell when it is no longer required.
+
+        Args:
+            protected: Protect the subshell from accidental deletion.
+        """
         return self.default_subshell_class(protected=protected)
 
     def list_subshells(self) -> list[str]:
