@@ -289,6 +289,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     msg_id = msg["header"]["msg_id"]
     reply = await utils.get_reply(client, msg_id, channel="control")
     utils.validate_message(reply, "create_subshell_reply", msg_id)
+    assert reply["content"]["status"] == "ok"
     subshell_id = reply["content"]["subshell_id"]
     assert subshell_id in kernel.subshell_manager.subshells
 
@@ -298,6 +299,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     msg_id = msg["header"]["msg_id"]
     reply = await utils.get_reply(client, msg_id, channel="control")
     utils.validate_message(reply, "list_subshell_reply", msg_id)
+    assert reply["content"]["status"] == "ok"
     assert reply["content"]["subshell_id"] == [subshell_id]
 
     # Delete
@@ -306,4 +308,5 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     msg_id = msg["header"]["msg_id"]
     reply = await utils.get_reply(client, msg_id, channel="control")
     utils.validate_message(reply, "delete_subshell_reply", msg_id)
+    assert reply["content"]["status"] == "ok"
     assert subshell_id not in kernel.subshell_manager.subshells

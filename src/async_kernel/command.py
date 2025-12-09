@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import sys
 import traceback
 from collections.abc import Callable
@@ -9,7 +10,6 @@ from typing import TYPE_CHECKING
 import anyio
 
 import async_kernel
-from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import get_kernel_dir, import_kernel_factory, remove_kernel_spec, write_kernel_spec
 from async_kernel.typing import KernelName
 
@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from async_kernel.kernel import Kernel
     from async_kernel.kernelspec import KernelFactoryType
 
     __all__ = ["command_line"]
@@ -135,9 +134,9 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
         if settings.get("connection_file") in {None, "", "."}:
             settings.pop("connection_file", None)
         factory: KernelFactoryType = import_kernel_factory(getattr(args, "kernel_factory", ""))
-        kernel: Kernel = factory(settings)
         try:
-            kernel.run(wait_exit_context)
+            factory(settings).run(wait_exit_context)
+            gc.collect()
         except KeyboardInterrupt:
             pass
         except BaseException as e:
