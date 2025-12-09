@@ -5,9 +5,79 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0-rc1] - 2025-12-09
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Rename Pending.wait argument shield as protect. [#249](https://github.com/fleming79/async-kernel/pull/249)
+
+- Drop MetadataKeys and rename execute_request_timeout to timeout and more tags. [#247](https://github.com/fleming79/async-kernel/pull/247)
+
+- Refactoring with view to supporting pyodide in the kernel. [#244](https://github.com/fleming79/async-kernel/pull/244)
+
+- Move RunMode.get_mode functionalty to Kernel.get_run_mode [#240](https://github.com/fleming79/async-kernel/pull/240)
+
+### <!-- 1 --> 🚀 Features
+
+- Add LastUpdatedDict and use it for the shell user_ns and user_global_ns. [#262](https://github.com/fleming79/async-kernel/pull/262)
+
+- Use standard dictionary for Fixed instead of weakkeydict for faster access. [#258](https://github.com/fleming79/async-kernel/pull/258)
+
+- Added PendingGroup and caller.create_pending_group. [#252](https://github.com/fleming79/async-kernel/pull/252)
+
+- Added SubshellPendingManager. [#251](https://github.com/fleming79/async-kernel/pull/251)
+
+- Caller.queue_call is now reset awaitable [#250](https://github.com/fleming79/async-kernel/pull/250)
+
+- Added PendingTracker,  PendingManager and make Pending.set_result resettable. [#248](https://github.com/fleming79/async-kernel/pull/248)
+
+- Update uv.lock and bump anyio min version to 4.12 with support for winloop. [#243](https://github.com/fleming79/async-kernel/pull/243)
+
+- Add support for kernel subshells. [#238](https://github.com/fleming79/async-kernel/pull/238)
+
+- Run mode header can now be either `# task` or `##task`. [#239](https://github.com/fleming79/async-kernel/pull/239)
+
+- Bump aiologic min version to 0.16 and use its import features. [#234](https://github.com/fleming79/async-kernel/pull/234)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Maintenance [#264](https://github.com/fleming79/async-kernel/pull/264)
+
+- Use gc.collect at kernel shutdown. [#263](https://github.com/fleming79/async-kernel/pull/263)
+
+- SubshellManager.create_subshell returns a subshell instead of the subshell_id. [#261](https://github.com/fleming79/async-kernel/pull/261)
+
+- Modify tests involving weakref to work with pypy. [#260](https://github.com/fleming79/async-kernel/pull/260)
+
+- Fix type hint for kernel.shell. [#259](https://github.com/fleming79/async-kernel/pull/259)
+
+- Kernel maintenance [#257](https://github.com/fleming79/async-kernel/pull/257)
+
+- Alternate kernel run modes. [#256](https://github.com/fleming79/async-kernel/pull/256)
+
+- Use a tuple to pack direct call instead a functools partial. [#255](https://github.com/fleming79/async-kernel/pull/255)
+
+- Do_complete_request bugfix. [#253](https://github.com/fleming79/async-kernel/pull/253)
+
+- Make signature of AsyncInteractiveShell.inspect_request consistent with other methods. [#246](https://github.com/fleming79/async-kernel/pull/246)
+
+- Move shell related requests to the shell. [#245](https://github.com/fleming79/async-kernel/pull/245)
+
+- Refactor Caller for improved shutdown. [#242](https://github.com/fleming79/async-kernel/pull/242)
+
+- Accept subshell_id from either the header or content. Content gets first option. [#241](https://github.com/fleming79/async-kernel/pull/241)
+
+- Add checkpoints to Caller. [#237](https://github.com/fleming79/async-kernel/pull/237)
+
+- Add py.typed [#236](https://github.com/fleming79/async-kernel/pull/236)
+
+- Restore Kernel to the module namespace. [#235](https://github.com/fleming79/async-kernel/pull/235)
+
 ## [0.9.2] - 2025-11-27
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.9.2 [#233](https://github.com/fleming79/async-kernel/pull/233)
 
 - Fix typing_extensions min version. [#232](https://github.com/fleming79/async-kernel/pull/232)
 
@@ -615,6 +685,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.10.0-rc1]: https://github.com/fleming79/async-kernel/compare/v0.9.2..v0.10.0-rc1
 [0.9.2]: https://github.com/fleming79/async-kernel/compare/v0.9.1..v0.9.2
 [0.9.1]: https://github.com/fleming79/async-kernel/compare/v0.9.0..v0.9.1
 [0.9.0]: https://github.com/fleming79/async-kernel/compare/v0.9.0-rc.4..v0.9.0
