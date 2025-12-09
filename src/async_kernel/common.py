@@ -76,11 +76,11 @@ class Fixed(Generic[S, T]):
         self.name = name
 
     def __get__(self, obj: S, objtype: type[S] | None = None) -> T:
-        if obj is None:
-            return self  # pyright: ignore[reportReturnType]
         try:
             return self.instances[id(obj)]
         except KeyError:
+            if obj is None:
+                return self  # pyright: ignore[reportReturnType]
             with self.lock:
                 try:
                     return self.instances[id(obj)]
