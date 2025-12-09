@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+import contextlib
 import json
 import pathlib
 import sys
@@ -26,7 +27,7 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.pending import PendingManager
 from async_kernel.typing import Content, NoValue, Tags
@@ -183,7 +184,7 @@ class AsyncInteractiveShell(InteractiveShell):
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
 
-    _user_ns: Fixed[Self, dict] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
+    _user_ns: Fixed[Self, LastUpdatedDict] = Fixed(LastUpdatedDict)  # pyright: ignore[reportIncompatibleVariableOverride]
     _main_mod_cache = Fixed(dict)
     _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
@@ -207,6 +208,8 @@ class AsyncInteractiveShell(InteractiveShell):
     def __init__(self, parent: None | Configurable = None) -> None:
         super().__init__(parent=parent)
         self.pending_manager.activate()
+        with contextlib.suppress(AttributeError):
+            utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)  # pyright: ignore[reportOptionalMemberAccess]
 
     def _get_default_ns(self):
         # Copied from `InteractiveShell.init_user_ns`

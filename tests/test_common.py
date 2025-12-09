@@ -12,7 +12,7 @@ import anyio.to_thread
 import pytest
 from aiologic import Event
 
-from async_kernel.common import Fixed, import_item
+from async_kernel.common import Fixed, LastUpdatedDict, import_item
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend, FixedCreate, FixedCreated
@@ -180,3 +180,23 @@ class TestFixed:
     def test_get_at_import(self):
         fixed = Fixed(str)
         assert fixed.__get__(None, None) is fixed
+
+
+class TestLastUpdatedDict:
+    def test_last_updated_dict(self):
+        d = LastUpdatedDict()
+        d["a"] = 1
+        d["b"] = 2
+        assert list(d.keys()) == ["a", "b"]
+        d["a"] = 3
+        assert list(d.keys()) == ["b", "a"]
+        assert d == {"a": 3, "b": 2}
+
+    def test_last_updated_dict_first(self):
+        d = LastUpdatedDict(last=False)
+        d["a"] = 1
+        d["b"] = 2
+        assert list(d.keys()) == ["b", "a"]
+        d["a"] = 3
+        assert list(d.keys()) == ["a", "b"]
+        assert d == {"a": 3, "b": 2}
