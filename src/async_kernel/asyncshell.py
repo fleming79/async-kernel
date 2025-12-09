@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 __all__ = ["AsyncInteractiveShell"]
 
 
-class KernelInterruptError(InterruptedError):
+class KernelInterruptError(Exception):
     "Raised to interrupt the kernel."
 
     # We subclass from InterruptedError so if the backend is a SelectorEventLoop it can catch the exception.
