@@ -29,6 +29,7 @@ with [concurrent message handling](#run-mode).
 - Thread-safe execution and cancellation (utilising [aiologic](https://aiologic.readthedocs.io/latest/) synchronisation primitives).
     - [Caller](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller) - code execution in a chosen event loop
     - [Pending](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending) - wait/await/cancel the pending result
+    - PendingGroup - An asynchronous context to automatically manage pending created in the context.
 - GUI event loops
     - [x] inline
     - [x] ipympl
@@ -65,33 +66,6 @@ There are two callers:
 - `Shell` - runs in the `MainThread` handling user related requests[^non-main-thread].
 - `Control` - runs in a separate thread handling control related requests.
 
-### Jupyter Kernel Subshells
-
-[**JEP92**](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#jupyter-kernel-subshells)
-
-In async kernel, a subshell is a separate shell, with its own:
-
-- `user_ns`
-- completer
-- history
-
-The global namespace is common for the shell and all subshells. Furthermore, the global namespace is the `user_ns` of the main shell.
-
-### Details
-
-- The namespace of subshells is disposed of when the subshell is 'deleted'.
-- Objects in the mainshell are accessible in subshells (to list them use `dir(globals())`).
-- Subshells run in the same thread as the main shell
-
-### Tips
-
-- The namespace of the main shell is accessible with the `globals` function.
-- To run code in a separate thread add the comment `# thread` on the top line in a code block.
-    ```python
-    # thread
-    dir()
-    ```
-
 ### Messaging
 
 Messages are received in a separate thread (per-channel) then handled in the associated thread (shell/control) concurrently according to the determined run mode.
@@ -103,7 +77,7 @@ The run modes available are:
 - `RunMode.direct` → [`Caller.call_direct`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct):
   Run the request in the scheduler.
 - `RunMode.queue` → [`Caller.queue_call`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.queue_call):
-  Run the request in a queue dedicated to the handler & channel.
+  Run the request in a queue dedicated to the subshell, handler & channel.
 - `RunMode.task` → [`Caller.call_soon`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_soon):
   Run the request in a separate task.
 - `RunMode.thread` → [`Caller.to_thread`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.to_thread):
@@ -129,6 +103,30 @@ These are the currently assigned run modes.
 | kernel_info_request     | direct | direct  |
 | list_subshell_request   | None   | direct  |
 | shutdown_request        | None   | direct  |
+
+### Jupyter Kernel Subshells
+
+Async kernel supports [kernel subshells (JEP92)](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#jupyter-kernel-subshells).
+Each subshell provides a separate `user_ns` and shares the `user_global_ns` with the main shell.
+
+Subshells are a useful means of providing separate namespaces and task management.
+
+Subshells use the same callers as the main shell. This was a deliberate design choice with the advantage being
+that comm messages are always handled in the shell's thread (the main thread except when the shell is intentionally
+started in a different thread).
+
+The active shell/subshell is controlled by setting a context variable. This is done by the
+kernel on a per-message basis. A context manager is also provided so that code can be executed
+in the context of a specific shell/subshell.
+
+When a subshell is stopped its pending manager will cancel `Pending` (tasks) created in its context.
+
+#### Kernel message handlers
+
+No additional sockets are created for subshells.
+
+Message handler methods are cached per channel and subshell ID, so when [run mode](#run-mode) is 'queue'
+(such as `comm_msg`), the message will be handled in a separate queue for the subshell/channel.
 
 #### Further detail
 
