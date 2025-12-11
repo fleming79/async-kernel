@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2025-12-11
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Maintenance [#269](https://github.com/fleming79/async-kernel/pull/269)
+
 ## [0.10.0-rc2] - 2025-12-10
 
 ### <!-- 5 --> 📝 Documentation
@@ -12,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Subshell docstrings [#267](https://github.com/fleming79/async-kernel/pull/267)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.10.0-rc2 [#268](https://github.com/fleming79/async-kernel/pull/268)
 
 - Fix Subshell resetting main_shell namespace reset. [#266](https://github.com/fleming79/async-kernel/pull/266)
 
@@ -697,6 +705,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.10.0]: https://github.com/fleming79/async-kernel/compare/v0.10.0-rc2..v0.10.0
 [0.10.0-rc2]: https://github.com/fleming79/async-kernel/compare/v0.10.0-rc1..v0.10.0-rc2
 [0.10.0-rc1]: https://github.com/fleming79/async-kernel/compare/v0.9.2..v0.10.0-rc1
 [0.9.2]: https://github.com/fleming79/async-kernel/compare/v0.9.1..v0.9.2
