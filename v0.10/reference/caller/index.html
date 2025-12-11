@@ -2398,12 +2398,8 @@ the context will exit, and all pending will be cancelled.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -2810,12 +2806,8 @@ the context will exit, and all pending will be cancelled.</p>
       <a href="../asyncshell/#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;callers</a>
+      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
   </span>
 
       </li>
@@ -4274,7 +4266,7 @@ the context will exit, and all pending will be cancelled.</p>
                 <span class="k">await</span> <span class="n">tg</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span><span class="p">,</span> <span class="n">tg</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="p">:</span>
                 <span class="n">socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># zmq.SocketType.PUB</span>
-                <span class="n">socket</span><span class="o">.</span><span class="n">linger</span> <span class="o">=</span> <span class="mi">500</span>
+                <span class="n">socket</span><span class="o">.</span><span class="n">linger</span> <span class="o">=</span> <span class="mi">50</span>
                 <span class="n">socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iopub_url</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">iopub_sockets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="n">socket</span>
             <span class="k">try</span><span class="p">:</span>
@@ -6485,8 +6477,12 @@ need to be performed from within the callers event loop/taskgroup.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.direct"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;direct</a>
   </span>
 
       </li>
