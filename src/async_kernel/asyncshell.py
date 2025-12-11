@@ -207,7 +207,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}  kernel name: {self.kernel.kernel_name!r}>"
+        return f"<{self.__class__.__name__}  kernel_name: {self.kernel.kernel_name!r} subhsell_id: {self.subshell_id}>"
 
     @override
     def __init__(self, parent: None | Configurable = None) -> None:
@@ -553,7 +553,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} kernel name: {self.kernel.kernel_name!r}  subshell id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
+        return f"<{self.__class__.__name__} kernel_name: {self.kernel.kernel_name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
 
     @property
     @override
@@ -696,13 +696,17 @@ class KernelMagics(Magics):
 
     @line_magic
     def subshell(self, _) -> None:
-        """Print the number of subshells and the `subshell_id` [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
+        """Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
 
         See also:
             - [async_kernel.utils.get_kernel][]
         """
-        subshells = utils.get_kernel().subshell_manager.list_subshells()
-        print(f"{len(subshells)} subshells: {subshells}")
+        kernel = utils.get_kernel()
+        subshells = kernel.subshell_manager.list_subshells()
+        subshell_list = (
+            f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
+        )
+        print(f"Current shell:\t{kernel.shell}\n\n{subshell_list}")
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)
