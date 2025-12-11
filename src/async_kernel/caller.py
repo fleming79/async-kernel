@@ -344,7 +344,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 await tg.start(self._scheduler, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
-                socket.linger = 500
+                socket.linger = 50
                 socket.connect(self.iopub_url)
                 self.iopub_sockets[self.thread] = socket
             try:

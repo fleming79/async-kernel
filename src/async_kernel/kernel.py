@@ -520,12 +520,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         finally:
             self.shell.reset(new_session=False)
             self.subshell_manager.stop_all_subshells(force=True)
+            self.callers.clear()
             Kernel._instance = None
             AsyncInteractiveShell.clear_instance()
+            with anyio.CancelScope(shield=True):
+                await anyio.sleep(0.1)
             self._zmq_context.term()
             if self.print_kernel_messages:
                 print(f"Kernel stopped: {self!r}")
-            self.callers.clear()
             gc.collect()
 
     def _interrupt_now(self, *, force=False):
@@ -600,7 +602,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 try:
                     zmq.proxy(frontend, iopub_socket)
                 except zmq.ContextTerminated:
-                    frontend.close(linger=500)
+                    frontend.close(linger=50)
 
         hb_ready, iopub_ready = (Event(), Event())
         threading.Thread(target=heartbeat, name="heartbeat", args=[hb_ready]).start()
@@ -629,7 +631,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             case SocketID.iopub:
                 socket_type = zmq.XPUB
         socket: zmq.Socket = self._zmq_context.socket(socket_type)
-        socket.linger = 500
+        socket.linger = 50
         port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self._ports.get(socket_id, 0))  # pyright: ignore[reportArgumentType]
         self._ports[socket_id] = port
         self.log.debug("%s socket on port: %i", socket_id, port)
@@ -637,7 +639,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         try:
             yield socket
         finally:
-            socket.close(linger=500)
+            socket.close(linger=50)
             self._sockets.pop(socket_id)
 
     def _write_connection_file(self) -> None:
