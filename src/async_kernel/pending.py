@@ -461,8 +461,8 @@ class PendingManager(PendingTracker):
         Returns:
             CountdownEvent: If there are pending that have not finished cancellation.
         """
-        if self._state is not PendingTrackerState.active:
-            raise InvalidStateError
+        if self._state is PendingTrackerState.stopped:
+            return None
         self._state = PendingTrackerState.exiting
         for pen in self._pending.copy():
             if cancel_pending:

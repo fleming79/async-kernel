@@ -307,6 +307,7 @@ class TestPendingManager:
 
         caller.call_soon(lambda: 1)
         count_event = pm.deactivate(cancel_pending=True)
+        count_event = pm.deactivate(cancel_pending=True)
         assert count_event is not None
         assert count_event.value == 1
 
@@ -315,10 +316,10 @@ class TestPendingManager:
 
         await count_event
 
+        assert pm.deactivate() is None
+
         with pytest.raises(InvalidStateError):
             pm.start_tracking()
-        with pytest.raises(InvalidStateError):
-            pm.deactivate()
 
     async def test_discard(self, pm: PendingManager, caller: Caller):
         pm.track(pen1 := caller.call_soon(lambda: 1 + 1))
