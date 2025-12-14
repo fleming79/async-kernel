@@ -709,6 +709,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 2. The method [Caller.queue_close][] is called with `func` or `func`'s hash.
                 3. `func` is deleted (utilising [weakref.finalize][]).
             - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.
+            - Exceptions are 'swallowed'; the last successful result is set on the pending.
 
         Returns:
             Pending: The pending where the queue loop is running.
@@ -725,6 +726,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 item = result = None
                 try:
                     while True:
+                        await async_checkpoint(force=True)
                         if queue:
                             item = queue.popleft()
                             try:
@@ -735,26 +737,21 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 if pen.cancelled():
                                     raise
                                 self.log.exception("Execution %s failed", item, exc_info=e)
-                            await async_checkpoint(force=True)
                         else:
-                            # Use checkpoints to catch new queue items
+                            pen.set_result(result, reset=True)
+                            del item  # pyright: ignore[reportPossiblyUnboundVariable]
+                            event = create_async_event()
+                            pen.metadata["resume"] = event.set
                             await async_checkpoint(force=True)
                             if not queue:
-                                event = create_async_event()
-                                pen.metadata["resume"] = event.set
-                                await async_checkpoint(force=True)
-                                if not queue:
-                                    pen.set_result(result, reset=True)  # pyright: ignore[reportPossiblyUnboundVariable]
-                                    del item, result  # pyright: ignore[reportPossiblyUnboundVariable]
-                                    await event
-                            pen.metadata.pop("resume")
+                                await event
+                            pen.metadata["resume"] = noop
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue)
+            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue, resume=noop)
         pen_.metadata["queue"].append((func, args, kwargs))
-        if resume := pen_.metadata.get("resume"):
-            resume()
+        pen_.metadata["resume"]()
         return pen_  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
