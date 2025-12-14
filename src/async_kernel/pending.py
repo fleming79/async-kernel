@@ -326,13 +326,11 @@ class Pending(Awaitable[T]):
             PendingCancelled: If the pending has been cancelled.
             InvalidStateError: If the pending isn't done yet.
         """
-        if self._cancelled is not None:
-            self.exception()
+        if e := self.exception():
+            raise e from None
         try:
             return self._result
         except AttributeError:
-            if e := self.exception():
-                raise e from None
             raise InvalidStateError from None
 
     def exception(self) -> BaseException | None:
@@ -341,12 +339,9 @@ class Pending(Awaitable[T]):
 
         Raises:
             PendingCancelled: If the instance has been cancelled.
-            InvalidStateError: If the instance isn't done yet.
         """
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
-        if not self._done:
-            raise InvalidStateError
         return getattr(self, "_exception", None)
 
 
