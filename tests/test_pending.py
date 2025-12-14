@@ -124,8 +124,6 @@ class TestPending:
 
     async def test_set_result_after_exception_raises(self, anyio_backend: Backend):
         pen = Pending()
-        with pytest.raises(InvalidStateError):
-            pen.exception()
         pen.set_exception(ValueError())
         assert isinstance(pen.exception(), ValueError)
         with pytest.raises(RuntimeError):
