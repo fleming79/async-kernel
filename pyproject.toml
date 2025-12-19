@@ -130,7 +130,8 @@ exclude_lines = [
   "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
   ".*sys.platform == \"win32\".*",
   "if not self.kernel.quiet.*",
-  "raise NotImplementedError"
+  "raise NotImplementedError",
+  '.*sys.platform == "emscripten".*'
 ]
 
 [tool.coverage.run]

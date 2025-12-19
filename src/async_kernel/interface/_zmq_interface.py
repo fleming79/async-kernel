@@ -341,7 +341,7 @@ class ZMQ_Interface(InterfaceBase):
         buffers: list[bytes] | None = None,
     ) -> None:
         """Send a message on the zmq iopub socket."""
-        if socket := Caller.iopub_sockets.get(thread := threading.current_thread()):
+        if socket := Caller.iopub_sockets.get(t_ident := Caller.current_ident()):
             msg = self.session.send(
                 stream=socket,
                 msg_or_type=msg_or_type,  # pyright: ignore[reportArgumentType]
@@ -352,10 +352,8 @@ class ZMQ_Interface(InterfaceBase):
                 buffers=buffers,
             )
             if msg:
-                self.log.debug(
-                    "iopub_send: (thread=%s) msg_type:'%s', content: %s", thread.name, msg["msg_type"], msg["content"]
-                )
-        elif (caller := self.callers.get(SocketID.control)) and caller.thread is not thread:
+                self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["msg_type"], msg["content"])
+        elif (caller := self.callers.get(SocketID.control)) and caller.ident != t_ident:
             caller.call_direct(
                 self.iopub_send,
                 msg_or_type=msg_or_type,
@@ -452,7 +450,7 @@ class ZMQ_Interface(InterfaceBase):
             force: If True, requests a forced interrupt. Defaults to False.
         """
         # Restricted this to when the shell is running in the main thread.
-        if self.callers[SocketID.shell].thread is threading.main_thread():
+        if self.callers[SocketID.shell].ident == Caller.MAIN_THREAD_IDENT:
             self._interrupt_requested = "FORCE" if force else True
             if sys.platform == "win32":
                 signal.raise_signal(signal.SIGINT)

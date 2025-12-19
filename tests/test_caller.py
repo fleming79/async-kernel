@@ -36,7 +36,7 @@ class TestCaller:
             assert await caller.to_thread(lambda: 2 + 1) == 3
             assert len(caller.children) == 1
             worker = next(iter(caller.children))
-            assert worker.thread.name == "async_kernel_caller"
+            assert worker.ident != caller.ident
             # Child thread
             c1 = caller.get(name="c1", protected=True)
             assert c1 in caller.children
@@ -60,9 +60,9 @@ class TestCaller:
         assert c3.stopped
 
     async def test_already_exists(self, caller: Caller):
-        assert Caller.get_current(caller.thread)
+        assert Caller.get_current(caller.ident)
         assert Caller("MainThread") is caller
-        with pytest.raises(RuntimeError, match="An instance already exists for thread="):
+        with pytest.raises(RuntimeError, match="An instance already exists for"):
             Caller("manual")
 
     async def test_start_after(self, anyio_backend: Backend):
@@ -78,7 +78,7 @@ class TestCaller:
             thread = threading.current_thread()
             assert thread is not threading.main_thread()
             caller = Caller()
-            assert caller.thread is thread
+            assert caller.ident == thread.ident
             assert (await caller.call_soon(lambda: 1 + 1)) == 2
 
         thread = threading.Thread(target=anyio.run, args=[get_caller])
@@ -88,7 +88,7 @@ class TestCaller:
     def test_no_event_loop(self, anyio_backend: Backend):
         assert current_async_library(failsafe=True) is None
         caller = Caller("NewThread", backend=anyio_backend)
-        assert caller.thread is not threading.current_thread()
+        assert caller.ident != threading.get_ident()
         assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
         caller.stop()
 
@@ -231,7 +231,7 @@ class TestCaller:
         thread.start()
         await ready
         assert isinstance(finished, Event)
-        caller = Caller.get_current(thread)
+        caller = Caller.get_current(thread.ident)
         assert caller
         if check_result == "result":
             expr = "10"
@@ -635,12 +635,12 @@ class TestCaller:
         assert {pen.result() for pen in done} == {0, 1}
 
     async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
-        pen1 = caller.to_thread(threading.current_thread)
+        pen1 = caller.to_thread(threading.get_ident)
         w1 = Caller.get_current(await pen1)
         assert w1
         assert w1 in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
         w1.stop()
-        pen2 = caller.to_thread(threading.current_thread)
+        pen2 = caller.to_thread(threading.get_ident)
         await w1.stopped
         assert w1 not in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
         w2 = Caller.get_current(await pen2)
@@ -652,9 +652,9 @@ class TestCaller:
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
-        pen1 = caller.to_thread(threading.current_thread)
+        pen1 = caller.to_thread(threading.get_ident)
         w1 = Caller.get_current(await pen1)
-        pen2 = caller.to_thread(threading.current_thread)
+        pen2 = caller.to_thread(threading.get_ident)
         w2 = Caller.get_current(await pen2)
         assert w1
         assert w2
