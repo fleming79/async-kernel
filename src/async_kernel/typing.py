@@ -73,7 +73,7 @@ class RunMode(enum.StrEnum):
     """
     An Enum of the run modes available for handling [Messages][async_kernel.typing.Message].
 
-    [receive_msg_loop][async_kernel.kernel.Kernel.receive_msg_loop] uses [get_run_mode][async_kernel.kernel.Kernel.get_run_mode]
+    [async_kernel.kernel.Kernel.msg_handler][] uses [get_run_mode][async_kernel.kernel.Kernel.get_run_mode]
     to map the message type and channel (`shell` or `control`) to the `RunMode`.
 
     Cell overrides:

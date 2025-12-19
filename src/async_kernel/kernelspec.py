@@ -11,8 +11,6 @@ import textwrap
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from jupyter_client.kernelspec import KernelSpec
-
 # path to kernelspec resources
 RESOURCES = Path(__file__).parent.joinpath("resources")
 
@@ -115,6 +113,8 @@ def write_kernel_spec(
         Warning:
             Moving the spec folder will break the import which is stored as an absolute path.
     """
+    from jupyter_client.kernelspec import KernelSpec  # noqa: PLC0415
+
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), kernel_name)
     path = Path(path) if path else (get_kernel_dir(prefix) / kernel_name)
     # stage resources

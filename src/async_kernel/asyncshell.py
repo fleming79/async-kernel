@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import builtins
 import contextlib
-import json
 import pathlib
 import sys
 import threading
@@ -12,6 +11,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
 import IPython.core.release
+import orjson
 from aiologic.lowlevel import async_checkpoint
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
@@ -20,7 +20,6 @@ from IPython.core.interactiveshell import ExecutionResult, InteractiveShell, Int
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
-from jupyter_client.jsonutil import json_default
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
 from typing_extensions import override
@@ -122,7 +121,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
         """
         content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
         msg_type = "update_display_data" if update else "display_data"
-        msg = utils.get_kernel().session.msg(msg_type, content, parent=utils.get_parent())  # pyright: ignore[reportArgumentType]
+        msg = utils.get_kernel().interface.msg(msg_type, content, parent=utils.get_parent())
         for hook in self._hooks:
             try:
                 msg = hook(msg)
@@ -246,7 +245,7 @@ class AsyncInteractiveShell(InteractiveShell):
             self.kernel.stop()
 
     def ask_exit(self) -> None:
-        if self.kernel.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
+        if self.kernel.interface.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
             self.exit_now = True
 
     @override
@@ -344,7 +343,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
             result = None
             try:
-                self.kernel.interrupts.add(cancel)
+                self.kernel.interface.interrupts.add(cancel)
                 if stop_on_error:
                     self._stop_on_error_pool.add(cancel)
                 with anyio.fail_after(delay=timeout or None):
@@ -357,7 +356,7 @@ class AsyncInteractiveShell(InteractiveShell):
                     )
             except (Exception, anyio.get_cancelled_exc_class()) as e:
                 # A safeguard to catch exceptions not caught by the shell.
-                err = KernelInterruptError() if self.kernel._last_interrupt_frame else e  # pyright: ignore[reportPrivateUsage]
+                err = KernelInterruptError() if self.kernel.interface.last_interrupt_frame else e
             else:
                 err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
                 if not err and Tags.raises_exception in tags:
@@ -365,7 +364,7 @@ class AsyncInteractiveShell(InteractiveShell):
                     err = RuntimeError(msg)
             finally:
                 self._stop_on_error_pool.discard(cancel)
-                self.kernel.interrupts.discard(cancel)
+                self.kernel.interface.interrupts.discard(cancel)
                 self.events.trigger("post_execute")
                 if not silent:
                     self.events.trigger("post_run_cell", result)
@@ -667,7 +666,7 @@ class KernelMagics(Magics):
             connection_file = connection_file.name
         info = kernel.get_connection_info()
         print(
-            json.dumps(info, indent=2, default=json_default),
+            orjson.dumps(info, option=orjson.OPT_INDENT_2).decode(),
             "Paste the above JSON into a file, and connect with:\n"
             + "    $> jupyter <app> --existing <file>\n"
             + "or, if you are local, you can connect with just:\n"

@@ -37,14 +37,15 @@ dependencies = [
     "anyio>=4.12",
     "typing_extensions>=4.14",
     "aiologic>=0.16.0",
+    "orjson>=3.11.5",
+    "comm>=0.2",
+    "ipython>=9.0",
+    "traitlets>=5.14",
+    "matplotlib-inline>0.1",
     # These aren't required on pyodide. async_kernel.Kernel needs zmq sockets & threading.
     # Pyodide provides its own async kernel.
-    "comm>=0.2; sys_platform != 'emscripten'",
     "pyzmq>=27.0; sys_platform != 'emscripten'",
     "jupyter_client>=8.6; sys_platform != 'emscripten'",
-    "ipython>=9.0; sys_platform != 'emscripten'",
-    "traitlets>=5.14; sys_platform != 'emscripten'",
-    "matplotlib-inline>0.1; sys_platform != 'emscripten'",
 ]
 
 [project.urls]
@@ -128,7 +129,8 @@ exclude_lines = [
   "except .*",
   "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
   ".*sys.platform == \"win32\".*",
-  "if not self.quiet.*"
+  "if not self.kernel.quiet.*",
+  "raise NotImplementedError"
 ]
 
 [tool.coverage.run]

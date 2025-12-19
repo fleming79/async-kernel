@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import anyio.abc
+import orjson
 from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import Bool, Dict, HasTraits, Instance, Set, default
@@ -123,8 +124,6 @@ class DebugpyClient(HasTraits):
         super().__init__()
         self.log = log
         self.event_callback = event_callback
-        self._pack = self.kernel.session.pack
-        self._unpack = self.kernel.session.unpack
 
     @property
     def connected(self):
@@ -135,7 +134,7 @@ class DebugpyClient(HasTraits):
             raise RuntimeError
         async with self._send_lock:
             self._result_responses[request["seq"]] = pen = Pending()
-            content = self._pack(request)
+            content = orjson.dumps(request)
             content_length = str(len(content)).encode()
             buf = self.HEADER + content_length + self.SEPARATOR
             buf += content
@@ -151,7 +150,7 @@ class DebugpyClient(HasTraits):
             for buf in data[1:]:
                 size, raw_msg = buf.split(self.SEPARATOR, maxsplit=1)
                 size = int(size)
-                msg: DebugMessage = self._unpack(raw_msg[:size])
+                msg: DebugMessage = orjson.loads(raw_msg[:size])
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
                     self.event_callback(msg)
