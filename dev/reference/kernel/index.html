@@ -2680,8 +2680,8 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
-<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterruptError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
+<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterruptError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="s2">&quot;Raised to interrupt the kernel.&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -6276,8 +6276,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.kernel_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_info_request</a>
   </span>
 
       </li>
@@ -6404,8 +6408,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request</a>
   </span>
 
       </li>
@@ -6461,8 +6469,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;complete_request</a>
   </span>
 
       </li>
@@ -6817,8 +6829,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.comm_close"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_close</a>
   </span>
 
       </li>
@@ -6874,8 +6890,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.interrupt_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupt_request</a>
   </span>
 
       </li>
@@ -6933,8 +6953,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.shutdown_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shutdown_request</a>
   </span>
 
       </li>
@@ -6997,7 +7021,7 @@ corresponding RunMode (if available).</p>
   </span>
 
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.list_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;list_subshell_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType.debug_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug_request</a>
   </span>
 
       </li>
@@ -7053,8 +7077,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.create_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;create_subshell_request</a>
   </span>
 
       </li>
