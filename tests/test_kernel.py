@@ -5,18 +5,16 @@ import logging
 import pathlib
 import sys
 import threading
-import time
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 import anyio
 import pytest
-import zmq
 
 import async_kernel.utils
+from async_kernel import Kernel
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
 from async_kernel.compiler import murmur2_x86
-from async_kernel.kernel import Kernel
 from async_kernel.typing import ExecuteContent, Job, MsgType, RunMode, SocketID, Tags
 from tests import utils
 
@@ -26,77 +24,12 @@ if TYPE_CHECKING:
     from jupyter_client.asynchronous.client import AsyncKernelClient
 
 
-from async_kernel.kernel import bind_socket
-
 # pyright: reportPrivateUsage=false
 
 
 @pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
 def transport(request):
     return request.param
-
-
-def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
-    ctx = zmq.Context()
-    ip = tmp_path / "mypath" if transport == "ipc" else "0.0.0.0"
-    try:
-        socket = ctx.socket(zmq.SocketType.ROUTER)
-        try:
-            port = bind_socket(socket, transport, ip)  # pyright: ignore[reportArgumentType]
-        finally:
-            socket.close(linger=0)
-        socket = ctx.socket(zmq.SocketType.ROUTER)
-        try:
-            assert bind_socket(socket, transport, ip, port) == port  # pyright: ignore[reportArgumentType]
-            if transport == "tcp":
-                with pytest.raises(RuntimeError):
-                    bind_socket(socket, transport, ip, max_attempts=0)  # pyright: ignore[reportArgumentType]
-                with pytest.raises(ValueError, match="Invalid transport"):
-                    bind_socket(socket, "", ip, max_attempts=1)  # pyright: ignore[reportArgumentType]
-        finally:
-            socket.close(linger=0)
-    finally:
-        ctx.term()
-
-
-@pytest.mark.parametrize("mode", ["direct", "proxy"])
-async def test_iopub(kernel: Kernel, mode: Literal["direct", "proxy"]) -> None:
-    def pubio_subscribe():
-        """Consume messages."""
-
-        socket = ctx.socket(zmq.SocketType.SUB)
-        socket.connect(url)
-        socket.setsockopt(zmq.SocketOption.SUBSCRIBE, b"")
-        try:
-            i = 0
-            while i < n:
-                msg = socket.recv_multipart()
-                if msg[0] == b"0":
-                    assert int(msg[1]) == i
-                    i += 1
-            # Also test iopub from a thread that doesn't have a socket works via control thread.
-            print("done")
-            msg = socket.recv_multipart()
-            assert msg[-1] == b'{"name": "stdout", "text": "done"}'
-        finally:
-            socket.close(linger=0)
-
-    n = 10
-    socket = kernel._sockets[SocketID.iopub]
-    url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
-    assert url.endswith(str(kernel._ports[SocketID.iopub]))
-    ctx = zmq.Context()
-    try:
-        thread = threading.Thread(target=pubio_subscribe)
-        thread.start()
-        time.sleep(0.05)
-        if mode == "proxy":
-            socket = Caller.iopub_sockets[kernel.callers[SocketID.control].thread]
-        for i in range(n):
-            socket.send_multipart([b"0", f"{i}".encode()])
-        thread.join()
-    finally:
-        ctx.term()
 
 
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
@@ -379,7 +312,7 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
 
 async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
     event = threading.Event()
-    kernel.interrupts.add(event.set)
+    kernel.interface.interrupts.add(event.set)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}
@@ -433,7 +366,7 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
 @pytest.mark.parametrize("response", ["y", ""])
 async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, response: Literal["y", ""]):
     stop = mocker.patch.object(kernel, "stop")
-    raw_input = mocker.patch.object(kernel, "raw_input", return_value=response)
+    raw_input = mocker.patch.object(kernel.interface, "raw_input", return_value=response)
     await utils.execute(client, "quit()")
     assert raw_input.call_count == 1
     assert stop.call_count == (1 if response == "y" else 0)
