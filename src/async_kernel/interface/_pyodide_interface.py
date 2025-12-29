@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, override
 
 import anyio
 import orjson
+from IPython.core.error import StdinNotImplementedError
 
 import async_kernel
 from async_kernel.interface.interface import InterfaceBase
@@ -16,15 +17,15 @@ if TYPE_CHECKING:
 
 
 class PyodideInterface(InterfaceBase):
-    _sender: Callable[[str], None]
+    _sender: Callable[[str, bool], None | str]  # Will return a result if blocking.
 
-    def _send_to_frontend(self, msg: Message):
+    def _send_to_frontend(self, msg: Message, *, requires_reply=False):
         if "channel" not in msg:
             msg["channel"] = "shell"  # pyright: ignore[reportGeneralTypeIssues]
         msg_string = orjson.dumps(
             msg, option=orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NAIVE_UTC | orjson.OPT_UTC_Z, default=repr
         ).decode()
-        self._sender(msg_string)
+        return self._sender(msg_string, requires_reply)
 
     async def _send_reply(self, job: Job, content: dict) -> None:
         if "status" not in content:
@@ -66,7 +67,20 @@ class PyodideInterface(InterfaceBase):
         msg_or_type["channel"] = "iopub"  # pyright: ignore[reportGeneralTypeIssues]
         self._send_to_frontend(msg_or_type)  # pyright: ignore[reportArgumentType]
 
-    async def start(self, sender: Callable[[str], None]):
+    @override
+    def input_request(self, prompt: str, *, password=False) -> Any:
+        job = async_kernel.utils.get_job()
+        if not job["msg"].get("content", {}).get("allow_stdin", False):
+            msg = "Stdin is not allowed in this context!"
+            raise StdinNotImplementedError(msg)
+        msg = self.msg(
+            "input_request",
+            content={"prompt": prompt, "password": password},
+        )
+        msg["channel"] = "stdin"  # pyright: ignore[reportGeneralTypeIssues]
+        return self._send_to_frontend(msg, requires_reply=True)
+
+    async def start(self, sender: Callable[[str, bool], None | str]):
         """Start the kernel.
 
         This method is designed to be called by the webworker with pyodide.

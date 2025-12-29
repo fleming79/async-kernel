@@ -170,7 +170,7 @@ class ZMQ_Interface(InterfaceBase):
                 self._start_hb_iopub_shell_control_threads(start)
                 with self._bind_socket(SocketID.stdin):
                     assert len(self.sockets) == len(SocketID)
-                    self.write_connection_file()
+                    self._write_connection_file()
                     restore_io = self._patch_io()
                     with contextlib.suppress(ValueError):
                         sig = signal.signal(signal.SIGINT, self._signal_handler)
@@ -245,8 +245,7 @@ class ZMQ_Interface(InterfaceBase):
             socket.close(linger=50)
             self.sockets.pop(socket_id)
 
-    @override
-    def write_connection_file(
+    def _write_connection_file(
         self,
     ) -> None:
         """Write connection info to JSON dict in kernel.connection_file."""

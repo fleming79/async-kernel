@@ -116,10 +116,6 @@ class InterfaceBase(HasTraits, anyio.AsyncContextManagerMixin):
 
         return restore
 
-    def write_connection_file(self) -> None:
-        """Write connection info to JSON dict in kernel.connection_file."""
-        raise NotImplementedError
-
     def input_request(self, prompt: str, *, password=False) -> Any:
         raise NotImplementedError
 
