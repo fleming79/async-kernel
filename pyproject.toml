@@ -37,11 +37,13 @@ dependencies = [
     "anyio>=4.12",
     "typing_extensions>=4.14",
     "aiologic>=0.16.0",
-    "orjson>=3.11.5",
+    "orjson>=3.10.16",
     "comm>=0.2",
     "ipython>=9.0",
     "traitlets>=5.14",
     "matplotlib-inline>0.1",
+    "wrapt>=2.0.1",
+    "jupyter-core>=5.9.1",
     # These aren't required on pyodide. async_kernel.Kernel needs zmq sockets & threading.
     # Pyodide provides its own async kernel.
     "pyzmq>=27.0; sys_platform != 'emscripten'",

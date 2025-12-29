@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 import atexit
-import builtins
 import contextlib
 import errno
-import getpass
 import os
 import pathlib
 import signal
 import sys
 import threading
 import time
-from collections.abc import Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self
@@ -34,11 +31,10 @@ from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.interface.interface import InterfaceBase
-from async_kernel.iostream import OutStream
-from async_kernel.typing import Content, Job, Message, MsgType, NoValue, SocketID
+from async_kernel.typing import Content, Job, Message, MsgHeader, MsgType, NoValue, SocketID
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Generator
+    from collections.abc import AsyncGenerator, Generator
     from types import FrameType
 
 __all__ = ["ZMQ_Interface"]
@@ -249,32 +245,6 @@ class ZMQ_Interface(InterfaceBase):
             socket.close(linger=50)
             self.sockets.pop(socket_id)
 
-    def _patch_io(self) -> Callable[[], None]:
-        original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
-
-        def restore():
-            sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = original_io
-
-        builtins.input = self.raw_input
-        getpass.getpass = self.getpass
-        for name in ["stdout", "stderr"]:
-
-            def flusher(string: str, name=name):
-                "Publish stdio or stderr when flush is called"
-                self.iopub_send(
-                    msg_or_type="stream",
-                    content={"name": name, "text": string},
-                    ident=f"stream.{name}".encode(),
-                )
-                if not self.kernel.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
-                    echo.write(string)
-                    echo.flush()
-
-            wrapper = OutStream(flusher=flusher)
-            setattr(sys, name, wrapper)
-
-        return restore
-
     @override
     def write_connection_file(
         self,
@@ -334,9 +304,10 @@ class ZMQ_Interface(InterfaceBase):
     def iopub_send(
         self,
         msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
+        *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        parent: dict[str, Any] | MsgHeader | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
         buffers: list[bytes] | None = None,
     ) -> None:
@@ -395,15 +366,8 @@ class ZMQ_Interface(InterfaceBase):
             while True:
                 try:
                     ident, msg = session.recv(socket, mode=zmq.BLOCKY, copy=False)
-                    try:
-                        subshell_id = msg["content"]["subshell_id"]  # pyright: ignore[reportOptionalSubscript]
-                    except KeyError:
-                        try:
-                            subshell_id = msg["header"]["subshell_id"]  # pyright: ignore[reportOptionalSubscript]
-                        except KeyError:
-                            subshell_id = None
                     job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(subshell_id, socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
+                    message_handler(socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:
@@ -471,9 +435,10 @@ class ZMQ_Interface(InterfaceBase):
     def msg(
         self,
         msg_type: str,
+        *,
         content: dict | None = None,
         parent: Message | dict[str, Any] | None = None,
-        header: dict[str, Any] | None = None,
+        header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Message[dict[str, Any]]:
-        return self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportReturnType, reportArgumentType]
+        return self.session.msg(msg_type=msg_type, content=content, parent=parent, header=header, metadata=metadata)  # pyright: ignore[reportReturnType, reportArgumentType]

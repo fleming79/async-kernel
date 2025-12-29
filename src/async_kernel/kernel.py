@@ -212,11 +212,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @traitlets.default("interface")
     def default_interface(self):
-        if importlib.util.find_spec("zmq"):
-            from async_kernel.interface._zmq_interface import ZMQ_Interface  # noqa: PLC0415
+        if sys.platform == "emscripten":
+            from async_kernel.interface._pyodide_interface import PyodideInterface  # noqa: PLC0415
 
-            return ZMQ_Interface()
-        raise NotImplementedError
+            return PyodideInterface()
+
+        from async_kernel.interface._zmq_interface import ZMQ_Interface  # noqa: PLC0415
+
+        return ZMQ_Interface()
 
     @traitlets.default("connection_file")
     def _default_connection_file(self) -> Path:
@@ -385,8 +388,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         try:
             async with self.interface:
                 self.callers.update(self.interface.callers)
-                if self.print_kernel_messages:
-                    print(f"Kernel started: {self!r}")
                 with anyio.CancelScope() as scope:
                     self._stop = lambda: self.caller.call_direct(scope.cancel, "Stopping kernel")
                     sys.excepthook = self.excepthook
@@ -396,6 +397,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     try:
                         self.comm_manager.kernel = self
                         self.event_started.set()
+                        self.log.info("Kernel started: %s", self)
                         yield self
                     except BaseException:
                         if not scope.cancel_called:
@@ -411,13 +413,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             AsyncInteractiveShell.clear_instance()
             with anyio.CancelScope(shield=True):
                 await anyio.sleep(0.1)
-            if self.print_kernel_messages:
-                print(f"Kernel stopped: {self!r}")
+            self.log.info("Kernel stopped: %s", self)
             gc.collect()
 
     def iopub_send(
         self,
         msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
+        *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
         parent: Message[dict[str, Any]] | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
@@ -425,7 +427,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         buffers: list[bytes] | None = None,
     ) -> None:
         """Send a message on the iopub socket."""
-        self.interface.iopub_send(msg_or_type, content, metadata, parent, ident, buffers)
+        self.interface.iopub_send(
+            msg_or_type,
+            content=content,
+            metadata=metadata,
+            parent=parent,
+            ident=ident,
+            buffers=buffers,
+        )
 
     def topic(self, topic) -> bytes:
         """prefixed topic for IOPub messages."""
@@ -433,7 +442,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     def msg_handler(
         self,
-        subshell_id: str | None,
         socket_id: Literal[SocketID.shell, SocketID.control],
         msg_type: MsgType,
         job: Job,
@@ -442,6 +450,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     ):
         """Schedule a message to be executed."""
         # Note: There are never any active pending trackers in this context.
+        try:
+            subshell_id = job["msg"]["content"]["subshell_id"]
+        except KeyError:
+            try:
+                subshell_id = job["msg"]["header"]["subshell_id"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            except KeyError:
+                subshell_id = None
         handler = cache_wrap_handler(subshell_id, send_reply, self.run_handler, self.get_handler(msg_type))
         run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
         match run_mode:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import sys
 from typing import TYPE_CHECKING, Self
 
 import comm
@@ -110,12 +111,13 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
         comm.create_comm = Comm
         comm.get_comm_manager = get_comm_manager
 
-        # Monkey patch ipykernel in case other libraries use its comm module directly. Eg: pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
-        with contextlib.suppress(ImportError):
-            ipykernel_comm = import_module("ipykernel.comm")
+        if sys.platform != "emscripten":
+            # Monkey patch ipykernel in case other libraries use its comm module directly. Eg: pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
+            with contextlib.suppress(ImportError):
+                ipykernel_comm = import_module("ipykernel.comm")
 
-            for k, v in {"Comm": Comm, "CommManager": CommManager}.items():
-                setattr(ipykernel_comm, k, v)
+                for k, v in {"Comm": Comm, "CommManager": CommManager}.items():
+                    setattr(ipykernel_comm, k, v)
 
 
 def get_comm_manager():

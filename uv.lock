@@ -117,11 +117,13 @@ dependencies = [
     { name = "comm" },
     { name = "ipython" },
     { name = "jupyter-client", marker = "sys_platform != 'emscripten'" },
+    { name = "jupyter-core" },
     { name = "matplotlib-inline" },
     { name = "orjson" },
     { name = "pyzmq", marker = "sys_platform != 'emscripten'" },
     { name = "traitlets" },
     { name = "typing-extensions" },
+    { name = "wrapt" },
 ]
 
 [package.dev-dependencies]
@@ -175,11 +177,13 @@ requires-dist = [
     { name = "comm", specifier = ">=0.2" },
     { name = "ipython", specifier = ">=9.0" },
     { name = "jupyter-client", marker = "sys_platform != 'emscripten'", specifier = ">=8.6" },
+    { name = "jupyter-core", specifier = ">=5.9.1" },
     { name = "matplotlib-inline", specifier = ">0.1" },
-    { name = "orjson", specifier = ">=3.11.5" },
+    { name = "orjson", specifier = ">=3.10.16" },
     { name = "pyzmq", marker = "sys_platform != 'emscripten'", specifier = ">=27.0" },
     { name = "traitlets", specifier = ">=5.14" },
     { name = "typing-extensions", specifier = ">=4.14" },
+    { name = "wrapt", specifier = ">=2.0.1" },
 ]
 
 [package.metadata.requires-dev]

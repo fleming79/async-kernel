@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec,
 from typing_extensions import Sentinel, override
 
 if TYPE_CHECKING:
+    import datetime
     import logging
 
     import zmq
@@ -291,11 +292,13 @@ class MsgHeader(TypedDict):
     ""
     username: str
     ""
-    date: str
+    date: str | datetime.datetime
     ""
-    msg_type: MsgType
+    msg_type: MsgType | str
     ""
     version: str
+    ""
+    subshell_id: NotRequired[str | None]
     ""
 
 
@@ -305,10 +308,10 @@ class Message(TypedDict, Generic[T]):
     header: MsgHeader
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)"
 
-    parent_header: MsgHeader
+    parent_header: MsgHeader | None
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"
 
-    metadata: dict[str, Any]
+    metadata: dict[str, Any] | None
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"
 
     content: T | Content

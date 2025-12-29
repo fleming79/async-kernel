@@ -120,7 +120,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
         """
         content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
         msg_type = "update_display_data" if update else "display_data"
-        msg = utils.get_kernel().interface.msg(msg_type, content, parent=utils.get_parent())
+        msg = utils.get_kernel().interface.msg(msg_type, content=content, parent=utils.get_parent())
         for hook in self._hooks:
             try:
                 msg = hook(msg)

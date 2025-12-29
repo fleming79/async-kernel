@@ -89,18 +89,18 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
         SubshellPendingManager._contextvar.reset(token)  # pyright: ignore[reportPrivateUsage]
 
 
-def get_metadata(job: Job | None = None, /) -> dict[str, Any]:
+def get_metadata(job: Job | None = None, /) -> dict[str, Any] | None:
     "Gets the metadata for the current context."
     try:
         return (job or _job_var.get())["msg"]["metadata"]
     except Exception:
-        return {}
+        return None
 
 
 def get_tags(job: Job | None = None, /) -> list[str]:
     "Gets the tags for the current context."
     try:
-        return get_metadata(job)["tags"]
+        return get_metadata(job)["tags"]  # pyright: ignore[reportOptionalSubscript]
     except Exception:
         return []
 
