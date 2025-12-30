@@ -44,8 +44,6 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
             raise
         else:
             h = msg_or_header
-    if not isinstance(h, dict):
-        h = dict(h)
     return h
 
 
@@ -163,8 +161,8 @@ class InterfaceBase(HasTraits, anyio.AsyncContextManagerMixin):
                 username="",
                 version=async_kernel.kernel_protocol_version,
             )
-        return Message(  # pyright: ignore[reportCallIssue]
-            header=header,
+        return Message(
+            header=header,  # pyright: ignore[reportArgumentType]
             parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
             content={} if content is None else content,
             metadata=metadata,

@@ -213,9 +213,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     @traitlets.default("interface")
     def default_interface(self):
         if sys.platform == "emscripten":
-            from async_kernel.interface._pyodide_interface import PyodideInterface  # noqa: PLC0415
+            from async_kernel.interface._callable_interface import CallableInterface  # noqa: PLC0415
 
-            return PyodideInterface()
+            return CallableInterface()
 
         from async_kernel.interface._zmq_interface import ZMQ_Interface  # noqa: PLC0415
 
