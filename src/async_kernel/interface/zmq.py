@@ -3,6 +3,7 @@ from __future__ import annotations
 import atexit
 import contextlib
 import errno
+import importlib.util
 import os
 import pathlib
 import signal
@@ -13,15 +14,16 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self
 
+import anyio
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import enable_signal_safety
+from aiologic.lowlevel import current_async_library, enable_signal_safety
 from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Unicode
+from traitlets import CaselessStrEnum, Dict, Unicode
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -30,14 +32,14 @@ from async_kernel import utils
 from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
-from async_kernel.interface.interface import InterfaceBase
-from async_kernel.typing import Content, Job, Message, MsgHeader, MsgType, NoValue, SocketID
+from async_kernel.interface.base import Interface
+from async_kernel.typing import Backend, Content, Job, Message, MsgHeader, MsgType, NoValue, SocketID
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
     from types import FrameType
 
-__all__ = ["ZMQ_Interface"]
+__all__ = ["ZMQKernelInterface"]
 
 
 def bind_socket(
@@ -96,7 +98,7 @@ def bind_socket(
     raise RuntimeError(msg)
 
 
-class ZMQ_Interface(InterfaceBase):
+class ZMQKernelInterface(Interface):
     "An interface for the kernel that uses zmq sockets."
 
     _zmq_context = Fixed(zmq.Context)
@@ -117,6 +119,44 @@ class ZMQ_Interface(InterfaceBase):
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
     )
     "Transport for sockets."
+
+    anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
+    "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
+
+    wait_exit = Fixed(Event)
+
+    @traitlets.default("anyio_backend_options")
+    def _default_anyio_backend_options(self):
+        use_uv = importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")
+        return {Backend.asyncio: {"use_uvloop": True} if use_uv else {}, Backend.trio: None}
+
+    def start(self):  # pyright: ignore[reportImplicitOverride]
+        """
+        Start the kernel (blocking).
+
+        Args:
+            wait_exit: The kernel will stop when the awaitable is complete.
+
+        Warning:
+            Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
+
+            - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
+            - Some libraries may assume the call is occurring in the 'MainThread'.
+            - If there is an asyncio or trio event loop already running in the 'MainThread. Simply use `async with kernel` instead.
+        """
+        if getattr(self, "_started", False):
+            raise RuntimeError
+        self._started = True
+
+        async def _run() -> None:
+            async with self.kernel:
+                await self.wait_exit
+
+        if not self.trait_has_value("anyio_backend") and "trio" in self.kernel.kernel_name.lower():
+            self.anyio_backend = Backend.trio
+        backend: Backend = self.anyio_backend
+        backend_options = self.anyio_backend_options.get(backend)
+        anyio.run(_run, backend=backend, backend_options=backend_options)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -165,6 +205,7 @@ class ZMQ_Interface(InterfaceBase):
         self.callers[SocketID.shell] = caller
         self.callers[SocketID.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
         start = Event()
+        self.anyio_backend = Backend(current_async_library())
         try:
             async with caller:
                 self._start_hb_iopub_shell_control_threads(start)

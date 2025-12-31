@@ -17,21 +17,22 @@ RESOURCES = Path(__file__).parent.joinpath("resources")
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from async_kernel.kernel import Kernel
+    from async_kernel.interface.base import Interface
 
-    KernelFactoryType = Callable[[dict[str, Any]], Kernel]
+    InterfaceFactoryType = Callable[[None | dict[str, Any]], Interface]
 
-__all__ = ["get_kernel_dir", "make_argv", "write_kernel_spec"]
+__all__ = ["get_kernel_dir", "import_interface_factory", "make_argv", "write_kernel_spec"]
 
 
 CUSTOM_KERNEL_MARKER = "↤"
+DEFAULT_FACTORY = "async_kernel.interface.zmq.ZMQKernelInterface"
 
 
 def make_argv(
     *,
     connection_file: str = "{connection_file}",
     kernel_name: str = "async",
-    kernel_factory: str | KernelFactoryType = "async_kernel.kernel.Kernel",
+    interface_factory: str | InterfaceFactoryType = DEFAULT_FACTORY,
     fullpath: bool = True,
     **kwargs: dict[str, Any],
 ) -> list[str]:
@@ -42,17 +43,17 @@ def make_argv(
 
     Args:
         connection_file: The path to the connection file.
-        kernel_factory: Either the kernel factory object itself, or the string import path to a
+        interface_factory: Either the kernel factory object itself, or the string import path to a
             callable that returns a non-started kernel.
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
-        **kwargs: Additional settings to pass when creating the kernel passed to `kernel_factory`.
+        **kwargs: Additional settings to pass when creating the kernel passed to `interface_factory`.
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
     argv = [(sys.executable if fullpath else "python"), "-m", "async_kernel", "-f", connection_file]
-    for k, v in ({"kernel_factory": kernel_factory, "kernel_name": kernel_name} | kwargs).items():
+    for k, v in ({"interface_factory": interface_factory, "kernel_name": kernel_name} | kwargs).items():
         argv.append(f"--{k}={v}")
     return argv
 
@@ -64,7 +65,7 @@ def write_kernel_spec(
     display_name: str = "",
     fullpath: bool = False,
     prefix: str = "",
-    kernel_factory: str | KernelFactoryType = "async_kernel.kernel.Kernel",
+    interface_factory: str | InterfaceFactoryType = "async_kernel.interface.zmq.ZMQKernelInterface",
     connection_file: str = "{connection_file}",
     **kwargs: dict[str, Any],
 ) -> Path:
@@ -76,7 +77,7 @@ def write_kernel_spec(
         kernel_name: The name of the kernel to use.
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
         display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
-        kernel_factory: The string import path to a callable that creates the Kernel or,
+        interface_factory: The string import path to a callable that creates the Kernel or,
             a *self-contained* function that returns an instance of a `Kernel`.
         connection_file: The path to the connection file.
         prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
@@ -85,16 +86,16 @@ def write_kernel_spec(
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
             For example `..., **{'shell.timeout'=0.1})`.
 
-    Example passing a callable kernel_factory:
+    Example passing a callable interface_factory:
 
-        When `kernel_factory` is passed as a callable, the callable is stored in the file
+        When `interface_factory` is passed as a callable, the callable is stored in the file
         'kernel_spec.py' inside the kernelspec folder.
 
         ```python
         import async_kernel.kernelspec
 
 
-        def kernel_factory(settings):
+        def interface_factory(settings):
             from async_kernel import Kernel
 
             class MyKernel(Kernel):
@@ -106,7 +107,7 @@ def write_kernel_spec(
 
 
         async_kernel.kernelspec.write_kernel_spec(
-            kernel_name="async-print-job", kernel_factory=kernel_factory
+            kernel_name="async-print-job", interface_factory=interface_factory
         )
         ```
 
@@ -120,17 +121,17 @@ def write_kernel_spec(
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
-        if callable(kernel_factory):
-            with path.joinpath("kernel_factory.py").open("w") as f:
-                f.write(textwrap.dedent(inspect.getsource(kernel_factory)))
-            kernel_factory = f"{path}{CUSTOM_KERNEL_MARKER}{kernel_factory.__name__}"
+        if callable(interface_factory):
+            with path.joinpath("interface_factory.py").open("w") as f:
+                f.write(textwrap.dedent(inspect.getsource(interface_factory)))
+            interface_factory = f"{path}{CUSTOM_KERNEL_MARKER}{interface_factory.__name__}"
         # validate
-        if kernel_factory != "async_kernel.kernel.Kernel":
-            import_kernel_factory(kernel_factory)
+        if interface_factory != DEFAULT_FACTORY:
+            import_interface_factory(interface_factory)
         shutil.copytree(src=RESOURCES, dst=path, dirs_exist_ok=True)
         spec = KernelSpec()
         spec.argv = make_argv(
-            kernel_factory=kernel_factory,
+            interface_factory=interface_factory,
             connection_file=connection_file,
             kernel_name=kernel_name,
             fullpath=fullpath,
@@ -169,22 +170,22 @@ def get_kernel_dir(prefix: str = "") -> Path:
     return Path(prefix or sys.prefix) / "share/jupyter/kernels"
 
 
-def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
+def import_interface_factory(interface_factory: str = "") -> InterfaceFactoryType:
     """
     Import the kernel factory as defined in a kernel spec.
 
     Args:
-        kernel_factory: The name of the kernel factory.
+        interface_factory: The name of the interface factory.
 
     Returns:
         The kernel factory.
     """
 
-    if CUSTOM_KERNEL_MARKER in kernel_factory:
-        path, factory_name = kernel_factory.split(CUSTOM_KERNEL_MARKER)
+    if CUSTOM_KERNEL_MARKER in interface_factory:
+        path, factory_name = interface_factory.split(CUSTOM_KERNEL_MARKER)
         try:
             sys.path.insert(0, path)
-            import kernel_factory as kf  # noqa: PLC0415
+            import interface_factory as kf  # noqa: PLC0415
 
             factory = getattr(kf, factory_name)
             assert len(inspect.signature(factory).parameters) == 1
@@ -193,4 +194,4 @@ def import_kernel_factory(kernel_factory: str = "") -> KernelFactoryType:
             sys.path.remove(path)
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    return import_item(kernel_factory or "async_kernel.kernel.Kernel")
+    return import_item(interface_factory or DEFAULT_FACTORY)

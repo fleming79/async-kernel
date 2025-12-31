@@ -12,13 +12,14 @@ from uuid import uuid4
 
 import anyio
 import traitlets
-from traitlets import HasTraits, Instance
+from aiologic.lowlevel import current_async_library
+from traitlets import HasTraits, Instance, UseEnum
 
 import async_kernel
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.iostream import OutStream
-from async_kernel.typing import Content, Message, MsgHeader, NoValue, SocketID
+from async_kernel.typing import Backend, Content, Message, MsgHeader, NoValue, SocketID
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
 
 
-__all__ = ["InterfaceBase"]
+__all__ = ["Interface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -47,7 +48,7 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
     return h
 
 
-class InterfaceBase(HasTraits, anyio.AsyncContextManagerMixin):
+class Interface(HasTraits, anyio.AsyncContextManagerMixin):
     "A base class to interface with the kernel. Must be overloaded to be useful."
 
     log = Instance(logging.LoggerAdapter)
@@ -66,6 +67,9 @@ class InterfaceBase(HasTraits, anyio.AsyncContextManagerMixin):
 
     message_cnt = traitlets.Int(0)
 
+    anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
+    "The anyio configured backend used to run the event loops."
+
     def load_connection_info(self, info: dict[str, Any]) -> None:
         raise NotImplementedError
 
@@ -73,9 +77,29 @@ class InterfaceBase(HasTraits, anyio.AsyncContextManagerMixin):
     def _default_log(self) -> LoggerAdapter[Logger]:
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 
+    def __init__(self, kernel_settings: dict[str, Any] | None = None, /) -> None:
+        if self.kernel.trait_has_value("interface"):
+            msg = "The kernel already has an interface!"
+            raise RuntimeError(msg)
+        super().__init__()
+        self.kernel.interface = self
+        if kernel_settings:
+            self.kernel.load_settings(kernel_settings)
+
+    def start(self, *args: Any, **kwargs) -> Any:
+        """
+        Start the kernel.
+
+        Arguments are implementation specific.
+
+        The kernel should be stopped by calling the kernel method directly.
+        """
+        raise NotImplementedError
+
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """Create caller, and open socketes."""
+        self.anyio_backend = Backend(current_async_library())
         restore_io = None
         caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log)
         self.callers[SocketID.shell] = caller

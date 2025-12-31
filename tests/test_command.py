@@ -12,7 +12,7 @@ import pytest
 import async_kernel
 from async_kernel import kernel as kernel_module
 from async_kernel.command import command_line
-from async_kernel.kernel import Kernel
+from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend
 from tests import utils
@@ -55,7 +55,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--kernel_factory=async_kernel.kernel.Kernel"],
+        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--interface_factory=async_kernel.kernel.Kernel"],
     )
     command_line()
     out = capsys.readouterr().out
@@ -71,7 +71,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "async_kernel",
             "-f",
             "{connection_file}",
-            "--kernel_factory=async_kernel.kernel.Kernel",
+            "--interface_factory=async_kernel.kernel.Kernel",
             "--kernel_name=async-trio",
         ],
         "env": {},
@@ -109,11 +109,10 @@ def test_start_kernel_success(monkeypatch):
     async def wait_exit():
         nonlocal started
         started = True
-        with pytest.raises(RuntimeError):
-            Kernel().run()
 
+    monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
     with pytest.raises(SystemExit) as e:
-        command_line(wait_exit)
+        command_line()
     assert e.value.code == 0
     assert started
 
@@ -126,7 +125,7 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
         "kernel = get_ipython().kernel",
         user_expressions={
             "kernel_name": "kernel.kernel_name",
-            "backend": "kernel.anyio_backend",
+            "backend": "kernel.interface.anyio_backend",
             "transport": "kernel.transport",
         },
     )

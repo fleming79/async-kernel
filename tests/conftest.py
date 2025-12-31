@@ -10,6 +10,7 @@ from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel.utils
 from async_kernel import Caller
+from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, ExecuteContent, Job, KernelName, Message, MsgHeader, MsgType, SocketID
@@ -50,7 +51,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
         async with kernel:
             yield kernel
     else:
-        thread = threading.Thread(target=kernel.run, name="ShellThread")
+        thread = threading.Thread(target=kernel.interface.start, name="ShellThread")
         thread.start()
         kernel.event_started.wait()
         try:
@@ -62,7 +63,8 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
 
 @pytest.fixture(scope="module")
 async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
-    if kernel.anyio_backend is Backend.trio:
+    assert isinstance(kernel.interface, ZMQKernelInterface)
+    if kernel.interface.anyio_backend is Backend.trio:
         pytest.skip("AsyncKernelClient needs asyncio")
     client = AsyncKernelClient()
     client.load_connection_info(kernel.get_connection_info())

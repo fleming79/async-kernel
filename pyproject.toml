@@ -44,7 +44,7 @@ dependencies = [
     "matplotlib-inline>0.1",
     "wrapt>=2.0.1",
     "jupyter-core>=5.9.1",
-    "pyzmq>=27.0; sys_platform != 'emscripten'", # pyzmq sockets (and threading) are not supported on pyodide (emscripten), `CallableInterface` is used for kernel messaging.  
+    "pyzmq>=27.0; sys_platform != 'emscripten'", # pyzmq sockets (and threading) are not supported on pyodide (emscripten), `CallableKernelInterface` is used for kernel messaging.  
     "jupyter_client>=8.6; sys_platform != 'emscripten'",
 ]
 

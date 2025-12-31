@@ -4,25 +4,21 @@ import argparse
 import gc
 import sys
 import traceback
-from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-import anyio
-
 import async_kernel
-from async_kernel.kernelspec import get_kernel_dir, import_kernel_factory, remove_kernel_spec, write_kernel_spec
+from async_kernel.kernelspec import get_kernel_dir, import_interface_factory, remove_kernel_spec, write_kernel_spec
 from async_kernel.typing import KernelName
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from async_kernel.kernelspec import KernelFactoryType
+    from async_kernel.kernelspec import InterfaceFactoryType
 
     __all__ = ["command_line"]
 
 
-def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_forever) -> None:
+def command_line() -> None:
     """
     Parses command-line arguments to manage kernel specs and start kernels.
 
@@ -133,9 +129,9 @@ def command_line(wait_exit_context: Callable[[], Awaitable] = anyio.sleep_foreve
             settings.pop(k, None)
         if settings.get("connection_file") in {None, "", "."}:
             settings.pop("connection_file", None)
-        factory: KernelFactoryType = import_kernel_factory(getattr(args, "kernel_factory", ""))
+        factory: InterfaceFactoryType = import_interface_factory(getattr(args, "interface_factory", ""))
         try:
-            factory(settings).run(wait_exit_context)
+            factory(settings).start()
             gc.collect()
         except KeyboardInterrupt:
             pass
