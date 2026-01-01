@@ -55,7 +55,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--interface_factory=async_kernel.kernel.Kernel"],
+        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--start_interface=async_kernel.kernel.Kernel"],
     )
     command_line()
     out = capsys.readouterr().out
@@ -71,7 +71,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "async_kernel",
             "-f",
             "{connection_file}",
-            "--interface_factory=async_kernel.kernel.Kernel",
+            "--start_interface=async_kernel.kernel.Kernel",
             "--kernel_name=async-trio",
         ],
         "env": {},

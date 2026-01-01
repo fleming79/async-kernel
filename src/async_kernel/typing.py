@@ -329,10 +329,13 @@ class Job(TypedDict, Generic[T]):
 
     msg: Message[T]
     "The message received over the socket."
+
     socket_id: Literal[SocketID.control, SocketID.shell]
     "The channel over which the socket was received."
+
     ident: bytes | list[bytes]
     "The ident associated with the message and its origin."
+
     received_time: float
     "The time the message was received."
 
@@ -358,15 +361,20 @@ class FixedCreate(TypedDict, Generic[S]):
     "A TypedDict relevant to Fixed."
 
     name: str
+    ""
     owner: S
+    ""
 
 
 class FixedCreated(TypedDict, Generic[S, T]):
     "A TypedDict relevant to Fixed."
 
     name: str
+    ""
     owner: S
+    ""
     obj: T
+    ""
 
 
 class PendingCreateOptions(TypedDict):
@@ -381,14 +389,19 @@ class CallerCreateOptions(TypedDict):
 
     name: NotRequired[str]
     "The name for the new caller instance."
+
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use for the caller."
+
     backend: NotRequired[Backend | Literal["trio", "asyncio"]]
+
     "The backend to specify when calling [anyio.run][]."
     backend_options: NotRequired[dict | None]
+
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (default=`False`)."
+
     zmq_context: NotRequired[zmq.Context[Any]]
     "A zmq Context to use."
 

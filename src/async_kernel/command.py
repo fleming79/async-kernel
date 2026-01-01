@@ -7,13 +7,13 @@ import traceback
 from typing import TYPE_CHECKING
 
 import async_kernel
-from async_kernel.kernelspec import get_kernel_dir, import_interface_factory, remove_kernel_spec, write_kernel_spec
+from async_kernel.kernelspec import get_kernel_dir, import_start_interface, remove_kernel_spec, write_kernel_spec
 from async_kernel.typing import KernelName
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from async_kernel.kernelspec import InterfaceFactoryType
+    from async_kernel.kernelspec import InterfaceStartType
 
     __all__ = ["command_line"]
 
@@ -39,12 +39,6 @@ def command_line() -> None:
     the default `Kernel` class) and configures the kernel instance with
     the provided arguments. It then starts the kernel within an `anyio`
     context, handling keyboard interrupts and other exceptions.
-
-    Args:
-        wait_exit_context: An optional asynchronous function or context manager
-            that determines how long the kernel should run. Defaults to
-            `anyio.sleep_forever`, which keeps the kernel running indefinitely
-            until an external signal is received.
 
     Raises:
         SystemExit: If an error occurs during kernel execution or if the
@@ -129,9 +123,9 @@ def command_line() -> None:
             settings.pop(k, None)
         if settings.get("connection_file") in {None, "", "."}:
             settings.pop("connection_file", None)
-        factory: InterfaceFactoryType = import_interface_factory(getattr(args, "interface_factory", ""))
+        factory: InterfaceStartType = import_start_interface(getattr(args, "start_interface", ""))
         try:
-            factory(settings).start()
+            factory(settings)
             gc.collect()
         except KeyboardInterrupt:
             pass

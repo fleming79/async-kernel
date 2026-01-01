@@ -32,7 +32,7 @@ from async_kernel import utils
 from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
-from async_kernel.interface.base import Interface
+from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Backend, Content, Job, Message, MsgHeader, MsgType, NoValue, SocketID
 
 if TYPE_CHECKING:
@@ -98,13 +98,16 @@ def bind_socket(
     raise RuntimeError(msg)
 
 
-class ZMQKernelInterface(Interface):
+class ZMQKernelInterface(BaseKernelInterface):
     "An interface for the kernel that uses zmq sockets."
 
     _zmq_context = Fixed(zmq.Context)
-    sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
-    ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
+    _interrupt_requested: bool | Literal["FORCE"] = False
 
+    sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
+    ""
+    ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
+    ""
     ip = Unicode()
     """
     The kernel's IP address [default localhost].
@@ -123,32 +126,23 @@ class ZMQKernelInterface(Interface):
     anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
 
-    wait_exit = Fixed(Event)
-
     @traitlets.default("anyio_backend_options")
     def _default_anyio_backend_options(self):
         use_uv = importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")
         return {Backend.asyncio: {"use_uvloop": True} if use_uv else {}, Backend.trio: None}
 
-    def start(self):  # pyright: ignore[reportImplicitOverride]
+    def start(self):
         """
         Start the kernel (blocking).
 
-        Args:
-            wait_exit: The kernel will stop when the awaitable is complete.
-
         Warning:
-            Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
-
+            - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
             - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
             - Some libraries may assume the call is occurring in the 'MainThread'.
             - If there is an asyncio or trio event loop already running in the 'MainThread. Simply use `async with kernel` instead.
         """
-        if getattr(self, "_started", False):
-            raise RuntimeError
-        self._started = True
 
-        async def _run() -> None:
+        async def run_kernel() -> None:
             async with self.kernel:
                 await self.wait_exit
 
@@ -156,7 +150,7 @@ class ZMQKernelInterface(Interface):
             self.anyio_backend = Backend.trio
         backend: Backend = self.anyio_backend
         backend_options = self.anyio_backend_options.get(backend)
-        anyio.run(_run, backend=backend, backend_options=backend_options)
+        anyio.run(run_kernel, backend=backend, backend_options=backend_options)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -465,11 +459,7 @@ class ZMQKernelInterface(Interface):
     @override
     def interrupt(self):
         self._interrupt_now()
-        while self.interrupts:
-            try:
-                self.interrupts.pop()()
-            except Exception:
-                pass
+        super().interrupt()
 
     @override
     def msg(

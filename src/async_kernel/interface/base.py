@@ -12,6 +12,7 @@ from uuid import uuid4
 
 import anyio
 import traitlets
+from aiologic import Event
 from aiologic.lowlevel import current_async_library
 from traitlets import HasTraits, Instance, UseEnum
 
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
 
 
-__all__ = ["Interface"]
+__all__ = ["BaseKernelInterface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -48,7 +49,7 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
     return h
 
 
-class Interface(HasTraits, anyio.AsyncContextManagerMixin):
+class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     "A base class to interface with the kernel. Must be overloaded to be useful."
 
     log = Instance(logging.LoggerAdapter)
@@ -62,10 +63,11 @@ class Interface(HasTraits, anyio.AsyncContextManagerMixin):
     interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     "A set for callables can be added to run code when a kernel interrupt is initiated (control thread)."
 
-    _interrupt_requested: bool | Literal["FORCE"] = False
     last_interrupt_frame = None
+    "This frame is set when an interrupt is intercepted and cleared once the interrupt has been handled."
 
-    message_cnt = traitlets.Int(0)
+    wait_exit = Fixed(Event)
+    "An event that when set will leave the kernel context if the kernel was started by this interface."
 
     anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
     "The anyio configured backend used to run the event loops."
@@ -85,16 +87,6 @@ class Interface(HasTraits, anyio.AsyncContextManagerMixin):
         self.kernel.interface = self
         if kernel_settings:
             self.kernel.load_settings(kernel_settings)
-
-    def start(self, *args: Any, **kwargs) -> Any:
-        """
-        Start the kernel.
-
-        Arguments are implementation specific.
-
-        The kernel should be stopped by calling the kernel method directly.
-        """
-        raise NotImplementedError
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -155,7 +147,11 @@ class Interface(HasTraits, anyio.AsyncContextManagerMixin):
         return self.input_request(prompt, password=True)
 
     def interrupt(self):
-        raise NotImplementedError
+        while self.interrupts:
+            try:
+                self.interrupts.pop()()
+            except Exception:
+                pass
 
     def msg(
         self,

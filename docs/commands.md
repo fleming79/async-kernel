@@ -28,7 +28,7 @@ async-kernel -a async-trio
 Additional arguments can be included when defining the kernel spec, these include:
 
 - Arguments for [async_kernel.kernelspec.write_kernel_spec][]
-    - `--interface_factory`
+    - `--start_interface`
     - `--fullpath=False`
     - `--display_name`
     - `--prefix`
@@ -56,12 +56,12 @@ or, with compact notation to set a Boolean value as a Boolean flag.
 
 === "write_kernel_spec argument"
 
-    **interface_factory**
+    **start_interface**
 
     To specify an alternate kernel factory.
 
     ```console
-    --interface_factory=my_module.my_interface_factory
+    --start_interface=my_module.my_interface_factory
     ```
 
     **fullpath (True)**

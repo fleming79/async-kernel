@@ -177,6 +177,7 @@ nav:
       - "command": reference/command.md
       - "common": reference/common.md
       - "debugger": reference/debugger.md
+      - "interface": reference/interface.md
       - "kernel": reference/kernel.md
       - "kernelspec": reference/kernelspec.md
       - "asyncshell": reference/asyncshell.md

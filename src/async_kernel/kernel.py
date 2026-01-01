@@ -35,7 +35,7 @@ from async_kernel.asyncshell import (
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
-from async_kernel.interface.base import Interface
+from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import (
     Content,
     ExecuteContent,
@@ -73,7 +73,8 @@ def cache_wrap_handler(
 
 class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     """
-    A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
+    A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell]
+    with support for kernel subshells.
 
     Info:
         Only one instance of a kernel is created at a time per subprocess. The instance can be obtained
@@ -92,7 +93,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         === "Blocking"
 
             ```python
-            Kernel().interface.start()
+            import async_kernel.interface
+
+            async_kernel.interface.start_kernel_zmq_interface()
             ```
 
         === "Inside a coroutine"
@@ -118,7 +121,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     _settings = Fixed(dict)
 
-    interface = traitlets.Instance(Interface)
+    interface = traitlets.Instance(BaseKernelInterface)
     "The abstraction to communicate with the kernel."
 
     callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)

@@ -51,6 +51,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
         async with kernel:
             yield kernel
     else:
+        assert isinstance(kernel.interface, ZMQKernelInterface)
         thread = threading.Thread(target=kernel.interface.start, name="ShellThread")
         thread.start()
         kernel.event_started.wait()
