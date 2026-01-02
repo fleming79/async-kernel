@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.3] - 2026-01-02
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Always set buffers in incoming messages in the callable interface. [#279](https://github.com/fleming79/async-kernel/pull/279)
+
 ## [0.10.2] - 2026-01-02
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -16,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an interface abstraction to the kernel with view to enable usage in pyodide. [#275](https://github.com/fleming79/async-kernel/pull/275)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.10.2 [#278](https://github.com/fleming79/async-kernel/pull/278)
 
 - Bump the actions group with 2 updates [#274](https://github.com/fleming79/async-kernel/pull/274)
 
@@ -733,6 +741,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.10.3]: https://github.com/fleming79/async-kernel/compare/v0.10.2..v0.10.3
 [0.10.2]: https://github.com/fleming79/async-kernel/compare/v0.10.1..v0.10.2
 [0.10.1]: https://github.com/fleming79/async-kernel/compare/v0.10.0..v0.10.1
 [0.10.0]: https://github.com/fleming79/async-kernel/compare/v0.10.0-rc2..v0.10.0
