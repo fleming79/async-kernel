@@ -1,30 +1,29 @@
 from __future__ import annotations
 
 import atexit
-import builtins
 import contextlib
 import errno
-import getpass
+import importlib.util
 import os
 import pathlib
 import signal
 import sys
 import threading
 import time
-from collections.abc import Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self
 
+import anyio
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import enable_signal_safety
+from aiologic.lowlevel import current_async_library, enable_signal_safety
 from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Unicode
+from traitlets import CaselessStrEnum, Dict, Unicode
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -33,15 +32,14 @@ from async_kernel import utils
 from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
-from async_kernel.interface.interface import InterfaceBase
-from async_kernel.iostream import OutStream
-from async_kernel.typing import Content, Job, Message, MsgType, NoValue, SocketID
+from async_kernel.interface.base import BaseKernelInterface
+from async_kernel.typing import Backend, Content, Job, Message, MsgHeader, MsgType, NoValue, SocketID
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Generator
+    from collections.abc import AsyncGenerator, Generator
     from types import FrameType
 
-__all__ = ["ZMQ_Interface"]
+__all__ = ["ZMQKernelInterface"]
 
 
 def bind_socket(
@@ -100,13 +98,16 @@ def bind_socket(
     raise RuntimeError(msg)
 
 
-class ZMQ_Interface(InterfaceBase):
+class ZMQKernelInterface(BaseKernelInterface):
     "An interface for the kernel that uses zmq sockets."
 
     _zmq_context = Fixed(zmq.Context)
-    sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
-    ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
+    _interrupt_requested: bool | Literal["FORCE"] = False
 
+    sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
+    ""
+    ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
+    ""
     ip = Unicode()
     """
     The kernel's IP address [default localhost].
@@ -121,6 +122,35 @@ class ZMQ_Interface(InterfaceBase):
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
     )
     "Transport for sockets."
+
+    anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
+    "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
+
+    @traitlets.default("anyio_backend_options")
+    def _default_anyio_backend_options(self):
+        use_uv = importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")
+        return {Backend.asyncio: {"use_uvloop": True} if use_uv else {}, Backend.trio: None}
+
+    def start(self):
+        """
+        Start the kernel (blocking).
+
+        Warning:
+            - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
+            - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
+            - Some libraries may assume the call is occurring in the 'MainThread'.
+            - If there is an asyncio or trio event loop already running in the 'MainThread. Simply use `async with kernel` instead.
+        """
+
+        async def run_kernel() -> None:
+            async with self.kernel:
+                await self.wait_exit
+
+        if not self.trait_has_value("anyio_backend") and "trio" in self.kernel.kernel_name.lower():
+            self.anyio_backend = Backend.trio
+        backend: Backend = self.anyio_backend
+        backend_options = self.anyio_backend_options.get(backend)
+        anyio.run(run_kernel, backend=backend, backend_options=backend_options)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -169,12 +199,13 @@ class ZMQ_Interface(InterfaceBase):
         self.callers[SocketID.shell] = caller
         self.callers[SocketID.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
         start = Event()
+        self.anyio_backend = Backend(current_async_library())
         try:
             async with caller:
                 self._start_hb_iopub_shell_control_threads(start)
                 with self._bind_socket(SocketID.stdin):
                     assert len(self.sockets) == len(SocketID)
-                    self.write_connection_file()
+                    self._write_connection_file()
                     restore_io = self._patch_io()
                     with contextlib.suppress(ValueError):
                         sig = signal.signal(signal.SIGINT, self._signal_handler)
@@ -249,34 +280,7 @@ class ZMQ_Interface(InterfaceBase):
             socket.close(linger=50)
             self.sockets.pop(socket_id)
 
-    def _patch_io(self) -> Callable[[], None]:
-        original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
-
-        def restore():
-            sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = original_io
-
-        builtins.input = self.raw_input
-        getpass.getpass = self.getpass
-        for name in ["stdout", "stderr"]:
-
-            def flusher(string: str, name=name):
-                "Publish stdio or stderr when flush is called"
-                self.iopub_send(
-                    msg_or_type="stream",
-                    content={"name": name, "text": string},
-                    ident=f"stream.{name}".encode(),
-                )
-                if not self.kernel.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
-                    echo.write(string)
-                    echo.flush()
-
-            wrapper = OutStream(flusher=flusher)
-            setattr(sys, name, wrapper)
-
-        return restore
-
-    @override
-    def write_connection_file(
+    def _write_connection_file(
         self,
     ) -> None:
         """Write connection info to JSON dict in kernel.connection_file."""
@@ -334,9 +338,10 @@ class ZMQ_Interface(InterfaceBase):
     def iopub_send(
         self,
         msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
+        *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        parent: dict[str, Any] | MsgHeader | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
         buffers: list[bytes] | None = None,
     ) -> None:
@@ -395,15 +400,8 @@ class ZMQ_Interface(InterfaceBase):
             while True:
                 try:
                     ident, msg = session.recv(socket, mode=zmq.BLOCKY, copy=False)
-                    try:
-                        subshell_id = msg["content"]["subshell_id"]  # pyright: ignore[reportOptionalSubscript]
-                    except KeyError:
-                        try:
-                            subshell_id = msg["header"]["subshell_id"]  # pyright: ignore[reportOptionalSubscript]
-                        except KeyError:
-                            subshell_id = None
                     job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(subshell_id, socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
+                    message_handler(socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:
@@ -461,19 +459,16 @@ class ZMQ_Interface(InterfaceBase):
     @override
     def interrupt(self):
         self._interrupt_now()
-        while self.interrupts:
-            try:
-                self.interrupts.pop()()
-            except Exception:
-                pass
+        super().interrupt()
 
     @override
     def msg(
         self,
         msg_type: str,
+        *,
         content: dict | None = None,
         parent: Message | dict[str, Any] | None = None,
-        header: dict[str, Any] | None = None,
+        header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Message[dict[str, Any]]:
-        return self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportReturnType, reportArgumentType]
+        return self.session.msg(msg_type=msg_type, content=content, parent=parent, header=header, metadata=metadata)  # pyright: ignore[reportReturnType, reportArgumentType]

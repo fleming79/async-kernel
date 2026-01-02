@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec,
 from typing_extensions import Sentinel, override
 
 if TYPE_CHECKING:
+    import datetime
     import logging
 
     import zmq
@@ -291,11 +292,13 @@ class MsgHeader(TypedDict):
     ""
     username: str
     ""
-    date: str
+    date: str | datetime.datetime
     ""
-    msg_type: MsgType
+    msg_type: MsgType | str
     ""
     version: str
+    ""
+    subshell_id: NotRequired[str | None]
     ""
 
 
@@ -305,10 +308,10 @@ class Message(TypedDict, Generic[T]):
     header: MsgHeader
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)"
 
-    parent_header: MsgHeader
+    parent_header: MsgHeader | None
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"
 
-    metadata: dict[str, Any]
+    metadata: dict[str, Any] | None
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"
 
     content: T | Content
@@ -317,7 +320,7 @@ class Message(TypedDict, Generic[T]):
     See also:
         - [ExecuteContent][]
     """
-    buffers: list[bytearray | bytes]
+    buffers: NotRequired[list[bytearray | bytes]]
     ""
 
 
@@ -326,10 +329,13 @@ class Job(TypedDict, Generic[T]):
 
     msg: Message[T]
     "The message received over the socket."
+
     socket_id: Literal[SocketID.control, SocketID.shell]
     "The channel over which the socket was received."
+
     ident: bytes | list[bytes]
     "The ident associated with the message and its origin."
+
     received_time: float
     "The time the message was received."
 
@@ -355,15 +361,20 @@ class FixedCreate(TypedDict, Generic[S]):
     "A TypedDict relevant to Fixed."
 
     name: str
+    ""
     owner: S
+    ""
 
 
 class FixedCreated(TypedDict, Generic[S, T]):
     "A TypedDict relevant to Fixed."
 
     name: str
+    ""
     owner: S
+    ""
     obj: T
+    ""
 
 
 class PendingCreateOptions(TypedDict):
@@ -378,14 +389,19 @@ class CallerCreateOptions(TypedDict):
 
     name: NotRequired[str]
     "The name for the new caller instance."
+
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use for the caller."
+
     backend: NotRequired[Backend | Literal["trio", "asyncio"]]
+
     "The backend to specify when calling [anyio.run][]."
     backend_options: NotRequired[dict | None]
+
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (default=`False`)."
+
     zmq_context: NotRequired[zmq.Context[Any]]
     "A zmq Context to use."
 

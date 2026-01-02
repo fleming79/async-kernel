@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import gc
-import importlib.util
 import json
 import logging
 import os
@@ -21,7 +20,7 @@ import traitlets
 from aiologic import Event
 from aiologic.lowlevel import current_async_library
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CUnicode, Dict, HasTraits, Instance, Tuple, UseEnum
+from traitlets import CUnicode, HasTraits, Instance, Tuple
 from typing_extensions import override
 
 import async_kernel
@@ -36,9 +35,8 @@ from async_kernel.asyncshell import (
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
-from async_kernel.interface.interface import InterfaceBase
+from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import (
-    Backend,
     Content,
     ExecuteContent,
     HandlerType,
@@ -52,7 +50,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
+    from collections.abc import AsyncGenerator, Callable, Iterable
     from types import CoroutineType
 
 
@@ -75,7 +73,8 @@ def cache_wrap_handler(
 
 class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     """
-    A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
+    A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell]
+    with support for kernel subshells.
 
     Info:
         Only one instance of a kernel is created at a time per subprocess. The instance can be obtained
@@ -94,7 +93,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         === "Blocking"
 
             ```python
-            Kernel().run()
+            import async_kernel.interface
+
+            async_kernel.interface.start_kernel_zmq_interface()
             ```
 
         === "Inside a coroutine"
@@ -120,7 +121,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     _settings = Fixed(dict)
 
-    interface = traitlets.Instance(InterfaceBase)
+    interface = traitlets.Instance(BaseKernelInterface)
     "The abstraction to communicate with the kernel."
 
     callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
@@ -130,12 +131,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "Dedicated to management of sub shells."
 
     # Public traits
-    anyio_backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
-    "The anyio configured backend used to run the event loops."
-
-    anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
-    "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
-
     help_links = Tuple()
     ""
     quiet = traitlets.Bool(True)
@@ -212,20 +207,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @traitlets.default("interface")
     def default_interface(self):
-        if importlib.util.find_spec("zmq"):
-            from async_kernel.interface._zmq_interface import ZMQ_Interface  # noqa: PLC0415
+        from async_kernel.interface.zmq import ZMQKernelInterface  # noqa: PLC0415
 
-            return ZMQ_Interface()
-        raise NotImplementedError
+        return ZMQKernelInterface()
 
     @traitlets.default("connection_file")
     def _default_connection_file(self) -> Path:
         return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
-
-    @traitlets.default("anyio_backend_options")
-    def _default_anyio_backend_options(self):
-        use_uv = importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")
-        return {Backend.asyncio: {"use_uvloop": True} if use_uv else {}, Backend.trio: None}
 
     @traitlets.default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:
@@ -338,34 +326,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         """
         self.interface.load_connection_info(info)
 
-    def run(self, wait_exit: Callable[[], Awaitable] = anyio.sleep_forever, /):
-        """
-        Run the kernel (blocking).
-
-        Args:
-            wait_exit: The kernel will stop when the awaitable is complete.
-
-        Warning:
-            Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
-
-            - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
-            - Some libraries may assume the call is occurring in the 'MainThread'.
-            - If there is an asyncio or trio event loop already running in the 'MainThread. Simply use `async with kernel` instead.
-        """
-        if getattr(self, "_started", False):
-            raise RuntimeError
-        self._started = True
-
-        async def _run() -> None:
-            async with self:
-                await wait_exit()
-
-        if not self.trait_has_value("anyio_backend") and "trio" in self.kernel_name.lower():
-            self.anyio_backend = Backend.trio
-        backend = self.anyio_backend
-        backend_options = self.anyio_backend_options.get(backend)
-        anyio.run(_run, backend=backend, backend_options=backend_options)
-
     @staticmethod
     def stop() -> None:
         """
@@ -381,12 +341,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """Start the kernel in an already running anyio event loop."""
         assert self.main_shell
-        self.anyio_backend = Backend(current_async_library())
         try:
             async with self.interface:
                 self.callers.update(self.interface.callers)
-                if self.print_kernel_messages:
-                    print(f"Kernel started: {self!r}")
                 with anyio.CancelScope() as scope:
                     self._stop = lambda: self.caller.call_direct(scope.cancel, "Stopping kernel")
                     sys.excepthook = self.excepthook
@@ -396,6 +353,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     try:
                         self.comm_manager.kernel = self
                         self.event_started.set()
+                        self.log.info("Kernel started: %s", self)
                         yield self
                     except BaseException:
                         if not scope.cancel_called:
@@ -411,13 +369,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             AsyncInteractiveShell.clear_instance()
             with anyio.CancelScope(shield=True):
                 await anyio.sleep(0.1)
-            if self.print_kernel_messages:
-                print(f"Kernel stopped: {self!r}")
+            self.log.info("Kernel stopped: %s", self)
             gc.collect()
 
     def iopub_send(
         self,
         msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
+        *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
         parent: Message[dict[str, Any]] | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
@@ -425,7 +383,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         buffers: list[bytes] | None = None,
     ) -> None:
         """Send a message on the iopub socket."""
-        self.interface.iopub_send(msg_or_type, content, metadata, parent, ident, buffers)
+        self.interface.iopub_send(
+            msg_or_type,
+            content=content,
+            metadata=metadata,
+            parent=parent,
+            ident=ident,
+            buffers=buffers,
+        )
 
     def topic(self, topic) -> bytes:
         """prefixed topic for IOPub messages."""
@@ -433,7 +398,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     def msg_handler(
         self,
-        subshell_id: str | None,
         socket_id: Literal[SocketID.shell, SocketID.control],
         msg_type: MsgType,
         job: Job,
@@ -442,6 +406,13 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     ):
         """Schedule a message to be executed."""
         # Note: There are never any active pending trackers in this context.
+        try:
+            subshell_id = job["msg"]["content"]["subshell_id"]
+        except KeyError:
+            try:
+                subshell_id = job["msg"]["header"]["subshell_id"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            except KeyError:
+                subshell_id = None
         handler = cache_wrap_handler(subshell_id, send_reply, self.run_handler, self.get_handler(msg_type))
         run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
         match run_mode:

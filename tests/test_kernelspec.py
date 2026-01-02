@@ -1,44 +1,59 @@
 from __future__ import annotations
 
 import json
-import shutil
 
 import pytest
+from aiologic import Event
 from jupyter_client.kernelspec import KernelSpec
 
-from async_kernel.kernelspec import write_kernel_spec
+from async_kernel.interface.zmq import ZMQKernelInterface
+from async_kernel.kernelspec import DEFAULT_START_INTERFACE, import_start_interface, write_kernel_spec
 from async_kernel.typing import KernelName
 
 
 @pytest.mark.parametrize(
-    ("kernel_name", "kernel_factory"),
+    ("kernel_name", "start_interface"),
     [
-        (KernelName.trio, "async_kernel.kernel.Kernel"),
-        ("function_factory", "function"),
+        (KernelName.trio, DEFAULT_START_INTERFACE),
+        ("function_factory", "custom"),
     ],
 )
-def test_write_kernel_spec(kernel_name: KernelName, kernel_factory, tmp_path):
-    if kernel_factory == "function":
+def test_write_kernel_spec(kernel_name: KernelName, start_interface, tmp_path, monkeypatch):
+    if start_interface == "custom":
 
-        def my_kernel_factory(settings):
+        def my_start_interface(settings: dict | None):
+            from async_kernel.interface import start_kernel_zmq_interface  # noqa: PLC0415
             from async_kernel.kernel import Kernel  # noqa: PLC0415
 
             class MyKernel(Kernel):
                 pass
 
-            return MyKernel(settings)
+            kernel = MyKernel()
+            # This would normally block, however wait_exit has been patched.
+            start_kernel_zmq_interface(settings)
+            assert kernel.interface.kernel is kernel
+            return "custom"
 
-        kernel_factory = my_kernel_factory
+        start_interface = my_start_interface
 
-    path = write_kernel_spec(tmp_path, kernel_name=kernel_name, kernel_factory=kernel_factory)
+    path = write_kernel_spec(tmp_path, kernel_name=kernel_name, start_interface=start_interface)
     kernel_json = path.joinpath("kernel.json")
     assert kernel_json.exists()
-    with kernel_json.open("r") as f:
-        data = json.load(f)
-    KernelSpec(**data)
-    shutil.rmtree(path)
+    data = json.loads(kernel_json.read_bytes())
+    spec = KernelSpec(**data)
+    start_interface_string = next(
+        v.removeprefix("--start_interface=") for v in spec.argv if v.startswith("--start_interface=")
+    )
+    starter = import_start_interface(start_interface_string)
+    wait_exit = Event()
+    wait_exit.set()
+
+    monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit)
+    result = starter({"a": None})
+    if start_interface == "custom":
+        assert result == "custom"
 
 
 def test_write_kernel_spec_fails():
     with pytest.raises(ValueError, match="not enough values to unpack"):
-        write_kernel_spec(kernel_name="never-works", kernel_factory="not a factory")
+        write_kernel_spec(kernel_name="never-works", start_interface="not a factory")

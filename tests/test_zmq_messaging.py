@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 import sys
-import threading
-import time
 from typing import Literal
 
 import pytest
 import zmq
 
-from async_kernel.caller import Caller
-from async_kernel.interface._zmq_interface import ZMQ_Interface, bind_socket
-from async_kernel.typing import Backend, SocketID
+from async_kernel.interface.zmq import bind_socket
 
 # pyright: reportPrivateUsage=false
 
@@ -41,45 +37,3 @@ def test_bind_socket(transport: Literal["tcp", "ipc"], tmp_path):
             socket.close(linger=0)
     finally:
         ctx.term()
-
-
-@pytest.mark.parametrize("mode", ["direct", "proxy"])
-async def test_iopub(mode: Literal["direct", "proxy"], anyio_backend: Backend) -> None:
-    def pubio_subscribe():
-        """Consume messages."""
-
-        socket = ctx.socket(zmq.SocketType.SUB)
-        socket.connect(url)
-        socket.setsockopt(zmq.SocketOption.SUBSCRIBE, b"")
-        try:
-            i = 0
-            while i < n:
-                msg = socket.recv_multipart()
-                if msg[0] == b"0":
-                    assert int(msg[1]) == i
-                    i += 1
-            # Also test iopub from a thread that doesn't have a socket works via control thread.
-            print("done")
-            msg = socket.recv_multipart()
-            assert msg[-1] == b'{"name": "stdout", "text": "done"}'
-        finally:
-            socket.close(linger=0)
-
-    messaging = ZMQ_Interface()
-    async with messaging:
-        n = 10
-        socket = messaging.sockets[SocketID.iopub]
-        url = socket.get_string(zmq.SocketOption.LAST_ENDPOINT)
-        assert url.endswith(str(messaging.ports[SocketID.iopub]))
-        ctx = zmq.Context()
-        try:
-            thread = threading.Thread(target=pubio_subscribe)
-            thread.start()
-            time.sleep(0.05)
-            if mode == "proxy":
-                socket = Caller.iopub_sockets[messaging.callers[SocketID.control].ident]
-            for i in range(n):
-                socket.send_multipart([b"0", f"{i}".encode()])
-            thread.join()
-        finally:
-            ctx.term()

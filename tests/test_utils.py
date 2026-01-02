@@ -25,7 +25,7 @@ class TestUtils:
         assert ak_utils.get_execution_count() == 0
 
     async def test_get_metadata(self, job: Job[ExecuteContent]):
-        assert ak_utils.get_metadata() == {}
+        assert ak_utils.get_metadata() is None
         assert ak_utils.get_metadata(job) is job["msg"]["metadata"]
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_metadata() is job["msg"]["metadata"]
@@ -37,7 +37,7 @@ class TestUtils:
         assert ak_utils.get_parent(job) is job["msg"]
 
     async def test_get_tags(self, job: Job[ExecuteContent]):
-        job["msg"]["metadata"]["tags"] = tags = []
+        job["msg"]["metadata"]["tags"] = tags = []  # pyright: ignore[reportOptionalSubscript]
         assert ak_utils.get_tags() == []
         assert ak_utils.get_tags(job) is tags
 
