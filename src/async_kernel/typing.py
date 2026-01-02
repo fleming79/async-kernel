@@ -320,7 +320,7 @@ class Message(TypedDict, Generic[T]):
     See also:
         - [ExecuteContent][]
     """
-    buffers: NotRequired[list[bytearray | bytes]]
+    buffers: list[bytearray | bytes]
     ""
 
 

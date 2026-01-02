@@ -186,6 +186,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
             parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
             content={} if content is None else content,
             metadata=metadata,
+            buffers=[],
         )
 
     def iopub_send(

@@ -126,8 +126,8 @@ class CallableKernelInterface(BaseKernelInterface):
         self, msg: Message[dict], channel: Literal["shell", "control", "iopub", "stdin"], requires_reply=False
     ) -> Message | None:
         msg["channel"] = channel  # pyright: ignore[reportGeneralTypeIssues]
-        buffers = msg.pop("buffers", None)
-        reply = self._send(self.pack(msg), buffers or None, requires_reply)
+        buffers: list | None = msg.pop("buffers", None) or []  # pyright: ignore[reportAssignmentType]
+        reply = self._send(self.pack(msg), buffers, requires_reply)
         if requires_reply:
             assert reply
             return self.unpack(reply)
@@ -142,10 +142,9 @@ class CallableKernelInterface(BaseKernelInterface):
 
     def _handle_msg(self, msg_json: str, buffers: list[bytearray] | list[bytes] | None = None, /):
         "The main message handler that gets returned by the `start` method."
-        msg = self.unpack(msg_json)
-        if buffers:
-            # Copy the buffer
-            msg["buffers"] = [b[:] for b in buffers]
+        msg: Message[dict[str, Any]] = self.unpack(msg_json)
+        # Copy the buffer
+        msg["buffers"] = [b[:] for b in buffers] if buffers else []
         socket_id: Literal[SocketID.shell, SocketID.control] = SocketID(msg.get("channel", SocketID.shell))  # pyright: ignore[reportAssignmentType]
         job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=b"")
         self.kernel.msg_handler(socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)
