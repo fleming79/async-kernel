@@ -391,6 +391,7 @@ class ZMQKernelInterface(BaseKernelInterface):
                         content=content,
                         parent=job["msg"],  # pyright: ignore[reportArgumentType]
                         ident=job["ident"],
+                        buffers=content.pop("buffers", None),
                     )
                     if msg:
                         log.debug("*** send_reply %s*** %s", socket_id, msg)

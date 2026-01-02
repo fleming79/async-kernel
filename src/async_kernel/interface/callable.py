@@ -123,10 +123,14 @@ class CallableKernelInterface(BaseKernelInterface):
         raise KernelInterruptError
 
     def _send_to_frontend(
-        self, msg: Message[dict], channel: Literal["shell", "control", "iopub", "stdin"], requires_reply=False
+        self,
+        msg: Message[dict],
+        channel: Literal["shell", "control", "iopub", "stdin"],
+        *,
+        buffers: list[bytearray | bytes] | None = None,
+        requires_reply=False,
     ) -> Message | None:
         msg["channel"] = channel  # pyright: ignore[reportGeneralTypeIssues]
-        buffers: list | None = msg.pop("buffers", None) or []  # pyright: ignore[reportAssignmentType]
         reply = self._send(self.pack(msg), buffers, requires_reply)
         if requires_reply:
             assert reply
@@ -138,7 +142,7 @@ class CallableKernelInterface(BaseKernelInterface):
             content["status"] = "ok"
         msg_type = job["msg"]["header"]["msg_type"].replace("request", "reply")
         msg = self.msg(msg_type, content=content, parent=job["msg"])
-        self._send_to_frontend(msg, job["socket_id"].name)
+        self._send_to_frontend(msg, job["socket_id"].name, buffers=content.pop("buffers", None))
 
     def _handle_msg(self, msg_json: str, buffers: list[bytearray] | list[bytes] | None = None, /):
         "The main message handler that gets returned by the `start` method."
@@ -164,8 +168,7 @@ class CallableKernelInterface(BaseKernelInterface):
             parent = async_kernel.utils.get_parent()
         if not isinstance(msg_or_type, dict):
             msg_or_type = self.msg(msg_type=msg_or_type, content=content, parent=parent, metadata=metadata)  # pyright: ignore[reportArgumentType]
-            msg_or_type["buffers"] = buffers  # pyright: ignore[reportGeneralTypeIssues]
-        self._send_to_frontend(msg_or_type, "iopub")  # pyright: ignore[reportArgumentType]
+        self._send_to_frontend(msg_or_type, "iopub", buffers=buffers)  # pyright: ignore[reportArgumentType]
 
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:

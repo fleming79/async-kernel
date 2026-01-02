@@ -414,6 +414,10 @@ A TypeAlias for a debug message.
 Content = dict[str, Any]
 """
 A TypeAlias for the content in `Message`.
+
+Notes:
+    - The content of a message handler can provide 'buffers'. When present, 
+        the buffers are extracted from dict and handled separately by the interface.
 """
 
 HandlerType = Callable[[Job], Awaitable[Content | None]]
