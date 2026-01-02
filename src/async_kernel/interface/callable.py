@@ -4,12 +4,13 @@ import asyncio
 import json
 import signal
 import time
-from typing import TYPE_CHECKING, Any, Literal, TypedDict, override
+from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
 import anyio
 import orjson
 from aiologic.lowlevel import enable_signal_safety
 from IPython.core.error import StdinNotImplementedError
+from typing_extensions import override
 
 import async_kernel
 from async_kernel.interface.base import BaseKernelInterface
