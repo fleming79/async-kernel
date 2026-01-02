@@ -311,7 +311,7 @@ class Message(TypedDict, Generic[T]):
     parent_header: MsgHeader | None
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"
 
-    metadata: dict[str, Any] | None
+    metadata: dict[str, Any]
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"
 
     content: T | Content
