@@ -726,6 +726,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -919,23 +921,6 @@ viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" command_line">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.command_line(wait_exit_context)" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;wait_exit_context
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -990,6 +975,34 @@ viewing the latest version.
     
   
     debugger
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    interface
   
 
     
@@ -1384,23 +1397,6 @@ viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" command_line">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.command.command_line(wait_exit_context)" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;wait_exit_context
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -1526,7 +1522,7 @@ viewing the latest version.
 
 
 <a href="#async_kernel.command.command_line" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">command_line</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title=" wait_exit_context (async_kernel.command.command_line(wait_exit_context))" href="#async_kernel.command.command_line(wait_exit_context)">wait_exit_context</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="anyio.sleep_forever" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.sleep_forever">sleep_forever</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">command_line</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1548,24 +1544,6 @@ is specified, it prints the help message.</p>
 the default <code>Kernel</code> class) and configures the kernel instance with
 the provided arguments. It then starts the kernel within an <code>anyio</code>
 context, handling keyboard interrupts and other exceptions.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<h3 id="async_kernel.command.command_line(wait_exit_context)" class="doc doc-heading doc-heading-parameter">              <b><code>wait_exit_context</code></b>
-<a href="#async_kernel.command.command_line(wait_exit_context)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], <a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a>]</code>, default:
-                  <code><a class="autorefs autorefs-external" title="anyio.sleep_forever" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.sleep_forever">sleep_forever</a></code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An optional asynchronous function or context manager
-that determines how long the kernel should run. Defaults to
-<code>anyio.sleep_forever</code>, which keeps the kernel running indefinitely
-until an external signal is received.</p>
-          </div>
-        </li>
-    </ul>
 
 
 <p><span class="doc-section-title">Raises:</span></p>
@@ -1646,7 +1624,11 @@ program is interrupted.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/command.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 25</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
 <span class="normal"> 26</span>
 <span class="normal"> 27</span>
 <span class="normal"> 28</span>
@@ -1763,17 +1745,7 @@ program is interrupted.</p>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">(</span><span class="n">wait_exit_context</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">]</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep_forever</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parses command-line arguments to manage kernel specs and start kernels.</span>
 
@@ -1794,12 +1766,6 @@ program is interrupted.</p>
 <span class="sd">    the default `Kernel` class) and configures the kernel instance with</span>
 <span class="sd">    the provided arguments. It then starts the kernel within an `anyio`</span>
 <span class="sd">    context, handling keyboard interrupts and other exceptions.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        wait_exit_context: An optional asynchronous function or context manager</span>
-<span class="sd">            that determines how long the kernel should run. Defaults to</span>
-<span class="sd">            `anyio.sleep_forever`, which keeps the kernel running indefinitely</span>
-<span class="sd">            until an external signal is received.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SystemExit: If an error occurs during kernel execution or if the</span>
@@ -1884,9 +1850,9 @@ program is interrupted.</p>
             <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">{</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">}:</span>
             <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">factory</span><span class="p">:</span> <span class="n">KernelFactoryType</span> <span class="o">=</span> <span class="n">import_kernel_factory</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kernel_factory&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="n">factory</span><span class="p">:</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">import_start_interface</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;start_interface&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">factory</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">wait_exit_context</span><span class="p">)</span>
+            <span class="n">factory</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
             <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
             <span class="k">pass</span>
