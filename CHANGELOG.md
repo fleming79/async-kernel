@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.2] - 2026-01-02
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Added a callback style interface compatible with Jupyterlite [#277](https://github.com/fleming79/async-kernel/pull/277)
+
+- Use ident instead of thread for caller mapping. [#276](https://github.com/fleming79/async-kernel/pull/276)
+
+- Add an interface abstraction to the kernel with view to enable usage in pyodide. [#275](https://github.com/fleming79/async-kernel/pull/275)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump the actions group with 2 updates [#274](https://github.com/fleming79/async-kernel/pull/274)
+
 ## [0.10.1] - 2025-12-14
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -12,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve Caller.queue_call rewake reliability and revise Pending.set_result. [#272](https://github.com/fleming79/async-kernel/pull/272)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.10.1 [#273](https://github.com/fleming79/async-kernel/pull/273)
 
 - Allow PendingManager.deactivate to be called multiple times. [#271](https://github.com/fleming79/async-kernel/pull/271)
 
@@ -717,6 +733,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.10.2]: https://github.com/fleming79/async-kernel/compare/v0.10.1..v0.10.2
 [0.10.1]: https://github.com/fleming79/async-kernel/compare/v0.10.0..v0.10.1
 [0.10.0]: https://github.com/fleming79/async-kernel/compare/v0.10.0-rc2..v0.10.0
 [0.10.0-rc2]: https://github.com/fleming79/async-kernel/compare/v0.10.0-rc1..v0.10.0-rc2
