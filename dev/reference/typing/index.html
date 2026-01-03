@@ -3789,6 +3789,14 @@ viewing the latest version.
 
         <p>A TypeAlias for the content in <code>Message</code>.</p>
 
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <ul>
+<li>The content of a message handler can provide 'buffers'. When present, 
+    the buffers are extracted from dict and handled separately by the interface.</li>
+</ul>
+</details>
           
 
 
@@ -7167,7 +7175,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title=" metadata (async_kernel.typing.Message.metadata)" href="#async_kernel.typing.Message.metadata">metadata</a></code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>] | None</code>)
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
           –
           <div class="doc-md-description">
             <p><a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata">ref</a></p>
@@ -7221,7 +7229,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
     <span class="n">parent_header</span><span class="p">:</span> <span class="n">MsgHeader</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="s2">&quot;[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)&quot;</span>
 
-    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
     <span class="s2">&quot;[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)&quot;</span>
 
     <span class="n">content</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="n">Content</span>
@@ -7308,7 +7316,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
   </span>
 
 <a href="#async_kernel.typing.Message.metadata" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">metadata</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">metadata</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
