@@ -1,6 +1,7 @@
 import contextlib
 import gc
 import re
+import sys
 import threading
 import time
 import weakref
@@ -665,3 +666,9 @@ class TestCaller:
         async with caller.create_pending_group() as pg:
             assert pg.caller.call_soon(lambda: None) in pg.pending
         assert not pg.pending
+
+    async def test_to_thread_emscripten(self, caller: Caller, mocker):
+        mocker.patch.object(sys, "platform", new="emscripten")
+        caller2 = await caller.to_thread(Caller)
+        assert caller2 is not caller
+        assert caller2.ident != caller.ident

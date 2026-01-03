@@ -183,7 +183,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     def __repr__(self) -> str:
         n = len(self._children)
         children = "" if not n else ("1 child" if n == 1 else f"{n} children")
-        return f"Caller<{self.name!s} {self.backend} {self._state_reprs.get(self._state)} {children}>"
+        info = f"{self.name} at {self.ident}" if (sys.platform == "emscripten") else self.name
+        return f"Caller<{info!s} {self.backend} {self._state_reprs.get(self._state)} {children}>"
 
     def __new__(
         cls,
@@ -438,7 +439,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             - Resets the context variable after execution.
         """
         md = pen.metadata
-        token = self._pending_var.set(pen)
+        token_pending = self._pending_var.set(pen)
+        token_ident = self._caller_token.set(self._ident)
         try:
             if pen.cancelled():
                 if not pen.done():
@@ -466,7 +468,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         except Exception as e:
             pen.set_exception(e)
         finally:
-            self._pending_var.reset(token)
+            self._pending_var.reset(token_pending)
+            self._caller_token.reset(token_ident)
 
     @classmethod
     def _start_idle_worker_cleanup_thead(cls) -> None:
