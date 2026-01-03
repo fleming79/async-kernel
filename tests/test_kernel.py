@@ -334,13 +334,12 @@ async def test_interrupt_request_async_request(subprocess_kernels_client: AsyncK
 async def test_interrupt_request_direct_exec_request(subprocess_kernels_client: AsyncKernelClient):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
-    msg_id = client.execute(f"import time;time.sleep({utils.TIMEOUT * 4})")
+    msg_id = client.execute(f"import time\nprint('started')\ntime.sleep({utils.TIMEOUT * 2})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await anyio.sleep(0.5)
-    reply = await utils.send_control_message(client, MsgType.interrupt_request)
-    with anyio.fail_after(utils.TIMEOUT):
-        reply = await utils.get_reply(client, msg_id)
+    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started")
+    await utils.send_control_message(client, MsgType.interrupt_request)
+    reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
     assert reply["content"]["ename"] == "KernelInterruptError"
 
@@ -350,13 +349,13 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
     code = f"""
     import time
     from async_kernel import Caller
-    await Caller().call_soon(time.sleep, {utils.TIMEOUT * 2})
+    await Caller().call_soon(lambda: [print('started'), time.sleep({utils.TIMEOUT * 2})])
     """
     client = subprocess_kernels_client
     msg_id = client.execute(code)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await anyio.sleep(0.5)
+    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started")
     await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
@@ -495,7 +494,6 @@ async def test_namespace_default(client: AsyncKernelClient, code: str):
     assert code
     _, reply = await utils.execute(client, code)
     assert reply["status"] == "ok"
-    await anyio.sleep(0.02)
 
 
 @pytest.mark.parametrize("channel", ["shell", "control"])
