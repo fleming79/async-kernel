@@ -853,7 +853,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         pen_ = self.call_soon(iter_items)
         try:
-            while not done or results:
+            while (not done) or results or done_results:
                 if done_results:
                     pen = done_results.popleft()
                     results.discard(pen)
