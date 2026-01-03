@@ -311,7 +311,7 @@ class Message(TypedDict, Generic[T]):
     parent_header: MsgHeader | None
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"
 
-    metadata: dict[str, Any] | None
+    metadata: dict[str, Any]
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"
 
     content: T | Content
@@ -414,6 +414,10 @@ A TypeAlias for a debug message.
 Content = dict[str, Any]
 """
 A TypeAlias for the content in `Message`.
+
+Notes:
+    - The content of a message handler can provide 'buffers'. When present, 
+        the buffers are extracted from dict and handled separately by the interface.
 """
 
 HandlerType = Callable[[Job], Awaitable[Content | None]]

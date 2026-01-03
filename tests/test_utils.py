@@ -37,7 +37,7 @@ class TestUtils:
         assert ak_utils.get_parent(job) is job["msg"]
 
     async def test_get_tags(self, job: Job[ExecuteContent]):
-        job["msg"]["metadata"]["tags"] = tags = []  # pyright: ignore[reportOptionalSubscript]
+        job["msg"]["metadata"]["tags"] = tags = []
         assert ak_utils.get_tags() == []
         assert ak_utils.get_tags(job) is tags
 

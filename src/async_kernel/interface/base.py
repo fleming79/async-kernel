@@ -181,12 +181,11 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
                 username="",
                 version=async_kernel.kernel_protocol_version,
             )
-        return Message(
-            header=header,  # pyright: ignore[reportArgumentType]
+        return Message(  # pyright: ignore[reportCallIssue]
+            header=header,
             parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
             content={} if content is None else content,
-            metadata=metadata,
-            buffers=[],
+            metadata=metadata if metadata is not None else {},
         )
 
     def iopub_send(
