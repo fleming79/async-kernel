@@ -2428,12 +2428,8 @@ the context will exit, and all pending will be cancelled.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -4867,7 +4863,7 @@ the context will exit, and all pending will be cancelled.</p>
 
         <span class="n">pen_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">iter_items</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span> <span class="ow">or</span> <span class="n">results</span><span class="p">:</span>
+            <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="n">done</span><span class="p">)</span> <span class="ow">or</span> <span class="n">results</span> <span class="ow">or</span> <span class="n">done_results</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">done_results</span><span class="p">:</span>
                     <span class="n">pen</span> <span class="o">=</span> <span class="n">done_results</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
                     <span class="n">results</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
@@ -6761,20 +6757,9 @@ need to be performed from within the callers event loop/taskgroup.</p>
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
   </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.as_completed"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_completed</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7513,7 +7498,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
     <span class="n">pen_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">iter_items</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span> <span class="ow">or</span> <span class="n">results</span><span class="p">:</span>
+        <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="n">done</span><span class="p">)</span> <span class="ow">or</span> <span class="n">results</span> <span class="ow">or</span> <span class="n">done_results</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">done_results</span><span class="p">:</span>
                 <span class="n">pen</span> <span class="o">=</span> <span class="n">done_results</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
                 <span class="n">results</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
