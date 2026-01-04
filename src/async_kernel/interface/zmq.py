@@ -33,7 +33,7 @@ from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Backend, Content, Job, Message, MsgHeader, MsgType, NoValue, SocketID
+from async_kernel.typing import Backend, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -104,9 +104,9 @@ class ZMQKernelInterface(BaseKernelInterface):
     _zmq_context = Fixed(zmq.Context)
     _interrupt_requested: bool | Literal["FORCE"] = False
 
-    sockets: Fixed[Self, dict[SocketID, zmq.Socket]] = Fixed(dict)
+    sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
     ""
-    ports: Fixed[Self, dict[SocketID, int]] = Fixed(dict)
+    ports: Fixed[Self, dict[Channel, int]] = Fixed(dict)
     ""
     ip = Unicode()
     """
@@ -168,10 +168,10 @@ class ZMQKernelInterface(BaseKernelInterface):
             raise RuntimeError(msg)
         self.transport = info.get("transport", self.transport)
         self.ip = info.get("ip") or self.ip
-        for socket in SocketID:
-            name = f"{socket}_port"
-            if socket not in self.ports and name in info:
-                self.ports[socket] = info[name]
+        for channel in Channel:
+            name = f"{channel}_port"
+            if channel not in self.ports and name in info:
+                self.ports[channel] = info[name]
         if "key" in info:
             key = info["key"]
             if isinstance(key, str):
@@ -196,15 +196,15 @@ class ZMQKernelInterface(BaseKernelInterface):
         """Create caller, and open socketes."""
         sig = restore_io = None
         caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log, zmq_context=self._zmq_context)
-        self.callers[SocketID.shell] = caller
-        self.callers[SocketID.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
+        self.callers[Channel.shell] = caller
+        self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
         start = Event()
         self.anyio_backend = Backend(current_async_library())
         try:
             async with caller:
                 self._start_hb_iopub_shell_control_threads(start)
-                with self._bind_socket(SocketID.stdin):
-                    assert len(self.sockets) == len(SocketID)
+                with self._bind_socket(Channel.stdin):
+                    assert len(self.sockets) == len(Channel)
                     self._write_connection_file()
                     restore_io = self._patch_io()
                     with contextlib.suppress(ValueError):
@@ -223,7 +223,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         def heartbeat(ready: Event) -> None:
             # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
             async_kernel.utils.mark_thread_pydev_do_not_trace()
-            with self._bind_socket(SocketID.heartbeat) as socket:
+            with self._bind_socket(Channel.heartbeat) as socket:
                 ready.set()
                 try:
                     zmq.proxy(socket, socket)
@@ -238,7 +238,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             utils.mark_thread_pydev_do_not_trace()
             frontend: zmq.Socket = self._zmq_context.socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
-            with self._bind_socket(SocketID.iopub) as iopub_socket:
+            with self._bind_socket(Channel.iopub) as iopub_socket:
                 ready.set()
                 try:
                     zmq.proxy(frontend, iopub_socket)
@@ -251,34 +251,34 @@ class ZMQKernelInterface(BaseKernelInterface):
         threading.Thread(target=pub_proxy, name="iopub proxy", args=[iopub_ready]).start()
         iopub_ready.wait()
         # message loops
-        for socket_id in [SocketID.shell, SocketID.control]:
+        for channel in [Channel.shell, Channel.control]:
             ready = Event()
-            name = f"{socket_id}-receive_msg_loop"
-            threading.Thread(target=self.receive_msg_loop, name=name, args=(socket_id, ready, start)).start()
+            name = f"{channel}-receive_msg_loop"
+            threading.Thread(target=self.receive_msg_loop, name=name, args=(channel, ready, start)).start()
             ready.wait()
 
     @contextlib.contextmanager
-    def _bind_socket(self, socket_id: SocketID) -> Generator[Any | Socket[Any], Any, None]:
+    def _bind_socket(self, channel: Channel) -> Generator[Any | Socket[Any], Any, None]:
         """
         Bind a zmq.Socket storing a reference to the socket and the port
         details and closing the socket on leaving the context.
         """
-        match socket_id:
-            case SocketID.shell | SocketID.control | SocketID.heartbeat | SocketID.stdin:
+        match channel:
+            case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
                 socket_type = zmq.ROUTER
-            case SocketID.iopub:
+            case Channel.iopub:
                 socket_type = zmq.XPUB
         socket: zmq.Socket = self._zmq_context.socket(socket_type)
         socket.linger = 50
-        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self.ports.get(socket_id, 0))  # pyright: ignore[reportArgumentType]
-        self.ports[socket_id] = port
-        self.log.debug("%s socket on port: %i", socket_id, port)
-        self.sockets[socket_id] = socket
+        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self.ports.get(channel, 0))  # pyright: ignore[reportArgumentType]
+        self.ports[channel] = port
+        self.log.debug("%s socket on port: %i", channel, port)
+        self.sockets[channel] = socket
         try:
             yield socket
         finally:
             socket.close(linger=50)
-            self.sockets.pop(socket_id)
+            self.sockets.pop(channel)
 
     def _write_connection_file(
         self,
@@ -293,7 +293,7 @@ class ZMQKernelInterface(BaseKernelInterface):
                 key=self.session.key,
                 signature_scheme=self.session.signature_scheme,
                 kernel_name=self.kernel.kernel_name,
-                **{f"{socket_id}_port": self.ports[socket_id] for socket_id in SocketID},
+                **{f"{channel}_port": self.ports[channel] for channel in Channel},
             )
             ip_files: list[pathlib.Path] = []
             if self.transport == "ipc":
@@ -315,7 +315,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise StdinNotImplementedError(msg)
-        socket = self.sockets[SocketID.stdin]
+        socket = self.sockets[Channel.stdin]
         # Clear messages on the stdin socket
         while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
             socket.recv_multipart(flags=Flag.DONTWAIT, copy=False)
@@ -357,8 +357,8 @@ class ZMQKernelInterface(BaseKernelInterface):
                 buffers=buffers,
             )
             if msg:
-                self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["msg_type"], msg["content"])
-        elif (caller := self.callers.get(SocketID.control)) and caller.ident != t_ident:
+                self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["header"]["msg_type"], msg["content"])
+        elif (caller := self.callers.get(Channel.control)) and caller.ident != t_ident:
             caller.call_direct(
                 self.iopub_send,
                 msg_or_type=msg_or_type,
@@ -369,16 +369,14 @@ class ZMQKernelInterface(BaseKernelInterface):
                 buffers=buffers,
             )
 
-    def receive_msg_loop(
-        self, socket_id: Literal[SocketID.control, SocketID.shell], ready: Event, start: Event
-    ) -> None:
-        "Opens a zmq socket for socket_id, receives messages and calls the message handler."
+    def receive_msg_loop(self, channel: Literal[Channel.control, Channel.shell], ready: Event, start: Event) -> None:
+        "Opens a zmq socket for the channel, receives messages and calls the message handler."
 
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
         session, log, message_handler = self.session, self.log, self.kernel.msg_handler
-        with self._bind_socket(socket_id) as socket:
+        with self._bind_socket(channel) as socket:
             lock = BinarySemaphore()
 
             async def send_reply(job: Job, content: dict, /) -> None:
@@ -394,19 +392,20 @@ class ZMQKernelInterface(BaseKernelInterface):
                         buffers=content.pop("buffers", None),
                     )
                     if msg:
-                        log.debug("*** send_reply %s*** %s", socket_id, msg)
+                        log.debug("*** send_reply %s*** %s", channel, msg)
 
             ready.set()
             start.wait()
             while True:
                 try:
                     ident, msg = session.recv(socket, mode=zmq.BLOCKY, copy=False)
-                    job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
+                    msg["channel"] = channel  # pyright: ignore[reportOptionalSubscript]
+                    job = Job(received_time=time.monotonic(), msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
+                    message_handler(channel, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:
-                    log.debug("Bad message on %s: %s", socket_id, e)
+                    log.debug("Bad message on %s: %s", channel, e)
                     continue
 
     @enable_signal_safety
@@ -432,8 +431,8 @@ class ZMQKernelInterface(BaseKernelInterface):
                         self._interrupt_now(force=True)
 
                 # Race to check if the main thread should be interrupted.
-                self.callers[SocketID.shell].call_direct(clearlast_interrupt_frame)
-                self.callers[SocketID.control].call_later(1, re_raise)
+                self.callers[Channel.shell].call_direct(clearlast_interrupt_frame)
+                self.callers[Channel.control].call_later(1, re_raise)
             case False:
                 signal.default_int_handler(signum, frame)
 
@@ -449,7 +448,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             force: If True, requests a forced interrupt. Defaults to False.
         """
         # Restricted this to when the shell is running in the main thread.
-        if self.callers[SocketID.shell].ident == Caller.MAIN_THREAD_IDENT:
+        if self.callers[Channel.shell].ident == Caller.MAIN_THREAD_IDENT:
             self._interrupt_requested = "FORCE" if force else True
             if sys.platform == "win32":
                 signal.raise_signal(signal.SIGINT)
@@ -461,15 +460,3 @@ class ZMQKernelInterface(BaseKernelInterface):
     def interrupt(self):
         self._interrupt_now()
         super().interrupt()
-
-    @override
-    def msg(
-        self,
-        msg_type: str,
-        *,
-        content: dict | None = None,
-        parent: Message | dict[str, Any] | None = None,
-        header: MsgHeader | dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> Message[dict[str, Any]]:
-        return self.session.msg(msg_type=msg_type, content=content, parent=parent, header=header, metadata=metadata)  # pyright: ignore[reportReturnType, reportArgumentType]

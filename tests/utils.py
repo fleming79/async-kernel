@@ -6,7 +6,7 @@ import anyio
 from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel.utils
-from async_kernel.typing import ExecuteContent, MsgType
+from async_kernel.typing import Channel, ExecuteContent, MsgType
 from tests.references import RMessage, references
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ async def get_reply(
     client: AsyncKernelClient,
     msg_id: str,
     *,
-    channel: Literal["shell", "control"] = "shell",
+    channel: Literal[Channel.shell, Channel.control] = Channel.shell,
     timeout=TIMEOUT,
     clear_pub=True,
 ) -> Mapping[str, Mapping[str, Any]]:
@@ -29,9 +29,9 @@ async def get_reply(
     with anyio.fail_after(timeout):
         while True:
             match channel:
-                case "shell":
+                case Channel.shell:
                     reply = await client.get_shell_msg(timeout=timeout)
-                case "control":
+                case Channel.control:
                     reply = await client.get_control_msg(timeout=timeout)
             if reply["parent_header"]["msg_id"] == msg_id:
                 if clear_pub:
@@ -157,7 +157,7 @@ async def send_shell_message(
     client.shell_channel.send(msg)
     if not reply:
         return {}
-    return await get_reply(client, msg["header"]["msg_id"], channel="shell")
+    return await get_reply(client, msg["header"]["msg_id"], channel=Channel.shell)
 
 
 async def send_control_message(
@@ -167,7 +167,7 @@ async def send_control_message(
     client.control_channel.send(msg)
     if not reply:
         return {}
-    return await get_reply(client, msg["header"]["msg_id"], channel="control", clear_pub=clear_pub)
+    return await get_reply(client, msg["header"]["msg_id"], channel=Channel.control, clear_pub=clear_pub)
 
 
 async def check_pub_message(client: AsyncKernelClient, msg_id: str, /, *, msg_type="status", **content_checks):

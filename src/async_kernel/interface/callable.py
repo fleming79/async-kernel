@@ -4,7 +4,7 @@ import asyncio
 import json
 import signal
 import time
-from typing import TYPE_CHECKING, Any, Literal, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
 import anyio
 import orjson
@@ -15,7 +15,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.kernel import KernelInterruptError
-from async_kernel.typing import Content, Job, Message, MsgHeader, MsgType, NoValue, SocketID
+from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -125,12 +125,12 @@ class CallableKernelInterface(BaseKernelInterface):
     def _send_to_frontend(
         self,
         msg: Message[dict],
-        channel: Literal["shell", "control", "iopub", "stdin"],
         *,
+        channel: Channel = Channel.shell,
         buffers: list[bytearray | bytes] | None = None,
         requires_reply=False,
     ) -> Message | None:
-        msg["channel"] = channel  # pyright: ignore[reportGeneralTypeIssues]
+        msg["channel"] = channel
         reply = self._send(self.pack(msg), buffers, requires_reply)
         if requires_reply:
             assert reply
@@ -142,16 +142,16 @@ class CallableKernelInterface(BaseKernelInterface):
             content["status"] = "ok"
         msg_type = job["msg"]["header"]["msg_type"].replace("request", "reply")
         msg = self.msg(msg_type, content=content, parent=job["msg"])
-        self._send_to_frontend(msg, job["socket_id"].name, buffers=content.pop("buffers", None))
+        self._send_to_frontend(msg, channel=job["msg"]["channel"], buffers=content.pop("buffers", None))
 
     def _handle_msg(self, msg_json: str, buffers: list[bytearray] | list[bytes] | None = None, /):
         "The main message handler that gets returned by the `start` method."
         msg: Message[dict[str, Any]] = self.unpack(msg_json)
         # Copy the buffer
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
-        socket_id: Literal[SocketID.shell, SocketID.control] = SocketID(msg.get("channel", SocketID.shell))  # pyright: ignore[reportAssignmentType]
-        job = Job(received_time=time.monotonic(), socket_id=socket_id, msg=msg, ident=b"")
-        self.kernel.msg_handler(socket_id, MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)
+        msg["channel"] = Channel(msg["channel"])
+        job = Job(received_time=time.monotonic(), msg=msg, ident=b"")
+        self.kernel.msg_handler(msg["channel"], MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)  # pyright: ignore[reportArgumentType]
 
     @override
     def iopub_send(
@@ -168,7 +168,7 @@ class CallableKernelInterface(BaseKernelInterface):
             parent = async_kernel.utils.get_parent()
         if not isinstance(msg_or_type, dict):
             msg_or_type = self.msg(msg_type=msg_or_type, content=content, parent=parent, metadata=metadata)  # pyright: ignore[reportArgumentType]
-        self._send_to_frontend(msg_or_type, "iopub", buffers=buffers)  # pyright: ignore[reportArgumentType]
+        self._send_to_frontend(msg_or_type, channel="iopub", buffers=buffers)  # pyright: ignore[reportArgumentType]
 
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:
@@ -177,6 +177,6 @@ class CallableKernelInterface(BaseKernelInterface):
             msg = "Stdin is not allowed in this context!"
             raise StdinNotImplementedError(msg)
         msg = self.msg("input_request", content={"prompt": prompt, "password": password})
-        reply = self._send_to_frontend(msg, "stdin", requires_reply=True)
+        reply = self._send_to_frontend(msg, channel=Channel.stdin, requires_reply=True)
         assert reply
         return reply["content"]["value"]

@@ -20,7 +20,7 @@ import async_kernel
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.iostream import OutStream
-from async_kernel.typing import Backend, Content, Message, MsgHeader, NoValue, SocketID
+from async_kernel.typing import Backend, Channel, Content, Message, MsgHeader, NoValue
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
@@ -55,7 +55,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     log = Instance(logging.LoggerAdapter)
     "The logging adapter."
 
-    callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
     ""
     kernel: Fixed[Self, Kernel] = Fixed(lambda _: async_kernel.Kernel())
@@ -94,8 +94,8 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
         self.anyio_backend = Backend(current_async_library())
         restore_io = None
         caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log)
-        self.callers[SocketID.shell] = caller
-        self.callers[SocketID.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
+        self.callers[Channel.shell] = caller
+        self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
         async with caller:
             try:
                 restore_io = self._patch_io()
@@ -161,6 +161,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
+        channel: Channel = Channel.shell,
     ) -> Message[dict[str, Any]]:
         """Return the nested message dict.
 
@@ -182,6 +183,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
                 version=async_kernel.kernel_protocol_version,
             )
         return Message(  # pyright: ignore[reportCallIssue]
+            channel=channel,
             header=header,
             parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
             content={} if content is None else content,

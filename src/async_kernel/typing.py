@@ -17,6 +17,7 @@ __all__ = [
     "Backend",
     "CallerCreateOptions",
     "CallerState",
+    "Channel",
     "Content",
     "DebugMessage",
     "ExecuteContent",
@@ -31,7 +32,6 @@ __all__ = [
     "NoValue",
     "PendingCreateOptions",
     "RunMode",
-    "SocketID",
     "Tags",
 ]
 
@@ -55,8 +55,8 @@ class KernelName(enum.StrEnum):
     trio = "async-trio"
 
 
-class SocketID(enum.StrEnum):
-    "Mapping of `Kernel.port_<id>` for sockets. [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
+class Channel(enum.StrEnum):
+    "An enum of channels[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
 
     heartbeat = "hb"
     ""
@@ -305,6 +305,9 @@ class MsgHeader(TypedDict):
 class Message(TypedDict, Generic[T]):
     "A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format)."
 
+    channel: Channel
+    "The channel of the message."
+
     header: MsgHeader
     "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)"
 
@@ -329,9 +332,6 @@ class Job(TypedDict, Generic[T]):
 
     msg: Message[T]
     "The message received over the socket."
-
-    socket_id: Literal[SocketID.control, SocketID.shell]
-    "The channel over which the socket was received."
 
     ident: bytes | list[bytes]
     "The ident associated with the message and its origin."

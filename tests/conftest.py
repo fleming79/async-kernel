@@ -13,7 +13,7 @@ from async_kernel import Caller
 from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Backend, ExecuteContent, Job, KernelName, Message, MsgHeader, MsgType, SocketID
+from async_kernel.typing import Backend, Channel, ExecuteContent, Job, KernelName, Message, MsgHeader, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
@@ -120,8 +120,8 @@ def job() -> Job[ExecuteContent]:
         code="", silent=True, store_history=True, user_expressions={}, allow_stdin=False, stop_on_error=True
     )
     header = MsgHeader(msg_id="", session="", username="", date="", msg_type=MsgType.execute_request, version="1")
-    msg = Message(header=header, parent_header=header, metadata={}, buffers=[], content=content)
-    return Job(msg=msg, socket_id=SocketID.shell, ident=[b""], received_time=0.0)
+    msg = Message(header=header, parent_header=header, metadata={}, buffers=[], content=content, channel=Channel.shell)
+    return Job(msg=msg, ident=[b""], received_time=0.0)
 
 
 @pytest.fixture
