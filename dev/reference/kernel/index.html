@@ -3042,10 +3042,10 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title=" callers (async_kernel.kernel.Kernel.callers)" href="#async_kernel.kernel.Kernel.callers">callers</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a>, <a class="autorefs autorefs-internal" title=" control (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a>], <span title="async_kernel.Caller">Caller</span>]]</code>)
+              (<code><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a>, <a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>], <span title="async_kernel.Caller">Caller</span>]]</code>)
           –
           <div class="doc-md-description">
-            <p>The caller associated with the kernel once it has started.</p>
+            <p>The callers associated with the kernel once it has started.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -3852,8 +3852,8 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
     <span class="n">interface</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Instance</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">)</span>
     <span class="s2">&quot;The abstraction to communicate with the kernel.&quot;</span>
 
-    <span class="n">callers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">],</span> <span class="n">Caller</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="s2">&quot;The caller associated with the kernel once it has started.&quot;</span>
+    <span class="n">callers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span> <span class="n">Caller</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="s2">&quot;The callers associated with the kernel once it has started.&quot;</span>
     <span class="s2">&quot;&quot;</span>
     <span class="n">subshell_manager</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">SubshellManager</span><span class="p">)</span>
     <span class="s2">&quot;Dedicated to management of sub shells.&quot;</span>
@@ -3997,7 +3997,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">caller</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Caller</span><span class="p">:</span>
         <span class="s2">&quot;The caller for the shell channel.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">transport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -4126,7 +4126,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 
     <span class="k">def</span><span class="w"> </span><span class="nf">msg_handler</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">socket_id</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">],</span>
+        <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span>
         <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span><span class="p">,</span>
         <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span>
         <span class="n">send_reply</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Job</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
@@ -4142,16 +4142,16 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="n">subshell_id</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">handler</span> <span class="o">=</span> <span class="n">cache_wrap_handler</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">,</span> <span class="n">send_reply</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_handler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">))</span>
-        <span class="n">run_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">socket_id</span><span class="o">=</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">job</span><span class="o">=</span><span class="n">job</span><span class="p">)</span>
+        <span class="n">run_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span> <span class="n">job</span><span class="o">=</span><span class="n">job</span><span class="p">)</span>
         <span class="k">match</span> <span class="n">run_mode</span><span class="p">:</span>
             <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">direct</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
             <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
             <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">task</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
             <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">run_mode</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HandlerType</span><span class="p">:</span>
@@ -4224,14 +4224,14 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">socket_id</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
+        <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
         <span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunMode</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Determine the run mode for a given channel, message type and job.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            socket_id: The socket ID the message was received on.</span>
+<span class="sd">            channel: The channel the message was received on.</span>
 <span class="sd">            msg_type: The type of the message.</span>
 <span class="sd">            job: The job associated with the message, if any.</span>
 
@@ -4245,10 +4245,10 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
         <span class="c1">#     return RunMode( mode_from_metadata)</span>
         <span class="c1"># if mode_from_header := job[&quot;msg&quot;][&quot;header&quot;].get(&quot;run_mode&quot;):</span>
         <span class="c1">#     return RunMode( mode_from_header)</span>
-        <span class="k">match</span> <span class="p">(</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">):</span>
+        <span class="k">match</span> <span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">):</span>
             <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
-            <span class="k">case</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
             <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">job</span><span class="p">:</span>
@@ -4267,7 +4267,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
                         <span class="k">return</span> <span class="n">RunMode</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">mode_</span><span class="p">)))</span>
                 <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
             <span class="k">case</span> <span class="p">(</span>
-                <span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
+                <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
                 <span class="n">MsgType</span><span class="o">.</span><span class="n">shutdown_request</span>
                 <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">debug_request</span>
                 <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">create_subshell_request</span>
@@ -4294,24 +4294,24 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 
     <span class="k">def</span><span class="w"> </span><span class="nf">all_concurrency_run_modes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">socket_ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">),</span>
+        <span class="n">channels</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">),</span>
         <span class="n">msg_types</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">MsgType</span><span class="p">]</span> <span class="o">=</span> <span class="n">MsgType</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span>
         <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span>
-        <span class="nb">tuple</span><span class="p">[</span><span class="n">SocketID</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="nb">tuple</span><span class="p">[</span><span class="n">Channel</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
     <span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates a dictionary containing all combinations of SocketID, and MsgType, along with their</span>
 <span class="sd">        corresponding RunMode (if available).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">socket_id</span> <span class="ow">in</span> <span class="n">socket_ids</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">msg_type</span> <span class="ow">in</span> <span class="n">msg_types</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">socket_id</span><span class="o">=</span><span class="n">socket_id</span><span class="p">)</span>
+                    <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                     <span class="n">mode</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">channel</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span>
         <span class="n">data_</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span> <span class="n">data_</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
@@ -4483,12 +4483,12 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
   </span>
 
 <a href="#async_kernel.kernel.Kernel.callers" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">callers</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a></span><span class="p">],</span> <span class="n"><span title="async_kernel.Caller">Caller</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">callers</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">],</span> <span class="n"><span title="async_kernel.Caller">Caller</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>The caller associated with the kernel once it has started.</p>
+        <p>The callers associated with the kernel once it has started.</p>
 
           
     </div>
@@ -5371,7 +5371,7 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.msg_handler" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">msg_handler</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(socket_id)">socket_id</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a></span><span class="p">],</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(channel)">channel</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">],</span>
     <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span>
     <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span>
     <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(send_reply)">send_reply</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
@@ -5439,7 +5439,7 @@ Instead a new instance should be started.</p>
 <span class="normal">426</span>
 <span class="normal">427</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg_handler</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">socket_id</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">],</span>
+    <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span><span class="p">,</span>
     <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span>
     <span class="n">send_reply</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Job</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
@@ -5455,16 +5455,16 @@ Instead a new instance should be started.</p>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">subshell_id</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">handler</span> <span class="o">=</span> <span class="n">cache_wrap_handler</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">,</span> <span class="n">send_reply</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_handler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">))</span>
-    <span class="n">run_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">socket_id</span><span class="o">=</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">job</span><span class="o">=</span><span class="n">job</span><span class="p">)</span>
+    <span class="n">run_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span> <span class="n">job</span><span class="o">=</span><span class="n">job</span><span class="p">)</span>
     <span class="k">match</span> <span class="n">run_mode</span><span class="p">:</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">direct</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">queue_call</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">task</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">socket_id</span><span class="p">]</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">run_mode</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5695,10 +5695,7 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.get_run_mode" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_run_mode</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(socket_id)">socket_id</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(channel)">channel</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span>
 </code></pre></div>
 
@@ -5710,13 +5707,13 @@ Instead a new instance should be started.</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<h4 id="async_kernel.kernel.Kernel.get_run_mode(socket_id)" class="doc doc-heading doc-heading-parameter">              <b><code>socket_id</code></b>
-<a href="#async_kernel.kernel.Kernel.get_run_mode(socket_id)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a>, <a class="autorefs autorefs-internal" title=" control (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a>]</code>, default:
-                  <code><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></code>
+<h4 id="async_kernel.kernel.Kernel.get_run_mode(channel)" class="doc doc-heading doc-heading-parameter">              <b><code>channel</code></b>
+<a href="#async_kernel.kernel.Kernel.get_run_mode(channel)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a>, <a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>]</code>, default:
+                  <code><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></code>
 )
           –
           <div class="doc-md-description">
-            <p>The socket ID the message was received on.</p>
+            <p>The channel the message was received on.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -5852,14 +5849,14 @@ Instead a new instance should be started.</p>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">socket_id</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
+    <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
     <span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunMode</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determine the run mode for a given channel, message type and job.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        socket_id: The socket ID the message was received on.</span>
+<span class="sd">        channel: The channel the message was received on.</span>
 <span class="sd">        msg_type: The type of the message.</span>
 <span class="sd">        job: The job associated with the message, if any.</span>
 
@@ -5873,10 +5870,10 @@ Instead a new instance should be started.</p>
     <span class="c1">#     return RunMode( mode_from_metadata)</span>
     <span class="c1"># if mode_from_header := job[&quot;msg&quot;][&quot;header&quot;].get(&quot;run_mode&quot;):</span>
     <span class="c1">#     return RunMode( mode_from_header)</span>
-    <span class="k">match</span> <span class="p">(</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">):</span>
+    <span class="k">match</span> <span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">):</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
-        <span class="k">case</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">:</span>
+        <span class="k">case</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">,</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">job</span><span class="p">:</span>
@@ -5895,7 +5892,7 @@ Instead a new instance should be started.</p>
                     <span class="k">return</span> <span class="n">RunMode</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">mode_</span><span class="p">)))</span>
             <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
         <span class="k">case</span> <span class="p">(</span>
-            <span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
+            <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
             <span class="n">MsgType</span><span class="o">.</span><span class="n">shutdown_request</span>
             <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">debug_request</span>
             <span class="o">|</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">create_subshell_request</span>
@@ -5934,10 +5931,10 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.all_concurrency_run_modes" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">all_concurrency_run_modes</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.all_concurrency_run_modes(socket_ids)">socket_ids</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a></span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.SocketID.shell)" href="../typing/#async_kernel.typing.SocketID.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.SocketID.control)" href="../typing/#async_kernel.typing.SocketID.control">control</a></span><span class="p">),</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.all_concurrency_run_modes(channels)">channels</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">),</span>
     <span class="n"><span title="async_kernel.kernel.Kernel.all_concurrency_run_modes(msg_types)">msg_types</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span>
-    <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" SocketID (async_kernel.typing.SocketID)" href="../typing/#async_kernel.typing.SocketID">SocketID</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Channel (async_kernel.typing.Channel)" href="../typing/#async_kernel.typing.Channel">Channel</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
 <span class="p">]</span>
 </code></pre></div>
 
@@ -5973,24 +5970,24 @@ corresponding RunMode (if available).</p>
 <span class="normal">587</span>
 <span class="normal">588</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">all_concurrency_run_modes</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">socket_ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">SocketID</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">SocketID</span><span class="o">.</span><span class="n">control</span><span class="p">),</span>
+    <span class="n">channels</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">),</span>
     <span class="n">msg_types</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">MsgType</span><span class="p">]</span> <span class="o">=</span> <span class="n">MsgType</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span>
     <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span>
-    <span class="nb">tuple</span><span class="p">[</span><span class="n">SocketID</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="nb">tuple</span><span class="p">[</span><span class="n">Channel</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">RunMode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
 <span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates a dictionary containing all combinations of SocketID, and MsgType, along with their</span>
 <span class="sd">    corresponding RunMode (if available).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">socket_id</span> <span class="ow">in</span> <span class="n">socket_ids</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">msg_type</span> <span class="ow">in</span> <span class="n">msg_types</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">socket_id</span><span class="o">=</span><span class="n">socket_id</span><span class="p">)</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="n">mode</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">socket_id</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">channel</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span>
     <span class="n">data_</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span> <span class="n">data_</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
@@ -6033,12 +6030,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.kernel_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_info_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6165,12 +6158,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6226,12 +6215,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;complete_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6415,12 +6400,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.history_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6476,12 +6457,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_open"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_open</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6537,12 +6514,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_msg"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_msg</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6598,12 +6571,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_close"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_close</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6659,12 +6628,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.interrupt_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupt_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6722,12 +6687,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.shutdown_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shutdown_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6785,24 +6746,9 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.debug_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug_request</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.list_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;list_subshell_request</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -6857,12 +6803,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.create_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;create_subshell_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
