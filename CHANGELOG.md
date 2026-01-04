@@ -5,9 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-01-04
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Renamed SocketID to Channel and embed the channel inside the message and use channel in place of socket_id. [#286](https://github.com/fleming79/async-kernel/pull/286)
+
+### <!-- 2 --> 🐛 Fixes
+
+- Fix to_thread for pyodide. [#283](https://github.com/fleming79/async-kernel/pull/283)
+
+- Fix Caller.as_completed sometimes does not yield the last result. [#282](https://github.com/fleming79/async-kernel/pull/282)
+
+### <!-- 5 --> 📝 Documentation
+
+- Update notebook examples [#285](https://github.com/fleming79/async-kernel/pull/285)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Make interrupt tests more deterministic. [#284](https://github.com/fleming79/async-kernel/pull/284)
+
+- Metadata and buffers [#281](https://github.com/fleming79/async-kernel/pull/281)
+
 ## [0.10.3] - 2026-01-02
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.10.3 [#280](https://github.com/fleming79/async-kernel/pull/280)
 
 - Always set buffers in incoming messages in the callable interface. [#279](https://github.com/fleming79/async-kernel/pull/279)
 
@@ -741,6 +765,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.11.0]: https://github.com/fleming79/async-kernel/compare/v0.10.3..v0.11.0
 [0.10.3]: https://github.com/fleming79/async-kernel/compare/v0.10.2..v0.10.3
 [0.10.2]: https://github.com/fleming79/async-kernel/compare/v0.10.1..v0.10.2
 [0.10.1]: https://github.com/fleming79/async-kernel/compare/v0.10.0..v0.10.1
