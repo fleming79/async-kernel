@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.typing import MsgType
+from async_kernel.typing import Channel, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
@@ -287,7 +287,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     msg = client.session.msg(MsgType.create_subshell_request, {})
     client.control_channel.send(msg)
     msg_id = msg["header"]["msg_id"]
-    reply = await utils.get_reply(client, msg_id, channel="control")
+    reply = await utils.get_reply(client, msg_id, channel=Channel.control)
     utils.validate_message(reply, "create_subshell_reply", msg_id)
     assert reply["content"]["status"] == "ok"
     subshell_id = reply["content"]["subshell_id"]
@@ -297,7 +297,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     msg = client.session.msg(MsgType.list_subshell_request, {})
     client.control_channel.send(msg)
     msg_id = msg["header"]["msg_id"]
-    reply = await utils.get_reply(client, msg_id, channel="control")
+    reply = await utils.get_reply(client, msg_id, channel=Channel.control)
     utils.validate_message(reply, "list_subshell_reply", msg_id)
     assert reply["content"]["status"] == "ok"
     assert reply["content"]["subshell_id"] == [subshell_id]
@@ -306,7 +306,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     msg = client.session.msg(MsgType.delete_subshell_request, {"subshell_id": subshell_id})
     client.control_channel.send(msg)
     msg_id = msg["header"]["msg_id"]
-    reply = await utils.get_reply(client, msg_id, channel="control")
+    reply = await utils.get_reply(client, msg_id, channel=Channel.control)
     utils.validate_message(reply, "delete_subshell_reply", msg_id)
     assert reply["content"]["status"] == "ok"
     assert subshell_id not in kernel.subshell_manager.subshells

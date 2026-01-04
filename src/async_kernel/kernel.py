@@ -37,6 +37,7 @@ from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import (
+    Channel,
     Content,
     ExecuteContent,
     HandlerType,
@@ -46,7 +47,6 @@ from async_kernel.typing import (
     MsgType,
     NoValue,
     RunMode,
-    SocketID,
 )
 
 if TYPE_CHECKING:
@@ -124,8 +124,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     interface = traitlets.Instance(BaseKernelInterface)
     "The abstraction to communicate with the kernel."
 
-    callers: Fixed[Self, dict[Literal[SocketID.shell, SocketID.control], Caller]] = Fixed(dict)
-    "The caller associated with the kernel once it has started."
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
+    "The callers associated with the kernel once it has started."
     ""
     subshell_manager = Fixed(SubshellManager)
     "Dedicated to management of sub shells."
@@ -269,7 +269,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     @property
     def caller(self) -> Caller:
         "The caller for the shell channel."
-        return self.callers[SocketID.shell]
+        return self.callers[Channel.shell]
 
     @property
     def transport(self):
@@ -398,7 +398,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     def msg_handler(
         self,
-        socket_id: Literal[SocketID.shell, SocketID.control],
+        channel: Literal[Channel.shell, Channel.control],
         msg_type: MsgType,
         job: Job,
         send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
@@ -414,16 +414,16 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             except KeyError:
                 subshell_id = None
         handler = cache_wrap_handler(subshell_id, send_reply, self.run_handler, self.get_handler(msg_type))
-        run_mode = self.get_run_mode(msg_type, socket_id=socket_id, job=job)
+        run_mode = self.get_run_mode(msg_type, channel=channel, job=job)
         match run_mode:
             case RunMode.direct:
-                self.callers[socket_id].call_direct(handler, job)
+                self.callers[channel].call_direct(handler, job)
             case RunMode.queue:
-                self.callers[socket_id].queue_call(handler, job)
+                self.callers[channel].queue_call(handler, job)
             case RunMode.task:
-                self.callers[socket_id].call_soon(handler, job)
+                self.callers[channel].call_soon(handler, job)
             case RunMode.thread:
-                self.callers[socket_id].to_thread(handler, job)
+                self.callers[channel].to_thread(handler, job)
         self.log.debug("%s %s %s %s", msg_type, handler, run_mode, job)
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
@@ -496,14 +496,14 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self,
         msg_type: MsgType,
         *,
-        socket_id: Literal[SocketID.shell, SocketID.control] = SocketID.shell,
+        channel: Literal[Channel.shell, Channel.control] = Channel.shell,
         job: Job | None = None,
     ) -> RunMode:
         """
         Determine the run mode for a given channel, message type and job.
 
         Args:
-            socket_id: The socket ID the message was received on.
+            channel: The channel the message was received on.
             msg_type: The type of the message.
             job: The job associated with the message, if any.
 
@@ -517,10 +517,10 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         #     return RunMode( mode_from_metadata)
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
-        match (socket_id, msg_type):
+        match (channel, msg_type):
             case _, MsgType.comm_msg:
                 return RunMode.queue
-            case SocketID.control, MsgType.execute_request:
+            case Channel.control, MsgType.execute_request:
                 return RunMode.queue
             case _, MsgType.execute_request:
                 if job:
@@ -539,7 +539,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                         return RunMode(next(iter(mode_)))
                 return RunMode.queue
             case (
-                SocketID.shell,
+                Channel.shell,
                 MsgType.shutdown_request
                 | MsgType.debug_request
                 | MsgType.create_subshell_request
@@ -566,24 +566,24 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     def all_concurrency_run_modes(
         self,
-        socket_ids: Iterable[Literal[SocketID.shell, SocketID.control]] = (SocketID.shell, SocketID.control),
+        channels: Iterable[Literal[Channel.shell, Channel.control]] = (Channel.shell, Channel.control),
         msg_types: Iterable[MsgType] = MsgType,
     ) -> dict[
         Literal["SocketID", "MsgType", "RunMode"],
-        tuple[SocketID, MsgType, RunMode | None],
+        tuple[Channel, MsgType, RunMode | None],
     ]:
         """
         Generates a dictionary containing all combinations of SocketID, and MsgType, along with their
         corresponding RunMode (if available).
         """
         data: list[Any] = []
-        for socket_id in socket_ids:
+        for channel in channels:
             for msg_type in msg_types:
                 try:
-                    mode = self.get_run_mode(msg_type, socket_id=socket_id)
+                    mode = self.get_run_mode(msg_type, channel=channel)
                 except ValueError:
                     mode = None
-                data.append((socket_id, msg_type, mode))
+                data.append((channel, msg_type, mode))
         data_ = zip(*data, strict=True)
         return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
 
