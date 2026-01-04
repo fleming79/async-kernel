@@ -183,7 +183,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     def __repr__(self) -> str:
         n = len(self._children)
         children = "" if not n else ("1 child" if n == 1 else f"{n} children")
-        info = f"{self.name} at {self.ident}" if (sys.platform == "emscripten") else self.name
+        info = f"{self.name} at {id(self)}"
         return f"Caller<{info!s} {self.backend} {self._state_reprs.get(self._state)} {children}>"
 
     def __new__(
@@ -274,6 +274,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                     token = self._caller_token.set(self._ident)
                 except AttributeError:
                     token = None
+
+                if not self._name:
+                    self._name = threading.current_thread().name
 
                 if self._state is CallerState.start_sync:
                     self._state = CallerState.initial
