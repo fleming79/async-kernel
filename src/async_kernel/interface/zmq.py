@@ -354,7 +354,7 @@ class ZMQKernelInterface(BaseKernelInterface):
                 metadata=metadata,
                 parent=parent if parent is not NoValue else utils.get_parent(),  # pyright: ignore[reportArgumentType]
                 ident=ident,
-                buffers=buffers,
+                buffers=buffers,  # pyright: ignore[reportArgumentType]
             )
             if msg:
                 self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["header"]["msg_type"], msg["content"])

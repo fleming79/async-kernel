@@ -11,17 +11,16 @@ import textwrap
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-# path to kernelspec resources
-RESOURCES = Path(__file__).parent.joinpath("resources")
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     InterfaceStartType = Callable[[None | dict[str, Any]], Any]
 
-__all__ = ["get_kernel_dir", "import_start_interface", "make_argv", "write_kernel_spec"]
+__all__ = ["PROTOCOL_VERSION", "get_kernel_dir", "import_start_interface", "make_argv", "write_kernel_spec"]
 
-
+# path to kernelspec resources
+RESOURCES = Path(__file__).parent.joinpath("resources")
+PROTOCOL_VERSION = "5.5"
 CUSTOM_KERNEL_MARKER = "↤"
 DEFAULT_START_INTERFACE = "async_kernel.interface.start_kernel_zmq_interface"
 
@@ -140,6 +139,7 @@ def write_kernel_spec(
         spec.language = "python"
         spec.interrupt_mode = "message"
         spec.metadata = {"debugger": True}
+        spec.kernel_protocol_version = PROTOCOL_VERSION
         # write kernel.json
         with path.joinpath("kernel.json").open("w") as f:
             json.dump(spec.to_dict(), f, indent=1)

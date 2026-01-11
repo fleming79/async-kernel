@@ -4,11 +4,12 @@ from importlib.metadata import version
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.kernel import Kernel
+from async_kernel.kernelspec import PROTOCOL_VERSION
 from async_kernel.pending import Pending
 
 __version__ = version(distribution_name="async-kernel")
 
-kernel_protocol_version = "5.4"
+kernel_protocol_version = PROTOCOL_VERSION
 kernel_protocol_version_info = {
     "name": "python",
     "version": ".".join(map(str, sys.version_info[0:3])),

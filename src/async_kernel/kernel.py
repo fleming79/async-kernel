@@ -283,6 +283,10 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
         "A dict of detail sent in reply to for a 'kernel_info_request'."
+        supported_features = ["kernel subshells"]
+        if not utils.LAUNCHED_BY_DEBUGPY and sys.platform != "emscripten":
+            supported_features.append("debugger")
+
         return {
             "protocol_version": async_kernel.kernel_protocol_version,
             "implementation": "async_kernel",
@@ -290,9 +294,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             "language_info": async_kernel.kernel_protocol_version_info,
             "banner": self.shell.banner,
             "help_links": self.help_links,
-            "debugger": not utils.LAUNCHED_BY_DEBUGPY,
+            "debugger": (not utils.LAUNCHED_BY_DEBUGPY) & (sys.platform != "emscripten"),
             "kernel_name": self.kernel_name,
-            "supported_features": ["kernel subshells"],
+            "supported_features": supported_features,
         }
 
     def load_settings(self, settings: dict[str, Any]) -> None:
