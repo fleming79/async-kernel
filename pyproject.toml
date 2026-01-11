@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.4", "jupyter_client>=8", "hatch-vcs"]
+requires = ["hatchling>=1.4", "jupyter_client>=8.8", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -45,7 +45,7 @@ dependencies = [
     "wrapt>=2.0.1",
     "jupyter-core>=5.9.1",
     "pyzmq>=27.0; sys_platform != 'emscripten'", # pyzmq sockets (and threading) are not supported on pyodide (emscripten), `CallableKernelInterface` is used for kernel messaging.  
-    "jupyter_client>=8.6; sys_platform != 'emscripten'",
+    "jupyter_client>=8.8; sys_platform != 'emscripten'",
 ]
 
 [project.urls]
