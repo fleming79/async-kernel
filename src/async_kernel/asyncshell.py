@@ -15,7 +15,7 @@ from aiologic.lowlevel import async_checkpoint
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
-from IPython.core.interactiveshell import ExecutionResult, InteractiveShell, InteractiveShellABC
+from IPython.core.interactiveshell import InteractiveShell, InteractiveShellABC
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
@@ -194,14 +194,9 @@ class AsyncInteractiveShell(InteractiveShell):
     stop_on_error_time_offset = Float(0.0)
     "An offset to add to the cancellation time to catch late arriving execute requests."
 
-    run_cell: Callable[..., ExecutionResult] = None  # pyright: ignore[reportAssignmentType]
-    "**Not supported** -  use [execute_request][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] instead."
-    should_run_async = None  # pyright: ignore[reportAssignmentType]
     loop_runner_map = None
     loop_runner = None
     autoindent = False
-    debug = None
-    "**Not supported - use the built in debugger instead.**"
 
     @override
     def __repr__(self) -> str:
