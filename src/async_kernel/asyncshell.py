@@ -258,6 +258,20 @@ class AsyncInteractiveShell(InteractiveShell):
     def init_user_ns(self) -> None:
         return
 
+    @override
+    def init_hooks(self):
+        """Initialize hooks."""
+        super().init_hooks()
+
+        def _show_in_pager(self, data: str | dict, start=0, screen_lines=0, pager_cmd=None) -> None:
+            "Handle IPython page calls"
+            if isinstance(data, dict):
+                self.kernel.interface.iopub_send("display_data", content=data)
+            else:
+                self.kernel.interface.iopub_send("stream", content={"name": "stdout", "text": data})
+
+        self.set_hook("show_in_pager", _show_in_pager, 99)
+
     @property
     @override
     def execution_count(self) -> int:
@@ -427,8 +441,6 @@ class AsyncInteractiveShell(InteractiveShell):
             oname = token_at_cursor(code, cursor_pos)
             bundle = self.object_inspect_mime(oname, detail_level=detail_level)
             content["data"] = bundle
-            if not self.enable_html_pager:
-                content["data"].pop("text/html")
         except KeyError:
             content["found"] = False
         return content
