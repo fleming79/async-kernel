@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 
 import anyio
 import pytest
+from IPython.core import page
 
 import async_kernel.utils
 from async_kernel import Kernel
@@ -629,3 +630,15 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
         async_kernel.utils.subshell_context(subshell.subshell_id),
     ):
         pass
+
+
+async def test_page(client: AsyncKernelClient, kernel: Kernel):
+    msg_id = client.execute("?", allow_stdin=True)
+    await utils.check_pub_message(client, msg_id, execution_state="busy")
+    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+    msg = await utils.check_pub_message(client, msg_id, msg_type="stream")
+    assert msg["header"]["msg_type"] == "stream"
+    assert list(msg["content"]) == ["name", "text"]
+    await utils.check_pub_message(client, msg_id, execution_state="idle")
+    page.page({"data": {"text/plain": "hello, world"}, "metadata": {}})
+    await utils.check_pub_message(client, "", msg_type="display_data")
