@@ -49,6 +49,12 @@
     
     
       
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
     
     
       <link rel="stylesheet" href="assets/_mkdocstrings.css">
@@ -1594,10 +1600,13 @@ viewing the latest version.
 <a href="https://squidfunk.github.io/mkdocs-material/"><img alt="Built with Material for MkDocs" src="https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&amp;logo=MaterialForMkDocs&amp;logoColor=white" /></a>
 <a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a></p>
 <p><img alt="logo-svg" src="https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587" /></p>
-<p>Async kernel is an asynchronous Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter kernel</a>
-with <a href="#run-mode">concurrent message handling</a>.</p>
+<p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter</a> kernel
+with <a href="#run-mode">fully configurable concurrent message handling</a>. One major benefit of concurrent
+message handling is that iopub messages, such as those associated with widgets can pass freely whist
+an execute request is underway.</p>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
 <ul class="task-list">
+<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> try it online <a href="https://fleming79.github.io/echo-kernel/">here</a></li>
 <li><a href="https://fleming79.github.io/async-kernel/latest/notebooks/simple_example/">Concurrent message handling</a></li>
 <li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a></li>
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a><ul>
@@ -1608,20 +1617,14 @@ with <a href="#run-mode">concurrent message handling</a>.</p>
 </li>
 </ul>
 </li>
-<li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a>
-  provides:<ul>
-<li>code execution</li>
-<li>magic</li>
-<li>code completions</li>
-<li>history</li>
-</ul>
-</li>
+<li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a></li>
 <li>Thread-safe execution and cancellation (utilising <a href="https://aiologic.readthedocs.io/latest/">aiologic</a> synchronisation primitives).<ul>
 <li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Caller</a> - code execution in a chosen event loop</li>
 <li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending">Pending</a> - wait/await/cancel the pending result</li>
 <li>PendingGroup - An asynchronous context to automatically manage pending created in the context.</li>
 </ul>
 </li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <a href="#jupyter-kernel-subshells">Jupyter Kernel Subshells</a></li>
 <li>GUI event loops<ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
@@ -1629,7 +1632,6 @@ with <a href="#run-mode">concurrent message handling</a>.</p>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> qt</li>
 </ul>
 </li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <a href="#jupyter-kernel-subshells">Jupyter Kernel Subshells</a></li>
 </ul>
 <p><strong><a href="https://fleming79.github.io/async-kernel/">Documentation</a></strong></p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
