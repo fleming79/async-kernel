@@ -11,4 +11,6 @@ Notebooks[^1] in this documentation show the result of each cell after executing
 
 You can download the notebook with the button at the top right of the page for the notebook.
 
+You can also try async-kernel with Jupyterlite directly in your browser at https://fleming79.github.io/echo-kernel.
+
 [^1]: Further detail about how notebooks are generated is provided [here](../about/contributing.md#notebooks).

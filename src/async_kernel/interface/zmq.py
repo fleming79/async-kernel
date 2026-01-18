@@ -1,3 +1,5 @@
+"A collection of objects defining the kernel interface using zmq sockets."
+
 from __future__ import annotations
 
 import atexit

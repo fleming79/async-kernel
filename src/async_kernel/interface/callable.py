@@ -1,4 +1,4 @@
-"""Defines a kernel interface that uses functions for kernel messaging messages."""
+"""A collection of objects to provide a kernel interface based on callbacks."""
 
 from __future__ import annotations
 

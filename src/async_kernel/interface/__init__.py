@@ -20,9 +20,6 @@ async def start_kernel_callable_interface(
 ) -> Handlers:
     """
     Start the kernel with the callback based kernel interface [CallableKernelInterface][async_kernel.interface.callable.CallableKernelInterface].
-
-    Used by:
-        - [`jupyterlite-async-kernel`](https://github.com/fleming79/echo-kernel): A Jupyterlite compatible Pyodide kernel (Experimental)
     """
     from async_kernel.interface.callable import CallableKernelInterface  # noqa: PLC0415
 
