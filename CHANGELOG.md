@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.2] - 2026-01-18
+
+### <!-- 1 --> 🚀 Features
+
+- Implement iopub_welcome for JEP65 [#292](https://github.com/fleming79/async-kernel/pull/292)
+
+- Provide a show_in_pager hook. [#291](https://github.com/fleming79/async-kernel/pull/291)
+
+### <!-- 5 --> 📝 Documentation
+
+- Update docs [#293](https://github.com/fleming79/async-kernel/pull/293)
+
 ## [0.11.1] - 2026-01-12
 
 ### <!-- 1 --> 🚀 Features
@@ -12,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove overrides of `run_cell`, `should_run_async` and `debug`, not testing, but assumed to be functional. [#289](https://github.com/fleming79/async-kernel/pull/289)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.11.1 [#290](https://github.com/fleming79/async-kernel/pull/290)
 
 - Add kernel_protocol_version to kernelspec. [#288](https://github.com/fleming79/async-kernel/pull/288)
 
@@ -777,6 +791,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.11.2]: https://github.com/fleming79/async-kernel/compare/v0.11.1..v0.11.2
 [0.11.1]: https://github.com/fleming79/async-kernel/compare/v0.11.0..v0.11.1
 [0.11.0]: https://github.com/fleming79/async-kernel/compare/v0.10.3..v0.11.0
 [0.10.3]: https://github.com/fleming79/async-kernel/compare/v0.10.2..v0.10.3
