@@ -215,6 +215,13 @@ class Stream(Reference):
     text = Unicode()
 
 
+class Welcome(Reference):
+    @override
+    def check(self, d):
+        super().check(d)
+        assert isinstance(d["subscription"], str)
+
+
 class DisplayData(MimeBundle):
     pass
 
@@ -267,4 +274,5 @@ references = {
     "create_subshell_reply": CreateSubshellReply(),
     "delete_subshell_reply": DeleteSubshellReply(),
     "list_subshell_reply": ListSubshellReply(),
+    "iopub_welcome": Welcome(),
 }

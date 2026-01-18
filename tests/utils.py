@@ -172,6 +172,12 @@ async def send_control_message(
 
 async def check_pub_message(client: AsyncKernelClient, msg_id: str, /, *, msg_type="status", **content_checks):
     msg = await client.get_iopub_msg()
+    if msg_type == "iopub_welcome":
+        msg = f"{msg_type=} is not allowed"
+        raise ValueError(msg)
+    if msg["msg_type"] == "iopub_welcome":
+        validate_message(msg, "iopub_welcome")
+        msg = await client.get_iopub_msg()
     validate_message(msg, msg_type, msg_id)
     content = msg["content"]
     for k, v in content_checks.items():

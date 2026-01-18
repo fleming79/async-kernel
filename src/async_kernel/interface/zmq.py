@@ -103,6 +103,7 @@ class ZMQKernelInterface(BaseKernelInterface):
 
     _zmq_context = Fixed(zmq.Context)
     _interrupt_requested: bool | Literal["FORCE"] = False
+    _iopub_url = "inproc://iopub-capture"
 
     sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
     ""
@@ -231,19 +232,28 @@ class ZMQKernelInterface(BaseKernelInterface):
                     return
 
         def pub_proxy(ready: Event) -> None:
+            utils.mark_thread_pydev_do_not_trace()
+
             # We use an internal proxy to collect pub messages for distribution.
             # Each thread needs to open its own socket to publish to the internal proxy.
-            # When thread-safe sockets become available, this could be changed...
             # Ref: https://zguide.zeromq.org/docs/chapter2/#Working-with-Messages (fig 14)
-            utils.mark_thread_pydev_do_not_trace()
+
             frontend: zmq.Socket = self._zmq_context.socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
+
+            # Capture broadcasts messages received on both frontend and backend
+            capture = self._zmq_context.socket(zmq.PUB)
+            capture.bind(self._iopub_url)
+            threading.Thread(target=self._pub_capture).start()
+
             with self._bind_socket(Channel.iopub) as iopub_socket:
                 ready.set()
                 try:
-                    zmq.proxy(frontend, iopub_socket)
-                except zmq.ContextTerminated:
-                    frontend.close(linger=50)
+                    zmq.proxy(frontend, iopub_socket, capture)
+                except (zmq.ContextTerminated, Exception):
+                    pass
+            frontend.close(linger=50)
+            capture.close(linger=50)
 
         hb_ready, iopub_ready = (Event(), Event())
         threading.Thread(target=heartbeat, name="heartbeat", args=[hb_ready]).start()
@@ -256,6 +266,34 @@ class ZMQKernelInterface(BaseKernelInterface):
             name = f"{channel}-receive_msg_loop"
             threading.Thread(target=self.receive_msg_loop, name=name, args=(channel, ready, start)).start()
             ready.wait()
+
+    def _pub_capture(self):
+        """
+        Capture connection messages on iopub.
+
+        Will send an 'iopub_welcome' whenever a socket subscribes to the iopub socket [ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message).
+        """
+
+        utils.mark_thread_pydev_do_not_trace()
+
+        socket: zmq.Socket = self._zmq_context.socket(zmq.SUB)
+        socket.linger = 0
+        socket.connect(self._iopub_url)
+        # welcome_message:  https://jupyter.org/enhancement-proposals/65-jupyter-xpub/jupyter-xpub.html#replace-pub-socket-with-xpub-socket
+        # Only subscribe to the 'pub subscribe' topic byte `1` (byte `0` is 'pub unsubscribe').
+        socket.subscribe(b"\x01")
+        with socket:
+            while True:
+                try:
+                    if frames := socket.recv_multipart():
+                        frame = next(iter(frames))
+                        if frame[0] == 1:
+                            msg = self.msg("iopub_welcome", content={"subscription": frame[1:].decode()})
+                            self.iopub_send(msg, parent=None)
+                except zmq.ContextTerminated:
+                    break
+                except Exception:
+                    continue
 
     @contextlib.contextmanager
     def _bind_socket(self, channel: Channel) -> Generator[Any | Socket[Any], Any, None]:
