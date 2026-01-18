@@ -1,3 +1,5 @@
+"""The base class definition to interface with the kernel."""
+
 from __future__ import annotations
 
 import builtins
@@ -50,7 +52,9 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
 
 
 class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
-    "A base class to interface with the kernel. Must be overloaded to be useful."
+    """
+    The base class required interface with the kernel. Must be overloaded to be useful.
+    """
 
     log = Instance(logging.LoggerAdapter)
     "The logging adapter."
@@ -59,6 +63,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     "The caller associated with the kernel once it has started."
     ""
     kernel: Fixed[Self, Kernel] = Fixed(lambda _: async_kernel.Kernel())
+    "The kernel."
 
     interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     "A set for callables can be added to run code when a kernel interrupt is initiated (control thread)."
@@ -130,23 +135,47 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
 
         return restore
 
-    def input_request(self, prompt: str, *, password=False) -> Any:
+    def input_request(self, prompt: str, *, password: bool = False) -> str:
+        """
+        Forward an input request to the frontend.
+
+        Args:
+            prompt: The user prompt.
+            password: If the prompt should be considered as a password.
+
+        Raises:
+           IPython.core.error.StdinNotImplementedError: if active frontend doesn't support stdi
+        """
         raise NotImplementedError
 
-    def raw_input(self, prompt="") -> Any:
+    def raw_input(self, prompt: str = "") -> str:
         """
-        Forward raw_input to frontends.
+        Forward a raw_input request to the client.
+
+        Args:
+            prompt: The user prompt.
 
         Raises:
            IPython.core.error.StdinNotImplementedError: if active frontend doesn't support stdin.
         """
         return self.input_request(str(prompt), password=False)
 
-    def getpass(self, prompt="") -> Any:
-        """Forward getpass to frontends."""
+    def getpass(self, prompt: str = "") -> str:
+        """
+        Forward getpass to the client.
+
+        Args:
+            prompt: The user prompt.
+
+        Raises:
+           IPython.core.error.StdinNotImplementedError: if active frontend doesn't support stdin.
+        """
         return self.input_request(prompt, password=True)
 
     def interrupt(self):
+        """
+        Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterruptError][].
+        """
         while self.interrupts:
             try:
                 self.interrupts.pop()()

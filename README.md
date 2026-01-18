@@ -11,11 +11,14 @@
 
 ![logo-svg](https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587)
 
-Async kernel is an asynchronous Python [Jupyter kernel](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
-with [concurrent message handling](#run-mode).
+Async kernel is a Python [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) kernel
+with [fully configurable concurrent message handling](#run-mode). One major benefit of concurrent
+message handling is that iopub messages, such as those associated with widgets can pass freely whist
+an execute request is underway.
 
 ## Highlights
 
+- [Experimental](https://github.com/fleming79/echo-kernel) support for [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/)
 - [Concurrent message handling](https://fleming79.github.io/async-kernel/latest/notebooks/simple_example/)
 - [Configurable backend](https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec)
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
@@ -23,21 +26,16 @@ with [concurrent message handling](#run-mode).
         - [`asyncio` backend](https://docs.python.org/3/library/asyncio.html) (default)[^uv-loop]
         - [`trio` backend](https://pypi.org/project/trio/)
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
-  provides:
-    - code execution
-    - magic
-    - code completions
-    - history
 - Thread-safe execution and cancellation (utilising [aiologic](https://aiologic.readthedocs.io/latest/) synchronisation primitives).
     - [Caller](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller) - code execution in a chosen event loop
     - [Pending](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending) - wait/await/cancel the pending result
     - PendingGroup - An asynchronous context to automatically manage pending created in the context.
+- [x] [Jupyter Kernel Subshells](#jupyter-kernel-subshells)
 - GUI event loops
     - [x] inline
     - [x] ipympl
     - [ ] tk
     - [ ] qt
-- [x] [Jupyter Kernel Subshells](#jupyter-kernel-subshells)
 
 **[Documentation](https://fleming79.github.io/async-kernel/)**
 

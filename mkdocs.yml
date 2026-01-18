@@ -40,7 +40,9 @@ theme:
     - navigation.path # https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/?h=breadcrumbs#navigation-path
   icon:
     annotation: material/information-outline
-  font: false
+  font:
+    text: Roboto
+    code: Roboto Mono
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
