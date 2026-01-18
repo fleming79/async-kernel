@@ -1,3 +1,5 @@
+"""Defines a kernel interface that uses functions for kernel messaging messages."""
+
 from __future__ import annotations
 
 import asyncio
@@ -31,10 +33,18 @@ class Handlers(TypedDict):
     "Handlers returned by [async_kernel.interface.callable.CallableKernelInterface][] when it is started."
 
     handle_msg: Callable[[str, list[bytes] | list[bytearray] | None]]
-    "The handler for all incoming messages."
+    """
+    Handle messages from the client.
+    
+    The handler requires two positional arguments
+        
+    1. The message serialized as a JSON string. The channel ("shell" or "control" ) 
+        should also be included in the Message under the key "channel". 
+    2. A list of buffers if there are any, or None if there are no buffers.
+    """
 
     stop: Callable[[], None]
-    "The handler to stop the kernel."
+    "Stop the kernel."
 
 
 class CallableKernelInterface(BaseKernelInterface):
@@ -46,18 +56,14 @@ class CallableKernelInterface(BaseKernelInterface):
         ```python
         from async_kernel.interface.callable import CallableKernelInterface
 
-        # The kernel is provided with callbacks to send messages
-        client_callbacks = {"send": ..., "stopped": ...}
+        # Start the kernel providing the necessary callbacks.
+        kernel_interface = await CallableKernelInterface(options).start(send=..., stopped=...)
 
-        callbacks = CallableKernelInterface(options).start(client_callbacks)
+        # Pass messages to the kernel.
+        kernel_interface["handle_msg"](msg, buffer)
 
-        # Pass messages to the kernel
-        callbacks["handle_msg"](msg, buffer)
-
-        ...
-
-        # Stop the kernel
-        callbacks["stop"](msg, buffer)
+        # Stop the kernel.
+        kernel_interface["stop"](msg, buffer)
         ```
     See also:
         - [async_kernel.typing.CallableKernelInterfaceReturnArgs]
@@ -91,7 +97,13 @@ class CallableKernelInterface(BaseKernelInterface):
         Start the kernel.
 
         Args:
-            send: The callback to send messages from the kernel to the client.
+            send: The function to send kernel messages to the client. It must accept
+
+                1. A json string of the message.
+                2. A list of buffers, or None if there are no buffers.
+                3. A boolean value that indicates a response is required for the stdio channel.
+
+            stopped: A callback that is called once the kernel has stopped.
 
         Returns: A pending that when resolved returns the message handler callback.
         """

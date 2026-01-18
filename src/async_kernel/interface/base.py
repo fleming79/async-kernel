@@ -1,3 +1,5 @@
+"""Defines the base class definition for the kernel to use as an interface for messaging."""
+
 from __future__ import annotations
 
 import builtins
@@ -59,6 +61,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     "The caller associated with the kernel once it has started."
     ""
     kernel: Fixed[Self, Kernel] = Fixed(lambda _: async_kernel.Kernel())
+    "The kernel."
 
     interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     "A set for callables can be added to run code when a kernel interrupt is initiated (control thread)."
