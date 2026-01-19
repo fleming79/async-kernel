@@ -36,6 +36,8 @@ if TYPE_CHECKING:
     from IPython.core.history import HistoryManager
     from traitlets.config import Configurable
 
+    from async_kernel import Kernel
+
 
 __all__ = ["AsyncInteractiveShell"]
 
@@ -177,7 +179,7 @@ class AsyncInteractiveShell(InteractiveShell):
     display_pub: Instance[AsyncDisplayPublisher]
     compiler_class = Type(XCachingCompiler)
     compile: Instance[XCachingCompiler]
-    kernel = Fixed(lambda _: utils.get_kernel())
+    kernel: Instance[Kernel] = Instance("async_kernel.Kernel", (), read_only=True)
     pending_manager = Fixed(PendingManager)
     subshell_id = Fixed(lambda _: None)
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())

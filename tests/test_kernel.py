@@ -633,6 +633,7 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
 
 
 async def test_page(client: AsyncKernelClient, kernel: Kernel):
+    await utils.clear_iopub(client)
     msg_id = client.execute("?", allow_stdin=True)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
