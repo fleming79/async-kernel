@@ -64,21 +64,25 @@ def write_kernel_spec(
     prefix: str = "",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
     connection_file: str = "{connection_file}",
+    env: dict | None = None,
+    metadata: dict | None = None,
     **kwargs: dict[str, Any],
 ) -> Path:
     """
-    Write a kernel spec for launching a kernel.
+    Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).
 
     Args:
         path: The path where to write the spec.
         kernel_name: The name of the kernel to use.
-        fullpath: If True the full path to the executable is used, otherwise 'python' is used.
         display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
+        fullpath: If True the full path to the executable is used, otherwise 'python' is used.
+        prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
+            This can be sys.prefix for installation inside virtual or conda envs.
         start_interface: The string import path to a callable that creates the Kernel or,
             a *self-contained* function that returns an instance of a `Kernel`.
         connection_file: The path to the connection file.
-        prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
-            This can be sys.prefix for installation inside virtual or conda envs.
+        env: A mapping environment variables for the kernel to set prior to starting.
+        metadata: A mapping of additional attributes to aid the client in kernel selection.
         **kwargs: Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
             For example `..., **{'shell.timeout'=0.1})`.
@@ -111,7 +115,6 @@ def write_kernel_spec(
         Warning:
             Moving the spec folder will break the import which is stored as an absolute path.
     """
-    from jupyter_client.kernelspec import KernelSpec  # noqa: PLC0415
 
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), kernel_name)
     path = Path(path) if path else (get_kernel_dir(prefix) / kernel_name)
@@ -119,30 +122,32 @@ def write_kernel_spec(
     try:
         path.mkdir(parents=True, exist_ok=True)
         if callable(start_interface):
-            with path.joinpath("start_interface.py").open("w") as f:
-                f.write(textwrap.dedent(inspect.getsource(start_interface)))
+            path.joinpath("start_interface.py").write_text(textwrap.dedent(inspect.getsource(start_interface)))
             start_interface = f"{path}{CUSTOM_KERNEL_MARKER}{start_interface.__name__}"
         # validate
         if start_interface != DEFAULT_START_INTERFACE:
             import_start_interface(start_interface)
         shutil.copytree(src=RESOURCES, dst=path, dirs_exist_ok=True)
-        spec = KernelSpec()
-        spec.argv = make_argv(
+
+        argv = make_argv(
             start_interface=start_interface,
             connection_file=connection_file,
             kernel_name=kernel_name,
             fullpath=fullpath,
             **kwargs,
         )
-        spec.name = kernel_name
-        spec.display_name = display_name or f"Python ({kernel_name})"
-        spec.language = "python"
-        spec.interrupt_mode = "message"
-        spec.metadata = {"debugger": True}
-        spec.kernel_protocol_version = PROTOCOL_VERSION
+        spec = {
+            "argv": argv,
+            "env": env or {},
+            "display_name": display_name or f"Python ({kernel_name})",
+            "language": "python",
+            "interrupt_mode": "message",
+            "metadata": metadata if metadata is not None else {"debugger": True, "concurrent": True},
+            "kernel_protocol_version": PROTOCOL_VERSION,
+        }
+
         # write kernel.json
-        with path.joinpath("kernel.json").open("w") as f:
-            json.dump(spec.to_dict(), f, indent=1)
+        path.joinpath("kernel.json").write_text(json.dumps(spec, indent=2))
     except Exception:
         shutil.rmtree(path, ignore_errors=True)
         raise
