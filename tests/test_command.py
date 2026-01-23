@@ -78,7 +78,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
         "display_name": "my kernel",
         "language": "python",
         "interrupt_mode": "message",
-        "metadata": {"debugger": True},
+        "metadata": {"concurrent": True, "debugger": True},
         "kernel_protocol_version": "5.5",
     }
 
