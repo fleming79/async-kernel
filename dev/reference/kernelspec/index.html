@@ -1165,6 +1165,17 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(display_name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;display_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.kernelspec.write_kernel_spec(fullpath)" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1176,10 +1187,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(display_name)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(prefix)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;display_name
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
       
     </span>
   </a>
@@ -1209,10 +1220,21 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(prefix)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(env)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;env
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(metadata)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;metadata
       
     </span>
   </a>
@@ -1723,6 +1745,17 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(display_name)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;display_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.kernelspec.write_kernel_spec(fullpath)" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1734,10 +1767,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(display_name)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(prefix)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;display_name
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
       
     </span>
   </a>
@@ -1767,10 +1800,21 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(prefix)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(env)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;env
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(metadata)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;metadata
       
     </span>
   </a>
@@ -1953,7 +1997,7 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title=" write_kernel_spec (async_kernel.kernelspec.write_kernel_spec)" href="#async_kernel.kernelspec.write_kernel_spec">write_kernel_spec</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Write a kernel spec for launching a kernel.</p>
+              <p>Write a kernel spec for launching a kernel <a href="https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs">ref</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -2161,13 +2205,15 @@ callable that returns a non-started kernel.</p>
     <span class="n"><a class="autorefs autorefs-internal" title=" prefix (async_kernel.kernelspec.write_kernel_spec(prefix))" href="#async_kernel.kernelspec.write_kernel_spec(prefix)">prefix</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" start_interface (async_kernel.kernelspec.write_kernel_spec(start_interface))" href="#async_kernel.kernelspec.write_kernel_spec(start_interface)">start_interface</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></span> <span class="o">=</span> <span class="n"><span title="async_kernel.kernelspec.DEFAULT_START_INTERFACE">DEFAULT_START_INTERFACE</span></span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title=" connection_file (async_kernel.kernelspec.write_kernel_spec(connection_file))" href="#async_kernel.kernelspec.write_kernel_spec(connection_file)">connection_file</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title=" env (async_kernel.kernelspec.write_kernel_spec(env))" href="#async_kernel.kernelspec.write_kernel_spec(env)">env</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title=" metadata (async_kernel.kernelspec.write_kernel_spec(metadata))" href="#async_kernel.kernelspec.write_kernel_spec(metadata)">metadata</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title=" **kwargs (async_kernel.kernelspec.write_kernel_spec(**kwargs))" href="#async_kernel.kernelspec.write_kernel_spec(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Write a kernel spec for launching a kernel.</p>
+        <p>Write a kernel spec for launching a kernel <a href="https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs">ref</a>.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2193,6 +2239,16 @@ callable that returns a non-started kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.write_kernel_spec(display_name)" class="doc doc-heading doc-heading-parameter">              <b><code>display_name</code></b>
+<a href="#async_kernel.kernelspec.write_kernel_spec(display_name)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The display name for Jupyter to use for the kernel. The default is <code>"Python ({kernel_name})"</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
 <h3 id="async_kernel.kernelspec.write_kernel_spec(fullpath)" class="doc doc-heading doc-heading-parameter">              <b><code>fullpath</code></b>
 <a href="#async_kernel.kernelspec.write_kernel_spec(fullpath)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
                   <code>False</code>
@@ -2203,13 +2259,14 @@ callable that returns a non-started kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.write_kernel_spec(display_name)" class="doc doc-heading doc-heading-parameter">              <b><code>display_name</code></b>
-<a href="#async_kernel.kernelspec.write_kernel_spec(display_name)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+<h3 id="async_kernel.kernelspec.write_kernel_spec(prefix)" class="doc doc-heading doc-heading-parameter">              <b><code>prefix</code></b>
+<a href="#async_kernel.kernelspec.write_kernel_spec(prefix)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
                   <code>&#39;&#39;</code>
 )
           –
           <div class="doc-md-description">
-            <p>The display name for Jupyter to use for the kernel. The default is <code>"Python ({kernel_name})"</code>.</p>
+            <p>given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
+This can be sys.prefix for installation inside virtual or conda envs.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2234,14 +2291,23 @@ a <em>self-contained</em> function that returns an instance of a <code>Kernel</c
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.write_kernel_spec(prefix)" class="doc doc-heading doc-heading-parameter">              <b><code>prefix</code></b>
-<a href="#async_kernel.kernelspec.write_kernel_spec(prefix)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
-                  <code>&#39;&#39;</code>
+<h3 id="async_kernel.kernelspec.write_kernel_spec(env)" class="doc doc-heading doc-heading-parameter">              <b><code>env</code></b>
+<a href="#async_kernel.kernelspec.write_kernel_spec(env)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None</code>, default:
+                  <code>None</code>
 )
           –
           <div class="doc-md-description">
-            <p>given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
-This can be sys.prefix for installation inside virtual or conda envs.</p>
+            <p>A mapping environment variables for the kernel to set prior to starting.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.write_kernel_spec(metadata)" class="doc doc-heading doc-heading-parameter">              <b><code>metadata</code></b>
+<a href="#async_kernel.kernelspec.write_kernel_spec(metadata)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>A mapping of additional attributes to aid the client in kernel selection.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2408,7 +2474,12 @@ Warning:
 <span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
-<span class="normal">150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">kernel_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
@@ -2417,21 +2488,25 @@ Warning:
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">start_interface</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">DEFAULT_START_INTERFACE</span><span class="p">,</span>
     <span class="n">connection_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">env</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Write a kernel spec for launching a kernel.</span>
+<span class="sd">    Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        path: The path where to write the spec.</span>
 <span class="sd">        kernel_name: The name of the kernel to use.</span>
-<span class="sd">        fullpath: If True the full path to the executable is used, otherwise &#39;python&#39; is used.</span>
 <span class="sd">        display_name: The display name for Jupyter to use for the kernel. The default is `&quot;Python ({kernel_name})&quot;`.</span>
+<span class="sd">        fullpath: If True the full path to the executable is used, otherwise &#39;python&#39; is used.</span>
+<span class="sd">        prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.</span>
+<span class="sd">            This can be sys.prefix for installation inside virtual or conda envs.</span>
 <span class="sd">        start_interface: The string import path to a callable that creates the Kernel or,</span>
 <span class="sd">            a *self-contained* function that returns an instance of a `Kernel`.</span>
 <span class="sd">        connection_file: The path to the connection file.</span>
-<span class="sd">        prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.</span>
-<span class="sd">            This can be sys.prefix for installation inside virtual or conda envs.</span>
+<span class="sd">        env: A mapping environment variables for the kernel to set prior to starting.</span>
+<span class="sd">        metadata: A mapping of additional attributes to aid the client in kernel selection.</span>
 <span class="sd">        **kwargs: Pass additional settings to set on the instance of the `Kernel` when it is instantiated.</span>
 <span class="sd">            Each setting should correspond to the dotted path to the attribute relative to the kernel.</span>
 <span class="sd">            For example `..., **{&#39;shell.timeout&#39;=0.1})`.</span>
@@ -2464,7 +2539,6 @@ Warning:
 <span class="sd">        Warning:</span>
 <span class="sd">            Moving the spec folder will break the import which is stored as an absolute path.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">jupyter_client.kernelspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">KernelSpec</span>  <span class="c1"># noqa: PLC0415</span>
 
     <span class="k">assert</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-z0-9._\-]+$&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">),</span> <span class="n">kernel_name</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="p">(</span><span class="n">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">/</span> <span class="n">kernel_name</span><span class="p">)</span>
@@ -2472,30 +2546,32 @@ Warning:
     <span class="k">try</span><span class="p">:</span>
         <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">start_interface</span><span class="p">):</span>
-            <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;start_interface.py&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">start_interface</span><span class="p">)))</span>
+            <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;start_interface.py&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">start_interface</span><span class="p">)))</span>
             <span class="n">start_interface</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}{</span><span class="n">CUSTOM_KERNEL_MARKER</span><span class="si">}{</span><span class="n">start_interface</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="c1"># validate</span>
         <span class="k">if</span> <span class="n">start_interface</span> <span class="o">!=</span> <span class="n">DEFAULT_START_INTERFACE</span><span class="p">:</span>
             <span class="n">import_start_interface</span><span class="p">(</span><span class="n">start_interface</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">RESOURCES</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">dirs_exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">spec</span> <span class="o">=</span> <span class="n">KernelSpec</span><span class="p">()</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">argv</span> <span class="o">=</span> <span class="n">make_argv</span><span class="p">(</span>
+
+        <span class="n">argv</span> <span class="o">=</span> <span class="n">make_argv</span><span class="p">(</span>
             <span class="n">start_interface</span><span class="o">=</span><span class="n">start_interface</span><span class="p">,</span>
             <span class="n">connection_file</span><span class="o">=</span><span class="n">connection_file</span><span class="p">,</span>
             <span class="n">kernel_name</span><span class="o">=</span><span class="n">kernel_name</span><span class="p">,</span>
             <span class="n">fullpath</span><span class="o">=</span><span class="n">fullpath</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">kernel_name</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="n">display_name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;Python (</span><span class="si">{</span><span class="n">kernel_name</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">language</span> <span class="o">=</span> <span class="s2">&quot;python&quot;</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">interrupt_mode</span> <span class="o">=</span> <span class="s2">&quot;message&quot;</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;debugger&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">kernel_protocol_version</span> <span class="o">=</span> <span class="n">PROTOCOL_VERSION</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;argv&quot;</span><span class="p">:</span> <span class="n">argv</span><span class="p">,</span>
+            <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="n">env</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="n">display_name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;Python (</span><span class="si">{</span><span class="n">kernel_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;interrupt_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">metadata</span> <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{</span><span class="s2">&quot;debugger&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;concurrent&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="s2">&quot;kernel_protocol_version&quot;</span><span class="p">:</span> <span class="n">PROTOCOL_VERSION</span><span class="p">,</span>
+        <span class="p">}</span>
+
         <span class="c1"># write kernel.json</span>
-        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;kernel.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;kernel.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">raise</span>
@@ -2541,14 +2617,14 @@ Warning:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The path to where kernel specs are stored for Jupyter.</span>
 
@@ -2608,12 +2684,7 @@ Warning:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
@@ -2632,7 +2703,12 @@ Warning:
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
-<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_start_interface</span><span class="p">(</span><span class="n">start_interface</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InterfaceStartType</span><span class="p">:</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_start_interface</span><span class="p">(</span><span class="n">start_interface</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InterfaceStartType</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Import the kernel interface starter as defined in a kernel spec.</span>
 
