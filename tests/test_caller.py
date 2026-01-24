@@ -675,7 +675,6 @@ class TestCaller:
 
     @pytest.mark.parametrize("mode", ["sync", "async"])
     async def test_balanced(self, caller: Caller, mode: Literal["sync", "async"]):
-
         def sync_func(pen: Pending, value):
             pen.set_result(value)
 

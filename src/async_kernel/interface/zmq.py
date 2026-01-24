@@ -134,7 +134,7 @@ class ZMQKernelInterface(BaseKernelInterface):
 
     @default("backend_options")
     def _default_backend_options(self):
-        return {"use_uv"} if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop") else None
+        return {"use_uv": True} if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop") else None
 
     def start(self):
         """
