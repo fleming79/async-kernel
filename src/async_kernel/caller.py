@@ -400,30 +400,17 @@ class Caller(anyio.AsyncContextManagerMixin):
             Exception: Logs and handles exceptions raised during direct callable execution.
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
-        if self.backend == Backend.asyncio:
+        eager = False
+        is_asyncio = self.backend == Backend.asyncio
+        if is_asyncio:
             # asyncio optimizations
             loop = asyncio.get_running_loop()
             coro = asyncio.sleep(0)
             try:
                 await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
+                eager = True
             except Exception:
                 coro.close()
-
-                def task_starter(call_scheduled, pen: Pending):
-                    task = loop.create_task(call_scheduled(pen))
-                    self._tasks.add(task)
-                    task.add_done_callback(self._tasks.discard)
-
-            else:
-                # Eager task factory is supported
-                def task_starter(call_scheduled, pen: Pending):
-                    task = loop.create_task(call_scheduled(pen), eager_start=True)  # pyright: ignore[reportCallIssue]
-                    if not task.done():
-                        self._tasks.add(task)
-                        task.add_done_callback(self._tasks.discard)
-
-        else:
-            task_starter = tg.start_soon  # pyright: ignore[reportAssignmentType]
         task_status.started()
         try:
             while self._state is CallerState.running:
@@ -437,7 +424,20 @@ class Caller(anyio.AsyncContextManagerMixin):
                         except Exception as e:
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
-                        item[0].run(task_starter, self._call_scheduled, item[1])
+                        if is_asyncio:
+                            coro = self._call_scheduled(item[1])
+                            if eager:
+                                task = loop.create_task(coro, context=item[0], eager_start=True)  # pyright: ignore[reportCallIssue, reportPossiblyUnboundVariable]
+                            else:
+                                task = loop.create_task(coro, context=item[0])  # pyright: ignore[reportPossiblyUnboundVariable]
+                            if not task.done():
+                                self._tasks.add(task)
+                                task.add_done_callback(self._tasks.discard)
+                            del task
+                        else:
+                            item[0].run(tg.start_soon, self._call_scheduled, item[1])
+                        if not self._queue:
+                            await async_checkpoint(force=True)
                     del item, result
                 else:
                     event = create_async_event()
