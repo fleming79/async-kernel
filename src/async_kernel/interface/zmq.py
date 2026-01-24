@@ -5,7 +5,6 @@ from __future__ import annotations
 import atexit
 import contextlib
 import errno
-import importlib.util
 import os
 import pathlib
 import signal
@@ -130,9 +129,8 @@ class ZMQKernelInterface(BaseKernelInterface):
     "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
 
     @traitlets.default("anyio_backend_options")
-    def _default_anyio_backend_options(self):
-        use_uv = importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")
-        return {Backend.asyncio: {"use_uvloop": True} if use_uv else {}, Backend.trio: None}
+    def _default_anyio_backend_options(self) -> dict[Backend, dict[str, Any] | None]:
+        return {Backend.asyncio: None, Backend.trio: None}
 
     def start(self):
         """
