@@ -34,7 +34,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          version: "0.8.22"
+          version: "0.9.26"
 
       - name: Build a binary wheel and a source tarball
         run: uv build

@@ -32,7 +32,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          version: "0.8.22"
+          version: "0.9.26"
           python-version: ${{ matrix.python-version }}
 
       - name: Install the project
@@ -56,7 +56,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          version: "0.8.22"
+          version: "0.9.26"
           python-version: "3.13"
 
       - name: Run tests with coverage
@@ -87,7 +87,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          version: "0.8.22"
+          version: "0.9.26"
 
       - name: Docs build strict
         timeout-minutes: 5
