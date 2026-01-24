@@ -673,6 +673,9 @@ class TestCaller:
         assert caller2 is not caller
         assert caller2.ident != caller.ident
 
+    @pytest.mark.parametrize(
+        "anyio_backend", [("asyncio", {"use_uvloop": True}), ("asyncio", {"use_uvloop": False}), "trio"]
+    )
     @pytest.mark.parametrize("mode", ["sync", "async"])
     async def test_balanced(self, caller: Caller, mode: Literal["sync", "async"]):
         def sync_func(pen: Pending, value):
