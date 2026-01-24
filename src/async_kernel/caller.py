@@ -113,6 +113,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     # Fixed
     _child_lock = Fixed(BinarySemaphore)
     _children: Fixed[Self, set[Self]] = Fixed(set)
+    _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
     _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | tuple[Callable, tuple, dict]]] = Fixed(deque)
@@ -292,7 +293,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 # An event loop for the current thread.
 
                 if self.backend == Backend.asyncio:
-                    self._task = asyncio.create_task(run_caller_in_context())
+                    self._tasks.add(asyncio.create_task(run_caller_in_context()))
                 else:
                     # trio
                     token = current_token()
@@ -399,6 +400,30 @@ class Caller(anyio.AsyncContextManagerMixin):
             Exception: Logs and handles exceptions raised during direct callable execution.
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
+        if self.backend == Backend.asyncio:
+            # asyncio optimizations
+            loop = asyncio.get_running_loop()
+            coro = asyncio.sleep(0)
+            try:
+                await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
+            except Exception:
+                coro.close()
+
+                def task_starter(call_scheduled, pen: Pending):
+                    task = loop.create_task(call_scheduled(pen))
+                    self._tasks.add(task)
+                    task.add_done_callback(self._tasks.discard)
+
+            else:
+                # Eager task factory is supported
+                def task_starter(call_scheduled, pen: Pending):
+                    task = loop.create_task(call_scheduled(pen), eager_start=True)  # pyright: ignore[reportCallIssue]
+                    if not task.done():
+                        self._tasks.add(task)
+                        task.add_done_callback(self._tasks.discard)
+
+        else:
+            task_starter = tg.start_soon  # pyright: ignore[reportAssignmentType]
         task_status.started()
         try:
             while self._state is CallerState.running:
@@ -412,7 +437,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         except Exception as e:
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
-                        item[0].run(tg.start_soon, self._call_scheduled, item[1])
+                        item[0].run(task_starter, self._call_scheduled, item[1])
                     del item, result
                 else:
                     event = create_async_event()
@@ -421,6 +446,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                         await event
                     self._resume = noop
         finally:
+            if self.backend == Backend.asyncio:
+                for task in self._tasks:
+                    task.cancel()
             tg.cancel_scope.cancel()
 
     async def _call_scheduled(self, pen: Pending) -> None:
