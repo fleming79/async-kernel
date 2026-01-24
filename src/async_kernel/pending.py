@@ -6,23 +6,45 @@ import reprlib
 import uuid
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
+from types import coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import async_checkpoint, create_async_event, enable_signal_safety, green_checkpoint
 from typing_extensions import override
+from wrapt import lazy_import
 
 import async_kernel
 from async_kernel.common import Fixed
-from async_kernel.typing import PendingCreateOptions, PendingTrackerState, T
+from async_kernel.typing import Backend, PendingCreateOptions, PendingTrackerState, T
 
-__all__ = ["InvalidStateError", "Pending", "PendingCancelled", "PendingGroup", "PendingManager", "PendingTracker"]
+trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
+
+
+__all__ = [
+    "InvalidStateError",
+    "Pending",
+    "PendingCancelled",
+    "PendingGroup",
+    "PendingManager",
+    "PendingTracker",
+    "checkpoint",
+]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
 truncated_rep.maxother = 100
 truncated_rep.fillvalue = "…"
+
+
+@coroutine
+def checkpoint(backend: Backend):
+    "Yield to the event loop."
+    if backend is Backend.trio:
+        yield from trio_checkpoint().__await__()
+    else:
+        yield
 
 
 class PendingCancelled(anyio.ClosedResourceError):

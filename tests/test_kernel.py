@@ -105,7 +105,7 @@ async def test_input(
     test_mode: Literal["interrupt", "reply", "allow_stdin=False"],
 ):
     client = subprocess_kernels_client
-    client.input("Some input that should be discardes")
+    client.input("Some input that should be discarded")
     theprompt = "Enter a value >"
     match mode:
         case "input":
