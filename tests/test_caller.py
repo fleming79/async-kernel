@@ -1,5 +1,6 @@
 import contextlib
 import gc
+import importlib.util
 import re
 import sys
 import threading
@@ -17,6 +18,10 @@ from aiologic.lowlevel import create_async_event, current_async_library
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend
+
+anyio_backends = [("asyncio", {"use_uvloop": False}), "trio"]
+if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
+    anyio_backends.append(("asyncio", {"use_uvloop": True}))
 
 
 @pytest.fixture(params=Backend, scope="module")
@@ -673,9 +678,7 @@ class TestCaller:
         assert caller2 is not caller
         assert caller2.ident != caller.ident
 
-    @pytest.mark.parametrize(
-        "anyio_backend", [("asyncio", {"use_uvloop": True}), ("asyncio", {"use_uvloop": False}), "trio"]
-    )
+    @pytest.mark.parametrize("anyio_backend", anyio_backends)
     @pytest.mark.parametrize("mode", ["sync", "async"])
     async def test_balanced(self, caller: Caller, mode: Literal["sync", "async"]):
         def sync_func(pen: Pending, value):
