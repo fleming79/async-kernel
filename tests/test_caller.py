@@ -672,3 +672,26 @@ class TestCaller:
         caller2 = await caller.to_thread(Caller)
         assert caller2 is not caller
         assert caller2.ident != caller.ident
+
+    @pytest.mark.parametrize("mode", ["sync", "async"])
+    async def test_balanced(self, caller: Caller, mode: Literal["sync", "async"]):
+
+        def sync_func(pen: Pending, value):
+            pen.set_result(value)
+
+        async def async_func(pen: Pending, value):
+            await anyio.sleep(0)
+            pen.set_result(value)
+
+        func = sync_func if mode == "sync" else async_func
+
+        n = 1000
+        all_pending = []
+        for _ in range(n):
+            for method in (caller.call_direct, caller.queue_call, caller.call_soon):
+                pen = Pending()
+                method(func, pen, method.__name__)
+                all_pending.append(pen)
+        results = [pen.result() async for pen in caller.as_completed(all_pending)]
+
+        assert results == ["call_direct", "queue_call", "call_soon"] * n

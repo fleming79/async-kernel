@@ -431,8 +431,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             del task
                         else:
                             item[0].run(tg.start_soon, self._call_scheduled, item[1])
-                        if not self._queue:
-                            await async_checkpoint(force=True)
+                    await async_checkpoint(force=True)
                     del item, result
                 else:
                     event = create_async_event()
