@@ -400,18 +400,17 @@ class Caller(anyio.AsyncContextManagerMixin):
             Exception: Logs and handles exceptions raised during direct callable execution.
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
-        eager = False
-        is_asyncio = self.backend == Backend.asyncio
-        if is_asyncio:
-            # asyncio optimizations
+        task_status.started()
+        kwgs = {}
+        asyncio_backend = self.backend == Backend.asyncio
+        if asyncio_backend:
             loop = asyncio.get_running_loop()
             coro = asyncio.sleep(0)
             try:
                 await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
-                eager = True
+                kwgs["eager_start"] = True
             except Exception:
                 coro.close()
-        task_status.started()
         try:
             while self._state is CallerState.running:
                 if self._queue:
@@ -424,12 +423,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                         except Exception as e:
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
-                        if is_asyncio:
-                            coro = self._call_scheduled(item[1])
-                            if eager:
-                                task = loop.create_task(coro, context=item[0], eager_start=True)  # pyright: ignore[reportCallIssue, reportPossiblyUnboundVariable]
-                            else:
-                                task = loop.create_task(coro, context=item[0])  # pyright: ignore[reportPossiblyUnboundVariable]
+                        if asyncio_backend:
+                            task = loop.create_task(self._call_scheduled(item[1]), context=item[0], **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
                             if not task.done():
                                 self._tasks.add(task)
                                 task.add_done_callback(self._tasks.discard)
@@ -446,7 +441,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         await event
                     self._resume = noop
         finally:
-            if self.backend == Backend.asyncio:
+            if asyncio_backend:
                 for task in self._tasks:
                     task.cancel()
             tg.cancel_scope.cancel()
