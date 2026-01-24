@@ -19,14 +19,14 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast
 import anyio
 import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.pending import Pending, PendingCancelled, PendingGroup
+from async_kernel.pending import Pending, PendingCancelled, PendingGroup, checkpoint
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, PendingCreateOptions, T
 
 with contextlib.suppress(ImportError):
@@ -382,7 +382,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
-                    await async_checkpoint(force=True)
+                    await checkpoint(self.backend)
 
     async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         """
@@ -431,7 +431,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             del task
                         else:
                             item[0].run(tg.start_soon, self._call_scheduled, item[1])
-                    await async_checkpoint(force=True)
+                    await checkpoint(self.backend)
                     del item, result
                 else:
                     event = create_async_event()
@@ -777,7 +777,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 item = result = None
                 try:
                     while True:
-                        await async_checkpoint(force=True)
+                        await checkpoint(self.backend)
                         if queue:
                             item = queue.popleft()
                             try:
@@ -793,7 +793,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             del item  # pyright: ignore[reportPossiblyUnboundVariable]
                             event = create_async_event()
                             pen.metadata["resume"] = event.set
-                            await async_checkpoint(force=True)
+                            await checkpoint(self.backend)
                             if not queue:
                                 await event
                             pen.metadata["resume"] = noop
@@ -870,7 +870,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if len(results) == max_concurrent_:
                                 await event
                             resume = noop
-                            await async_checkpoint(force=True)
+                            await checkpoint(self.backend)
 
             except (StopAsyncIteration, StopIteration):
                 return
