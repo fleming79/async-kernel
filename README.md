@@ -12,25 +12,21 @@
 ![logo-svg](https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587)
 
 Async kernel is a Python [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) kernel
-with [fully configurable concurrent message handling](#run-mode). One major benefit of concurrent
-message handling is that iopub messages, such as those associated with widgets can pass freely whist
-an execute request is underway.
+with concurrent message handling.
+
+Messages are processed fairly whilst preventing asynchronous deadlocks by using a unique message handler per `channel`, `message_type` and `subshell_id`.
 
 ## Highlights
 
-- [Experimental](https://github.com/fleming79/echo-kernel) support for [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/)
-- [Concurrent message handling](https://fleming79.github.io/async-kernel/latest/notebooks/simple_example/)
-- [Configurable backend](https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec)
+- [Experimental](https://github.com/fleming79/echo-kernel) support for [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/) 👈
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
-    - [anyio](https://pypi.org/project/anyio/)
-        - [`asyncio` backend](https://docs.python.org/3/library/asyncio.html) (default)[^uv-loop]
-        - [`trio` backend](https://pypi.org/project/trio/)
+- [anyio](https://pypi.org/project/anyio/) compatible event loops
+    - [`asyncio`](https://docs.python.org/3/library/asyncio.html) (default)
+    - [`trio`](https://pypi.org/project/trio/)
+- [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
+- [Easy multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
-- Thread-safe execution and cancellation (utilising [aiologic](https://aiologic.readthedocs.io/latest/) synchronisation primitives).
-    - [Caller](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller) - code execution in a chosen event loop
-    - [Pending](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending) - wait/await/cancel the pending result
-    - PendingGroup - An asynchronous context to automatically manage pending created in the context.
-- [x] [Jupyter Kernel Subshells](#jupyter-kernel-subshells)
+- Per-subshell user_ns
 - GUI event loops
     - [x] inline
     - [x] ipympl
@@ -45,6 +41,10 @@ an execute request is underway.
 pip install async-kernel
 ```
 
+## Asyncio
+
+An asyncio kernel based backend with the name 'async' is installed when the kernel is installed.
+
 ### Trio backend
 
 To add a kernel spec for a `trio` backend.
@@ -54,28 +54,33 @@ pip install trio
 async-kernel -a async-trio
 ```
 
-See also: [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
+For further detail about kernel customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
 
-## Asynchronous event loops
+## Message handling
 
-Async kernel uses [`Caller`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
-for concurrent message handling.
+- When a message is received the `msg_handler` is called with:
+    - 'job' (a dict of `msg`, `received_time` and `ident`)
+    - the [`channel`](#channel)
+    - `msg_type`
+    - A function `send_reply`
 
-There are two callers:
-
-- `Shell` - runs in the `MainThread` handling user related requests[^non-main-thread].
-- `Control` - runs in a separate thread handling control related requests.
-
-### Messaging
-
-Messages are received in a separate thread (per-channel) then handled in the associated thread (shell/control) concurrently according to the determined run mode.
+- The `msg_handler`
+    - determines the `subshell_id` and [run mode](#run-mode).
+    - obtains the `handler` from the kernel with the same name as the `msg_type`.
+    - determines the [run mode](#run-mode)
+    - creates cached version of the `run_handler` with a unique version per:
+        - The `handler`
+        - `channel`
+        - `subshell_id`
+        - send_reply (constant or per-channel)
+    - Obtains the caller associated with the channel and schedules execution of the cached handler
 
 ### Run mode
 
 The run modes available are:
 
 - `RunMode.direct` → [`Caller.call_direct`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct):
-  Run the request in the scheduler.
+  Run the request directly in the scheduler.
 - `RunMode.queue` → [`Caller.queue_call`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.queue_call):
   Run the request in a queue dedicated to the subshell, handler & channel.
 - `RunMode.task` → [`Caller.call_soon`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_soon):
@@ -104,41 +109,9 @@ These are the currently assigned run modes.
 | list_subshell_request   | None   | direct  |
 | shutdown_request        | None   | direct  |
 
-### Jupyter Kernel Subshells
-
-Async kernel supports [kernel subshells (JEP92)](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#jupyter-kernel-subshells).
-Each subshell provides a separate `user_ns` and shares the `user_global_ns` with the main shell.
-
-Subshells are a useful means of providing separate namespaces and task management.
-
-Subshells use the same callers as the main shell. This was a deliberate design choice with the advantage being
-that comm messages are always handled in the shell's thread (the main thread except when the shell is intentionally
-started in a different thread).
-
-The active shell/subshell is controlled by setting a context variable. This is done by the
-kernel on a per-message basis. A context manager is also provided so that code can be executed
-in the context of a specific shell/subshell.
-
-When a subshell is stopped its pending manager will cancel `Pending` (tasks) created in its context.
-
-#### Kernel message handlers
-
-No additional sockets are created for subshells.
-
-Message handler methods are cached per channel and subshell ID, so when [run mode](#run-mode) is 'queue'
-(such as `comm_msg`), the message will be handled in a separate queue for the subshell/channel.
-
-#### Further detail
-
-- [`MsgType`](https://fleming79.github.io/async-kernel/latest/reference/typing/#async_kernel.typing.MsgType) docs.
-- [`Kernel.receive_msg_loop`](https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.receive_msg_loop) docs.
-- [Concurrency](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/) notebook.
-
 ## Origin
 
 Async kernel started as a [fork](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)
 of [IPyKernel](https://github.com/ipython/ipykernel). Thank you to the original contributors of IPyKernel that made Async kernel possible.
-
-[^uv-loop]: Uvloop is not a dependency of async-kernel but will be used if it has been installed.
 
 [^non-main-thread]: The Shell can run in other threads with the associated limitations with regard to signalling and interrupts.
