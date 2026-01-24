@@ -57,6 +57,7 @@ jobs:
         with:
           enable-cache: true
           version: "0.8.22"
+          python-version: "3.13"
 
       - name: Run tests with coverage
         timeout-minutes: 5
