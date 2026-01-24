@@ -41,6 +41,10 @@ Messages are processed fairly whilst preventing asynchronous deadlocks by using 
 pip install async-kernel
 ```
 
+## Asyncio
+
+An asyncio kernel based backend with the name 'async' is installed when the kernel is installed.
+
 ### Trio backend
 
 To add a kernel spec for a `trio` backend.
@@ -50,7 +54,7 @@ pip install trio
 async-kernel -a async-trio
 ```
 
-See also: [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
+For further detail about kernel customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
 
 ## Message handling
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import atexit
 import contextlib
 import errno
+import importlib.util
 import os
 import pathlib
 import signal
@@ -24,7 +25,7 @@ from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Dict, Unicode
+from traitlets import CaselessStrEnum, Dict, Unicode, UseEnum, default
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -125,33 +126,35 @@ class ZMQKernelInterface(BaseKernelInterface):
     )
     "Transport for sockets."
 
-    anyio_backend_options: Dict[Backend, dict[str, Any] | None] = Dict(allow_none=True)
-    "Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`."
+    backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
+    "The the backend used to provide the shell event loop."
 
-    @traitlets.default("anyio_backend_options")
-    def _default_anyio_backend_options(self) -> dict[Backend, dict[str, Any] | None]:
-        return {Backend.asyncio: None, Backend.trio: None}
+    backend_options = Dict(allow_none=True)
+    "The `backend_options` to use with [anyio.run][]."
+
+    @default("backend_options")
+    def _default_backend_options(self):
+        return {"use_uv"} if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop") else None
 
     def start(self):
         """
-        Start the kernel (blocking).
+        Start the kernel blocking until the kernel stops.
 
         Warning:
             - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
             - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
             - Some libraries may assume the call is occurring in the 'MainThread'.
-            - If there is an asyncio or trio event loop already running in the 'MainThread. Simply use `async with kernel` instead.
+            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread. Use `async with kernel` instead.
         """
 
         async def run_kernel() -> None:
             async with self.kernel:
                 await self.wait_exit
 
-        if not self.trait_has_value("anyio_backend") and "trio" in self.kernel.kernel_name.lower():
-            self.anyio_backend = Backend.trio
-        backend: Backend = self.anyio_backend
-        backend_options = self.anyio_backend_options.get(backend)
-        anyio.run(run_kernel, backend=backend, backend_options=backend_options)
+        if not self.trait_has_value("backend") and "trio" in self.kernel.kernel_name.lower():
+            self.backend = Backend.trio
+
+        anyio.run(run_kernel, backend=self.backend, backend_options=self.backend_options)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:

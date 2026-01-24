@@ -32,7 +32,7 @@ Additional arguments can be included when defining the kernel spec, these includ
     - `--fullpath=False`
     - `--display_name`
     - `--prefix`
-- Nested attributes on the kernel via \`kernel.\<nested.attribute.name>'
+- Nested attributes on the kernel via `kernel.[nested.attribute.name']'
 
 Each parameter should be specified as if it were a 'flag' as follows.
 
@@ -96,8 +96,28 @@ or, with compact notation to set a Boolean value as a Boolean flag.
 
     Set `kernel.quiet=False`:
 
-    ```bash
+    ```console
     --no=quiet
+    ```
+
+=== "Anyio backend options"
+
+    In Cpython the anyio 'backend' can be specified on `kernel.interface` with
+
+    ```console
+    # options are 'asycio' or 'trio'
+    --interface.backend=asyncio
+    ```
+
+    The backend options used with [anyio.run][] can also be specified on the interface.
+
+    Options can be written as literal python inside string.
+
+    ```console
+    # use uv is set by default. If we had uvloop installed and wanted to disable it we could do.
+    "--interface.backend_options={'use_uv':False}"
+    or
+    "--interface.backend_options=None"
     ```
 
 ## Remove a kernel spec
