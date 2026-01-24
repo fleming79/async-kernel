@@ -483,7 +483,18 @@ viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Installation">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asyncio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asyncio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Asyncio">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -503,44 +514,22 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#asynchronous-event-loops" class="md-nav__link">
+  <a href="#message-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Asynchronous event loops
+        Message handling
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Asynchronous event loops">
+    <nav class="md-nav" aria-label="Message handling">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Messaging
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#run-mode" class="md-nav__link">
     <span class="md-ellipsis">
       
         Run mode
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jupyter-kernel-subshells" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Jupyter Kernel Subshells
       
     </span>
   </a>
@@ -1482,7 +1471,18 @@ viewing the latest version.
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Installation">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asyncio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asyncio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Asyncio">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1502,44 +1502,22 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#asynchronous-event-loops" class="md-nav__link">
+  <a href="#message-handling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Asynchronous event loops
+        Message handling
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Asynchronous event loops">
+    <nav class="md-nav" aria-label="Message handling">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Messaging
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#run-mode" class="md-nav__link">
     <span class="md-ellipsis">
       
         Run mode
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jupyter-kernel-subshells" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Jupyter Kernel Subshells
       
     </span>
   </a>
@@ -1601,30 +1579,21 @@ viewing the latest version.
 <a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a></p>
 <p><img alt="logo-svg" src="https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587" /></p>
 <p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter</a> kernel
-with <a href="#run-mode">fully configurable concurrent message handling</a>. One major benefit of concurrent
-message handling is that iopub messages, such as those associated with widgets can pass freely whist
-an execute request is underway.</p>
+with concurrent message handling.</p>
+<p>Messages are processed fairly whilst preventing asynchronous deadlocks by using a unique message handler per <code>channel</code>, <code>message_type</code> and <code>subshell_id</code>.</p>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
-<ul class="task-list">
-<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> try it online <a href="https://fleming79.github.io/echo-kernel/">here</a></li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/notebooks/simple_example/">Concurrent message handling</a></li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/commands/#add-a-kernel-spec">Configurable backend</a></li>
-<li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a><ul>
-<li><a href="https://pypi.org/project/anyio/">anyio</a><ul>
-<li><a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code> backend</a> (default)<sup id="fnref:uv-loop"><a class="footnote-ref" href="#fn:uv-loop">1</a></sup></li>
-<li><a href="https://pypi.org/project/trio/"><code>trio</code> backend</a></li>
+<ul>
+<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈</li>
+<li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
+<li><a href="https://pypi.org/project/anyio/">anyio</a> compatible event loops<ul>
+<li><a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> (default)</li>
+<li><a href="https://pypi.org/project/trio/"><code>trio</code></a></li>
 </ul>
 </li>
-</ul>
-</li>
+<li><a href="https://aiologic.readthedocs.io/latest/">aiologic</a> thread-safe synchronisation primitives</li>
+<li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Easy multi-thread / multi-event loop management</a></li>
 <li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a></li>
-<li>Thread-safe execution and cancellation (utilising <a href="https://aiologic.readthedocs.io/latest/">aiologic</a> synchronisation primitives).<ul>
-<li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Caller</a> - code execution in a chosen event loop</li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.pending.Pending">Pending</a> - wait/await/cancel the pending result</li>
-<li>PendingGroup - An asynchronous context to automatically manage pending created in the context.</li>
-</ul>
-</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <a href="#jupyter-kernel-subshells">Jupyter Kernel Subshells</a></li>
+<li>Per-subshell user_ns</li>
 <li>GUI event loops<ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
@@ -1637,27 +1606,47 @@ an execute request is underway.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>async-kernel
 </code></pre></div>
+<h2 id="asyncio">Asyncio<a class="headerlink" href="#asyncio" title="Permanent link">&para;</a></h2>
+<p>An asyncio kernel based backend with the name 'async' is installed when the kernel is installed.</p>
 <h3 id="trio-backend">Trio backend<a class="headerlink" href="#trio-backend" title="Permanent link">&para;</a></h3>
 <p>To add a kernel spec for a <code>trio</code> backend.</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
 async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
 </code></pre></div>
-<p>See also: <a href="https://fleming79.github.io/async-kernel/latest/commands/#command-line">command line usage</a>.</p>
-<h2 id="asynchronous-event-loops">Asynchronous event loops<a class="headerlink" href="#asynchronous-event-loops" title="Permanent link">&para;</a></h2>
-<p>Async kernel uses <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller"><code>Caller</code></a>
-for concurrent message handling.</p>
-<p>There are two callers:</p>
+<p>For further detail about kernel customisation see <a href="https://fleming79.github.io/async-kernel/latest/commands/#command-line">command line usage</a>.</p>
+<h2 id="message-handling">Message handling<a class="headerlink" href="#message-handling" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>Shell</code> - runs in the <code>MainThread</code> handling user related requests<sup id="fnref:non-main-thread"><a class="footnote-ref" href="#fn:non-main-thread">2</a></sup>.</li>
-<li><code>Control</code> - runs in a separate thread handling control related requests.</li>
+<li>
+<p>When a message is received the <code>msg_handler</code> is called with:</p>
+<ul>
+<li>'job' (a dict of <code>msg</code>, <code>received_time</code> and <code>ident</code>)</li>
+<li>the <a href="#channel"><code>channel</code></a></li>
+<li><code>msg_type</code></li>
+<li>A function <code>send_reply</code></li>
 </ul>
-<h3 id="messaging">Messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h3>
-<p>Messages are received in a separate thread (per-channel) then handled in the associated thread (shell/control) concurrently according to the determined run mode.</p>
+</li>
+<li>
+<p>The <code>msg_handler</code></p>
+<ul>
+<li>determines the <code>subshell_id</code> and <a href="#run-mode">run mode</a>.</li>
+<li>obtains the <code>handler</code> from the kernel with the same name as the <code>msg_type</code>.</li>
+<li>determines the <a href="#run-mode">run mode</a></li>
+<li>creates cached version of the <code>run_handler</code> with a unique version per:<ul>
+<li>The <code>handler</code></li>
+<li><code>channel</code></li>
+<li><code>subshell_id</code></li>
+<li>send_reply (constant or per-channel)</li>
+</ul>
+</li>
+<li>Obtains the caller associated with the channel and schedules execution of the cached handler</li>
+</ul>
+</li>
+</ul>
 <h3 id="run-mode">Run mode<a class="headerlink" href="#run-mode" title="Permanent link">&para;</a></h3>
 <p>The run modes available are:</p>
 <ul>
 <li><code>RunMode.direct</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct"><code>Caller.call_direct</code></a>:
-  Run the request in the scheduler.</li>
+  Run the request directly in the scheduler.</li>
 <li><code>RunMode.queue</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.queue_call"><code>Caller.queue_call</code></a>:
   Run the request in a queue dedicated to the subshell, handler &amp; channel.</li>
 <li><code>RunMode.task</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_soon"><code>Caller.call_soon</code></a>:
@@ -1757,38 +1746,14 @@ for concurrent message handling.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="jupyter-kernel-subshells">Jupyter Kernel Subshells<a class="headerlink" href="#jupyter-kernel-subshells" title="Permanent link">&para;</a></h3>
-<p>Async kernel supports <a href="https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#jupyter-kernel-subshells">kernel subshells (JEP92)</a>.
-Each subshell provides a separate <code>user_ns</code> and shares the <code>user_global_ns</code> with the main shell.</p>
-<p>Subshells are a useful means of providing separate namespaces and task management.</p>
-<p>Subshells use the same callers as the main shell. This was a deliberate design choice with the advantage being
-that comm messages are always handled in the shell's thread (the main thread except when the shell is intentionally
-started in a different thread).</p>
-<p>The active shell/subshell is controlled by setting a context variable. This is done by the
-kernel on a per-message basis. A context manager is also provided so that code can be executed
-in the context of a specific shell/subshell.</p>
-<p>When a subshell is stopped its pending manager will cancel <code>Pending</code> (tasks) created in its context.</p>
-<h4 id="kernel-message-handlers">Kernel message handlers<a class="headerlink" href="#kernel-message-handlers" title="Permanent link">&para;</a></h4>
-<p>No additional sockets are created for subshells.</p>
-<p>Message handler methods are cached per channel and subshell ID, so when <a href="#run-mode">run mode</a> is 'queue'
-(such as <code>comm_msg</code>), the message will be handled in a separate queue for the subshell/channel.</p>
-<h4 id="further-detail">Further detail<a class="headerlink" href="#further-detail" title="Permanent link">&para;</a></h4>
-<ul>
-<li><a href="https://fleming79.github.io/async-kernel/latest/reference/typing/#async_kernel.typing.MsgType"><code>MsgType</code></a> docs.</li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/#async_kernel.kernel.Kernel.receive_msg_loop"><code>Kernel.receive_msg_loop</code></a> docs.</li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/">Concurrency</a> notebook.</li>
-</ul>
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
 <p>Async kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
 of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to the original contributors of IPyKernel that made Async kernel possible.</p>
 <div class="footnote">
 <hr />
 <ol>
-<li id="fn:uv-loop">
-<p>Uvloop is not a dependency of async-kernel but will be used if it has been installed.&#160;<a class="footnote-backref" href="#fnref:uv-loop" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
 <li id="fn:non-main-thread">
-<p>The Shell can run in other threads with the associated limitations with regard to signalling and interrupts.&#160;<a class="footnote-backref" href="#fnref:non-main-thread" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+<p>The Shell can run in other threads with the associated limitations with regard to signalling and interrupts.&#160;<a class="footnote-backref" href="#fnref:non-main-thread" title="Jump back to footnote 1 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>

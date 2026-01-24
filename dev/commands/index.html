@@ -1564,7 +1564,7 @@ allowed (whitespace is not allowed).</p>
 <li><code>--prefix</code></li>
 </ul>
 </li>
-<li>Nested attributes on the kernel via `kernel.\<nested.attribute.name>'</li>
+<li>Nested attributes on the kernel via `kernel.[nested.attribute.name']'</li>
 </ul>
 <p>Each parameter should be specified as if it were a 'flag' as follows.</p>
 <p>Prefix with "--" and join with the delimiter "=".</p>
@@ -1578,7 +1578,7 @@ allowed (whitespace is not allowed).</p>
 <span class="go">--no-&lt;PARAMETER or DOTTED.ATTRIBUTE.NAME&gt;</span>
 </code></pre></div>
 <h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="write_kernel_spec-argument" name="__tabbed_1" type="radio" /><input id="kernel-attribute" name="__tabbed_1" type="radio" /><input id="kernel-boolean-attribute-as-a-flag" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="write_kernel_spec-argument">write_kernel_spec argument</label><label for="kernel-attribute">Kernel attribute</label><label for="kernel-boolean-attribute-as-a-flag">Kernel Boolean attribute as a flag</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="write_kernel_spec-argument" name="__tabbed_1" type="radio" /><input id="kernel-attribute" name="__tabbed_1" type="radio" /><input id="kernel-boolean-attribute-as-a-flag" name="__tabbed_1" type="radio" /><input id="anyio-backend-options" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="write_kernel_spec-argument">write_kernel_spec argument</label><label for="kernel-attribute">Kernel attribute</label><label for="kernel-boolean-attribute-as-a-flag">Kernel Boolean attribute as a flag</label><label for="anyio-backend-options">Anyio backend options</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>start_interface</strong></p>
@@ -1603,7 +1603,20 @@ allowed (whitespace is not allowed).</p>
 <div class="highlight"><pre><span></span><code><span class="go">--quiet</span>
 </code></pre></div>
 <p>Set <code>kernel.quiet=False</code>:</p>
-<div class="highlight"><pre><span></span><code>--no<span class="o">=</span>quiet
+<div class="highlight"><pre><span></span><code><span class="go">--no=quiet</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>In Cpython the anyio 'backend' can be specified on <code>kernel.interface</code> with</p>
+<div class="highlight"><pre><span></span><code><span class="gp"># </span>options<span class="w"> </span>are<span class="w"> </span><span class="s1">&#39;asycio&#39;</span><span class="w"> </span>or<span class="w"> </span><span class="s1">&#39;trio&#39;</span>
+<span class="go">--interface.backend=asyncio</span>
+</code></pre></div>
+<p>The backend options used with <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a> can also be specified on the interface.</p>
+<p>Options can be written as literal python inside string.</p>
+<div class="highlight"><pre><span></span><code><span class="gp"># </span>use<span class="w"> </span>uv<span class="w"> </span>is<span class="w"> </span><span class="nb">set</span><span class="w"> </span>by<span class="w"> </span>default.<span class="w"> </span>If<span class="w"> </span>we<span class="w"> </span>had<span class="w"> </span>uvloop<span class="w"> </span>installed<span class="w"> </span>and<span class="w"> </span>wanted<span class="w"> </span>to<span class="w"> </span>disable<span class="w"> </span>it<span class="w"> </span>we<span class="w"> </span>could<span class="w"> </span><span class="k">do</span>.
+<span class="go">&quot;--interface.backend_options={&#39;use_uv&#39;:False}&quot;</span>
+<span class="go">or</span>
+<span class="go">&quot;--interface.backend_options=None&quot;</span>
 </code></pre></div>
 </div>
 </div>
@@ -1648,7 +1661,7 @@ prior to setting.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="January 2, 2026 02:59:58 UTC"><span class="timeago" datetime="2026-01-02T02:59:58+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="January 2, 2026 02:59:58 UTC">2026-01-02</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="January 24, 2026 22:09:40 UTC"><span class="timeago" datetime="2026-01-24T22:09:40+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="January 24, 2026 22:09:40 UTC">2026-01-24</span>
   </span>
 
     

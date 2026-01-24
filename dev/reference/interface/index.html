@@ -1081,17 +1081,6 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.BaseKernelInterface.anyio_backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.interface.BaseKernelInterface.__asynccontextmanager__" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1278,17 +1267,6 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;wait_exit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.interface.base.BaseKernelInterface.anyio_backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend
       
     </span>
   </a>
@@ -1556,10 +1534,21 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.anyio_backend_options" class="md-nav__link">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend_options
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.backend_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;backend_options
       
     </span>
   </a>
@@ -2086,17 +2075,6 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.BaseKernelInterface.anyio_backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.interface.BaseKernelInterface.__asynccontextmanager__" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2283,17 +2261,6 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;wait_exit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.interface.base.BaseKernelInterface.anyio_backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend
       
     </span>
   </a>
@@ -2561,10 +2528,21 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.anyio_backend_options" class="md-nav__link">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;anyio_backend_options
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.backend_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;backend_options
       
     </span>
   </a>
@@ -2980,14 +2958,6 @@ viewing the latest version.
             <p>An event that when set will leave the kernel context if the kernel was started by this interface.</p>
           </div>
         </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" anyio_backend (async_kernel.interface.BaseKernelInterface.anyio_backend)" href="#async_kernel.interface.BaseKernelInterface.anyio_backend">anyio_backend</a></code></b>
-              (<code><span title="traitlets.Container">Container</span>[<span title="async_kernel.typing.Backend">Backend</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The anyio configured backend used to run the event loops.</p>
-          </div>
-        </li>
     </ul>
 
               <details class="mkdocstrings-source">
@@ -3168,10 +3138,7 @@ viewing the latest version.
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class required interface with the kernel. Must be overloaded to be useful.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3193,9 +3160,6 @@ viewing the latest version.
 
     <span class="n">wait_exit</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Event</span><span class="p">)</span>
     <span class="s2">&quot;An event that when set will leave the kernel context if the kernel was started by this interface.&quot;</span>
-
-    <span class="n">anyio_backend</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Container</span><span class="p">[</span><span class="n">Backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
-    <span class="s2">&quot;The anyio configured backend used to run the event loops.&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -3520,32 +3484,6 @@ viewing the latest version.
 
 </div>
 
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.interface.BaseKernelInterface.anyio_backend" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">anyio_backend</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.interface.BaseKernelInterface.anyio_backend" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">anyio_backend</span><span class="p">:</span> <span class="n"><span title="traitlets.Container">Container</span></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.Backend">Backend</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span><span class="n"><span title="async_kernel.typing.Backend">Backend</span></span><span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The anyio configured backend used to run the event loops.</p>
-
-          
-    </div>
-
-</div>
-
 
 
 
@@ -3572,7 +3510,10 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
@@ -3583,10 +3524,7 @@ viewing the latest version.
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create caller, and open socketes.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">current_async_library</span><span class="p">())</span>
@@ -3661,7 +3599,10 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">138</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
@@ -3669,10 +3610,7 @@ viewing the latest version.
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -3736,17 +3674,17 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward a raw_input request to the client.</span>
 
@@ -3809,17 +3747,17 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward getpass to the client.</span>
 
@@ -3855,15 +3793,15 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">175</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterruptError][].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3908,7 +3846,10 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
@@ -3940,10 +3881,7 @@ format, which is a list of message parts.</p>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -4012,7 +3950,10 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">222</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
@@ -4020,10 +3961,7 @@ format, which is a list of message parts.</p>
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -4394,14 +4332,6 @@ format, which is a list of message parts.</p>
             <p>An event that when set will leave the kernel context if the kernel was started by this interface.</p>
           </div>
         </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" anyio_backend (async_kernel.interface.base.BaseKernelInterface.anyio_backend)" href="#async_kernel.interface.base.BaseKernelInterface.anyio_backend">anyio_backend</a></code></b>
-              (<code><span title="traitlets.Container">Container</span>[<span title="async_kernel.typing.Backend">Backend</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The anyio configured backend used to run the event loops.</p>
-          </div>
-        </li>
     </ul>
 
               <details class="mkdocstrings-source">
@@ -4582,10 +4512,7 @@ format, which is a list of message parts.</p>
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class required interface with the kernel. Must be overloaded to be useful.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -4607,9 +4534,6 @@ format, which is a list of message parts.</p>
 
     <span class="n">wait_exit</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Event</span><span class="p">)</span>
     <span class="s2">&quot;An event that when set will leave the kernel context if the kernel was started by this interface.&quot;</span>
-
-    <span class="n">anyio_backend</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Container</span><span class="p">[</span><span class="n">Backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
-    <span class="s2">&quot;The anyio configured backend used to run the event loops.&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -4934,32 +4858,6 @@ format, which is a list of message parts.</p>
 
 </div>
 
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.interface.base.BaseKernelInterface.anyio_backend" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">anyio_backend</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.interface.base.BaseKernelInterface.anyio_backend" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">anyio_backend</span><span class="p">:</span> <span class="n"><span title="traitlets.Container">Container</span></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.Backend">Backend</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span><span class="n"><span title="async_kernel.typing.Backend">Backend</span></span><span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The anyio configured backend used to run the event loops.</p>
-
-          
-    </div>
-
-</div>
-
 
 
 
@@ -4986,7 +4884,10 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
@@ -4997,10 +4898,7 @@ format, which is a list of message parts.</p>
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create caller, and open socketes.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">current_async_library</span><span class="p">())</span>
@@ -5075,7 +4973,10 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">138</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
@@ -5083,10 +4984,7 @@ format, which is a list of message parts.</p>
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -5150,17 +5048,17 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward a raw_input request to the client.</span>
 
@@ -5223,17 +5121,17 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward getpass to the client.</span>
 
@@ -5269,15 +5167,15 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">175</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterruptError][].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -5322,7 +5220,10 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
@@ -5354,10 +5255,7 @@ format, which is a list of message parts.</p>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5426,7 +5324,10 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">222</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
@@ -5434,10 +5335,7 @@ format, which is a list of message parts.</p>
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -6499,7 +6397,7 @@ kernel_interface["stop"](msg, buffer)
             <b><code><a class="autorefs autorefs-internal" title=" start (async_kernel.interface.zmq.ZMQKernelInterface.start)" href="#async_kernel.interface.zmq.ZMQKernelInterface.start">start</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Start the kernel (blocking).</p>
+              <p>Start the kernel blocking until the kernel stops.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -6576,11 +6474,18 @@ kernel_interface["stop"](msg, buffer)
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" anyio_backend_options (async_kernel.interface.zmq.ZMQKernelInterface.anyio_backend_options)" href="#async_kernel.interface.zmq.ZMQKernelInterface.anyio_backend_options">anyio_backend_options</a></code></b>
-              (<code><span title="traitlets.Dict">Dict</span>[<span title="async_kernel.typing.Backend">Backend</span>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>] | None]</code>)
+          <b><code><a class="autorefs autorefs-internal" title=" backend (async_kernel.interface.zmq.ZMQKernelInterface.backend)" href="#async_kernel.interface.zmq.ZMQKernelInterface.backend">backend</a></code></b>
+              (<code><span title="traitlets.Container">Container</span>[<span title="async_kernel.typing.Backend">Backend</span>]</code>)
           –
           <div class="doc-md-description">
-            <p>Default options to use with <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>. See also: <code>Kernel.handle_message_request</code>.</p>
+            <p>The the backend used to provide the shell event loop.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title=" backend_options (async_kernel.interface.zmq.ZMQKernelInterface.backend_options)" href="#async_kernel.interface.zmq.ZMQKernelInterface.backend_options">backend_options</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>The <code>backend_options</code> to use with <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.</p>
           </div>
         </li>
     </ul>
@@ -6986,7 +6891,8 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">499</span>
 <span class="normal">500</span>
 <span class="normal">501</span>
-<span class="normal">502</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
+<span class="normal">502</span>
+<span class="normal">503</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
     <span class="s2">&quot;An interface for the kernel that uses zmq sockets.&quot;</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span>
@@ -7012,34 +6918,35 @@ kernel_interface["stop"](msg, buffer)
     <span class="p">)</span>
     <span class="s2">&quot;Transport for sockets.&quot;</span>
 
-    <span class="n">anyio_backend_options</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Backend</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">&quot;Default options to use with [anyio.run][]. See also: `Kernel.handle_message_request`.&quot;</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Container</span><span class="p">[</span><span class="n">Backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
+    <span class="s2">&quot;The the backend used to provide the shell event loop.&quot;</span>
 
-    <span class="nd">@traitlets</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s2">&quot;anyio_backend_options&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_default_anyio_backend_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">use_uv</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;winloop&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;uvloop&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">Backend</span><span class="o">.</span><span class="n">asyncio</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;use_uvloop&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span> <span class="k">if</span> <span class="n">use_uv</span> <span class="k">else</span> <span class="p">{},</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="n">backend_options</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="s2">&quot;The `backend_options` to use with [anyio.run][].&quot;</span>
+
+    <span class="nd">@default</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_default_backend_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;use_uv&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span> <span class="k">if</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;winloop&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;uvloop&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Start the kernel (blocking).</span>
+<span class="sd">        Start the kernel blocking until the kernel stops.</span>
 
 <span class="sd">        Warning:</span>
 <span class="sd">            - Running the kernel in a thread other than the &#39;MainThread&#39; is permitted, but discouraged.</span>
 <span class="sd">            - Blocking calls can only be interrupted in the &#39;MainThread&#39; because [*&#39;threads cannot be destroyed, stopped, suspended, resumed, or interrupted&#39;*](https://docs.python.org/3/library/threading.html#module-threading).</span>
 <span class="sd">            - Some libraries may assume the call is occurring in the &#39;MainThread&#39;.</span>
-<span class="sd">            - If there is an asyncio or trio event loop already running in the &#39;MainThread. Simply use `async with kernel` instead.</span>
+<span class="sd">            - If there is an `asyncio` or `trio` event loop already running in the &#39;MainThread. Use `async with kernel` instead.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">:</span>
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_exit</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trait_has_value</span><span class="p">(</span><span class="s2">&quot;anyio_backend&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span>
-        <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend</span>
-        <span class="n">backend_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-        <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_kernel</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_options</span><span class="o">=</span><span class="n">backend_options</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trait_has_value</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span>
+
+        <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_kernel</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_options</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -7533,8 +7440,8 @@ will be able to connect to the Kernel, so be careful!</p>
 
 
 
-<h3 id="async_kernel.interface.zmq.ZMQKernelInterface.anyio_backend_options" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">anyio_backend_options</span>
+<h3 id="async_kernel.interface.zmq.ZMQKernelInterface.backend" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">backend</span>
 
 
   <span class="doc doc-labels">
@@ -7542,13 +7449,39 @@ will be able to connect to the Kernel, so be careful!</p>
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
-<a href="#async_kernel.interface.zmq.ZMQKernelInterface.anyio_backend_options" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">anyio_backend_options</span><span class="p">:</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.Backend">Backend</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a href="#async_kernel.interface.zmq.ZMQKernelInterface.backend" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span><span class="p">:</span> <span class="n"><span title="traitlets.Container">Container</span></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.Backend">Backend</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span><span class="n"><span title="async_kernel.typing.Backend">Backend</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Default options to use with <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>. See also: <code>Kernel.handle_message_request</code>.</p>
+        <p>The the backend used to provide the shell event loop.</p>
+
+          
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="async_kernel.interface.zmq.ZMQKernelInterface.backend_options" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">backend_options</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#async_kernel.interface.zmq.ZMQKernelInterface.backend_options" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend_options</span> <span class="o">=</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The <code>backend_options</code> to use with <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.</p>
 
           
     </div>
@@ -7571,7 +7504,7 @@ will be able to connect to the Kernel, so be careful!</p>
 
     <div class="doc doc-contents ">
 
-        <p>Start the kernel (blocking).</p>
+        <p>Start the kernel blocking until the kernel stops.</p>
 
 
 <details class="warning" open>
@@ -7580,16 +7513,14 @@ will be able to connect to the Kernel, so be careful!</p>
 <li>Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.</li>
 <li>Blocking calls can only be interrupted in the 'MainThread' because <a href="https://docs.python.org/3/library/threading.html#module-threading"><em>'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'</em></a>.</li>
 <li>Some libraries may assume the call is occurring in the 'MainThread'.</li>
-<li>If there is an asyncio or trio event loop already running in the 'MainThread. Simply use <code>async with kernel</code> instead.</li>
+<li>If there is an <code>asyncio</code> or <code>trio</code> event loop already running in the 'MainThread. Use <code>async with kernel</code> instead.</li>
 </ul>
 </details>
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
@@ -7606,26 +7537,26 @@ will be able to connect to the Kernel, so be careful!</p>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">156</span>
+<span class="normal">157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Start the kernel (blocking).</span>
+<span class="sd">    Start the kernel blocking until the kernel stops.</span>
 
 <span class="sd">    Warning:</span>
 <span class="sd">        - Running the kernel in a thread other than the &#39;MainThread&#39; is permitted, but discouraged.</span>
 <span class="sd">        - Blocking calls can only be interrupted in the &#39;MainThread&#39; because [*&#39;threads cannot be destroyed, stopped, suspended, resumed, or interrupted&#39;*](https://docs.python.org/3/library/threading.html#module-threading).</span>
 <span class="sd">        - Some libraries may assume the call is occurring in the &#39;MainThread&#39;.</span>
-<span class="sd">        - If there is an asyncio or trio event loop already running in the &#39;MainThread. Simply use `async with kernel` instead.</span>
+<span class="sd">        - If there is an `asyncio` or `trio` event loop already running in the &#39;MainThread. Use `async with kernel` instead.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_exit</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trait_has_value</span><span class="p">(</span><span class="s2">&quot;anyio_backend&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span>
-    <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend</span>
-    <span class="n">backend_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anyio_backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-    <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_kernel</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_options</span><span class="o">=</span><span class="n">backend_options</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trait_has_value</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span>
+
+    <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_kernel</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">backend_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_options</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7666,8 +7597,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
-<span class="normal">159</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
@@ -7694,7 +7624,8 @@ and is called by load_connection_file.</p>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
-<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">186</span>
+<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load connection info from a dict containing connection info.</span>
@@ -7752,8 +7683,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
-<span class="normal">197</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
@@ -7779,7 +7709,8 @@ and is called by load_connection_file.</p>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">223</span>
+<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create caller, and open socketes.&quot;&quot;&quot;</span>
@@ -7840,8 +7771,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">377</span>
-<span class="normal">378</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
@@ -7873,7 +7803,8 @@ and is called by load_connection_file.</p>
 <span class="normal">407</span>
 <span class="normal">408</span>
 <span class="normal">409</span>
-<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">410</span>
+<span class="normal">411</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
@@ -7932,8 +7863,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">412</span>
-<span class="normal">413</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">413</span>
 <span class="normal">414</span>
 <span class="normal">415</span>
 <span class="normal">416</span>
@@ -7969,7 +7899,8 @@ and is called by load_connection_file.</p>
 <span class="normal">446</span>
 <span class="normal">447</span>
 <span class="normal">448</span>
-<span class="normal">449</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">449</span>
+<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Opens a zmq socket for the channel, receives messages and calls the message handler.&quot;</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">utils</span><span class="o">.</span><span class="n">LAUNCHED_BY_DEBUGPY</span><span class="p">:</span>
