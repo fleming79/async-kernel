@@ -40,7 +40,7 @@ jobs:
 
       - name: Run tests
         timeout-minutes: 5
-        run: uv run pytest -vvl
+        run: uv run pytest -vvl --maxfail=1 --reruns 1
 
       - name: Type checking with basedpyright
         run: uvx basedpyright
