@@ -3,22 +3,12 @@ from __future__ import annotations
 import pytest
 
 from async_kernel.kernel import Kernel
-from async_kernel.typing import Backend, KernelName
 
 
-@pytest.fixture(scope="module", params=list(KernelName))
-def kernel_name(request):
-    return request.param
-
-
-@pytest.fixture(scope="module")
-def anyio_backend(kernel_name: KernelName):
-    return "trio" if kernel_name is KernelName.trio else "asyncio"
-
-
-async def test_start_kernel_in_context(anyio_backend: Backend, kernel_name: KernelName):
+@pytest.mark.parametrize("anyio_backend", argvalues=["asyncio", "trio"])
+async def test_start_kernel_in_context(anyio_backend):
     async with Kernel({"print_kernel_messages": False}) as kernel:
-        assert kernel.kernel_name == kernel_name
+        assert kernel.kernel_name == {"asyncio": "async", "trio": "async-trio"}[anyio_backend]
         connection_file = kernel.connection_file
         # Test prohibit nested async context.
         with pytest.raises(RuntimeError, match="this Kernel has already been entered"):

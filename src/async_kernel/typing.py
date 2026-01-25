@@ -25,7 +25,6 @@ __all__ = [
     "FixedCreated",
     "HandlerType",
     "Job",
-    "KernelName",
     "Message",
     "MsgHeader",
     "MsgType",
@@ -48,11 +47,6 @@ P = ParamSpec("P")
 class Backend(enum.StrEnum):
     asyncio = "asyncio"
     trio = "trio"
-
-
-class KernelName(enum.StrEnum):
-    asyncio = "async"
-    trio = "async-trio"
 
 
 class Channel(enum.StrEnum):

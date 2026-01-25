@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 import async_kernel
 from async_kernel.kernelspec import get_kernel_dir, import_start_interface, remove_kernel_spec, write_kernel_spec
-from async_kernel.typing import KernelName
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -68,8 +67,7 @@ def command_line() -> None:
         "-a",
         "--add",
         dest="add",
-        help=f"Add a kernel spec. Default kernel names are: {list(map(str, KernelName))}.\n"
-        + "To specify a 'trio' backend, include 'trio' in the name. Other options are also permitted. See: `write_kernel_spec` for detail.",
+        help="Write a kernel spec with the corresponding name. This will overwrite existing kernel specs of the same name.",
     )
     kernels = [] if not kernel_dir.exists() else [item.name for item in kernel_dir.iterdir() if item.is_dir()]
     parser.add_argument(

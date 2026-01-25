@@ -8,17 +8,16 @@ from jupyter_client.kernelspec import KernelSpec
 
 from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernelspec import DEFAULT_START_INTERFACE, import_start_interface, write_kernel_spec
-from async_kernel.typing import KernelName
 
 
 @pytest.mark.parametrize(
     ("kernel_name", "start_interface"),
     [
-        (KernelName.trio, DEFAULT_START_INTERFACE),
+        ("trio", DEFAULT_START_INTERFACE),
         ("function_factory", "custom"),
     ],
 )
-def test_write_kernel_spec(kernel_name: KernelName, start_interface, tmp_path, monkeypatch):
+def test_write_kernel_spec(kernel_name, start_interface, tmp_path, monkeypatch):
     if start_interface == "custom":
 
         def my_start_interface(settings: dict | None):

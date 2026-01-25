@@ -16,7 +16,7 @@ from async_kernel import Caller
 from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Backend, Channel, ExecuteContent, Job, KernelName, Message, MsgHeader, MsgType
+from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
@@ -110,20 +110,21 @@ async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
         await anyio.sleep(0)
 
 
-@pytest.fixture(scope="module", params=KernelName)
+@pytest.fixture(scope="module", params=["async", "async-trio"])
 def kernel_name(request):
     return request.param
 
 
 @pytest.fixture(scope="module")
-async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name: KernelName, transport):
+async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name, transport: str):
     """
     Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it.
     """
     assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-    kwgs = {"interface.transport": transport}
-    command = make_argv(connection_file=connection_file, kernel_name=kernel_name, **kwgs)
+    backend = "trio" if "trio" in kernel_name else "asyncio"
+    kwgs = {"interface.transport": transport, "interface.backend": backend}
+    command = make_argv(connection_file=connection_file, kernel_name=kernel_name, **kwgs)  # pyright: ignore[reportArgumentType]
     process = await anyio.open_process([*command, "--no-print_kernel_messages"])
     async with process:
         while not connection_file.exists() or not connection_file.stat().st_size:
