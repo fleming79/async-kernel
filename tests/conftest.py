@@ -30,13 +30,10 @@ def pytest_configure(config):
     os.environ["PYTEST_TIMEOUT"] = str(1e6) if async_kernel.utils.LAUNCHED_BY_DEBUGPY else str(utils.TIMEOUT)
 
 
-params = [
-    pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio"),
-    # pytest.param(('trio', {}), id='trio') # AsyncKernelClient relies on asyncio
-]
-
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    params.append(pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop"))
+    params = [pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop")]
+else:
+    params = [pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio")]
 
 
 def check_anyio_backend(anyio_backend):

@@ -3,7 +3,6 @@ from __future__ import annotations
 import inspect
 import logging
 import pathlib
-import sys
 import threading
 from typing import TYPE_CHECKING, Any, Literal, cast
 
