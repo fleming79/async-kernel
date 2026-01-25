@@ -3,7 +3,6 @@ from __future__ import annotations
 import inspect
 import logging
 import pathlib
-import sys
 import threading
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -26,11 +25,6 @@ if TYPE_CHECKING:
 
 
 # pyright: reportPrivateUsage=false
-
-
-@pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
-def transport(request):
-    return request.param
 
 
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):

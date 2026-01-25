@@ -30,13 +30,10 @@ def pytest_configure(config):
     os.environ["PYTEST_TIMEOUT"] = str(1e6) if async_kernel.utils.LAUNCHED_BY_DEBUGPY else str(utils.TIMEOUT)
 
 
-params = [
-    pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio"),
-    # pytest.param(('trio', {}), id='trio') # AsyncKernelClient relies on asyncio
-]
-
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    params.append(pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop"))
+    params = [pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop")]
+else:
+    params = [pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio")]
 
 
 def check_anyio_backend(anyio_backend):
@@ -75,7 +72,8 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     kernel = Kernel()
     kernel.connection_file = connection_file
     os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
-    kernel.transport = transport
+    assert isinstance(kernel.interface, ZMQKernelInterface)
+    kernel.interface.transport = transport
     kernel.print_kernel_messages = False
 
     if request.param == "MainThread":
@@ -83,7 +81,6 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
             await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
             yield kernel
     else:
-        assert isinstance(kernel.interface, ZMQKernelInterface)
         if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
             kernel.interface.backend_options = {}
         thread = threading.Thread(target=kernel.interface.start, name="ShellThread")
@@ -125,7 +122,8 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
     """
     assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-    command = make_argv(connection_file=connection_file, kernel_name=kernel_name, transport=transport)
+    kwgs = {"interface.transport": transport}
+    command = make_argv(connection_file=connection_file, kernel_name=kernel_name, **kwgs)
     process = await anyio.open_process([*command, "--no-print_kernel_messages"])
     async with process:
         while not connection_file.exists() or not connection_file.stat().st_size:
