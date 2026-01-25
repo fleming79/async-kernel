@@ -114,6 +114,7 @@ local_scheme = "no-local-version"
 minversion = "6.0"
 xfail_strict = true
 log_cli_level =  "INFO"
+log_level = "INFO" 
 addopts = [
   "-raXs", "--durations=10", "--color=yes", "--doctest-modules",
    "--showlocals", "--strict-markers", "--strict-config",
