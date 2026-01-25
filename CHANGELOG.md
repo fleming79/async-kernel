@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-01-25
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Drop the enum KernelName and no longer 'auto' select trio. [#303](https://github.com/fleming79/async-kernel/pull/303)
+
+- Moved `kernel.transport` to` interface.transport [#301](https://github.com/fleming79/async-kernel/pull/301)
+
+- Caller asyncio scheduling optimization and update readme [#297](https://github.com/fleming79/async-kernel/pull/297)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Tweak ci to only run once typechecking passes. [#304](https://github.com/fleming79/async-kernel/pull/304)
+
+- Chore - pre-commit autoupdate and uv.lock [#300](https://github.com/fleming79/async-kernel/pull/300)
+
+- Expand kernel tests to run with uvloop/winloop where it is available [#299](https://github.com/fleming79/async-kernel/pull/299)
+
+- Add a checkpoint that accepts backend as the argument. [#298](https://github.com/fleming79/async-kernel/pull/298)
+
+- Remove jupyter_client as a build dependency. [#296](https://github.com/fleming79/async-kernel/pull/296)
+
+- Make the AsyncInteractiveShell.kernel a trait [#295](https://github.com/fleming79/async-kernel/pull/295)
+
 ## [0.11.2] - 2026-01-18
 
 ### <!-- 1 --> 🚀 Features
@@ -16,6 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### <!-- 5 --> 📝 Documentation
 
 - Update docs [#293](https://github.com/fleming79/async-kernel/pull/293)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.11.2 [#294](https://github.com/fleming79/async-kernel/pull/294)
 
 ## [0.11.1] - 2026-01-12
 
@@ -791,6 +819,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.12.0]: https://github.com/fleming79/async-kernel/compare/v0.11.2..v0.12.0
 [0.11.2]: https://github.com/fleming79/async-kernel/compare/v0.11.1..v0.11.2
 [0.11.1]: https://github.com/fleming79/async-kernel/compare/v0.11.0..v0.11.1
 [0.11.0]: https://github.com/fleming79/async-kernel/compare/v0.10.3..v0.11.0
