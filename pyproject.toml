@@ -63,7 +63,7 @@ async-kernel = "async_kernel.command:command_line"
 docs = ["mkdocs-material",
     "mike",
     "mkdocstrings[python]",
-    "mkdocs-jupyter",
+    "mkdocs-jupyter >= 0.25.1",
     "mkdocs-open-in-new-tab",
     "mkdocs-git-revision-date-localized-plugin",
     "jupyterlab",
