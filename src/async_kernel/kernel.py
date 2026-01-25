@@ -272,15 +272,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return self.callers[Channel.shell]
 
     @property
-    def transport(self):
-        return getattr(self.interface, "transport", "")
-
-    @transport.setter
-    def transport(self, value):
-        if not self.interface.callers and self.interface.has_trait("transport"):
-            self.interface.set_trait("transport", value)
-
-    @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
         "A dict of detail sent in reply to for a 'kernel_info_request'."
         supported_features = ["kernel subshells"]

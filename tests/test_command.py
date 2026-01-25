@@ -127,7 +127,7 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
         user_expressions={
             "kernel_name": "kernel.kernel_name",
             "backend": "kernel.interface.anyio_backend",
-            "transport": "kernel.transport",
+            "transport": "kernel.interface.transport",
         },
     )
     assert kernel_name in reply["user_expressions"]["kernel_name"]["data"]["text/plain"]

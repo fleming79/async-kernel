@@ -28,11 +28,6 @@ if TYPE_CHECKING:
 # pyright: reportPrivateUsage=false
 
 
-@pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
-def transport(request):
-    return request.param
-
-
 async def test_load_connection_info_error(kernel: Kernel, tmp_path):
     with pytest.raises(RuntimeError):
         kernel.load_connection_info({})
