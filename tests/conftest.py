@@ -1,3 +1,5 @@
+import asyncio
+import importlib.util
 import os
 import sys
 import threading
@@ -7,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 import anyio
 import pytest
 from jupyter_client.asynchronous.client import AsyncKernelClient
+from sniffio import current_async_library
 
 import async_kernel.utils
 from async_kernel import Caller
@@ -27,9 +30,38 @@ def pytest_configure(config):
     os.environ["PYTEST_TIMEOUT"] = str(1e6) if async_kernel.utils.LAUNCHED_BY_DEBUGPY else str(utils.TIMEOUT)
 
 
-@pytest.fixture(scope="module")
+params = [
+    pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio"),
+    # pytest.param(('trio', {}), id='trio') # AsyncKernelClient relies on asyncio
+]
+
+if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
+    params.append(
+        pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop"),
+    )
+
+
+def check_anyio_backend(anyio_backend):
+    "Checks the running backend is loaded"
+    assert current_async_library() == anyio_backend[0]
+    if anyio_backend[0] == "asyncio":
+        loop = asyncio.get_running_loop()
+        if anyio_backend[1]["use_uvloop"]:
+            if sys.platform == "win32":
+                import winloop  # noqa: PLC0415
+
+                assert isinstance(loop, winloop.Loop)
+            else:
+                import uvloop  # noqa: PLC0415
+
+                assert isinstance(loop, uvloop.Loop)
+        else:
+            assert isinstance(loop, asyncio.BaseEventLoop)
+
+
+@pytest.fixture(params=params, scope="module")
 def anyio_backend(request):
-    return "asyncio"
+    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -47,14 +79,19 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
     kernel.transport = transport
     kernel.print_kernel_messages = False
+
     if request.param == "MainThread":
         async with kernel:
+            await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
             yield kernel
     else:
         assert isinstance(kernel.interface, ZMQKernelInterface)
+        if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
+            kernel.interface.backend_options = {}
         thread = threading.Thread(target=kernel.interface.start, name="ShellThread")
         thread.start()
         kernel.event_started.wait()
+        await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
         try:
             yield kernel
         finally:
@@ -88,7 +125,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
     """
     Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it.
     """
-    assert anyio_backend == "asyncio", "Asyncio is required for the client"
+    assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     command = make_argv(connection_file=connection_file, kernel_name=kernel_name, transport=transport)
     process = await anyio.open_process([*command, "--no-print_kernel_messages"])
