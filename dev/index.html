@@ -1611,9 +1611,9 @@ with concurrent message handling.</p>
 <h3 id="trio-backend">Trio backend<a class="headerlink" href="#trio-backend" title="Permanent link">&para;</a></h3>
 <p>To add a kernel spec for a <code>trio</code> backend.</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio<span class="w"> </span>--interface.backend<span class="o">=</span>trio
 </code></pre></div>
-<p>For further detail about kernel customisation see <a href="https://fleming79.github.io/async-kernel/latest/commands/#command-line">command line usage</a>.</p>
+<p>For further detail about kernel spec customisation see <a href="https://fleming79.github.io/async-kernel/latest/commands/#command-line">command line usage</a>.</p>
 <h2 id="message-handling">Message handling<a class="headerlink" href="#message-handling" title="Permanent link">&para;</a></h2>
 <ul>
 <li>
