@@ -51,10 +51,10 @@ To add a kernel spec for a `trio` backend.
 
 ```bash
 pip install trio
-async-kernel -a async-trio
+async-kernel -a async-trio --interface.backend=trio
 ```
 
-For further detail about kernel customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
+For further detail about kernel spec customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
 
 ## Message handling
 

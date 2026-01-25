@@ -153,9 +153,6 @@ class ZMQKernelInterface(BaseKernelInterface):
             async with self.kernel:
                 await self.wait_exit
 
-        if not self.trait_has_value("backend") and "trio" in self.kernel.kernel_name.lower():
-            self.backend = Backend.trio
-
         anyio.run(run_kernel, backend=self.backend, backend_options=self.backend_options)
 
     @override

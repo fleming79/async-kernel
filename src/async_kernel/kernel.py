@@ -36,18 +36,7 @@ from async_kernel.comm import CommManager
 from async_kernel.common import Fixed
 from async_kernel.debugger import Debugger
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import (
-    Channel,
-    Content,
-    ExecuteContent,
-    HandlerType,
-    Job,
-    KernelName,
-    Message,
-    MsgType,
-    NoValue,
-    RunMode,
-)
+from async_kernel.typing import Channel, Content, ExecuteContent, HandlerType, Job, Message, MsgType, NoValue, RunMode
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable, Iterable
@@ -197,13 +186,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 
     @traitlets.default("kernel_name")
-    def _default_kernel_name(self) -> Literal[KernelName.trio, KernelName.asyncio]:
-        try:
-            if current_async_library() == "trio":
-                return KernelName.trio
-        except Exception:
-            pass
-        return KernelName.asyncio
+    def _default_kernel_name(self):
+        return "async-trio" if current_async_library(failsafe=True) == "trio" else "async"
 
     @traitlets.default("interface")
     def default_interface(self):
