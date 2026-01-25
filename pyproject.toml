@@ -131,7 +131,8 @@ exclude_lines = [
   ".*sys.platform == \"win32\".*",
   "if not self.kernel.quiet.*",
   "raise NotImplementedError",
-  '.*sys.platform == "emscripten".*'
+  '.*sys.platform == "emscripten".*',
+  '.*# pragma: no cover'
 ]
 
 [tool.coverage.run]
