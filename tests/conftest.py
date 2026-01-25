@@ -36,9 +36,7 @@ params = [
 ]
 
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    params.append(
-        pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop"),
-    )
+    params.append(pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop"))
 
 
 def check_anyio_backend(anyio_backend):
