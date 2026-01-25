@@ -63,7 +63,7 @@ async-kernel = "async_kernel.command:command_line"
 docs = ["mkdocs-material",
     "mike",
     "mkdocstrings[python]",
-    "mkdocs-jupyter",
+    "mkdocs-jupyter >= 0.25.1",
     "mkdocs-open-in-new-tab",
     "mkdocs-git-revision-date-localized-plugin",
     "jupyterlab",
@@ -114,6 +114,7 @@ local_scheme = "no-local-version"
 minversion = "6.0"
 xfail_strict = true
 log_cli_level =  "INFO"
+log_level = "INFO" 
 addopts = [
   "-raXs", "--durations=10", "--color=yes", "--doctest-modules",
    "--showlocals", "--strict-markers", "--strict-config",
