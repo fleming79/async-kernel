@@ -840,7 +840,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         resume = noop
         result_ready = noop
         done_results: deque[Pending[T]] = deque()
-        results: set[Pending[T]] = set()
+        unfinished: set[Pending[T]] = set()
         done = False
         current_pending = self.current_pending()
         if isinstance(items, set | list | tuple):
@@ -863,11 +863,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                         pen = cast("Pending[T]", self.call_soon(await_for, pen))
                     pen.add_done_callback(result_done)
                     if not pen.done():
-                        results.add(pen)
-                        if max_concurrent_ and (len(results) == max_concurrent_):
+                        unfinished.add(pen)
+                        if max_concurrent_ and len(unfinished) == max_concurrent_:
                             event = create_async_event()
                             resume = event.set
-                            if len(results) == max_concurrent_:
+                            if len(unfinished) == max_concurrent_:
                                 await event
                             resume = noop
                             await checkpoint(self.backend)
@@ -881,24 +881,22 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         pen_ = self.call_soon(iter_items)
         try:
-            while (not done) or results or done_results:
+            while (not done) or unfinished or done_results:
                 if done_results:
                     pen = done_results.popleft()
-                    results.discard(pen)
-                    # Ensure all done callbacks are complete.
-                    await pen.wait(result=False)
+                    unfinished.discard(pen)
                     yield pen
                 else:
-                    if max_concurrent_ and len(results) < max_concurrent_:
+                    if max_concurrent_ and len(unfinished) < max_concurrent_:
                         resume()
                     event = create_async_event()
                     result_ready = event.set
-                    if not done or results:
+                    if not done or unfinished:
                         await event
                     result_ready = noop
         finally:
             pen_.cancel()
-            for pen in results:
+            for pen in unfinished:
                 pen.remove_done_callback(result_done)
                 if cancel_unfinished:
                     pen.cancel("Cancelled by as_completed")
@@ -934,7 +932,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         if pending:
             with anyio.move_on_after(timeout):
                 async for pen in self.as_completed(pending.copy(), cancel_unfinished=False):
-                    _ = (pending.discard(pen), done.add(pen))
+                    pending.discard(pen)
+                    done.add(pen)
                     if return_when == "FIRST_COMPLETED":
                         break
                     if return_when == "FIRST_EXCEPTION" and (pen.cancelled() or pen.exception()):
