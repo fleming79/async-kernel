@@ -338,7 +338,7 @@ class TestCaller:
             assert not caller.queue_get(func)
 
     async def test_queue_call_result(self, caller: Caller):
-        def pass_through(n):
+        async def pass_through(n):
             return n
 
         pen = Pending()
@@ -631,14 +631,24 @@ class TestCaller:
             results.add(await pen)
         assert results == {0, 1}
 
+    async def test_as_completed_queue(self, caller: Caller):
+        async def f(i: int):
+            await anyio.sleep(i * 0.001)
+            return i
+
+        results = set()
+        async for pen in caller.as_completed(caller.queue_call(f, i) for i in range(2)):
+            results.add(pen.result())
+        assert results == {1}
+
     async def test_wait_awaitables(self, caller: Caller):
         async def f(i: int):
             await anyio.sleep(i * 0.001)
             return i
 
-        done, pending = await caller.wait(f(i) for i in range(2))
+        done, pending = await caller.wait((caller.queue_call(f, 1), caller.call_soon(f, 2), caller.to_thread(f, 3)))
         assert not pending
-        assert {pen.result() for pen in done} == {0, 1}
+        assert {pen.result() for pen in done} == {1, 2, 3}
 
     async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
         pen1 = caller.to_thread(threading.get_ident)
