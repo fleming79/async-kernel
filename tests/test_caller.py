@@ -338,7 +338,7 @@ class TestCaller:
             assert not caller.queue_get(func)
 
     async def test_queue_call_result(self, caller: Caller):
-        def pass_through(n):
+        async def pass_through(n):
             return n
 
         pen = Pending()

@@ -774,7 +774,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             async def queue_loop() -> None:
                 pen = self.current_pending()
                 assert pen
-                item = result = None
+                result = None
                 try:
                     while True:
                         await checkpoint(self.backend)
@@ -783,14 +783,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                             try:
                                 result = item[0](*item[1], **item[2])
                                 if inspect.iscoroutine(object=result):
-                                    await result
+                                    result = await result
                             except (anyio.get_cancelled_exc_class(), Exception) as e:
                                 if pen.cancelled():
                                     raise
                                 self.log.exception("Execution %s failed", item, exc_info=e)
                         else:
                             pen.set_result(result, reset=True)
-                            del item  # pyright: ignore[reportPossiblyUnboundVariable]
+                            item = result = None
                             event = create_async_event()
                             pen.metadata["resume"] = event.set
                             await checkpoint(self.backend)
