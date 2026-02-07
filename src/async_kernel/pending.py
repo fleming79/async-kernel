@@ -524,6 +524,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
     _cancel_scope: anyio.CancelScope
     _cancelled: str | None = None
+    cancellation_timeout = 10
+    "The maximum time to wait for cancelled pending to be done."
 
     caller = Fixed(lambda _: async_kernel.Caller())
 
@@ -546,8 +548,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                     self._leaving_context = True
                     if self._pending:
                         await self._all_done
-                except (anyio.get_cancelled_exc_class(), Exception):
-                    self.cancel("An error occurred")
+                except (anyio.get_cancelled_exc_class(), Exception) as e:
+                    self.cancel(f"An error occurred: {e!r}")
                     raise
             if self._cancelled is not None:
                 raise PendingCancelled(self._cancelled)
@@ -558,7 +560,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 if self._all_done or self._all_done.cancelled():
                     self._all_done = create_async_event()
                 if self._pending and not self._all_done:
-                    with anyio.CancelScope(shield=True):
+                    with anyio.CancelScope(shield=True), anyio.move_on_after(self.cancellation_timeout):
                         await self._all_done
             self._active = False
 
@@ -566,15 +568,16 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     def add(self, pen: Pending):
         assert self._active
         if self._cancelled is not None:
-            msg = "Trying to add to a closed PendingGroup"
+            msg = f"Trying to add to a cancelled PendingGroup.\nCancellation messages: {self._cancelled}"
             pen.cancel(msg)
-        super().add(pen)
+        else:
+            super().add(pen)
 
     @override
     def remove(self, pen: Pending) -> None:
         "Remove pen from the group."
         super().remove(pen)
-        if pen.done() and self._active and (pen.cancelled() or pen.exception()):
+        if pen.done() and self._active and (not pen.cancelled() and pen.exception()):
             self.cancel(f"{pen} tracked by {self} failed or was cancelled")
         if self._leaving_context and not self._pending:
             self._all_done.set()
@@ -585,8 +588,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
             self._cancelled = "\n".join(((self._cancelled or ""), msg or ""))
             if not self._cancel_scope.cancel_called:
                 self.caller.call_direct(self._cancel_scope.cancel, msg)
-        for pen_ in self.pending:
-            pen_.cancel(msg)
+                for pen_ in self.pending:
+                    pen_.cancel(msg)
 
     def cancelled(self) -> bool:
         """Return True if the pending group is cancelled."""
