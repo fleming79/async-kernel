@@ -952,5 +952,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         return done, pending
 
     def create_pending_group(self, *, shield: bool = False):
-        "Create a new [pending group][async_kernel.pending.PendingGroup]."
+        """
+        Create a new [pending group][async_kernel.pending.PendingGroup].
+
+        Args:
+            shield: Shield the pending group from external cancellation.
+        """
         return PendingGroup(shield=shield)

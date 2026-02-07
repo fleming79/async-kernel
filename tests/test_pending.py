@@ -25,8 +25,10 @@ async def pm(anyio_backend: Backend):
     pm.activate()
     assert PendingManager.current() is None
     yield pm
-    if pm.state is PendingTrackerState.active and (countdown := pm.deactivate()):
-        await countdown
+    pm.deactivate()
+    if pm.pending:
+        with anyio.CancelScope(shield=True):
+            await Caller().wait(pm.pending)
 
 
 @pytest.mark.anyio
@@ -252,12 +254,11 @@ class TestPendingManager:
         token = pm.activate()
         for pen in pending:
             assert not pen.done()
-            pm.track(pen)
-        done_event = pm.deactivate(cancel_pending=True)
-        assert done_event is not None
-        assert done_event.value == 6
+            pm.add(pen)
+        pm.deactivate(cancel_pending=True)
+        assert pm.pending
         assert pm.state is PendingTrackerState.exiting
-        await done_event
+        await caller.wait(pm.pending)
         assert pm.state is PendingTrackerState.stopped
         assert pen.done()
         assert not pm.pending
@@ -295,8 +296,8 @@ class TestPendingManager:
         with pytest.raises(InvalidStateError):
             pm.activate()
 
-        pm.start_tracking()
-        pm.track(pen := caller.call_soon(recursive))
+        token = pm.start_tracking()
+        pm.add(pen := caller.call_soon(recursive))
         while isinstance(pen, Pending):
             pen = await pen
         assert pen == n
@@ -304,24 +305,20 @@ class TestPendingManager:
         assert not pm.pending
 
         caller.call_soon(lambda: 1)
-        count_event = pm.deactivate(cancel_pending=True)
-        count_event = pm.deactivate(cancel_pending=True)
-        assert count_event is not None
-        assert count_event.value == 1
+        pm.deactivate(cancel_pending=True)
+        pm.deactivate(cancel_pending=True)
+        assert pm.pending
 
         with pytest.raises(InvalidStateError):
-            pm.track(Pending())
-
-        await count_event
-
-        assert pm.deactivate() is None
-
+            pm.add(Pending())
         with pytest.raises(InvalidStateError):
             pm.start_tracking()
+        pm.stop_tracking(token)
+        await caller.wait(pm.pending)
 
     async def test_discard(self, pm: PendingManager, caller: Caller):
-        pm.track(pen1 := caller.call_soon(lambda: 1 + 1))
-        pm.track(pen2 := Pending())
+        pm.add(pen1 := caller.call_soon(lambda: 1 + 1))
+        pm.add(pen2 := Pending())
         assert await pen1 == 2
         pm.discard(pen2)
 
@@ -350,15 +347,15 @@ class TestPendingManager:
 
 
 class TestPendingGroup:
-    async def test_pending_manager_async(self, caller: Caller) -> None:
+    async def test_basi(self, caller: Caller) -> None:
         assert PendingGroup.current() is None
         async with PendingGroup() as pm:
             assert pm is PendingGroup.current()
             pen1 = caller.call_soon(lambda: 1)
             assert pen1 in pm.pending
-            assert pm._count_event.value == 1  # pyright: ignore[reportPrivateUsage]
+            assert not pm._all_done  # pyright: ignore[reportPrivateUsage]
         assert pen1 not in pm.pending
-        assert pm._count_event.value == 0  # pyright: ignore[reportPrivateUsage]
+        assert pm._all_done  # pyright: ignore[reportPrivateUsage]
         assert pm.state is PendingTrackerState.stopped
 
     async def test_async_reenter(self, caller: Caller) -> None:
