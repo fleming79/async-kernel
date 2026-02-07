@@ -17,7 +17,7 @@ from wrapt import lazy_import
 
 import async_kernel
 from async_kernel.common import Fixed
-from async_kernel.typing import Backend, PendingCreateOptions, PendingTrackerState, T
+from async_kernel.typing import Backend, PendingCreateOptions, T
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
 
@@ -376,7 +376,7 @@ class PendingTracker:
     _active_contexts: ClassVar[dict[str, Self]] = {}
     _contextvar: ClassVar[contextvars.ContextVar[str | None]] = contextvars.ContextVar("PendingManager", default=None)
 
-    _state = PendingTrackerState.idle
+    _active = False
     _pending: Fixed[Self, set[Pending[Any]]] = Fixed(set)
     _tracking = False
 
@@ -384,8 +384,8 @@ class PendingTracker:
     "The context id (per instance)."
 
     @property
-    def state(self) -> PendingTrackerState:
-        return self._state
+    def active(self) -> bool:
+        return self._active
 
     @property
     def pending(self) -> set[Pending[Any]]:
@@ -395,12 +395,6 @@ class PendingTracker:
         # Each subclass is assigned a new context variable.
         cls._contextvar = contextvars.ContextVar(f"{cls.__module__}.{cls.__name__}", default=None)
         return super().__init_subclass__()
-
-    def _set_context(self) -> contextvars.Token[str | None]:
-        assert self._state is PendingTrackerState.active
-        self._active_classes.add(self.__class__)
-        self._active_contexts[self.context_id] = self
-        return self._contextvar.set(self.context_id)
 
     @classmethod
     def add_to_pending_trackers(cls, pen: Pending) -> None:
@@ -412,8 +406,12 @@ class PendingTracker:
         """
         # Called by `Pending` when a new instance for each new instance.
         for cls_ in cls._active_classes:
-            if (id_ := cls_._contextvar.get()) and (pm := cls._active_contexts.get(id_)):
-                pm.add(pen)
+            if id_ := cls_._contextvar.get():
+                if pm := cls._active_contexts.get(id_):
+                    pm.add(pen)
+                else:
+                    msg = f"The context of {cls} no longer active!"
+                    raise InvalidStateError(msg)
 
     @classmethod
     def current(cls) -> Self | None:
@@ -426,10 +424,14 @@ class PendingTracker:
         """
         Start tracking `Pending` in the  current context.
         """
-        if self._tracking or self.state is not PendingTrackerState.active:
+        if self._tracking or not self.active:
             raise InvalidStateError
+        assert self._active
+        self._active_classes.add(self.__class__)
+        self._active_contexts[self.context_id] = self
+        self._parent_context_id = self._contextvar.get()
         self._tracking = True
-        return self._set_context()
+        return self._contextvar.set(self.context_id)
 
     def stop_tracking(self, token: contextvars.Token[str | None]) -> None:
         """
@@ -440,27 +442,28 @@ class PendingTracker:
         """
         self._contextvar.reset(token)
         self._tracking = False
+        self._parent_context_id = None
 
     def add(self, pen: Pending) -> None:
         "Track `Pending` if it isn't done."
-        if self._state is not PendingTrackerState.active:
-            msg = f"{self.__class__.__name__} state is {self._state}!"
-            raise InvalidStateError(msg)
+        assert self._active
         if not pen.done() and pen not in self._pending:
-            pen.add_done_callback(self.remove)
+            pen.add_done_callback(self.discard)
             self._pending.add(pen)
+        if self._tracking and (id_ := self._parent_context_id) and (parent := self._active_contexts.get(id_)):
+            parent.add(pen)
 
     def remove(self, pen: Pending) -> None:
-        "Remove a `Pending` that is being tracked."
+        "Remove a `Pending`."
         self._pending.remove(pen)
-        if self._state is PendingTrackerState.exiting and not self._pending:
-            self._state = PendingTrackerState.stopped
-            self._active_contexts.pop(self.context_id, None)
+        pen.remove_done_callback(self.discard)
 
     def discard(self, pen: Pending) -> None:
-        "Remove a `Pending` if it is being tracked."
-        if pen.remove_done_callback(self.remove):
+        "Discard the `Pending`."
+        try:
             self.remove(pen)
+        except IndexError:
+            pass
 
 
 class PendingManager(PendingTracker):
@@ -476,35 +479,20 @@ class PendingManager(PendingTracker):
         """
         Enter the active state to begin tracking pending.
         """
-
-        if self._state not in [PendingTrackerState.idle, PendingTrackerState.stopped]:
-            raise InvalidStateError
-        self._state = PendingTrackerState.active
+        assert not self._active
         self._active_contexts[self.context_id] = self
         self._active_classes.add(self.__class__)
+        self._active = True
         return self
 
-    def deactivate(self, *, cancel_pending: bool = True) -> None:
+    def deactivate(self) -> None:
         """
-        Leave the active state and remove pending.
-
-
-        Args:
-            cancel_pending: Cancel all `Pending` in the current 'pending' set.
-
-        Returns:
-            CountdownEvent: If there are pending that have not finished cancellation.
+        Leave the active state cancelling all pending.
         """
-        if self._state is not PendingTrackerState.stopped:
-            self._state = PendingTrackerState.exiting
-            for pen in self._pending.copy():
-                if cancel_pending:
-                    pen.cancel(f"{self} has been deactivated")
-                else:
-                    self.discard(pen)
-            if not self._pending:
-                self._state = PendingTrackerState.stopped
-                self._active_contexts.pop(self.context_id, None)
+        self._active = False
+        self._active_contexts.pop(self.context_id, None)
+        for pen in self._pending.copy():
+            pen.cancel(f"{self} has been deactivated")
 
 
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
@@ -548,7 +536,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self._cancel_scope = anyio.CancelScope(shield=self._shield)
         self._all_done = create_async_event()
-        self._state = PendingTrackerState.active
+        self._active = True
         self._leaving_context = False
         token = self.start_tracking()
         try:
@@ -565,7 +553,6 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 raise PendingCancelled(self._cancelled)
         finally:
             self._leaving_context = True
-            self._state = PendingTrackerState.exiting
             self.stop_tracking(token)
             if self._pending:
                 if self._all_done or self._all_done.cancelled():
@@ -573,23 +560,31 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 if self._pending and not self._all_done:
                     with anyio.CancelScope(shield=True):
                         await self._all_done
-            self._state = PendingTrackerState.stopped
+            self._active = False
+
+    @override
+    def add(self, pen: Pending):
+        assert self._active
+        if self._cancelled is not None:
+            msg = "Trying to add to a closed PendingGroup"
+            pen.cancel(msg)
+        super().add(pen)
 
     @override
     def remove(self, pen: Pending) -> None:
         "Remove pen from the group."
         super().remove(pen)
-        if pen.done() and self._state is PendingTrackerState.active and (pen.cancelled() or pen.exception()):
+        if pen.done() and self._active and (pen.cancelled() or pen.exception()):
             self.cancel(f"{pen} tracked by {self} failed or was cancelled")
         if self._leaving_context and not self._pending:
             self._all_done.set()
 
     def cancel(self, msg: str | None = None) -> None:
         "Cancel the pending group (thread-safe)."
-        if self._state is PendingTrackerState.active:
-            self._state = PendingTrackerState.exiting
+        if self._active:
             self._cancelled = "\n".join(((self._cancelled or ""), msg or ""))
-            self.caller.call_direct(self._cancel_scope.cancel, msg)
+            if not self._cancel_scope.cancel_called:
+                self.caller.call_direct(self._cancel_scope.cancel, msg)
         for pen_ in self.pending:
             pen_.cancel(msg)
 

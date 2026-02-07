@@ -10,7 +10,7 @@ from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
 from async_kernel.pending import InvalidStateError, Pending, PendingCancelled, PendingGroup, PendingManager
-from async_kernel.typing import Backend, PendingTrackerState
+from async_kernel.typing import Backend
 
 
 @pytest.fixture(params=Backend, scope="module")
@@ -249,17 +249,17 @@ class TestPendingManager:
         assert pen in pm.pending
         pm.stop_tracking(token)
         pending = pm.pending
-        assert pm.deactivate(cancel_pending=False) is None
-        assert pm.state is PendingTrackerState.stopped
+        pm.deactivate()
+        assert not pm.active
         token = pm.activate()
         for pen in pending:
             assert not pen.done()
             pm.add(pen)
-        pm.deactivate(cancel_pending=True)
+        pm.deactivate()
         assert pm.pending
-        assert pm.state is PendingTrackerState.exiting
+        assert not pm.active
         await caller.wait(pm.pending)
-        assert pm.state is PendingTrackerState.stopped
+        assert not pm.active
         assert pen.done()
         assert not pm.pending
 
@@ -277,7 +277,7 @@ class TestPendingManager:
             await pen2
         await pen2.wait(result=False)
         assert not pm.pending
-        assert pm.state is PendingTrackerState.active
+        assert pm.active
         pm.stop_tracking(token)
 
     async def test_state(self, pm: PendingManager, caller: Caller):
@@ -293,9 +293,6 @@ class TestPendingManager:
                 return caller.call_soon(recursive)
             return count
 
-        with pytest.raises(InvalidStateError):
-            pm.activate()
-
         token = pm.start_tracking()
         pm.add(pen := caller.call_soon(recursive))
         while isinstance(pen, Pending):
@@ -305,8 +302,8 @@ class TestPendingManager:
         assert not pm.pending
 
         caller.call_soon(lambda: 1)
-        pm.deactivate(cancel_pending=True)
-        pm.deactivate(cancel_pending=True)
+        pm.deactivate()
+        pm.deactivate()
         assert pm.pending
 
         with pytest.raises(InvalidStateError):
@@ -356,7 +353,7 @@ class TestPendingGroup:
             assert not pm._all_done  # pyright: ignore[reportPrivateUsage]
         assert pen1 not in pm.pending
         assert pm._all_done  # pyright: ignore[reportPrivateUsage]
-        assert pm.state is PendingTrackerState.stopped
+        assert not pm.active
 
     async def test_async_reenter(self, caller: Caller) -> None:
         assert PendingGroup.current() is None
@@ -407,12 +404,13 @@ class TestPendingGroup:
         ok = False
 
         async def add_when_cancelled():
+            assert PendingGroup.current() is pm
             nonlocal ok
             try:
                 await anyio.sleep_forever()
             except anyio.get_cancelled_exc_class():
-                with pytest.raises(InvalidStateError):
-                    caller.call_soon(anyio.sleep_forever)
+                pen = caller.call_soon(anyio.sleep_forever)
+                assert pen.cancelled()
                 ok = True
                 raise
 
@@ -420,7 +418,7 @@ class TestPendingGroup:
             async with pm:
                 caller.call_soon(add_when_cancelled)
         assert ok
-        assert pm.state is PendingTrackerState.stopped
+        assert not pm.active
 
     async def test_wait_exception(self, caller: Caller):
         with pytest.raises(PendingCancelled):  # noqa: PT012

@@ -258,15 +258,6 @@ class Tags(enum.StrEnum):
     """
 
 
-class PendingTrackerState(enum.Enum):
-    "The state of a [async_kernel.pending.PendingManager][]."
-
-    idle = enum.auto()
-    active = enum.auto()
-    exiting = enum.auto()
-    stopped = enum.auto()
-
-
 class CallerState(enum.Enum):
     "The State of a [async_kernel.caller.Caller][]."
 
