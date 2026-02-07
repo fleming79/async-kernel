@@ -131,7 +131,7 @@ class Pending(Awaitable[T]):
         rep = (
             "<Pending"
             + ((" ⛔" + (f"message={self._cancelled!s}" if self._cancelled else "")) if self.cancelled() else "")
-            + (" 🏁" if self._done else " 🏃")
+            + ((f" ❗ {e!r}" if (e := getattr(self, "_exception", None)) else " 🏁") if self._done else " 🏃")
         )
         rep = f"{rep} at {id(self)}"
         if self._options:
