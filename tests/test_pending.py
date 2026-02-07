@@ -347,7 +347,7 @@ class TestPendingManager:
 
 
 class TestPendingGroup:
-    async def test_basi(self, caller: Caller) -> None:
+    async def test_basic(self, caller: Caller) -> None:
         assert PendingGroup.current() is None
         async with PendingGroup() as pm:
             assert pm is PendingGroup.current()
