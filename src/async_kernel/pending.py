@@ -577,8 +577,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     def remove(self, pen: Pending) -> None:
         "Remove pen from the group."
         super().remove(pen)
-        if pen.done() and self._active and (not pen.cancelled() and pen.exception()):
-            self.cancel(f"{pen} tracked by {self} failed or was cancelled")
+        if pen.done() and self._active and (not pen.cancelled() and (pen.exception())):
+            self.cancel(f"Exception in member: {pen}")
         if self._leaving_context and not self._pending:
             self._all_done.set()
 

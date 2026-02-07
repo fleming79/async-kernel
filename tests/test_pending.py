@@ -462,3 +462,20 @@ class TestPendingGroup:
                         ok = True
                     assert not pg.cancelled()
         assert ok
+
+    async def test_nested(self, caller: Caller):
+        with anyio.move_on_after(0.1):
+            async with caller.create_pending_group() as pg1:
+                async with pg1.caller.create_pending_group() as pg2:
+                    pen = pg2.caller.call_soon(anyio.sleep_forever)
+                    assert pen in pg2.pending
+                    assert pen in pg1.pending
+        assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    async def test_nested_raises(self, caller: Caller):
+        with pytest.raises(PendingCancelled, match="division by zero"):  # noqa: PT012
+            async with caller.create_pending_group() as pg1:
+                async with pg1.caller.create_pending_group() as pg2:
+                    pen = pg2.caller.call_soon(lambda: 1 / 0)
+
+        assert pen.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
