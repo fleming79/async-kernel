@@ -514,8 +514,12 @@ class TestCaller:
             await pen
 
     @pytest.mark.parametrize("return_when", ["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"])
+    @pytest.mark.parametrize("when", ["done", "soon"])
     async def test_wait(
-        self, caller: Caller, return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"]
+        self,
+        caller: Caller,
+        return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"],
+        when: Literal["done", "soon"],
     ):
         waiters = [create_async_event() for _ in range(4)]
         waiters[0].set()
@@ -528,7 +532,16 @@ class TestCaller:
             finally:
                 caller.call_soon(waiters[i + 1].set)
 
-        items = [caller.call_soon(f, i) for i in range(3)]
+        if when == "soon":
+            items = [caller.call_soon(f, i) for i in range(3)]
+        else:
+            items = [Pending(), Pending(), Pending()]
+            items[0].set_result(None)
+            if return_when in ("FIRST_EXCEPTION", "ALL_COMPLETED"):
+                items[1].set_exception(RuntimeError())
+            if return_when == "ALL_COMPLETED":
+                items[2].set_result(None)
+
         done, pending = await caller.wait(items, return_when=return_when)
         match return_when:
             case "FIRST_COMPLETED":
@@ -538,6 +551,12 @@ class TestCaller:
             case _:
                 assert {*items} == done
                 assert not pending
+
+    async def test_wait_awaitable(self, caller):
+        done, pending = await caller.wait((anyio.sleep(0),))
+        assert not pending
+        assert len(done) == 1
+        assert isinstance(next(iter(done)), Pending)
 
     async def test_cancelled_result(self, caller: Caller):
         pen = caller.call_soon(anyio.sleep_forever)

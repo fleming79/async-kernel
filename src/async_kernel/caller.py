@@ -926,9 +926,20 @@ class Caller(anyio.AsyncContextManagerMixin):
             - This does not raise a TimeoutError!
             - Pendings that aren't done when the timeout occurs are returned in the second set.
         """
-        pending: set[Pending[T]]
+        pending: set[Pending[T]] = set()
         done = set()
-        pending = {item if isinstance(item, Pending) else self.call_soon(await_for, item) for item in items}
+        for item in items:
+            if isinstance(item, Pending):
+                done.add(item) if item.done() else pending.add(item)
+            else:
+                pending.add(self.call_soon(await_for, item))
+        if done:
+            if return_when == "FIRST_COMPLETED":
+                return done, pending
+            if return_when == "FIRST_EXCEPTION":
+                for pen in done:
+                    if pen.cancelled() or pen.exception():
+                        return done, pending
         if pending:
             with anyio.move_on_after(timeout):
                 async for pen in self.as_completed(pending.copy(), cancel_unfinished=False):
