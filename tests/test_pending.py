@@ -180,10 +180,10 @@ class TestPending:
     def test_repr(self):
         a = "long string" * 100
         b = {f"name {i}": "long_string" * 100 for i in range(100)}
-        pen = Pending({"allow_tracking": False})
+        pen = Pending()
         pen.metadata.update(a=a, b=b)
         matches = [
-            f"<Pending {indicator} at {id(pen)} options:{{'allow_tracking': False}} metadata:{{'a': 'long stringl…nglong string', 'b': {{…}}}} >"
+            f"<Pending {indicator} at {id(pen)} metadata:{{'a': 'long stringl…nglong string', 'b': {{…}}}} >"
             for indicator in ("🏃", "⛔ 🏃", "⛔ 🏁")
         ]
         assert re.match(matches[0], repr(pen))
@@ -294,6 +294,9 @@ class TestPendingManager:
             return count
 
         token = pm.start_tracking()
+        with pytest.raises(InvalidStateError):
+            pm.start_tracking()
+
         pm.add(pen := caller.call_soon(recursive))
         while isinstance(pen, Pending):
             pen = await pen
@@ -303,13 +306,13 @@ class TestPendingManager:
 
         caller.call_soon(lambda: 1)
         pm.deactivate()
+        assert not pm.active
         pm.deactivate()
         assert pm.pending
 
-        with pytest.raises(InvalidStateError):
-            pm.add(Pending())
-        with pytest.raises(InvalidStateError):
-            pm.start_tracking()
+        pen = Pending()
+        pm.add(pen)
+        assert pen not in pm.pending, ""
         pm.stop_tracking(token)
         await caller.wait(pm.pending)
 
@@ -489,3 +492,31 @@ class TestPendingGroup:
             assert pg.caller is caller
             assert caller.queue_call(func, 2) is pen
             assert pen in pg.pending
+
+    async def test_tracking(self, caller: Caller):
+        pm = PendingManager()
+        pm.activate()
+        token = pm.start_tracking()
+        try:
+            async with caller.create_pending_group() as pg:
+                pen = Pending()
+                assert pen in pg.pending
+                assert pen in pm.pending
+
+                pen_no_track = Pending(trackers=())
+                assert pen_no_track not in pm.pending
+                assert pen_no_track not in pg.pending
+
+                pen_pg = Pending(trackers=(PendingGroup,))
+                assert pen_pg in pg.pending
+                assert pen_pg not in pm.pending
+
+                pen_pm = Pending(trackers=(PendingManager,))
+                assert pen_pm in pm.pending
+                assert pen_pm not in pg.pending
+                pg._pending.clear()  # pyright: ignore[reportPrivateUsage]
+
+        finally:
+            pm._pending.clear()  # pyright: ignore[reportPrivateUsage]
+            pm.stop_tracking(token)
+            pm.deactivate()
