@@ -272,7 +272,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         if self._leaving_context and not self._pending:
             self._all_done.set()
 
-    def cancel(self, msg: str | None = None) -> None:
+    @enable_signal_safety
+    def cancel(self, msg: str | None = None) -> bool:
         "Cancel the pending group (thread-safe)."
         if self._active:
             self._cancelled = "\n".join(((self._cancelled or ""), msg or ""))
@@ -280,6 +281,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 self.caller.call_direct(self._cancel_scope.cancel, msg)
                 for pen_ in self.pending:
                     pen_.cancel(msg)
+        return self.cancelled()
 
     def cancelled(self) -> bool:
         """Return True if the pending group is cancelled."""
