@@ -317,7 +317,7 @@ class Pending(Awaitable[T]):
     _exception: Exception
     _done: bool
     _result: T
-    trackers: tuple[type[PendingTracker], ...]
+    trackers: type[PendingTracker] | tuple[type[PendingTracker], ...]
     """
     A tuple of [async_kernel.pending.PendingTracker][] subclasses that the pending is permitted to register with.
 
@@ -334,12 +334,14 @@ class Pending(Awaitable[T]):
         """
         return self._metadata_mappings[id(self)]
 
-    def __init__(self, *, trackers: tuple[type[PendingTracker], ...] = (PendingTracker,), **metadata: Any):
+    def __init__(
+        self, *, trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = PendingTracker, **metadata: Any
+    ):
         """
         Initializes a new Pending object with optional creation options and metadata.
 
         Args:
-            trackers: A tuple of PendingTracker subclasses to permit tracking with.
+            trackers: A subclass or tuple of `PendingTracker` subclasses to which the pending can be added given the context.
             **metadata: Arbitrary keyword arguments containing metadata to associate with this Pending instance.
                 trackers: Enabled by default. To disable tracking pass `trackers=False`
 
