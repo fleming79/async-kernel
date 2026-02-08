@@ -10,7 +10,7 @@ from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
 from async_kernel.pending import InvalidStateError, Pending, PendingCancelled, PendingGroup, PendingManager
-from async_kernel.typing import Backend, PendingTrackerState
+from async_kernel.typing import Backend
 
 
 @pytest.fixture(params=Backend, scope="module")
@@ -25,8 +25,10 @@ async def pm(anyio_backend: Backend):
     pm.activate()
     assert PendingManager.current() is None
     yield pm
-    if pm.state is PendingTrackerState.active and (countdown := pm.deactivate()):
-        await countdown
+    pm.deactivate()
+    if pm.pending:
+        with anyio.CancelScope(shield=True):
+            await Caller().wait(pm.pending)
 
 
 @pytest.mark.anyio
@@ -247,18 +249,17 @@ class TestPendingManager:
         assert pen in pm.pending
         pm.stop_tracking(token)
         pending = pm.pending
-        assert pm.deactivate(cancel_pending=False) is None
-        assert pm.state is PendingTrackerState.stopped
+        pm.deactivate()
+        assert not pm.active
         token = pm.activate()
         for pen in pending:
             assert not pen.done()
-            pm.track(pen)
-        done_event = pm.deactivate(cancel_pending=True)
-        assert done_event is not None
-        assert done_event.value == 6
-        assert pm.state is PendingTrackerState.exiting
-        await done_event
-        assert pm.state is PendingTrackerState.stopped
+            pm.add(pen)
+        pm.deactivate()
+        assert pm.pending
+        assert not pm.active
+        await caller.wait(pm.pending)
+        assert not pm.active
         assert pen.done()
         assert not pm.pending
 
@@ -276,7 +277,7 @@ class TestPendingManager:
             await pen2
         await pen2.wait(result=False)
         assert not pm.pending
-        assert pm.state is PendingTrackerState.active
+        assert pm.active
         pm.stop_tracking(token)
 
     async def test_state(self, pm: PendingManager, caller: Caller):
@@ -292,11 +293,8 @@ class TestPendingManager:
                 return caller.call_soon(recursive)
             return count
 
-        with pytest.raises(InvalidStateError):
-            pm.activate()
-
-        pm.start_tracking()
-        pm.track(pen := caller.call_soon(recursive))
+        token = pm.start_tracking()
+        pm.add(pen := caller.call_soon(recursive))
         while isinstance(pen, Pending):
             pen = await pen
         assert pen == n
@@ -304,24 +302,20 @@ class TestPendingManager:
         assert not pm.pending
 
         caller.call_soon(lambda: 1)
-        count_event = pm.deactivate(cancel_pending=True)
-        count_event = pm.deactivate(cancel_pending=True)
-        assert count_event is not None
-        assert count_event.value == 1
+        pm.deactivate()
+        pm.deactivate()
+        assert pm.pending
 
         with pytest.raises(InvalidStateError):
-            pm.track(Pending())
-
-        await count_event
-
-        assert pm.deactivate() is None
-
+            pm.add(Pending())
         with pytest.raises(InvalidStateError):
             pm.start_tracking()
+        pm.stop_tracking(token)
+        await caller.wait(pm.pending)
 
     async def test_discard(self, pm: PendingManager, caller: Caller):
-        pm.track(pen1 := caller.call_soon(lambda: 1 + 1))
-        pm.track(pen2 := Pending())
+        pm.add(pen1 := caller.call_soon(lambda: 1 + 1))
+        pm.add(pen2 := Pending())
         assert await pen1 == 2
         pm.discard(pen2)
 
@@ -350,16 +344,16 @@ class TestPendingManager:
 
 
 class TestPendingGroup:
-    async def test_pending_manager_async(self, caller: Caller) -> None:
+    async def test_basic(self, caller: Caller) -> None:
         assert PendingGroup.current() is None
         async with PendingGroup() as pm:
             assert pm is PendingGroup.current()
             pen1 = caller.call_soon(lambda: 1)
             assert pen1 in pm.pending
-            assert pm._count_event.value == 1  # pyright: ignore[reportPrivateUsage]
+            assert not pm._all_done  # pyright: ignore[reportPrivateUsage]
         assert pen1 not in pm.pending
-        assert pm._count_event.value == 0  # pyright: ignore[reportPrivateUsage]
-        assert pm.state is PendingTrackerState.stopped
+        assert pm._all_done  # pyright: ignore[reportPrivateUsage]
+        assert not pm.active
 
     async def test_async_reenter(self, caller: Caller) -> None:
         assert PendingGroup.current() is None
@@ -410,12 +404,13 @@ class TestPendingGroup:
         ok = False
 
         async def add_when_cancelled():
+            assert PendingGroup.current() is pm
             nonlocal ok
             try:
                 await anyio.sleep_forever()
             except anyio.get_cancelled_exc_class():
-                with pytest.raises(InvalidStateError):
-                    caller.call_soon(anyio.sleep_forever)
+                pen = caller.call_soon(anyio.sleep_forever)
+                assert pen.cancelled()
                 ok = True
                 raise
 
@@ -423,7 +418,7 @@ class TestPendingGroup:
             async with pm:
                 caller.call_soon(add_when_cancelled)
         assert ok
-        assert pm.state is PendingTrackerState.stopped
+        assert not pm.active
 
     async def test_wait_exception(self, caller: Caller):
         with pytest.raises(PendingCancelled):  # noqa: PT012
@@ -467,3 +462,20 @@ class TestPendingGroup:
                         ok = True
                     assert not pg.cancelled()
         assert ok
+
+    async def test_nested(self, caller: Caller):
+        with anyio.move_on_after(0.1):
+            async with caller.create_pending_group() as pg1:
+                async with pg1.caller.create_pending_group() as pg2:
+                    pen = pg2.caller.call_soon(anyio.sleep_forever)
+                    assert pen in pg2.pending
+                    assert pen in pg1.pending
+        assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    async def test_nested_raises(self, caller: Caller):
+        with pytest.raises(PendingCancelled, match="division by zero"):  # noqa: PT012
+            async with caller.create_pending_group() as pg1:
+                async with pg1.caller.create_pending_group() as pg2:
+                    pen = pg2.caller.call_soon(lambda: 1 / 0)
+
+        assert pen.exception()  # pyright: ignore[reportPossiblyUnboundVariable]

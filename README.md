@@ -113,5 +113,3 @@ These are the currently assigned run modes.
 
 Async kernel started as a [fork](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)
 of [IPyKernel](https://github.com/ipython/ipykernel). Thank you to the original contributors of IPyKernel that made Async kernel possible.
-
-[^non-main-thread]: The Shell can run in other threads with the associated limitations with regard to signalling and interrupts.
