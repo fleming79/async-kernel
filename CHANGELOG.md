@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.1] - 2026-02-08
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Dropped PendingCreateOptions in favour of trackers [#310](https://github.com/fleming79/async-kernel/pull/310)
+
+- Improve PendingTracker, PendingManager and PendingGroup reliability [#308](https://github.com/fleming79/async-kernel/pull/308)
+
+### <!-- 1 --> 🚀 Features
+
+- Add Caller.queue_call_advanced and allow for tracking of queue_call associated pending. [#309](https://github.com/fleming79/async-kernel/pull/309)
+
+- Improve Caller.wait to pre-check for pending and done. [#307](https://github.com/fleming79/async-kernel/pull/307)
+
+### <!-- 2 --> 🐛 Fixes
+
+- Fix Caller.queue_call not capturing the result of coroutines. [#306](https://github.com/fleming79/async-kernel/pull/306)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Make pending group cancellation equivalent to Pending cancellation [#311](https://github.com/fleming79/async-kernel/pull/311)
+
 ## [0.12.0] - 2026-01-25
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -16,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Caller asyncio scheduling optimization and update readme [#297](https://github.com/fleming79/async-kernel/pull/297)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.12.0 [#305](https://github.com/fleming79/async-kernel/pull/305)
 
 - Tweak ci to only run once typechecking passes. [#304](https://github.com/fleming79/async-kernel/pull/304)
 
@@ -819,6 +843,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.12.1]: https://github.com/fleming79/async-kernel/compare/v0.12.0..v0.12.1
 [0.12.0]: https://github.com/fleming79/async-kernel/compare/v0.11.2..v0.12.0
 [0.11.2]: https://github.com/fleming79/async-kernel/compare/v0.11.1..v0.11.2
 [0.11.1]: https://github.com/fleming79/async-kernel/compare/v0.11.0..v0.11.1
