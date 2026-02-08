@@ -398,7 +398,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             case RunMode.direct:
                 self.callers[channel].call_direct(handler, job)
             case RunMode.queue:
-                self.callers[channel].queue_call(handler, job)
+                self.callers[channel].queue_call_advanced(handler, (job,), {}, allow_tracking=True, track=False)
             case RunMode.task:
                 self.callers[channel].call_soon(handler, job)
             case RunMode.thread:

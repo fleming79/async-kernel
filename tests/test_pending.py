@@ -479,3 +479,13 @@ class TestPendingGroup:
                     pen = pg2.caller.call_soon(lambda: 1 / 0)
 
         assert pen.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    async def test_queue(self, caller: Caller):
+        def func(val):
+            return val
+
+        pen = caller.queue_call(func, 1)
+        async with caller.create_pending_group() as pg:
+            assert pg.caller is caller
+            assert caller.queue_call(func, 2) is pen
+            assert pen in pg.pending
