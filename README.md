@@ -60,7 +60,7 @@ For further detail about kernel spec customisation see [command line usage](http
 
 - When a message is received the `msg_handler` is called with:
     - 'job' (a dict of `msg`, `received_time` and `ident`)
-    - the [`channel`](#channel)
+    - The `channel`
     - `msg_type`
     - A function `send_reply`
 

@@ -29,7 +29,6 @@ __all__ = [
     "MsgHeader",
     "MsgType",
     "NoValue",
-    "PendingCreateOptions",
     "RunMode",
     "Tags",
 ]
@@ -360,13 +359,6 @@ class FixedCreated(TypedDict, Generic[S, T]):
     ""
     obj: T
     ""
-
-
-class PendingCreateOptions(TypedDict):
-    "Options to pass when creating a new [Pending][async_kernel.pending.Pending]."
-
-    allow_tracking: NotRequired[bool]
-    "Add the pending to all [pending trackers][async_kernel.pending.PendingTracker] (default=`True`)."
 
 
 class CallerCreateOptions(TypedDict):
