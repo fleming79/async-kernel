@@ -61,7 +61,7 @@ class PendingTracker:
     """
 
     _active_classes: ClassVar[set[type[Self]]] = set()
-    _active_contexts: ClassVar[dict[str, Self]] = {}
+    _active_trackers: ClassVar[dict[str, Self]] = {}
     _contextvar: ClassVar[contextvars.ContextVar[str | None]] = contextvars.ContextVar("PendingManager", default=None)
 
     _active = False
@@ -99,14 +99,14 @@ class PendingTracker:
                 if (
                     issubclass(cls_, trackers)
                     and (id_ := cls_._contextvar.get())
-                    and (pm := cls._active_contexts.get(id_))
+                    and (pm := cls._active_trackers.get(id_))
                 ):
                     pm.add(pen)
 
     @classmethod
     def current(cls) -> Self | None:
         "The current instance of this class for the current context."
-        if (id_ := cls._contextvar.get()) and (current := cls._active_contexts.get(id_)):
+        if (id_ := cls._contextvar.get()) and (current := cls._active_trackers.get(id_)):
             return current
         return None
 
@@ -118,7 +118,7 @@ class PendingTracker:
             raise InvalidStateError
         assert self._active
         self._active_classes.add(self.__class__)
-        self._active_contexts[self.context_id] = self
+        self._active_trackers[self.context_id] = self
         self._parent_context_id = self._contextvar.get()
         self._tracking = True
         return self._contextvar.set(self.context_id)
@@ -140,7 +140,7 @@ class PendingTracker:
         if self._active and isinstance(self, pen.trackers) and (not pen.done()) and (pen not in self._pending):
             pen.add_done_callback(self.discard)
             self._pending.add(pen)
-        if (id_ := self._parent_context_id) and (parent := self._active_contexts.get(id_)):
+        if (id_ := self._parent_context_id) and (parent := self._active_trackers.get(id_)):
             parent.add(pen)
 
     def remove(self, pen: Pending) -> None:
@@ -170,7 +170,7 @@ class PendingManager(PendingTracker):
         Enter the active state to begin tracking pending.
         """
         assert not self._active
-        self._active_contexts[self.context_id] = self
+        self._active_trackers[self.context_id] = self
         self._active_classes.add(self.__class__)
         self._active = True
         return self
@@ -180,7 +180,7 @@ class PendingManager(PendingTracker):
         Leave the active state cancelling all pending.
         """
         self._active = False
-        self._active_contexts.pop(self.context_id, None)
+        self._active_trackers.pop(self.context_id, None)
         for pen in self._pending.copy():
             pen.cancel(f"{self} has been deactivated")
 
