@@ -13,7 +13,7 @@ import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from types import CoroutineType
+from types import CoroutineType, coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast
 
 import anyio
@@ -23,10 +23,11 @@ from aiologic.lowlevel import create_async_event, current_async_library
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
+from wrapt import lazy_import
 
 from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingTracker, checkpoint
+from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, T
 
 with contextlib.suppress(ImportError):
@@ -54,6 +55,18 @@ truncated_rep.fillvalue = "…"
 
 def noop() -> None:
     pass
+
+
+trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
+
+
+@coroutine
+def checkpoint(backend: Backend):
+    "Yield to the event loop."
+    if backend is Backend.trio:
+        yield from trio_checkpoint().__await__()
+    else:
+        yield
 
 
 class Caller(anyio.AsyncContextManagerMixin):
@@ -179,6 +192,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         if (ref := self._parent_ref) and (inst := ref()) and not inst.stopped:
             return inst
         return None
+
+    def checkpoint(self) -> Awaitable[None]:
+        "An awaitable that will yield execution to the event loop."
+        return checkpoint(self.backend)
 
     @override
     def __repr__(self) -> str:
