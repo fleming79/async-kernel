@@ -26,7 +26,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.pending import PendingManager, checkpoint
+from async_kernel.pending import PendingManager
 from async_kernel.typing import Content, NoValue, Tags
 
 if TYPE_CHECKING:
@@ -391,7 +391,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content |= utils.error_to_content(err)
             if (not silent) and stop_on_error:
                 with anyio.CancelScope(shield=True):
-                    await checkpoint(Caller().backend)
+                    await Caller().checkpoint()
                     self._stop_on_error_info["time"] = time.monotonic() + (self.stop_on_error_time_offset)
                     self._stop_on_error_info["execution_count"] = execution_count
                     self.log.info("An error occurred in a non-silent execution request")
