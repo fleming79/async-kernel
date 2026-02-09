@@ -135,13 +135,17 @@ class PendingTracker:
         self._parent_context_id = None
 
     def add(self, pen: Pending) -> None:
-        "Track `Pending` if it isn't done."
+        "Track `Pending` until it is done."
 
-        if self._active and isinstance(self, pen.trackers) and (not pen.done()) and (pen not in self._pending):
-            pen.add_done_callback(self.discard)
+        if self._active and isinstance(self, pen.trackers) and (pen not in self._pending):
             self._pending.add(pen)
+            pen.add_done_callback(self.on_pending_done)
         if (id_ := self._parent_context_id) and (parent := self._active_trackers.get(id_)):
             parent.add(pen)
+
+    def on_pending_done(self, pen: Pending) -> None:
+        "A done_callback that is registered with pen when it is added (don't call directly)."
+        self._pending.discard(pen)
 
     def remove(self, pen: Pending) -> None:
         "Remove a `Pending`."
@@ -264,11 +268,13 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
             super().add(pen)
 
     @override
-    def remove(self, pen: Pending) -> None:
-        "Remove pen from the group."
-        super().remove(pen)
-        if pen.done() and self._active and (not pen.cancelled() and (pen.exception())):
-            self.cancel(f"Exception in member: {pen}")
+    def on_pending_done(self, pen: Pending) -> None:
+        try:
+            self._pending.remove(pen)
+            if self._active and (not pen.cancelled() and (pen.exception())):
+                self.cancel(f"Exception in member: {pen}")
+        except KeyError:
+            pass
         if self._leaving_context and not self._pending:
             self._all_done.set()
 
