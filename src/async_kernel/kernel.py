@@ -446,7 +446,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             - The reply message type is derived from the original request type.
         """
         job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        subshell_token = SubshellPendingManager._contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
+        subshell_token = SubshellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
 
         try:
             self.iopub_send(
@@ -462,7 +462,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             self.log.exception("Exception in message handler:", exc_info=e)
         finally:
             utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
-            SubshellPendingManager._contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
+            SubshellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
             self.iopub_send(
                 msg_or_type="status",
                 parent=job["msg"],

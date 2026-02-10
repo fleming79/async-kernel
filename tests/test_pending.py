@@ -336,6 +336,7 @@ class TestPendingManager:
         class PendingManagerSubclass(PendingManager):
             pass
 
+        assert PendingManagerSubclass in PendingTracker._subclasses  # pyright: ignore[reportPrivateUsage]
         pm2 = PendingManagerSubclass().activate()
         assert PendingManagerSubclass.current() is None
         pm2_token = pm2.start_tracking()
@@ -351,6 +352,15 @@ class TestPendingManager:
 
         pm2.stop_tracking(pm2_token)
         assert PendingManagerSubclass.current() is None
+
+    async def test_nested_isolated(self, pm: PendingManager, caller: Caller):
+        async def func() -> None:
+            assert PendingManager.current() is None, "A current PendingManager should not exist in this context"
+
+        pm = pm.activate()
+        token = pm.start_tracking()
+        await caller.schedule_call(func, (), {}, None, ())
+        pm.stop_tracking(token)
 
 
 class TestPendingGroup:
@@ -528,3 +538,10 @@ class TestPendingGroup:
             pm._pending.clear()  # pyright: ignore[reportPrivateUsage]
             pm.stop_tracking(token)
             pm.deactivate()
+
+    async def test_propagation(self, caller: Caller):
+        async def func() -> None:
+            assert PendingGroup.current() is None, "A current PendingGroup should not exist in this context"
+
+        async with caller.create_pending_group():
+            await caller.schedule_call(func, (), {}, None, ())
