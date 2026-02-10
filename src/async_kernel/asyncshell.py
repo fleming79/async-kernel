@@ -555,7 +555,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
     stopped = traitlets.Bool(read_only=True)
     protected = traitlets.Bool(read_only=True)
     pending_manager = Fixed(SubshellPendingManager)
-    subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.context_id)
+    subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.id)
 
     @override
     def __repr__(self) -> str:
