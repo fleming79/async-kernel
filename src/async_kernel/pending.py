@@ -206,6 +206,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     _cancel_scope: anyio.CancelScope
     _cancelled: str | None = None
     _leaving_context: bool = False
+    _failed: Fixed[Self, list[Pending]] = Fixed(list)
     cancellation_timeout = 10
     "The maximum time to wait for cancelled pending to be done."
 
@@ -236,7 +237,9 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                     self.cancel(f"An error occurred: {e!r}")
                     raise
             if self._cancelled is not None:
-                raise PendingCancelled(self._cancelled)
+                exceptions = [e for pen in self._failed if isinstance(e := pen.exception(), Exception)]
+                msg = "One or more exceptions occurred in this context!"
+                raise ExceptionGroup(msg, exceptions)
         finally:
             self._leaving_context = True
             self._stop_tracking(token)
@@ -261,6 +264,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         try:
             self._pending.remove(pen)
             if self._active and (not pen.cancelled() and (pen.exception())):
+                self._failed.append(pen)
                 self.cancel(f"Exception in member: {pen}")
         except KeyError:
             pass
