@@ -3227,7 +3227,7 @@ viewing the latest version.
             <span class="n">content</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span> <span class="ow">and</span> <span class="n">stop_on_error</span><span class="p">:</span>
                 <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-                    <span class="k">await</span> <span class="n">checkpoint</span><span class="p">(</span><span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
+                    <span class="k">await</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_on_error_time_offset</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in a non-silent execution request&quot;</span><span class="p">)</span>
@@ -3707,7 +3707,7 @@ viewing the latest version.
         <span class="n">content</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span> <span class="ow">and</span> <span class="n">stop_on_error</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-                <span class="k">await</span> <span class="n">checkpoint</span><span class="p">(</span><span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_on_error_time_offset</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in a non-silent execution request&quot;</span><span class="p">)</span>
@@ -4548,18 +4548,18 @@ protected subshell when it is no longer required.</p>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
