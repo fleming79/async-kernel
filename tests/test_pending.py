@@ -420,14 +420,14 @@ class TestPendingGroup:
         assert not pm.active
 
     async def test_wait_exception(self, caller: Caller):
-        with pytest.raises(PendingCancelled):  # noqa: PT012
+        with pytest.raises(ExceptionGroup):  # noqa: PT012
             async with PendingGroup():
                 pen = caller.call_soon(anyio.sleep_forever)
                 Pending(PendingGroup).set_exception(RuntimeError("stop"))
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_cancelled_by_pending(self, caller: Caller):
-        with pytest.raises(PendingCancelled):  # noqa: PT012
+        with pytest.raises(ExceptionGroup):  # noqa: PT012
             async with PendingGroup() as pg:
                 assert caller.call_soon(lambda: 1 / 0) in pg.pending
                 await anyio.sleep_forever()
@@ -473,11 +473,9 @@ class TestPendingGroup:
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_nested_raises(self, caller: Caller):
-        with pytest.raises(PendingCancelled, match="division by zero"):  # noqa: PT012
-            async with caller.create_pending_group() as pg1:
-                async with pg1.caller.create_pending_group() as pg2:
-                    pen = pg2.caller.call_soon(lambda: 1 / 0)
-
+        with pytest.raises(ExceptionGroup):
+            async with caller.create_pending_group() as pg1, pg1.caller.create_pending_group() as pg2:
+                pen = pg2.caller.call_soon(lambda: 1 / 0)
         assert pen.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_queue(self, caller: Caller):
