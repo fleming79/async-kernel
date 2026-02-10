@@ -254,11 +254,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         if not self._active:
             msg = "Cannot add when not active!"
             raise InvalidStateError(msg)
-        if self._cancelled is not None:
-            msg = f"Trying to add to a cancelled PendingGroup.\nCancellation messages: {self._cancelled}"
-            pen.cancel(msg)
-        else:
-            super().add(pen)
+        super().add(pen)
 
     @override
     def on_pending_done(self, pen: Pending) -> None:
