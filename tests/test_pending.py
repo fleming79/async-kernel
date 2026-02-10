@@ -371,18 +371,9 @@ class TestPendingGroup:
             pen1 = caller.call_soon(lambda: 1)
             assert pen1 in pm.pending
         assert pen1.result() == 1
-        async with pm:
-            pen2 = caller.call_soon(lambda: 2)
-            with pytest.raises(RuntimeError, match="this PendingGroup has already been entered"):
-                async with pm:
-                    pass
-        assert pen2.result() == 2
-        assert not pm.pending
-        async with pm:
-            pen3 = caller.call_soon(lambda: 3)
-            assert pen3 in pm.pending
-            assert await pen3 == 3
-            assert not pm.pending
+        with pytest.raises(InvalidStateError):
+            async with pm:
+                pass
 
     async def test_state(self, caller: Caller):
         count = 0
@@ -419,8 +410,6 @@ class TestPendingGroup:
             try:
                 await anyio.sleep_forever()
             except anyio.get_cancelled_exc_class():
-                pen = caller.call_soon(anyio.sleep_forever)
-                assert pen.cancelled()
                 ok = True
                 raise
 
@@ -449,6 +438,8 @@ class TestPendingGroup:
             pen = Pending(PendingGroup)
             pg.discard(pen)
             assert pen not in pg.pending
+        with pytest.raises(InvalidStateError):
+            pg.add(Pending(PendingGroup))
 
     async def test_subclass(self, caller: Caller):
         class PendingManagerSubclass(PendingGroup):
@@ -475,11 +466,10 @@ class TestPendingGroup:
 
     async def test_nested(self, caller: Caller):
         with anyio.move_on_after(0.1):
-            async with caller.create_pending_group() as pg1:
-                async with pg1.caller.create_pending_group() as pg2:
-                    pen = pg2.caller.call_soon(anyio.sleep_forever)
-                    assert pen in pg2.pending
-                    assert pen in pg1.pending
+            async with caller.create_pending_group() as pg1, pg1.caller.create_pending_group() as pg2:
+                pen = pg2.caller.call_soon(anyio.sleep_forever)
+                assert pen in pg2.pending
+                assert pen in pg1.pending
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_nested_raises(self, caller: Caller):
@@ -499,6 +489,12 @@ class TestPendingGroup:
             assert pg.caller is caller
             assert caller.queue_call(func, 2) is pen
             assert pen in pg.pending
+            async with caller.create_pending_group() as pg2:
+                assert pg2._parent_id == pg.id  # pyright: ignore[reportPrivateUsage]
+        assert pen.result() == 2
+        pen = caller.queue_call(func, 3)
+        assert await pen == 3
+        
 
     async def test_tracking(self, caller: Caller):
         pm = PendingManager()

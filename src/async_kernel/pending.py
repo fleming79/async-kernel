@@ -45,10 +45,10 @@ class PendingTracker:
     _active = False
     _pending: Fixed[Self, set[Pending[Any]]] = Fixed(set)
     _tracking: bool = False
-    _parent_context_id: None | str = None
+    _parent_id: None | str = None
 
-    context_id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
-    "The context id (per instance)."
+    id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
+    "The unique id of the instance. It is a string to be compatible with `subshell_id`."
 
     @property
     def active(self) -> bool:
@@ -96,10 +96,11 @@ class PendingTracker:
             raise InvalidStateError
         assert self._active
         self._active_classes.add(self.__class__)
-        self._active_trackers[self.context_id] = self
-        self._parent_context_id = self._contextvar.get()
+        id_ = self.id
+        self._active_trackers[id_] = self
+        self._parent_id = None if (idp := self._contextvar.get()) == id_  else idp
         self._tracking = True
-        return self._contextvar.set(self.context_id)
+        return self._contextvar.set(id_)
 
     def stop_tracking(self, token: contextvars.Token[str | None]) -> None:
         """
@@ -108,9 +109,10 @@ class PendingTracker:
         Args:
             token: The token returned from [start_tracking][].
         """
+        self._active_trackers.pop(self.id, None)
         self._contextvar.reset(token)
         self._tracking = False
-        self._parent_context_id = None
+        self._parent_id = None
 
     def add(self, pen: Pending) -> None:
         "Track `Pending` until it is done."
@@ -118,7 +120,7 @@ class PendingTracker:
         if self._active and isinstance(self, pen.trackers) and (pen not in self._pending):
             self._pending.add(pen)
             pen.add_done_callback(self.on_pending_done)
-        if (id_ := self._parent_context_id) and (parent := self._active_trackers.get(id_)):
+        if (id_ := self._parent_id) and (parent := self._active_trackers.get(id_)):
             parent.add(pen)
 
     def on_pending_done(self, pen: Pending) -> None:
@@ -152,7 +154,7 @@ class PendingManager(PendingTracker):
         Enter the active state to begin tracking pending.
         """
         assert not self._active
-        self._active_trackers[self.context_id] = self
+        self._active_trackers[self.id] = self
         self._active_classes.add(self.__class__)
         self._active = True
         return self
@@ -162,7 +164,7 @@ class PendingManager(PendingTracker):
         Leave the active state cancelling all pending.
         """
         self._active = False
-        self._active_trackers.pop(self.context_id, None)
+        self._active_trackers.pop(self.id, None)
         for pen in self._pending.copy():
             pen.cancel(f"{self} has been deactivated")
 
@@ -196,6 +198,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
     _cancel_scope: anyio.CancelScope
     _cancelled: str | None = None
+    _leaving_context: bool = False
     cancellation_timeout = 10
     "The maximum time to wait for cancelled pending to be done."
 
@@ -208,10 +211,12 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        if self._leaving_context:
+            msg = "Re-entry of a PendingGroup is not supported!"
+            raise InvalidStateError(msg)
         self._cancel_scope = anyio.CancelScope(shield=self._shield)
         self._all_done = create_async_event()
         self._active = True
-        self._leaving_context = False
         token = self.start_tracking()
         try:
             with self._cancel_scope:
@@ -238,7 +243,9 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
     @override
     def add(self, pen: Pending):
-        assert self._active
+        if not self._active:
+            msg = "Cannot add when not active!"
+            raise InvalidStateError(msg)
         if self._cancelled is not None:
             msg = f"Trying to add to a cancelled PendingGroup.\nCancellation messages: {self._cancelled}"
             pen.cancel(msg)
