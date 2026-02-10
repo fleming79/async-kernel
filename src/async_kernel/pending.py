@@ -237,9 +237,10 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                     self.cancel(f"An error occurred: {e!r}")
                     raise
             if self._cancelled is not None:
-                exceptions = [e for pen in self._failed if isinstance(e := pen.exception(), Exception)]
-                msg = "One or more exceptions occurred in this context!"
-                raise ExceptionGroup(msg, exceptions)
+                if exceptions := [e for pen in self._failed if isinstance(e := pen.exception(), Exception)]:
+                    msg = "One or more exceptions occurred in this context!"
+                    raise ExceptionGroup(msg, exceptions)
+                raise PendingCancelled(self._cancelled)
         finally:
             self._leaving_context = True
             self._stop_tracking(token)

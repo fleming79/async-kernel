@@ -393,10 +393,18 @@ class TestPendingGroup:
             pen = pen.result()
         assert pen == n
 
-    async def test_cancellation(self, caller: Caller):
+    async def test_external_cancellation(self, caller: Caller):
         with anyio.move_on_after(0.1):
             async with PendingGroup() as pm:
                 pen = caller.call_soon(anyio.sleep_forever)
+        assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
+        assert not pm.pending  # pyright: ignore[reportPossiblyUnboundVariable]
+
+    async def test_cancellation(self, caller: Caller):
+        with pytest.raises(PendingCancelled):  # noqa: PT012
+            async with PendingGroup() as pm:
+                pen = caller.call_soon(anyio.sleep_forever)
+                pm.cancel("Stop")
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
         assert not pm.pending  # pyright: ignore[reportPossiblyUnboundVariable]
 
