@@ -494,7 +494,6 @@ class TestPendingGroup:
         assert pen.result() == 2
         pen = caller.queue_call(func, 3)
         assert await pen == 3
-        
 
     async def test_tracking(self, caller: Caller):
         pm = PendingManager()

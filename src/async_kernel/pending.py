@@ -88,28 +88,26 @@ class PendingTracker:
             return current
         return None
 
-    def start_tracking(self) -> contextvars.Token[str | None]:
-        """
-        Start tracking `Pending` in the  current context.
-        """
-        if self._tracking or not self.active:
-            raise InvalidStateError
-        assert self._active
+    def _activate(self) -> None:
         self._active_classes.add(self.__class__)
-        id_ = self.id
-        self._active_trackers[id_] = self
-        self._parent_id = None if (idp := self._contextvar.get()) == id_  else idp
-        self._tracking = True
-        return self._contextvar.set(id_)
+        self._active_trackers[self.id] = self
+        self._active = True
 
-    def stop_tracking(self, token: contextvars.Token[str | None]) -> None:
-        """
-        Stop tracking using the token.
-
-        Args:
-            token: The token returned from [start_tracking][].
-        """
+    def _deactivate(self) -> None:
+        self._active = False
         self._active_trackers.pop(self.id, None)
+        for pen in self._pending.copy():
+            pen.cancel(f"{self} has been deactivated")
+
+    def _start_tracking(self) -> contextvars.Token[str | None]:
+        if self._tracking or not self._active:
+            raise InvalidStateError
+        parent_id = self._contextvar.get()
+        self._parent_id = None if parent_id == self.id else parent_id
+        self._tracking = True
+        return self._contextvar.set(self.id)
+
+    def _stop_tracking(self, token: contextvars.Token[str | None]) -> None:
         self._contextvar.reset(token)
         self._tracking = False
         self._parent_id = None
@@ -153,20 +151,29 @@ class PendingManager(PendingTracker):
         """
         Enter the active state to begin tracking pending.
         """
-        assert not self._active
-        self._active_trackers[self.id] = self
-        self._active_classes.add(self.__class__)
-        self._active = True
+        self._activate()
         return self
 
     def deactivate(self) -> None:
         """
         Leave the active state cancelling all pending.
         """
-        self._active = False
-        self._active_trackers.pop(self.id, None)
-        for pen in self._pending.copy():
-            pen.cancel(f"{self} has been deactivated")
+        self._deactivate()
+
+    def start_tracking(self) -> contextvars.Token[str | None]:
+        """
+        Start tracking `Pending` in the  current context.
+        """
+        return self._start_tracking()
+
+    def stop_tracking(self, token: contextvars.Token[str | None]) -> None:
+        """
+        Stop tracking using the token.
+
+        Args:
+            token: The token returned from [start_tracking][].
+        """
+        self._stop_tracking(token)
 
 
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
@@ -212,12 +219,12 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         if self._leaving_context:
-            msg = "Re-entry of a PendingGroup is not supported!"
+            msg = f"Re-entry of {self.__class__} is not supported!"
             raise InvalidStateError(msg)
         self._cancel_scope = anyio.CancelScope(shield=self._shield)
         self._all_done = create_async_event()
-        self._active = True
-        token = self.start_tracking()
+        self._activate()
+        token = self._start_tracking()
         try:
             with self._cancel_scope:
                 try:
@@ -232,7 +239,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 raise PendingCancelled(self._cancelled)
         finally:
             self._leaving_context = True
-            self.stop_tracking(token)
+            self._stop_tracking(token)
+            self._deactivate()
             if self._pending:
                 if self._all_done or self._all_done.cancelled():
                     self._all_done = create_async_event()
