@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2026-02-10
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Change Pending trackers default from `PendingTracker`  to () meaning that tracking is opt in rather than opt out. [#314](https://github.com/fleming79/async-kernel/pull/314)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Maintenance [#313](https://github.com/fleming79/async-kernel/pull/313)
+
 ## [0.12.1] - 2026-02-08
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -24,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix Caller.queue_call not capturing the result of coroutines. [#306](https://github.com/fleming79/async-kernel/pull/306)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.12.1 [#312](https://github.com/fleming79/async-kernel/pull/312)
 
 - Make pending group cancellation equivalent to Pending cancellation [#311](https://github.com/fleming79/async-kernel/pull/311)
 
@@ -843,6 +855,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.12.2]: https://github.com/fleming79/async-kernel/compare/v0.12.1..v0.12.2
 [0.12.1]: https://github.com/fleming79/async-kernel/compare/v0.12.0..v0.12.1
 [0.12.0]: https://github.com/fleming79/async-kernel/compare/v0.11.2..v0.12.0
 [0.11.2]: https://github.com/fleming79/async-kernel/compare/v0.11.1..v0.11.2
