@@ -320,9 +320,7 @@ class Pending(Awaitable[T]):
         """
         return self._metadata_mappings[id(self)]
 
-    def __init__(
-        self, *, trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = PendingTracker, **metadata: Any
-    ):
+    def __init__(self, trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = (), **metadata: Any):
         """
         Initializes a new Pending object with optional creation options and metadata.
 
