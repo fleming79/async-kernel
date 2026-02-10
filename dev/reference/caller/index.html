@@ -2458,8 +2458,12 @@ the context will exit, and all pending will be cancelled.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
   </span>
 
       </li>
@@ -2637,7 +2641,8 @@ the context will exit, and all pending will be cancelled.</p>
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
-<span class="normal">287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PendingGroup</span><span class="p">(</span><span class="n">PendingTracker</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">287</span>
+<span class="normal">288</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PendingGroup</span><span class="p">(</span><span class="n">PendingTracker</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An asynchronous context manager that automatically registers pending created in its context.</span>
 
@@ -2698,9 +2703,10 @@ the context will exit, and all pending will be cancelled.</p>
                     <span class="bp">self</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">raise</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">exceptions</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span> <span class="o">:=</span> <span class="n">pen</span><span class="o">.</span><span class="n">exception</span><span class="p">(),</span> <span class="ne">Exception</span><span class="p">)]</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;One or more exceptions occurred in this context!&quot;</span>
-                <span class="k">raise</span> <span class="n">ExceptionGroup</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">exceptions</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">exceptions</span> <span class="o">:=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span> <span class="o">:=</span> <span class="n">pen</span><span class="o">.</span><span class="n">exception</span><span class="p">(),</span> <span class="ne">Exception</span><span class="p">)]:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;One or more exceptions occurred in this context!&quot;</span>
+                    <span class="k">raise</span> <span class="n">ExceptionGroup</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">exceptions</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">PendingCancelled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_leaving_context</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_stop_tracking</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
@@ -2807,8 +2813,7 @@ the context will exit, and all pending will be cancelled.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">274</span>
-<span class="normal">275</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span>
 <span class="normal">278</span>
@@ -2816,7 +2821,8 @@ the context will exit, and all pending will be cancelled.</p>
 <span class="normal">280</span>
 <span class="normal">281</span>
 <span class="normal">282</span>
-<span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@enable_signal_safety</span>
+<span class="normal">283</span>
+<span class="normal">284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@enable_signal_safety</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Cancel the pending group (thread-safe).&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">:</span>
@@ -2851,9 +2857,9 @@ the context will exit, and all pending will be cancelled.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the pending group is cancelled.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2940,8 +2946,12 @@ the context will exit, and all pending will be cancelled.</p>
       <a href="../asyncshell/#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;callers</a>
   </span>
 
       </li>
@@ -6882,12 +6892,8 @@ need to be performed from within the callers event loop/taskgroup.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.direct"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;direct</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -7311,12 +7317,8 @@ call once the queue has been emptied. Exceptions are not set, instead the result
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
