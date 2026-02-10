@@ -825,9 +825,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue, resume=noop)
         pen_.metadata["queue"].append((func, args, kwargs))
         pen_.metadata["resume"]()
-        if pen_.trackers:
-            PendingTracker.add_to_trackers(pen_)
-        return pen_  # pyright: ignore[reportReturnType]
+        return pen_.add_to_trackers()  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
         """

@@ -18,6 +18,8 @@ from async_kernel.common import Fixed
 from async_kernel.typing import T
 
 if TYPE_CHECKING:
+    from _contextvars import Token
+
     from async_kernel.caller import Caller
 
 __all__ = ["InvalidStateError", "Pending", "PendingCancelled", "PendingGroup", "PendingManager", "PendingTracker"]
@@ -48,10 +50,13 @@ class PendingTracker:
     _active = False
     _pending: Fixed[Self, set[Pending[Any]]] = Fixed(set)
     _tracking: bool = False
-    _parent_id: None | str = None
 
     id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
-    "The unique id of the instance. It is a string to be compatible with `subshell_id`."
+    """
+    The unique id of the pending tracker instance. 
+    
+    It is also used as the `subshell_id` of [async_kernel.subshell.AsyncInteractiveSubshell][] managed by [async_kernel.subshell.SubshellManager][].
+    """
 
     @property
     def active(self) -> bool:
@@ -66,20 +71,6 @@ class PendingTracker:
         # Each subclass is assigned a new context variable.
         cls._id_contextvar = contextvars.ContextVar(f"{cls.__module__}.{cls.__name__}", default=None)
         return super().__init_subclass__()
-
-    @classmethod
-    def add_to_trackers(cls, pen: Pending) -> None:
-        """
-        Add the pending to the active trackers in the current context.
-        """
-        if trackers := pen.trackers:
-            for cls_ in cls._subclasses:
-                if (
-                    issubclass(cls_, trackers)
-                    and (id_ := cls_._id_contextvar.get())
-                    and (pm := cls._active_trackers.get(id_))
-                ):
-                    pm.add(pen)
 
     @classmethod
     def current(cls) -> Self | None:
@@ -98,18 +89,15 @@ class PendingTracker:
         for pen in self._pending.copy():
             pen.cancel(f"{self} has been deactivated")
 
-    def _start_tracking(self) -> contextvars.Token[str | None]:
+    def _start_tracking(self) -> Token[str | None]:
         if self._tracking or not self._active:
             raise InvalidStateError
-        parent_id = self._id_contextvar.get()
-        self._parent_id = None if parent_id == self.id else parent_id
         self._tracking = True
         return self._id_contextvar.set(self.id)
 
     def _stop_tracking(self, token: contextvars.Token[str | None]) -> None:
         self._id_contextvar.reset(token)
         self._tracking = False
-        self._parent_id = None
 
     def add(self, pen: Pending) -> None:
         "Track `Pending` until it is done."
@@ -117,8 +105,6 @@ class PendingTracker:
         if self._active and isinstance(self, pen.trackers) and (pen not in self._pending):
             self._pending.add(pen)
             pen.add_done_callback(self.on_pending_done)
-        if (id_ := self._parent_id) and (parent := self._active_trackers.get(id_)):
-            parent.add(pen)
 
     def on_pending_done(self, pen: Pending) -> None:
         "A done_callback that is registered with pen when it is added (don't call directly)."
@@ -198,6 +184,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         ```
     """
 
+    _parent_id: None | str = None
     _cancel_scope: anyio.CancelScope
     _cancelled: str | None = None
     _leaving_context: bool = False
@@ -212,6 +199,11 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         self.caller  # noqa: B018
         self._shield = shield
         super().__init__()
+
+    @override
+    def _start_tracking(self) -> Token[str | None]:
+        self._parent_id = None if (parent_id := self._id_contextvar.get()) == self.id else parent_id
+        return super()._start_tracking()
 
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -254,7 +246,11 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         if not self._active:
             msg = "Cannot add when not active!"
             raise InvalidStateError(msg)
-        super().add(pen)
+        if self._active and isinstance(self, pen.trackers) and (pen not in self._pending):
+            self._pending.add(pen)
+            pen.add_done_callback(self.on_pending_done)
+        if (id_ := self._parent_id) and (parent := self._active_trackers.get(id_)):
+            parent.add(pen)
 
     @override
     def on_pending_done(self, pen: Pending) -> None:
@@ -611,3 +607,17 @@ class Pending(Awaitable[T]):
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
         return getattr(self, "_exception", None)
+
+    def add_to_trackers(self) -> Self:
+        """
+        Add this pending to the trackers active in the current context that are include.
+        """
+        if trackers := self.trackers:
+            for cls_ in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
+                if (
+                    issubclass(cls_, trackers)
+                    and (id_ := cls_._id_contextvar.get())  # pyright: ignore[reportPrivateUsage]
+                    and (pm := PendingTracker._active_trackers.get(id_))  # pyright: ignore[reportPrivateUsage]
+                ):
+                    pm.add(self)
+        return self
