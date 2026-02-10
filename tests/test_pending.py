@@ -9,7 +9,14 @@ from aiologic import Event
 from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
-from async_kernel.pending import InvalidStateError, Pending, PendingCancelled, PendingGroup, PendingManager
+from async_kernel.pending import (
+    InvalidStateError,
+    Pending,
+    PendingCancelled,
+    PendingGroup,
+    PendingManager,
+    PendingTracker,
+)
 from async_kernel.typing import Backend
 
 
@@ -318,7 +325,7 @@ class TestPendingManager:
 
     async def test_discard(self, pm: PendingManager, caller: Caller):
         pm.add(pen1 := caller.call_soon(lambda: 1 + 1))
-        pm.add(pen2 := Pending())
+        pm.add(pen2 := Pending(PendingManager))
         assert await pen1 == 2
         pm.discard(pen2)
 
@@ -427,7 +434,7 @@ class TestPendingGroup:
         with pytest.raises(PendingCancelled):  # noqa: PT012
             async with PendingGroup():
                 pen = caller.call_soon(anyio.sleep_forever)
-                Pending().set_exception(RuntimeError("stop"))
+                Pending(PendingGroup).set_exception(RuntimeError("stop"))
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_cancelled_by_pending(self, caller: Caller):
@@ -439,7 +446,7 @@ class TestPendingGroup:
 
     async def test_discard(self, caller: Caller):
         async with PendingGroup() as pg:
-            pen = Pending()
+            pen = Pending(PendingGroup)
             pg.discard(pen)
             assert pen not in pg.pending
 
@@ -499,19 +506,19 @@ class TestPendingGroup:
         token = pm.start_tracking()
         try:
             async with caller.create_pending_group() as pg:
-                pen = Pending()
+                pen = Pending(PendingTracker)
                 assert pen in pg.pending
                 assert pen in pm.pending
 
-                pen_no_track = Pending(trackers=())
+                pen_no_track = Pending()
                 assert pen_no_track not in pm.pending
                 assert pen_no_track not in pg.pending
 
-                pen_pg = Pending(trackers=(PendingGroup,))
+                pen_pg = Pending(PendingGroup)
                 assert pen_pg in pg.pending
                 assert pen_pg not in pm.pending
 
-                pen_pm = Pending(trackers=(PendingManager,))
+                pen_pm = Pending(PendingManager)
                 assert pen_pm in pm.pending
                 assert pen_pm not in pg.pending
                 pg._pending.clear()  # pyright: ignore[reportPrivateUsage]

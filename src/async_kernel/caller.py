@@ -614,6 +614,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         args: tuple,
         kwargs: dict,
         context: contextvars.Context | None = None,
+        trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = PendingTracker,
         /,
         **metadata: Any,
     ) -> Pending[T]:
@@ -628,12 +629,13 @@ class Caller(anyio.AsyncContextManagerMixin):
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
             context: The context to use, if not provided the current context is used.
+            trackers: The tracker subclasses of active trackers which to add the pending.
             **metadata: Additional metadata to store in the instance.
         """
         if self._state in {CallerState.stopping, CallerState.stopped}:
             msg = f"{self} is {self._state.name}!"
             raise RuntimeError(msg)
-        pen = Pending(func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        pen = Pending(trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append((context or contextvars.copy_context(), pen))
         self._resume()
         return pen
