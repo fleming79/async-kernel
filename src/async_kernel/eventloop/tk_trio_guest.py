@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 
 import trio
 
-import async_kernel.asyncshell
+import async_kernel
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -94,5 +94,5 @@ def run(async_fn: Callable[[], Awaitable], **kwargs: Any) -> None:
         run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe,
         done_callback=host.done_callback,
     )
-    async_kernel.asyncshell.SUPPORTED_GUI.append("tk")
+    async_kernel.utils._runtime_gui.set(("tk",))  # pyright: ignore[reportPrivateUsage]
     host.mainloop()

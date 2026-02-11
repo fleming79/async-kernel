@@ -39,7 +39,8 @@ __all__ = [
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
 _job_var: ContextVar[Job] = ContextVar("job")
-_execute_request_timeout: ContextVar[float | None] = ContextVar("timeout", default=None)
+_runtime_gui: ContextVar[tuple[str, ...]] = ContextVar("runtime_gui_support", default=())
+"A registry of matplotlib gui's that are available. These get sett from eventloop runners in [async_kernel.eventloop][]."
 
 
 def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:

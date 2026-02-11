@@ -127,8 +127,8 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
                     ident=f"stream.{name}".encode(),
                 )
                 if not self.kernel.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
-                    echo.write(string)
-                    echo.flush()
+                    echo.write(string)  # pragma: no cover
+                    echo.flush()  # pragma: no cover
 
             wrapper = OutStream(flusher=flusher)
             setattr(sys, name, wrapper)
