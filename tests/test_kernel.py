@@ -439,7 +439,7 @@ async def test_shell_required_properites(kernel: Kernel):
     # U
     kernel.shell.enable_gui()
     with pytest.raises(NotImplementedError):
-        kernel.shell.enable_gui("tk")
+        kernel.shell.enable_gui("any")
 
 
 async def test_shell_can_set_namespace(kernel: Kernel):

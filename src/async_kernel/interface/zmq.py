@@ -25,7 +25,7 @@ from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Dict, Unicode, UseEnum, default
+from traitlets import CaselessStrEnum, Dict, Unicode, default
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -33,12 +33,12 @@ import async_kernel
 from async_kernel import utils
 from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, import_item
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Backend, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Generator
+    from collections.abc import AsyncGenerator, Callable, Generator
     from types import FrameType
 
 __all__ = ["ZMQKernelInterface"]
@@ -126,11 +126,20 @@ class ZMQKernelInterface(BaseKernelInterface):
     )
     "Transport for sockets."
 
-    backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
-    "The the backend used to provide the shell event loop."
-
+    backend = Unicode("asyncio")
+    """
+    The backend used to provide the shell event loop.
+    
+    Options:
+        Anyio managed ([anyio.run][]):
+            - 'asyncio'
+            - 'trio'
+        Trio guest mode:
+            - 'async_kernel.eventloop.qt_trio_guest.run'
+            - 'async_kernel.eventloop.tk_trio_guest.run'
+    """
     backend_options = Dict(allow_none=True)
-    "The `backend_options` to use with [anyio.run][]."
+    "The `backend_options` to use when starting the backend."
 
     @default("backend_options")
     def _default_backend_options(self):
@@ -153,7 +162,12 @@ class ZMQKernelInterface(BaseKernelInterface):
             async with self.kernel:
                 await self.wait_exit
 
-        anyio.run(run_kernel, backend=self.backend, backend_options=self.backend_options)
+        if self.backend in ["asyncio", "trio"]:
+            anyio.run(run_kernel, backend=self.backend, backend_options=self.backend_options)
+        else:
+            run: Callable = import_item(self.backend)
+            kwargs = self.backend_options or {}
+            run(run_kernel, **kwargs)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:

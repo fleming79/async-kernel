@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import signal
 import sys
@@ -101,21 +102,52 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     assert "not found!" in out
 
 
-def test_start_kernel_success(monkeypatch):
+backend_combinations = [
+    ("asyncio", {}),
+    ("trio", {}),
+    ("async_kernel.eventloop.tk_trio_guest.run", {}),
+]
+if importlib.util.find_spec("PySide6"):
+    backend_combinations.append(("async_kernel.eventloop.qt_trio_guest.run", {"module": "PySide6"}))
+
+
+@pytest.mark.parametrize(("backend", "backend_options"), backend_combinations)
+def test_start_kernel_enable_gui(monkeypatch, backend: str, backend_options: dict):
+    async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
     monkeypatch.setattr(
-        sys, "argv", ["prog", "-f", ".", "--kernel_name=async", "--backend=asyncio", "--no-print_kernel_messages"]
+        sys,
+        "argv",
+        [
+            "prog",
+            "-f",
+            ".",
+            "--kernel_name=async",
+            f"--interface.backend={backend}",
+            f"--interface.backend_options={backend_options}",
+            "--no-print_kernel_messages",
+        ],
     )
     started = False
+    if "tk_trio_guest" in backend:
+        gui = "tk"
+    elif "qt_trio_guest" in backend:
+        gui = "qt"
+    else:
+        gui = "ipympl"
 
     async def wait_exit():
         nonlocal started
+        async_kernel.Kernel().shell.enable_gui(gui)
         started = True
 
     monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
-    with pytest.raises(SystemExit) as e:
-        command_line()
-    assert e.value.code == 0
-    assert started
+    try:
+        with pytest.raises(SystemExit) as e:
+            command_line()
+        assert e.value.code == 0
+        assert started
+    finally:
+        async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
 
 
 async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, kernel_name, transport):

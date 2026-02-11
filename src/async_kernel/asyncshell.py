@@ -40,6 +40,8 @@ if TYPE_CHECKING:
 
 __all__ = ["AsyncInteractiveShell"]
 
+SUPPORTED_GUI = [None, "inline", "ipympl"]
+
 
 class KernelInterruptError(Exception):
     "Raised to interrupt the kernel."
@@ -520,13 +522,17 @@ class AsyncInteractiveShell(InteractiveShell):
         Supported guis:
             - [x] inline
             - [x] ipympl
-            - [ ] tk
-            - [ ] qt
+            - [x] tk (trio guest mode)
+            - [x] qt (trio guest mode)
         """
-        supported_no_eventloop = [None, "inline", "ipympl"]
-        if gui not in supported_no_eventloop:
-            msg = f"The backend {gui=} is not supported by async-kernel. The currently supported gui options are: {supported_no_eventloop}."
+
+        if gui not in SUPPORTED_GUI:
+            msg = f"The backend {gui=} is not supported by this kernel. The currently supported gui options are: {SUPPORTED_GUI}."
             raise NotImplementedError(msg)
+        if gui in ["tk", "qt"]:
+            import matplotlib.pyplot as plt  # noqa: PLC0415
+
+            plt.ion()
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:

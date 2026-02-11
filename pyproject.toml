@@ -84,7 +84,9 @@ uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and impl
 ]    
 dev = [
     "debugpy",
+    "matplotlib",
     "ipykernel; implementation_name == 'cpython'",
+    "PySide6-Essentials; implementation_name == 'cpython'",
      {include-group = "uvloop"},
     {include-group = "test"}
 ]
