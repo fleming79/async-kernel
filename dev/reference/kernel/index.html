@@ -2652,8 +2652,12 @@ viewing the latest version.
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
@@ -4249,7 +4253,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 <span class="sd">            - The reply message type is derived from the original request type.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">job_token</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">_job_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
-        <span class="n">subshell_token</span> <span class="o">=</span> <span class="n">SubshellPendingManager</span><span class="o">.</span><span class="n">_contextvar</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
+        <span class="n">subshell_token</span> <span class="o">=</span> <span class="n">ShellPendingManager</span><span class="o">.</span><span class="n">_id_contextvar</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
@@ -4265,7 +4269,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Exception in message handler:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">_job_var</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">job_token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
-            <span class="n">SubshellPendingManager</span><span class="o">.</span><span class="n">_contextvar</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">subshell_token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
+            <span class="n">ShellPendingManager</span><span class="o">.</span><span class="n">_id_contextvar</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">subshell_token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
                 <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
                 <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">],</span>
@@ -5710,7 +5714,7 @@ Instead a new instance should be started.</p>
 <span class="sd">        - The reply message type is derived from the original request type.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">job_token</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">_job_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
-    <span class="n">subshell_token</span> <span class="o">=</span> <span class="n">SubshellPendingManager</span><span class="o">.</span><span class="n">_contextvar</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
+    <span class="n">subshell_token</span> <span class="o">=</span> <span class="n">ShellPendingManager</span><span class="o">.</span><span class="n">_id_contextvar</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
@@ -5726,7 +5730,7 @@ Instead a new instance should be started.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Exception in message handler:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">_job_var</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">job_token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
-        <span class="n">SubshellPendingManager</span><span class="o">.</span><span class="n">_contextvar</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">subshell_token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
+        <span class="n">ShellPendingManager</span><span class="o">.</span><span class="n">_id_contextvar</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">subshell_token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
             <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
             <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">],</span>
@@ -6084,12 +6088,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.kernel_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_info_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6145,12 +6145,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_info_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6346,12 +6342,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.is_complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;is_complete_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6539,12 +6531,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_open"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_open</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6785,12 +6773,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.shutdown_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shutdown_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6848,24 +6832,9 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.debug_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug_request</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.list_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;list_subshell_request</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -6920,12 +6889,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.create_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;create_subshell_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6983,12 +6948,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.delete_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;delete_subshell_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
