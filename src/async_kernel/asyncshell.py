@@ -206,7 +206,6 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def __init__(self, parent: None | Configurable = None) -> None:
         super().__init__(parent=parent)
-        self.pending_manager.activate()
         with contextlib.suppress(AttributeError):
             utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)  # pyright: ignore[reportOptionalMemberAccess]
 
@@ -578,7 +577,8 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
     def stop(self, *, force=False) -> None:
         "Stop this subshell."
         if force or not self.protected:
-            self.pending_manager.deactivate()
+            for pen in self.pending_manager.pending:
+                pen.cancel(f"Subshell {self.subshell_id} is stopping.")
             self.reset(new_session=False)
             self.kernel.subshell_manager.subshells.pop(self.subshell_id, None)
             self.set_trait("stopped", True)

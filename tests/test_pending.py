@@ -33,10 +33,10 @@ class PendingManagerTest(PendingManager):
 async def pm(anyio_backend: Backend):
     assert PendingManagerTest.current() is None
     pm = PendingManagerTest()
-    pm.activate()
     assert PendingManagerTest.current() is None
     yield pm
-    pm.deactivate()
+    for pen in pm.pending:
+        pen.cancel()
     if pm.pending:
         with anyio.CancelScope(shield=True):
             await Caller().wait(pm.pending)
@@ -252,28 +252,6 @@ class TestPendingManagerTest:
         pm.stop_tracking(token)
         assert PendingManagerTest.current() is None
 
-    async def test_pool_deactivate(self, pm: PendingManagerTest, caller: Caller) -> None:
-        token = pm.start_tracking()
-        pen = caller.call_soon(anyio.sleep_forever)
-        for _ in range(5):
-            caller.call_soon(anyio.sleep_forever)
-        assert pen in pm.pending
-        pm.stop_tracking(token)
-        pending = pm.pending
-        pm.deactivate()
-        assert not pm.active
-        token = pm.activate()
-        for pen in pending:
-            assert not pen.done()
-            pm.add(pen)
-        pm.deactivate()
-        assert pm.pending
-        assert not pm.active
-        await caller.wait(pm.pending)
-        assert not pm.active
-        assert pen.done()
-        assert not pm.pending
-
     async def test_pool_ignores_pending_errors(self, pm: PendingManagerTest, caller: Caller) -> None:
         token = pm.start_tracking()
         proceed = Event()
@@ -288,7 +266,6 @@ class TestPendingManagerTest:
             await pen2
         await pen2.wait(result=False)
         assert not pm.pending
-        assert pm.active
         pm.stop_tracking(token)
 
     async def test_state(self, pm: PendingManagerTest, caller: Caller):
@@ -314,9 +291,6 @@ class TestPendingManagerTest:
         assert not pm.pending
 
         caller.call_soon(lambda: 1)
-        pm.deactivate()
-        assert not pm.active
-        pm.deactivate()
         assert pm.pending
 
         pen = Pending()
@@ -339,7 +313,7 @@ class TestPendingManagerTest:
             pass
 
         assert PendingManagerTestSubclass in PendingTracker._subclasses  # pyright: ignore[reportPrivateUsage]
-        pm2 = PendingManagerTestSubclass().activate()
+        pm2 = PendingManagerTestSubclass()
         assert PendingManagerTestSubclass.current() is None
         pm2_token = pm2.start_tracking()
 
@@ -359,7 +333,6 @@ class TestPendingManagerTest:
         async def func() -> None:
             assert PendingManagerTest.current() is None, "A current PendingManagerTest should not exist in this context"
 
-        pm = pm.activate()
         token = pm.start_tracking()
         await caller.schedule_call(func, (), {}, None, ())
         pm.stop_tracking(token)
@@ -375,7 +348,6 @@ class TestPendingGroup:
             assert not pm._all_done  # pyright: ignore[reportPrivateUsage]
         assert pen1 not in pm.pending
         assert pm._all_done  # pyright: ignore[reportPrivateUsage]
-        assert not pm.active
 
     async def test_async_reenter(self, caller: Caller) -> None:
         assert PendingGroup.current() is None
@@ -437,7 +409,6 @@ class TestPendingGroup:
             async with pm:
                 caller.call_soon(add_when_cancelled)
         assert ok
-        assert not pm.active
 
     async def test_wait_exception(self, caller: Caller):
         with pytest.raises(ExceptionGroup):  # noqa: PT012
@@ -458,8 +429,6 @@ class TestPendingGroup:
             pen = Pending(PendingGroup)
             pg.discard(pen)
             assert pen not in pg.pending
-        with pytest.raises(InvalidStateError):
-            pg.add(Pending(PendingGroup))
 
     async def test_subclass(self, caller: Caller):
         class PendingManagerTestSubclass(PendingGroup):
@@ -515,7 +484,6 @@ class TestPendingGroup:
 
     async def test_tracking(self, caller: Caller):
         pm = PendingManagerTest()
-        pm.activate()
         token = pm.start_tracking()
         try:
             async with caller.create_pending_group() as pg:
@@ -539,7 +507,6 @@ class TestPendingGroup:
         finally:
             pm._pending.clear()  # pyright: ignore[reportPrivateUsage]
             pm.stop_tracking(token)
-            pm.deactivate()
 
     async def test_propagation(self, caller: Caller):
         async def func() -> None:
