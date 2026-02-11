@@ -602,6 +602,7 @@ class SubshellManager:
     __slots__ = ["__weakref__"]
 
     main_shell: Fixed[Self, AsyncInteractiveShell] = Fixed(lambda _: utils.get_kernel().main_shell)
+    _main_shell_pending_manager_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].main_shell.pending_manager.id)
     subshells: dict[str, AsyncInteractiveSubshell] = {}
     default_subshell_class = AsyncInteractiveSubshell
 
@@ -639,7 +640,7 @@ class SubshellManager:
         """
         if subshell_id is NoValue:
             subshell_id = ShellPendingManager.active_id()
-        if subshell_id is None or subshell_id == self.main_shell.pending_manager.id:
+        if subshell_id is None or subshell_id == self._main_shell_pending_manager_id:
             return self.main_shell
         return self.subshells[subshell_id]
 
