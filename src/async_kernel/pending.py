@@ -50,11 +50,7 @@ class PendingTracker:
     _pending: Fixed[Self, set[Pending[Any]]] = Fixed(set)
 
     id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
-    """
-    The unique id of the pending tracker instance. 
-    
-    It is also used as the `subshell_id` of [async_kernel.subshell.AsyncInteractiveSubshell][] managed by [async_kernel.subshell.SubshellManager][].
-    """
+    """The unique id of the pending tracker instance."""
 
     @property
     def pending(self) -> set[Pending[Any]]:
@@ -128,11 +124,11 @@ class PendingManager(PendingTracker):
         m2 = MyPendingManager()
 
         # In one or more contexts
-        token = m.start_tracking()
+        token = m.activate()
         try:
             ...
             try:
-                token2 = m2.start_tracking()
+                token2 = m2.activate()
                 pen = m2.caller.call_soon(lambda: 1 + 1)
                 assert pen in m2.pending
                 assert (
@@ -140,12 +136,10 @@ class PendingManager(PendingTracker):
                 ), "pen is associated should only be associated with m2"
                 ...
             finally:
-                m2.stop_tracking(token2)
+                m2.deactivate(token2)
 
         finally:
-            m.stop_tracking(token)
-
-        # When complete tidy up, deactivate will cancel all pending.
+            m.deactivate(token)
         ```
     """
 
@@ -160,7 +154,7 @@ class PendingManager(PendingTracker):
         Stop tracking using the token.
 
         Args:
-            token: The token returned from [start_tracking][].
+            token: The token returned from [activate][].
         """
         self._deactivate(token)
 
@@ -356,7 +350,6 @@ class Pending(Awaitable[T]):
         Behavior:
             - Initializes internal state for tracking completion and cancellation
             - Stores provided metadata in a class-level mapping
-            - Registers with [async_kernel.pending.PendingTracker.add_to_pending_trackers][]
         """
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
         self._metadata_mappings[id(self)] = metadata
