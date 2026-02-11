@@ -77,10 +77,10 @@ class PendingTracker:
     def __init__(self) -> None:
         self._instances[self.id] = self
 
-    def _start_tracking(self) -> Token[str | None]:
+    def _enable(self) -> Token[str | None]:
         return self._id_contextvar.set(self.id)
 
-    def _stop_tracking(self, token: contextvars.Token[str | None]) -> None:
+    def _disable(self, token: contextvars.Token[str | None]) -> None:
         self._id_contextvar.reset(token)
 
     def add(self, pen: Pending) -> None:
@@ -88,23 +88,11 @@ class PendingTracker:
 
         if isinstance(self, pen.trackers) and (pen not in self._pending):
             self._pending.add(pen)
-            pen.add_done_callback(self.on_pending_done)
+            pen.add_done_callback(self._on_pending_done)
 
-    def on_pending_done(self, pen: Pending) -> None:
+    def _on_pending_done(self, pen: Pending) -> None:
         "A done_callback that is registered with pen when it is added (don't call directly)."
         self._pending.discard(pen)
-
-    def remove(self, pen: Pending) -> None:
-        "Remove a `Pending`."
-        self._pending.remove(pen)
-        pen.remove_done_callback(self.on_pending_done)
-
-    def discard(self, pen: Pending) -> None:
-        "Discard the `Pending`."
-        try:
-            self.remove(pen)
-        except IndexError:
-            pass
 
 
 class PendingManager(PendingTracker):
@@ -155,20 +143,20 @@ class PendingManager(PendingTracker):
         ```
     """
 
-    def start_tracking(self) -> contextvars.Token[str | None]:
+    def enable(self) -> contextvars.Token[str | None]:
         """
         Start tracking `Pending` in the  current context.
         """
-        return self._start_tracking()
+        return self._enable()
 
-    def stop_tracking(self, token: contextvars.Token[str | None]) -> None:
+    def disable(self, token: contextvars.Token[str | None]) -> None:
         """
         Stop tracking using the token.
 
         Args:
             token: The token returned from [start_tracking][].
         """
-        self._stop_tracking(token)
+        self._disable(token)
 
 
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
@@ -213,9 +201,9 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         super().__init__()
 
     @override
-    def _start_tracking(self) -> Token[str | None]:
+    def _enable(self) -> Token[str | None]:
         self._parent_id = None if (parent_id := self._id_contextvar.get()) == self.id else parent_id
-        return super()._start_tracking()
+        return super()._enable()
 
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -224,7 +212,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
             raise InvalidStateError(msg)
         self._cancel_scope = anyio.CancelScope(shield=self._shield)
         self._all_done = create_async_event()
-        token = self._start_tracking()
+        token = self._enable()
         try:
             with self._cancel_scope:
                 try:
@@ -242,7 +230,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 raise PendingCancelled(self._cancelled)
         finally:
             self._leaving_context = True
-            self._stop_tracking(token)
+            self._disable(token)
             self._instances.pop(self.id, None)
             if self._pending:
                 if self._all_done or self._all_done.cancelled():
@@ -255,12 +243,12 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     def add(self, pen: Pending) -> None:
         if pen not in self._pending:
             self._pending.add(pen)
-            pen.add_done_callback(self.on_pending_done)
+            pen.add_done_callback(self._on_pending_done)
         if (id_ := self._parent_id) and (parent := self._instances.get(id_)):
             parent.add(pen)
 
     @override
-    def on_pending_done(self, pen: Pending) -> None:
+    def _on_pending_done(self, pen: Pending) -> None:
         try:
             self._pending.remove(pen)
             if not pen.cancelled() and (pen.exception()):
