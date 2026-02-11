@@ -143,7 +143,7 @@ patch = ['subprocess']
 parallel = true
 relative_files = true
 source = ["async_kernel"]
-omit = ["tests/*", "hatch_build.py", '_version.py']
+omit = ["tests/*", "hatch_build.py", '_version.py', "tk_trio_guest.py"]
 
 [tool.ruff]
 required-version = ">=0.12.8"

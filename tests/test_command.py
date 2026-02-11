@@ -113,6 +113,18 @@ if importlib.util.find_spec("PySide6"):
 
 @pytest.mark.parametrize(("backend", "backend_options"), backend_combinations)
 def test_start_kernel_enable_gui(monkeypatch, backend: str, backend_options: dict):
+    started = False
+    if "tk_trio_guest" in backend:
+        gui = "tk"
+        try:
+            import tkinter  # noqa: F401, ICN001, PLC0415  # pyright: ignore[reportUnusedImport]
+        except ImportError:
+            pytest.skip("Tkinter is not available")
+    elif "qt_trio_guest" in backend:
+        gui = "qt"
+    else:
+        gui = "ipympl"
+
     async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
     monkeypatch.setattr(
         sys,
@@ -127,13 +139,6 @@ def test_start_kernel_enable_gui(monkeypatch, backend: str, backend_options: dic
             "--no-print_kernel_messages",
         ],
     )
-    started = False
-    if "tk_trio_guest" in backend:
-        gui = "tk"
-    elif "qt_trio_guest" in backend:
-        gui = "qt"
-    else:
-        gui = "ipympl"
 
     async def wait_exit():
         nonlocal started
