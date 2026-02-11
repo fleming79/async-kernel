@@ -30,7 +30,7 @@ from async_kernel.pending import PendingManager
 from async_kernel.typing import Content, NoValue, Tags
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Generator
 
     from IPython.core.history import HistoryManager
     from traitlets.config import Configurable
@@ -156,6 +156,10 @@ class AsyncDisplayPublisher(DisplayPublisher):
             self._hooks.remove(hook)
 
 
+class ShellPendingManager(PendingManager):
+    "A pending manager to track the active shell/subshell."
+
+
 class AsyncInteractiveShell(InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].
@@ -179,7 +183,10 @@ class AsyncInteractiveShell(InteractiveShell):
     compiler_class = Type(XCachingCompiler)
     compile: Instance[XCachingCompiler]
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", (), read_only=True)
+
+    pending_manager = Fixed(ShellPendingManager)
     subshell_id = Fixed(lambda _: None)
+
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
 
@@ -491,9 +498,8 @@ class AsyncInteractiveShell(InteractiveShell):
             self._resetting = True
             try:
                 super().reset(new_session, aggressive)
-                if pm := getattr(self, "pending_manager", None):
-                    for pen in pm.pending:
-                        pen.cancel()
+                for pen in self.pending_manager.pending:
+                    pen.cancel()
                 if new_session:
                     self._execution_count = 0
                     self._stop_on_error_info.clear()
@@ -522,9 +528,10 @@ class AsyncInteractiveShell(InteractiveShell):
             msg = f"The backend {gui=} is not supported by async-kernel. The currently supported gui options are: {supported_no_eventloop}."
             raise NotImplementedError(msg)
 
-
-class SubshellPendingManager(PendingManager):
-    "A pending manager for subshells."
+    @contextlib.contextmanager
+    def context(self) -> Generator[None, Any, None]:
+        with self.pending_manager.context():
+            yield
 
 
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
@@ -553,7 +560,6 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     stopped = traitlets.Bool(read_only=True)
     protected = traitlets.Bool(read_only=True)
-    pending_manager = Fixed(SubshellPendingManager)
     subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.id)
 
     @override
@@ -632,12 +638,10 @@ class SubshellManager:
             subshell_id: The id of an existing subshell.
         """
         if subshell_id is NoValue:
-            subshell_id = utils.get_subshell_id()
-        try:
-            return self.subshells[subshell_id] if subshell_id else self.main_shell
-        except KeyError:
-            msg = f"Subshell with {subshell_id=} does not exist!"
-            raise RuntimeError(msg) from None
+            subshell_id = ShellPendingManager.active_id()
+        if subshell_id is None or subshell_id == self.main_shell.pending_manager.id:
+            return self.main_shell
+        return self.subshells[subshell_id]
 
     def delete_subshell(self, subshell_id: str) -> None:
         """

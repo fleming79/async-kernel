@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any
 from typing_extensions import TypeVar
 
 import async_kernel
-from async_kernel.asyncshell import SubshellPendingManager
 from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
@@ -71,7 +70,7 @@ def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
 
 def get_subshell_id() -> str | None:
     "Get the `subshell_id` for the current context."
-    return SubshellPendingManager._id_contextvar.get()  # pyright: ignore[reportPrivateUsage]
+    return get_kernel().shell.subshell_id
 
 
 @contextmanager
@@ -81,12 +80,8 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
     Args:
         subshell_id: An existing subshell or the main shell if subshell_id is None.
     """
-    shell = get_kernel().subshell_manager.get_shell(subshell_id)  # use the shell for validation.
-    token = SubshellPendingManager._id_contextvar.set(shell.subshell_id)  # pyright: ignore[reportPrivateUsage]
-    try:
+    with get_kernel().subshell_manager.get_shell(subshell_id).context():
         yield
-    finally:
-        SubshellPendingManager._id_contextvar.reset(token)  # pyright: ignore[reportPrivateUsage]
 
 
 def get_metadata(job: Job | None = None, /) -> dict[str, Any] | None:

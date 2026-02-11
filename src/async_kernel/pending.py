@@ -70,10 +70,15 @@ class PendingTracker:
 
     @classmethod
     def current(cls) -> Self | None:
-        "The current instance of this class for the current context."
+        "The instance of the active tracker in the current context."
         if (id_ := cls._id_contextvar.get()) and (current := cls._instances.get(id_)):
             return current
         return None
+
+    @classmethod
+    def active_id(cls) -> str | None:
+        "The id of the active tracker in the current context."
+        return cls._id_contextvar.get()
 
     def __init__(self) -> None:
         self._instances[self.id] = self

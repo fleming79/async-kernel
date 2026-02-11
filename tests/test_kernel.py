@@ -620,10 +620,7 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     assert subshell_id in kernel.subshell_manager.subshells, "Protected should not stop when deleted"
     kernel.subshell_manager.stop_all_subshells(force=True)
     assert kernel.main_shell.user_ns["a"] == 1
-    with (
-        pytest.raises(RuntimeError, match="does not exist!"),
-        async_kernel.utils.subshell_context(subshell.subshell_id),
-    ):
+    with pytest.raises(KeyError), async_kernel.utils.subshell_context(subshell.subshell_id):
         pass
 
 
