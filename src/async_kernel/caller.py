@@ -129,7 +129,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
-    _queue: Fixed[Self, deque[tuple[contextvars.Context, Pending] | tuple[Callable, tuple, dict]]] = Fixed(deque)
+    _queue: Fixed[Self, deque[Pending | tuple[Callable, tuple, dict]]] = Fixed(deque)
     stopped = Fixed(Event)
     "A thread-safe Event for when the caller is stopped."
 
@@ -354,9 +354,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             child.stop(force=True)
         while self._queue:
             item = self._queue.pop()
-            if len(item) == 2:
-                item[1].cancel()
-                item[1].set_result(None)
+            if isinstance(item, Pending):
+                item.cancel()
+                item.set_result(None)
         for func in tuple(self._queue_map):
             self.queue_close(func)
         self._resume()
@@ -431,8 +431,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         try:
             while self._state is CallerState.running:
                 if self._queue:
-                    item, result = self._queue.popleft(), None
-                    if len(item) == 3:
+                    item = self._queue.popleft()
+                    result = None
+                    if not isinstance(item, Pending):
                         try:
                             result = item[0](*item[1], **item[2])
                             if inspect.iscoroutine(result):
@@ -441,13 +442,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                             self.log.exception("Direct call failed", exc_info=e)
                     else:
                         if asyncio_backend:
-                            task = loop.create_task(self._call_scheduled(item[1]), context=item[0], **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
+                            task = loop.create_task(self._call_scheduled(item), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
                             if not task.done():
                                 self._tasks.add(task)
                                 task.add_done_callback(self._tasks.discard)
                             del task
                         else:
-                            item[0].run(tg.start_soon, self._call_scheduled, item[1])
+                            item.context.run(tg.start_soon, self._call_scheduled, item)
                     await checkpoint(self.backend)
                     del item, result
                 else:
@@ -635,8 +636,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._state in {CallerState.stopping, CallerState.stopped}:
             msg = f"{self} is {self._state.name}!"
             raise RuntimeError(msg)
-        pen = Pending(trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        self._queue.append((context or contextvars.copy_context(), pen))
+        pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        self._queue.append(pen)
         self._resume()
         return pen
 
@@ -824,9 +825,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue, resume=noop)
         pen_.metadata["queue"].append((func, args, kwargs))
         pen_.metadata["resume"]()
-        if pen_.trackers:
-            PendingTracker.add_to_pending_trackers(pen_)
-        return pen_  # pyright: ignore[reportReturnType]
+        return pen_.add_to_trackers()  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
         """
