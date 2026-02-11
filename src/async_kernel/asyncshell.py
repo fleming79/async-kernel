@@ -179,7 +179,6 @@ class AsyncInteractiveShell(InteractiveShell):
     compiler_class = Type(XCachingCompiler)
     compile: Instance[XCachingCompiler]
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", (), read_only=True)
-    pending_manager = Fixed(PendingManager)
     subshell_id = Fixed(lambda _: None)
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -492,8 +491,9 @@ class AsyncInteractiveShell(InteractiveShell):
             self._resetting = True
             try:
                 super().reset(new_session, aggressive)
-                for pen in self.pending_manager.pending:
-                    pen.cancel()
+                if pm := getattr(self, "pending_manager", None):
+                    for pen in pm.pending:
+                        pen.cancel()
                 if new_session:
                     self._execution_count = 0
                     self._stop_on_error_info.clear()

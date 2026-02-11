@@ -58,6 +58,7 @@ class PendingTracker:
 
     @property
     def pending(self) -> set[Pending[Any]]:
+        "The pending currently associated with this instance."
         return self._pending.copy()
 
     def __init_subclass__(cls) -> None:
@@ -77,10 +78,10 @@ class PendingTracker:
     def __init__(self) -> None:
         self._instances[self.id] = self
 
-    def _enable(self) -> Token[str | None]:
+    def _activate(self) -> Token[str | None]:
         return self._id_contextvar.set(self.id)
 
-    def _disable(self, token: contextvars.Token[str | None]) -> None:
+    def _deactivate(self, token: contextvars.Token[str | None]) -> None:
         self._id_contextvar.reset(token)
 
     def add(self, pen: Pending) -> None:
@@ -143,20 +144,29 @@ class PendingManager(PendingTracker):
         ```
     """
 
-    def enable(self) -> contextvars.Token[str | None]:
+    def activate(self) -> contextvars.Token[str | None]:
         """
         Start tracking `Pending` in the  current context.
         """
-        return self._enable()
+        return self._activate()
 
-    def disable(self, token: contextvars.Token[str | None]) -> None:
+    def deactivate(self, token: contextvars.Token[str | None]) -> None:
         """
         Stop tracking using the token.
 
         Args:
             token: The token returned from [start_tracking][].
         """
-        self._disable(token)
+        self._deactivate(token)
+
+    @contextlib.contextmanager
+    def context(self) -> Generator[None, Any, None]:
+        """A context manager to activate this instance."""
+        token = self.activate()
+        try:
+            yield
+        finally:
+            self.deactivate(token)
 
 
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
@@ -201,9 +211,9 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         super().__init__()
 
     @override
-    def _enable(self) -> Token[str | None]:
+    def _activate(self) -> Token[str | None]:
         self._parent_id = None if (parent_id := self._id_contextvar.get()) == self.id else parent_id
-        return super()._enable()
+        return super()._activate()
 
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -212,7 +222,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
             raise InvalidStateError(msg)
         self._cancel_scope = anyio.CancelScope(shield=self._shield)
         self._all_done = create_async_event()
-        token = self._enable()
+        token = self._activate()
         try:
             with self._cancel_scope:
                 try:
@@ -230,7 +240,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 raise PendingCancelled(self._cancelled)
         finally:
             self._leaving_context = True
-            self._disable(token)
+            self._deactivate(token)
             self._instances.pop(self.id, None)
             if self._pending:
                 if self._all_done or self._all_done.cancelled():
@@ -336,7 +346,7 @@ class Pending(Awaitable[T]):
         Args:
             trackers: A subclass or tuple of `PendingTracker` subclasses to which the pending can be added given the context.
             **metadata: Arbitrary keyword arguments containing metadata to associate with this Pending instance.
-                trackers: Enabled by default. To disable tracking pass `trackers=False`
+                trackers: Enabled by default. To deactivate tracking pass `trackers=False`
 
         Behavior:
             - Initializes internal state for tracking completion and cancellation
