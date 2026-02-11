@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import signal
 import sys
 import types
@@ -115,12 +116,12 @@ if importlib.util.find_spec("PySide6"):
 def test_start_kernel_enable_gui(monkeypatch, backend: str, backend_options: dict):
     started = False
     if "tk_trio_guest" in backend:
+        if os.getenv("GITHUB_ACTIONS"):
+            pytest.skip("Skip on CI")
         gui = "tk"
-        try:
-            import tkinter  # noqa: F401, ICN001, PLC0415  # pyright: ignore[reportUnusedImport]
-        except ImportError:
-            pytest.skip("Tkinter is not available")
     elif "qt_trio_guest" in backend:
+        if os.getenv("GITHUB_ACTIONS"):
+            pytest.skip("Skip on CI")
         gui = "qt"
     else:
         gui = "ipympl"

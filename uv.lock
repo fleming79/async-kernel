@@ -130,12 +130,6 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-cov = [
-    { name = "coverage", extra = ["toml"] },
-    { name = "matplotlib" },
-    { name = "pytest-cov" },
-    { name = "trio" },
-]
 dev = [
     { name = "debugpy" },
     { name = "ipykernel", marker = "implementation_name == 'cpython'" },
@@ -192,12 +186,6 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-cov = [
-    { name = "coverage", extras = ["toml"] },
-    { name = "matplotlib" },
-    { name = "pytest-cov" },
-    { name = "trio" },
-]
 dev = [
     { name = "debugpy" },
     { name = "ipykernel", marker = "implementation_name == 'cpython'" },

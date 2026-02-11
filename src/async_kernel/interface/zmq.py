@@ -16,7 +16,6 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self
 
-import anyio
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
@@ -126,14 +125,14 @@ class ZMQKernelInterface(BaseKernelInterface):
     )
     "Transport for sockets."
 
-    backend = Unicode("asyncio")
+    backend = Unicode("async_kernel.eventloop.anyio.run_asyncio")
     """
     The backend used to provide the shell event loop.
     
     Options:
         Anyio managed ([anyio.run][]):
-            - 'asyncio'
-            - 'trio'
+            - 'asyncio' or 'async_kernel.eventloop.anyio.run_asyncio'
+            - 'trio' or 'async_kernel.eventloop.anyio.run_trio'
         Trio guest mode:
             - 'async_kernel.eventloop.qt_trio_guest.run'
             - 'async_kernel.eventloop.tk_trio_guest.run'
@@ -162,12 +161,14 @@ class ZMQKernelInterface(BaseKernelInterface):
             async with self.kernel:
                 await self.wait_exit
 
-        if self.backend in ["asyncio", "trio"]:
-            anyio.run(run_kernel, backend=self.backend, backend_options=self.backend_options)
-        else:
-            run: Callable = import_item(self.backend)
-            kwargs = self.backend_options or {}
-            run(run_kernel, **kwargs)
+        if self.backend == "asyncio":
+            self.backend = "async_kernel.eventloop.anyio.run_asyncio"
+        if self.backend == "trio":
+            self.backend = "async_kernel.eventloop.anyio.run_trio"
+
+        run: Callable = import_item(self.backend)
+        kwargs = self.backend_options or {}
+        run(run_kernel, **kwargs)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:

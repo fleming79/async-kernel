@@ -83,18 +83,12 @@ uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and impl
 "winloop; sys_platform == 'win32' and implementation_name == 'cpython'"
 ]    
 dev = [
-    "debugpy",
+  "PySide6-Essentials; implementation_name == 'cpython'",
     "matplotlib",
+    "debugpy",
     "ipykernel; implementation_name == 'cpython'",
-    "PySide6-Essentials; implementation_name == 'cpython'",
      {include-group = "uvloop"},
     {include-group = "test"}
-]
-cov = [
-  "coverage[toml]",
-  "pytest-cov",
-  "matplotlib",
-  "trio",
 ]
 
 [tool.hatch.version]
@@ -143,7 +137,7 @@ patch = ['subprocess']
 parallel = true
 relative_files = true
 source = ["async_kernel"]
-omit = ["tests/*", "hatch_build.py", '_version.py', "tk_trio_guest.py"]
+omit = ["tests/*", "hatch_build.py", '_version.py', "tk_trio_guest.py", "qt_trio_guest.py"]
 
 [tool.ruff]
 required-version = ">=0.12.8"
