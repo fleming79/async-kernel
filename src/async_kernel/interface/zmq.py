@@ -37,7 +37,7 @@ from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Backend, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Generator
+    from collections.abc import AsyncGenerator, Generator
     from types import FrameType
 
 __all__ = ["ZMQKernelInterface"]
@@ -161,14 +161,13 @@ class ZMQKernelInterface(BaseKernelInterface):
             async with self.kernel:
                 await self.wait_exit
 
-        if self.backend == "asyncio":
-            self.backend = "async_kernel.eventloop.anyio.run_asyncio"
-        if self.backend == "trio":
-            self.backend = "async_kernel.eventloop.anyio.run_trio"
+        dottedname, kwargs = self.backend, self.backend_options or {}
+        if dottedname == "asyncio":
+            dottedname = "async_kernel.eventloop.anyio.run_asyncio"
+        elif dottedname == "trio":
+            dottedname = "async_kernel.eventloop.anyio.run_trio"
 
-        run: Callable = import_item(self.backend)
-        kwargs = self.backend_options or {}
-        run(run_kernel, **kwargs)
+        import_item(dottedname)(run_kernel, **kwargs)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
