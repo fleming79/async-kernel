@@ -1,7 +1,4 @@
-from __future__ import annotations
-
-#
-# origin: https://github.com/richardsheridan/trio-guest/blob/master/trio_guest_tkinter.py
+# From https://github.com/richardsheridan/trio-guest/blob/master/trio_guest_tkinter.py
 # Copyright 2020 Richard J. Sheridan
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +13,10 @@ from __future__ import annotations
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Modified: 2026
+# Modifications 2026 MIT License
+
+from __future__ import annotations
+
 import collections
 import tkinter as tk
 from typing import TYPE_CHECKING, Any

@@ -1,7 +1,4 @@
-from __future__ import annotations
-
-# origin: https://github.com/richardsheridan/trio-guest/blob/master/trio_guest_qt5.py
-# From https://gist.github.com/njsmith/d996e80b700a339e0623f97f48bcf0cb
+# From https://github.com/richardsheridan/trio-guest/blob/master/trio_guest_qt5.py
 #
 # Modifications Copyright 2020 Richard J. Sheridan
 #
@@ -17,7 +14,10 @@ from __future__ import annotations
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Modified 2026
+# Modifications 2026 MIT License
+
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, override
 
 import trio
