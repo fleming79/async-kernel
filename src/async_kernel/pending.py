@@ -49,7 +49,6 @@ class PendingTracker:
 
     _active = False
     _pending: Fixed[Self, set[Pending[Any]]] = Fixed(set)
-    _tracking: bool = False
 
     id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
     """
@@ -67,9 +66,10 @@ class PendingTracker:
         return self._pending.copy()
 
     def __init_subclass__(cls) -> None:
-        PendingTracker._subclasses = (*cls._subclasses, cls)
-        # Each subclass is assigned a new context variable.
-        cls._id_contextvar = contextvars.ContextVar(f"{cls.__module__}.{cls.__name__}", default=None)
+        if cls.__name__ != "PendingManager":
+            PendingTracker._subclasses = (*cls._subclasses, cls)
+            # Each subclass is assigned a new context variable.
+            cls._id_contextvar = contextvars.ContextVar(f"{cls.__module__}.{cls.__name__}", default=None)
         return super().__init_subclass__()
 
     @classmethod
@@ -90,14 +90,12 @@ class PendingTracker:
             pen.cancel(f"{self} has been deactivated")
 
     def _start_tracking(self) -> Token[str | None]:
-        if self._tracking or not self._active:
+        if not self._active:
             raise InvalidStateError
-        self._tracking = True
         return self._id_contextvar.set(self.id)
 
     def _stop_tracking(self, token: contextvars.Token[str | None]) -> None:
         self._id_contextvar.reset(token)
-        self._tracking = False
 
     def add(self, pen: Pending) -> None:
         "Track `Pending` until it is done."
@@ -113,7 +111,7 @@ class PendingTracker:
     def remove(self, pen: Pending) -> None:
         "Remove a `Pending`."
         self._pending.remove(pen)
-        pen.remove_done_callback(self.discard)
+        pen.remove_done_callback(self.on_pending_done)
 
     def discard(self, pen: Pending) -> None:
         "Discard the `Pending`."
@@ -125,7 +123,41 @@ class PendingTracker:
 
 class PendingManager(PendingTracker):
     """
-    PendingManager is a context-aware PendingTracker for tracking [Pending][async_kernel.pending.Pending].
+    PendingManager is a class that can be used to capture the creation of [async_kernel.pending.Pending][]
+    in any specific context.
+
+    This class can not be used directly and must be subclassed to be useful. For any
+    subclass, there is only one active instance in that context.
+
+    Notes:
+
+        - A subclass of [PendingManager][] is required to use its functionality.
+        - Each subclass is assigned it's own context variable.
+            - This means that only one instance is ever active in a specific context at any time.
+        - It is proportionally expensive to subclass PendingManager so it's usage should
+            be limited to cases where it is necessary to start and stop tracking from specific contexts.
+
+    Usage:
+        Create a subclass
+
+        ```python
+        class MyPendingManager(PendingManager):
+            "Manages the context of ..."
+
+
+        m = MyPendingManager().activate()
+        m2 = MyPendingManager().activate()
+
+        # In one or more contexts
+        token = m.start_tracking()
+        try:
+            ...
+        finally:
+            m.stop_tracking(token)
+
+        # When complete tidy up, deactivate will cancel all pending.
+        m.deactivate()
+        ```
     """
 
     def activate(self) -> Self:
@@ -159,13 +191,11 @@ class PendingManager(PendingTracker):
 
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
-    An asynchronous context manager that automatically registers pending created in its context.
+    An asynchronous context manager for tracking [async_kernel.pending.Pending][] created in the context.
 
-    All pending created within the context of `PendingGroup` provided that the `PendingGroup` is an instance
-    of [Pending.trackers][] will be automatically added to the group (default for `Pending`).
-
-    If any pending fails, is cancelled (with the result/exception set) or the pending group is cancelled;
-    the context will exit, and all pending will be cancelled.
+    If any pending is set with an exception, the pending group and all tracked pending
+    will be cancelled. The context will exit once all registered pending are complete or
+    when after the [cancellation_timeout][] period has elapsed.
 
     Features:
         - The context will exit after all tracked pending are done or removed.
@@ -320,7 +350,7 @@ class Pending(Awaitable[T]):
     Should be specified during init.
     
     For some pending it may not make sense for it to be added to a [PendingGroup][]
-    Instead specify `(PendingManager,)` instead of `(PendingTracker,)`.
+    Instead specify `PendingManager` instead of `PendingTracker`.
     """
 
     @property

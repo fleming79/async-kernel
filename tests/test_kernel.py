@@ -609,7 +609,8 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
             assert async_kernel.utils.get_subshell_id() is None
         # Test reset
         pen = Caller().call_soon(anyio.sleep_forever)
-        assert await Caller().call_soon(lambda: async_kernel.utils.get_kernel().shell) is subshell
+        shell = await Caller().call_soon(lambda: async_kernel.utils.get_kernel().shell)
+        assert shell is subshell
         kernel.shell.reset()
         assert pen.cancelled()
 
