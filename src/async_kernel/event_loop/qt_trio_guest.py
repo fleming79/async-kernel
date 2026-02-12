@@ -19,10 +19,11 @@
 from __future__ import annotations
 
 import threading
-from typing import TYPE_CHECKING, Any, override
+from typing import TYPE_CHECKING, Any
 
 import trio
 from aiologic.meta import import_from
+from typing_extensions import override
 
 import async_kernel.asyncshell
 
