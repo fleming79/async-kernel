@@ -18,12 +18,13 @@
 
 from __future__ import annotations
 
+import threading
 from typing import TYPE_CHECKING, Any, override
 
 import trio
 from aiologic.meta import import_from
 
-import async_kernel
+import async_kernel.asyncshell
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -87,5 +88,5 @@ def run(async_fn: Callable[[], Awaitable], module: str = "PySide6", **kwargs: An
         run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
         done_callback=host.done_callback,
     )
-    async_kernel.utils._runtime_gui.set(("qt",))  # pyright: ignore[reportPrivateUsage]
+    async_kernel.asyncshell.AsyncInteractiveShell._runtime_gui_by_thread[threading.get_ident()] = ("qt",)  # pyright: ignore[reportPrivateUsage]
     host.mainloop()

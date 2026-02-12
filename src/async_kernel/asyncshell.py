@@ -4,6 +4,7 @@ import builtins
 import contextlib
 import pathlib
 import sys
+import threading
 import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
@@ -174,6 +175,7 @@ class AsyncInteractiveShell(InteractiveShell):
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
 
+    _runtime_gui_by_thread: ClassVar[dict[int, tuple[str, ...]]] = {}
     _execution_count = 0
     _resetting = False
     displayhook_class = Type(AsyncDisplayHook)
@@ -524,7 +526,7 @@ class AsyncInteractiveShell(InteractiveShell):
             - [x] qt (trio guest mode)
         """
 
-        if gui in (runtime_gui := utils._runtime_gui.get()):  # pyright: ignore[reportPrivateUsage]
+        if gui in (runtime_gui := self._runtime_gui_by_thread.get(threading.get_ident(), ())):
             import matplotlib.pyplot as plt  # noqa: PLC0415 # pragma: no cover
 
             plt.ion()  # pragma: no cover
