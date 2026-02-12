@@ -1,4 +1,4 @@
-# From https://github.com/richardsheridan/trio-guest/blob/master/trio_guest_tkinter.py
+# From https://github.com/richardsheridan/trio-guest/blob/69a349c21563b641e333de02ee88ee8d5c1a3a52/trio_guest_tkinter.py
 # Copyright 2020 Richard J. Sheridan
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
