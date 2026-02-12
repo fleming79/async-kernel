@@ -95,6 +95,7 @@ def run(async_fn: Callable[[], Awaitable], **kwargs: Any) -> None:
         run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
         run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe,
         done_callback=host.done_callback,
+        **kwargs,
     )
     async_kernel.asyncshell.AsyncInteractiveShell._runtime_gui_by_thread[threading.get_ident()] = ("tk",)  # pyright: ignore[reportPrivateUsage]
     host.mainloop()

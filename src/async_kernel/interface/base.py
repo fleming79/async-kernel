@@ -16,7 +16,7 @@ import anyio
 import traitlets
 from aiologic import Event
 from aiologic.lowlevel import current_async_library
-from traitlets import HasTraits, Instance, TraitType, UseEnum
+from traitlets import HasTraits, Instance, UseEnum
 
 import async_kernel
 from async_kernel.caller import Caller
@@ -74,8 +74,8 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     wait_exit = Fixed(Event)
     "An event that when set will leave the kernel context if the kernel was started by this interface."
 
-    anyio_backend: TraitType[Backend, Backend] = UseEnum(Backend)
-    "The asynchronous backend used by the caller for messaging."
+    backend = UseEnum(Backend)
+    "The current async used by the caller for messaging."
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
         raise NotImplementedError
@@ -95,8 +95,8 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        """Create caller, and open socketes."""
-        self.anyio_backend = Backend(current_async_library())
+        """Create caller, and open sockets."""
+        self.backend = Backend(current_async_library())
         restore_io = None
         caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log)
         self.callers[Channel.shell] = caller

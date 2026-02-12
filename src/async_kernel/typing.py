@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, NotRequired, ParamSpec, TypedDict, TypeVar
 
 from typing_extensions import Sentinel, override
 
@@ -25,6 +25,7 @@ __all__ = [
     "FixedCreated",
     "HandlerType",
     "Job",
+    "Loop",
     "Message",
     "MsgHeader",
     "MsgType",
@@ -44,12 +45,41 @@ P = ParamSpec("P")
 
 
 class Backend(enum.StrEnum):
+    "An enum of library names corresponding to anyio."
+
     asyncio = "asyncio"
+    "An asyncio style event loop."
+
     trio = "trio"
+    "A trio style event loop."
+
+
+class Loop(enum.StrEnum):
+    "An enum of event loop names."
+
+    asyncio = "asyncio"
+    "An asyncio style event loop."
+
+    trio = "trio"
+    "A trio style event loop."
+
+    tk_trio = "tk_trio"
+    "A tk event loop hosting a trio guest."
+
+    qt_trio = "qt_trio"
+    "A qt event loop hosting a trio guest."
+
+    @property
+    def backend(self) -> Backend:
+        "The type of backend provided by the event loop."
+
+        if self is Loop.asyncio:
+            return Backend.asyncio
+        return Backend.trio
 
 
 class Channel(enum.StrEnum):
-    "An enum of channels[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
+    "An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
 
     heartbeat = "hb"
     ""
@@ -370,10 +400,11 @@ class CallerCreateOptions(TypedDict):
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use for the caller."
 
-    backend: NotRequired[Backend | Literal["trio", "asyncio"]]
+    loop: NotRequired[Loop]
+    "The type of eventloop where the backend will run."
 
-    "The backend to specify when calling [anyio.run][]."
-    backend_options: NotRequired[dict | None]
+    "Options to use when calling [async_kernel.eventloop.run][]."
+    loop_options: NotRequired[dict]
 
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]

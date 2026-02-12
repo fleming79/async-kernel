@@ -19,22 +19,22 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import current_async_library, enable_signal_safety
+from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
 from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Dict, Unicode, default
+from traitlets import CaselessStrEnum, Dict, TraitType, Unicode, UseEnum, default
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
-import async_kernel
+import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, import_item
+from async_kernel.common import Fixed
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Backend, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
+from async_kernel.typing import Backend, Channel, Content, Job, Loop, Message, MsgHeader, MsgType, NoValue
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -125,26 +125,22 @@ class ZMQKernelInterface(BaseKernelInterface):
     )
     "Transport for sockets."
 
-    backend = Unicode("async_kernel.eventloop.anyio.run_asyncio")
-    """
-    The backend used to provide the shell event loop.
-    
-    Options:
-        Anyio managed ([anyio.run][]):
-            - 'asyncio' or 'async_kernel.eventloop.anyio.run_asyncio'
-            - 'trio' or 'async_kernel.eventloop.anyio.run_trio'
-        Trio guest mode:
-            - 'async_kernel.eventloop.qt_trio_guest.run'
-            - 'async_kernel.eventloop.tk_trio_guest.run'
-    """
-    backend_options = Dict(allow_none=True)
-    "The `backend_options` to use when starting the backend."
+    loop: TraitType[Loop, Loop] = UseEnum(Loop)
+    "The event loop where the kernel will run."
 
-    @default("backend_options")
-    def _default_backend_options(self):
-        if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-            return {"use_uvloop": True}
-        return None  # pragma: no cover
+    loop_options = Dict(allow_none=True)
+    "The options to use when starting the event loop."
+
+    @default("loop")
+    def _default_loop(self) -> Loop:
+        try:
+            return Loop(current_async_library())
+        except AsyncLibraryNotFoundError:
+            if (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")) and not self.trait_has_value(
+                "loop_options"
+            ):
+                self.loop_options["use_uvloop"] = True
+            return Loop.asyncio
 
     def start(self):
         """
@@ -161,13 +157,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             async with self.kernel:
                 await self.wait_exit
 
-        dottedname, kwargs = self.backend, self.backend_options or {}
-        if dottedname == "asyncio":
-            dottedname = "async_kernel.eventloop.anyio.run_asyncio"
-        elif dottedname == "trio":
-            dottedname = "async_kernel.eventloop.anyio.run_trio"
-
-        import_item(dottedname)(run_kernel, **kwargs)
+        async_kernel.event_loop.run(run_kernel, self.loop, self.loop_options or {})
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -211,12 +201,19 @@ class ZMQKernelInterface(BaseKernelInterface):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """Create caller, and open socketes."""
+        self.backend = Backend(current_async_library())
         sig = restore_io = None
-        caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log, zmq_context=self._zmq_context)
+        caller = Caller(
+            "manual",
+            name="Shell",
+            protected=True,
+            log=self.kernel.log,
+            zmq_context=self._zmq_context,
+            loop=self.loop,
+        )
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
         start = Event()
-        self.anyio_backend = Backend(current_async_library())
         try:
             async with caller:
                 self._start_hb_iopub_shell_control_threads(start)

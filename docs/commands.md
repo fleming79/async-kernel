@@ -100,24 +100,40 @@ or, with compact notation to set a Boolean value as a Boolean flag.
     --no=quiet
     ```
 
-=== "Anyio backend options"
+=== "Loop"
 
-    In Cpython the anyio 'backend' can be specified on `kernel.interface` with
+    In Cpython the [type of loop][async_kernel.typing.Loop] can be specified on
+    [`kernel.interface.loop`][async_kernel.interface.zmq.ZMQKernelInterface] and
+    can is configurable via a dictionary on [`kernel.interface.loop_options']. Options
+    can be written as a literal python string.
 
     ```console
-    # options are 'asycio' or 'trio'
-    --interface.backend=asyncio
+    # options are 'asycio', 'trio', 'tk_trio', 'qt_trio'
+
+    --interface.loop=asyncio
+
+    # asyncio & trio event loops are started using anyio. 'backend_options'
+
+    ```console
+    # 'use_uv' is set by default.
+    # To disable.
+    "--interface.loop_options={'use_uv':False}"
     ```
 
-    The backend options used with [anyio.run][] can also be specified on the interface.
+=== "Gui event loops"
 
-    Options can be written as literal python inside string.
+    Gui event loops can run with trio running in guest mode.
 
     ```console
-    # use uv is set by default. If we had uvloop installed and wanted to disable it we could do.
-    "--interface.backend_options={'use_uv':False}"
-    or
-    "--interface.backend_options=None"
+    # tk
+    --interface.loop=tk_trio
+
+    # qt
+    --interface.loop=qt_trio
+
+    # PySide6 is default.  To use a different module do
+
+    --loop_options={'module':'PySide2'}
     ```
 
 ## Remove a kernel spec

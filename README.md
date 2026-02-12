@@ -51,7 +51,7 @@ To add a kernel spec for a `trio` backend.
 
 ```bash
 pip install trio
-async-kernel -a async-trio --interface.backend=trio
+async-kernel -a async-trio --interface.loop=trio
 ```
 
 ### Gui event loop + trio guest mode
@@ -62,11 +62,11 @@ Gui event loops are supported with trio guest mode.
 pip install trio
 
 # tk
-async-kernel -a async-tk --interface.backend=async_kernel.eventloop.tk_trio_guest.run
+async-kernel -a async-tk --interface.loop=tk_trio
 
 # qt
 pip install PySide6-Essentials
-async-kernel -a async-qt --interface.backend=async_kernel.eventloop.qt_trio_guest.run
+async-kernel -a async-qt --interface.loop=qt_trio --loop_options={'module':'PySide6'}
 ```
 
 For further detail about kernel spec customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).

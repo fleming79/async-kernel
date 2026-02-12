@@ -87,6 +87,7 @@ def run(async_fn: Callable[[], Awaitable], module: str = "PySide6", **kwargs: An
         async_fn,
         run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
         done_callback=host.done_callback,
+        **kwargs,
     )
     async_kernel.asyncshell.AsyncInteractiveShell._runtime_gui_by_thread[threading.get_ident()] = ("qt",)  # pyright: ignore[reportPrivateUsage]
     host.mainloop()

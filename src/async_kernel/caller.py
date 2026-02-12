@@ -25,10 +25,11 @@ from anyio.lowlevel import current_token
 from typing_extensions import override
 from wrapt import lazy_import
 
+import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingTracker
-from async_kernel.typing import Backend, CallerCreateOptions, CallerState, NoValue, T
+from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Loop, NoValue, T
 
 with contextlib.suppress(ImportError):
     # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
@@ -108,8 +109,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     _name: str
     _idle_time: float = 0.0
     _ident: int
-    _backend: Backend
-    _backend_options: dict[str, Any] | None
+    _loop: Loop
+    _loop_options: dict[str, Any]
     _protected = False
     _state: CallerState = CallerState.initial
     _state_reprs: ClassVar[dict] = {
@@ -142,6 +143,9 @@ class Caller(anyio.AsyncContextManagerMixin):
     iopub_url: ClassVar = "inproc://iopub"
     ""
 
+    backend: Fixed[Self, Backend] = Fixed(lambda c: c["owner"].loop.backend)
+    "The type of backend hosted in the current thread."
+
     @property
     def name(self) -> str:
         "The name of the thread when the caller was created."
@@ -153,13 +157,13 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._ident
 
     @property
-    def backend(self) -> Backend:
-        "The `anyio` backend the caller is running in."
-        return self._backend
+    def loop(self) -> Loop:
+        "The type of event loop where the backend is running."
+        return self._loop
 
     @property
-    def backend_options(self) -> dict | None:
-        return self._backend_options
+    def loop_options(self) -> dict:
+        return self._loop_options
 
     @property
     def protected(self) -> bool:
@@ -223,8 +227,8 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             **kwargs: Additional options for Caller creation, such as:
                 - name: The name to use.
-                - backend: The async backend to use.
-                - backend_options: Options for the backend.
+                - loop: The event loop to use.
+                - loop_options: Options for the event loop.
                 - protected: Whether the Caller is protected.
                 - zmq_context: ZeroMQ context.
                 - log: Logger instance.
@@ -233,11 +237,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             Self: The created or retrieved Caller instance.
 
         Raises:
-            RuntimeError: If the backend is not provided and backend can't be determined.
+            RuntimeError: If the loop is not provided and loop can't be determined.
             ValueError: If the thread and caller's name do not match.
         """
         with cls._lock:
-            name, backend = kwargs.get("name", ""), kwargs.get("backend")
+            name, loop = kwargs.get("name", ""), kwargs.get("loop")
             match modifier:
                 case "CurrentThread" | "manual":
                     ident = cls.current_ident()
@@ -254,8 +258,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if name and name != caller.name:
                     msg = f"The thread and caller's name do not match! {name=} {caller=}"
                     raise ValueError(msg)
-                if backend and backend != caller.backend:
-                    msg = f"The backend does not match! {backend=} {caller.backend=}"
+                if loop and loop != caller.loop:
+                    msg = f"The event loop does not match! {loop=} {caller.loop=}"
                     raise ValueError(msg)
                 return caller
 
@@ -263,8 +267,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst = super().__new__(cls)
             inst._resume = noop
             inst._name = name
-            inst._backend = Backend(backend or current_async_library())
-            inst._backend_options = kwargs.get("backend_options")
+            inst._loop = Loop(loop or current_async_library())
+            inst._loop_options = kwargs.get("loop_options") or {}
             inst._protected = kwargs.get("protected", False)
             inst._zmq_context = kwargs.get("zmq_context")
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
@@ -325,12 +329,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
                     threading.Thread(target=to_thread, daemon=False).start()
             else:
-                # An event loop in a new thread.
-                def run_event_loop() -> None:
-                    anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
-
                 name = self.name or "async_kernel_caller"
-                t = threading.Thread(target=run_event_loop, name=name, daemon=True)
+                args = [run_caller_in_context, self.loop, self.loop_options]
+                t = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
                 t.start()
                 self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]
 
@@ -593,20 +594,18 @@ class Caller(anyio.AsyncContextManagerMixin):
             if name := kwargs.get("name"):
                 for caller in self.children:
                     if caller.name == name:
-                        if (backend := kwargs.get("backend")) and caller.backend != backend:
-                            msg = f"Backend mismatch! {backend=} {caller.backend=}"
+                        if (loop := kwargs.get("loop")) and caller.loop != loop:
+                            msg = f"Event loop mismatch! {loop=} {caller.loop=}"
                             raise RuntimeError(msg)
                         return caller
             if "backend" not in kwargs:
-                kwargs["backend"] = self.backend
-                kwargs["backend_options"] = self.backend_options
+                kwargs["loop"] = Loop(self._loop.backend)
+                kwargs["loop_options"] = self.loop_options
             if "zmq_context" not in kwargs and self._zmq_context:
                 kwargs["zmq_context"] = self._zmq_context
-            existing = frozenset(self._instances.values())
             caller = self.__class__("NewThread", **kwargs)
-            if caller not in existing:
-                self._children.add(caller)
-                caller._parent_ref = weakref.ref(self)
+            self._children.add(caller)
+            caller._parent_ref = weakref.ref(self)
             return caller
 
     def schedule_call(

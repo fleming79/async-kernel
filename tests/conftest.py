@@ -16,7 +16,7 @@ from async_kernel import Caller
 from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
+from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Loop, Message, MsgHeader, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
@@ -82,7 +82,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
             yield kernel
     else:
         if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
-            kernel.interface.backend_options = {}
+            kernel.interface.loop_options = {}
         thread = threading.Thread(target=kernel.interface.start, name="ShellThread")
         thread.start()
         kernel.event_started.wait()
@@ -97,7 +97,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
 @pytest.fixture(scope="module")
 async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
     assert isinstance(kernel.interface, ZMQKernelInterface)
-    if kernel.interface.anyio_backend is Backend.trio:
+    if kernel.interface.backend is Backend.trio:
         pytest.skip("AsyncKernelClient needs asyncio")
     client = AsyncKernelClient()
     client.load_connection_info(kernel.get_connection_info())
@@ -122,8 +122,8 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
     """
     assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-    backend = "trio" if "trio" in kernel_name else "asyncio"
-    kwgs = {"interface.transport": transport, "interface.backend": backend}
+    loop = Loop.trio if "trio" in kernel_name else Loop.asyncio
+    kwgs = {"interface.transport": transport, "interface.loop": loop}
     command = make_argv(connection_file=connection_file, kernel_name=kernel_name, **kwgs)  # pyright: ignore[reportArgumentType]
     process = await anyio.open_process([*command, "--no-print_kernel_messages"])
     async with process:
