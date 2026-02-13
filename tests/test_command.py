@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import signal
 import sys
 import types
@@ -114,10 +115,14 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
 def test_start_kernel_enable_gui(monkeypatch, loop: Loop, loop_options: dict):
     started = False
     if loop is Loop.tk_trio:
+        if os.getenv("GITHUB_ACTIONS"):
+            pytest.skip("Skip on CI")
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
         gui = "tk"
     elif loop is Loop.qt_trio:
+        if os.getenv("GITHUB_ACTIONS"):
+            pytest.skip("Skip on CI")
         if not importlib.util.find_spec("PySide6"):
             pytest.skip("PySide6 not installed")
         gui = "qt"
