@@ -77,6 +77,19 @@ class Loop(enum.StrEnum):
             return Backend.asyncio
         return Backend.trio
 
+    @property
+    def gui_loop_support(self) -> tuple[str, ...]:
+        "Gui event loop provided by the loop"
+        match self:
+            case Loop.asyncio:
+                return ()
+            case Loop.trio:
+                return ()
+            case Loop.qt_trio:  # pragma: no cover
+                return ("qt",)  # pragma: no cover
+            case Loop.tk_trio:  # pragma: no cover
+                return ("tk",)  # pragma: no cover
+
 
 class Channel(enum.StrEnum):
     "An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."

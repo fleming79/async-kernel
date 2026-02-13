@@ -18,13 +18,10 @@
 from __future__ import annotations
 
 import collections
-import threading
 import tkinter as tk
 from typing import TYPE_CHECKING, Any
 
 import trio
-
-import async_kernel.asyncshell
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -97,5 +94,4 @@ def run(async_fn: Callable[[], Awaitable], **kwargs: Any) -> None:
         done_callback=host.done_callback,
         **kwargs,
     )
-    async_kernel.asyncshell.AsyncInteractiveShell._runtime_gui_by_thread[threading.get_ident()] = ("tk",)  # pyright: ignore[reportPrivateUsage]
     host.mainloop()
