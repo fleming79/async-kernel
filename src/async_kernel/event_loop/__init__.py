@@ -28,11 +28,11 @@ def run(func: Callable[[], CoroutineType], loop: Loop, loop_options: dict, /) ->
         case Loop.trio:
             anyio.run(func, backend="trio", backend_options=loop_options)
 
-        case Loop.tk_trio:
+        case Loop.tk_trio:  # pragma: no cover TODO: Remove once gui tests are enabled in CI
             import async_kernel.event_loop.tk_trio_guest  # noqa: PLC0415
 
             async_kernel.event_loop.tk_trio_guest.run(func, **loop_options)
-        case Loop.qt_trio:
+        case Loop.qt_trio:  # pragma: no cover TODO: Remove once gui tests are enabled in CI
             import async_kernel.event_loop.qt_trio_guest  # noqa: PLC0415
 
             async_kernel.event_loop.qt_trio_guest.run(func, **loop_options)
