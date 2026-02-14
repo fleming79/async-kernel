@@ -9,6 +9,7 @@ import types
 from typing import TYPE_CHECKING
 
 import anyio
+import matplotlib as mpl
 import pytest
 
 import async_kernel
@@ -105,21 +106,22 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
 
 @pytest.mark.skipif(bool(os.getenv("GITHUB_ACTIONS")), reason="Skip on CI")
 @pytest.mark.parametrize("backend", Backend)
-@pytest.mark.parametrize("loop", Loop)
+@pytest.mark.parametrize("loop", [*Loop, None])
 def test_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
+    mpl.use("module://matplotlib_inline.backend_inline")
     started = False
     if loop is Loop.tk:
         if os.getenv("GITHUB_ACTIONS"):
             pytest.skip("Skip on CI")
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
-        gui = "tk"
+        gui = "tkagg"
     elif loop is Loop.qt:
         if not importlib.util.find_spec("PySide6"):
             pytest.skip("PySide6 not installed")
-        gui = "qt"
+        gui = "qtagg"
     else:
-        gui = "ipympl"
+        gui = "module://matplotlib_inline.backend_inline"
 
     async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
     monkeypatch.setattr(
@@ -138,7 +140,8 @@ def test_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
 
     async def wait_exit():
         nonlocal started
-        async_kernel.Kernel().shell.enable_matplotlib(gui)
+        bg = async_kernel.Kernel().shell.enable_matplotlib()
+        assert bg == (loop, gui)
         started = True
 
     monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
