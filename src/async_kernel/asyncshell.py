@@ -552,7 +552,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     def _list_matplotlib_backends_and_gui_loops(self) -> list[str | None]:
         loop_backends = loop.matplotlib_backends if (loop := Caller().loop) else ()
-        return [*loop_backends, None, "inline", "ipympl"]
+        return [*loop_backends, "inline", "ipympl"]
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
