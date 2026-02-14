@@ -104,15 +104,15 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     assert "not found!" in out
 
 
-@pytest.mark.skipif(bool(os.getenv("GITHUB_ACTIONS")), reason="Skip on CI")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("loop", [*Loop, None])
-def test_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
+def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
+    if loop is not None and os.getenv("GITHUB_ACTIONS"):
+        pytest.skip("Skip on CI")
+
     mpl.use("module://matplotlib_inline.backend_inline")
     started = False
     if loop is Loop.tk:
-        if os.getenv("GITHUB_ACTIONS"):
-            pytest.skip("Skip on CI")
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
         gui = "tkagg"
@@ -185,4 +185,3 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path, anyio_backend):
         # Simulate a keyboard interrupt from the console.
         process.send_signal(signal.SIGINT)
     assert process.returncode == 0
-
