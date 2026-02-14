@@ -59,6 +59,13 @@ Changelog = "https://fleming79.github.io/async-kernel/latest/about/changelog/"
 [project.scripts]
 async-kernel = "async_kernel.command:command_line"
 
+[project.optional-dependencies]
+asyncio-guest = [
+    "greenlet>=1.0.0",
+    "outcome>=1.0.0",
+    "sniffio>=1.3.0",
+    "wrapt>=2.0.0",
+]
 
 [dependency-groups]
 docs = ["mkdocs-material",

@@ -81,7 +81,7 @@ Gui event loops are supported with the backend (asyncio / trio) running in guest
 backend can be specified and the backend options are passed to the corresponding run_guest_mode functions.
 
 ```bash
-pip install greenlet # required for asyncio guest mode only
+pip install async-kernel[asyncio-guest] # required for asyncio guest only
 
 # tk
 async-kernel -a async-tk-asyncio --interface.loop=tk
