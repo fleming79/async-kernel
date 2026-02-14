@@ -132,6 +132,7 @@ dependencies = [
 [package.optional-dependencies]
 asyncio-guest = [
     { name = "greenlet" },
+    { name = "outcome" },
 ]
 
 [package.dev-dependencies]
@@ -186,6 +187,7 @@ requires-dist = [
     { name = "jupyter-core", specifier = ">=5.9.1" },
     { name = "matplotlib-inline", specifier = ">0.1" },
     { name = "orjson", specifier = ">=3.10.16" },
+    { name = "outcome", marker = "extra == 'asyncio-guest'" },
     { name = "pyzmq", marker = "sys_platform != 'emscripten'", specifier = ">=27.0" },
     { name = "traitlets", specifier = ">=5.14" },
     { name = "typing-extensions", specifier = ">=4.14" },
