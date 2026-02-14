@@ -176,15 +176,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._loop_options
 
     @property
-    def run_settings(self) -> RunSettings:
-        return RunSettings(
-            backend=self.backend,
-            loop=self.loop,
-            backend_options=self.backend_options,
-            loop_options=self.loop_options,
-        )
-
-    @property
     def protected(self) -> bool:
         "Returns `True` if the caller is protected from stopping."
         return self._protected
@@ -351,7 +342,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                     threading.Thread(target=to_thread, daemon=False).start()
             else:
                 name = self.name or "async_kernel_caller"
-                args = [run_caller_in_context, (), self.run_settings]
+                settings = RunSettings(
+                    backend=self.backend,
+                    loop=self.loop,
+                    backend_options=self.backend_options,
+                    loop_options=self.loop_options,
+                )
+                args = [run_caller_in_context, (), settings]
                 t = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
                 t.start()
                 self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]

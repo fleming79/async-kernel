@@ -145,15 +145,6 @@ class ZMQKernelInterface(BaseKernelInterface):
                 self.backend_options["use_uvloop"] = True
             return Backend.asyncio
 
-    @property
-    def run_settings(self) -> RunSettings:
-        return RunSettings(
-            backend=self.backend,
-            loop=self.loop,
-            backend_options=self.backend_options.copy(),
-            loop_options=self.loop_options.copy(),
-        )
-
     def start(self):
         """
         Start the kernel blocking until the kernel stops.
@@ -169,7 +160,13 @@ class ZMQKernelInterface(BaseKernelInterface):
             async with self.kernel:
                 await self.wait_exit
 
-        async_kernel.event_loop.run(run_kernel, (), self.run_settings)
+        settings = RunSettings(
+            backend=self.backend,
+            loop=self.loop,
+            backend_options=self.backend_options,
+            loop_options=self.loop_options,
+        )
+        async_kernel.event_loop.run(run_kernel, (), settings)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
