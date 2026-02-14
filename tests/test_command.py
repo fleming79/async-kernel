@@ -121,7 +121,7 @@ def test_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
             pytest.skip("PySide6 not installed")
         gui = "qtagg"
     else:
-        gui = "module://matplotlib_inline.backend_inline"
+        gui = "inline"
 
     async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
     monkeypatch.setattr(
@@ -185,3 +185,4 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path, anyio_backend):
         # Simulate a keyboard interrupt from the console.
         process.send_signal(signal.SIGINT)
     assert process.returncode == 0
+
