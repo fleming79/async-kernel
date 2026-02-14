@@ -17,6 +17,6 @@ class TestHost:
         async_kernel.event_loop._run.get_host = Host  # pyright: ignore[reportAttributeAccessIssue, reportPrivateUsage]
         try:
             with pytest.raises(RuntimeError, match="mainloop"):
-                async_kernel.event_loop.run(anyio.sleep, (0,), {"loop": "_run"})  # pyright: ignore[reportArgumentType]
+                async_kernel.event_loop.run(anyio.sleep, (0,), {"loop": "_run", "backend": "trio"})  # pyright: ignore[reportArgumentType]
         finally:
             del async_kernel.event_loop._run.get_host  # pyright: ignore[reportAttributeAccessIssue, reportPrivateUsage]
