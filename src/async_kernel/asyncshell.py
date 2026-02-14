@@ -513,7 +513,7 @@ class AsyncInteractiveShell(InteractiveShell):
         self.register_magics(KernelMagics)
 
     @override
-    def enable_matplotlib(self, gui=None):
+    def enable_matplotlib(self, gui: str | None = None) -> tuple[str | Any | None, Any | str]:
         """
         Enable interactive matplotlib and inline figure support.
 
