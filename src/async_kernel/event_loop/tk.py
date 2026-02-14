@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import override
 
-from async_kernel.typing import Host
+from ._run import Host
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -81,11 +81,13 @@ class TkHost(Host):
         """
         End the Tk app.
         """
+        super().done_callback(outcome)
         self.root.destroy()
 
     @override
     def mainloop(self):
         self.root.mainloop()
+        return super().mainloop()
 
 
 def get_host() -> Host:

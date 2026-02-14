@@ -18,17 +18,18 @@
 
 from __future__ import annotations
 
+import threading
 from typing import TYPE_CHECKING, Any, Literal
 
 from aiologic.meta import import_from
 from typing_extensions import override
 
-from async_kernel.typing import Host
+from ._run import Host
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from PySide6 import QtCore  # noqa: TC004
+    from PySide6 import QtCore, QtWidgets  # noqa: TC004
 
 
 def get_host(module: str = "PySide6") -> Host:
@@ -39,7 +40,12 @@ def get_host(module: str = "PySide6") -> Host:
         module: https://matplotlib.org/stable/api/backend_qt_api.html#qt-bindings
         **kwargs: Ignored
     """
+    if threading.current_thread() is not threading.main_thread():
+        msg = "QT can only be run in main thread!"
+        raise RuntimeError(msg)
+
     globals()["QtCore"] = import_from(module, "QtCore")
+    globals()["QtWidgets"] = import_from(module, "QtWidgets")
 
     # class Reenter(QtCore.QObject):
     #     run = QtCore.Signal(object)
@@ -59,7 +65,7 @@ def get_host(module: str = "PySide6") -> Host:
             return False
 
     class QtHost(Host):
-        def __init__(self, app: QtCore.QCoreApplication) -> None:
+        def __init__(self, app: QtWidgets.QApplication) -> None:
             self.app = app
             self.reenter = Reenter()
             # or if using Signal
@@ -80,14 +86,16 @@ def get_host(module: str = "PySide6") -> Host:
 
         @override
         def done_callback(self, outcome) -> None:
+            super().done_callback(outcome)
             self.app.quit()
 
         @override
         def mainloop(self) -> None:
             self.app.exec()
+            return super().mainloop()
 
-    app = QtCore.QCoreApplication.instance()
+    app = QtWidgets.QApplication.instance()
     if app is None:
-        app = QtCore.QCoreApplication([])
-        # app.setQuitOnLastWindowClosed(False)  # prevent app sudden death
-    return QtHost(app)
+        app = QtWidgets.QApplication([])
+        app.setQuitOnLastWindowClosed(False)  # prevent app sudden death
+    return QtHost(app)  # pyright: ignore[reportArgumentType]

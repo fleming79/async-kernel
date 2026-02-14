@@ -9,16 +9,15 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
+import IPython.core.pylabtools
 import IPython.core.release
 import orjson
-from IPython.core import magic_arguments
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
 from IPython.core.interactiveshell import InteractiveShell, InteractiveShellABC
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_magic, magics_class
-from IPython.core.magics.pylab import magic_gui_arg
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
@@ -169,7 +168,6 @@ class AsyncInteractiveShell(InteractiveShell):
     Notable differences:
         - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
-        - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
         - `user_ns` and `user_global_ns` are same dictionary which is a fixed `LastUpdatedDict`.
 
@@ -529,7 +527,7 @@ class AsyncInteractiveShell(InteractiveShell):
             gui:
                 If given, dictates the choice of matplotlib GUI backend to use
                 (should be one of IPython's supported backends, 'qt', 'osx', 'tk',
-                'gtk', 'wx' or 'inline'), otherwise we use the default chosen by
+                'gtk', 'wx' or 'inline', 'ipympl'), otherwise we use the default chosen by
                 matplotlib (as dictated by the matplotlib build-time options plus the
                 user's matplotlibrc configuration file).  Note that not all backends
                 make sense in all contexts, for example a terminal ipython can't
@@ -538,8 +536,9 @@ class AsyncInteractiveShell(InteractiveShell):
         import matplotlib_inline.backend_inline  # noqa: PLC0415
         from IPython.core import pylabtools as pt  # noqa: PLC0415
 
+        backends = self._list_matplotlib_backends_and_gui_loops()
+        gui = gui or backends[0]  # Use the
         gui, backend = pt.find_gui_and_backend(gui, self.pylab_gui_select)
-        self.enable_gui(gui)
         pt.activate_matplotlib(backend)
 
         matplotlib_inline.backend_inline.configure_inline_support(self, backend)
@@ -548,28 +547,12 @@ class AsyncInteractiveShell(InteractiveShell):
         # plot updates into account
         self.magics_manager.registry["ExecutionMagics"].default_runner = pt.mpl_runner(self.safe_execfile)
 
+        IPython.core.pylabtools.activate_matplotlib(backend)
         return gui, backend
 
-    @override
-    def enable_gui(self, gui=None) -> None:
-        """
-        Enable a given gui.
-
-        Supported guis:
-            - [x] inline
-            - [x] ipympl
-            - [x] tk (trio guest mode)
-            - [x] qt (trio guest mode)
-        """
-        runtime_gui = ()
-        if (loop := Caller().loop) and gui in (runtime_gui := loop.matplotlib_backends):
-            import matplotlib.pyplot as plt  # noqa: PLC0415 # pragma: no cover
-
-            plt.ion()  # pragma: no cover
-        else:
-            if gui not in (supported := [None, "inline", "ipympl", *runtime_gui]):
-                msg = f"The gui {gui!r} is not supported by this kernel. The currently supported gui options are: {supported}."
-                raise NotImplementedError(msg)
+    def _list_matplotlib_backends_and_gui_loops(self) -> list[str | None]:
+        loop_backends = loop.matplotlib_backends if (loop := Caller().loop) else ()
+        return [*loop_backends, None, "inline", "ipympl"]
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
@@ -711,6 +694,8 @@ class SubshellManager:
 class KernelMagics(Magics):
     """Extra magics for async kernel."""
 
+    shell: AsyncInteractiveShell  # pyright: ignore[reportIncompatibleVariableOverride]
+
     @line_magic
     def connect_info(self, _) -> None:
         """Print information for connecting other clients to this kernel."""
@@ -761,13 +746,6 @@ class KernelMagics(Magics):
             f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
         )
         print(f"Current shell:\t{kernel.shell}\n\n{subshell_list}")
-
-    @line_magic
-    @magic_arguments.magic_arguments()
-    @magic_arguments.argument("-l", "--list", action="store_true", help="Show available matplotlib backends")
-    @magic_gui_arg  # pyright: ignore[reportUntypedFunctionDecorator]
-    def enable_matplotlib(self, gui=None):
-        pass
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)

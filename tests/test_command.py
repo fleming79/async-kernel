@@ -106,7 +106,7 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
 @pytest.mark.skipif(bool(os.getenv("GITHUB_ACTIONS")), reason="Skip on CI")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("loop", Loop)
-def test_start_kernel_enable_gui(monkeypatch, backend, loop):
+def test_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
     started = False
     if loop is Loop.tk:
         if os.getenv("GITHUB_ACTIONS"):
@@ -138,7 +138,7 @@ def test_start_kernel_enable_gui(monkeypatch, backend, loop):
 
     async def wait_exit():
         nonlocal started
-        async_kernel.Kernel().shell.enable_gui(gui)
+        async_kernel.Kernel().shell.enable_matplotlib(gui)
         started = True
 
     monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())

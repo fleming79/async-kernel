@@ -437,9 +437,7 @@ async def test_shell_required_properites(kernel: Kernel):
     # used by ipython AutoMagicChecker via is_shadowed (requires 'builitin')
     assert set(kernel.shell.ns_table) == {"user_global", "user_local", "builtin"}
     # U
-    kernel.shell.enable_gui()
-    with pytest.raises(NotImplementedError):
-        kernel.shell.enable_gui("any")
+    kernel.shell.enable_matplotlib()
 
 
 async def test_shell_can_set_namespace(kernel: Kernel):

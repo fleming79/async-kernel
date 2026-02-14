@@ -80,6 +80,8 @@ The backend options correspond to those that can be used with [anyio.run][].
 Gui event loops are supported with the backend (asyncio / trio) running in guest mode. The
 backend can be specified and the backend options are passed to the corresponding run_guest_mode functions.
 
+#### Asyncio guest
+
 ```bash
 pip install async-kernel[asyncio-guest] # required for asyncio guest only
 
@@ -89,6 +91,19 @@ async-kernel -a async-tk-asyncio --interface.loop=tk
 # qt
 pip install PySide6-Essentials
 async-kernel -a async-qt-asyncio --interface.loop=qt
+```
+
+#### Trio guest
+
+```bash
+pip install trio
+
+# tk
+async-kernel -a async-tk-trio --interface.loop=tk --interface.backend=trio
+
+# qt
+pip install PySide6-Essentials
+async-kernel -a async-qt-trio --interface.loop=qt --interface.backend=trio
 ```
 
 For further detail about kernel spec customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).

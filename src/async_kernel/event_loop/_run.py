@@ -1,18 +1,20 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Generic
 
 import anyio
 
 from async_kernel.common import import_item
-from async_kernel.typing import Backend, Host, RunSettings
+from async_kernel.typing import Backend, RunSettings, T
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
+    from collections.abc import Callable
     from types import CoroutineType
 
+    from outcome import Outcome
 
-def run(func: Callable[[], CoroutineType], args: tuple, settings: RunSettings, /) -> None:
+
+def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
     """
     Run func to completion using specified backend / event loop.
 
@@ -24,45 +26,42 @@ def run(func: Callable[[], CoroutineType], args: tuple, settings: RunSettings, /
         settings: Specifics on the backend and optional gui loop with the settings.
     """
     backend = Backend(settings.get("backend", "asyncio"))
+    backend_options = settings.get("backend_options") or {}
     if loop := settings.get("loop"):
-        # A loop with the backend running as a guest
+        # A loop with the backend running as a guest.
         get_host: Callable[..., Host] = import_item(f"async_kernel.event_loop.{loop}.get_host")
         host: Host = get_host(**settings.get("loop_options") or {})
-        return run_with_host(host, func, args, backend, settings.get("backend_options") or {})
+        if backend is Backend.asyncio:
+            from .asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
+        else:
+            from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
+        sgr(
+            func,
+            *args,
+            run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
+            run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe,
+            done_callback=host.done_callback,
+            **backend_options,
+        )
+        return host.mainloop()
     # backend only
-    return anyio.run(func, *args, backend=str(backend), backend_options=settings.get("backend_options"))
+    return anyio.run(func, *args, backend=str(backend), backend_options=backend_options)
 
 
-def run_with_host(
-    host: Host,
-    async_fn: Callable[[], Awaitable],
-    args: tuple,
-    backend: Backend,
-    backend_options: dict,
-) -> None:
-    "Run async_fn in the host loop and the backend running as guest."
+class Host(Generic[T]):
+    """
+    A template non-async event loops to work with [run][].
+    """
 
-    match backend:
-        case Backend.asyncio:
-            from .asyncio_guest import start_guest_run  # noqa: PLC0415
+    _outcome: Outcome[T] | None = None
 
-            start_guest_run(
-                async_fn,
-                *args,
-                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
-                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe,
-                done_callback=host.done_callback,
-                **backend_options,
-            )
-        case Backend.trio:
-            import trio.lowlevel  # noqa: PLC0415
+    def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None: ...
+    def run_sync_soon_not_threadsafe(self, fn: Callable[[], Any]) -> None: ...
+    def done_callback(self, outcome: Outcome) -> None:
+        self._outcome = outcome
 
-            trio.lowlevel.start_guest_run(
-                async_fn,
-                *args,
-                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
-                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe,
-                done_callback=host.done_callback,
-                **backend_options,
-            )
-    host.mainloop()
+    def mainloop(self) -> T:
+        if not self._outcome:
+            msg = "The mainloop should only exit once done_callback has been called!"
+            raise RuntimeError(msg)
+        return self._outcome.unwrap()  # pragma: no cover

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Protocol, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, TypedDict, TypeVar
 
 from typing_extensions import Sentinel, override
 
@@ -67,10 +67,10 @@ class Loop(enum.StrEnum):
     def matplotlib_backends(self) -> tuple[str, ...]:
         "The matplotlib backends provided by the loop."
         match self:
-            case Loop.qt:  # pragma: no cover
-                return ("qt",)  # pragma: no cover
-            case Loop.tk:  # pragma: no cover
-                return ("tk",)  # pragma: no cover
+            case Loop.qt:
+                return ("qt",)
+            case Loop.tk:
+                return ("tk",)
 
 
 class Channel(enum.StrEnum):
@@ -435,14 +435,3 @@ HandlerType = Callable[[Job], Awaitable[Content | None]]
 """
 A TypeAlias for the handler of message requests.
 """
-
-
-class Host(Protocol):
-    """
-    A protocol defining an event loop which provides methods required for [trio.lowlevel.start_guest_run][].
-    """
-
-    def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None: ...
-    def run_sync_soon_not_threadsafe(self, fn: Callable[[], Any]) -> None: ...
-    def done_callback(self, outcome: Any) -> None: ...
-    def mainloop(self) -> None: ...
