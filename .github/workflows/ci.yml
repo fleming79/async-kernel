@@ -83,12 +83,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: fleming79/async-kernel
-
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
 
   docs:
     needs: type-checking
