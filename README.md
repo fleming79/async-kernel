@@ -30,8 +30,8 @@ Messages are processed fairly whilst preventing asynchronous deadlocks by using 
 - GUI event loops
     - [x] inline
     - [x] ipympl
-    - [x] tk + trio backend (guest mode)
-    - [x] qt + trio backend (guest mode)
+    - [x] tk (backend running in guest mode)
+    - [x] qt (backend running in guest mode)
 
 **[Documentation](https://fleming79.github.io/async-kernel/)**
 
@@ -41,32 +41,54 @@ Messages are processed fairly whilst preventing asynchronous deadlocks by using 
 pip install async-kernel
 ```
 
-## Asyncio
+## Kernel specs
 
-An asyncio kernel based backend with the name 'async' is installed when the kernel is installed.
+A kernel spec with the name 'async' is added when async kernel is installed.
 
-### Trio backend
+Kernel specs can be added/removed via the command line.
+
+The kernel is configured via the interface with the options:
+
+- [`interface.backend`](#backends)
+- `interface.backend_options`
+- `interface.loop`
+- `interface.loop_options`
+
+### Backends
+
+The backend defines the asynchronous library provided in the thread in which it is running.
+There are two flavours of backends,
+
+- `'asyncio'`
+- `'trio'` requires trio
+
+### Example - trio backend
 
 To add a kernel spec for a `trio` backend.
 
 ```bash
 pip install trio
-async-kernel -a async-trio --interface.loop=trio
+async-kernel -a async-trio --interface.backend=trio
 ```
 
-### Gui event loop + trio guest mode
+## Backend options
 
-Gui event loops are supported with trio guest mode.
+The backend options correspond to those that can be used with [anyio.run][].
+
+### Gui event loop
+
+Gui event loops are supported with the backend (asyncio / trio) running in guest mode. The
+backend can be specified and the backend options are passed to the corresponding run_guest_mode functions.
 
 ```bash
-pip install trio
+pip install greenlet # required for asyncio guest mode only
 
 # tk
-async-kernel -a async-tk --interface.loop=tk_trio
+async-kernel -a async-tk-asyncio --interface.loop=tk
 
 # qt
 pip install PySide6-Essentials
-async-kernel -a async-qt --interface.loop=qt_trio --loop_options={'module':'PySide6'}
+async-kernel -a async-qt-asyncio --interface.loop=qt
 ```
 
 For further detail about kernel spec customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).

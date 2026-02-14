@@ -11,12 +11,14 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 import anyio
 import IPython.core.release
 import orjson
+from IPython.core import magic_arguments
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
 from IPython.core.interactiveshell import InteractiveShell, InteractiveShellABC
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_magic, magics_class
+from IPython.core.magics.pylab import magic_gui_arg
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
@@ -513,6 +515,42 @@ class AsyncInteractiveShell(InteractiveShell):
         self.register_magics(KernelMagics)
 
     @override
+    def enable_matplotlib(self, gui=None):
+        """
+        Enable interactive matplotlib and inline figure support.
+
+        This takes the following steps:
+
+        1. select the appropriate matplotlib backend
+        2. set up matplotlib for interactive use with that backend
+        3. configure formatters for inline figure display
+
+        Args:
+            gui:
+                If given, dictates the choice of matplotlib GUI backend to use
+                (should be one of IPython's supported backends, 'qt', 'osx', 'tk',
+                'gtk', 'wx' or 'inline'), otherwise we use the default chosen by
+                matplotlib (as dictated by the matplotlib build-time options plus the
+                user's matplotlibrc configuration file).  Note that not all backends
+                make sense in all contexts, for example a terminal ipython can't
+                display figures inline.
+        """
+        import matplotlib_inline.backend_inline  # noqa: PLC0415
+        from IPython.core import pylabtools as pt  # noqa: PLC0415
+
+        gui, backend = pt.find_gui_and_backend(gui, self.pylab_gui_select)
+        self.enable_gui(gui)
+        pt.activate_matplotlib(backend)
+
+        matplotlib_inline.backend_inline.configure_inline_support(self, backend)
+
+        # Now we must activate the gui pylab wants to use, and fix %run to take
+        # plot updates into account
+        self.magics_manager.registry["ExecutionMagics"].default_runner = pt.mpl_runner(self.safe_execfile)
+
+        return gui, backend
+
+    @override
     def enable_gui(self, gui=None) -> None:
         """
         Enable a given gui.
@@ -523,8 +561,8 @@ class AsyncInteractiveShell(InteractiveShell):
             - [x] tk (trio guest mode)
             - [x] qt (trio guest mode)
         """
-
-        if gui in (runtime_gui := Caller().loop.gui_loop_support):
+        runtime_gui = ()
+        if (loop := Caller().loop) and gui in (runtime_gui := loop.matplotlib_backends):
             import matplotlib.pyplot as plt  # noqa: PLC0415 # pragma: no cover
 
             plt.ion()  # pragma: no cover
@@ -723,6 +761,13 @@ class KernelMagics(Magics):
             f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
         )
         print(f"Current shell:\t{kernel.shell}\n\n{subshell_list}")
+
+    @line_magic
+    @magic_arguments.magic_arguments()
+    @magic_arguments.argument("-l", "--list", action="store_true", help="Show available matplotlib backends")
+    @magic_gui_arg  # pyright: ignore[reportUntypedFunctionDecorator]
+    def enable_matplotlib(self, gui=None):
+        pass
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)

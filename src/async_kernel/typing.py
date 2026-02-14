@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, NotRequired, ParamSpec, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Protocol, TypedDict, TypeVar
 
 from typing_extensions import Sentinel, override
 
@@ -57,37 +57,19 @@ class Backend(enum.StrEnum):
 class Loop(enum.StrEnum):
     "An enum of event loop names."
 
-    asyncio = "asyncio"
-    "An asyncio style event loop."
-
-    trio = "trio"
-    "A trio style event loop."
-
-    tk_trio = "tk_trio"
+    tk = "tk"
     "A tk event loop hosting a trio guest."
 
-    qt_trio = "qt_trio"
+    qt = "qt"
     "A qt event loop hosting a trio guest."
 
     @property
-    def backend(self) -> Backend:
-        "The type of backend provided by the event loop."
-
-        if self is Loop.asyncio:
-            return Backend.asyncio
-        return Backend.trio
-
-    @property
-    def gui_loop_support(self) -> tuple[str, ...]:
-        "Gui event loop provided by the loop"
+    def matplotlib_backends(self) -> tuple[str, ...]:
+        "The matplotlib backends provided by the loop."
         match self:
-            case Loop.asyncio:
-                return ()
-            case Loop.trio:
-                return ()
-            case Loop.qt_trio:  # pragma: no cover
+            case Loop.qt:  # pragma: no cover
                 return ("qt",)  # pragma: no cover
-            case Loop.tk_trio:  # pragma: no cover
+            case Loop.tk:  # pragma: no cover
                 return ("tk",)  # pragma: no cover
 
 
@@ -404,7 +386,21 @@ class FixedCreated(TypedDict, Generic[S, T]):
     ""
 
 
-class CallerCreateOptions(TypedDict):
+class RunSettings(TypedDict):
+    backend: NotRequired[Backend | Literal["asyncio", "trio"]]
+    "The backend to use for the caller."
+
+    backend_options: NotRequired[dict | None]
+    "The backend options to specify for [anyio.run][] (or `run_guest_mode` when a loop is specified)."
+
+    loop: NotRequired[Loop | None]
+    "The type of eventloop where the backend will run."
+
+    "Options to use when calling [async_kernel.eventloop.run][]."
+    loop_options: NotRequired[dict | None]
+
+
+class CallerCreateOptions(RunSettings):
     "Options to use when creating an instance of a [Caller][async_kernel.caller.Caller]."
 
     name: NotRequired[str]
@@ -412,12 +408,6 @@ class CallerCreateOptions(TypedDict):
 
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use for the caller."
-
-    loop: NotRequired[Loop]
-    "The type of eventloop where the backend will run."
-
-    "Options to use when calling [async_kernel.eventloop.run][]."
-    loop_options: NotRequired[dict]
 
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]
@@ -445,3 +435,14 @@ HandlerType = Callable[[Job], Awaitable[Content | None]]
 """
 A TypeAlias for the handler of message requests.
 """
+
+
+class Host(Protocol):
+    """
+    A protocol defining an event loop which provides methods required for [trio.lowlevel.start_guest_run][].
+    """
+
+    def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None: ...
+    def run_sync_soon_not_threadsafe(self, fn: Callable[[], Any]) -> None: ...
+    def done_callback(self, outcome: Any) -> None: ...
+    def mainloop(self) -> None: ...

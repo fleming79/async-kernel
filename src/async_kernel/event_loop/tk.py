@@ -21,13 +21,15 @@ import collections
 import tkinter as tk
 from typing import TYPE_CHECKING, Any
 
-import trio
+from typing_extensions import override
+
+from async_kernel.typing import Host
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
+    from collections.abc import Callable
 
 
-class TkHost:
+class TkHost(Host):
     def __init__(self, root) -> None:
         self.root = root
         self._tk_func_name = root.register(self._tk_func)
@@ -36,7 +38,8 @@ class TkHost:
     def _tk_func(self) -> None:
         self._q.popleft()()
 
-    def run_sync_soon_threadsafe(self, func):
+    @override
+    def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None:
         """
         Use Tcl "after" command to schedule a function call
 
@@ -52,10 +55,11 @@ class TkHost:
         is used to send thread safe signals between tcl interpreters.
         """
         # self.root.after_idle(lambda:self.root.after(0, func)) # does a fairly intensive wrapping to each func
-        self._q.append(func)
+        self._q.append(fn)
         self.root.call("after", "idle", self._tk_func_name)
 
-    def run_sync_soon_not_threadsafe(self, func) -> None:
+    @override
+    def run_sync_soon_not_threadsafe(self, fn) -> None:
         """
         Use Tcl "after" command to schedule a function call from the main thread
 
@@ -65,33 +69,26 @@ class TkHost:
         The incantation `"after idle after 0" <https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061>`_ avoids blocking the normal event queue when
         faced with an unending stream of tasks, for example "while True: await trio.sleep(0)".
         """
-        self._q.append(func)
+        self._q.append(fn)
         self.root.call("after", "idle", "after", 0, self._tk_func_name)
         # Not sure if this is actually an optimization because Tcl parses this eval string fresh each time.
         # However it's definitely thread unsafe because the string is fed directly into the Tcl interpreter
         # from the current Python thread
         # self.root.eval(f'after idle after 0 {self._tk_func_name}')
 
+    @override
     def done_callback(self, outcome) -> None:
         """
         End the Tk app.
         """
         self.root.destroy()
 
+    @override
     def mainloop(self):
         self.root.mainloop()
 
 
-def run(async_fn: Callable[[], Awaitable], **kwargs: Any) -> None:
+def get_host() -> Host:
     root = tk.Tk()
     root.withdraw()
-    host = TkHost(root)
-
-    trio.lowlevel.start_guest_run(
-        async_fn,
-        run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
-        run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe,
-        done_callback=host.done_callback,
-        **kwargs,
-    )
-    host.mainloop()
+    return TkHost(root)

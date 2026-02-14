@@ -59,6 +59,7 @@ Changelog = "https://fleming79.github.io/async-kernel/latest/about/changelog/"
 [project.scripts]
 async-kernel = "async_kernel.command:command_line"
 
+
 [dependency-groups]
 docs = ["mkdocs-material",
     "mike",
@@ -84,11 +85,12 @@ uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and impl
 ]    
 dev = [
   "PySide6-Essentials; implementation_name == 'cpython'",
-    "matplotlib",
-    "debugpy",
-    "ipykernel; implementation_name == 'cpython'",
-     {include-group = "uvloop"},
-    {include-group = "test"}
+  "matplotlib",
+  "debugpy",
+  "ipykernel; implementation_name == 'cpython'",
+  "greenlet>=3.3.1",
+  {include-group = "uvloop"},
+  {include-group = "test"},
 ]
 
 [tool.hatch.version]
@@ -136,13 +138,13 @@ patch = ['subprocess']
 parallel = true
 relative_files = true
 source = ["async_kernel"]
-omit = ["tests/*", "hatch_build.py", '_version.py', "tk_trio_guest.py", "qt_trio_guest.py"]
+omit = ["tests/*", "hatch_build.py", '_version.py', "tk.py", "qt.py", "asyncio_guest.py"]
 
 [tool.ruff]
 required-version = ">=0.12.8"
 line-length = 120
 extend-exclude = [
-  "_version.py"
+  "_version.py", "**/asyncio_guest.py"
 ]
 
 [tool.ruff.lint]
@@ -220,7 +222,7 @@ allow-direct-references = true
 
 [tool.basedpyright]
 include = ["src/**", "tests/**"]
-ignore = ["_version.py"]
+ignore = ["_version.py", "**/asyncio_guest.py"]
 reportMissingParameterType = false
 reportExplicitAny = false
 reportUnknownParameterType = false

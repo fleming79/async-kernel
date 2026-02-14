@@ -34,7 +34,7 @@ from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Backend, Channel, Content, Job, Loop, Message, MsgHeader, MsgType, NoValue
+from async_kernel.typing import Backend, Channel, Content, Job, Loop, Message, MsgHeader, MsgType, NoValue, RunSettings
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -125,22 +125,34 @@ class ZMQKernelInterface(BaseKernelInterface):
     )
     "Transport for sockets."
 
-    loop: TraitType[Loop, Loop] = UseEnum(Loop)
-    "The event loop where the kernel will run."
+    loop: TraitType[Loop | None, Loop | None] = UseEnum(Loop, default_value=None, allow_none=True)
+    "The name of the loop if one is used."
 
     loop_options = Dict(allow_none=True)
-    "The options to use when starting the event loop."
+    "The options for starting the loop."
 
-    @default("loop")
-    def _default_loop(self) -> Loop:
+    backend_options = Dict(allow_none=True)
+    "The options for starting the backend."
+
+    @default("backend")
+    def _default_backend(self):
         try:
-            return Loop(current_async_library())
+            return Backend(current_async_library())
         except AsyncLibraryNotFoundError:
             if (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")) and not self.trait_has_value(
-                "loop_options"
+                "backend_options"
             ):
-                self.loop_options["use_uvloop"] = True
-            return Loop.asyncio
+                self.backend_options["use_uvloop"] = True
+            return Backend.asyncio
+
+    @property
+    def run_settings(self) -> RunSettings:
+        return RunSettings(
+            backend=self.backend,
+            loop=self.loop,
+            backend_options=self.backend_options.copy(),
+            loop_options=self.loop_options.copy(),
+        )
 
     def start(self):
         """
@@ -157,7 +169,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             async with self.kernel:
                 await self.wait_exit
 
-        async_kernel.event_loop.run(run_kernel, self.loop, self.loop_options or {})
+        async_kernel.event_loop.run(run_kernel, (), self.run_settings)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:

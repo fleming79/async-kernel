@@ -17,7 +17,7 @@ from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
-from async_kernel.typing import Backend, Loop
+from async_kernel.typing import Backend
 
 anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
@@ -48,9 +48,9 @@ class TestCaller:
             assert c1 in caller.children
             assert len(caller.children) == 2
             assert caller.get(name="c1") is c1
-            wrong_eventloop = Loop(next(b for b in Backend if b != anyio_backend))
-            with pytest.raises(RuntimeError, match="Event loop mismatch!"):
-                caller.get(name="c1", loop=wrong_eventloop)
+            wrong_backend = next(b for b in Backend if b != anyio_backend)
+            with pytest.raises(RuntimeError, match="Backend mismatch!"):
+                caller.get(name="c1", backend=wrong_backend)
             # A child's child
             c2 = c1.get(name="c2")
             assert c2 in c1.children
@@ -91,9 +91,9 @@ class TestCaller:
         thread.start()
         thread.join()
 
-    def test_no_loop(self, anyio_backend):
+    def test_no_event_loop(self, anyio_backend: Backend):
         assert current_async_library(failsafe=True) is None
-        caller = Caller("NewThread", loop=Loop(anyio_backend))
+        caller = Caller("NewThread", backend=anyio_backend)
         assert caller.ident != threading.get_ident()
         assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
         caller.stop()
@@ -171,8 +171,8 @@ class TestCaller:
     async def test_usage_example(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
             child_1 = caller.get()
-            child_2 = caller.get(name="asyncio backend", loop=Loop.asyncio)
-            child_3 = caller.get(name="trio backend", loop=Loop.trio)
+            child_2 = caller.get(name="asyncio backend", backend="asyncio")
+            child_3 = caller.get(name="trio backend", backend="trio")
             assert caller.children == {child_1, child_2, child_3}
         assert not caller.children
 
@@ -428,8 +428,8 @@ class TestCaller:
 
     async def test_backend_mismatch(self, caller: Caller):
         wrong_backend = next(b for b in Backend if b != caller.backend)
-        with pytest.raises(ValueError, match="The event loop does not match!"):
-            Caller(loop=Loop(wrong_backend))
+        with pytest.raises(ValueError, match="The backend does not match!"):
+            Caller(backend=wrong_backend)
 
     async def test_prevent_multi_entry(self, anyio_backend: Backend):
         async with Caller("manual") as caller:

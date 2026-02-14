@@ -18,19 +18,20 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
-import trio
 from aiologic.meta import import_from
 from typing_extensions import override
 
+from async_kernel.typing import Host
+
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
+    from collections.abc import Callable
 
-    from PySide6 import QtCore, QtWidgets  # noqa: TC004
+    from PySide6 import QtCore  # noqa: TC004
 
 
-def run(async_fn: Callable[[], Awaitable], module: str = "PySide6", **kwargs: Any) -> None:
+def get_host(module: str = "PySide6") -> Host:
     """
     Run an async function with qt event loop using trio guest mode.
 
@@ -39,7 +40,6 @@ def run(async_fn: Callable[[], Awaitable], module: str = "PySide6", **kwargs: An
         **kwargs: Ignored
     """
     globals()["QtCore"] = import_from(module, "QtCore")
-    globals()["QtWidgets"] = import_from(module, "QtWidgets")
 
     # class Reenter(QtCore.QObject):
     #     run = QtCore.Signal(object)
@@ -54,37 +54,40 @@ def run(async_fn: Callable[[], Awaitable], module: str = "PySide6", **kwargs: An
 
     class Reenter(QtCore.QObject):
         @override
-        def event(self, event: ReenterEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
+        def event(self, event: ReenterEvent) -> Literal[False]:  # pyright: ignore[reportIncompatibleMethodOverride]
             event.fn()
             return False
 
-    class QtHost:
-        def __init__(self, app):
+    class QtHost(Host):
+        def __init__(self, app: QtCore.QCoreApplication) -> None:
             self.app = app
             self.reenter = Reenter()
             # or if using Signal
             # self.reenter.run.connect(lambda fn: fn(), QtCore.Qt.QueuedConnection)
             # self.run_sync_soon_threadsafe = self.reenter.run.emit
 
-        def run_sync_soon_threadsafe(self, fn):
+        @override
+        def run_sync_soon_threadsafe(self, fn) -> None:
             event = ReenterEvent(REENTER_EVENT_TYPE)
             event.fn = fn
             self.app.postEvent(self.reenter, event)
 
-        def done_callback(self, outcome):
+        @override
+        def run_sync_soon_not_threadsafe(self, fn) -> None:
+            event = ReenterEvent(REENTER_EVENT_TYPE)
+            event.fn = fn
+            self.app.postEvent(self.reenter, event)
+
+        @override
+        def done_callback(self, outcome) -> None:
             self.app.quit()
 
-        def mainloop(self):
+        @override
+        def mainloop(self) -> None:
             self.app.exec()
 
-    app = QtWidgets.QApplication([])
-    app.setQuitOnLastWindowClosed(False)  # prevent app sudden death
-    host = QtHost(app)
-
-    trio.lowlevel.start_guest_run(
-        async_fn,
-        run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
-        done_callback=host.done_callback,
-        **kwargs,
-    )
-    host.mainloop()
+    app = QtCore.QCoreApplication.instance()
+    if app is None:
+        app = QtCore.QCoreApplication([])
+        # app.setQuitOnLastWindowClosed(False)  # prevent app sudden death
+    return QtHost(app)

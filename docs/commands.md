@@ -108,7 +108,7 @@ or, with compact notation to set a Boolean value as a Boolean flag.
     can be written as a literal python string.
 
     ```console
-    # options are 'asycio', 'trio', 'tk_trio', 'qt_trio'
+    # options are 'asycio', 'trio', 'tk', 'qt'
 
     --interface.loop=asyncio
 
@@ -126,10 +126,10 @@ or, with compact notation to set a Boolean value as a Boolean flag.
 
     ```console
     # tk
-    --interface.loop=tk_trio
+    --interface.loop=tk
 
     # qt
-    --interface.loop=qt_trio
+    --interface.loop=qt
 
     # PySide6 is default.  To use a different module do
 

@@ -16,7 +16,7 @@ from async_kernel import kernel as kernel_module
 from async_kernel.command import command_line
 from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Loop
+from async_kernel.typing import Backend, Loop
 from tests import utils
 
 if TYPE_CHECKING:
@@ -103,26 +103,18 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     assert "not found!" in out
 
 
-@pytest.mark.parametrize(
-    ("loop", "loop_options"),
-    [
-        (Loop.asyncio, {}),
-        (Loop.trio, {}),
-        (Loop.tk_trio, {}),
-        (Loop.qt_trio, {"module": "PySide6"}),
-    ],
-)
-def test_start_kernel_enable_gui(monkeypatch, loop: Loop, loop_options: dict):
+@pytest.mark.skipif(bool(os.getenv("GITHUB_ACTIONS")), reason="Skip on CI")
+@pytest.mark.parametrize("backend", Backend)
+@pytest.mark.parametrize("loop", Loop)
+def test_start_kernel_enable_gui(monkeypatch, backend, loop):
     started = False
-    if loop is Loop.tk_trio:
+    if loop is Loop.tk:
         if os.getenv("GITHUB_ACTIONS"):
             pytest.skip("Skip on CI")
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
         gui = "tk"
-    elif loop is Loop.qt_trio:
-        if os.getenv("GITHUB_ACTIONS"):
-            pytest.skip("Skip on CI")
+    elif loop is Loop.qt:
         if not importlib.util.find_spec("PySide6"):
             pytest.skip("PySide6 not installed")
         gui = "qt"
@@ -139,7 +131,7 @@ def test_start_kernel_enable_gui(monkeypatch, loop: Loop, loop_options: dict):
             ".",
             f"--kernel_name=async-{loop}",
             f"--interface.loop={loop}",
-            f"--interface.loop_options={loop_options}",
+            f"--interface.backend={backend}",
             "--no-print_kernel_messages",
         ],
     )
@@ -161,7 +153,7 @@ def test_start_kernel_enable_gui(monkeypatch, loop: Loop, loop_options: dict):
 
 async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, kernel_name, transport):
     # Start & Stop a kernel
-    loop = anyio_backend = Loop.trio if "trio" in kernel_name.lower() else Loop.asyncio
+    backend = Backend.trio if "trio" in kernel_name.lower() else Backend.asyncio
     _, reply = await utils.execute(
         subprocess_kernels_client,
         "kernel = get_ipython().kernel",
@@ -173,8 +165,7 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
         },
     )
     assert kernel_name in reply["user_expressions"]["kernel_name"]["data"]["text/plain"]
-    assert loop in reply["user_expressions"]["loop"]["data"]["text/plain"]
-    assert anyio_backend in reply["user_expressions"]["backend"]["data"]["text/plain"]
+    assert backend in reply["user_expressions"]["backend"]["data"]["text/plain"]
     assert transport in reply["user_expressions"]["transport"]["data"]["text/plain"]
 
 
