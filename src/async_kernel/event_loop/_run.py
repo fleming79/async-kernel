@@ -50,7 +50,10 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
 
 class Host(Generic[T]):
     """
-    A template non-async event loops to work with [run][].
+    A class that provides the necessary callbacks for `start_guest_run`.
+
+    Non-async (gui) event loops (tk, qt, ...) can subclass from so that a backend can run as
+    a *guest* of the gui's event loop.
     """
 
     _outcome: Outcome[T] | None = None
