@@ -140,8 +140,11 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
 
     async def wait_exit():
         nonlocal started
-        bg = async_kernel.Kernel().shell.enable_matplotlib()
+        shell = async_kernel.Kernel().shell
+        bg = shell.enable_matplotlib()
         assert bg == (loop, gui)
+        with pytest.raises(RuntimeError, match="not one of the supported gui options"):
+            shell.enable_gui("Not a gui")
         started = True
 
     monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
