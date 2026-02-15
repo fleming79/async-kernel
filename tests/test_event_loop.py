@@ -10,7 +10,7 @@ from typing_extensions import override
 import async_kernel.event_loop
 import async_kernel.event_loop.asyncio_guest
 from async_kernel.common import Fixed
-from async_kernel.event_loop._run import Host
+from async_kernel.event_loop._run import Host, get_runtime_matplotlib_guis
 from async_kernel.pending import Pending
 from async_kernel.typing import Loop, RunSettings
 
@@ -27,10 +27,12 @@ class TestHost:
     def test_custom_host(self, mocker):
         class MyCustomHost(Host):
             LOOP = Loop.custom
+            MATPLOTLIB_GUIS = ("my gui",)
             event_done = Fixed(aiologic.Event)
 
             @override
             def done_callback(self, outcome: outcome.Outcome) -> None:
+                assert get_runtime_matplotlib_guis() == MyCustomHost.MATPLOTLIB_GUIS
                 self._outcome = outcome
                 self.event_done.set()
 
@@ -51,6 +53,7 @@ class TestHost:
         settings = RunSettings(backend="trio", loop=Loop.custom, loop_options={"host_class": MyCustomHost})
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == ("abc",)
+        assert get_runtime_matplotlib_guis() == ()
 
     async def test_start_guest_run(self, anyio_backend) -> None:
         lock = aiologic.Lock()
