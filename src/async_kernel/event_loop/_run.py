@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import threading
 from importlib import import_module
-from typing import TYPE_CHECKING, Any, Generic, Self
+from typing import TYPE_CHECKING, Any, Generic, Self, override
 
 import anyio
+from aiologic import Event
 
 from async_kernel.common import import_item
 from async_kernel.typing import Backend, Loop, RunSettings, T
@@ -143,3 +145,28 @@ class Host(Generic[T]):
             msg = "The mainloop should only exit once done_callback has been called!"
             raise RuntimeError(msg)
         return self._outcome.unwrap()  # pragma: no cover
+
+
+class AsyncioHost(Host):
+    LOOP = Loop.asyncio
+
+    def __init__(self, **backend_options) -> None:
+        self.backend_options = backend_options
+
+    async def _start(self):
+        loop = asyncio.get_running_loop()
+        self.run_sync_soon_not_threadsafe = loop.call_soon  # pyright: ignore[reportAttributeAccessIssue]
+        self.run_sync_soon_threadsafe = loop.call_soon_threadsafe  # pyright: ignore[reportAttributeAccessIssue]
+        self.start_guest()
+        self.done_event = Event()
+        await self.done_event
+
+    @override
+    def done_callback(self, outcome: Outcome) -> None:
+        super().done_callback(outcome)
+        self.done_event.set()
+
+    @override
+    def mainloop(self):
+        anyio.run(self._start, backend="asyncio", backend_options=self.backend_options)
+        return super().mainloop()

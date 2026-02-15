@@ -72,6 +72,8 @@ class Loop(enum.StrEnum):
 
     custom = "custom"
     ""
+    asyncio = "asyncio"
+    "Provided for testing purposes."
 
 
 class Channel(enum.StrEnum):

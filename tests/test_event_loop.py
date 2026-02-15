@@ -1,10 +1,12 @@
 import asyncio
+import importlib.util
 
 import aiologic
 import anyio
 import outcome
 import pytest
 from aiologic.lowlevel import current_async_library
+from traitlets import import_item
 from typing_extensions import override
 
 import async_kernel.event_loop
@@ -59,6 +61,25 @@ class TestHost:
         settings = RunSettings(backend="trio", loop=Loop.custom, loop_options={"host_class": "async_kernel.Pending"})
         with pytest.raises(TypeError):
             Host.run(anyio.sleep, (), settings)
+
+    def test_asyncio_host(self):
+        async def test_func(val):
+            loop = asyncio.get_running_loop()
+            if importlib.util.find_spec("winloop"):
+                assert isinstance(loop, import_item("winloop.Loop"))
+            if importlib.util.find_spec("uvloop"):
+                assert isinstance(loop, import_item("uvloop.Loop"))
+            assert current_async_library() == "trio"
+            return val
+
+        settings = RunSettings(
+            backend="trio",
+            loop=Loop.asyncio,
+            loop_options={"use_uvloop": True},
+            backend_options={"host_uses_signal_set_wakeup_fd": True},
+        )
+        result = async_kernel.event_loop.run(test_func, ("abc",), settings)
+        assert result == "abc"
 
     async def test_start_guest_run(self, anyio_backend) -> None:
         lock = aiologic.Lock()
