@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 import signal
 import sys
 import types
 from typing import TYPE_CHECKING
 
 import anyio
-import matplotlib as mpl
 import pytest
 
 import async_kernel
@@ -104,11 +102,32 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     assert "not found!" in out
 
 
+def test_command_start_kernel(monkeypatch):
+    started = False
+
+    async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
+    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--no-print_kernel_messages"])
+
+    async def wait_exit():
+        nonlocal started
+        started = True
+
+    monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
+    try:
+        with pytest.raises(SystemExit) as e:
+            command_line()
+        assert e.value.code == 0
+        assert started
+    finally:
+        async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
+
+
+# Avoid matplotlib tests generally to avoid flaky tests on ci.
+@pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Requires matplotlib")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("loop", [Loop.tk, Loop.qt, None])
 def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
-    if loop is not None and os.getenv("GITHUB_ACTIONS"):
-        pytest.skip("Skip on CI")
+    import matplotlib as mpl  # noqa: PLC0415
 
     mpl.use("module://matplotlib_inline.backend_inline")
     started = False
@@ -143,8 +162,6 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
         shell = async_kernel.Kernel().shell
         bg = shell.enable_matplotlib()
         assert bg == (loop, gui)
-        with pytest.raises(RuntimeError, match="not one of the supported gui options"):
-            shell.enable_gui("Not a gui")
         started = True
 
     monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())

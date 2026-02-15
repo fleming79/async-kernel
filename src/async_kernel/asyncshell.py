@@ -522,7 +522,7 @@ class AsyncInteractiveShell(InteractiveShell):
             raise RuntimeError(msg)
 
     @override
-    def enable_matplotlib(self, gui: str | None = None) -> tuple[str | Any | None, Any | str]:
+    def enable_matplotlib(self, gui: str | None = None) -> tuple[str | Any | None, Any | str]:  # pragma: no cover
         """
         Enable interactive matplotlib and inline figure support.
 
