@@ -100,7 +100,9 @@ class Host(Generic[T]):
             cls_ = loop_options.pop("host_class")
             if isinstance(cls_, str):
                 cls_ = import_item(cls_)
-            assert issubclass(cls_, cls)
+            if not issubclass(cls_, cls):
+                msg = f"{cls_} is not a subclass of {cls}!"
+                raise TypeError(msg)
         else:
             if loop not in cls._subclasses:
                 import_module(f"async_kernel.event_loop.{loop}")

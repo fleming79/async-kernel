@@ -55,6 +55,11 @@ class TestHost:
         assert result == ("abc",)
         assert get_runtime_matplotlib_guis() == ()
 
+    def test_custom_host_import(self):
+        settings = RunSettings(backend="trio", loop=Loop.custom, loop_options={"host_class": "async_kernel.Pending"})
+        with pytest.raises(TypeError):
+            Host.run(anyio.sleep, (), settings)
+
     async def test_start_guest_run(self, anyio_backend) -> None:
         lock = aiologic.Lock()
         results = set()
