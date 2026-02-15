@@ -1,11 +1,11 @@
 import asyncio
-from typing import override
 
 import aiologic
 import anyio
 import outcome
 import pytest
 from aiologic.lowlevel import current_async_library
+from typing_extensions import override
 
 import async_kernel.event_loop
 import async_kernel.event_loop.asyncio_guest
