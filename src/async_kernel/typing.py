@@ -64,7 +64,7 @@ class Loop(enum.StrEnum):
     gtk = "gtk"
     "Not implemented"
 
-    wk = "wx"
+    wx = "wx"
     "Not implemented"
 
     osx = "osx"
