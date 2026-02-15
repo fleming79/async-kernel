@@ -87,11 +87,7 @@ class TestHost:
                 async_kernel.event_loop.run(test_func, ("abc",), settings)
             return val
 
-        settings = RunSettings(
-            backend=Backend.asyncio,
-            loop=Loop.trio,
-            loop_options={"use_uvloop": True},
-        )
+        settings = RunSettings(backend=Backend.asyncio, loop=Loop.trio)
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == "abc"
 
