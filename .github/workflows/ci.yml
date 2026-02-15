@@ -83,7 +83,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: fleming79/async-kernel
-          report_type: test_results
+          report_type: coverage
 
   docs:
     needs: type-checking
