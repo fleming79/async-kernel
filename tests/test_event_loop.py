@@ -14,7 +14,7 @@ import async_kernel.event_loop.asyncio_guest
 from async_kernel.common import Fixed
 from async_kernel.event_loop._run import Host, get_runtime_matplotlib_guis
 from async_kernel.pending import Pending
-from async_kernel.typing import Loop, RunSettings
+from async_kernel.typing import Backend, Loop, RunSettings
 
 
 class TestHost:
@@ -77,6 +77,22 @@ class TestHost:
             loop=Loop.asyncio,
             loop_options={"use_uvloop": True},
             backend_options={"host_uses_signal_set_wakeup_fd": True},
+        )
+        result = async_kernel.event_loop.run(test_func, ("abc",), settings)
+        assert result == "abc"
+
+    def test_trio_host(self):
+        async def test_func(val):
+            asyncio.get_running_loop()
+            assert current_async_library() == "asyncio"
+            with pytest.raises(RuntimeError, match="already running"):
+                async_kernel.event_loop.run(test_func, ("abc",), settings)
+            return val
+
+        settings = RunSettings(
+            backend=Backend.asyncio,
+            loop=Loop.trio,
+            loop_options={"use_uvloop": True},
         )
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == "abc"

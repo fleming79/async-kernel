@@ -75,6 +75,9 @@ class Loop(enum.StrEnum):
     asyncio = "asyncio"
     "Provided for testing purposes."
 
+    trio = "trio"
+    "Provided for testing purposes."
+
 
 class Channel(enum.StrEnum):
     "An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
