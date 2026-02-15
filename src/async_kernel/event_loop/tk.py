@@ -23,6 +23,8 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import override
 
+from async_kernel.typing import Loop
+
 from ._run import Host
 
 if TYPE_CHECKING:
@@ -30,7 +32,12 @@ if TYPE_CHECKING:
 
 
 class TkHost(Host):
-    def __init__(self, root) -> None:
+    LOOP = Loop.tk
+    MATPLOTLIB_GUIS = ("tk",)
+
+    def __init__(self) -> None:
+        root = tk.Tk()
+        root.withdraw()
         self.root = root
         self._tk_func_name = root.register(self._tk_func)
         self._q = collections.deque()
@@ -85,12 +92,7 @@ class TkHost(Host):
         self.root.destroy()
 
     @override
-    def mainloop(self):
+    def mainloop(self) -> Any:
+        self.start_guest()
         self.root.mainloop()
         return super().mainloop()
-
-
-def get_host() -> Host:
-    root = tk.Tk()
-    root.withdraw()
-    return TkHost(root)

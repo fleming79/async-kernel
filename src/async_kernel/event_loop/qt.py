@@ -24,6 +24,8 @@ from typing import TYPE_CHECKING, Any, Literal
 from aiologic.meta import import_from
 from typing_extensions import override
 
+from async_kernel.typing import Loop
+
 from ._run import Host
 
 if TYPE_CHECKING:
@@ -32,70 +34,51 @@ if TYPE_CHECKING:
     from PySide6 import QtCore, QtWidgets  # noqa: TC004
 
 
-def get_host(module: str = "PySide6") -> Host:
-    """
-    Run an async function with qt event loop using trio guest mode.
+class QtHost(Host):
+    LOOP = Loop.qt
+    MATPLOTLIB_GUIS = ("qt",)
 
-    args:
-        module: https://matplotlib.org/stable/api/backend_qt_api.html#qt-bindings
-        **kwargs: Ignored
-    """
-    if threading.current_thread() is not threading.main_thread():
-        msg = "QT can only be run in main thread!"
-        raise RuntimeError(msg)
+    def __init__(self, module: str = "PySide6") -> None:
+        if threading.current_thread() is not threading.main_thread():
+            msg = "QT can only be run in main thread!"
+            raise RuntimeError(msg)
 
-    globals()["QtCore"] = import_from(module, "QtCore")
-    globals()["QtWidgets"] = import_from(module, "QtWidgets")
+        globals()["QtCore"] = import_from(module, "QtCore")
+        globals()["QtWidgets"] = import_from(module, "QtWidgets")
 
-    # class Reenter(QtCore.QObject):
-    #     run = QtCore.Signal(object)
-    #
-    # This is substantially faster than using a signal... for some reason Qt
-    # signal dispatch is really slow (and relies on events underneath anyway, so
-    # this is strictly less work)
-    REENTER_EVENT_TYPE = QtCore.QEvent.Type(QtCore.QEvent.registerEventType())
+        REENTER_EVENT_TYPE = QtCore.QEvent.Type(QtCore.QEvent.registerEventType())
 
-    class ReenterEvent(QtCore.QEvent):
-        fn: Callable[[], Any]
+        class ReenterEvent(QtCore.QEvent):
+            fn: Callable[[], Any]
 
-    class Reenter(QtCore.QObject):
-        @override
-        def event(self, event: ReenterEvent) -> Literal[False]:  # pyright: ignore[reportIncompatibleMethodOverride]
-            event.fn()
-            return False
+        class Reenter(QtCore.QObject):
+            @override
+            def event(self, event: ReenterEvent) -> Literal[False]:  # pyright: ignore[reportIncompatibleMethodOverride]
+                event.fn()
+                return False
 
-    class QtHost(Host):
-        def __init__(self, app: QtWidgets.QApplication) -> None:
-            self.app = app
-            self.reenter = Reenter()
-            # or if using Signal
-            # self.reenter.run.connect(lambda fn: fn(), QtCore.Qt.QueuedConnection)
-            # self.run_sync_soon_threadsafe = self.reenter.run.emit
+        reenter = Reenter()
 
-        @override
-        def run_sync_soon_threadsafe(self, fn) -> None:
+        if (app := QtWidgets.QApplication.instance()) is None:
+            app = QtWidgets.QApplication([])
+            app.setQuitOnLastWindowClosed(False)  # prevent app sudden death
+
+        def run_soon_threadsafe(fn):
             event = ReenterEvent(REENTER_EVENT_TYPE)
             event.fn = fn
-            self.app.postEvent(self.reenter, event)
+            app.postEvent(reenter, event)
 
-        @override
-        def run_sync_soon_not_threadsafe(self, fn) -> None:
-            event = ReenterEvent(REENTER_EVENT_TYPE)
-            event.fn = fn
-            self.app.postEvent(self.reenter, event)
+        self.run_sync_soon_threadsafe = run_soon_threadsafe
+        self.run_sync_soon_not_threadsafe = run_soon_threadsafe
+        self.app = app
 
-        @override
-        def done_callback(self, outcome) -> None:
-            super().done_callback(outcome)
-            self.app.quit()
+    @override
+    def done_callback(self, outcome) -> None:
+        super().done_callback(outcome)
+        self.app.quit()
 
-        @override
-        def mainloop(self) -> None:
-            self.app.exec()
-            return super().mainloop()
-
-    app = QtWidgets.QApplication.instance()
-    if app is None:
-        app = QtWidgets.QApplication([])
-        app.setQuitOnLastWindowClosed(False)  # prevent app sudden death
-    return QtHost(app)  # pyright: ignore[reportArgumentType]
+    @override
+    def mainloop(self) -> None:
+        self.start_guest()
+        self.app.exec()
+        return super().mainloop()

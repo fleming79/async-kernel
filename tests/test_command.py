@@ -105,7 +105,7 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
 
 
 @pytest.mark.parametrize("backend", Backend)
-@pytest.mark.parametrize("loop", [*Loop, None])
+@pytest.mark.parametrize("loop", [Loop.tk, Loop.qt, None])
 def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
     if loop is not None and os.getenv("GITHUB_ACTIONS"):
         pytest.skip("Skip on CI")

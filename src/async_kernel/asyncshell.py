@@ -27,6 +27,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
+from async_kernel.event_loop._run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
 from async_kernel.typing import Content, NoValue, Tags
 
@@ -173,6 +174,8 @@ class AsyncInteractiveShell(InteractiveShell):
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
+
+    DEFAULT_MATPLOTLIB_BACKENDS = ["inline", "ipympl"]
 
     _execution_count = 0
     _resetting = False
@@ -513,6 +516,12 @@ class AsyncInteractiveShell(InteractiveShell):
         self.register_magics(KernelMagics)
 
     @override
+    def enable_gui(self, gui=None) -> None:
+        if (gui is not None) and (gui not in (supported := self._list_matplotlib_backends_and_gui_loops())):
+            msg = f"The gui {gui!r} is not one of the supported gui options for this thread! {supported}="
+            raise RuntimeError(msg)
+
+    @override
     def enable_matplotlib(self, gui: str | None = None) -> tuple[str | Any | None, Any | str]:
         """
         Enable interactive matplotlib and inline figure support.
@@ -539,7 +548,11 @@ class AsyncInteractiveShell(InteractiveShell):
         backends = self._list_matplotlib_backends_and_gui_loops()
         gui = gui or backends[0]  # Use the
         gui, backend = pt.find_gui_and_backend(gui, self.pylab_gui_select)
-        pt.activate_matplotlib(backend)
+        self.enable_gui(gui)
+        try:
+            pt.activate_matplotlib(backend)
+        except RuntimeError as e:
+            e.add_note(f"This thread supports the gui {gui!s} but pyplot only supports one interactive backend.")
 
         matplotlib_inline.backend_inline.configure_inline_support(self, backend)
 
@@ -551,8 +564,7 @@ class AsyncInteractiveShell(InteractiveShell):
         return gui, backend
 
     def _list_matplotlib_backends_and_gui_loops(self) -> list[str | None]:
-        loop_backends = loop.matplotlib_backends if (loop := Caller().loop) else ()
-        return [*loop_backends, "inline", "ipympl"]
+        return [*get_runtime_matplotlib_guis(), *self.DEFAULT_MATPLOTLIB_BACKENDS]
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:

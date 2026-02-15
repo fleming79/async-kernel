@@ -1,17 +1,18 @@
 import asyncio
+from typing import override
 
 import aiologic
 import anyio
 import outcome
 import pytest
-import trio.lowlevel
 from aiologic.lowlevel import current_async_library
 
 import async_kernel.event_loop
 import async_kernel.event_loop.asyncio_guest
+from async_kernel.common import Fixed
 from async_kernel.event_loop._run import Host
 from async_kernel.pending import Pending
-from async_kernel.typing import Backend
+from async_kernel.typing import Loop, RunSettings
 
 
 class TestHost:
@@ -23,20 +24,33 @@ class TestHost:
         result = host.mainloop()
         assert result == 2
 
-    @pytest.mark.parametrize("backend", Backend)
-    def test_host_import(self, mocker, backend: Backend):
-        if backend is Backend.asyncio:
-            func = mocker.patch.object(async_kernel.event_loop.asyncio_guest, "start_guest_run")
-        else:
-            func = mocker.patch.object(trio.lowlevel, "start_guest_run")
+    def test_custom_host(self, mocker):
+        class MyCustomHost(Host):
+            LOOP = Loop.custom
+            event_done = Fixed(aiologic.Event)
 
-        async_kernel.event_loop._run.get_host = Host  # pyright: ignore[reportAttributeAccessIssue, reportPrivateUsage]
-        try:
-            with pytest.raises(RuntimeError, match="mainloop"):
-                async_kernel.event_loop.run(anyio.sleep, (0,), {"loop": "_run", "backend": backend})  # pyright: ignore[reportArgumentType]
-            assert func.call_count == 1
-        finally:
-            del async_kernel.event_loop._run.get_host  # pyright: ignore[reportAttributeAccessIssue, reportPrivateUsage]
+            @override
+            def done_callback(self, outcome: outcome.Outcome) -> None:
+                self._outcome = outcome
+                self.event_done.set()
+
+            @override
+            def mainloop(self):
+                with asyncio.Runner() as runner:
+                    loop = runner.get_loop()
+                    self.run_sync_soon_not_threadsafe = loop.call_soon  # pyright: ignore[reportAttributeAccessIssue]
+                    self.run_sync_soon_threadsafe = loop.call_soon_threadsafe  # pyright: ignore[reportAttributeAccessIssue]
+                    self.start_guest()
+                    loop.run_until_complete(self.event_done)
+                return super().mainloop()
+
+        async def test_func(*args):
+            assert current_async_library() == "trio"
+            return args
+
+        settings = RunSettings(backend="trio", loop=Loop.custom, loop_options={"host_class": MyCustomHost})
+        result = async_kernel.event_loop.run(test_func, ("abc",), settings)
+        assert result == ("abc",)
 
     async def test_start_guest_run(self, anyio_backend) -> None:
         lock = aiologic.Lock()

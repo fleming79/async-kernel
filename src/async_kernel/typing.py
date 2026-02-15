@@ -58,19 +58,20 @@ class Loop(enum.StrEnum):
     "An enum of event loop names."
 
     tk = "tk"
-    "A tk event loop hosting a trio guest."
-
+    ""
     qt = "qt"
-    "A qt event loop hosting a trio guest."
+    ""
+    gtk = "gtk"
+    "Not implemented"
 
-    @property
-    def matplotlib_backends(self) -> tuple[str, ...]:
-        "The matplotlib backends provided by the loop."
-        match self:
-            case Loop.qt:
-                return ("qt",)
-            case Loop.tk:
-                return ("tk",)
+    wk = "wx"
+    "Not implemented"
+
+    osx = "osx"
+    "Not implemented"
+
+    custom = "custom"
+    ""
 
 
 class Channel(enum.StrEnum):

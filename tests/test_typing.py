@@ -1,5 +1,5 @@
 from async_kernel.kernel import Kernel
-from async_kernel.typing import Loop, MsgType, RunMode, Tags
+from async_kernel.typing import MsgType, RunMode, Tags
 
 
 class TestRunMode:
@@ -36,8 +36,3 @@ class TestTags:
 
     def test_hash(self):
         assert hash(Tags.suppress_error) == hash(Tags.suppress_error)
-
-
-class TestLoop:
-    assert Loop.tk.matplotlib_backends == ("tk",)
-    assert Loop.qt.matplotlib_backends == ("qt",)
