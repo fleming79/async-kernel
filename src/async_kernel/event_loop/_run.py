@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 import threading
 from importlib import import_module
 from typing import TYPE_CHECKING, Any, Generic, Self
 
 import anyio
-from aiologic import Event
-from typing_extensions import override
 
-from async_kernel.common import Fixed, import_item
+from async_kernel.common import import_item
 from async_kernel.typing import Backend, Loop, RunSettings, T
 
 if TYPE_CHECKING:
@@ -108,7 +105,7 @@ class Host(Generic[T]):
                 raise TypeError(msg)
         else:
             if loop not in cls._subclasses:
-                import_module(f"async_kernel.event_loop.{loop}")
+                import_module(f"async_kernel.event_loop.{loop}_host")
                 assert loop in cls._subclasses, f"No subclass for {loop} or LOOP not set correctly!"
             cls_ = cls._subclasses[loop]
         if backend is Backend.asyncio:
@@ -146,62 +143,3 @@ class Host(Generic[T]):
             msg = "The mainloop should only exit once done_callback has been called!"
             raise RuntimeError(msg)
         return self._outcome.unwrap()  # pragma: no cover
-
-
-class AsyncioHost(Host):
-    LOOP = Loop.asyncio
-    done_event = Fixed(Event)
-
-    def __init__(self, **backend_options) -> None:
-        self.backend_options = backend_options
-
-    async def _start(self):
-        loop = asyncio.get_running_loop()
-        self.run_sync_soon_not_threadsafe = loop.call_soon  # pyright: ignore[reportAttributeAccessIssue]
-        self.run_sync_soon_threadsafe = loop.call_soon_threadsafe  # pyright: ignore[reportAttributeAccessIssue]
-        self.start_guest()
-        await self.done_event
-
-    @override
-    def done_callback(self, outcome: Outcome) -> None:
-        super().done_callback(outcome)
-        self.done_event.set()
-
-    @override
-    def mainloop(self):
-        anyio.run(self._start, backend="asyncio", backend_options=self.backend_options)
-        return super().mainloop()
-
-
-class TrioHost(Host):
-    LOOP = Loop.trio
-    _done = False
-
-    def __init__(self, **backend_options) -> None:
-        self.backend_options = backend_options
-
-    async def _start(self):
-        from aiologic import Queue  # noqa: PLC0415
-
-        queue = Queue()
-
-        self.run_sync_soon_not_threadsafe = lambda fn: queue.green_put(fn, blocking=False)
-        self.run_sync_soon_threadsafe = lambda fn: queue.green_put(fn, blocking=False)
-        self.done = lambda: queue.green_put(lambda: None, blocking=False)
-        self.start_guest()
-        while not self._outcome:
-            fn = await queue.async_get()
-            try:
-                fn()
-            except Exception:
-                continue
-
-    @override
-    def done_callback(self, outcome: Outcome) -> None:
-        super().done_callback(outcome)
-        self.done()
-
-    @override
-    def mainloop(self):
-        anyio.run(self._start, backend="trio", backend_options=self.backend_options)
-        return super().mainloop()
