@@ -69,7 +69,7 @@ class Host(Generic[T]):
     _instances: dict[threading.Thread, Host] = {}
 
     _outcome: Outcome[T] | None = None
-    start_guest: Callable[[], None] = lambda: None
+    start_guest: Callable[[], Any] = lambda: None
     "A callback to start the guest. This must be called by a subclass."
 
     def __init_subclass__(cls) -> None:
