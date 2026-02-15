@@ -32,8 +32,8 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
     Loop.custom:
         To define a custom gui event loop do the following:
         1. Create a subclass of Host.
-        2. Define a a function to return an instance.
-        3. In settings specify: {'loop':'custom', 'loop_options':{'host':'path.MyCustomHost'}}.
+        2. In settings specify: `{'loop':'custom', 'loop_options':{'host_class': MyCustomHost}}`
+            Alternatively, the class can be passed as an importable path.
 
     """
     if settings.get("loop"):
