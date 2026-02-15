@@ -104,6 +104,7 @@ class Host(Generic[T]):
                 msg = f"{cls_} is not a subclass of {cls}!"
                 raise TypeError(msg)
         else:
+            assert loop != backend
             if loop not in cls._subclasses:
                 import_module(f"async_kernel.event_loop.{loop}_host")
                 assert loop in cls._subclasses, f"No subclass for {loop} or LOOP not set correctly!"
