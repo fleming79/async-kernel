@@ -48,9 +48,9 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
     )
 
 
-def get_runtime_matplotlib_guis() -> tuple[str, ...]:
-    "A list of runtime guis supported by the host."
-    if host := Host.current():
+def get_runtime_matplotlib_guis(thread: threading.Thread | None = None) -> tuple[str, ...]:
+    "A list of runtime guis supported by the host for the associated thread."
+    if host := Host.current(thread):
         return host.MATPLOTLIB_GUIS
     return ()
 
