@@ -36,12 +36,10 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
         args: Args to use when calling func.
         settings: Settings to use when running func.
 
-    [async_kernel.Loop.custom][]:
-        To define a custom gui event loop do the following:
-        1. Create a subclass of Host.
-        2. In settings specify: `{'loop':'custom', 'loop_options':{'host_class': MyCustomHost}}`
-            Alternatively, the class can be specified as a dotted path if it is importable.
-
+    Custom loop:
+        A custom event loop can be used by subclassing [Host][].
+        The host can be specified in the settings as the option 'host_class'. The value
+        can be the class or a dotted path if it is importable.
     """
     if settings.get("loop"):
         # A loop with the backend running as a guest.
