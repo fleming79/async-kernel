@@ -397,7 +397,7 @@ class RunSettings(TypedDict):
     "The backend to use for the caller."
 
     backend_options: NotRequired[dict | None]
-    "The backend options to specify for [anyio.run][] (or `run_guest_mode` when a loop is specified)."
+    "The backend options to specify for [anyio.run][] (or `start_guest_run` when a loop is specified)."
 
     loop: NotRequired[Loop | None]
     "The type of eventloop where the backend will run."
