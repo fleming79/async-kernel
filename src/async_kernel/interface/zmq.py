@@ -126,13 +126,13 @@ class ZMQKernelInterface(BaseKernelInterface):
     "Transport for sockets."
 
     loop: TraitType[Loop | None, Loop | None] = UseEnum(Loop, default_value=None, allow_none=True)
-    "The name of the loop if one is used."
+    "The name of the (gui) event loop if one is used."
 
     loop_options = Dict(allow_none=True)
-    "The options for starting the loop."
+    "Options for starting the loop."
 
     backend_options = Dict(allow_none=True)
-    "The options for starting the backend."
+    "Options for starting the backend."
 
     @default("backend")
     def _default_backend(self):
@@ -153,7 +153,8 @@ class ZMQKernelInterface(BaseKernelInterface):
             - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
             - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
             - Some libraries may assume the call is occurring in the 'MainThread'.
-            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread. Use `async with kernel` instead.
+            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread start
+                the kernel asynchronously instead (`async with kernel:`).
         """
 
         async def run_kernel() -> None:

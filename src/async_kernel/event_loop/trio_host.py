@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import anyio
 from typing_extensions import override
 
-from async_kernel.event_loop._run import Host
+from async_kernel.event_loop.run import Host
 from async_kernel.typing import Loop
 
 if TYPE_CHECKING:

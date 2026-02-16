@@ -25,7 +25,7 @@ from typing_extensions import override
 
 from async_kernel.typing import Loop
 
-from ._run import Host
+from .run import Host
 
 if TYPE_CHECKING:
     from collections.abc import Callable

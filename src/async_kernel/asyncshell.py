@@ -27,7 +27,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.event_loop._run import get_runtime_matplotlib_guis
+from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
 from async_kernel.typing import Content, NoValue, Tags
 

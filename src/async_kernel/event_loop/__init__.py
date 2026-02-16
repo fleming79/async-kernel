@@ -1,5 +1,5 @@
 from __future__ import annotations
 
-from ._run import run
+from .run import Host, run
 
-__all__ = ["run"]
+__all__ = ["Host", "run"]

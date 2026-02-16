@@ -16,30 +16,37 @@ if TYPE_CHECKING:
     from outcome import Outcome
 
 
+__all__ = ["Host", "run"]
+
+
 def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
     """
-    Run func to completion using the specified backend and optional loop.
+    Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend]
+    with an optional gui event loop (_host_).
 
-    The backend defaults to asyncio if it is not specified.
+    The default backend is ['asyncio'][async_kernel.typing.Backend.asyncio].
 
-    If a loop is provided then the backend will run as a guest.
+    If [loop][async_kernel.typing.Loop] is specified in `settings`. A _host_ (gui) mainloop
+    will be started with the `backend` running as a guest (in the same thread). The `backend`
+    will execute `func` asynchronously to completion. Once completed the backend and host
+    are stopped and finally the result is returned.
 
     Args:
         func: A coroutine function.
         args: Args to use when calling func.
-        settings: Specifics on the backend and optional gui loop with the settings.
+        settings: Settings to use when running func.
 
-    Loop.custom:
+    [async_kernel.Loop.custom][]:
         To define a custom gui event loop do the following:
         1. Create a subclass of Host.
         2. In settings specify: `{'loop':'custom', 'loop_options':{'host_class': MyCustomHost}}`
-            Alternatively, the class can be passed as an importable path.
+            Alternatively, the class can be specified as a dotted path if it is importable.
 
     """
     if settings.get("loop"):
         # A loop with the backend running as a guest.
         return Host.run(func, args, settings)
-    # backend only
+    # backend only.
     return anyio.run(
         func,
         *args,
@@ -58,9 +65,6 @@ def get_runtime_matplotlib_guis(thread: threading.Thread | None = None) -> tuple
 class Host(Generic[T]):
     """
     A class that provides the necessary callbacks for `start_guest_run`.
-
-    Non-async (gui) event loops (tk, qt, ...) can subclass from so that a backend can run as
-    a *guest* of the gui's event loop.
     """
 
     LOOP: Loop
@@ -69,7 +73,7 @@ class Host(Generic[T]):
     _instances: dict[threading.Thread, Host] = {}
 
     _outcome: Outcome[T] | None = None
-    start_guest: Callable[[], Any] = lambda: None
+    start_guest: Callable[[], Any] = staticmethod(lambda: None)
     "A callback to start the guest. This must be called by a subclass."
 
     def __init_subclass__(cls) -> None:
@@ -107,7 +111,7 @@ class Host(Generic[T]):
             assert loop != backend
             if loop not in cls._subclasses:
                 import_module(f"async_kernel.event_loop.{loop}_host")
-                assert loop in cls._subclasses, f"No subclass for {loop} or LOOP not set correctly!"
+                assert loop in cls._subclasses, f"Host for {loop=} is not implemented correctly!"
             cls_ = cls._subclasses[loop]
         if backend is Backend.asyncio:
             from .asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
@@ -140,6 +144,8 @@ class Host(Generic[T]):
         self._outcome = outcome
 
     def mainloop(self) -> T:
+        "Start the main event loop of the host."
+        self.start_guest()  # Call at an appropriate time in the overriding subclass.
         if not self._outcome:
             msg = "The mainloop should only exit once done_callback has been called!"
             raise RuntimeError(msg)

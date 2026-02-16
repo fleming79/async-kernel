@@ -27,15 +27,19 @@ Messages are processed fairly whilst preventing asynchronous deadlocks by using 
 - [Easy multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
 - Per-subshell user_ns
-- GUI event loops [^gui note]
+- GUI event loops [^gui note][^gui caller note]
     - [x] inline
     - [x] ipympl
     - [x] tk with asyncio[^asyncio guest] or trio backend running as a guest
     - [x] qt with asyncio[^asyncio guest] or trio backend running as a guest
 
-[^gui note]: The kernel must be set to use the required event loop and the necessary dependencies must be installed
-separately. Switching event loops is not supported, however starting an event loop in a thread is possible provided
-the gui supports it (qt can only run in the main thread).
+[^gui note]: To use a gui event loop the kernel must be started with `interface.loop=<loop name>`.
+The event loop (_host_) will run the gui's mainloop and start the kernel `backend` as a guest
+in the same thread. Switching the event loop at runtime is not supported.
+
+[^gui caller note]: It is also possible to use a caller to run a gui event loop in a separate thread (with a backend running as a guest)
+if the gui allows it (qt will only run in the main thread). Also note that pyplot will only permit one interactive
+gui library in a process.
 
 [^asyncio guest]: The asyncio implementation of `start_guest_run` was written by [the author of aiologic](https://github.com/x42005e1f/aiologic)
 and provided as a ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).

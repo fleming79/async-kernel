@@ -185,6 +185,7 @@ nav:
       - "kernelspec": reference/kernelspec.md
       - "asyncshell": reference/asyncshell.md
       - "pending": reference/pending.md
+      - "event_loop": reference/event_loop.md
       - "typing": reference/typing.md
       - "utils": reference/utils.md
 
