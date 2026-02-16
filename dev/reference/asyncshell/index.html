@@ -441,6 +441,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -667,7 +669,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../commands/" class="md-nav__link">
+      <a href="../../usage/commands/" class="md-nav__link">
         
   
   
@@ -675,6 +677,34 @@ viewing the latest version.
     
   
     Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/message_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Message handling
   
 
     
@@ -708,6 +738,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -1209,10 +1241,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_gui" class="md-nav__link">
+  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enable_gui
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enable_matplotlib
       
     </span>
   </a>
@@ -1509,6 +1541,34 @@ viewing the latest version.
     
   
     pending
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../event_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    event_loop
   
 
     
@@ -1905,10 +1965,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_gui" class="md-nav__link">
+  <a href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enable_gui
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enable_matplotlib
       
     </span>
   </a>
@@ -2400,7 +2460,6 @@ viewing the latest version.
   <ul>
 <li>All <a class="autorefs autorefs-internal" title=" execute_request" href="#async_kernel.asyncshell.AsyncInteractiveShell.execute_request">execute requests</a> are run asynchronously.</li>
 <li>Supports a soft timeout specified via tags <code>timeout=&lt;value in seconds&gt;</code><sup id="async_kernel.asyncshell.AsyncInteractiveShell--fnref:1"><a class="footnote-ref" href="#async_kernel.asyncshell.AsyncInteractiveShell--fn:1">1</a></sup>.</li>
-<li>Gui event loops(tk, qt, ...) <a class="autorefs autorefs-internal" title=" enable_gui" href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_gui">are not presently supported</a>.</li>
 <li>Not all features are support (see "not-supported" features listed below).</li>
 <li><code>user_ns</code> and <code>user_global_ns</code> are same dictionary which is a fixed <code>LastUpdatedDict</code>.</li>
 </ul>
@@ -2596,10 +2655,10 @@ viewing the latest version.
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" enable_gui (async_kernel.asyncshell.AsyncInteractiveShell.enable_gui)" href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_gui">enable_gui</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title=" enable_matplotlib (async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib)" href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib">enable_matplotlib</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Enable a given gui.</p>
+              <p>Enable interactive matplotlib and inline figure support.</p>
             </div>
           </li>
     </ul>
@@ -2627,8 +2686,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
-<span class="normal">164</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
@@ -2998,19 +3056,56 @@ viewing the latest version.
 <span class="normal">531</span>
 <span class="normal">532</span>
 <span class="normal">533</span>
-<span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveShell</span><span class="p">(</span><span class="n">InteractiveShell</span><span class="p">):</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveShell</span><span class="p">(</span><span class="n">InteractiveShell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].</span>
 
 <span class="sd">    Notable differences:</span>
 <span class="sd">        - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.</span>
 <span class="sd">        - Supports a soft timeout specified via tags `timeout=&lt;value in seconds&gt;`[^1].</span>
-<span class="sd">        - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].</span>
 <span class="sd">        - Not all features are support (see &quot;not-supported&quot; features listed below).</span>
 <span class="sd">        - `user_ns` and `user_global_ns` are same dictionary which is a fixed `LastUpdatedDict`.</span>
 
 <span class="sd">        [^1]: When the execution time exceeds the timeout value, the code execution will &quot;move on&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DEFAULT_MATPLOTLIB_BACKENDS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;inline&quot;</span><span class="p">,</span> <span class="s2">&quot;ipympl&quot;</span><span class="p">]</span>
 
     <span class="n">_execution_count</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">_resetting</span> <span class="o">=</span> <span class="kc">False</span>
@@ -3352,19 +3447,53 @@ viewing the latest version.
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">enable_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Enable a given gui.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">gui</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">gui</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">supported</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_matplotlib_backends_and_gui_loops</span><span class="p">())):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;The gui </span><span class="si">{</span><span class="n">gui</span><span class="si">!r}</span><span class="s2"> is not one of the supported gui options for this thread! </span><span class="si">{</span><span class="n">supported</span><span class="si">}</span><span class="s2">=&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-<span class="sd">        Supported guis:</span>
-<span class="sd">            - [x] inline</span>
-<span class="sd">            - [x] ipympl</span>
-<span class="sd">            - [ ] tk</span>
-<span class="sd">            - [ ] qt</span>
+    <span class="nd">@override</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_matplotlib</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enable interactive matplotlib and inline figure support.</span>
+
+<span class="sd">        This takes the following steps:</span>
+
+<span class="sd">        1. select the appropriate matplotlib backend</span>
+<span class="sd">        2. set up matplotlib for interactive use with that backend</span>
+<span class="sd">        3. configure formatters for inline figure display</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gui:</span>
+<span class="sd">                If given, dictates the choice of matplotlib GUI backend to use</span>
+<span class="sd">                (should be one of IPython&#39;s supported backends, &#39;qt&#39;, &#39;osx&#39;, &#39;tk&#39;,</span>
+<span class="sd">                &#39;gtk&#39;, &#39;wx&#39; or &#39;inline&#39;, &#39;ipympl&#39;), otherwise we use the default chosen by</span>
+<span class="sd">                matplotlib (as dictated by the matplotlib build-time options plus the</span>
+<span class="sd">                user&#39;s matplotlibrc configuration file).  Note that not all backends</span>
+<span class="sd">                make sense in all contexts, for example a terminal ipython can&#39;t</span>
+<span class="sd">                display figures inline.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">supported_no_eventloop</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;inline&quot;</span><span class="p">,</span> <span class="s2">&quot;ipympl&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">gui</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_no_eventloop</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;The backend </span><span class="si">{</span><span class="n">gui</span><span class="si">=}</span><span class="s2"> is not supported by async-kernel. The currently supported gui options are: </span><span class="si">{</span><span class="n">supported_no_eventloop</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib_inline.backend_inline</span>  <span class="c1"># noqa: PLC0415</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">pylabtools</span> <span class="k">as</span> <span class="n">pt</span>  <span class="c1"># noqa: PLC0415</span>
+
+        <span class="n">backends</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_matplotlib_backends_and_gui_loops</span><span class="p">()</span>
+        <span class="n">gui</span> <span class="o">=</span> <span class="n">gui</span> <span class="ow">or</span> <span class="n">backends</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Use the</span>
+        <span class="n">gui</span><span class="p">,</span> <span class="n">backend</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">find_gui_and_backend</span><span class="p">(</span><span class="n">gui</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pylab_gui_select</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_gui</span><span class="p">(</span><span class="n">gui</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pt</span><span class="o">.</span><span class="n">activate_matplotlib</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;This thread supports the gui </span><span class="si">{</span><span class="n">gui</span><span class="si">!s}</span><span class="s2"> but pyplot only supports one interactive backend.&quot;</span><span class="p">)</span>
+
+        <span class="n">matplotlib_inline</span><span class="o">.</span><span class="n">backend_inline</span><span class="o">.</span><span class="n">configure_inline_support</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">)</span>
+
+        <span class="c1"># Now we must activate the gui pylab wants to use, and fix %run to take</span>
+        <span class="c1"># plot updates into account</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">magics_manager</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="s2">&quot;ExecutionMagics&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default_runner</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">mpl_runner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">safe_execfile</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">gui</span><span class="p">,</span> <span class="n">backend</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_list_matplotlib_backends_and_gui_loops</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="o">*</span><span class="n">get_runtime_matplotlib_guis</span><span class="p">(),</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_MATPLOTLIB_BACKENDS</span><span class="p">]</span>
 
     <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
@@ -3457,9 +3586,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">269</span>
 <span class="normal">270</span>
 <span class="normal">271</span>
 <span class="normal">272</span>
@@ -3469,7 +3596,9 @@ viewing the latest version.
 <span class="normal">276</span>
 <span class="normal">277</span>
 <span class="normal">278</span>
-<span class="normal">279</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_hooks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize hooks.&quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_hooks</span><span class="p">()</span>
@@ -3546,9 +3675,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">316</span>
 <span class="normal">317</span>
 <span class="normal">318</span>
 <span class="normal">319</span>
@@ -3638,7 +3765,9 @@ viewing the latest version.
 <span class="normal">403</span>
 <span class="normal">404</span>
 <span class="normal">405</span>
-<span class="normal">406</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -3760,9 +3889,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">410</span>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
@@ -3785,7 +3912,9 @@ viewing the latest version.
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
-<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion).&quot;&quot;&quot;</span>
 
     <span class="n">cursor_pos</span> <span class="o">=</span> <span class="n">cursor_pos</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
@@ -3840,13 +3969,13 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">437</span>
 <span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
-<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness).&quot;&quot;&quot;</span>
     <span class="n">status</span><span class="p">,</span> <span class="n">indent_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_transformer_manager</span><span class="o">.</span><span class="n">check_complete</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">}</span>
@@ -3884,16 +4013,16 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span>
 <span class="normal">451</span>
-<span class="normal">452</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection).&quot;&quot;&quot;</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;found&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
     <span class="k">try</span><span class="p">:</span>
@@ -3944,9 +4073,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">456</span>
 <span class="normal">457</span>
 <span class="normal">458</span>
 <span class="normal">459</span>
@@ -3970,7 +4097,9 @@ viewing the latest version.
 <span class="normal">477</span>
 <span class="normal">478</span>
 <span class="normal">479</span>
-<span class="normal">480</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -4022,11 +4151,11 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">511</span>
 <span class="normal">512</span>
-<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_magics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize magics.&quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_magics</span><span class="p">()</span>
@@ -4040,84 +4169,128 @@ viewing the latest version.
 <div class="doc doc-object doc-function">
 
 
-<h3 id="async_kernel.asyncshell.AsyncInteractiveShell.enable_gui" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">enable_gui</span>
+<h3 id="async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">enable_matplotlib</span>
 
 
-<a href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_gui" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">enable_gui</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.enable_gui(gui)">gui</span></span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<a href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">enable_matplotlib</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib(gui)">gui</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Enable a given gui.</p>
+        <p>Enable interactive matplotlib and inline figure support.</p>
+<p>This takes the following steps:</p>
+<ol>
+<li>select the appropriate matplotlib backend</li>
+<li>set up matplotlib for interactive use with that backend</li>
+<li>configure formatters for inline figure display</li>
+</ol>
 
 
-<details class="supported-guis" open>
-  <summary>Supported guis</summary>
-  <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> tk</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> qt</li>
-</ul>
-</details>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib(gui)" class="doc doc-heading doc-heading-parameter">              <b><code>gui</code></b>
+<a href="#async_kernel.asyncshell.AsyncInteractiveShell.enable_matplotlib(gui)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If given, dictates the choice of matplotlib GUI backend to use
+(should be one of IPython's supported backends, 'qt', 'osx', 'tk',
+'gtk', 'wx' or 'inline', 'ipympl'), otherwise we use the default chosen by
+matplotlib (as dictated by the matplotlib build-time options plus the
+user's matplotlibrc configuration file).  Note that not all backends
+make sense in all contexts, for example a terminal ipython can't
+display figures inline.</p>
+          </div>
+        </li>
+    </ul>
+
           
-
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#">asyncshell</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">523</span>
 <span class="normal">524</span>
 <span class="normal">525</span>
 <span class="normal">526</span>
 <span class="normal">527</span>
 <span class="normal">528</span>
-<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">enable_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">enable_matplotlib</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Enable a given gui.</span>
+<span class="sd">    Enable interactive matplotlib and inline figure support.</span>
 
-<span class="sd">    Supported guis:</span>
-<span class="sd">        - [x] inline</span>
-<span class="sd">        - [x] ipympl</span>
-<span class="sd">        - [ ] tk</span>
-<span class="sd">        - [ ] qt</span>
+<span class="sd">    This takes the following steps:</span>
+
+<span class="sd">    1. select the appropriate matplotlib backend</span>
+<span class="sd">    2. set up matplotlib for interactive use with that backend</span>
+<span class="sd">    3. configure formatters for inline figure display</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gui:</span>
+<span class="sd">            If given, dictates the choice of matplotlib GUI backend to use</span>
+<span class="sd">            (should be one of IPython&#39;s supported backends, &#39;qt&#39;, &#39;osx&#39;, &#39;tk&#39;,</span>
+<span class="sd">            &#39;gtk&#39;, &#39;wx&#39; or &#39;inline&#39;, &#39;ipympl&#39;), otherwise we use the default chosen by</span>
+<span class="sd">            matplotlib (as dictated by the matplotlib build-time options plus the</span>
+<span class="sd">            user&#39;s matplotlibrc configuration file).  Note that not all backends</span>
+<span class="sd">            make sense in all contexts, for example a terminal ipython can&#39;t</span>
+<span class="sd">            display figures inline.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">supported_no_eventloop</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;inline&quot;</span><span class="p">,</span> <span class="s2">&quot;ipympl&quot;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">gui</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_no_eventloop</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;The backend </span><span class="si">{</span><span class="n">gui</span><span class="si">=}</span><span class="s2"> is not supported by async-kernel. The currently supported gui options are: </span><span class="si">{</span><span class="n">supported_no_eventloop</span><span class="si">}</span><span class="s2">.&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib_inline.backend_inline</span>  <span class="c1"># noqa: PLC0415</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">pylabtools</span> <span class="k">as</span> <span class="n">pt</span>  <span class="c1"># noqa: PLC0415</span>
+
+    <span class="n">backends</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_matplotlib_backends_and_gui_loops</span><span class="p">()</span>
+    <span class="n">gui</span> <span class="o">=</span> <span class="n">gui</span> <span class="ow">or</span> <span class="n">backends</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Use the</span>
+    <span class="n">gui</span><span class="p">,</span> <span class="n">backend</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">find_gui_and_backend</span><span class="p">(</span><span class="n">gui</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pylab_gui_select</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">enable_gui</span><span class="p">(</span><span class="n">gui</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pt</span><span class="o">.</span><span class="n">activate_matplotlib</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">e</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;This thread supports the gui </span><span class="si">{</span><span class="n">gui</span><span class="si">!s}</span><span class="s2"> but pyplot only supports one interactive backend.&quot;</span><span class="p">)</span>
+
+    <span class="n">matplotlib_inline</span><span class="o">.</span><span class="n">backend_inline</span><span class="o">.</span><span class="n">configure_inline_support</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">)</span>
+
+    <span class="c1"># Now we must activate the gui pylab wants to use, and fix %run to take</span>
+    <span class="c1"># plot updates into account</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">magics_manager</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="s2">&quot;ExecutionMagics&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default_runner</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">mpl_runner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">safe_execfile</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">gui</span><span class="p">,</span> <span class="n">backend</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4310,43 +4483,7 @@ protected subshell when it is no longer required.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">537</span>
-<span class="normal">538</span>
-<span class="normal">539</span>
-<span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span>
-<span class="normal">543</span>
-<span class="normal">544</span>
-<span class="normal">545</span>
-<span class="normal">546</span>
-<span class="normal">547</span>
-<span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">573</span>
 <span class="normal">574</span>
 <span class="normal">575</span>
 <span class="normal">576</span>
@@ -4363,7 +4500,43 @@ protected subshell when it is no longer required.</p>
 <span class="normal">587</span>
 <span class="normal">588</span>
 <span class="normal">589</span>
-<span class="normal">590</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveSubshell</span><span class="p">(</span><span class="n">AsyncInteractiveShell</span><span class="p">):</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveSubshell</span><span class="p">(</span><span class="n">AsyncInteractiveShell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An asynchronous interactive subshell for managing isolated execution contexts within an async kernel.</span>
 
@@ -4501,14 +4674,14 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Stop this subshell.&quot;</span>
     <span class="k">if</span> <span class="n">force</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">protected</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_manager</span><span class="o">.</span><span class="n">pending</span><span class="p">:</span>
@@ -4602,8 +4775,8 @@ protected subshell when it is no longer required.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
-<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterruptError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">45</span>
+<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterruptError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="s2">&quot;Raised to interrupt the kernel.&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -4681,8 +4854,7 @@ representations of the object.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">51</span>
-<span class="normal">52</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">52</span>
 <span class="normal">53</span>
 <span class="normal">54</span>
 <span class="normal">55</span>
@@ -4718,7 +4890,8 @@ representations of the object.</p>
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span>
-<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncDisplayHook</span><span class="p">(</span><span class="n">DisplayHook</span><span class="p">):</span>
+<span class="normal">88</span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncDisplayHook</span><span class="p">(</span><span class="n">DisplayHook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A displayhook subclass that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send].</span>
 
@@ -4791,10 +4964,10 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">67</span>
-<span class="normal">68</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
 <span class="normal">69</span>
-<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">70</span>
+<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start_displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the display hook.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="p">{}</span>
@@ -4823,10 +4996,10 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">72</span>
-<span class="normal">73</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">73</span>
 <span class="normal">74</span>
-<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">75</span>
+<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_output_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write the output prompt.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_count</span>
@@ -4855,11 +5028,11 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">77</span>
-<span class="normal">78</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">78</span>
 <span class="normal">79</span>
 <span class="normal">80</span>
-<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">81</span>
+<span class="normal">82</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_format_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="p">,</span> <span class="n">md_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write format data to the message.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_dict</span>
@@ -4889,12 +5062,12 @@ representations of the object.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">83</span>
-<span class="normal">84</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">84</span>
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span>
-<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">88</span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">finish_displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Finish up all displayhook activities.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
@@ -4974,8 +5147,7 @@ representations of the object.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
-<span class="normal"> 92</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
 <span class="normal"> 93</span>
 <span class="normal"> 94</span>
 <span class="normal"> 95</span>
@@ -5039,7 +5211,8 @@ representations of the object.</p>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncDisplayPublisher</span><span class="p">(</span><span class="n">DisplayPublisher</span><span class="p">):</span>
+<span class="normal">156</span>
+<span class="normal">157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncDisplayPublisher</span><span class="p">(</span><span class="n">DisplayPublisher</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send].&quot;&quot;&quot;</span>
 
     <span class="n">topic</span><span class="p">:</span> <span class="n">ClassVar</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;display_data&quot;</span>
@@ -5192,8 +5365,7 @@ Transient data should not be persisted to documents.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
-<span class="normal">101</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
 <span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
@@ -5224,7 +5396,8 @@ Transient data should not be persisted to documents.</p>
 <span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
-<span class="normal">132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">132</span>
+<span class="normal">133</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">publish</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportIncompatibleMethodOverride]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
@@ -5299,8 +5472,7 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">134</span>
-<span class="normal">135</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">135</span>
 <span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
@@ -5309,7 +5481,8 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 <span class="normal">141</span>
 <span class="normal">142</span>
 <span class="normal">143</span>
-<span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">144</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">clear_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Clear output associated with the current execution (cell).</span>
@@ -5347,13 +5520,13 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
-<span class="normal">147</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
-<span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">152</span>
+<span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a hook for when publish is called.</span>
 
 <span class="sd">    The hook should return the message or None.</span>
@@ -5469,43 +5642,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span>
-<span class="normal">598</span>
-<span class="normal">599</span>
-<span class="normal">600</span>
-<span class="normal">601</span>
-<span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span>
-<span class="normal">624</span>
-<span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
 <span class="normal">632</span>
@@ -5540,7 +5677,43 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="normal">661</span>
 <span class="normal">662</span>
 <span class="normal">663</span>
-<span class="normal">664</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SubshellManager</span><span class="p">:</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SubshellManager</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Manages all instances of [subshells][async_kernel.asyncshell.AsyncInteractiveSubshell].</span>
 
@@ -5664,17 +5837,17 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new instance of the default subshell class.</span>
 
@@ -5731,21 +5904,21 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
-<span class="normal">641</span>
-<span class="normal">642</span>
-<span class="normal">643</span>
-<span class="normal">644</span>
-<span class="normal">645</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_shell</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_shell</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveShell</span> <span class="o">|</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
@@ -5798,15 +5971,15 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span>
-<span class="normal">651</span>
-<span class="normal">652</span>
-<span class="normal">653</span>
-<span class="normal">654</span>
-<span class="normal">655</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop a subshell unless it is protected.</span>
 
@@ -5855,14 +6028,14 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop_all_subshells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop_all_subshells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop all current subshells.</span>
 
 <span class="sd">    Args:</span>
@@ -5944,43 +6117,7 @@ protected subshell when it is no longer required.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">703</span>
 <span class="normal">704</span>
 <span class="normal">705</span>
 <span class="normal">706</span>
@@ -5997,9 +6134,49 @@ protected subshell when it is no longer required.</p>
 <span class="normal">717</span>
 <span class="normal">718</span>
 <span class="normal">719</span>
-<span class="normal">720</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@magics_class</span>
+<span class="normal">720</span>
+<span class="normal">721</span>
+<span class="normal">722</span>
+<span class="normal">723</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@magics_class</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">KernelMagics</span><span class="p">(</span><span class="n">Magics</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extra magics for async kernel.&quot;&quot;&quot;</span>
+
+    <span class="n">shell</span><span class="p">:</span> <span class="n">AsyncInteractiveShell</span>  <span class="c1"># pyright: ignore[reportIncompatibleVariableOverride]</span>
 
     <span class="nd">@line_magic</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">connect_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -6086,25 +6263,25 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span>
+<span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span>
+<span class="normal">721</span>
+<span class="normal">722</span>
+<span class="normal">723</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Print information for connecting other clients to this kernel.&quot;&quot;&quot;</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
@@ -6148,22 +6325,22 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">callers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Print a table of [Callers][async_kernel.caller.Caller], indicating its status including:  -running - protected - on the current thread.&quot;</span>
     <span class="n">callers</span> <span class="o">=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">all_callers</span><span class="p">(</span><span class="n">running_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -6211,19 +6388,19 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
-<span class="normal">717</span>
-<span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).</span>
 

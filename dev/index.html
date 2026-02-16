@@ -486,50 +486,33 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#asyncio" class="md-nav__link">
+  <a href="#kernel-specs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Asyncio
+        Kernel specs
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Asyncio">
+    <nav class="md-nav" aria-label="Kernel specs">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#trio-backend" class="md-nav__link">
+  <a href="#backends" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Trio backend
+        Backends
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#message-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Message handling
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Message handling">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#run-mode" class="md-nav__link">
+  <a href="#gui-event-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run mode
+        Gui event loop
       
     </span>
   </a>
@@ -571,6 +554,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -803,7 +788,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="commands/" class="md-nav__link">
+      <a href="usage/commands/" class="md-nav__link">
         
   
   
@@ -811,6 +796,34 @@ viewing the latest version.
     
   
     Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="usage/message_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Message handling
   
 
     
@@ -842,6 +855,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -1207,6 +1222,34 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
+      <a href="reference/event_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    event_loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="reference/typing/" class="md-nav__link">
         
   
@@ -1474,50 +1517,33 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#asyncio" class="md-nav__link">
+  <a href="#kernel-specs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Asyncio
+        Kernel specs
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Asyncio">
+    <nav class="md-nav" aria-label="Kernel specs">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#trio-backend" class="md-nav__link">
+  <a href="#backends" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Trio backend
+        Backends
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#message-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Message handling
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Message handling">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#run-mode" class="md-nav__link">
+  <a href="#gui-event-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run mode
+        Gui event loop
       
     </span>
   </a>
@@ -1580,10 +1606,12 @@ viewing the latest version.
 <p><img alt="logo-svg" src="https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587" /></p>
 <p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter</a> kernel
 with concurrent message handling.</p>
-<p>Messages are processed fairly whilst preventing asynchronous deadlocks by using a unique message handler per <code>channel</code>, <code>message_type</code> and <code>subshell_id</code>.</p>
+<p>Messages are processed fairly whilst preventing asynchronous deadlocks by using
+a unique message handler per <code>channel</code>, <code>message_type</code> and <code>subshell_id</code>.</p>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈</li>
+<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for
+  <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈</li>
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
 <li><a href="https://pypi.org/project/anyio/">anyio</a> compatible event loops<ul>
 <li><a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> (default)</li>
@@ -1594,11 +1622,11 @@ with concurrent message handling.</p>
 <li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Easy multi-thread / multi-event loop management</a></li>
 <li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a></li>
 <li>Per-subshell user_ns</li>
-<li>GUI event loops<ul class="task-list">
+<li>GUI event loops <sup id="fnref:gui note"><a class="footnote-ref" href="#fn:gui note">1</a></sup><sup id="fnref:gui caller note"><a class="footnote-ref" href="#fn:gui caller note">2</a></sup><ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> tk</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> qt</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> tk with asyncio<sup id="fnref:asyncio guest"><a class="footnote-ref" href="#fn:asyncio guest">3</a></sup> or trio backend running as a guest</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> qt with asyncio<sup id="fnref2:asyncio guest"><a class="footnote-ref" href="#fn:asyncio guest">3</a></sup> or trio backend running as a guest</li>
 </ul>
 </li>
 </ul>
@@ -1606,149 +1634,71 @@ with concurrent message handling.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>async-kernel
 </code></pre></div>
-<h2 id="asyncio">Asyncio<a class="headerlink" href="#asyncio" title="Permanent link">&para;</a></h2>
-<p>An asyncio kernel based backend with the name 'async' is installed when the kernel is installed.</p>
-<h3 id="trio-backend">Trio backend<a class="headerlink" href="#trio-backend" title="Permanent link">&para;</a></h3>
-<p>To add a kernel spec for a <code>trio</code> backend.</p>
+<h2 id="kernel-specs">Kernel specs<a class="headerlink" href="#kernel-specs" title="Permanent link">&para;</a></h2>
+<p>A kernel spec with the name 'async' is added when async kernel is installed.</p>
+<p>Kernel specs can be added/removed via the command line.</p>
+<p>The kernel is configured via the interface with the options:</p>
+<ul>
+<li><a href="#backends"><code>interface.backend</code></a></li>
+<li><code>interface.backend_options</code></li>
+<li><code>interface.loop</code></li>
+<li><code>interface.loop_options</code></li>
+</ul>
+<h3 id="backends">Backends<a class="headerlink" href="#backends" title="Permanent link">&para;</a></h3>
+<p>The backend defines the asynchronous library provided in the thread in which it is running.</p>
+<ul>
+<li>asyncio</li>
+<li>trio</li>
+</ul>
+<p><strong>Example - change kernel spec to use trio</strong></p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-trio<span class="w"> </span>--interface.backend<span class="o">=</span>trio
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="w"> </span>--interface.backend<span class="o">=</span>trio
+</code></pre></div>
+<h3 id="gui-event-loop">Gui event loop<a class="headerlink" href="#gui-event-loop" title="Permanent link">&para;</a></h3>
+<p>The kernel can be started with a gui event loop as the <em>host</em> and the <em>backend</em> running as a guest.</p>
+<p><strong>asyncio backend</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># tk</span>
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.loop<span class="o">=</span>tk
+
+<span class="c1"># qt</span>
+pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.loop<span class="o">=</span>qt
+</code></pre></div>
+<p><strong>trio backend</strong></p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
+<span class="c1"># tk</span>
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.loop<span class="o">=</span>tk<span class="w"> </span>--interface.backend<span class="o">=</span>trio
+
+<span class="c1"># qt</span>
+pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.loop<span class="o">=</span>qt<span class="w"> </span>--interface.backend<span class="o">=</span>trio
 </code></pre></div>
 <p>For further detail about kernel spec customisation see <a href="https://fleming79.github.io/async-kernel/latest/commands/#command-line">command line usage</a>.</p>
-<h2 id="message-handling">Message handling<a class="headerlink" href="#message-handling" title="Permanent link">&para;</a></h2>
-<ul>
-<li>
-<p>When a message is received the <code>msg_handler</code> is called with:</p>
-<ul>
-<li>'job' (a dict of <code>msg</code>, <code>received_time</code> and <code>ident</code>)</li>
-<li>The <code>channel</code></li>
-<li><code>msg_type</code></li>
-<li>A function <code>send_reply</code></li>
-</ul>
-</li>
-<li>
-<p>The <code>msg_handler</code></p>
-<ul>
-<li>determines the <code>subshell_id</code> and <a href="#run-mode">run mode</a>.</li>
-<li>obtains the <code>handler</code> from the kernel with the same name as the <code>msg_type</code>.</li>
-<li>determines the <a href="#run-mode">run mode</a></li>
-<li>creates cached version of the <code>run_handler</code> with a unique version per:<ul>
-<li>The <code>handler</code></li>
-<li><code>channel</code></li>
-<li><code>subshell_id</code></li>
-<li>send_reply (constant or per-channel)</li>
-</ul>
-</li>
-<li>Obtains the caller associated with the channel and schedules execution of the cached handler</li>
-</ul>
-</li>
-</ul>
-<h3 id="run-mode">Run mode<a class="headerlink" href="#run-mode" title="Permanent link">&para;</a></h3>
-<p>The run modes available are:</p>
-<ul>
-<li><code>RunMode.direct</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct"><code>Caller.call_direct</code></a>:
-  Run the request directly in the scheduler.</li>
-<li><code>RunMode.queue</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.queue_call"><code>Caller.queue_call</code></a>:
-  Run the request in a queue dedicated to the subshell, handler &amp; channel.</li>
-<li><code>RunMode.task</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_soon"><code>Caller.call_soon</code></a>:
-  Run the request in a separate task.</li>
-<li><code>RunMode.thread</code> → <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.to_thread"><code>Caller.to_thread</code></a>:
-  Run the request in a separate worker thread.</li>
-</ul>
-<p>These are the currently assigned run modes.</p>
-<table>
-<thead>
-<tr>
-<th>SocketID</th>
-<th>shell</th>
-<th>control</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>comm_close</td>
-<td>direct</td>
-<td>direct</td>
-</tr>
-<tr>
-<td>comm_info_request</td>
-<td>direct</td>
-<td>direct</td>
-</tr>
-<tr>
-<td>comm_msg</td>
-<td>queue</td>
-<td>queue</td>
-</tr>
-<tr>
-<td>comm_open</td>
-<td>direct</td>
-<td>direct</td>
-</tr>
-<tr>
-<td>complete_request</td>
-<td>thread</td>
-<td>thread</td>
-</tr>
-<tr>
-<td>create_subshell_request</td>
-<td>None</td>
-<td>thread</td>
-</tr>
-<tr>
-<td>debug_request</td>
-<td>None</td>
-<td>queue</td>
-</tr>
-<tr>
-<td>delete_subshell_request</td>
-<td>None</td>
-<td>thread</td>
-</tr>
-<tr>
-<td>execute_request</td>
-<td>queue</td>
-<td>queue</td>
-</tr>
-<tr>
-<td>history_request</td>
-<td>thread</td>
-<td>thread</td>
-</tr>
-<tr>
-<td>inspect_request</td>
-<td>thread</td>
-<td>thread</td>
-</tr>
-<tr>
-<td>interrupt_request</td>
-<td>direct</td>
-<td>direct</td>
-</tr>
-<tr>
-<td>is_complete_request</td>
-<td>thread</td>
-<td>thread</td>
-</tr>
-<tr>
-<td>kernel_info_request</td>
-<td>direct</td>
-<td>direct</td>
-</tr>
-<tr>
-<td>list_subshell_request</td>
-<td>None</td>
-<td>direct</td>
-</tr>
-<tr>
-<td>shutdown_request</td>
-<td>None</td>
-<td>direct</td>
-</tr>
-</tbody>
-</table>
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
 <p>Async kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
 of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to the original contributors of IPyKernel that made Async kernel possible.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:gui note">
+<p>A gui event loop is provided by starting the event loop (<em>host</em>)
+and then running an asynchronous backend as a guest in the event loop. Kernel
+messaging is performed as usual in the asynchronous backend. For this reason
+it is not possible to enable a gui event loop at runtime.&#160;<a class="footnote-backref" href="#fnref:gui note" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:gui caller note">
+<p>It is also possible to use a caller to run a gui event loop
+in a separate thread (with a backend running as a guest) if the gui allows it
+(qt will only run in the main thread). Also note that pyplot will only permit
+one interactive gui library in a process.&#160;<a class="footnote-backref" href="#fnref:gui caller note" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:asyncio guest">
+<p>The asyncio implementation of <code>start_guest_run</code> was written by
+<a href="https://github.com/x42005e1f/aiologic">the author of aiologic</a> and provided as a
+(<a href="https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779">gist</a>).&#160;<a class="footnote-backref" href="#fnref:asyncio guest" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:asyncio guest" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 

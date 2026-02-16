@@ -6,35 +6,35 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="API reference for async kernel.">
+        <meta name="description" content="Async-kernel for Jupyter">
       
       
       
-        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/reference/">
+        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/usage/commands/">
       
       
-        <link rel="prev" href="../usage/message_handling/">
+        <link rel="prev" href="../../notebooks/caller/">
       
       
-        <link rel="next" href="caller/">
+        <link rel="next" href="../message_handling/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>Modules - async-kernel</title>
+        <title>Commands - async-kernel</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -59,13 +59,13 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../css/timeago.css">
+      <link rel="stylesheet" href="../../css/timeago.css">
     
-      <link rel="stylesheet" href="../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#reference" class="md-skip">
+        <a href="#command-line-and-kernel-configuration" class="md-skip">
           Skip to content
         </a>
       
@@ -105,12 +105,12 @@
             <div class="md-banner__inner md-grid md-typeset">
                You're not
 viewing the latest version.
-<a href="../..">
+<a href="../../..">
   <strong>Click here to go to latest.</strong>
 </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -122,7 +122,7 @@ viewing the latest version.
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="async-kernel" class="md-header__button md-logo" aria-label="async-kernel" data-md-component="logo">
+    <a href="../.." title="async-kernel" class="md-header__button md-logo" aria-label="async-kernel" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -142,7 +142,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Modules
+              Commands
             
           </span>
         </div>
@@ -259,7 +259,7 @@ viewing the latest version.
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -278,11 +278,13 @@ viewing the latest version.
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../usage/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -302,13 +304,11 @@ viewing the latest version.
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../reference/" class="md-tabs__link">
           
   
   
@@ -330,7 +330,7 @@ viewing the latest version.
     
     
       <li class="md-tabs__item">
-        <a href="../about/" class="md-tabs__link">
+        <a href="../../about/" class="md-tabs__link">
           
   
   
@@ -372,7 +372,7 @@ viewing the latest version.
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="async-kernel" class="md-nav__button md-logo" aria-label="async-kernel" data-md-component="logo">
+    <a href="../.." title="async-kernel" class="md-nav__button md-logo" aria-label="async-kernel" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -402,7 +402,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -428,6 +428,8 @@ viewing the latest version.
       
   
   
+    
+  
   
   
     
@@ -447,18 +449,21 @@ viewing the latest version.
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../usage/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -478,13 +483,13 @@ viewing the latest version.
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -531,7 +536,7 @@ viewing the latest version.
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../notebooks/" class="md-nav__link ">
+            <a href="../../notebooks/" class="md-nav__link ">
               
   
   
@@ -577,7 +582,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../notebooks/simple_example/" class="md-nav__link">
+      <a href="../../notebooks/simple_example/" class="md-nav__link">
         
   
   
@@ -605,7 +610,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../notebooks/concurrency/" class="md-nav__link">
+      <a href="../../notebooks/concurrency/" class="md-nav__link">
         
   
   
@@ -633,7 +638,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../notebooks/caller/" class="md-nav__link">
+      <a href="../../notebooks/caller/" class="md-nav__link">
         
   
   
@@ -666,10 +671,37 @@ viewing the latest version.
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../usage/commands/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -685,6 +717,148 @@ viewing the latest version.
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#kernel-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-loop-gui-event-loops-tk-qt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host loop (gui event loops - tk, qt)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Host loop (gui event loops - tk, qt)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        qt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loop-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loop options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backend options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remove-a-kernel-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove a kernel spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#start-a-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start a kernel
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -697,7 +871,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../usage/message_handling/" class="md-nav__link">
+      <a href="../message_handling/" class="md-nav__link">
         
   
   
@@ -729,8 +903,6 @@ viewing the latest version.
       
   
   
-    
-  
   
   
     
@@ -770,21 +942,18 @@ viewing the latest version.
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../../reference/" class="md-nav__link ">
               
   
   
@@ -802,13 +971,13 @@ viewing the latest version.
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -828,7 +997,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="caller/" class="md-nav__link">
+      <a href="../../reference/caller/" class="md-nav__link">
         
   
   
@@ -856,7 +1025,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="comm/" class="md-nav__link">
+      <a href="../../reference/comm/" class="md-nav__link">
         
   
   
@@ -884,7 +1053,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="command/" class="md-nav__link">
+      <a href="../../reference/command/" class="md-nav__link">
         
   
   
@@ -912,7 +1081,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="common/" class="md-nav__link">
+      <a href="../../reference/common/" class="md-nav__link">
         
   
   
@@ -940,7 +1109,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="debugger/" class="md-nav__link">
+      <a href="../../reference/debugger/" class="md-nav__link">
         
   
   
@@ -968,7 +1137,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="interface/" class="md-nav__link">
+      <a href="../../reference/interface/" class="md-nav__link">
         
   
   
@@ -996,7 +1165,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="kernel/" class="md-nav__link">
+      <a href="../../reference/kernel/" class="md-nav__link">
         
   
   
@@ -1024,7 +1193,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="kernelspec/" class="md-nav__link">
+      <a href="../../reference/kernelspec/" class="md-nav__link">
         
   
   
@@ -1052,7 +1221,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="asyncshell/" class="md-nav__link">
+      <a href="../../reference/asyncshell/" class="md-nav__link">
         
   
   
@@ -1080,7 +1249,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="pending/" class="md-nav__link">
+      <a href="../../reference/pending/" class="md-nav__link">
         
   
   
@@ -1108,7 +1277,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="event_loop/" class="md-nav__link">
+      <a href="../../reference/event_loop/" class="md-nav__link">
         
   
   
@@ -1136,7 +1305,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="typing/" class="md-nav__link">
+      <a href="../../reference/typing/" class="md-nav__link">
         
   
   
@@ -1164,7 +1333,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="utils/" class="md-nav__link">
+      <a href="../../reference/utils/" class="md-nav__link">
         
   
   
@@ -1226,7 +1395,7 @@ viewing the latest version.
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../about/" class="md-nav__link ">
+            <a href="../../about/" class="md-nav__link ">
               
   
   
@@ -1270,7 +1439,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../about/contributing/" class="md-nav__link">
+      <a href="../../about/contributing/" class="md-nav__link">
         
   
   
@@ -1298,7 +1467,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../about/changelog/" class="md-nav__link">
+      <a href="../../about/changelog/" class="md-nav__link">
         
   
   
@@ -1326,7 +1495,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../about/license/" class="md-nav__link">
+      <a href="../../about/license/" class="md-nav__link">
         
   
   
@@ -1381,10 +1550,121 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#highlights" class="md-nav__link">
+  <a href="#kernel-spec" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Highlights
+        Kernel spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-loop-gui-event-loops-tk-qt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host loop (gui event loops - tk, qt)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Host loop (gui event loops - tk, qt)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        qt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loop-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loop options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backend options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remove-a-kernel-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove a kernel spec
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#start-a-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start a kernel
       
     </span>
   </a>
@@ -1416,7 +1696,7 @@ viewing the latest version.
   
   
     <li class="md-path__item">
-      <a href=".." class="md-path__link">
+      <a href="../.." class="md-path__link">
         
   <span class="md-ellipsis">
     Home
@@ -1434,10 +1714,10 @@ viewing the latest version.
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Reference
+    Usage
   </span>
 
         </a>
@@ -1459,15 +1739,186 @@ viewing the latest version.
   
 
 
-<h1 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h1>
-<p>The reference section provides documentation for each module in async kernel.</p>
-<h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
+<h1 id="command-line-and-kernel-configuration">Command line and kernel configuration<a class="headerlink" href="#command-line-and-kernel-configuration" title="Permanent link">&para;</a></h1>
+<p>The command <code>async-kernel</code> and alias <code>async_kernel</code> are provided at the command line.</p>
+<p>The primary options available are:</p>
 <ul>
-<li><a class="autorefs autorefs-internal" title=" Kernel" href="kernel/#async_kernel.kernel.Kernel">Kernel</a> - The kernel.</li>
-<li><a class="autorefs autorefs-internal" title=" Caller" href="caller/#async_kernel.caller.Caller">Caller</a> - Simplifies event loop management and call scheduling (thread-safe).</li>
-<li><a class="autorefs autorefs-internal" title=" Pending" href="pending/#async_kernel.pending.Pending">Pending</a> - Represents a pending result that can be set, awaited and cancelled (thread-safe).</li>
-<li><a class="autorefs autorefs-internal" title=" command_line" href="command/#async_kernel.command.command_line">command_line</a> - The command line interface.</li>
+<li><a href="#kernel-spec">Add kernel spec</a>: <code>-a &lt;name&gt; &lt;options&gt;</code></li>
+<li><a href="#remove-a-kernel-spec">Remove a kernel spec</a> <code>-r &lt;name&gt;</code></li>
+<li><a href="#start-a-kernel">Start a kernel</a>: <code>-f &lt;path to config file&gt;</code></li>
 </ul>
+<h2 id="kernel-spec">Kernel spec<a class="headerlink" href="#kernel-spec" title="Permanent link">&para;</a></h2>
+<p>The kernel spec can be configured via the command line:</p>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="go">async-kernel -a async --backend=trio --loop=tk --display_name=&quot;Async python tk trio&quot;</span>
+</code></pre></div>
+<p>The kernel spec looks like this:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;argv&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">&quot;python&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;async_kernel&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;-f&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;{connection_file}&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;--start_interface=async_kernel.interface.start_kernel_zmq_interface&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;--kernel_name=async&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;--backend=trio&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;--loop=tk&quot;</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="nt">&quot;display_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Async python tk trio&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;python&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;interrupt_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;message&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;debugger&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;concurrent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;kernel_protocol_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5.5&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>A single kernel spec is created when async kernel is installed with the following defaults.</p>
+<p><strong>Defaults</strong></p>
+<ul>
+<li>name: 'async'</li>
+<li>display_name: 'async'</li>
+<li>backend: <code>asyncio</code></li>
+<li>backend_options: <code>{'use_uvloop':True}</code> if uvloop or winloop is installed</li>
+<li>loop: <code>None</code></li>
+<li>loop_options: <code>None</code></li>
+</ul>
+<p>The kernel spec can be updated by adding a kernel spec with the same name ('async').</p>
+<h2 id="backend">Backend<a class="headerlink" href="#backend" title="Permanent link">&para;</a></h2>
+<p>There are two supported backends 'asyncio' and 'trio'.</p>
+<p>In CPython the <a class="autorefs autorefs-internal" title=" Backend" href="../../reference/typing/#async_kernel.typing.Backend">backend</a> is started using <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.
+The type of backend can be specified at the attribute <a class="autorefs autorefs-internal" title=" backend" href="../../reference/interface/#async_kernel.interface.BaseKernelInterface.backend"><code>interface.backend</code></a>.
+The backend_options can be specified at the attribute <a class="autorefs autorefs-internal" title=" backend_options" href="../../reference/interface/#async_kernel.interface.zmq.ZMQKernelInterface.backend_options">`interface.backend_options'</a>.
+Options can be written as a literal python string.</p>
+<div class="highlight"><pre><span></span><code><span class="go">async-kernel -a async-trio --interface.backend=trio</span>
+</code></pre></div>
+<h2 id="host-loop-gui-event-loops-tk-qt">Host loop (gui event loops - tk, qt)<a class="headerlink" href="#host-loop-gui-event-loops-tk-qt" title="Permanent link">&para;</a></h2>
+<p>Typically event loops don't like to share the thread with any other event loop.
+Trio provides the function <a class="autorefs autorefs-external" href="https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run">trio.lowlevel.start_guest_run</a> which allows it to run
+as a guest alongside the host event loop by means of callbacks. The author of
+aiologic has provided an (experimental) asyncio equivalent (<a href="https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779">gist</a>).</p>
+<p>Async kernel supports configuration of one host and one backend for the kernel.
+Below are some example kernel specs for host and backend kernel specs.</p>
+<h3 id="tk">tk<a class="headerlink" href="#tk" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="gp"># </span>tk<span class="w"> </span>host<span class="w"> </span>asyncio<span class="w"> </span>backend
+<span class="go">async-kernel -a async-tk --interface.loop=tk</span>
+
+<span class="gp"># </span>tk<span class="w"> </span>host<span class="w"> </span>trio<span class="w"> </span>backend
+<span class="go">async-kernel -a async-tk --interface.loop=tk --backend=trio</span>
+</code></pre></div>
+<h3 id="qt">qt<a class="headerlink" href="#qt" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="gp"># </span>qt<span class="w"> </span>host<span class="w"> </span>asyncio<span class="w"> </span>backend
+<span class="go">async-kernel -a async-qt --interface.loop=qt</span>
+
+<span class="gp"># </span>qt<span class="w"> </span>host<span class="w"> </span>trio<span class="w"> </span>backend
+<span class="go">async-kernel -a async-qt-trio --interface.loop=qt --interface.backend=trio</span>
+
+<span class="gp"># </span>PySide6<span class="w"> </span>is<span class="w"> </span>default.<span class="w">  </span>You<span class="w"> </span>can<span class="w"> </span>specify<span class="w"> </span>a<span class="w"> </span>different<span class="w"> </span>module<span class="w"> </span>via<span class="w"> </span><span class="sb">`</span>loop_options<span class="sb">`</span>
+<span class="go">async-kernel -a async-qt --interface.loop=qt --interface.loop_options={&#39;module&#39;:&#39;PySide2&#39;}</span>
+</code></pre></div>
+<h2 id="loop-options">Loop options<a class="headerlink" href="#loop-options" title="Permanent link">&para;</a></h2>
+<p>Options can be provided to configure how a loop loads. There are only a few options available
+at present.</p>
+<ul>
+<li><code>host_class'</code>[type[Host| str]]` : A customised subclass of a <a class="autorefs autorefs-internal" title=" Host" href="../../reference/event_loop/#async_kernel.event_loop.run.Host">Host</a>
+  or a dotted import path to the customised Host.</li>
+<li>`'module': The module name on which to base the event loop. (Only applies to 'qt').</li>
+</ul>
+<h2 id="backend-options">Backend options<a class="headerlink" href="#backend-options" title="Permanent link">&para;</a></h2>
+<p>Options can be provided for how the backend is started.</p>
+<ul>
+<li>With a (gui) loop: Options for <code>start_guest_run</code><ul>
+<li><a class="autorefs autorefs-external" href="https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run">trio.lowlevel.start_guest_run</a></li>
+<li>asyncio<ul>
+<li>host_uses_signal_set_wakeup_fd</li>
+<li>loop_factory,</li>
+<li>task_factory,</li>
+<li>context,</li>
+<li>debug,</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Without a (gui) loop: <code>backend_options</code> in <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="gp"># </span>If<span class="w"> </span>uvloop<span class="w"> </span>is<span class="w"> </span>installed<span class="w"> </span>it<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>used<span class="w"> </span>by<span class="w"> </span>default.<span class="w"> </span>You<span class="w"> </span>can<span class="w"> </span><span class="k">do</span><span class="w"> </span>this<span class="w"> </span>to<span class="w"> </span>disable<span class="w"> </span>it.
+<span class="go">async-kernel -a async &quot;--interface.loop_options={&#39;use_uvloop&#39;:False}&quot;</span>
+</code></pre></div>
+<h3 id="custom-arguments">Custom arguments<a class="headerlink" href="#custom-arguments" title="Permanent link">&para;</a></h3>
+<p>Additional arguments can be included when defining the kernel spec, these include:</p>
+<ul>
+<li>Arguments for <a class="autorefs autorefs-internal" title=" write_kernel_spec" href="../../reference/kernelspec/#async_kernel.kernelspec.write_kernel_spec">async_kernel.kernelspec.write_kernel_spec</a><ul>
+<li><code>--start_interface</code></li>
+<li><code>--fullpath=False</code></li>
+<li><code>--display_name</code></li>
+<li><code>--prefix</code></li>
+</ul>
+</li>
+<li>Nested attributes can be set on the kernel via `kernel.[nested.attribute.name']'.
+  Each parameter should be specified as if it were a 'flag' as follows.</li>
+</ul>
+<p>Prefix each setting with "--" and join using the delimiter "=".</p>
+<div class="highlight"><pre><span></span><code><span class="go">--&lt;PARAMETER or DOTTED.ATTRIBUTE.NAME&gt;=&lt;VALUE&gt;</span>
+</code></pre></div>
+<p>or, with compact notation to set a Boolean value as a Boolean flag.</p>
+<div class="highlight"><pre><span></span><code><span class="gp"># </span>True
+<span class="go">--&lt;PARAMETER or DOTTED.ATTRIBUTE.NAME&gt;</span>
+
+<span class="gp"># </span>False
+<span class="go">--no-&lt;PARAMETER or DOTTED.ATTRIBUTE.NAME&gt;</span>
+</code></pre></div>
+<h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="write_kernel_spec-argument" name="__tabbed_1" type="radio" /><input id="kernel-attribute" name="__tabbed_1" type="radio" /><input id="kernel-boolean-attribute-as-a-flag" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="write_kernel_spec-argument">write_kernel_spec argument</label><label for="kernel-attribute">Kernel attribute</label><label for="kernel-boolean-attribute-as-a-flag">Kernel Boolean attribute as a flag</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>start_interface</strong></p>
+<p>To specify an alternate kernel factory.</p>
+<div class="highlight"><pre><span></span><code><span class="go">--start_interface=my_module.my_interface_factory</span>
+</code></pre></div>
+<p><strong>fullpath (True)</strong></p>
+<div class="highlight"><pre><span></span><code><span class="go">--fullpath</span>
+</code></pre></div>
+<p><strong>display name</strong></p>
+<p>To set the kernel display name to <code>True</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="go">&quot;--display_name=My kernel display name&quot;</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Set the execute request timeout trait on the kernel shell.</p>
+<div class="highlight"><pre><span></span><code><span class="go">--shell.timeout=0.1</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Set <code>kernel.quiet=True</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="go">--quiet</span>
+</code></pre></div>
+<p>Set <code>kernel.quiet=False</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="go">--no=quiet</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="remove-a-kernel-spec">Remove a kernel spec<a class="headerlink" href="#remove-a-kernel-spec" title="Permanent link">&para;</a></h2>
+<p>Use the flag <code>-r</code> or <code>--remove</code> to remove a kernelspec.</p>
+<p>If you added the custom kernel spec above, you can remove it with:</p>
+<div class="highlight"><pre><span></span><code>async-kernel<span class="w"> </span>-r<span class="w"> </span>async-trio-custom
+</code></pre></div>
+<h2 id="start-a-kernel">Start a kernel<a class="headerlink" href="#start-a-kernel" title="Permanent link">&para;</a></h2>
+<p>Use the flag <code>-f</code> or <code>--connection_file</code> followed by the full path to the connection file.
+To skip providing a connection file</p>
+<p>This will start the default kernel (async).</p>
+<div class="highlight"><pre><span></span><code>async-kernel<span class="w"> </span>-f<span class="w"> </span>.
+</code></pre></div>
+<p>Additional settings can be passed as arguments.</p>
+<div class="highlight"><pre><span></span><code>async-kernel<span class="w"> </span>-f<span class="w"> </span>.<span class="w"> </span>--kernel_name<span class="o">=</span>async-trio-custom<span class="w"> </span>--display_name<span class="o">=</span><span class="s1">&#39;My custom kernel&#39;</span><span class="w"> </span>--quiet<span class="o">=</span>False
+</code></pre></div>
+<p>The call above will start a new kernel with a 'trio' backend. The quiet setting is
+a parameter that gets set on kernel. Parameters of this type are converted using [eval]
+prior to setting.</p>
+<p>For further detail, see the API for the command line handler <a class="autorefs autorefs-internal" title=" command_line" href="../../reference/command/#async_kernel.command.command_line">command_line</a>.</p>
 
 
 
@@ -1500,7 +1951,7 @@ viewing the latest version.
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2025 03:03:23 UTC"><span class="timeago" datetime="2025-08-21T03:03:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2025 03:03:23 UTC">2025-08-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 16, 2026 09:54:18 UTC"><span class="timeago" datetime="2026-02-16T09:54:18+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 16, 2026 09:54:18 UTC">2026-02-16</span>
   </span>
 
     
@@ -1535,7 +1986,7 @@ viewing the latest version.
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../usage/message_handling/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Message handling">
+          <a href="../../notebooks/caller/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Caller">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1545,20 +1996,20 @@ viewing the latest version.
                 Previous
               </span>
               <div class="md-ellipsis">
-                Message handling
+                Caller
               </div>
             </div>
           </a>
         
         
           
-          <a href="caller/" class="md-footer__link md-footer__link--next" aria-label="Next: caller">
+          <a href="../message_handling/" class="md-footer__link md-footer__link--next" aria-label="Next: Message handling">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                caller
+                Message handling
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1659,16 +2110,16 @@ viewing the latest version.
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../js/timeago.min.js"></script>
+        <script src="../../js/timeago.min.js"></script>
       
-        <script src="../js/timeago_mkdocs_material.js"></script>
+        <script src="../../js/timeago_mkdocs_material.js"></script>
       
-        <script src="../js/open_in_new_tab.js"></script>
+        <script src="../../js/open_in_new_tab.js"></script>
       
     
   </body>
