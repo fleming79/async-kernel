@@ -31,6 +31,7 @@ __all__ = [
     "MsgType",
     "NoValue",
     "RunMode",
+    "RunSettings",
     "Tags",
 ]
 
@@ -55,28 +56,31 @@ class Backend(enum.StrEnum):
 
 
 class Loop(enum.StrEnum):
-    "An enum of event loop names."
+    "An enum of event loop names that available to start using [detail][async_kernel.event_loop.run.run]."
 
     tk = "tk"
-    ""
+    "An eventloop for [tkinter][]."
+
     qt = "qt"
-    ""
+    "An event loop for [Qt](https://wiki.qt.io/Qt_for_Python)."
+
     gtk = "gtk"
-    "Not implemented"
+    "Not implemented [GTK](https://www.gtk.org/)."
 
     wx = "wx"
-    "Not implemented"
+    "Not implemented [wxPython](https://wxpython.org/)."
 
     osx = "osx"
     "Not implemented"
 
     custom = "custom"
-    ""
+    "A custom loop that does is fit the other values."
+
     asyncio = "asyncio"
-    "Provided for testing purposes."
+    "Provided for testing purposes only."
 
     trio = "trio"
-    "Provided for testing purposes."
+    "Provided for testing purposes only."
 
 
 class Channel(enum.StrEnum):
@@ -393,6 +397,8 @@ class FixedCreated(TypedDict, Generic[S, T]):
 
 
 class RunSettings(TypedDict):
+    "A dict of settings to use with [async_kernel.event_loop.run][]."
+
     backend: NotRequired[Backend | Literal["asyncio", "trio"]]
     "The backend to use for the caller."
 
