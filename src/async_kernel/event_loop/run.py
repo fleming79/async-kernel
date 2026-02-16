@@ -97,7 +97,7 @@ class Host(Generic[T]):
         backend_options = settings.get("backend_options") or {}
         loop_options = settings.get("loop_options") or {}
 
-        if loop is Loop.custom:
+        if "host_class" in loop_options:
             loop_options = loop_options.copy()
             cls_ = loop_options.pop("host_class")
             if isinstance(cls_, str):
@@ -111,6 +111,8 @@ class Host(Generic[T]):
                 import_module(f"async_kernel.event_loop.{loop}_host")
                 assert loop in cls._subclasses, f"Host for {loop=} is not implemented correctly!"
             cls_ = cls._subclasses[loop]
+        assert cls_.LOOP is loop
+
         if backend is Backend.asyncio:
             from .asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
         else:
