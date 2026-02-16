@@ -34,7 +34,7 @@ The kernel spec looks like this:
         "--loop=tk"
     ],
     "env": {},
-    "display_name": "My tk trio kernel",
+    "display_name": "Async python tk trio",
     "language": "python",
     "interrupt_mode": "message",
     "metadata": {
