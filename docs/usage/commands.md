@@ -73,17 +73,13 @@ async-kernel -a async-trio --interface.backend=trio
 
 ## Host loop (gui event loops - tk, qt)
 
-Generally event loops don't like to share the thread with other event loops.
-Trio provides the function [trio.lowlevel.start_guest_run][] to run the event loop
-as a guest of the host event loop by means of callbacks.
+Typically event loops don't like to share the thread with any other event loop.
+Trio provides the function [trio.lowlevel.start_guest_run][] allow it to run
+as a guest alongside the host event loop by means of callbacks. The author of
+aiologic has provided an (experimental) asyncio equivalent ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
-The author of aiologic recently wrote an experimental
-asyncio version ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
-
-This means we can have a gui event loop and and asynchronous event loop running in the same thread.
-This is especially useful when the gui isn't thread safe.
-
-Here are some example kernel specs for host and backend.
+Async kernel supports configuration of one host and one backend for the kernel.
+Below are some example kernel specs for host and backend.
 
 ### tk
 
@@ -112,7 +108,7 @@ async-kernel -a async-qt --interface.loop=qt --interface.loop_options={'module':
 
 Options can be provided for how the backend is started.
 
-- With loop: Options for `start_guest_run`
+- With a (gui) loop: Options for `start_guest_run`
     - [trio.lowlevel.start_guest_run][]
     - asyncio
         - host_uses_signal_set_wakeup_fd
@@ -120,7 +116,7 @@ Options can be provided for how the backend is started.
         - task_factory,
         - context,
         - debug,
-- Without loop: `backend_options` in [anyio.run][]
+- Without a (gui) loop: `backend_options` in [anyio.run][]
 
 ```console
 # If uvloop is installed it will be used by default. You can do this to disable it.
