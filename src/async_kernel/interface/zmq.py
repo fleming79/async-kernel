@@ -135,7 +135,7 @@ class ZMQKernelInterface(BaseKernelInterface):
     "Options for starting the backend."
 
     @default("backend")
-    def _default_backend(self):
+    def _default_backend(self) -> Backend:
         try:
             return Backend(current_async_library())
         except AsyncLibraryNotFoundError:
@@ -155,8 +155,8 @@ class ZMQKernelInterface(BaseKernelInterface):
             - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
             - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
             - Some libraries may assume the call is occurring in the 'MainThread'.
-            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread start
-                the kernel asynchronously instead (`async with kernel:`).
+            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread`;
+                start the kernel asynchronously instead (`async with kernel: ...`).
         """
 
         async def run_kernel() -> None:
@@ -346,7 +346,9 @@ class ZMQKernelInterface(BaseKernelInterface):
     def _write_connection_file(
         self,
     ) -> None:
-        """Write connection info to JSON dict in kernel.connection_file."""
+        """
+        Write connection info to JSON dict in kernel.connection_file.
+        """
         if not (path := self.kernel.connection_file).exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             write_connection_file(
@@ -408,7 +410,9 @@ class ZMQKernelInterface(BaseKernelInterface):
         ident: bytes | list[bytes] | None = None,
         buffers: list[bytes] | None = None,
     ) -> None:
-        """Send a message on the zmq iopub socket."""
+        """
+        Send a message on the zmq iopub socket.
+        """
         if socket := Caller.iopub_sockets.get(t_ident := Caller.current_ident()):
             msg = self.session.send(
                 stream=socket,
@@ -433,8 +437,9 @@ class ZMQKernelInterface(BaseKernelInterface):
             )
 
     def receive_msg_loop(self, channel: Literal[Channel.control, Channel.shell], ready: Event, start: Event) -> None:
-        "Opens a zmq socket for the channel, receives messages and calls the message handler."
-
+        """
+        Opens a zmq socket for the channel, receives messages and calls the message handler.
+        """
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
@@ -499,7 +504,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             case False:
                 signal.default_int_handler(signum, frame)
 
-    def _interrupt_now(self, *, force=False):
+    def _interrupt_now(self, *, force=False) -> None:
         """
         Request an interrupt of the currently running shell thread.
 
@@ -520,6 +525,9 @@ class ZMQKernelInterface(BaseKernelInterface):
                 os.kill(os.getpid(), signal.SIGINT)
 
     @override
-    def interrupt(self):
+    def interrupt(self) -> None:
+        """
+        Perform a keyboard interrupt.
+        """
         self._interrupt_now()
         super().interrupt()
