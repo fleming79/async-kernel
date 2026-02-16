@@ -60,27 +60,15 @@ The kernel spec can be updated by adding a kernel spec with the same name ('asyn
 
 ## Backend
 
-The name _backend_ is adopted from anyio which applies to the asynchronous library.
-For async kernel this applies to the asynchronous library used shell and control channels.
-async kernel facilitates this using the [caller][async_kernel.caller.Caller] class with
-one caller per channel.
+There are two supported backends 'asyncio' and 'trio'.
 
 In CPython the [backend][async_kernel.typing.Backend] is started using [anyio.run][].
-The backend can be specified via the zmq [`interface.backend`][async_kernel.interface.BaseKernelInterface.backend] and backend_options can be specified on [`interface.backend_options'][async_kernel.interface.zmq.ZMQKernelInterface.backend_options].
+The type of backend can be specified at the attribute [`interface.backend`][async_kernel.interface.BaseKernelInterface.backend].
+The backend_options can be specified at the attribute [`interface.backend_options'][async_kernel.interface.zmq.ZMQKernelInterface.backend_options].
 Options can be written as a literal python string.
 
 ```console
-# options are 'asycio', 'trio'
-
---interface.backend=trio
-
-# asyncio & trio event loops are started using anyio. 'backend_options'
-
-
-# 'use_uv' is set by default.
-
-# To disable uv
-"--interface.loop_options={'use_uv':False}"
+async-kernel -a async-trio --interface.backend=trio
 ```
 
 ## Host loop (gui event loops - tk, qt)
@@ -89,12 +77,13 @@ Generally event loops don't like to share the thread with other event loops.
 Trio provides the function [trio.lowlevel.start_guest_run][] to run the event loop
 as a guest of the host event loop by means of callbacks.
 
-Ilya Egorov recently wrote an experimental
+The author of aiologic recently wrote an experimental
 asyncio version ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
-This means we can have a gui event loop and and asynchronous event loop running in the same thread. This is especially useful when the gui isn't thread safe.
+This means we can have a gui event loop and and asynchronous event loop running in the same thread.
+This is especially useful when the gui isn't thread safe.
 
-Here are some example kernel specs for host and backend
+Here are some example kernel specs for host and backend.
 
 ### tk
 
@@ -132,6 +121,11 @@ Options can be provided for how the backend is started.
         - context,
         - debug,
 - Without loop: `backend_options` in [anyio.run][]
+
+```console
+# If uvloop is installed it will be used by default. You can do this to disable it.
+async-kernel -a async "--interface.loop_options={'use_uvloop':False}"
+```
 
 ### Custom arguments
 
