@@ -110,7 +110,7 @@ Options can be provided to configure how a loop loads. There are only a few opti
 at present.
 
 - `host_class' `[type[Host| str]]` : A customised subclass of a [Host][async_kernel.event_loop.run.Host]
-    or a dotted import path to the customised Host.
+  or a dotted import path to the customised Host.
 - `'module': The module name on which to base the event loop. (Only applies to 'qt').
 
 ## Backend options
