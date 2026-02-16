@@ -14,11 +14,13 @@
 Async kernel is a Python [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) kernel
 with concurrent message handling.
 
-Messages are processed fairly whilst preventing asynchronous deadlocks by using a unique message handler per `channel`, `message_type` and `subshell_id`.
+Messages are processed fairly whilst preventing asynchronous deadlocks by using
+a unique message handler per `channel`, `message_type` and `subshell_id`.
 
 ## Highlights
 
-- [Experimental](https://github.com/fleming79/echo-kernel) support for [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/) 👈
+- [Experimental](https://github.com/fleming79/echo-kernel) support for
+  [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/) 👈
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 - [anyio](https://pypi.org/project/anyio/) compatible event loops
     - [`asyncio`](https://docs.python.org/3/library/asyncio.html) (default)
@@ -33,16 +35,19 @@ Messages are processed fairly whilst preventing asynchronous deadlocks by using 
     - [x] tk with asyncio[^asyncio guest] or trio backend running as a guest
     - [x] qt with asyncio[^asyncio guest] or trio backend running as a guest
 
-[^gui note]: To use a gui event loop the kernel must be started with `interface.loop=<loop name>`.
-The event loop (_host_) will run the gui's mainloop and start the kernel `backend` as a guest
-in the same thread. Switching the event loop at runtime is not supported.
+[^gui note]: A gui event loop is provided by starting the event loop (_host_)
+and then running an asynchronous backend as a guest in the event loop. Kernel
+messaging is performed as usual in the asynchronous backend. For this reason
+it is not possible to enable a gui event loop at runtime.
 
-[^gui caller note]: It is also possible to use a caller to run a gui event loop in a separate thread (with a backend running as a guest)
-if the gui allows it (qt will only run in the main thread). Also note that pyplot will only permit one interactive
-gui library in a process.
+[^gui caller note]: It is also possible to use a caller to run a gui event loop
+in a separate thread (with a backend running as a guest) if the gui allows it
+(qt will only run in the main thread). Also note that pyplot will only permit
+one interactive gui library in a process.
 
-[^asyncio guest]: The asyncio implementation of `start_guest_run` was written by [the author of aiologic](https://github.com/x42005e1f/aiologic)
-and provided as a ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
+[^asyncio guest]: The asyncio implementation of `start_guest_run` was written by
+[the author of aiologic](https://github.com/x42005e1f/aiologic) and provided as a
+([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
 **[Documentation](https://fleming79.github.io/async-kernel/)**
 
