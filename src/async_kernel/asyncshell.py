@@ -26,6 +26,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
+from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
 from async_kernel.typing import Content, NoValue, Tags
 
@@ -167,12 +168,13 @@ class AsyncInteractiveShell(InteractiveShell):
     Notable differences:
         - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
-        - Gui event loops(tk, qt, ...) [are not presently supported][async_kernel.asyncshell.AsyncInteractiveShell.enable_gui].
         - Not all features are support (see "not-supported" features listed below).
         - `user_ns` and `user_global_ns` are same dictionary which is a fixed `LastUpdatedDict`.
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
+
+    DEFAULT_MATPLOTLIB_BACKENDS = ["inline", "ipympl"]
 
     _execution_count = 0
     _resetting = False
@@ -514,19 +516,53 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def enable_gui(self, gui=None) -> None:
-        """
-        Enable a given gui.
+        if (gui is not None) and (gui not in (supported := self._list_matplotlib_backends_and_gui_loops())):
+            msg = f"The gui {gui!r} is not one of the supported gui options for this thread! {supported}="
+            raise RuntimeError(msg)
 
-        Supported guis:
-            - [x] inline
-            - [x] ipympl
-            - [ ] tk
-            - [ ] qt
+    @override
+    def enable_matplotlib(self, gui: str | None = None) -> tuple[str | Any | None, Any | str]:  # pragma: no cover
         """
-        supported_no_eventloop = [None, "inline", "ipympl"]
-        if gui not in supported_no_eventloop:
-            msg = f"The backend {gui=} is not supported by async-kernel. The currently supported gui options are: {supported_no_eventloop}."
-            raise NotImplementedError(msg)
+        Enable interactive matplotlib and inline figure support.
+
+        This takes the following steps:
+
+        1. select the appropriate matplotlib backend
+        2. set up matplotlib for interactive use with that backend
+        3. configure formatters for inline figure display
+
+        Args:
+            gui:
+                If given, dictates the choice of matplotlib GUI backend to use
+                (should be one of IPython's supported backends, 'qt', 'osx', 'tk',
+                'gtk', 'wx' or 'inline', 'ipympl'), otherwise we use the default chosen by
+                matplotlib (as dictated by the matplotlib build-time options plus the
+                user's matplotlibrc configuration file).  Note that not all backends
+                make sense in all contexts, for example a terminal ipython can't
+                display figures inline.
+        """
+        import matplotlib_inline.backend_inline  # noqa: PLC0415
+        from IPython.core import pylabtools as pt  # noqa: PLC0415
+
+        backends = self._list_matplotlib_backends_and_gui_loops()
+        gui = gui or backends[0]  # Use the
+        gui, backend = pt.find_gui_and_backend(gui, self.pylab_gui_select)
+        self.enable_gui(gui)
+        try:
+            pt.activate_matplotlib(backend)
+        except RuntimeError as e:
+            e.add_note(f"This thread supports the gui {gui!s} but pyplot only supports one interactive backend.")
+
+        matplotlib_inline.backend_inline.configure_inline_support(self, backend)
+
+        # Now we must activate the gui pylab wants to use, and fix %run to take
+        # plot updates into account
+        self.magics_manager.registry["ExecutionMagics"].default_runner = pt.mpl_runner(self.safe_execfile)
+
+        return gui, backend
+
+    def _list_matplotlib_backends_and_gui_loops(self) -> list[str | None]:
+        return [*get_runtime_matplotlib_guis(), *self.DEFAULT_MATPLOTLIB_BACKENDS]
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
@@ -667,6 +703,8 @@ class SubshellManager:
 @magics_class
 class KernelMagics(Magics):
     """Extra magics for async kernel."""
+
+    shell: AsyncInteractiveShell  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @line_magic
     def connect_info(self, _) -> None:

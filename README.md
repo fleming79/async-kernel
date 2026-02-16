@@ -14,11 +14,13 @@
 Async kernel is a Python [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) kernel
 with concurrent message handling.
 
-Messages are processed fairly whilst preventing asynchronous deadlocks by using a unique message handler per `channel`, `message_type` and `subshell_id`.
+Messages are processed fairly whilst preventing asynchronous deadlocks by using
+a unique message handler per `channel`, `message_type` and `subshell_id`.
 
 ## Highlights
 
-- [Experimental](https://github.com/fleming79/echo-kernel) support for [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/) 👈
+- [Experimental](https://github.com/fleming79/echo-kernel) support for
+  [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/) 👈
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 - [anyio](https://pypi.org/project/anyio/) compatible event loops
     - [`asyncio`](https://docs.python.org/3/library/asyncio.html) (default)
@@ -27,11 +29,25 @@ Messages are processed fairly whilst preventing asynchronous deadlocks by using 
 - [Easy multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
 - Per-subshell user_ns
-- GUI event loops
+- GUI event loops [^gui note][^gui caller note]
     - [x] inline
     - [x] ipympl
-    - [ ] tk
-    - [ ] qt
+    - [x] tk with asyncio[^asyncio guest] or trio backend running as a guest
+    - [x] qt with asyncio[^asyncio guest] or trio backend running as a guest
+
+[^gui note]: A gui event loop is provided by starting the event loop (_host_)
+and then running an asynchronous backend as a guest in the event loop. Kernel
+messaging is performed as usual in the asynchronous backend. For this reason
+it is not possible to enable a gui event loop at runtime.
+
+[^gui caller note]: It is also possible to use a caller to run a gui event loop
+in a separate thread (with a backend running as a guest) if the gui allows it
+(qt will only run in the main thread). Also note that pyplot will only permit
+one interactive gui library in a process.
+
+[^asyncio guest]: The asyncio implementation of `start_guest_run` was written by
+[the author of aiologic](https://github.com/x42005e1f/aiologic) and provided as a
+([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
 **[Documentation](https://fleming79.github.io/async-kernel/)**
 
@@ -41,73 +57,61 @@ Messages are processed fairly whilst preventing asynchronous deadlocks by using 
 pip install async-kernel
 ```
 
-## Asyncio
+## Kernel specs
 
-An asyncio kernel based backend with the name 'async' is installed when the kernel is installed.
+A kernel spec with the name 'async' is added when async kernel is installed.
 
-### Trio backend
+Kernel specs can be added/removed via the command line.
 
-To add a kernel spec for a `trio` backend.
+The kernel is configured via the interface with the options:
+
+- [`interface.backend`](#backends)
+- `interface.backend_options`
+- `interface.loop`
+- `interface.loop_options`
+
+### Backends
+
+The backend defines the asynchronous library provided in the thread in which it is running.
+
+- asyncio
+- trio
+
+**Example - change kernel spec to use trio**
 
 ```bash
 pip install trio
-async-kernel -a async-trio --interface.backend=trio
+async-kernel -a async --interface.backend=trio
+```
+
+### Gui event loop
+
+The kernel can be started with a gui event loop as the _host_ and the _backend_ running as a guest.
+
+**asyncio backend**
+
+```bash
+# tk
+async-kernel -a async-tk --interface.loop=tk
+
+# qt
+pip install PySide6-Essentials
+async-kernel -a async-qt --interface.loop=qt
+```
+
+**trio backend**
+
+```bash
+pip install trio
+# tk
+async-kernel -a async-tk --interface.loop=tk --interface.backend=trio
+
+# qt
+pip install PySide6-Essentials
+async-kernel -a async-qt --interface.loop=qt --interface.backend=trio
 ```
 
 For further detail about kernel spec customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
-
-## Message handling
-
-- When a message is received the `msg_handler` is called with:
-    - 'job' (a dict of `msg`, `received_time` and `ident`)
-    - The `channel`
-    - `msg_type`
-    - A function `send_reply`
-
-- The `msg_handler`
-    - determines the `subshell_id` and [run mode](#run-mode).
-    - obtains the `handler` from the kernel with the same name as the `msg_type`.
-    - determines the [run mode](#run-mode)
-    - creates cached version of the `run_handler` with a unique version per:
-        - The `handler`
-        - `channel`
-        - `subshell_id`
-        - send_reply (constant or per-channel)
-    - Obtains the caller associated with the channel and schedules execution of the cached handler
-
-### Run mode
-
-The run modes available are:
-
-- `RunMode.direct` → [`Caller.call_direct`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_direct):
-  Run the request directly in the scheduler.
-- `RunMode.queue` → [`Caller.queue_call`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.queue_call):
-  Run the request in a queue dedicated to the subshell, handler & channel.
-- `RunMode.task` → [`Caller.call_soon`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_soon):
-  Run the request in a separate task.
-- `RunMode.thread` → [`Caller.to_thread`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.to_thread):
-  Run the request in a separate worker thread.
-
-These are the currently assigned run modes.
-
-| SocketID                | shell  | control |
-| ----------------------- | ------ | ------- |
-| comm_close              | direct | direct  |
-| comm_info_request       | direct | direct  |
-| comm_msg                | queue  | queue   |
-| comm_open               | direct | direct  |
-| complete_request        | thread | thread  |
-| create_subshell_request | None   | thread  |
-| debug_request           | None   | queue   |
-| delete_subshell_request | None   | thread  |
-| execute_request         | queue  | queue   |
-| history_request         | thread | thread  |
-| inspect_request         | thread | thread  |
-| interrupt_request       | direct | direct  |
-| is_complete_request     | thread | thread  |
-| kernel_info_request     | direct | direct  |
-| list_subshell_request   | None   | direct  |
-| shutdown_request        | None   | direct  |
 
 ## Origin
 

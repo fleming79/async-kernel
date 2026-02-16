@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import signal
 import sys
@@ -14,7 +15,7 @@ from async_kernel import kernel as kernel_module
 from async_kernel.command import command_line
 from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Backend
+from async_kernel.typing import Backend, Loop
 from tests import utils
 
 if TYPE_CHECKING:
@@ -101,21 +102,76 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     assert "not found!" in out
 
 
-def test_start_kernel_success(monkeypatch):
-    monkeypatch.setattr(
-        sys, "argv", ["prog", "-f", ".", "--kernel_name=async", "--backend=asyncio", "--no-print_kernel_messages"]
-    )
+def test_command_start_kernel(monkeypatch):
     started = False
+
+    async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
+    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--no-print_kernel_messages"])
 
     async def wait_exit():
         nonlocal started
         started = True
 
     monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
-    with pytest.raises(SystemExit) as e:
-        command_line()
-    assert e.value.code == 0
-    assert started
+    try:
+        with pytest.raises(SystemExit) as e:
+            command_line()
+        assert e.value.code == 0
+        assert started
+    finally:
+        async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
+
+
+# Avoid matplotlib tests generally to avoid flaky tests on ci.
+@pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Requires matplotlib")
+@pytest.mark.parametrize("backend", Backend)
+@pytest.mark.parametrize("loop", [Loop.tk, Loop.qt, None])
+def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
+    import matplotlib as mpl  # noqa: PLC0415
+
+    mpl.use("module://matplotlib_inline.backend_inline")
+    started = False
+    if loop is Loop.tk:
+        if not importlib.util.find_spec("_tkinter"):
+            pytest.skip("_tkinter not installed")
+        gui = "tkagg"
+    elif loop is Loop.qt:
+        if not importlib.util.find_spec("PySide6"):
+            pytest.skip("PySide6 not installed")
+        gui = "qtagg"
+    else:
+        gui = "inline"
+
+    async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "prog",
+            "-f",
+            ".",
+            f"--kernel_name=async-{loop}",
+            f"--interface.loop={loop}",
+            f"--interface.backend={backend}",
+            "--no-print_kernel_messages",
+        ],
+    )
+
+    async def wait_exit():
+        nonlocal started
+        shell = async_kernel.Kernel().shell
+        bg = shell.enable_matplotlib()
+        assert bg == (loop, gui)
+        started = True
+
+    monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
+    try:
+        with pytest.raises(SystemExit) as e:
+            command_line()
+        assert e.value.code == 0
+        assert started
+    finally:
+        async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
 
 
 async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, kernel_name, transport):
@@ -126,7 +182,8 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
         "kernel = get_ipython().kernel",
         user_expressions={
             "kernel_name": "kernel.kernel_name",
-            "backend": "kernel.interface.anyio_backend",
+            "loop": "kernel.interface.loop",
+            "backend": "kernel.interface.backend",
             "transport": "kernel.interface.transport",
         },
     )

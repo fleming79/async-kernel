@@ -44,6 +44,8 @@ dependencies = [
     "matplotlib-inline>0.1",
     "wrapt>=2.0.1",
     "jupyter-core>=5.9.1",
+    "sniffio>=1.3.0; sys_platform != 'emscripten'",
+    "outcome; sys_platform != 'emscripten'",
     "pyzmq>=27.0; sys_platform != 'emscripten'", # pyzmq sockets (and threading) are not supported on pyodide (emscripten), `CallableKernelInterface` is used for kernel messaging.  
     "jupyter_client>=8.8; sys_platform != 'emscripten'",
 ]
@@ -58,6 +60,7 @@ Changelog = "https://fleming79.github.io/async-kernel/latest/about/changelog/"
 
 [project.scripts]
 async-kernel = "async_kernel.command:command_line"
+
 
 [dependency-groups]
 docs = ["mkdocs-material",
@@ -83,16 +86,15 @@ uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and impl
 "winloop; sys_platform == 'win32' and implementation_name == 'cpython'"
 ]    
 dev = [
-    "debugpy",
-    "ipykernel; implementation_name == 'cpython'",
-     {include-group = "uvloop"},
-    {include-group = "test"}
+  "debugpy",
+  "ipykernel; implementation_name == 'cpython'",
+  {include-group = "uvloop"},
+  {include-group = "test"},
 ]
-cov = [
-  "coverage[toml]",
-  "pytest-cov",
-  "matplotlib",
-  "trio",
+gui = [
+    "matplotlib>=3.10.8",
+    "pyside6-essentials>=6.10.2",
+    "wxpython>=4.2.5",
 ]
 
 [tool.hatch.version]
@@ -130,10 +132,9 @@ exclude_lines = [
   "except .*",
   "def excepthook.*", # Pytest overrides excepthook so it's not possible to test it.
   ".*sys.platform == \"win32\".*",
-  "if not self.kernel.quiet.*",
   "raise NotImplementedError",
   '.*sys.platform == "emscripten".*',
-  '.*# pragma: no cover'
+  '.*# pragma: no cover',
 ]
 
 [tool.coverage.run]
@@ -141,13 +142,13 @@ patch = ['subprocess']
 parallel = true
 relative_files = true
 source = ["async_kernel"]
-omit = ["tests/*", "hatch_build.py", '_version.py']
+omit = ["tests/*", "hatch_build.py", '_version.py', "tk_host.py", "qt_host.py", "asyncio_guest.py"]
 
 [tool.ruff]
 required-version = ">=0.12.8"
 line-length = 120
 extend-exclude = [
-  "_version.py"
+  "_version.py", "**/asyncio_guest.py"
 ]
 
 [tool.ruff.lint]
@@ -225,7 +226,7 @@ allow-direct-references = true
 
 [tool.basedpyright]
 include = ["src/**", "tests/**"]
-ignore = ["_version.py"]
+ignore = ["_version.py", "**/asyncio_guest.py", "**/qt_host.py"]
 reportMissingParameterType = false
 reportExplicitAny = false
 reportUnknownParameterType = false

@@ -39,7 +39,6 @@ __all__ = [
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
 _job_var: ContextVar[Job] = ContextVar("job")
-_execute_request_timeout: ContextVar[float | None] = ContextVar("timeout", default=None)
 
 
 def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:

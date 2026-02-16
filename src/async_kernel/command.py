@@ -132,7 +132,7 @@ def command_line() -> None:
                 traceback.print_exception(e, file=sys.stderr)
                 if sys.__stderr__ is not sys.stderr:
                     traceback.print_exception(e, file=sys.__stderr__)
-                sys.exit(1)
+                    sys.exit(1)
         sys.exit(0)
 
     # Print help

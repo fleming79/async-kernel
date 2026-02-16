@@ -25,11 +25,13 @@ __all__ = [
     "FixedCreated",
     "HandlerType",
     "Job",
+    "Loop",
     "Message",
     "MsgHeader",
     "MsgType",
     "NoValue",
     "RunMode",
+    "RunSettings",
     "Tags",
 ]
 
@@ -44,12 +46,45 @@ P = ParamSpec("P")
 
 
 class Backend(enum.StrEnum):
+    "An enum of library names corresponding to anyio."
+
     asyncio = "asyncio"
+    "An asyncio style event loop."
+
     trio = "trio"
+    "A trio style event loop."
+
+
+class Loop(enum.StrEnum):
+    "An enum of event loop names that available to start using [detail][async_kernel.event_loop.run.run]."
+
+    tk = "tk"
+    "An eventloop for [tkinter][]."
+
+    qt = "qt"
+    "An event loop for [Qt](https://wiki.qt.io/Qt_for_Python)."
+
+    gtk = "gtk"
+    "Not implemented [GTK](https://www.gtk.org/)."
+
+    wx = "wx"
+    "Not implemented [wxPython](https://wxpython.org/)."
+
+    osx = "osx"
+    "Not implemented"
+
+    custom = "custom"
+    "A custom loop that does is fit the other values."
+
+    asyncio = "asyncio"
+    "Provided for testing purposes only."
+
+    trio = "trio"
+    "Provided for testing purposes only."
 
 
 class Channel(enum.StrEnum):
-    "An enum of channels[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
+    "An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
 
     heartbeat = "hb"
     ""
@@ -361,7 +396,23 @@ class FixedCreated(TypedDict, Generic[S, T]):
     ""
 
 
-class CallerCreateOptions(TypedDict):
+class RunSettings(TypedDict):
+    "A dict of settings to use with [async_kernel.event_loop.run][]."
+
+    backend: NotRequired[Backend | Literal["asyncio", "trio"]]
+    "The backend to use for the caller."
+
+    backend_options: NotRequired[dict | None]
+    "The backend options to specify for [anyio.run][] (or `start_guest_run` when a loop is specified)."
+
+    loop: NotRequired[Loop | None]
+    "The type of eventloop where the backend will run."
+
+    "Options to use when calling [async_kernel.eventloop.run][]."
+    loop_options: NotRequired[dict | None]
+
+
+class CallerCreateOptions(RunSettings):
     "Options to use when creating an instance of a [Caller][async_kernel.caller.Caller]."
 
     name: NotRequired[str]
@@ -369,11 +420,6 @@ class CallerCreateOptions(TypedDict):
 
     log: NotRequired[logging.LoggerAdapter]
     "A logging adapter to use for the caller."
-
-    backend: NotRequired[Backend | Literal["trio", "asyncio"]]
-
-    "The backend to specify when calling [anyio.run][]."
-    backend_options: NotRequired[dict | None]
 
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]

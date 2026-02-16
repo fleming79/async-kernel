@@ -171,7 +171,8 @@ nav:
           - Simple example: notebooks/simple_example.ipynb
           - About concurrency: notebooks/concurrency.ipynb
           - Using caller: notebooks/caller.ipynb
-      - Commands: commands.md
+      - Commands: usage/commands.md
+      - Message handling: usage/message_handling.md
   - Reference:
       - reference/index.md
       - "caller": reference/caller.md
@@ -184,6 +185,7 @@ nav:
       - "kernelspec": reference/kernelspec.md
       - "asyncshell": reference/asyncshell.md
       - "pending": reference/pending.md
+      - "event_loop": reference/event_loop.md
       - "typing": reference/typing.md
       - "utils": reference/utils.md
 

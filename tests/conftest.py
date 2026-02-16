@@ -97,7 +97,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
 @pytest.fixture(scope="module")
 async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
     assert isinstance(kernel.interface, ZMQKernelInterface)
-    if kernel.interface.anyio_backend is Backend.trio:
+    if kernel.interface.backend is Backend.trio:
         pytest.skip("AsyncKernelClient needs asyncio")
     client = AsyncKernelClient()
     client.load_connection_info(kernel.get_connection_info())
@@ -122,7 +122,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, kernel_name
     """
     assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
     connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-    backend = "trio" if "trio" in kernel_name else "asyncio"
+    backend = Backend.trio if "trio" in kernel_name else Backend.asyncio
     kwgs = {"interface.transport": transport, "interface.backend": backend}
     command = make_argv(connection_file=connection_file, kernel_name=kernel_name, **kwgs)  # pyright: ignore[reportArgumentType]
     process = await anyio.open_process([*command, "--no-print_kernel_messages"])

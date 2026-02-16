@@ -16,26 +16,25 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self
 
-import anyio
 import traitlets
 import zmq
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import current_async_library, enable_signal_safety
+from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
 from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Dict, Unicode, UseEnum, default
+from traitlets import CaselessStrEnum, Dict, TraitType, Unicode, UseEnum, default
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
-import async_kernel
+import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Backend, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
+from async_kernel.typing import Backend, Channel, Content, Job, Loop, Message, MsgHeader, MsgType, NoValue, RunSettings
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -126,17 +125,27 @@ class ZMQKernelInterface(BaseKernelInterface):
     )
     "Transport for sockets."
 
-    backend: traitlets.Container[Backend] = UseEnum(Backend)  # pyright: ignore[reportAssignmentType]
-    "The the backend used to provide the shell event loop."
+    loop: TraitType[Loop | None, Loop | None] = UseEnum(Loop, default_value=None, allow_none=True)
+    "The name of the (gui) event loop if one is used."
+
+    loop_options = Dict(allow_none=True)
+    "Options for starting the loop."
 
     backend_options = Dict(allow_none=True)
-    "The `backend_options` to use with [anyio.run][]."
+    "Options for starting the backend."
 
-    @default("backend_options")
-    def _default_backend_options(self):
-        if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-            return {"use_uvloop": True}
-        return None  # pragma: no cover
+    @default("backend")
+    def _default_backend(self) -> Backend:
+        try:
+            return Backend(current_async_library())
+        except AsyncLibraryNotFoundError:
+            if (
+                not self.loop
+                and not self.trait_has_value("backend_options")
+                and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
+            ):
+                self.backend_options["use_uvloop"] = True
+            return Backend.asyncio
 
     def start(self):
         """
@@ -146,14 +155,21 @@ class ZMQKernelInterface(BaseKernelInterface):
             - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
             - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
             - Some libraries may assume the call is occurring in the 'MainThread'.
-            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread. Use `async with kernel` instead.
+            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread`;
+                start the kernel asynchronously instead (`async with kernel: ...`).
         """
 
         async def run_kernel() -> None:
             async with self.kernel:
                 await self.wait_exit
 
-        anyio.run(run_kernel, backend=self.backend, backend_options=self.backend_options)
+        settings = RunSettings(
+            backend=self.backend,
+            loop=self.loop,
+            backend_options=self.backend_options,
+            loop_options=self.loop_options,
+        )
+        async_kernel.event_loop.run(run_kernel, (), settings)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -197,12 +213,19 @@ class ZMQKernelInterface(BaseKernelInterface):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """Create caller, and open socketes."""
+        self.backend = Backend(current_async_library())
         sig = restore_io = None
-        caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log, zmq_context=self._zmq_context)
+        caller = Caller(
+            "manual",
+            name="Shell",
+            protected=True,
+            log=self.kernel.log,
+            zmq_context=self._zmq_context,
+            loop=self.loop,
+        )
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
         start = Event()
-        self.anyio_backend = Backend(current_async_library())
         try:
             async with caller:
                 self._start_hb_iopub_shell_control_threads(start)
@@ -323,7 +346,9 @@ class ZMQKernelInterface(BaseKernelInterface):
     def _write_connection_file(
         self,
     ) -> None:
-        """Write connection info to JSON dict in kernel.connection_file."""
+        """
+        Write connection info to JSON dict in kernel.connection_file.
+        """
         if not (path := self.kernel.connection_file).exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             write_connection_file(
@@ -385,7 +410,9 @@ class ZMQKernelInterface(BaseKernelInterface):
         ident: bytes | list[bytes] | None = None,
         buffers: list[bytes] | None = None,
     ) -> None:
-        """Send a message on the zmq iopub socket."""
+        """
+        Send a message on the zmq iopub socket.
+        """
         if socket := Caller.iopub_sockets.get(t_ident := Caller.current_ident()):
             msg = self.session.send(
                 stream=socket,
@@ -410,8 +437,9 @@ class ZMQKernelInterface(BaseKernelInterface):
             )
 
     def receive_msg_loop(self, channel: Literal[Channel.control, Channel.shell], ready: Event, start: Event) -> None:
-        "Opens a zmq socket for the channel, receives messages and calls the message handler."
-
+        """
+        Opens a zmq socket for the channel, receives messages and calls the message handler.
+        """
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
@@ -476,7 +504,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             case False:
                 signal.default_int_handler(signum, frame)
 
-    def _interrupt_now(self, *, force=False):
+    def _interrupt_now(self, *, force=False) -> None:
         """
         Request an interrupt of the currently running shell thread.
 
@@ -497,6 +525,9 @@ class ZMQKernelInterface(BaseKernelInterface):
                 os.kill(os.getpid(), signal.SIGINT)
 
     @override
-    def interrupt(self):
+    def interrupt(self) -> None:
+        """
+        Perform a keyboard interrupt.
+        """
         self._interrupt_now()
         super().interrupt()
