@@ -53,7 +53,9 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
 
 class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     """
-    The base class required interface with the kernel. Must be overloaded to be useful.
+    The base class for interfacing with the kernel.
+
+    Must be overloaded to be useful.
     """
 
     log = Instance(logging.LoggerAdapter)
@@ -61,12 +63,12 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
-    ""
+
     kernel: Fixed[Self, Kernel] = Fixed(lambda _: async_kernel.Kernel())
     "The kernel."
 
     interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
-    "A set for callables can be added to run code when a kernel interrupt is initiated (control thread)."
+    "A set for callbacks to register for calling when `interrupt` is called."
 
     last_interrupt_frame = None
     "This frame is set when an interrupt is intercepted and cleared once the interrupt has been handled."
@@ -75,7 +77,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     "An event that when set will leave the kernel context if the kernel was started by this interface."
 
     backend = UseEnum(Backend)
-    "The current async used by the caller for messaging."
+    "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
         raise NotImplementedError
@@ -95,7 +97,6 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        """Create caller, and open sockets."""
         self.backend = Backend(current_async_library())
         restore_io = None
         caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log)
@@ -119,7 +120,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
         getpass.getpass = self.getpass
         for name in ["stdout", "stderr"]:
 
-            def flusher(string: str, name=name):
+            def flusher(string: str, name=name) -> None:
                 "Publish stdio or stderr when flush is called"
                 self.iopub_send(
                     msg_or_type="stream",
@@ -172,7 +173,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
         """
         return self.input_request(prompt, password=True)
 
-    def interrupt(self):
+    def interrupt(self) -> None:
         """
         Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterruptError][].
         """
