@@ -88,7 +88,7 @@ async-kernel -a async --interface.backend=trio
 
 The kernel can be started with a gui event loop as the _host_ and the _backend_ running as a guest.
 
-**asyncio backend:**
+**asyncio backend**
 
 ```bash
 # tk

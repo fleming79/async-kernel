@@ -74,12 +74,12 @@ async-kernel -a async-trio --interface.backend=trio
 ## Host loop (gui event loops - tk, qt)
 
 Typically event loops don't like to share the thread with any other event loop.
-Trio provides the function [trio.lowlevel.start_guest_run][] allow it to run
+Trio provides the function [trio.lowlevel.start_guest_run][] which allows it to run
 as a guest alongside the host event loop by means of callbacks. The author of
 aiologic has provided an (experimental) asyncio equivalent ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
 Async kernel supports configuration of one host and one backend for the kernel.
-Below are some example kernel specs for host and backend.
+Below are some example kernel specs for host and backend kernel specs.
 
 ### tk
 
@@ -103,6 +103,15 @@ async-kernel -a async-qt-trio --interface.loop=qt --interface.backend=trio
 # PySide6 is default.  You can specify a different module via `loop_options`
 async-kernel -a async-qt --interface.loop=qt --interface.loop_options={'module':'PySide2'}
 ```
+
+## Loop options
+
+Options can be provided to configure how a loop loads. There are only a few options available
+at present.
+
+- `host_class' `[type[Host| str]]` : A customised subclass of a [Host][async_kernel.event_loop.run.Host]
+    or a dotted import path to the customised Host.
+- `'module': The module name on which to base the event loop. (Only applies to 'qt').
 
 ## Backend options
 
