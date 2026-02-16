@@ -139,8 +139,10 @@ class ZMQKernelInterface(BaseKernelInterface):
         try:
             return Backend(current_async_library())
         except AsyncLibraryNotFoundError:
-            if (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop")) and not self.trait_has_value(
-                "backend_options"
+            if (
+                not self.loop
+                and not self.trait_has_value("backend_options")
+                and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
             ):
                 self.backend_options["use_uvloop"] = True
             return Backend.asyncio

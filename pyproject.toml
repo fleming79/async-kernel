@@ -86,11 +86,15 @@ uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and impl
 "winloop; sys_platform == 'win32' and implementation_name == 'cpython'"
 ]    
 dev = [
-  "PySide6-Essentials; implementation_name == 'cpython'",
   "debugpy",
   "ipykernel; implementation_name == 'cpython'",
   {include-group = "uvloop"},
   {include-group = "test"},
+]
+gui = [
+    "matplotlib>=3.10.8",
+    "pyside6-essentials>=6.10.2",
+    "wxpython>=4.2.5",
 ]
 
 [tool.hatch.version]
@@ -222,7 +226,7 @@ allow-direct-references = true
 
 [tool.basedpyright]
 include = ["src/**", "tests/**"]
-ignore = ["_version.py", "**/asyncio_guest.py"]
+ignore = ["_version.py", "**/asyncio_guest.py", "**/qt_host.py"]
 reportMissingParameterType = false
 reportExplicitAny = false
 reportUnknownParameterType = false
