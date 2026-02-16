@@ -9,7 +9,6 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 
 import anyio
-import IPython.core.pylabtools
 import IPython.core.release
 import orjson
 from IPython.core.completer import provisionalcompleter, rectify_completions
@@ -560,7 +559,6 @@ class AsyncInteractiveShell(InteractiveShell):
         # plot updates into account
         self.magics_manager.registry["ExecutionMagics"].default_runner = pt.mpl_runner(self.safe_execfile)
 
-        IPython.core.pylabtools.activate_matplotlib(backend)
         return gui, backend
 
     def _list_matplotlib_backends_and_gui_loops(self) -> list[str | None]:
