@@ -79,7 +79,7 @@ class SimpleAsyncQueue(Generic[T]):
             appended to the queue after the queue stop has been called.
     """
 
-    __slots__ = ["__weakref__", "_active", "_checkpoint", "_disposer", "_resume"]
+    __slots__ = ["__weakref__", "_active", "_checkpoint", "_reject", "_resume"]
 
     _active: bool | None
     queue: Fixed[Self, deque[T]] = Fixed(deque)
@@ -90,7 +90,7 @@ class SimpleAsyncQueue(Generic[T]):
         self._resume = noop
         self._checkpoint = asyncio_checkpoint if Backend(backend) is Backend.asyncio else trio_checkpoint
         self._active = None
-        self._disposer = reject
+        self._reject = reject
 
     async def __aiter__(self) -> AsyncGenerator[T]:
         if self._active is False:
@@ -118,9 +118,9 @@ class SimpleAsyncQueue(Generic[T]):
         "Stop the queue rejecting any items currently in the queue."
         self._active = False
         self._resume()
-        if self._disposer:
+        if self._reject:
             for item in self.queue:
-                self._disposer(item)
+                self._reject(item)
         self.queue.clear()
         self._resume = noop
 
@@ -132,8 +132,8 @@ class SimpleAsyncQueue(Generic[T]):
         """
         if self._active is False:
             for item in items:
-                if self._disposer:
-                    self._disposer(item)
+                if self._reject:
+                    self._reject(item)
         else:
             self.queue.extend(items)
             self._resume()
