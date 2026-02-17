@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast
 import anyio
 import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
@@ -62,12 +62,8 @@ trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpo
 
 
 @coroutine
-def checkpoint(backend: Backend):
-    "Yield to the event loop."
-    if backend is Backend.trio:
-        yield from trio_checkpoint().__await__()
-    else:
-        yield
+def asyncio_checkpoint():
+    yield
 
 
 class Caller(anyio.AsyncContextManagerMixin):
@@ -114,6 +110,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _loop: Loop | None
     _loop_options: dict[str, Any] | None
     _protected = False
+    _use_safe_checkpoint = False
     _state: CallerState = CallerState.initial
     _state_reprs: ClassVar[dict] = {
         CallerState.initial: "❗ not running",
@@ -207,9 +204,19 @@ class Caller(anyio.AsyncContextManagerMixin):
             return inst
         return None
 
-    def checkpoint(self) -> Awaitable[None]:
-        "An awaitable that will yield execution to the event loop."
-        return checkpoint(self.backend)
+    async def checkpoint(self) -> None:  
+        "Yield to the event loop."
+        if not self._use_safe_checkpoint:
+            try:
+                if self.backend is Backend.trio:
+                    await trio_checkpoint()
+                else:
+                    await asyncio_checkpoint()
+            except Exception:
+                self._use_safe_checkpoint = True
+            else:
+                return
+        await async_checkpoint(force=True)
 
     @override
     def __repr__(self) -> str:
@@ -418,7 +425,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
-                    await checkpoint(self.backend)
+                    await self.checkpoint()
 
     async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
         """
@@ -468,7 +475,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             del task
                         else:
                             item.context.run(tg.start_soon, self._call_scheduled, item)
-                    await checkpoint(self.backend)
+                    await self.checkpoint()
                     del item, result
                 else:
                     event = create_async_event()
@@ -818,7 +825,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 result = None
                 try:
                     while True:
-                        await checkpoint(self.backend)
+                        await self.checkpoint()
                         if queue:
                             item = queue.popleft()
                             try:
@@ -834,7 +841,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             item = result = None
                             event = create_async_event()
                             pen.metadata["resume"] = event.set
-                            await checkpoint(self.backend)
+                            await self.checkpoint()
                             if not queue:
                                 await event
                             pen.metadata["resume"] = noop
@@ -912,7 +919,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if len(unfinished) == max_concurrent_:
                                 await event
                             resume = noop
-                            await checkpoint(self.backend)
+                            await self.checkpoint()
 
             except (StopAsyncIteration, StopIteration):
                 return

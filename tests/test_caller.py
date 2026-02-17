@@ -127,6 +127,16 @@ class TestCaller:
         await pen
         assert re.match(matches[1], repr(pen))
 
+    async def test_use_safe_checkpoint(self, mocker, caller: Caller):
+        await caller.checkpoint()
+        mocker.patch.object(caller, "_use_safe_checkpoint", True)
+        await caller.checkpoint()
+        mocker.patch.object(caller, "_use_safe_checkpoint", False)
+        # Force the opposite backend
+        mocker.patch.object(caller, "_backend", next(b for b in Backend if b is not caller.backend))
+        await caller.checkpoint()
+
+
     async def test_protected(self, anyio_backend: Backend):
         async with Caller("manual", protected=True) as caller:
             caller.stop()
