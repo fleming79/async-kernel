@@ -72,11 +72,11 @@ class SimpleAsyncQueue(Generic[T]):
 
     Notes:
         - Adding to the queue is synchronous and non-blocking.
-        - The size of the queue is limitless.
-        - The queue can only be entered with the async iterator.
-        - When the queue is stopped the iterator stops.
-        - Items in the queue are rejected when the queue is stopped and to any item
-            appended to the queue after the queue stop has been called.
+        - The size of the queue is not limited.
+        - The queue will only iterate once, suquest iteration will return immediately.
+        - When the queue is stopped the iterator is stopped.
+        - Items in the queue are discarded when the queue is stopped and will call `reject` if it is set.
+        - Items added to the queue after stop is called will call 'reject' if it is set.
     """
 
     __slots__ = ["__weakref__", "_active", "_checkpoint", "_reject", "_resume"]
