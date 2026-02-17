@@ -7,7 +7,7 @@ import threading
 import time
 import weakref
 from random import random
-from typing import Literal
+from typing import Any, Literal
 
 import anyio
 import anyio.to_thread
@@ -15,7 +15,7 @@ import pytest
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
 
-from async_kernel.caller import Caller
+from async_kernel.caller import Caller, SimpleAsyncQueue
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, Loop
 
@@ -27,6 +27,60 @@ if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
 @pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
     return request.param
+
+
+class TestSimpleAsyncQueue:
+    async def test_functional(self, anyio_backend: Backend) -> None:
+        rejected = set()
+
+        def reject(item):
+            rejected.add(item)
+
+        queue = SimpleAsyncQueue(anyio_backend, reject=reject)
+        for i in range(4):
+            queue.add(i)
+        async for n in queue:
+            if n == 2:
+                break
+        await anyio.sleep(0.01)
+        assert not queue.queue
+        assert rejected == {3}
+        async for _ in queue:
+            pass
+        queue.add(4)
+        assert rejected == {3, 4}
+
+    async def test_resume(self, anyio_backend: Backend) -> None:
+        queue = SimpleAsyncQueue(anyio_backend)
+
+        async def add():
+            await anyio.sleep(0.01)
+            for i in range(10):
+                if i % 2:
+                    await anyio.sleep(0.01)
+                queue.add(i)
+
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(add)
+            i = 0
+            async for n in queue:
+                assert n == i
+                i += 1
+                if i == 10:
+                    break
+
+    async def test_stop(self, anyio_backend: Backend) -> None:
+        queue = SimpleAsyncQueue[Any](anyio_backend)
+        queue.add(range(3))
+        async for _ in queue:
+            queue.stop()
+        assert not queue.queue
+
+    async def test_stop_early(self, anyio_backend: Backend) -> None:
+        queue = SimpleAsyncQueue[Any](anyio_backend)
+        queue.stop()
+        queue.add(range(3))
+        assert not queue.queue
 
 
 @pytest.mark.anyio

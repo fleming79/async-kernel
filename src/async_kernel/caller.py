@@ -14,7 +14,7 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType, coroutine
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack, cast
 
 import anyio
 import anyio.from_thread
@@ -64,6 +64,84 @@ trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpo
 @coroutine
 def asyncio_checkpoint():
     yield
+
+
+class SimpleAsyncQueue(Generic[T]):
+    """
+    A single use queue for a single asynchronous iterator consumer.
+
+    Notes:
+        - Adding to the queue is synchronous and non-blocking.
+        - The size of the queue is limitless.
+        - The queue can only be entered with the async iterator.
+        - When the queue is stopped the iterator stops.
+        - Items in the queue are rejected when the queue is stopped and to any item
+            appended to the queue after the queue stop has been called.
+    """
+
+    __slots__ = ["__weakref__", "_active", "_checkpoint", "_disposer", "_resume"]
+
+    _active: bool | None
+    queue: Fixed[Self, deque[T]] = Fixed(deque)
+
+    def __init__(
+        self, backend: Backend | Literal["asyncio", "trio"], /, *, reject: Callable[[T], Any] | None = None
+    ) -> None:
+        self._resume = noop
+        self._checkpoint = asyncio_checkpoint if Backend(backend) is Backend.asyncio else trio_checkpoint
+        self._active = None
+        self._disposer = reject
+
+    async def __aiter__(self) -> AsyncGenerator[T]:
+        if self._active is False:
+            # already stooped
+            return
+        if self._active is not None:
+            msg = "Already active!"
+            raise RuntimeError(msg)
+        self._active = True
+        try:
+            while self._active:
+                if self.queue:
+                    yield self.queue.popleft()
+                    await self._checkpoint()
+                else:
+                    event = create_async_event()
+                    self._resume = event.set
+                    if not self.queue and self._active:
+                        await event
+                    self._resume = noop
+        finally:
+            self.stop()
+
+    def stop(self) -> None:
+        "Stop the queue rejecting any items currently in the queue."
+        self._active = False
+        self._resume()
+        if self._disposer:
+            for item in self.queue:
+                self._disposer(item)
+        self.queue.clear()
+        self._resume = noop
+
+    def add(self, *items: T) -> None:
+        """
+        Add items to the queue.
+
+        If the queue has been stopped the items will be rejected.
+        """
+        if self._active is False:
+            for item in items:
+                if self._disposer:
+                    self._disposer(item)
+        else:
+            self.queue.extend(items)
+            self._resume()
+
+    @property
+    def stopped(self) -> bool:
+        "Set after the queue has been stopped and the no items in the queue."
+        return self._active is False
 
 
 class Caller(anyio.AsyncContextManagerMixin):
@@ -129,7 +207,12 @@ class Caller(anyio.AsyncContextManagerMixin):
     _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
-    _queue: Fixed[Self, deque[Pending | tuple[Callable, tuple, dict]]] = Fixed(deque)
+    _queue: Fixed[Self, SimpleAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
+        lambda c: SimpleAsyncQueue(
+            c["owner"].backend,
+            reject=lambda item: isinstance(item, Pending) and (item.cancel("closed", _force=True)),
+        )
+    )
     stopped = Fixed(Event)
     "A thread-safe Event for when the caller is stopped."
 
@@ -282,7 +365,6 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             # create a new instance
             inst = super().__new__(cls)
-            inst._resume = noop
             inst._name = name
             inst._backend = Backend(backend or current_async_library())
             inst._loop = Loop(loop) if (loop := kwargs.get("loop")) else None
@@ -378,14 +460,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pass
         for child in self.children:
             child.stop(force=True)
-        while self._queue:
-            item = self._queue.pop()
-            if isinstance(item, Pending):
-                item.cancel()
-                item.set_result(None)
+        self._queue.stop()
         for func in tuple(self._queue_map):
             self.queue_close(func)
-        self._resume()
         if set_stop:
             self.stopped.set()
             self._state = CallerState.stopped
@@ -455,34 +532,27 @@ class Caller(anyio.AsyncContextManagerMixin):
             except Exception:
                 coro.close()
         try:
-            while self._state is CallerState.running:
-                if self._queue:
-                    item = self._queue.popleft()
-                    result = None
-                    if not isinstance(item, Pending):
-                        try:
-                            result = item[0](*item[1], **item[2])
-                            if inspect.iscoroutine(result):
-                                await result
-                        except Exception as e:
-                            self.log.exception("Direct call failed", exc_info=e)
-                    else:
-                        if asyncio_backend:
-                            task = loop.create_task(self._call_scheduled(item), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
-                            if not task.done():
-                                self._tasks.add(task)
-                                task.add_done_callback(self._tasks.discard)
-                            del task
-                        else:
-                            item.context.run(tg.start_soon, self._call_scheduled, item)
-                    await self.checkpoint()
-                    del item, result
+            async for item in self._queue:
+                if self._state is not CallerState.running:
+                    break
+                result = None
+                if not isinstance(item, Pending):
+                    try:
+                        result = item[0](*item[1], **item[2])
+                        if inspect.iscoroutine(result):
+                            await result
+                    except Exception as e:
+                        self.log.exception("Direct call failed", exc_info=e)
                 else:
-                    event = create_async_event()
-                    self._resume = event.set
-                    if self._state is CallerState.running and not self._queue:
-                        await event
-                    self._resume = noop
+                    if asyncio_backend:
+                        task = loop.create_task(self._call_scheduled(item), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
+                        if not task.done():
+                            self._tasks.add(task)
+                            task.add_done_callback(self._tasks.discard)
+                        del task
+                    else:
+                        item.context.run(tg.start_soon, self._call_scheduled, item)
+                del item, result
         finally:
             if asyncio_backend:
                 for task in self._tasks:
@@ -664,8 +734,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             msg = f"{self} is {self._state.name}!"
             raise RuntimeError(msg)
         pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        self._queue.append(pen)
-        self._resume()
+        self._queue.add(pen)
         return pen
 
     def call_later(
@@ -730,8 +799,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **Use this method for lightweight calls only!**
 
         """
-        self._queue.append((func, args, kwargs))
-        self._resume()
+        self._queue.add((func, args, kwargs))
 
     def to_thread(
         self,
