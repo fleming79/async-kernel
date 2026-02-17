@@ -94,7 +94,7 @@ class SimpleAsyncQueue(Generic[T]):
 
     async def __aiter__(self) -> AsyncGenerator[T]:
         if self._active is False:
-            # already stooped
+            # already stopped
             return
         if self._active is not None:
             msg = "Already active!"
@@ -883,7 +883,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         key = hash(func)
         if not (pen_ := self._queue_map.get(key)):
-            queue = deque()
+            queue = SimpleAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
 
@@ -892,34 +892,23 @@ class Caller(anyio.AsyncContextManagerMixin):
                 assert pen
                 result = None
                 try:
-                    while True:
-                        await self.checkpoint()
-                        if queue:
-                            item = queue.popleft()
-                            try:
-                                result = item[0](*item[1], **item[2])
-                                if inspect.iscoroutine(object=result):
-                                    result = await result
-                            except (anyio.get_cancelled_exc_class(), Exception) as e:
-                                if pen.cancelled():
-                                    raise
-                                self.log.exception("Execution %s failed", item, exc_info=e)
-                        else:
+                    async for item in queue:
+                        try:
+                            result = item[0](*item[1], **item[2])
+                            if inspect.iscoroutine(object=result):
+                                result = await result
+                        except (anyio.get_cancelled_exc_class(), Exception) as e:
+                            if pen.cancelled():
+                                raise
+                            self.log.exception("Execution %s failed", item, exc_info=e)
+                        if not queue.queue:
                             pen.set_result(result, reset=True)
-                            item = result = None
-                            event = create_async_event()
-                            pen.metadata["resume"] = event.set
-                            await self.checkpoint()
-                            if not queue:
-                                await event
-                            pen.metadata["resume"] = noop
-                            del event
+                            item = result = None  # noqa: PLW2901
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue, resume=noop)
-        pen_.metadata["queue"].append((func, args, kwargs))
-        pen_.metadata["resume"]()
+            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue)
+        pen_.metadata["queue"].add((func, args, kwargs))
         return pen_.add_to_trackers()  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
@@ -931,6 +920,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         key = func if isinstance(func, int) else hash(func)
         if pen := self._queue_map.pop(key, None):
+            pen.metadata["queue"].stop()
             pen.cancel()
 
     async def as_completed(
