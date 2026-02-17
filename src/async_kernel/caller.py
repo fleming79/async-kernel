@@ -204,7 +204,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             return inst
         return None
 
-    async def checkpoint(self) -> None:  
+    async def checkpoint(self) -> None:
         "Yield to the event loop."
         if not self._use_safe_checkpoint:
             try:

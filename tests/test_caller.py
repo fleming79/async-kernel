@@ -136,7 +136,6 @@ class TestCaller:
         mocker.patch.object(caller, "_backend", next(b for b in Backend if b is not caller.backend))
         await caller.checkpoint()
 
-
     async def test_protected(self, anyio_backend: Backend):
         async with Caller("manual", protected=True) as caller:
             caller.stop()
