@@ -111,7 +111,7 @@ pip install PySide6-Essentials
 async-kernel -a async-qt --interface.loop=qt --interface.backend=trio
 ```
 
-For further detail about kernel spec customisation see [command line usage](https://fleming79.github.io/async-kernel/latest/commands/#command-line).
+For further detail about kernel spec customisation see [command line and kernel configuration](https://fleming79.github.io/async-kernel/latest/usage/commands/).
 
 ## Origin
 
