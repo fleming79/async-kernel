@@ -422,9 +422,12 @@ class Pending(Awaitable[T]):
             if not self._done or self._done_callbacks:
                 event = create_async_event()
                 self._done_callbacks.appendleft(lambda _: event.set())
-                with anyio.fail_after(timeout):
-                    if not self._done or self._done_callbacks:
+                if not self._done or self._done_callbacks:
+                    if timeout is None:
                         await event
+                    else:
+                        with anyio.fail_after(timeout):
+                            await event
             else:
                 await async_checkpoint(force=True)
             return self.result() if result else None
