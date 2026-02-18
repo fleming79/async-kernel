@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack,
 import anyio
 import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, create_async_waiter, current_async_library
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
@@ -942,43 +942,38 @@ class Caller(anyio.AsyncContextManagerMixin):
             2. Pass a container with all results when the limiter is not relevant.
         """
         resume = noop
-        done_results: SingleConsumerAsyncQueue[Pending[T]] = SingleConsumerAsyncQueue(self.backend)
+        queue: SingleConsumerAsyncQueue[Pending[T]] = SingleConsumerAsyncQueue(self.backend)
         unfinished: set[Pending[T]] = set()
-        done = False
-        current_pending = self.current_pending()
+        pen_current = self.current_pending()
         if isinstance(items, set | list | tuple):
             max_concurrent_ = 0
         else:
             max_concurrent_ = self.MAX_IDLE_POOL_INSTANCES if max_concurrent is NoValue else int(max_concurrent)
 
-        async def iter_items():
-            nonlocal done, resume
+        async def scheduler():
+            nonlocal resume
             gen = items if isinstance(items, AsyncGenerator) else iter(items)
-            try:
-                ag = isinstance(gen, AsyncGenerator)
-                while (pen := await anext(gen, None) if ag else next(gen, None)) is not None:
-                    assert pen is not current_pending, "Would result in deadlock"
-                    if not isinstance(pen, Pending):
-                        pen = cast("Pending[T]", self.call_soon(await_for, pen))
-                    pen.add_done_callback(done_results.append)
-                    if not pen.done():
-                        unfinished.add(pen)
-                        if max_concurrent_ and len(unfinished) == max_concurrent_:
-                            event = create_async_event()
-                            resume = event.set
-                            if len(unfinished) == max_concurrent_:
-                                await event
-                            resume = noop
-                            await self.checkpoint()
-            finally:
-                done = True
+            is_async = isinstance(gen, AsyncGenerator)
+            while (pen := await anext(gen, None) if is_async else next(gen, None)) is not None:
+                assert pen is not pen_current, "Would result in deadlock"
+                if not isinstance(pen, Pending):
+                    pen = cast("Pending[T]", self.call_soon(await_for, pen))
+                pen.add_done_callback(queue.append)
+                if not pen.done():
+                    unfinished.add(pen)
+                    if max_concurrent_ and len(unfinished) == max_concurrent_:
+                        waiter = create_async_waiter()
+                        resume = waiter.wake
+                        if len(unfinished) == max_concurrent_:
+                            await waiter
+                        resume = noop
 
-        pen_ = self.call_soon(iter_items)
+        pen_ = self.call_soon(scheduler)
         try:
-            async for pen in done_results:
+            async for pen in queue:
                 unfinished.discard(pen)
                 yield pen
-                if done and not unfinished and not done_results.queue:
+                if pen_.done() and not unfinished and not queue.queue:
                     break
                 else:
                     if max_concurrent_ and len(unfinished) < max_concurrent_:
@@ -987,7 +982,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         finally:
             pen_.cancel()
             for pen in unfinished:
-                pen.remove_done_callback(done_results.append)
+                pen.remove_done_callback(queue.append)
                 if cancel_unfinished:
                     pen.cancel("Cancelled by as_completed")
 
