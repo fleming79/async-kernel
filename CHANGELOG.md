@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.3] - 2026-02-18
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Fix PendingTracker for id leakage when opting out of tracking [#319](https://github.com/fleming79/async-kernel/pull/319)
+
+### <!-- 1 --> 🚀 Features
+
+- Added SingleConsumerAsyncQueue to caller.py [#322](https://github.com/fleming79/async-kernel/pull/322)
+
+- Add support for running various event loops with the backend running as a guest [#320](https://github.com/fleming79/async-kernel/pull/320)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Make Caller.checkpoint safer. [#321](https://github.com/fleming79/async-kernel/pull/321)
+
+- Raise a PendingCancelled in a PendingGroup when cancelled via the cancel scope. [#318](https://github.com/fleming79/async-kernel/pull/318)
+
+- Raise ExceptionGroup in PendingGroup when a pending fails. [#317](https://github.com/fleming79/async-kernel/pull/317)
+
+- PendingTracker refactoring [#316](https://github.com/fleming79/async-kernel/pull/316)
+
 ## [0.12.2] - 2026-02-10
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -12,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change Pending trackers default from `PendingTracker`  to () meaning that tracking is opt in rather than opt out. [#314](https://github.com/fleming79/async-kernel/pull/314)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.12.2 [#315](https://github.com/fleming79/async-kernel/pull/315)
 
 - Maintenance [#313](https://github.com/fleming79/async-kernel/pull/313)
 
@@ -855,6 +879,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.12.3]: https://github.com/fleming79/async-kernel/compare/v0.12.2..v0.12.3
 [0.12.2]: https://github.com/fleming79/async-kernel/compare/v0.12.1..v0.12.2
 [0.12.1]: https://github.com/fleming79/async-kernel/compare/v0.12.0..v0.12.1
 [0.12.0]: https://github.com/fleming79/async-kernel/compare/v0.11.2..v0.12.0
