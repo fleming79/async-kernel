@@ -123,18 +123,17 @@ class SingleConsumerAsyncQueue(Generic[T]):
         self.queue.clear()
         self._resume = noop
 
-    def add(self, *items: T) -> None:
+    def append(self, item: T) -> None:
         """
-        Add items to the queue.
+        Append an item to the queue.
 
-        If the queue has been stopped the items will be rejected.
+        If the queue has been stopped it will be rejected immediately.
         """
         if self._active is False:
-            for item in items:
-                if self._reject:
-                    self._reject(item)
+            if self._reject:
+                self._reject(item)
         else:
-            self.queue.extend(items)
+            self.queue.append(item)
             self._resume()
 
     @property
@@ -211,7 +210,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
         lambda c: SingleConsumerAsyncQueue(
             c["owner"].backend,
-            reject=lambda item: isinstance(item, Pending) and (item.cancel("closed", _force=True)),
+            reject=lambda item: isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True)),
         )
     )
     stopped = Fixed(Event)
@@ -732,7 +731,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             msg = f"{self} is {self._state.name}!"
             raise RuntimeError(msg)
         pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        self._queue.add(pen)
+        self._queue.append(pen)
         return pen
 
     def call_later(
@@ -797,7 +796,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **Use this method for lightweight calls only!**
 
         """
-        self._queue.add((func, args, kwargs))
+        self._queue.append((func, args, kwargs))
 
     def to_thread(
         self,
@@ -906,7 +905,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self._queue_map.pop(key)
 
             self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue)
-        pen_.metadata["queue"].add((func, args, kwargs))
+        pen_.metadata["queue"].append((func, args, kwargs))
         return pen_.add_to_trackers()  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:

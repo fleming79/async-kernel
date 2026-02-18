@@ -38,7 +38,7 @@ class TestSingleConsumerAsyncQueue:
 
         queue = SingleConsumerAsyncQueue(anyio_backend, reject=reject)
         for i in range(4):
-            queue.add(i)
+            queue.append(i)
         async for n in queue:
             assert not queue.stopped
             if n == 1:
@@ -54,14 +54,14 @@ class TestSingleConsumerAsyncQueue:
         assert rejected == {3}
         async for _ in queue:
             pass
-        queue.add(4)
+        queue.append(4)
         assert rejected == {3, 4}
 
     async def test_aiter(self, anyio_backend: Backend) -> None:
         queue = SingleConsumerAsyncQueue(anyio_backend)
         aiter1 = aiter(queue)
         aiter2 = aiter(queue)
-        queue.add(1)
+        queue.append(1)
         assert await anext(aiter1) == 1
         with pytest.raises(StopAsyncIteration):
             await anext(aiter2)
@@ -80,7 +80,7 @@ class TestSingleConsumerAsyncQueue:
             for i in range(10):
                 if i % 2:
                     await anyio.sleep(0.01)
-                queue.add(i)
+                queue.append(i)
 
         async with anyio.create_task_group() as tg:
             tg.start_soon(add)
@@ -93,7 +93,7 @@ class TestSingleConsumerAsyncQueue:
 
     async def test_stop(self, anyio_backend: Backend) -> None:
         queue = SingleConsumerAsyncQueue[Any](anyio_backend)
-        queue.add(range(3))
+        [queue.append(i) for i in range(3)]
         async for _ in queue:
             queue.stop()
         assert not queue.queue
@@ -101,13 +101,13 @@ class TestSingleConsumerAsyncQueue:
     async def test_stop_early(self, anyio_backend: Backend) -> None:
         queue = SingleConsumerAsyncQueue[Any](anyio_backend)
         queue.stop()
-        queue.add(range(3))
+        [queue.append(i) for i in range(3)]
         assert not queue.queue
 
     async def test_stop_waiting(self, anyio_backend: Backend) -> None:
         queue = SingleConsumerAsyncQueue[Any](anyio_backend)
         queue.stop()
-        queue.add(range(3))
+        [queue.append(i) for i in range(3)]
         assert not queue.queue
 
 
