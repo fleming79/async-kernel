@@ -955,7 +955,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             gen = items if isinstance(items, AsyncGenerator) else iter(items)
             is_async = isinstance(gen, AsyncGenerator)
             while (pen := await anext(gen, None) if is_async else next(gen, None)) is not None:
-                assert pen is not pen_current, "Would result in deadlock"
+                if pen is pen_current:
+                    queue.stop()
+                    msg = "Waiting for the pending in which it is running would result in deadlock!"
+                    raise RuntimeError(msg)
                 if not isinstance(pen, Pending):
                     pen = cast("Pending[T]", self.call_soon(await_for, pen))
                 pen.add_done_callback(queue.append)
