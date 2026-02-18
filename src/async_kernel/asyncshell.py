@@ -209,7 +209,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}  kernel_name: {self.kernel.kernel_name!r} subhsell_id: {self.subshell_id}>"
+        return f"<{self.__class__.__name__}  kernel_name: {self.kernel.kernel_name!r} subshell_id: {self.subshell_id}>"
 
     @override
     def __init__(self, parent: None | Configurable = None) -> None:
