@@ -533,8 +533,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 coro.close()
         try:
             async for item in self._queue:
-                if self._state is not CallerState.running:
-                    break
                 result = None
                 if not isinstance(item, Pending):
                     try:

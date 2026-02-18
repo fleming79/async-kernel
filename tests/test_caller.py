@@ -40,9 +40,17 @@ class TestSingleConsumerAsyncQueue:
         for i in range(4):
             queue.add(i)
         async for n in queue:
+            assert not queue.stopped
+            if n == 1:
+                with pytest.raises(RuntimeError):
+                    async for _ in queue:
+                        pass
             if n == 2:
                 break
+
+        assert not queue.stopped, "Async exiting context is scheduled."
         await anyio.sleep(0.01)
+        assert queue.stopped
         assert not queue.queue
         assert rejected == {3}
         async for _ in queue:
