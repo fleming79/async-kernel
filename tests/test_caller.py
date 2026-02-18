@@ -753,6 +753,15 @@ class TestCaller:
             results.add(pen.result())
         assert results == {1}
 
+    async def test_as_completed_current_pending_deadlock(self, caller: Caller):
+        async def f():
+            if pen := caller.current_pending():
+                async for _ in caller.as_completed((pen,)):
+                    pass
+
+        with pytest.raises(RuntimeError, match="deadlock"):
+            await caller.call_soon(f)
+
     async def test_wait_awaitables(self, caller: Caller):
         async def f(i: int):
             await anyio.sleep(i * 0.001)

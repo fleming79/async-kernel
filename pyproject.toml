@@ -94,7 +94,6 @@ dev = [
 gui = [
     "matplotlib>=3.10.8",
     "pyside6-essentials>=6.10.2",
-    "wxpython>=4.2.5",
 ]
 
 [tool.hatch.version]
