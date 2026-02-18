@@ -42,9 +42,8 @@ class TestSingleConsumerAsyncQueue:
         async for n in queue:
             assert not queue.stopped
             if n == 1:
-                with pytest.raises(RuntimeError):
-                    async for _ in queue:
-                        pass
+                async for m in queue:
+                    assert not m, "Nothing should iterate here"
             if n == 2:
                 break
 
@@ -57,6 +56,21 @@ class TestSingleConsumerAsyncQueue:
             pass
         queue.add(4)
         assert rejected == {3, 4}
+
+    async def test_aiter(self, anyio_backend: Backend) -> None:
+        queue = SingleConsumerAsyncQueue(anyio_backend)
+        aiter1 = aiter(queue)
+        aiter2 = aiter(queue)
+        queue.add(1)
+        assert await anext(aiter1) == 1
+        with pytest.raises(StopAsyncIteration):
+            await anext(aiter2)
+        await aiter1.aclose()
+        await aiter2.aclose()
+
+        queue.stop()
+        with pytest.raises(StopAsyncIteration):
+            await anext(aiter1)
 
     async def test_resume(self, anyio_backend: Backend) -> None:
         queue = SingleConsumerAsyncQueue(anyio_backend)
@@ -85,6 +99,12 @@ class TestSingleConsumerAsyncQueue:
         assert not queue.queue
 
     async def test_stop_early(self, anyio_backend: Backend) -> None:
+        queue = SingleConsumerAsyncQueue[Any](anyio_backend)
+        queue.stop()
+        queue.add(range(3))
+        assert not queue.queue
+
+    async def test_stop_waiting(self, anyio_backend: Backend) -> None:
         queue = SingleConsumerAsyncQueue[Any](anyio_backend)
         queue.stop()
         queue.add(range(3))

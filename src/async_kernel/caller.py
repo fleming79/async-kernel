@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     import zmq
-    from anyio.abc import TaskGroup, TaskStatus
+    from anyio.abc import TaskGroup
 
     from async_kernel.typing import P
 
@@ -73,10 +73,10 @@ class SingleConsumerAsyncQueue(Generic[T]):
     Notes:
         - Adding to the queue is synchronous and non-blocking.
         - The size of the queue is not limited.
-        - The queue will only iterate once, suquest iteration will return immediately.
-        - When the queue is stopped the iterator is stopped.
-        - Items in the queue are discarded when the queue is stopped and will call `reject` if it is set.
-        - Items added to the queue after stop is called will call 'reject' if it is set.
+        - The queue will only yield for one async iterator.
+        - When [SingleConsumerAsyncQueue.stop][] is called:
+            - Any items in the queue are rejected.
+            - Adding more items will be rejected immediately.
     """
 
     __slots__ = ["__weakref__", "_active", "_checkpoint", "_reject", "_resume"]
@@ -93,12 +93,9 @@ class SingleConsumerAsyncQueue(Generic[T]):
         self._reject = reject
 
     async def __aiter__(self) -> AsyncGenerator[T]:
-        if self._active is False:
-            # already stopped
-            return
         if self._active is not None:
-            msg = "Already active!"
-            raise RuntimeError(msg)
+            # Either active or stopped.
+            return
         self._active = True
         try:
             while self._active:
@@ -115,7 +112,9 @@ class SingleConsumerAsyncQueue(Generic[T]):
             self.stop()
 
     def stop(self) -> None:
-        "Stop the queue rejecting any items currently in the queue."
+        """
+        Stop the queue rejecting any items currently in the queue.
+        """
         self._active = False
         self._resume()
         if self._reject:
@@ -140,7 +139,9 @@ class SingleConsumerAsyncQueue(Generic[T]):
 
     @property
     def stopped(self) -> bool:
-        "Set after the queue has been stopped and the no items in the queue."
+        """
+        Will return True once stop has been called.
+        """
         return self._active is False
 
 
@@ -482,7 +483,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async with anyio.create_task_group() as tg:
             if self._state is CallerState.initial:
                 self._state = CallerState.running
-                await tg.start(self._scheduler, tg)
+                tg.start_soon(self._scheduler, self._queue, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
@@ -504,7 +505,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.stopped.set()
                     await self.checkpoint()
 
-    async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
+    async def _scheduler(self, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
         """
         Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
 
@@ -520,7 +521,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             Exception: Logs and handles exceptions raised during direct callable execution.
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
-        task_status.started()
         kwgs = {}
         asyncio_backend = self.backend == Backend.asyncio
         if asyncio_backend:
@@ -532,7 +532,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             except Exception:
                 coro.close()
         try:
-            async for item in self._queue:
+            async for item in queue:
                 result = None
                 if not isinstance(item, Pending):
                     try:
