@@ -66,7 +66,7 @@ def asyncio_checkpoint():
     yield
 
 
-class SimpleAsyncQueue(Generic[T]):
+class SingleConsumerAsyncQueue(Generic[T]):
     """
     A single use queue for a single asynchronous iterator consumer.
 
@@ -207,8 +207,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
-    _queue: Fixed[Self, SimpleAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
-        lambda c: SimpleAsyncQueue(
+    _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
+        lambda c: SingleConsumerAsyncQueue(
             c["owner"].backend,
             reject=lambda item: isinstance(item, Pending) and (item.cancel("closed", _force=True)),
         )
@@ -883,7 +883,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         key = hash(func)
         if not (pen_ := self._queue_map.get(key)):
-            queue = SimpleAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
+            queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
 
