@@ -14,7 +14,7 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType, coroutine
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack, cast
 
 import anyio
 import anyio.from_thread
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     import zmq
-    from anyio.abc import TaskGroup, TaskStatus
+    from anyio.abc import TaskGroup
 
     from async_kernel.typing import P
 
@@ -64,6 +64,84 @@ trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpo
 @coroutine
 def asyncio_checkpoint():
     yield
+
+
+class SingleConsumerAsyncQueue(Generic[T]):
+    """
+    A single use queue for a single asynchronous iterator consumer.
+
+    Notes:
+        - Adding to the queue is synchronous and non-blocking.
+        - The size of the queue is not limited.
+        - The queue will only yield for one async iterator.
+        - When [SingleConsumerAsyncQueue.stop][] is called:
+            - Any items in the queue are rejected.
+            - Adding more items will be rejected immediately.
+    """
+
+    __slots__ = ["__weakref__", "_active", "_checkpoint", "_reject", "_resume"]
+
+    _active: bool | None
+    queue: Fixed[Self, deque[T]] = Fixed(deque)
+
+    def __init__(
+        self, backend: Backend | Literal["asyncio", "trio"], /, *, reject: Callable[[T], Any] | None = None
+    ) -> None:
+        self._resume = noop
+        self._checkpoint = asyncio_checkpoint if Backend(backend) is Backend.asyncio else trio_checkpoint
+        self._active = None
+        self._reject = reject
+
+    async def __aiter__(self) -> AsyncGenerator[T]:
+        if self._active is not None:
+            # Either active or stopped.
+            return
+        self._active = True
+        try:
+            while self._active:
+                if self.queue:
+                    yield self.queue.popleft()
+                    await self._checkpoint()
+                else:
+                    event = create_async_event()
+                    self._resume = event.set
+                    if not self.queue and self._active:
+                        await event
+                    self._resume = noop
+        finally:
+            self.stop()
+
+    def stop(self) -> None:
+        """
+        Stop the queue rejecting any items currently in the queue.
+        """
+        self._active = False
+        self._resume()
+        if self._reject:
+            for item in self.queue:
+                self._reject(item)
+        self.queue.clear()
+        self._resume = noop
+
+    def append(self, item: T) -> None:
+        """
+        Append an item to the queue.
+
+        If the queue has been stopped it will be rejected immediately.
+        """
+        if self._active is False:
+            if self._reject:
+                self._reject(item)
+        else:
+            self.queue.append(item)
+            self._resume()
+
+    @property
+    def stopped(self) -> bool:
+        """
+        Will return True once stop has been called.
+        """
+        return self._active is False
 
 
 class Caller(anyio.AsyncContextManagerMixin):
@@ -129,7 +207,12 @@ class Caller(anyio.AsyncContextManagerMixin):
     _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
-    _queue: Fixed[Self, deque[Pending | tuple[Callable, tuple, dict]]] = Fixed(deque)
+    _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
+        lambda c: SingleConsumerAsyncQueue(
+            c["owner"].backend,
+            reject=lambda item: isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True)),
+        )
+    )
     stopped = Fixed(Event)
     "A thread-safe Event for when the caller is stopped."
 
@@ -282,7 +365,6 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             # create a new instance
             inst = super().__new__(cls)
-            inst._resume = noop
             inst._name = name
             inst._backend = Backend(backend or current_async_library())
             inst._loop = Loop(loop) if (loop := kwargs.get("loop")) else None
@@ -378,14 +460,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pass
         for child in self.children:
             child.stop(force=True)
-        while self._queue:
-            item = self._queue.pop()
-            if isinstance(item, Pending):
-                item.cancel()
-                item.set_result(None)
+        self._queue.stop()
         for func in tuple(self._queue_map):
             self.queue_close(func)
-        self._resume()
         if set_stop:
             self.stopped.set()
             self._state = CallerState.stopped
@@ -405,7 +482,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async with anyio.create_task_group() as tg:
             if self._state is CallerState.initial:
                 self._state = CallerState.running
-                await tg.start(self._scheduler, tg)
+                tg.start_soon(self._scheduler, self._queue, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
@@ -427,7 +504,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.stopped.set()
                     await self.checkpoint()
 
-    async def _scheduler(self, tg: TaskGroup, task_status: TaskStatus[None]) -> None:
+    async def _scheduler(self, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
         """
         Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
 
@@ -443,7 +520,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             Exception: Logs and handles exceptions raised during direct callable execution.
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
-        task_status.started()
         kwgs = {}
         asyncio_backend = self.backend == Backend.asyncio
         if asyncio_backend:
@@ -455,34 +531,25 @@ class Caller(anyio.AsyncContextManagerMixin):
             except Exception:
                 coro.close()
         try:
-            while self._state is CallerState.running:
-                if self._queue:
-                    item = self._queue.popleft()
-                    result = None
-                    if not isinstance(item, Pending):
-                        try:
-                            result = item[0](*item[1], **item[2])
-                            if inspect.iscoroutine(result):
-                                await result
-                        except Exception as e:
-                            self.log.exception("Direct call failed", exc_info=e)
-                    else:
-                        if asyncio_backend:
-                            task = loop.create_task(self._call_scheduled(item), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
-                            if not task.done():
-                                self._tasks.add(task)
-                                task.add_done_callback(self._tasks.discard)
-                            del task
-                        else:
-                            item.context.run(tg.start_soon, self._call_scheduled, item)
-                    await self.checkpoint()
-                    del item, result
+            async for item in queue:
+                result = None
+                if not isinstance(item, Pending):
+                    try:
+                        result = item[0](*item[1], **item[2])
+                        if inspect.iscoroutine(result):
+                            await result
+                    except Exception as e:
+                        self.log.exception("Direct call failed", exc_info=e)
                 else:
-                    event = create_async_event()
-                    self._resume = event.set
-                    if self._state is CallerState.running and not self._queue:
-                        await event
-                    self._resume = noop
+                    if asyncio_backend:
+                        task = loop.create_task(self._call_scheduled(item), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
+                        if not task.done():
+                            self._tasks.add(task)
+                            task.add_done_callback(self._tasks.discard)
+                        del task
+                    else:
+                        item.context.run(tg.start_soon, self._call_scheduled, item)
+                del item, result
         finally:
             if asyncio_backend:
                 for task in self._tasks:
@@ -665,7 +732,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise RuntimeError(msg)
         pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         self._queue.append(pen)
-        self._resume()
         return pen
 
     def call_later(
@@ -731,7 +797,6 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         """
         self._queue.append((func, args, kwargs))
-        self._resume()
 
     def to_thread(
         self,
@@ -815,7 +880,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         key = hash(func)
         if not (pen_ := self._queue_map.get(key)):
-            queue = deque()
+            queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
 
@@ -824,34 +889,23 @@ class Caller(anyio.AsyncContextManagerMixin):
                 assert pen
                 result = None
                 try:
-                    while True:
-                        await self.checkpoint()
-                        if queue:
-                            item = queue.popleft()
-                            try:
-                                result = item[0](*item[1], **item[2])
-                                if inspect.iscoroutine(object=result):
-                                    result = await result
-                            except (anyio.get_cancelled_exc_class(), Exception) as e:
-                                if pen.cancelled():
-                                    raise
-                                self.log.exception("Execution %s failed", item, exc_info=e)
-                        else:
+                    async for item in queue:
+                        try:
+                            result = item[0](*item[1], **item[2])
+                            if inspect.iscoroutine(object=result):
+                                result = await result
+                        except (anyio.get_cancelled_exc_class(), Exception) as e:
+                            if pen.cancelled():
+                                raise
+                            self.log.exception("Execution %s failed", item, exc_info=e)
+                        if not queue.queue:
                             pen.set_result(result, reset=True)
-                            item = result = None
-                            event = create_async_event()
-                            pen.metadata["resume"] = event.set
-                            await self.checkpoint()
-                            if not queue:
-                                await event
-                            pen.metadata["resume"] = noop
-                            del event
+                            item = result = None  # noqa: PLW2901
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue, resume=noop)
+            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue)
         pen_.metadata["queue"].append((func, args, kwargs))
-        pen_.metadata["resume"]()
         return pen_.add_to_trackers()  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
@@ -863,6 +917,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         key = func if isinstance(func, int) else hash(func)
         if pen := self._queue_map.pop(key, None):
+            pen.metadata["queue"].stop()
             pen.cancel()
 
     async def as_completed(
