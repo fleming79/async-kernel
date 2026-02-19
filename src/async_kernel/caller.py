@@ -389,54 +389,48 @@ class Caller(anyio.AsyncContextManagerMixin):
     def start_sync(self) -> None:
         "Start synchronously."
 
-        if self._state is CallerState.initial:
-            self._state = CallerState.start_sync
+        assert self._state is CallerState.initial
+        self._state = CallerState.start_sync
 
-            async def run_caller_in_context() -> None:
-                if self._state is CallerState.start_sync:
-                    self._state = CallerState.initial
-                try:
-                    async with self:
-                        if self._state is CallerState.running:
-                            await anyio.sleep_forever()
-                except RuntimeError:
-                    if not self.stopped:
-                        raise
-                    return
-                finally:
-                    self._state = CallerState.stopped
-                    self.stopped.set()
+        async def run_caller_in_context() -> None:
+            if self._state is CallerState.stopped:
+                return
+            if self._state is CallerState.start_sync:
+                self._state = CallerState.initial
+            async with self:
+                if self._state is CallerState.running:
+                    await anyio.sleep_forever()
 
-            if getattr(self, "_ident", None) is not None:
-                # An event loop for the current thread.
+        if getattr(self, "_ident", None) is not None:
+            # An event loop for the current thread.
 
-                if self.backend == Backend.asyncio:
-                    self._tasks.add(asyncio.create_task(run_caller_in_context()))
-                else:
-                    # trio
-                    token = current_token()
-
-                    def to_thread():
-                        utils.mark_thread_pydev_do_not_trace()
-                        try:
-                            anyio.from_thread.run(run_caller_in_context, token=token)
-                        except (BaseExceptionGroup, BaseException) as e:
-                            if not "shutdown" not in str(e):
-                                raise
-
-                    threading.Thread(target=to_thread, daemon=False).start()
+            if self.backend == Backend.asyncio:
+                self._tasks.add(asyncio.create_task(run_caller_in_context()))
             else:
-                name = self.name or "async_kernel_caller"
-                settings = RunSettings(
-                    backend=self.backend,
-                    loop=self.loop,
-                    backend_options=self.backend_options,
-                    loop_options=self.loop_options,
-                )
-                args = [run_caller_in_context, (), settings]
-                t = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
-                t.start()
-                self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]
+                # trio
+                token = current_token()
+
+                def to_thread():
+                    utils.mark_thread_pydev_do_not_trace()
+                    try:
+                        anyio.from_thread.run(run_caller_in_context, token=token)
+                    except (BaseExceptionGroup, BaseException) as e:
+                        if not "shutdown" not in str(e):
+                            raise
+
+                threading.Thread(target=to_thread, daemon=False).start()
+        else:
+            name = self.name or "async_kernel_caller"
+            settings = RunSettings(
+                backend=self.backend,
+                loop=self.loop,
+                backend_options=self.backend_options,
+                loop_options=self.loop_options,
+            )
+            args = [run_caller_in_context, (), settings]
+            t = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
+            t.start()
+            self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]
 
     def stop(self, *, force=False) -> CallerState:
         """
@@ -446,7 +440,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if (self._protected and not force) or self._state is CallerState.stopping:
             return self._state
-        set_stop = self._state is CallerState.initial
+        set_stop = self._state in [CallerState.initial, CallerState.start_sync]
         self._state = CallerState.stopping
         self._instances.pop(self._ident, None)
         if parent := self.parent:
