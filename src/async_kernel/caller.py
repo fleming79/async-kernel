@@ -393,13 +393,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         self._state = CallerState.start_sync
 
         async def run_caller_in_context() -> None:
-            if self._state is CallerState.stopped:
-                return
             if self._state is CallerState.start_sync:
                 self._state = CallerState.initial
-            async with self:
-                if self._state is CallerState.running:
-                    await anyio.sleep_forever()
+                async with self:
+                    await self.stopped
 
         if getattr(self, "_ident", None) is not None:
             # An event loop for the current thread.
@@ -432,11 +429,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             t.start()
             self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]
 
-    def stop(self, *, force=False) -> CallerState:
+    def stop(self, *, force: bool = False) -> CallerState:
         """
-        Stop the caller, cancelling all pending tasks and close the thread.
+        Stop the caller cancelling all incomplete tasks.
 
-        If the instance is protected, this is no-op unless force is used.
+        Args:
+            force: If the caller is protected the call is a no-op unless force=True.
         """
         if (self._protected and not force) or self._state is CallerState.stopping:
             return self._state
@@ -468,16 +466,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                 msg = "Caller cannot be been re-entered!"
             raise RuntimeError(msg)
 
-        # Begin entering the context
         if not hasattr(self, "_ident"):
             self._ident = threading.get_ident()
         if not self._name:
             self._name = threading.current_thread().name
         async with anyio.create_task_group() as tg:
             socket = None
-            if self._state is CallerState.initial:
-                self._state = CallerState.running
-                tg.start_soon(self._scheduler, self._queue, tg)
+            self._state = CallerState.running
+            tg.start_soon(self._scheduler, self._queue, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
