@@ -393,23 +393,19 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._state = CallerState.start_sync
 
             async def run_caller_in_context() -> None:
-                try:
-                    token = self._caller_token.set(self._ident)
-                except AttributeError:
-                    token = None
-
-                if not self._name:
-                    self._name = threading.current_thread().name
-
                 if self._state is CallerState.start_sync:
                     self._state = CallerState.initial
                 try:
                     async with self:
                         if self._state is CallerState.running:
                             await anyio.sleep_forever()
+                except RuntimeError:
+                    if not self.stopped:
+                        raise
+                    return
                 finally:
-                    if token:
-                        self._caller_token.reset(token)
+                    self._state = CallerState.stopped
+                    self.stopped.set()
 
             if getattr(self, "_ident", None) is not None:
                 # An event loop for the current thread.
@@ -448,7 +444,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         If the instance is protected, this is no-op unless force is used.
         """
-        if (self._protected and not force) or self._state in {CallerState.stopped, CallerState.stopping}:
+        if (self._protected and not force) or self._state is CallerState.stopping:
             return self._state
         set_stop = self._state is CallerState.initial
         self._state = CallerState.stopping
@@ -470,14 +466,23 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        match self._state:
+            case CallerState.start_sync:
+                msg = 'Already starting! Did you mean to use Caller("manual")?'
+                raise RuntimeError(msg)
+            case CallerState.stopping | CallerState.stopped:
+                self.stop(force=True)
+                self._state = CallerState.stopped
+                self.stopped.set()
+                msg = "Cannot enter context when stopping or stopped!"
+                raise RuntimeError(msg)
+            case _:
+                pass
+        assert self._state is CallerState.initial
         if not hasattr(self, "_ident"):
             self._ident = threading.get_ident()
-        if self._state is CallerState.start_sync:
-            msg = 'Already starting! Did you mean to use Caller("manual")?'
-            raise RuntimeError(msg)
-        if self._state is CallerState.stopped:
-            msg = f"Restarting is not allowed: {self}"
-            raise RuntimeError(msg)
+        if not self._name:
+            self._name = threading.current_thread().name
         socket = None
         async with anyio.create_task_group() as tg:
             if self._state is CallerState.initial:
