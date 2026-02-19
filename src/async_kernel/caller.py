@@ -389,68 +389,56 @@ class Caller(anyio.AsyncContextManagerMixin):
     def start_sync(self) -> None:
         "Start synchronously."
 
-        if self._state is CallerState.initial:
-            self._state = CallerState.start_sync
+        assert self._state is CallerState.initial
+        self._state = CallerState.start_sync
 
-            async def run_caller_in_context() -> None:
-                try:
-                    token = self._caller_token.set(self._ident)
-                except AttributeError:
-                    token = None
+        async def run_caller_in_context() -> None:
+            if self._state is CallerState.start_sync:
+                self._state = CallerState.initial
+                async with self:
+                    await self.stopped
 
-                if not self._name:
-                    self._name = threading.current_thread().name
+        if getattr(self, "_ident", None) is not None:
+            # An event loop for the current thread.
 
-                if self._state is CallerState.start_sync:
-                    self._state = CallerState.initial
-                try:
-                    async with self:
-                        if self._state is CallerState.running:
-                            await anyio.sleep_forever()
-                finally:
-                    if token:
-                        self._caller_token.reset(token)
-
-            if getattr(self, "_ident", None) is not None:
-                # An event loop for the current thread.
-
-                if self.backend == Backend.asyncio:
-                    self._tasks.add(asyncio.create_task(run_caller_in_context()))
-                else:
-                    # trio
-                    token = current_token()
-
-                    def to_thread():
-                        utils.mark_thread_pydev_do_not_trace()
-                        try:
-                            anyio.from_thread.run(run_caller_in_context, token=token)
-                        except (BaseExceptionGroup, BaseException) as e:
-                            if not "shutdown" not in str(e):
-                                raise
-
-                    threading.Thread(target=to_thread, daemon=False).start()
+            if self.backend == Backend.asyncio:
+                self._tasks.add(asyncio.create_task(run_caller_in_context()))
             else:
-                name = self.name or "async_kernel_caller"
-                settings = RunSettings(
-                    backend=self.backend,
-                    loop=self.loop,
-                    backend_options=self.backend_options,
-                    loop_options=self.loop_options,
-                )
-                args = [run_caller_in_context, (), settings]
-                t = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
-                t.start()
-                self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]
+                # trio
+                token = current_token()
 
-    def stop(self, *, force=False) -> CallerState:
-        """
-        Stop the caller, cancelling all pending tasks and close the thread.
+                def to_thread():
+                    utils.mark_thread_pydev_do_not_trace()
+                    try:
+                        anyio.from_thread.run(run_caller_in_context, token=token)
+                    except (BaseExceptionGroup, BaseException) as e:
+                        if not "shutdown" not in str(e):
+                            raise
 
-        If the instance is protected, this is no-op unless force is used.
+                threading.Thread(target=to_thread, daemon=False).start()
+        else:
+            name = self.name or "async_kernel_caller"
+            settings = RunSettings(
+                backend=self.backend,
+                loop=self.loop,
+                backend_options=self.backend_options,
+                loop_options=self.loop_options,
+            )
+            args = [run_caller_in_context, (), settings]
+            t = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
+            t.start()
+            self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]
+
+    def stop(self, *, force: bool = False) -> CallerState:
         """
-        if (self._protected and not force) or self._state in {CallerState.stopped, CallerState.stopping}:
+        Stop the caller cancelling all incomplete tasks.
+
+        Args:
+            force: If the caller is protected the call is a no-op unless force=True.
+        """
+        if (self._protected and not force) or self._state is CallerState.stopping:
             return self._state
-        set_stop = self._state is CallerState.initial
+        set_stop = self._state in [CallerState.initial, CallerState.start_sync]
         self._state = CallerState.stopping
         self._instances.pop(self._ident, None)
         if parent := self.parent:
@@ -470,19 +458,22 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        "The asynchronous context for caller."
+        if (state := self._state) is not CallerState.initial:
+            if state is CallerState.start_sync:
+                msg = 'Already starting! Did you mean to use Caller("manual")?'
+            else:
+                msg = "Caller cannot be been re-entered!"
+            raise RuntimeError(msg)
+
         if not hasattr(self, "_ident"):
             self._ident = threading.get_ident()
-        if self._state is CallerState.start_sync:
-            msg = 'Already starting! Did you mean to use Caller("manual")?'
-            raise RuntimeError(msg)
-        if self._state is CallerState.stopped:
-            msg = f"Restarting is not allowed: {self}"
-            raise RuntimeError(msg)
-        socket = None
+        if not self._name:
+            self._name = threading.current_thread().name
         async with anyio.create_task_group() as tg:
-            if self._state is CallerState.initial:
-                self._state = CallerState.running
-                tg.start_soon(self._scheduler, self._queue, tg)
+            socket = None
+            self._state = CallerState.running
+            tg.start_soon(self._scheduler, self._queue, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
