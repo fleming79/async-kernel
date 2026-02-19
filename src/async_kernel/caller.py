@@ -460,25 +460,21 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        match self._state:
-            case CallerState.start_sync:
+        "The asynchronous context for caller."
+        if (state := self._state) is not CallerState.initial:
+            if state is CallerState.start_sync:
                 msg = 'Already starting! Did you mean to use Caller("manual")?'
-                raise RuntimeError(msg)
-            case CallerState.stopping | CallerState.stopped:
-                self.stop(force=True)
-                self._state = CallerState.stopped
-                self.stopped.set()
-                msg = "Cannot enter context when stopping or stopped!"
-                raise RuntimeError(msg)
-            case _:
-                pass
-        assert self._state is CallerState.initial
+            else:
+                msg = "Caller cannot be been re-entered!"
+            raise RuntimeError(msg)
+
+        # Begin entering the context
         if not hasattr(self, "_ident"):
             self._ident = threading.get_ident()
         if not self._name:
             self._name = threading.current_thread().name
-        socket = None
         async with anyio.create_task_group() as tg:
+            socket = None
             if self._state is CallerState.initial:
                 self._state = CallerState.running
                 tg.start_soon(self._scheduler, self._queue, tg)
