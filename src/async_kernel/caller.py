@@ -283,29 +283,15 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @property
     def thread(self) -> threading.Thread:
-        "Get the thread where the caller is running."
+        "The thread where the caller is running."
         return self._thread
 
     @property
     def parent(self) -> Self | None:
-        "The parent if it exists."
+        "The parent caller if it exists."
         if (ref := self._parent_ref) and (inst := ref()) and not inst.stopped:
             return inst
         return None
-
-    async def checkpoint(self) -> None:
-        "Yield to the event loop."
-        if not self._use_safe_checkpoint:
-            try:
-                if self.backend is Backend.trio:
-                    await trio_checkpoint()
-                else:
-                    await asyncio_checkpoint()
-            except Exception:
-                self._use_safe_checkpoint = True
-            else:
-                return
-        await async_checkpoint(force=True)
 
     @override
     def __repr__(self) -> str:
@@ -795,7 +781,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         Warning:
 
             **Use this method for lightweight calls only!**
-
         """
         self._queue.append((func, args, kwargs))
 
@@ -920,6 +905,20 @@ class Caller(anyio.AsyncContextManagerMixin):
         if pen := self._queue_map.pop(key, None):
             pen.metadata["queue"].stop()
             pen.cancel()
+
+    async def checkpoint(self) -> None:
+        "Yield to the event loop."
+        if not self._use_safe_checkpoint:
+            try:
+                if self.backend is Backend.trio:
+                    await trio_checkpoint()
+                else:
+                    await asyncio_checkpoint()
+            except Exception:
+                self._use_safe_checkpoint = True
+            else:
+                return
+        await async_checkpoint(force=True)
 
     async def as_completed(
         self,
