@@ -174,7 +174,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     Set to 0 to disable (default when running tests).
     """
 
-    CALLER_MAIN_THREAD_ID = id(threading.main_thread()) or 0
+    CALLER_MAIN_THREAD_ID: int = id(threading.main_thread())
 
     _caller_token = contextvars.ContextVar("caller_tokens", default=CALLER_MAIN_THREAD_ID)
     _instances: ClassVar[dict[int, Self]] = {}
