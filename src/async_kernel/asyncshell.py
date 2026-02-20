@@ -731,16 +731,21 @@ class KernelMagics(Magics):
         "Print a table of [Callers][async_kernel.caller.Caller], indicating its status including:  -running - protected - on the current thread."
         callers = Caller.all_callers(running_only=False)
         n = max(len(c.name) for c in callers) + 6
-        m = max(len(repr(c.ident)) for c in callers) + 6
-        lines = ["".join(["Name".center(n), "Running ", "Protected", "Thread".center(m)]), "─" * (n + m + 22)]
+        m = max(len(repr(c.id)) for c in callers) + 6
+        t = max(len(str(c.thread.name)) for c in callers) + 6
+        lines = [
+            "".join(["Name".center(n), "Running ", "Protected", "Thread".center(t), "Caller".center(m)]),
+            "─" * (n + m + t + 22),
+        ]
         for caller in callers:
             running = ("✓" if caller.running else "✗").center(8)
             protected = "   🔐    " if caller.protected else "         "
             name = caller.name + " " * (n - len(caller.name))
-            thread = repr(caller.ident)
-            if caller.ident == Caller.current_ident():
-                thread += " ← current"
-            lines.append("".join([name, running.center(8), protected, thread]))
+            thread = str(caller.thread.name).center(t)
+            caller_id = str(caller.id)
+            if caller.id == Caller.id_current():
+                caller_id += " ← current"
+            lines.append("".join([name, running.center(8), protected, thread, caller_id]))
         print(*lines, sep="\n")
 
     @line_magic
