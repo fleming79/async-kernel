@@ -413,7 +413,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         """
         Send a message on the zmq iopub socket.
         """
-        if socket := Caller.iopub_sockets.get(t_ident := Caller.current_ident()):
+        if socket := Caller.iopub_sockets.get(t_ident := Caller.current_id()):
             msg = self.session.send(
                 stream=socket,
                 msg_or_type=msg_or_type,  # pyright: ignore[reportArgumentType]
@@ -425,7 +425,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             )
             if msg:
                 self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["header"]["msg_type"], msg["content"])
-        elif (caller := self.callers.get(Channel.control)) and caller.ident != t_ident:
+        elif (caller := self.callers.get(Channel.control)) and caller.id != t_ident:
             caller.call_direct(
                 self.iopub_send,
                 msg_or_type=msg_or_type,
@@ -516,7 +516,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             force: If True, requests a forced interrupt. Defaults to False.
         """
         # Restricted this to when the shell is running in the main thread.
-        if self.callers[Channel.shell].ident == Caller.MAIN_THREAD_IDENT:
+        if self.callers[Channel.shell].id == Caller.CALLER_MAIN_THREAD_ID:
             self._interrupt_requested = "FORCE" if force else True
             if sys.platform == "win32":
                 signal.raise_signal(signal.SIGINT)

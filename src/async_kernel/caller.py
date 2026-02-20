@@ -174,15 +174,16 @@ class Caller(anyio.AsyncContextManagerMixin):
     Set to 0 to disable (default when running tests).
     """
 
-    MAIN_THREAD_IDENT = threading.main_thread().ident or 0
+    CALLER_MAIN_THREAD_ID = id(threading.main_thread()) or 0
 
-    _caller_token = contextvars.ContextVar("caller_tokens", default=MAIN_THREAD_IDENT)
+    _caller_token = contextvars.ContextVar("caller_tokens", default=CALLER_MAIN_THREAD_ID)
     _instances: ClassVar[dict[int, Self]] = {}
     _lock: ClassVar = BinarySemaphore()
 
+    _thread: threading.Thread
+    _caller_id: int
     _name: str
     _idle_time: float = 0.0
-    _ident: int
     _backend: Backend
     _backend_options: dict[str, Any] | None
     _loop: Loop | None
@@ -231,9 +232,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._name
 
     @property
-    def ident(self) -> int:
-        "The ident for the caller."
-        return self._ident
+    def id(self) -> int:
+        "The id for the caller."
+        return self._caller_id
 
     @property
     def backend(self) -> Backend:
@@ -279,6 +280,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             - All children are stopped prior to the parent exiting its async context.
         """
         return frozenset(self._children)
+
+    @property
+    def thread(self) -> threading.Thread:
+        "Get the thread where the caller is running."
+        return self._thread
 
     @property
     def parent(self) -> Self | None:
@@ -344,16 +350,16 @@ class Caller(anyio.AsyncContextManagerMixin):
             name, backend = kwargs.get("name", ""), kwargs.get("backend")
             match modifier:
                 case "CurrentThread" | "manual":
-                    ident = cls.current_ident()
+                    caller_id = cls.current_id()
                 case "MainThread":
-                    ident = cls.MAIN_THREAD_IDENT
+                    caller_id = cls.CALLER_MAIN_THREAD_ID
                 case "NewThread":
-                    ident = None
+                    caller_id = None
 
             # Locate existing
-            if ident is not None and (caller := cls._instances.get(ident)):
+            if caller_id is not None and (caller := cls._instances.get(caller_id)):
                 if modifier == "manual":
-                    msg = f"An instance already exists for {ident=}"
+                    msg = f"An instance already exists for {caller_id=}"
                     raise RuntimeError(msg)
                 if name and name != caller.name:
                     msg = f"The thread and caller's name do not match! {name=} {caller=}"
@@ -373,17 +379,18 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._protected = kwargs.get("protected", False)
             inst._zmq_context = kwargs.get("zmq_context")
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
-            if (sys.platform == "emscripten") and (ident is None):
-                ident = id(inst)
-            if ident is not None:
-                inst._ident = ident
+            if (sys.platform == "emscripten") and (caller_id is None):
+                caller_id = id(inst)
+            if caller_id is not None:
+                inst._caller_id = caller_id
+                inst._thread = threading.current_thread()
 
             # finalize
             if modifier != "manual":
                 inst.start_sync()
-            assert inst._ident
-            assert inst._ident not in cls._instances
-            cls._instances[inst._ident] = inst
+            assert inst._caller_id
+            assert inst._caller_id not in cls._instances
+            cls._instances[inst._caller_id] = inst
         return inst
 
     def start_sync(self) -> None:
@@ -398,7 +405,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 async with self:
                     await self.stopped
 
-        if getattr(self, "_ident", None) is not None:
+        if getattr(self, "_caller_id", None) is not None:
             # An event loop for the current thread.
 
             if self.backend == Backend.asyncio:
@@ -425,9 +432,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 loop_options=self.loop_options,
             )
             args = [run_caller_in_context, (), settings]
-            t = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
-            t.start()
-            self._ident = t.ident  # pyright: ignore[reportAttributeAccessIssue]
+            self._thread = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
+            self._caller_id = id(self._thread)
+            self._thread.start()
 
     def stop(self, *, force: bool = False) -> CallerState:
         """
@@ -440,7 +447,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             return self._state
         set_stop = self._state in [CallerState.initial, CallerState.start_sync]
         self._state = CallerState.stopping
-        self._instances.pop(self._ident, None)
+        self._instances.pop(self._caller_id, None)
         if parent := self.parent:
             try:
                 parent._worker_pool.remove(self)
@@ -465,9 +472,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             else:
                 msg = "Caller cannot be been re-entered!"
             raise RuntimeError(msg)
-
-        if not hasattr(self, "_ident"):
-            self._ident = threading.get_ident()
         if not self._name:
             self._name = threading.current_thread().name
         async with anyio.create_task_group() as tg:
@@ -478,13 +482,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
                 socket.connect(self.iopub_url)
-                self.iopub_sockets[self._ident] = socket
+                self.iopub_sockets[self._caller_id] = socket
             try:
                 yield self
             finally:
                 self.stop(force=True)
                 if socket:
-                    self.iopub_sockets.pop(self._ident, None)
+                    self.iopub_sockets.pop(self._caller_id, None)
                     socket.close()
                 with anyio.CancelScope(shield=True):
                     while self._children:
@@ -567,7 +571,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         md = pen.metadata
         token_pending = self._pending_var.set(pen)
-        token_ident = self._caller_token.set(self._ident)
+        token_ident = self._caller_token.set(self._caller_id)
         try:
             if pen.cancelled():
                 if not pen.done():
@@ -624,17 +628,22 @@ class Caller(anyio.AsyncContextManagerMixin):
             cls._thread_cleanup_idle_workers.start()
 
     @classmethod
-    def current_ident(cls):
+    def current_id(cls) -> int:
         if sys.platform == "emscripten":
             return cls._caller_token.get()
-        return threading.get_ident()
+        return id(threading.current_thread())
 
     @classmethod
-    def get_current(cls, ident: int | None = None) -> Self | None:
-        "A [classmethod][] to get the caller instance from the corresponding thread if it exists."
-        ident = cls.current_ident() if ident is None else ident
+    def get_existing(cls, caller_id: int | None = None, /) -> Self | None:
+        """
+        A [classmethod][] to get the caller instance from the corresponding thread if it exists.
+
+        Args:
+            caller_id: The id of the caller which in CPython is also the the id of the thread in which it is running.
+        """
+        caller_id = cls.current_id() if caller_id is None else caller_id
         with cls._lock:
-            return cls._instances.get(ident)
+            return cls._instances.get(caller_id)
 
     @classmethod
     def current_pending(cls) -> Pending[Any] | None:
