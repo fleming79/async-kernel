@@ -413,7 +413,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         """
         Send a message on the zmq iopub socket.
         """
-        if socket := Caller.iopub_sockets.get(t_ident := Caller.current_id()):
+        if socket := Caller.iopub_sockets.get(t_ident := Caller.id_current()):
             msg = self.session.send(
                 stream=socket,
                 msg_or_type=msg_or_type,  # pyright: ignore[reportArgumentType]

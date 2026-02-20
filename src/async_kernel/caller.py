@@ -350,7 +350,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             name, backend = kwargs.get("name", ""), kwargs.get("backend")
             match modifier:
                 case "CurrentThread" | "manual":
-                    caller_id = cls.current_id()
+                    caller_id = cls.id_current()
                 case "MainThread":
                     caller_id = cls.CALLER_MAIN_THREAD_ID
                 case "NewThread":
@@ -628,7 +628,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             cls._thread_cleanup_idle_workers.start()
 
     @classmethod
-    def current_id(cls) -> int:
+    def id_current(cls) -> int:
+        "The id that is used for a caller for the current thread in CPython or context in Pyodide."
         if sys.platform == "emscripten":
             return cls._caller_token.get()
         return id(threading.current_thread())
@@ -641,7 +642,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             caller_id: The id of the caller which in CPython is also the the id of the thread in which it is running.
         """
-        caller_id = cls.current_id() if caller_id is None else caller_id
+        caller_id = cls.id_current() if caller_id is None else caller_id
         with cls._lock:
             return cls._instances.get(caller_id)
 

@@ -738,7 +738,7 @@ class KernelMagics(Magics):
             protected = "   🔐    " if caller.protected else "         "
             name = caller.name + " " * (n - len(caller.name))
             thread = repr(caller.thread) if sys.platform != "emscripten" else str(caller.id)
-            if caller.id == Caller.current_id():
+            if caller.id == Caller.id_current():
                 thread += " ← current"
             lines.append("".join([name, running.center(8), protected, thread]))
         print(*lines, sep="\n")
