@@ -20,21 +20,20 @@ if TYPE_CHECKING:
 __all__ = ["Host", "run"]
 
 
-start_guest_run_asyncio = lazy_import("async_kernel.event_loop.asyncio_guest", "start_guest_run")
-start_guest_run_trio = lazy_import("trio.lowlevel", "start_guest_run")
+if TYPE_CHECKING:
+    from trio.lowlevel import start_guest_run as start_guest_run_asyncio  # noqa: TC004
+
+    from async_kernel.event_loop.asyncio_guest import start_guest_run as start_guest_run_trio  # noqa: TC004
+
+globals()["start_guest_run_asyncio"] = lazy_import("async_kernel.event_loop.asyncio_guest", "start_guest_run")
+globals()["start_guest_run_trio"] = lazy_import("trio.lowlevel", "start_guest_run")
 
 
 def get_start_guest_run(backend: Backend):
     """
-    Get the `start_guest_run` function to run the backend as a guest.
+    Get the `start_guest_run` function corresponding to the `backend`.
     """
-    if TYPE_CHECKING:
-        from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
-
-        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: F811, PLC0415
-
-        return sgr
-    return start_guest_run_asyncio if Backend(backend) is Backend.asyncio else start_guest_run_trio  # pyright: ignore[reportUnreachable]
+    return start_guest_run_asyncio if Backend(backend) is Backend.asyncio else start_guest_run_trio
 
 
 def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
