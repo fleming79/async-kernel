@@ -726,7 +726,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **metadata: Additional metadata to store in the instance.
         """
         pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        if backend is NoValue or backend is self.backend:
+        if backend is NoValue or (backend := Backend(backend)) is self.backend:
             self._queue.append(pen)
         else:
             if not hasattr(self, "_guest_queue"):
@@ -746,7 +746,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             # Prefer callbacks from the host.
             host = Host.current(self.thread)
             run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
-            get_start_guest_run(backend)(
+            start_guest_run = get_start_guest_run(backend)
+            start_guest_run(
                 _guest_scheduler,
                 done_callback=lambda _: run_soon_threadsafe_queue.stop(),
                 run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else run_soon_threadsafe_queue.append,
@@ -829,7 +830,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             - **Only use this to execute coroutines that require a specific backend to run in the callers thread.**
             - Where possible use a separate caller/thread with [Caller.get][] instead.
         """
-        return self.schedule_call(func, args, kwargs, None, PendingTracker, backend)
+        return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))
 
     def call_direct(
         self,

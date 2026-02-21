@@ -5,6 +5,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Any, Generic, Self
 
 import anyio
+from wrapt import lazy_import
 
 from async_kernel.common import import_item
 from async_kernel.typing import Backend, Loop, RunSettings, T
@@ -19,15 +20,21 @@ if TYPE_CHECKING:
 __all__ = ["Host", "run"]
 
 
+start_guest_run_asyncio = lazy_import("async_kernel.event_loop.asyncio_guest", "start_guest_run")
+start_guest_run_trio = lazy_import("trio.lowlevel", "start_guest_run")
+
+
 def get_start_guest_run(backend: Backend):
     """
     Get the `start_guest_run` function to run the backend as a guest.
     """
-    if backend is Backend.asyncio:
-        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
-    else:
+    if TYPE_CHECKING:
         from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
-    return sgr
+
+        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: F811, PLC0415
+
+        return sgr
+    return start_guest_run_asyncio if Backend(backend) is Backend.asyncio else start_guest_run_trio  # pyright: ignore[reportUnreachable]
 
 
 def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
@@ -127,8 +134,9 @@ class Host(Generic[T]):
         host = cls_(**loop_options)
         # set the `start_guest` function (runs once).
         backend_options.setdefault("host_uses_signal_set_wakeup_fd", host.host_uses_signal_set_wakeup_fd)
+        start_guest_run = get_start_guest_run(backend)
         host.start_guest = lambda: [
-            get_start_guest_run(backend)(
+            start_guest_run(
                 func,
                 *args,
                 run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
