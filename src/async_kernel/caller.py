@@ -202,6 +202,8 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     _parent_ref: weakref.ref[Self] | None = None
 
+    _guest_queue: None | SingleConsumerAsyncQueue = None
+
     # Fixed
     _child_lock = Fixed(BinarySemaphore)
     _children: Fixed[Self, set[Self]] = Fixed(set)
@@ -463,7 +465,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async with anyio.create_task_group() as tg:
             socket = None
             self._state = CallerState.running
-            tg.start_soon(self._scheduler, self._queue, tg)
+            tg.start_soon(self._scheduler, self.backend, self._queue, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
@@ -472,6 +474,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             try:
                 yield self
             finally:
+                if stop_guest := getattr(self, "_stop_guest", None):
+                    with anyio.CancelScope(shield=True):
+                        await stop_guest()
                 self.stop(force=True)
                 if socket:
                     self.iopub_sockets.pop(self._caller_id, None)
@@ -485,7 +490,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.stopped.set()
                     await self.checkpoint()
 
-    async def _scheduler(self, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
+    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
         """
         Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
 
@@ -494,6 +499,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         handling on shutdown.
 
         Args:
+            backend: The backend where the scheduler is operating.
             tg: The task group used to manage concurrent tasks.
             task_status: Used to signal when the scheduler has started.
 
@@ -502,7 +508,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
         kwgs = {}
-        asyncio_backend = self.backend == Backend.asyncio
+        asyncio_backend = backend == Backend.asyncio
         if asyncio_backend:
             loop = asyncio.get_running_loop()
             coro = asyncio.sleep(0)
@@ -751,7 +757,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Pending[T]:
         """
-        Schedule func to be called in caller's event loop copying the current context.
+        Schedule func to be executed.
 
         Args:
             func: The function.
@@ -759,6 +765,65 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with func.
         """
         return self.schedule_call(func, args, kwargs)
+
+    def call_soon_using(
+        self,
+        backend: Backend | Literal["asyncio", "trio"],
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Pending[T]:
+        """
+        Schedule func to be executed using the specified backend.
+
+        Only use this to execute coroutines that require a specific backend.
+
+        If the backend is the same as the caller's backend, the execution is handled using [Caller.call_soon][].
+        Other it is executed in a backed running as a guest.
+        """
+
+        if backend is self.backend:
+            return self.call_soon(func, *args, **kwargs)
+        self._use_safe_checkpoint = True
+        pen = Pending(func=func, args=args, kwargs=kwargs, caller=self)
+        if not self._guest_queue:
+            self._guest_queue = queue = SingleConsumerAsyncQueue(
+                backend,
+                reject=lambda item: (
+                    isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True))
+                ),
+            )
+
+            async def run_guest_loop():
+                async def _guest_scheduler() -> None:
+                    async with anyio.create_task_group() as tg:
+                        tg.start_soon(self._scheduler, Backend(backend), queue, tg)
+
+                if self._state is CallerState.running:
+                    if backend is Backend.asyncio:
+                        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
+                    else:
+                        from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
+                    run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
+                    sgr(
+                        _guest_scheduler,
+                        done_callback=lambda _: run_soon_threadsafe_queue.stop(),
+                        run_sync_soon_threadsafe=run_soon_threadsafe_queue.append,
+                        host_uses_signal_set_wakeup_fd=True,
+                    )
+                    if pen := self.current_pending():
+                        self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]  # pyright: ignore[reportAttributeAccessIssue]
+                    with anyio.CancelScope(shield=True):
+                        async for func in run_soon_threadsafe_queue:
+                            try:
+                                func()
+                            except Exception:
+                                pass
+
+            self.schedule_call(run_guest_loop, (), {}, None, ())
+        self._guest_queue.append(pen)
+        return pen
 
     def call_direct(
         self,

@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import gc
 import importlib.util
@@ -12,6 +13,7 @@ from typing import Any, Literal
 import anyio
 import anyio.to_thread
 import pytest
+import trio
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
 
@@ -833,3 +835,31 @@ class TestCaller:
         results = [pen.result() async for pen in caller.as_completed(all_pending)]
 
         assert results == ["call_direct", "queue_call", "call_soon"] * n
+
+    async def test_call_soon_with_backend(self, caller: Caller):
+        opposite = next(b for b in Backend if b is not caller.backend)
+
+        async def check_backend(backend: Backend, fail=False):
+            assert current_async_library() == backend
+            if backend is Backend.asyncio:
+                await asyncio.sleep(0.01)
+            else:
+                await trio.sleep(0.01)
+            if fail:
+                raise RuntimeError
+
+        await check_backend(caller.backend)
+
+        await caller.call_soon_using(caller.backend, check_backend, caller.backend)
+
+        await caller.call_soon_using(opposite, check_backend, opposite)
+
+        with pytest.raises(RuntimeError):
+            await caller.call_soon_using(opposite, check_backend, opposite, fail=True)
+
+    async def test_call_soon_with_backend_cancel(self, caller: Caller):
+        opposite = next(b for b in Backend if b is not caller.backend)
+        pen = caller.call_soon_using(opposite, anyio.sleep_forever)
+        pen.cancel("Testing")
+        with pytest.raises(PendingCancelled, match="Test"):
+            await pen
