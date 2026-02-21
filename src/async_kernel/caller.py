@@ -28,7 +28,7 @@ from wrapt import lazy_import
 import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.event_loop.run import get_start_guest_run
+from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Loop, NoValue, RunSettings, T
 
@@ -743,12 +743,15 @@ class Caller(anyio.AsyncContextManagerMixin):
                 tg.start_soon(self._scheduler, Backend(backend), queue, tg)
 
         if self._state is CallerState.running:
+            # Prefer callbacks from the host.
+            host = Host.current(self.thread)
             run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
             get_start_guest_run(backend)(
                 _guest_scheduler,
                 done_callback=lambda _: run_soon_threadsafe_queue.stop(),
-                run_sync_soon_threadsafe=run_soon_threadsafe_queue.append,
-                host_uses_signal_set_wakeup_fd=True,
+                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else run_soon_threadsafe_queue.append,
+                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
+                host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
             )
             if pen := self.current_pending():
                 self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]
