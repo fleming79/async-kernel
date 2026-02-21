@@ -397,8 +397,9 @@ class TestCaller:
         caller = Caller()
         caller.stop()
         await caller.stopped
-        with pytest.raises(RuntimeError, match="is stopped!"):
-            caller.call_soon(lambda: None)
+        pen = caller.call_soon(lambda: None)
+        assert pen.cancelled()
+        assert pen.done()
 
     async def test_await_stopped(self, anyio_backend: Backend):
         caller = Caller()

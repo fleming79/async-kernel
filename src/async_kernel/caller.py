@@ -28,6 +28,7 @@ from wrapt import lazy_import
 import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed
+from async_kernel.event_loop.run import get_start_guest_run
 from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Loop, NoValue, RunSettings, T
 
@@ -202,8 +203,6 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     _parent_ref: weakref.ref[Self] | None = None
 
-    _guest_queue: None | SingleConsumerAsyncQueue = None
-
     # Fixed
     _child_lock = Fixed(BinarySemaphore)
     _children: Fixed[Self, set[Self]] = Fixed(set)
@@ -211,11 +210,9 @@ class Caller(anyio.AsyncContextManagerMixin):
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
     _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
-        lambda c: SingleConsumerAsyncQueue(
-            c["owner"].backend,
-            reject=lambda item: isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True)),
-        )
+        lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
     )
+
     stopped = Fixed(Event)
     "A thread-safe Event for when the caller is stopped."
 
@@ -443,6 +440,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pass
         for child in self.children:
             child.stop(force=True)
+        if queue := getattr(self, "_guest_queue", None):
+            queue.stop()
         self._queue.stop()
         for func in tuple(self._queue_map):
             self.queue_close(func)
@@ -594,6 +593,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._pending_var.reset(token_pending)
             self._caller_token.reset(token_ident)
 
+    @staticmethod
+    def _reject(item: tuple | Pending) -> None:
+        if isinstance(item, Pending):
+            item.cancel("The caller has been closed", _force=True)
+
     @classmethod
     def _start_idle_worker_cleanup_thead(cls) -> None:
         "A single thread to shutdown idle workers that have not been used for an extended duration."
@@ -721,53 +725,39 @@ class Caller(anyio.AsyncContextManagerMixin):
             trackers: The tracker subclasses of active trackers which to add the pending.
             **metadata: Additional metadata to store in the instance.
         """
-        if self._state in [CallerState.stopping, CallerState.stopped]:
-            msg = f"{self} is {self._state.name}!"
-            raise RuntimeError(msg)
         pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         if backend is NoValue or backend is self.backend:
             self._queue.append(pen)
         else:
-            self._queue_guest_call(backend, pen)
+            if not hasattr(self, "_guest_queue"):
+                self._guest_queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
+                self.schedule_call(
+                    self._guest_backend_loop, (), {"backend": backend, "queue": self._guest_queue}, None, ()
+                )
+            self._guest_queue.append(pen)
         return pen
 
-    def _queue_guest_call(self, backend: Backend, pen: Pending):
-        if not self._guest_queue:
-            self._guest_queue = queue = SingleConsumerAsyncQueue(
-                backend,
-                reject=lambda item: (
-                    isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True))
-                ),
+    async def _guest_backend_loop(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
+        async def _guest_scheduler() -> None:
+            async with anyio.create_task_group() as tg:
+                tg.start_soon(self._scheduler, Backend(backend), queue, tg)
+
+        if self._state is CallerState.running:
+            run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
+            get_start_guest_run(backend)(
+                _guest_scheduler,
+                done_callback=lambda _: run_soon_threadsafe_queue.stop(),
+                run_sync_soon_threadsafe=run_soon_threadsafe_queue.append,
+                host_uses_signal_set_wakeup_fd=True,
             )
-
-            async def run_guest_loop():
-                async def _guest_scheduler() -> None:
-                    async with anyio.create_task_group() as tg:
-                        tg.start_soon(self._scheduler, Backend(backend), queue, tg)
-
-                if self._state is CallerState.running:
-                    if backend is Backend.asyncio:
-                        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
-                    else:
-                        from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
-                    run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
-                    sgr(
-                        _guest_scheduler,
-                        done_callback=lambda _: run_soon_threadsafe_queue.stop(),
-                        run_sync_soon_threadsafe=run_soon_threadsafe_queue.append,
-                        host_uses_signal_set_wakeup_fd=True,
-                    )
-                    if pen := self.current_pending():
-                        self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]  # pyright: ignore[reportAttributeAccessIssue]
-                    with anyio.CancelScope(shield=True):
-                        async for func in run_soon_threadsafe_queue:
-                            try:
-                                func()
-                            except Exception:
-                                pass
-
-            self.schedule_call(run_guest_loop, (), {}, None, ())
-        self._guest_queue.append(pen)
+            if pen := self.current_pending():
+                self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]
+            with anyio.CancelScope(shield=True):
+                async for func in run_soon_threadsafe_queue:
+                    try:
+                        func()
+                    except Exception:
+                        pass
 
     def call_later(
         self,

@@ -19,6 +19,17 @@ if TYPE_CHECKING:
 __all__ = ["Host", "run"]
 
 
+def get_start_guest_run(backend: Backend):
+    """
+    Get the `start_guest_run` function to run the backend as a guest.
+    """
+    if backend is Backend.asyncio:
+        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
+    else:
+        from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
+    return sgr
+
+
 def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
     """
     Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend]
@@ -113,14 +124,10 @@ class Host(Generic[T]):
             cls_ = cls._subclasses[loop]
         assert cls_.LOOP is loop
 
-        if backend is Backend.asyncio:
-            from .asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
-        else:
-            from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
         host = cls_(**loop_options)
         # Provide the start_guest function that can only be called once.
         host.start_guest = lambda: [
-            sgr(
+            get_start_guest_run(backend)(
                 func,
                 *args,
                 run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
