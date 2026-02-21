@@ -52,7 +52,12 @@ class TestHost:
             assert current_async_library() == "trio"
             return args
 
-        settings = RunSettings(backend="trio", loop=Loop.custom, loop_options={"host_class": MyCustomHost})
+        settings = RunSettings(
+            backend="trio",
+            loop=Loop.custom,
+            loop_options={"host_class": MyCustomHost},
+            backend_options={"host_uses_signal_set_wakeup_fd": True},
+        )
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == ("abc",)
         assert get_runtime_matplotlib_guis() == ()
