@@ -773,8 +773,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             func: The function.
             delay: The minimum delay to add between submission and execution.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
 
         Info:
             All call arguments are packed into the instance's metadata.
@@ -793,12 +793,12 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Args:
             func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
         """
         return self.schedule_call(func, args, kwargs)
 
-    def call_soon_using(
+    def call_using_backend(
         self,
         backend: Backend | Literal["asyncio", "trio"],
         func: Callable[P, T | CoroutineType[Any, Any, T]],
@@ -809,12 +809,22 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Schedule func to be executed using the specified backend.
 
-        If the backend is the same as the caller's backend, the execution is handled using [Caller.call_soon][].
-        Other it is executed in a backed running as a guest.
+        This methods enables coroutines written for a specific function to be run irresective
+        of the callers backend.
 
-        Warning:
+        - `backend == caller.backend` - `func` is executed via [Caller.call_soon][].
+        - `backend != caller.backend` - `func` is executed with a backend running as a guest.
 
-            **Only use this to execute coroutines that require a specific backend.**
+        Args:
+            backend: The backend in which `func` must be executed.
+            func: The function.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
+
+        Notes:
+
+            - **Only use this to execute coroutines that require a specific backend to run in the callers thread.**
+            - Where possible use a separate caller/thread with [Caller.get][] instead.
         """
         return self.schedule_call(func, args, kwargs, None, PendingTracker, backend)
 
@@ -828,13 +838,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Schedule `func` to be called in caller's event loop directly.
 
-        This method is provided to facilitate lightweight *thread-safe* function calls that
-        need to be performed from within the callers event loop/taskgroup.
+        Use this for short-running function calls only.
 
         Args:
             func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
 
         Warning:
 
