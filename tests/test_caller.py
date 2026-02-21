@@ -849,13 +849,21 @@ class TestCaller:
                 raise RuntimeError
 
         await check_backend(caller.backend)
-
         await caller.call_soon_using(caller.backend, check_backend, caller.backend)
-
         await caller.call_soon_using(opposite, check_backend, opposite)
-
         with pytest.raises(RuntimeError):
             await caller.call_soon_using(opposite, check_backend, opposite, fail=True)
+
+    async def test_call_soon_with_backend_pending_group(self, caller: Caller):
+        opposite = next(b for b in Backend if b is not caller.backend)
+        assert caller.backend is not opposite
+        async with caller.create_pending_group() as pg:
+            for _ in range(3):
+                pen = caller.call_soon_using(opposite, current_async_library)
+                assert pen in pg.pending
+            pending = pg.pending
+        for pen in pending:
+            assert pen.result() == opposite
 
     async def test_call_soon_with_backend_cancel(self, caller: Caller):
         opposite = next(b for b in Backend if b is not caller.backend)

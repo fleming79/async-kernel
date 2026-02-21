@@ -703,6 +703,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         kwargs: dict,
         context: contextvars.Context | None = None,
         trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = PendingTracker,
+        backend: NoValue | Backend = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         /,
         **metadata: Any,
     ) -> Pending[T]:
@@ -720,12 +721,53 @@ class Caller(anyio.AsyncContextManagerMixin):
             trackers: The tracker subclasses of active trackers which to add the pending.
             **metadata: Additional metadata to store in the instance.
         """
-        if self._state in {CallerState.stopping, CallerState.stopped}:
+        if self._state in [CallerState.stopping, CallerState.stopped]:
             msg = f"{self} is {self._state.name}!"
             raise RuntimeError(msg)
         pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        self._queue.append(pen)
+        if backend is NoValue or backend is self.backend:
+            self._queue.append(pen)
+        else:
+            self._queue_guest_call(backend, pen)
         return pen
+
+    def _queue_guest_call(self, backend: Backend, pen: Pending):
+        if not self._guest_queue:
+            self._guest_queue = queue = SingleConsumerAsyncQueue(
+                backend,
+                reject=lambda item: (
+                    isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True))
+                ),
+            )
+
+            async def run_guest_loop():
+                async def _guest_scheduler() -> None:
+                    async with anyio.create_task_group() as tg:
+                        tg.start_soon(self._scheduler, Backend(backend), queue, tg)
+
+                if self._state is CallerState.running:
+                    if backend is Backend.asyncio:
+                        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
+                    else:
+                        from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
+                    run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
+                    sgr(
+                        _guest_scheduler,
+                        done_callback=lambda _: run_soon_threadsafe_queue.stop(),
+                        run_sync_soon_threadsafe=run_soon_threadsafe_queue.append,
+                        host_uses_signal_set_wakeup_fd=True,
+                    )
+                    if pen := self.current_pending():
+                        self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]  # pyright: ignore[reportAttributeAccessIssue]
+                    with anyio.CancelScope(shield=True):
+                        async for func in run_soon_threadsafe_queue:
+                            try:
+                                func()
+                            except Exception:
+                                pass
+
+            self.schedule_call(run_guest_loop, (), {}, None, ())
+        self._guest_queue.append(pen)
 
     def call_later(
         self,
@@ -777,53 +819,14 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Schedule func to be executed using the specified backend.
 
-        Only use this to execute coroutines that require a specific backend.
-
         If the backend is the same as the caller's backend, the execution is handled using [Caller.call_soon][].
         Other it is executed in a backed running as a guest.
+
+        Warning:
+
+            **Only use this to execute coroutines that require a specific backend.**
         """
-
-        if backend is self.backend:
-            return self.call_soon(func, *args, **kwargs)
-        self._use_safe_checkpoint = True
-        pen = Pending(func=func, args=args, kwargs=kwargs, caller=self)
-        if not self._guest_queue:
-            self._guest_queue = queue = SingleConsumerAsyncQueue(
-                backend,
-                reject=lambda item: (
-                    isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True))
-                ),
-            )
-
-            async def run_guest_loop():
-                async def _guest_scheduler() -> None:
-                    async with anyio.create_task_group() as tg:
-                        tg.start_soon(self._scheduler, Backend(backend), queue, tg)
-
-                if self._state is CallerState.running:
-                    if backend is Backend.asyncio:
-                        from async_kernel.event_loop.asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
-                    else:
-                        from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
-                    run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
-                    sgr(
-                        _guest_scheduler,
-                        done_callback=lambda _: run_soon_threadsafe_queue.stop(),
-                        run_sync_soon_threadsafe=run_soon_threadsafe_queue.append,
-                        host_uses_signal_set_wakeup_fd=True,
-                    )
-                    if pen := self.current_pending():
-                        self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]  # pyright: ignore[reportAttributeAccessIssue]
-                    with anyio.CancelScope(shield=True):
-                        async for func in run_soon_threadsafe_queue:
-                            try:
-                                func()
-                            except Exception:
-                                pass
-
-            self.schedule_call(run_guest_loop, (), {}, None, ())
-        self._guest_queue.append(pen)
-        return pen
+        return self.schedule_call(func, args, kwargs, None, PendingTracker, backend)
 
     def call_direct(
         self,
