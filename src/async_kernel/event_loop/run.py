@@ -5,6 +5,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Any, Generic, Self
 
 import anyio
+from wrapt import lazy_import
 
 from async_kernel.common import import_item
 from async_kernel.typing import Backend, Loop, RunSettings, T
@@ -17,6 +18,22 @@ if TYPE_CHECKING:
 
 
 __all__ = ["Host", "run"]
+
+
+if TYPE_CHECKING:
+    from trio.lowlevel import start_guest_run as start_guest_run_asyncio  # noqa: TC004
+
+    from async_kernel.event_loop.asyncio_guest import start_guest_run as start_guest_run_trio  # noqa: TC004
+
+globals()["start_guest_run_asyncio"] = lazy_import("async_kernel.event_loop.asyncio_guest", "start_guest_run")
+globals()["start_guest_run_trio"] = lazy_import("trio.lowlevel", "start_guest_run")
+
+
+def get_start_guest_run(backend: Backend):
+    """
+    Get the `start_guest_run` function corresponding to the `backend`.
+    """
+    return start_guest_run_asyncio if Backend(backend) is Backend.asyncio else start_guest_run_trio
 
 
 def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
@@ -113,14 +130,12 @@ class Host(Generic[T]):
             cls_ = cls._subclasses[loop]
         assert cls_.LOOP is loop
 
-        if backend is Backend.asyncio:
-            from .asyncio_guest import start_guest_run as sgr  # noqa: PLC0415
-        else:
-            from trio.lowlevel import start_guest_run as sgr  # noqa: PLC0415
         host = cls_(**loop_options)
-        # Provide the start_guest function that can only be called once.
+        # set the `start_guest` function (runs once).
+        backend_options.setdefault("host_uses_signal_set_wakeup_fd", host.host_uses_signal_set_wakeup_fd)
+        start_guest_run = get_start_guest_run(backend)
         host.start_guest = lambda: [
-            sgr(
+            start_guest_run(
                 func,
                 *args,
                 run_sync_soon_threadsafe=host.run_sync_soon_threadsafe,
@@ -136,7 +151,9 @@ class Host(Generic[T]):
         finally:
             host._instances.pop(threading.current_thread())
 
-    # The methods below here should be overridden by a subclass
+    # Override the methods/attributes below as required.
+    host_uses_signal_set_wakeup_fd = False
+
     def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None: ...
     def run_sync_soon_not_threadsafe(self, fn: Callable[[], Any]) -> None: ...
 

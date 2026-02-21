@@ -28,6 +28,7 @@ from wrapt import lazy_import
 import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed
+from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Loop, NoValue, RunSettings, T
 
@@ -209,11 +210,9 @@ class Caller(anyio.AsyncContextManagerMixin):
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
     _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
-        lambda c: SingleConsumerAsyncQueue(
-            c["owner"].backend,
-            reject=lambda item: isinstance(item, Pending) and (item.cancel("The caller has been closed", _force=True)),
-        )
+        lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
     )
+
     stopped = Fixed(Event)
     "A thread-safe Event for when the caller is stopped."
 
@@ -441,6 +440,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pass
         for child in self.children:
             child.stop(force=True)
+        if queue := getattr(self, "_guest_queue", None):
+            queue.stop()
         self._queue.stop()
         for func in tuple(self._queue_map):
             self.queue_close(func)
@@ -463,7 +464,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async with anyio.create_task_group() as tg:
             socket = None
             self._state = CallerState.running
-            tg.start_soon(self._scheduler, self._queue, tg)
+            tg.start_soon(self._scheduler, self.backend, self._queue, tg)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
@@ -472,6 +473,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             try:
                 yield self
             finally:
+                if stop_guest := getattr(self, "_stop_guest", None):
+                    with anyio.CancelScope(shield=True):
+                        await stop_guest()
                 self.stop(force=True)
                 if socket:
                     self.iopub_sockets.pop(self._caller_id, None)
@@ -485,7 +489,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.stopped.set()
                     await self.checkpoint()
 
-    async def _scheduler(self, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
+    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
         """
         Asynchronous scheduler coroutine responsible for managing and executing tasks from an internal queue.
 
@@ -494,6 +498,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         handling on shutdown.
 
         Args:
+            backend: The backend where the scheduler is operating.
             tg: The task group used to manage concurrent tasks.
             task_status: Used to signal when the scheduler has started.
 
@@ -502,7 +507,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             PendingCancelled: Sets this exception on pending results in the queue upon shutdown.
         """
         kwgs = {}
-        asyncio_backend = self.backend == Backend.asyncio
+        asyncio_backend = backend == Backend.asyncio
         if asyncio_backend:
             loop = asyncio.get_running_loop()
             coro = asyncio.sleep(0)
@@ -587,6 +592,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         finally:
             self._pending_var.reset(token_pending)
             self._caller_token.reset(token_ident)
+
+    @staticmethod
+    def _reject(item: tuple | Pending) -> None:
+        if isinstance(item, Pending):
+            item.cancel("The caller has been closed", _force=True)
 
     @classmethod
     def _start_idle_worker_cleanup_thead(cls) -> None:
@@ -697,6 +707,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         kwargs: dict,
         context: contextvars.Context | None = None,
         trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = PendingTracker,
+        backend: NoValue | Backend = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         /,
         **metadata: Any,
     ) -> Pending[T]:
@@ -714,12 +725,43 @@ class Caller(anyio.AsyncContextManagerMixin):
             trackers: The tracker subclasses of active trackers which to add the pending.
             **metadata: Additional metadata to store in the instance.
         """
-        if self._state in {CallerState.stopping, CallerState.stopped}:
-            msg = f"{self} is {self._state.name}!"
-            raise RuntimeError(msg)
         pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        self._queue.append(pen)
+        if backend is NoValue or (backend := Backend(backend)) is self.backend:
+            self._queue.append(pen)
+        else:
+            if not hasattr(self, "_guest_queue"):
+                self._guest_queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
+                self.schedule_call(
+                    self._guest_backend_loop, (), {"backend": backend, "queue": self._guest_queue}, None, ()
+                )
+            self._guest_queue.append(pen)
         return pen
+
+    async def _guest_backend_loop(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
+        async def _guest_scheduler() -> None:
+            async with anyio.create_task_group() as tg:
+                tg.start_soon(self._scheduler, Backend(backend), queue, tg)
+
+        if self._state is CallerState.running:
+            # Prefer callbacks from the host.
+            host = Host.current(self.thread)
+            run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
+            start_guest_run = get_start_guest_run(backend)
+            start_guest_run(
+                _guest_scheduler,
+                done_callback=lambda _: run_soon_threadsafe_queue.stop(),
+                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else run_soon_threadsafe_queue.append,
+                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
+                host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
+            )
+            if pen := self.current_pending():
+                self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]
+            with anyio.CancelScope(shield=True):
+                async for func in run_soon_threadsafe_queue:
+                    try:
+                        func()
+                    except Exception:
+                        pass
 
     def call_later(
         self,
@@ -735,8 +777,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             func: The function.
             delay: The minimum delay to add between submission and execution.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
 
         Info:
             All call arguments are packed into the instance's metadata.
@@ -751,14 +793,44 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Pending[T]:
         """
-        Schedule func to be called in caller's event loop copying the current context.
+        Schedule func to be executed.
 
         Args:
             func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
         """
         return self.schedule_call(func, args, kwargs)
+
+    def call_using_backend(
+        self,
+        backend: Backend | Literal["asyncio", "trio"],
+        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Pending[T]:
+        """
+        Schedule func to be executed using the specified backend.
+
+        This methods enables coroutines written for a specific function to be run irresective
+        of the callers backend.
+
+        - `backend == caller.backend` - `func` is executed via [Caller.call_soon][].
+        - `backend != caller.backend` - `func` is executed with a backend running as a guest.
+
+        Args:
+            backend: The backend in which `func` must be executed.
+            func: The function.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
+
+        Notes:
+
+            - **Only use this to execute coroutines that require a specific backend to run in the callers thread.**
+            - Where possible use a separate caller/thread with [Caller.get][] instead.
+        """
+        return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))
 
     def call_direct(
         self,
@@ -770,13 +842,12 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         Schedule `func` to be called in caller's event loop directly.
 
-        This method is provided to facilitate lightweight *thread-safe* function calls that
-        need to be performed from within the callers event loop/taskgroup.
+        Use this for short-running function calls only.
 
         Args:
             func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
 
         Warning:
 

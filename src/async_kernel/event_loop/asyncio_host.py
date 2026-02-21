@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 class AsyncioHost(Host):
     LOOP = Loop.asyncio
     done_event = Fixed(Event)
+    host_uses_signal_set_wakeup_fd = True
 
     def __init__(self, **backend_options) -> None:
         self.backend_options = backend_options
