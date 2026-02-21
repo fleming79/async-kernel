@@ -125,7 +125,8 @@ class Host(Generic[T]):
         assert cls_.LOOP is loop
 
         host = cls_(**loop_options)
-        # Provide the start_guest function that can only be called once.
+        # set the `start_guest` function (runs once).
+        backend_options.setdefault("host_uses_signal_set_wakeup_fd", host.host_uses_signal_set_wakeup_fd)
         host.start_guest = lambda: [
             get_start_guest_run(backend)(
                 func,
@@ -143,7 +144,9 @@ class Host(Generic[T]):
         finally:
             host._instances.pop(threading.current_thread())
 
-    # The methods below here should be overridden by a subclass
+    # Override the methods/attributes below as required.
+    host_uses_signal_set_wakeup_fd = False
+
     def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None: ...
     def run_sync_soon_not_threadsafe(self, fn: Callable[[], Any]) -> None: ...
 

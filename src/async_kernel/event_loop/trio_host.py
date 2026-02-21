@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 class TrioHost(Host):
     LOOP = Loop.trio
+    host_uses_signal_set_wakeup_fd = True
     _done = False
 
     def __init__(self, **backend_options) -> None:

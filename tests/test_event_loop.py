@@ -56,7 +56,6 @@ class TestHost:
             backend="trio",
             loop=Loop.custom,
             loop_options={"host_class": MyCustomHost},
-            backend_options={"host_uses_signal_set_wakeup_fd": True},
         )
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == ("abc",)
@@ -79,7 +78,6 @@ class TestHost:
             backend="trio",
             loop=Loop.asyncio,
             loop_options={"use_uvloop": True} if importlib.util.find_spec("uvloop") else {},
-            backend_options={"host_uses_signal_set_wakeup_fd": True},
         )
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == "abc"
