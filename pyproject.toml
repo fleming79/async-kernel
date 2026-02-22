@@ -63,7 +63,9 @@ async-kernel = "async_kernel.command:command_line"
 
 
 [dependency-groups]
-docs = ["mkdocs-material",
+docs = [
+    "mkdocs-material",
+    "mkdocs-autorefs == 1.4.3",
     "mike",
     "mkdocstrings[python]",
     "mkdocs-jupyter >= 0.25.1",
