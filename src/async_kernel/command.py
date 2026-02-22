@@ -53,7 +53,7 @@ def command_line() -> None:
         + "With the async-kernel command line tool you can:\n\n"
         + "    - Add/remove kernel specs\n"
         + "    - start kernels\n\n"
-        + "Online help: https://fleming79.github.io/async-kernel/latest/commands/#command-line \n\n"
+        + "Online help: https://fleming79.github.io/async-kernel/latest/usage/commands/ \n\n"
         + f"Jupyter kernel directory: '{kernel_dir}'",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
