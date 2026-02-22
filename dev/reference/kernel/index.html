@@ -2645,17 +2645,17 @@ viewing the latest version.
 <p><span class="doc-section-title">Classes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" KernelInterruptError (async_kernel.kernel.KernelInterruptError)" href="#async_kernel.kernel.KernelInterruptError">KernelInterruptError</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            KernelInterruptError (async_kernel.kernel.KernelInterruptError)" href="#async_kernel.kernel.KernelInterruptError">KernelInterruptError</a></code></b>
           –
           <div class="doc-md-description">
             <p>Raised to interrupt the kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" Kernel (async_kernel.kernel.Kernel)" href="#async_kernel.kernel.Kernel">Kernel</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            Kernel (async_kernel.kernel.Kernel)" href="#async_kernel.kernel.Kernel">Kernel</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A Jupyter kernel that supports concurrent execution providing an <a class="autorefs autorefs-internal" title=" AsyncInteractiveShell" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">IPython InteractiveShell</a></p>
+            <p>A Jupyter kernel that supports concurrent execution providing an <a class="autorefs autorefs-internal" title="            AsyncInteractiveShell" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">IPython InteractiveShell</a></p>
           </div>
         </li>
     </ul>
@@ -2718,12 +2718,8 @@ viewing the latest version.
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
@@ -2775,7 +2771,7 @@ viewing the latest version.
 
 
 
-        <p>A Jupyter kernel that supports concurrent execution providing an <a class="autorefs autorefs-internal" title=" AsyncInteractiveShell" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">IPython InteractiveShell</a>
+        <p>A Jupyter kernel that supports concurrent execution providing an <a class="autorefs autorefs-internal" title="            AsyncInteractiveShell" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">IPython InteractiveShell</a>
 with support for kernel subshells.</p>
 
 
@@ -2788,7 +2784,7 @@ with <code>Kernel()</code> or [get_kernel].</p>
 <details class="starting-the-kernel" open>
   <summary>Starting the kernel</summary>
   <p>The kernel should appear in the list of kernels just as other kernels are. Variants of the kernel
-can with custom configuration can be added at the <a class="autorefs autorefs-internal" title=" command_line" href="../command/#async_kernel.command.command_line">command line</a>.</p>
+can with custom configuration can be added at the <a class="autorefs autorefs-internal" title="            command_line" href="../command/#async_kernel.command.command_line">command line</a>.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="async_kernel.kernel.Kernel--from-the-shell" name="async_kernel.kernel.Kernel--__tabbed_1" type="radio" /><input id="async_kernel.kernel.Kernel--blocking" name="async_kernel.kernel.Kernel--__tabbed_1" type="radio" /><input id="async_kernel.kernel.Kernel--inside-a-coroutine" name="async_kernel.kernel.Kernel--__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="async_kernel.kernel.Kernel--from-the-shell">From the shell</label><label for="async_kernel.kernel.Kernel--blocking">Blocking</label><label for="async_kernel.kernel.Kernel--inside-a-coroutine">Inside a coroutine</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -2939,6 +2935,43 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
       </li>
   </ul>
 
+        <b class="doc doc-backlink-type">Used by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#">interface</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+  </ul>
+
   </div>
 
 
@@ -2955,210 +2988,305 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" load_settings (async_kernel.kernel.Kernel.load_settings)" href="#async_kernel.kernel.Kernel.load_settings">load_settings</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            load_settings (async_kernel.kernel.Kernel.load_settings)" href="#async_kernel.kernel.Kernel.load_settings">load_settings</a></code></b>
             –
             <div class="doc-md-description">
               <p>Load settings into the kernel.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" load_connection_info (async_kernel.kernel.Kernel.load_connection_info)" href="#async_kernel.kernel.Kernel.load_connection_info">load_connection_info</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            load_connection_info (async_kernel.kernel.Kernel.load_connection_info)" href="#async_kernel.kernel.Kernel.load_connection_info">load_connection_info</a></code></b>
             –
             <div class="doc-md-description">
               <p>Load connection info from a dict containing connection info.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" stop (async_kernel.kernel.Kernel.stop)" href="#async_kernel.kernel.Kernel.stop">stop</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            stop
+
+
+  
+      staticmethod
+   (async_kernel.kernel.Kernel.stop)" href="#async_kernel.kernel.Kernel.stop">stop</a></code></b>
             –
             <div class="doc-md-description">
               <p>A <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#staticmethod">staticmethod</a> to stop the running kernel.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" __asynccontextmanager__ (async_kernel.kernel.Kernel.__asynccontextmanager__)" href="#async_kernel.kernel.Kernel.__asynccontextmanager__">__asynccontextmanager__</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            __asynccontextmanager__
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.__asynccontextmanager__)" href="#async_kernel.kernel.Kernel.__asynccontextmanager__">__asynccontextmanager__</a></code></b>
             –
             <div class="doc-md-description">
               <p>Start the kernel in an already running anyio event loop.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" iopub_send (async_kernel.kernel.Kernel.iopub_send)" href="#async_kernel.kernel.Kernel.iopub_send">iopub_send</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            iopub_send (async_kernel.kernel.Kernel.iopub_send)" href="#async_kernel.kernel.Kernel.iopub_send">iopub_send</a></code></b>
             –
             <div class="doc-md-description">
               <p>Send a message on the iopub socket.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" topic (async_kernel.kernel.Kernel.topic)" href="#async_kernel.kernel.Kernel.topic">topic</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            topic (async_kernel.kernel.Kernel.topic)" href="#async_kernel.kernel.Kernel.topic">topic</a></code></b>
             –
             <div class="doc-md-description">
               <p>prefixed topic for IOPub messages.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" msg_handler (async_kernel.kernel.Kernel.msg_handler)" href="#async_kernel.kernel.Kernel.msg_handler">msg_handler</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            msg_handler (async_kernel.kernel.Kernel.msg_handler)" href="#async_kernel.kernel.Kernel.msg_handler">msg_handler</a></code></b>
             –
             <div class="doc-md-description">
               <p>Schedule a message to be executed.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" run_handler (async_kernel.kernel.Kernel.run_handler)" href="#async_kernel.kernel.Kernel.run_handler">run_handler</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            run_handler
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.run_handler)" href="#async_kernel.kernel.Kernel.run_handler">run_handler</a></code></b>
             –
             <div class="doc-md-description">
               <p>Asynchronously run a message handler for a given job, managing reply sending and execution state.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" get_run_mode (async_kernel.kernel.Kernel.get_run_mode)" href="#async_kernel.kernel.Kernel.get_run_mode">get_run_mode</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            get_run_mode (async_kernel.kernel.Kernel.get_run_mode)" href="#async_kernel.kernel.Kernel.get_run_mode">get_run_mode</a></code></b>
             –
             <div class="doc-md-description">
               <p>Determine the run mode for a given channel, message type and job.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" all_concurrency_run_modes (async_kernel.kernel.Kernel.all_concurrency_run_modes)" href="#async_kernel.kernel.Kernel.all_concurrency_run_modes">all_concurrency_run_modes</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            all_concurrency_run_modes (async_kernel.kernel.Kernel.all_concurrency_run_modes)" href="#async_kernel.kernel.Kernel.all_concurrency_run_modes">all_concurrency_run_modes</a></code></b>
             –
             <div class="doc-md-description">
               <p>Generates a dictionary containing all combinations of SocketID, and MsgType, along with their</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" kernel_info_request (async_kernel.kernel.Kernel.kernel_info_request)" href="#async_kernel.kernel.Kernel.kernel_info_request">kernel_info_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            kernel_info_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.kernel_info_request)" href="#async_kernel.kernel.Kernel.kernel_info_request">kernel_info_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info">kernel info request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" comm_info_request (async_kernel.kernel.Kernel.comm_info_request)" href="#async_kernel.kernel.Kernel.comm_info_request">comm_info_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            comm_info_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.comm_info_request)" href="#async_kernel.kernel.Kernel.comm_info_request">comm_info_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info">comm info request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" execute_request (async_kernel.kernel.Kernel.execute_request)" href="#async_kernel.kernel.Kernel.execute_request">execute_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            execute_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.execute_request)" href="#async_kernel.kernel.Kernel.execute_request">execute_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute">execute request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" complete_request (async_kernel.kernel.Kernel.complete_request)" href="#async_kernel.kernel.Kernel.complete_request">complete_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            complete_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.complete_request)" href="#async_kernel.kernel.Kernel.complete_request">complete_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion">completion request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" is_complete_request (async_kernel.kernel.Kernel.is_complete_request)" href="#async_kernel.kernel.Kernel.is_complete_request">is_complete_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            is_complete_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.is_complete_request)" href="#async_kernel.kernel.Kernel.is_complete_request">is_complete_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness">is_complete request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" inspect_request (async_kernel.kernel.Kernel.inspect_request)" href="#async_kernel.kernel.Kernel.inspect_request">inspect_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            inspect_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.inspect_request)" href="#async_kernel.kernel.Kernel.inspect_request">inspect_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection">inspect request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" history_request (async_kernel.kernel.Kernel.history_request)" href="#async_kernel.kernel.Kernel.history_request">history_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            history_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.history_request)" href="#async_kernel.kernel.Kernel.history_request">history_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#history">history request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" comm_open (async_kernel.kernel.Kernel.comm_open)" href="#async_kernel.kernel.Kernel.comm_open">comm_open</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            comm_open
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.comm_open)" href="#async_kernel.kernel.Kernel.comm_open">comm_open</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm">comm open request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" comm_msg (async_kernel.kernel.Kernel.comm_msg)" href="#async_kernel.kernel.Kernel.comm_msg">comm_msg</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            comm_msg
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.comm_msg)" href="#async_kernel.kernel.Kernel.comm_msg">comm_msg</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages">comm msg request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" comm_close (async_kernel.kernel.Kernel.comm_close)" href="#async_kernel.kernel.Kernel.comm_close">comm_close</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            comm_close
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.comm_close)" href="#async_kernel.kernel.Kernel.comm_close">comm_close</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms">comm close request</a>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" interrupt_request (async_kernel.kernel.Kernel.interrupt_request)" href="#async_kernel.kernel.Kernel.interrupt_request">interrupt_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            interrupt_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.interrupt_request)" href="#async_kernel.kernel.Kernel.interrupt_request">interrupt_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle an <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt">interrupt request</a> (control only).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" shutdown_request (async_kernel.kernel.Kernel.shutdown_request)" href="#async_kernel.kernel.Kernel.shutdown_request">shutdown_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            shutdown_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.shutdown_request)" href="#async_kernel.kernel.Kernel.shutdown_request">shutdown_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown">shutdown request</a> (control only).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" debug_request (async_kernel.kernel.Kernel.debug_request)" href="#async_kernel.kernel.Kernel.debug_request">debug_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            debug_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.debug_request)" href="#async_kernel.kernel.Kernel.debug_request">debug_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request">debug request</a> (control only).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" create_subshell_request (async_kernel.kernel.Kernel.create_subshell_request)" href="#async_kernel.kernel.Kernel.create_subshell_request">create_subshell_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            create_subshell_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.create_subshell_request)" href="#async_kernel.kernel.Kernel.create_subshell_request">create_subshell_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell">create subshell request</a> (control only).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" delete_subshell_request (async_kernel.kernel.Kernel.delete_subshell_request)" href="#async_kernel.kernel.Kernel.delete_subshell_request">delete_subshell_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            delete_subshell_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.delete_subshell_request)" href="#async_kernel.kernel.Kernel.delete_subshell_request">delete_subshell_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell">delete subshell request</a> (control only).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" list_subshell_request (async_kernel.kernel.Kernel.list_subshell_request)" href="#async_kernel.kernel.Kernel.list_subshell_request">list_subshell_request</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            list_subshell_request
+
+
+  
+      async
+   (async_kernel.kernel.Kernel.list_subshell_request)" href="#async_kernel.kernel.Kernel.list_subshell_request">list_subshell_request</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle a <a href="https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells">list subshell request</a> (control only).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" excepthook (async_kernel.kernel.Kernel.excepthook)" href="#async_kernel.kernel.Kernel.excepthook">excepthook</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            excepthook (async_kernel.kernel.Kernel.excepthook)" href="#async_kernel.kernel.Kernel.excepthook">excepthook</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle an exception.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" unraisablehook (async_kernel.kernel.Kernel.unraisablehook)" href="#async_kernel.kernel.Kernel.unraisablehook">unraisablehook</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            unraisablehook (async_kernel.kernel.Kernel.unraisablehook)" href="#async_kernel.kernel.Kernel.unraisablehook">unraisablehook</a></code></b>
             –
             <div class="doc-md-description">
               <p>Handle unraisable exceptions (during gc for instance).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" get_connection_info (async_kernel.kernel.Kernel.get_connection_info)" href="#async_kernel.kernel.Kernel.get_connection_info">get_connection_info</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            get_connection_info (async_kernel.kernel.Kernel.get_connection_info)" href="#async_kernel.kernel.Kernel.get_connection_info">get_connection_info</a></code></b>
             –
             <div class="doc-md-description">
               <p>Return the connection info as a dict.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" get_parent (async_kernel.kernel.Kernel.get_parent)" href="#async_kernel.kernel.Kernel.get_parent">get_parent</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            get_parent (async_kernel.kernel.Kernel.get_parent)" href="#async_kernel.kernel.Kernel.get_parent">get_parent</a></code></b>
             –
             <div class="doc-md-description">
               <p>A convenience method to access the 'message' in the current context if there is one.</p>
@@ -3172,50 +3300,104 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" interface (async_kernel.kernel.Kernel.interface)" href="#async_kernel.kernel.Kernel.interface">interface</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            interface
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.interface)" href="#async_kernel.kernel.Kernel.interface">interface</a></code></b>
           –
           <div class="doc-md-description">
             <p>The abstraction to communicate with the kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" callers (async_kernel.kernel.Kernel.callers)" href="#async_kernel.kernel.Kernel.callers">callers</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a>, <a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>], <span title="async_kernel.Caller">Caller</span>]]</code>)
+          <b><code><a class="autorefs autorefs-internal" title="            callers
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.callers)" href="#async_kernel.kernel.Kernel.callers">callers</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a>, <a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>], <a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a>]]</code>)
           –
           <div class="doc-md-description">
             <p>The callers associated with the kernel once it has started.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" subshell_manager (async_kernel.kernel.Kernel.subshell_manager)" href="#async_kernel.kernel.Kernel.subshell_manager">subshell_manager</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            subshell_manager
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.subshell_manager)" href="#async_kernel.kernel.Kernel.subshell_manager">subshell_manager</a></code></b>
           –
           <div class="doc-md-description">
             <p>Dedicated to management of sub shells.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" help_links (async_kernel.kernel.Kernel.help_links)" href="#async_kernel.kernel.Kernel.help_links">help_links</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            help_links
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.help_links)" href="#async_kernel.kernel.Kernel.help_links">help_links</a></code></b>
           –
           <div class="doc-md-description">
             
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" quiet (async_kernel.kernel.Kernel.quiet)" href="#async_kernel.kernel.Kernel.quiet">quiet</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            quiet
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.quiet)" href="#async_kernel.kernel.Kernel.quiet">quiet</a></code></b>
           –
           <div class="doc-md-description">
             <p>Only send stdout/stderr to output stream.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" print_kernel_messages (async_kernel.kernel.Kernel.print_kernel_messages)" href="#async_kernel.kernel.Kernel.print_kernel_messages">print_kernel_messages</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            print_kernel_messages
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.print_kernel_messages)" href="#async_kernel.kernel.Kernel.print_kernel_messages">print_kernel_messages</a></code></b>
           –
           <div class="doc-md-description">
             <p>When enabled the kernel will print startup, shutdown and terminal errors.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" connection_file (async_kernel.kernel.Kernel.connection_file)" href="#async_kernel.kernel.Kernel.connection_file">connection_file</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            connection_file
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.connection_file)" href="#async_kernel.kernel.Kernel.connection_file">connection_file</a></code></b>
               (<code><span title="traitlets.TraitType">TraitType</span>[<a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a>, <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
           –
           <div class="doc-md-description">
@@ -3223,56 +3405,103 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" kernel_name (async_kernel.kernel.Kernel.kernel_name)" href="#async_kernel.kernel.Kernel.kernel_name">kernel_name</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            kernel_name
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.kernel_name)" href="#async_kernel.kernel.Kernel.kernel_name">kernel_name</a></code></b>
           –
           <div class="doc-md-description">
             <p>The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" log (async_kernel.kernel.Kernel.log)" href="#async_kernel.kernel.Kernel.log">log</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            log
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.log)" href="#async_kernel.kernel.Kernel.log">log</a></code></b>
           –
           <div class="doc-md-description">
             <p>The logging adapter.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" main_shell (async_kernel.kernel.Kernel.main_shell)" href="#async_kernel.kernel.Kernel.main_shell">main_shell</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            main_shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.main_shell)" href="#async_kernel.kernel.Kernel.main_shell">main_shell</a></code></b>
           –
           <div class="doc-md-description">
             <p>The interactive shell.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" debugger (async_kernel.kernel.Kernel.debugger)" href="#async_kernel.kernel.Kernel.debugger">debugger</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            debugger
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.debugger)" href="#async_kernel.kernel.Kernel.debugger">debugger</a></code></b>
           –
           <div class="doc-md-description">
             <p>Handles <a href="https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request">debug requests</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" comm_manager (async_kernel.kernel.Kernel.comm_manager)" href="#async_kernel.kernel.Kernel.comm_manager">comm_manager</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            comm_manager
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.comm_manager)" href="#async_kernel.kernel.Kernel.comm_manager">comm_manager</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Creates <a class="autorefs autorefs-internal" title=" Comm" href="../comm/#async_kernel.comm.Comm">async_kernel.comm.Comm</a> instances and maintains a mapping to <code>comm_id</code> to <code>Comm</code> instances.</p>
+            <p>Creates <a class="autorefs autorefs-internal" title="            Comm" href="../comm/#async_kernel.comm.Comm">async_kernel.comm.Comm</a> instances and maintains a mapping to <code>comm_id</code> to <code>Comm</code> instances.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" event_started (async_kernel.kernel.Kernel.event_started)" href="#async_kernel.kernel.Kernel.event_started">event_started</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            event_started
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.event_started)" href="#async_kernel.kernel.Kernel.event_started">event_started</a></code></b>
           –
           <div class="doc-md-description">
             <p>An event that occurs when the kernel is started.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" event_stopped (async_kernel.kernel.Kernel.event_stopped)" href="#async_kernel.kernel.Kernel.event_stopped">event_stopped</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            event_stopped
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.kernel.Kernel.event_stopped)" href="#async_kernel.kernel.Kernel.event_stopped">event_stopped</a></code></b>
           –
           <div class="doc-md-description">
             <p>An event that occurs when the kernel is stopped.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" settings (async_kernel.kernel.Kernel.settings)" href="#async_kernel.kernel.Kernel.settings">settings</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            settings
+
+
+  
+      property
+   (async_kernel.kernel.Kernel.settings)" href="#async_kernel.kernel.Kernel.settings">settings</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
           –
           <div class="doc-md-description">
@@ -3280,23 +3509,38 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" shell (async_kernel.kernel.Kernel.shell)" href="#async_kernel.kernel.Kernel.shell">shell</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" AsyncInteractiveShell (async_kernel.asyncshell.AsyncInteractiveShell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">AsyncInteractiveShell</a> | <a class="autorefs autorefs-internal" title=" AsyncInteractiveSubshell (async_kernel.asyncshell.AsyncInteractiveSubshell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveSubshell">AsyncInteractiveSubshell</a></code>)
+          <b><code><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      property
+   (async_kernel.kernel.Kernel.shell)" href="#async_kernel.kernel.Kernel.shell">shell</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            AsyncInteractiveShell (async_kernel.asyncshell.AsyncInteractiveShell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">AsyncInteractiveShell</a> | <a class="autorefs autorefs-internal" title="            AsyncInteractiveSubshell (async_kernel.asyncshell.AsyncInteractiveSubshell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveSubshell">AsyncInteractiveSubshell</a></code>)
           –
           <div class="doc-md-description">
             <p>The shell given the current context.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" caller (async_kernel.kernel.Kernel.caller)" href="#async_kernel.kernel.Kernel.caller">caller</a></code></b>
-              (<code><span title="async_kernel.Caller">Caller</span></code>)
+          <b><code><a class="autorefs autorefs-internal" title="            caller
+
+
+  
+      property
+   (async_kernel.kernel.Kernel.caller)" href="#async_kernel.kernel.Kernel.caller">caller</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></code>)
           –
           <div class="doc-md-description">
             <p>The caller for the shell channel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" kernel_info (async_kernel.kernel.Kernel.kernel_info)" href="#async_kernel.kernel.Kernel.kernel_info">kernel_info</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            kernel_info
+
+
+  
+      property
+   (async_kernel.kernel.Kernel.kernel_info)" href="#async_kernel.kernel.Kernel.kernel_info">kernel_info</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]] | <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, ...] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a>]</code>)
           –
           <div class="doc-md-description">
@@ -4575,7 +4819,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
   </span>
 
 <a href="#async_kernel.kernel.Kernel.interface" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">interface</span> <span class="o">=</span> <span class="n"><span title="traitlets.Instance">Instance</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title=" BaseKernelInterface (async_kernel.interface.base.BaseKernelInterface)" href="../interface/#async_kernel.interface.base.BaseKernelInterface">BaseKernelInterface</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">interface</span> <span class="o">=</span> <span class="n"><span title="traitlets.Instance">Instance</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            BaseKernelInterface (async_kernel.interface.base.BaseKernelInterface)" href="../interface/#async_kernel.interface.base.BaseKernelInterface">BaseKernelInterface</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4601,7 +4845,19 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
   </span>
 
 <a href="#async_kernel.kernel.Kernel.callers" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">callers</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">],</span> <span class="n"><span title="async_kernel.Caller">Caller</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">callers</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4627,7 +4883,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
   </span>
 
 <a href="#async_kernel.kernel.Kernel.subshell_manager" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">subshell_manager</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title=" SubshellManager (async_kernel.asyncshell.SubshellManager)" href="../asyncshell/#async_kernel.asyncshell.SubshellManager">SubshellManager</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">subshell_manager</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            SubshellManager (async_kernel.asyncshell.SubshellManager)" href="../asyncshell/#async_kernel.asyncshell.SubshellManager">SubshellManager</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4811,7 +5067,7 @@ of the current profile, but can be specified by absolute path.</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.main_shell" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">main_shell</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.instance">instance</span></span><span class="p">())</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">main_shell</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.instance">instance</span></span><span class="p">())</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4837,7 +5093,7 @@ of the current profile, but can be specified by absolute path.</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.debugger" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">debugger</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title=" Debugger (async_kernel.debugger.Debugger)" href="../debugger/#async_kernel.debugger.Debugger">Debugger</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">debugger</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Debugger (async_kernel.debugger.Debugger)" href="../debugger/#async_kernel.debugger.Debugger">Debugger</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4863,12 +5119,12 @@ of the current profile, but can be specified by absolute path.</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.comm_manager" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_manager</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><span title="async_kernel.comm.CommManager">CommManager</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_manager</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><span title="async_kernel.comm.CommManager">CommManager</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Creates <a class="autorefs autorefs-internal" title=" Comm" href="../comm/#async_kernel.comm.Comm">async_kernel.comm.Comm</a> instances and maintains a mapping to <code>comm_id</code> to <code>Comm</code> instances.</p>
+        <p>Creates <a class="autorefs autorefs-internal" title="            Comm" href="../comm/#async_kernel.comm.Comm">async_kernel.comm.Comm</a> instances and maintains a mapping to <code>comm_id</code> to <code>Comm</code> instances.</p>
 
           
     </div>
@@ -4889,7 +5145,7 @@ of the current profile, but can be specified by absolute path.</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.event_started" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">event_started</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/latest/api.html#aiologic.Event">Event</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">event_started</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/latest/api.html#aiologic.Event">Event</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4915,7 +5171,7 @@ of the current profile, but can be specified by absolute path.</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.event_stopped" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">event_stopped</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/latest/api.html#aiologic.Event">Event</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">event_stopped</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/latest/api.html#aiologic.Event">Event</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4965,7 +5221,7 @@ of the current profile, but can be specified by absolute path.</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.shell" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">shell</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" AsyncInteractiveShell (async_kernel.asyncshell.AsyncInteractiveShell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">AsyncInteractiveShell</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title=" AsyncInteractiveSubshell (async_kernel.asyncshell.AsyncInteractiveSubshell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveSubshell">AsyncInteractiveSubshell</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">shell</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            AsyncInteractiveShell (async_kernel.asyncshell.AsyncInteractiveShell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell">AsyncInteractiveShell</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            AsyncInteractiveSubshell (async_kernel.asyncshell.AsyncInteractiveSubshell)" href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveSubshell">AsyncInteractiveSubshell</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4997,7 +5253,7 @@ of the current profile, but can be specified by absolute path.</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.caller" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><span title="async_kernel.Caller">Caller</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5047,7 +5303,7 @@ of the current profile, but can be specified by absolute path.</p>
 
 
 <a href="#async_kernel.kernel.Kernel.load_settings" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_settings</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.load_settings(settings)">settings</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_settings</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="settings (async_kernel.kernel.Kernel.load_settings(settings))" href="#async_kernel.kernel.Kernel.load_settings(settings)">settings</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5122,7 +5378,7 @@ value: The value to set.</p>
 
 
 <a href="#async_kernel.kernel.Kernel.load_connection_info" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_connection_info</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.load_connection_info(info)">info</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_connection_info</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="info (async_kernel.kernel.Kernel.load_connection_info(info))" href="#async_kernel.kernel.Kernel.load_connection_info(info)">info</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5330,11 +5586,26 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.iopub_send" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">iopub_send</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(msg_or_type)">msg_or_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(msg_or_type)">msg_or_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(content)">content</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(content)">content</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(parent)">parent</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(parent)">parent</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
     <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(ident)">ident</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.kernel.Kernel.iopub_send(buffers)">buffers</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
@@ -5489,10 +5760,22 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.msg_handler" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">msg_handler</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(channel)">channel</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">],</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(send_reply)">send_reply</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(channel)">channel</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">],</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.msg_handler(send_reply)">send_reply</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -5603,10 +5886,15 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.run_handler" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_handler</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.run_handler(subshell_id)">subshell_id</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.run_handler(send_reply)">send_reply</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.run_handler(handler)">handler</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" HandlerType (async_kernel.typing.HandlerType)" href="../typing/#async_kernel.typing.HandlerType">HandlerType</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.run_handler(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="subshell_id (async_kernel.kernel.Kernel.run_handler(subshell_id))" href="#async_kernel.kernel.Kernel.run_handler(subshell_id)">subshell_id</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="send_reply (async_kernel.kernel.Kernel.run_handler(send_reply))" href="#async_kernel.kernel.Kernel.run_handler(send_reply)">send_reply</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="handler (async_kernel.kernel.Kernel.run_handler(handler))" href="#async_kernel.kernel.Kernel.run_handler(handler)">handler</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            HandlerType
+
+
+  
+      module-attribute
+   (async_kernel.typing.HandlerType)" href="../typing/#async_kernel.typing.HandlerType">HandlerType</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="job (async_kernel.kernel.Kernel.run_handler(job))" href="#async_kernel.kernel.Kernel.run_handler(job)">job</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
@@ -5627,7 +5915,7 @@ Instead a new instance should be started.</p>
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.kernel.Kernel.run_handler(send_reply)" class="doc doc-heading doc-heading-parameter">              <b><code>send_reply</code></b>
-<a href="#async_kernel.kernel.Kernel.run_handler(send_reply)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>], <a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, None]]</code>)
+<a href="#async_kernel.kernel.Kernel.run_handler(send_reply)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>], <a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, None]]</code>)
           –
           <div class="doc-md-description">
             <p>A coroutine function responsible for sending the reply.</p>
@@ -5635,12 +5923,17 @@ Instead a new instance should be started.</p>
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.kernel.Kernel.run_handler(handler)" class="doc doc-heading doc-heading-parameter">              <b><code>handler</code></b>
-<a href="#async_kernel.kernel.Kernel.run_handler(handler)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title=" HandlerType (async_kernel.typing.HandlerType)" href="../typing/#async_kernel.typing.HandlerType">HandlerType</a></code>)
+<a href="#async_kernel.kernel.Kernel.run_handler(handler)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            HandlerType
+
+
+  
+      module-attribute
+   (async_kernel.typing.HandlerType)" href="../typing/#async_kernel.typing.HandlerType">HandlerType</a></code>)
           –
           <div class="doc-md-description">
             <p>A coroutine function to handle the job / message.</p>
 <ul>
-<li>It is a method on the kernel whose name corresponds to the <a class="autorefs autorefs-internal" title=" MsgType" href="../typing/#async_kernel.typing.MsgType">message type that it handles</a>.</li>
+<li>It is a method on the kernel whose name corresponds to the <a class="autorefs autorefs-internal" title="            MsgType" href="../typing/#async_kernel.typing.MsgType">message type that it handles</a>.</li>
 <li>The handler should return a dict to use as 'content'in a reply.</li>
 <li>If status is not included in the dict it gets added automatically as <code>{'status': 'ok'}</code>.</li>
 <li>If a reply is not expected the handler should return <code>None</code>.</li>
@@ -5649,7 +5942,7 @@ Instead a new instance should be started.</p>
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.kernel.Kernel.run_handler(job)" class="doc doc-heading doc-heading-parameter">              <b><code>job</code></b>
-<a href="#async_kernel.kernel.Kernel.run_handler(job)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>]</code>)
+<a href="#async_kernel.kernel.Kernel.run_handler(job)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>]</code>)
           –
           <div class="doc-md-description">
             <p>The job dictionary containing message, socket, and identification information.</p>
@@ -5813,8 +6106,26 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.get_run_mode" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_run_mode</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(channel)">channel</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.kernel.Kernel.get_run_mode(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span>
+    <span class="n"><a class="autorefs autorefs-internal" title="msg_type (async_kernel.kernel.Kernel.get_run_mode(msg_type))" href="#async_kernel.kernel.Kernel.get_run_mode(msg_type)">msg_type</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="channel (async_kernel.kernel.Kernel.get_run_mode(channel))" href="#async_kernel.kernel.Kernel.get_run_mode(channel)">channel</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="job (async_kernel.kernel.Kernel.get_run_mode(job))" href="#async_kernel.kernel.Kernel.get_run_mode(job)">job</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5826,8 +6137,26 @@ Instead a new instance should be started.</p>
     <ul>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.kernel.Kernel.get_run_mode(channel)" class="doc doc-heading doc-heading-parameter">              <b><code>channel</code></b>
-<a href="#async_kernel.kernel.Kernel.get_run_mode(channel)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a>, <a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>]</code>, default:
-                  <code><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></code>
+<a href="#async_kernel.kernel.Kernel.get_run_mode(channel)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[<a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a>, <a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>]</code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></code>
 )
           –
           <div class="doc-md-description">
@@ -5836,7 +6165,7 @@ Instead a new instance should be started.</p>
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.kernel.Kernel.get_run_mode(msg_type)" class="doc doc-heading doc-heading-parameter">              <b><code>msg_type</code></b>
-<a href="#async_kernel.kernel.Kernel.get_run_mode(msg_type)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></code>)
+<a href="#async_kernel.kernel.Kernel.get_run_mode(msg_type)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></code>)
           –
           <div class="doc-md-description">
             <p>The type of the message.</p>
@@ -5844,7 +6173,7 @@ Instead a new instance should be started.</p>
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.kernel.Kernel.get_run_mode(job)" class="doc doc-heading doc-heading-parameter">              <b><code>job</code></b>
-<a href="#async_kernel.kernel.Kernel.get_run_mode(job)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a> | None</code>, default:
+<a href="#async_kernel.kernel.Kernel.get_run_mode(job)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a> | None</code>, default:
                   <code>None</code>
 )
           –
@@ -5858,7 +6187,7 @@ Instead a new instance should be started.</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title=" RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></code>
+              <code><a class="autorefs autorefs-internal" title="            RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></code>
           –
           <div class="doc-md-description">
             <p>The run mode for the message.</p>
@@ -6049,10 +6378,34 @@ Instead a new instance should be started.</p>
 
 <a href="#async_kernel.kernel.Kernel.all_concurrency_run_modes" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">all_concurrency_run_modes</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.all_concurrency_run_modes(channels)">channels</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title=" shell (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" control (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">),</span>
-    <span class="n"><span title="async_kernel.kernel.Kernel.all_concurrency_run_modes(msg_types)">msg_types</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.all_concurrency_run_modes(channels)">channels</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            shell
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            control
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a></span><span class="p">),</span>
+    <span class="n"><span title="async_kernel.kernel.Kernel.all_concurrency_run_modes(msg_types)">msg_types</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span>
-    <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Channel (async_kernel.typing.Channel)" href="../typing/#async_kernel.typing.Channel">Channel</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">&quot;SocketID&quot;</span><span class="p">,</span> <span class="s2">&quot;MsgType&quot;</span><span class="p">,</span> <span class="s2">&quot;RunMode&quot;</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Channel (async_kernel.typing.Channel)" href="../typing/#async_kernel.typing.Channel">Channel</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            MsgType (async_kernel.typing.MsgType)" href="../typing/#async_kernel.typing.MsgType">MsgType</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            RunMode (async_kernel.typing.RunMode)" href="../typing/#async_kernel.typing.RunMode">RunMode</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
 <span class="p">]</span>
 </code></pre></div>
 
@@ -6126,7 +6479,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.kernel_info_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">kernel_info_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.kernel_info_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">kernel_info_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.kernel_info_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6187,7 +6550,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.comm_info_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_info_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_info_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_info_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_info_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6262,7 +6635,12 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.execute_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execute_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.execute_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" ExecuteContent (async_kernel.typing.ExecuteContent)" href="../typing/#async_kernel.typing.ExecuteContent">ExecuteContent</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execute_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.execute_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            ExecuteContent (async_kernel.typing.ExecuteContent)" href="../typing/#async_kernel.typing.ExecuteContent">ExecuteContent</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6284,8 +6662,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request</a>
   </span>
 
       </li>
@@ -6319,7 +6701,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.complete_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">complete_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.complete_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">complete_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.complete_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6384,7 +6776,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.is_complete_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.is_complete_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.is_complete_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6406,8 +6808,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.is_complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;is_complete_request</a>
   </span>
 
       </li>
@@ -6441,7 +6847,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.inspect_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">inspect_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.inspect_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">inspect_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.inspect_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6463,8 +6879,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.inspect_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inspect_request</a>
   </span>
 
       </li>
@@ -6508,7 +6928,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.history_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">history_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.history_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">history_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.history_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6530,8 +6960,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.history_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_request</a>
   </span>
 
       </li>
@@ -6565,7 +6999,12 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.comm_open" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_open</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_open(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_open</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_open(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6587,8 +7026,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.comm_open"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_open</a>
   </span>
 
       </li>
@@ -6622,7 +7065,12 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.comm_msg" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_msg</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_msg(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_msg</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_msg(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6644,8 +7092,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.comm_msg"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_msg</a>
   </span>
 
       </li>
@@ -6679,7 +7131,12 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.comm_close" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_close</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_close(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_close</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.comm_close(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6701,8 +7158,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.comm_close"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_close</a>
   </span>
 
       </li>
@@ -6736,7 +7197,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.interrupt_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">interrupt_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.interrupt_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">interrupt_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.interrupt_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6758,12 +7229,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.interrupt_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupt_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6799,7 +7266,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.shutdown_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">shutdown_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.shutdown_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">shutdown_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.shutdown_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6858,7 +7335,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.debug_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">debug_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.debug_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">debug_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.debug_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6919,7 +7406,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.create_subshell_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_subshell_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.create_subshell_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_subshell_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.create_subshell_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6941,8 +7438,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.create_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;create_subshell_request</a>
   </span>
 
       </li>
@@ -6978,7 +7479,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.delete_subshell_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">delete_subshell_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.delete_subshell_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">delete_subshell_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.delete_subshell_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7000,8 +7511,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.delete_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;delete_subshell_request</a>
   </span>
 
       </li>
@@ -7037,7 +7552,17 @@ corresponding RunMode (if available).</p>
   </span>
 
 <a href="#async_kernel.kernel.Kernel.list_subshell_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">list_subshell_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.list_subshell_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Content (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">list_subshell_request</span><span class="p">(</span><span class="n"><span title="async_kernel.kernel.Kernel.list_subshell_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+
+
+  
+      module-attribute
+   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7173,7 +7698,7 @@ corresponding RunMode (if available).</p>
 
 
 <a href="#async_kernel.kernel.Kernel.get_parent" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_parent</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_parent</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7185,7 +7710,7 @@ corresponding RunMode (if available).</p>
 <details class="see-also" open>
   <summary>See also</summary>
   <ul>
-<li><a class="autorefs autorefs-internal" title=" iopub_send" href="#async_kernel.kernel.Kernel.iopub_send">Kernel.iopub_send</a></li>
+<li><a class="autorefs autorefs-internal" title="            iopub_send" href="#async_kernel.kernel.Kernel.iopub_send">Kernel.iopub_send</a></li>
 <li><a class="autorefs autorefs-external" href="https://ipywidgets.readthedocs.io/en/stable/reference/ipywidgets.html#ipywidgets.widgets.widget_output.Output">ipywidgets.Output</a>:
     Uses <code>get_ipython().kernel.get_parent()</code> to obtain the <code>msg_id</code> which
     is used to 'capture' output when its context has been acquired.</li>

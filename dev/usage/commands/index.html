@@ -1789,9 +1789,21 @@ viewing the latest version.
 <p>The kernel spec can be updated by adding a kernel spec with the same name ('async').</p>
 <h2 id="backend">Backend<a class="headerlink" href="#backend" title="Permanent link">&para;</a></h2>
 <p>There are two supported backends 'asyncio' and 'trio'.</p>
-<p>In CPython the <a class="autorefs autorefs-internal" title=" Backend" href="../../reference/typing/#async_kernel.typing.Backend">backend</a> is started using <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.
-The type of backend can be specified at the attribute <a class="autorefs autorefs-internal" title=" backend" href="../../reference/interface/#async_kernel.interface.BaseKernelInterface.backend"><code>interface.backend</code></a>.
-The backend_options can be specified at the attribute <a class="autorefs autorefs-internal" title=" backend_options" href="../../reference/interface/#async_kernel.interface.zmq.ZMQKernelInterface.backend_options">`interface.backend_options'</a>.
+<p>In CPython the <a class="autorefs autorefs-internal" title="            Backend" href="../../reference/typing/#async_kernel.typing.Backend">backend</a> is started using <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.
+The type of backend can be specified at the attribute <a class="autorefs autorefs-internal" title="            backend
+
+
+  
+      class-attribute
+      instance-attribute
+  " href="../../reference/interface/#async_kernel.interface.BaseKernelInterface.backend"><code>interface.backend</code></a>.
+The backend_options can be specified at the attribute <a class="autorefs autorefs-internal" title="            backend_options
+
+
+  
+      class-attribute
+      instance-attribute
+  " href="../../reference/interface/#async_kernel.interface.zmq.ZMQKernelInterface.backend_options">`interface.backend_options'</a>.
 Options can be written as a literal python string.</p>
 <div class="highlight"><pre><span></span><code><span class="go">async-kernel -a async-trio --interface.backend=trio</span>
 </code></pre></div>
@@ -1823,7 +1835,7 @@ Below are some example kernel specs for host and backend kernel specs.</p>
 <p>Options can be provided to configure how a loop loads. There are only a few options available
 at present.</p>
 <ul>
-<li><code>host_class'</code>[type[Host| str]]` : A customised subclass of a <a class="autorefs autorefs-internal" title=" Host" href="../../reference/event_loop/#async_kernel.event_loop.run.Host">Host</a>
+<li><code>host_class'</code>[type[Host| str]]` : A customised subclass of a <a class="autorefs autorefs-internal" title="            Host" href="../../reference/event_loop/#async_kernel.event_loop.run.Host">Host</a>
   or a dotted import path to the customised Host.</li>
 <li>`'module': The module name on which to base the event loop. (Only applies to 'qt').</li>
 </ul>
@@ -1850,7 +1862,7 @@ at present.</p>
 <h3 id="custom-arguments">Custom arguments<a class="headerlink" href="#custom-arguments" title="Permanent link">&para;</a></h3>
 <p>Additional arguments can be included when defining the kernel spec, these include:</p>
 <ul>
-<li>Arguments for <a class="autorefs autorefs-internal" title=" write_kernel_spec" href="../../reference/kernelspec/#async_kernel.kernelspec.write_kernel_spec">async_kernel.kernelspec.write_kernel_spec</a><ul>
+<li>Arguments for <a class="autorefs autorefs-internal" title="            write_kernel_spec" href="../../reference/kernelspec/#async_kernel.kernelspec.write_kernel_spec">async_kernel.kernelspec.write_kernel_spec</a><ul>
 <li><code>--start_interface</code></li>
 <li><code>--fullpath=False</code></li>
 <li><code>--display_name</code></li>
@@ -1918,7 +1930,7 @@ To skip providing a connection file</p>
 <p>The call above will start a new kernel with a 'trio' backend. The quiet setting is
 a parameter that gets set on kernel. Parameters of this type are converted using [eval]
 prior to setting.</p>
-<p>For further detail, see the API for the command line handler <a class="autorefs autorefs-internal" title=" command_line" href="../../reference/command/#async_kernel.command.command_line">command_line</a>.</p>
+<p>For further detail, see the API for the command line handler <a class="autorefs autorefs-internal" title="            command_line" href="../../reference/command/#async_kernel.command.command_line">command_line</a>.</p>
 
 
 

@@ -1534,7 +1534,7 @@ Awaiting in cells is fully supported and will not block shell messaging.</p>
 <p>Blocking code should be run in a separate thread using one of the following:</p>
 <ol>
 <li><a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync">anyio</a></li>
-<li><a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a></li>
+<li><a class="autorefs autorefs-internal" title="            to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a></li>
 <li>Using the backend's library<ul>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread">asyncio.to_thread</a></li>
 <li><a class="autorefs autorefs-external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.to_thread.run_sync">trio.to_thread.run_sync</a></li>
@@ -1542,10 +1542,10 @@ Awaiting in cells is fully supported and will not block shell messaging.</p>
 </li>
 </ol>
 <h2 id="caller">Caller<a class="headerlink" href="#caller" title="Permanent link">&para;</a></h2>
-<p><a class="autorefs autorefs-internal" title=" Caller" href="../reference/caller/#async_kernel.caller.Caller">Caller</a> was originally developed to simplify message handling in the
-<a class="autorefs autorefs-internal" title=" Kernel" href="../reference/kernel/#async_kernel.kernel.Kernel">Kernel</a>. It is now a capable tool in its own right with a convenient
+<p><a class="autorefs autorefs-internal" title="            Caller" href="../reference/caller/#async_kernel.caller.Caller">Caller</a> was originally developed to simplify message handling in the
+<a class="autorefs autorefs-internal" title="            Kernel" href="../reference/kernel/#async_kernel.kernel.Kernel">Kernel</a>. It is now a capable tool in its own right with a convenient
 interface for executing synchronous and asynchronous code in a given thread's event loop.</p>
-<p>Job scheduling is synchronous, and for methods that return a <a class="autorefs autorefs-internal" title=" Pending" href="../reference/pending/#async_kernel.pending.Pending">Pending</a>,
+<p>Job scheduling is synchronous, and for methods that return a <a class="autorefs autorefs-internal" title="            Pending" href="../reference/pending/#async_kernel.pending.Pending">Pending</a>,
 the execution result can be cancelled, awaited from any thread or waited synchronously blocking the
 thread until the Pending is done.</p>
 <h3 id="get-a-caller">Get a Caller<a class="headerlink" href="#get-a-caller" title="Permanent link">&para;</a></h3>
@@ -1563,10 +1563,10 @@ thread until the Pending is done.</p>
   a different thread, the caller must have already been created in the main thread.</li>
 <li>"NewThread": A new thread is always created.</li>
 <li>"manual": A new thread is created. The scheduler must be started manually by either entering the async context
-  or calling <a class="autorefs autorefs-internal" title=" start_sync" href="../reference/caller/#async_kernel.caller.Caller.start_sync">Caller.start_sync</a>.</li>
+  or calling <a class="autorefs autorefs-internal" title="            start_sync" href="../reference/caller/#async_kernel.caller.Caller.start_sync">Caller.start_sync</a>.</li>
 </ul>
 <h3 id="callerget"><code>Caller.get</code><a class="headerlink" href="#callerget" title="Permanent link">&para;</a></h3>
-<p>Caller.get <a class="autorefs autorefs-internal" title=" get" href="../reference/caller/#async_kernel.caller.Caller.get">caller.get</a> can be used to create child callers that belong to the parent.
+<p>Caller.get <a class="autorefs autorefs-internal" title="            get" href="../reference/caller/#async_kernel.caller.Caller.get">caller.get</a> can be used to create child callers that belong to the parent.
 When the parent is stopped the children are stopped.</p>
 <p>The following options are copied from the parent or can be specified.</p>
 <ul>
@@ -1575,16 +1575,28 @@ When the parent is stopped the children are stopped.</p>
 <li>'backend_options' (only if the backend matches)</li>
 </ul>
 <h3 id="callerto_thread"><code>Caller.to_thread</code><a class="headerlink" href="#callerto_thread" title="Permanent link">&para;</a></h3>
-<p><a class="autorefs autorefs-internal" title=" to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">Caller.to_thread</a> performs execute requests in a dedicated caller
+<p><a class="autorefs autorefs-internal" title="            to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">Caller.to_thread</a> performs execute requests in a dedicated caller
 using the same backend and zmq context as the parent. A pool of workers is retained to handle to thread
 calls, but are shutdown when no longer required.</p>
 <h4 id="worker-lifespan">worker lifespan<a class="headerlink" href="#worker-lifespan" title="Permanent link">&para;</a></h4>
 <p>The <code>to_thread</code> call is synchronous and returns a Pending for the result of execution. When the
 Pending is done the worker becomes 'idle'. The following settings affect what happens to the idle worker:</p>
 <ul>
-<li><a class="autorefs autorefs-internal" title=" MAX_IDLE_POOL_INSTANCES" href="../reference/caller/#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES">Caller.MAX_IDLE_POOL_INSTANCES</a>:
+<li><a class="autorefs autorefs-internal" title="            MAX_IDLE_POOL_INSTANCES
+
+
+  
+      class-attribute
+      instance-attribute
+  " href="../reference/caller/#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES">Caller.MAX_IDLE_POOL_INSTANCES</a>:
   When a worker becomes idle it will stop immediately if the number of idle workers equals this value.</li>
-<li><a class="autorefs autorefs-internal" title=" IDLE_WORKER_SHUTDOWN_DURATION" href="../reference/caller/#async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION">Caller.IDLE_WORKER_SHUTDOWN_DURATION</a>:
+<li><a class="autorefs autorefs-internal" title="            IDLE_WORKER_SHUTDOWN_DURATION
+
+
+  
+      class-attribute
+      instance-attribute
+  " href="../reference/caller/#async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION">Caller.IDLE_WORKER_SHUTDOWN_DURATION</a>:
   If this value is greater than zero a thread is started that periodically checks and stops workers
   that have been idle for a duration exceeding this value.</li>
 </ul>

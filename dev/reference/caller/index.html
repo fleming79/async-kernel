@@ -2591,14 +2591,14 @@ viewing the latest version.
 <p><span class="doc-section-title">Classes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" PendingGroup (async_kernel.caller.PendingGroup)" href="#async_kernel.caller.PendingGroup">PendingGroup</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            PendingGroup (async_kernel.caller.PendingGroup)" href="#async_kernel.caller.PendingGroup">PendingGroup</a></code></b>
           –
           <div class="doc-md-description">
-            <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title=" Pending" href="../pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
+            <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title="            Pending" href="../pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a></code></b>
           –
           <div class="doc-md-description">
             <p>Caller is an advanced asynchronous context manager and scheduler for managing function calls within an async kernel environment.</p>
@@ -2635,14 +2635,20 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
 
 
 
-        <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title=" Pending" href="../pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
+        <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title="            Pending" href="../pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
 <p>If any pending is set with an exception, the pending group and all tracked pending
 will be cancelled. The context will exit once all registered pending are complete or
-when after the <a class="autorefs autorefs-internal" title=" cancellation_timeout" href="../pending/#async_kernel.pending.PendingGroup.cancellation_timeout">cancellation_timeout</a> period has elapsed.</p>
+when after the <a class="autorefs autorefs-internal" title="            cancellation_timeout
+
+
+  
+      class-attribute
+      instance-attribute
+  " href="../pending/#async_kernel.pending.PendingGroup.cancellation_timeout">cancellation_timeout</a> period has elapsed.</p>
 
 
 <details class="features" open>
@@ -2733,14 +2739,14 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" cancel (async_kernel.caller.PendingGroup.cancel)" href="#async_kernel.caller.PendingGroup.cancel">cancel</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            cancel (async_kernel.caller.PendingGroup.cancel)" href="#async_kernel.caller.PendingGroup.cancel">cancel</a></code></b>
             –
             <div class="doc-md-description">
               <p>Cancel the pending group (thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" cancelled (async_kernel.caller.PendingGroup.cancelled)" href="#async_kernel.caller.PendingGroup.cancelled">cancelled</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            cancelled (async_kernel.caller.PendingGroup.cancelled)" href="#async_kernel.caller.PendingGroup.cancelled">cancelled</a></code></b>
             –
             <div class="doc-md-description">
               <p>Return True if the pending group is cancelled.</p>
@@ -2754,15 +2760,27 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" cancellation_timeout (async_kernel.caller.PendingGroup.cancellation_timeout)" href="#async_kernel.caller.PendingGroup.cancellation_timeout">cancellation_timeout</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            cancellation_timeout
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.caller.PendingGroup.cancellation_timeout)" href="#async_kernel.caller.PendingGroup.cancellation_timeout">cancellation_timeout</a></code></b>
           –
           <div class="doc-md-description">
             <p>The maximum time to wait for cancelled pending to be done.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" caller (async_kernel.caller.PendingGroup.caller)" href="#async_kernel.caller.PendingGroup.caller">caller</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title=" Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a>]</code>)
+          <b><code><a class="autorefs autorefs-internal" title="            caller
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.caller.PendingGroup.caller)" href="#async_kernel.caller.PendingGroup.caller">caller</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a>]</code>)
           –
           <div class="doc-md-description">
             <p>The caller where the pending group was instantiated.</p>
@@ -3088,7 +3106,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.caller.PendingGroup.caller" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><span title="async_kernel.Caller">Caller</span></span><span class="p">())</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="#async_kernel.caller.Caller">Caller</a></span><span class="p">())</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3253,8 +3271,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
       <a href="../asyncshell/#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;callers</a>
   </span>
 
       </li>
@@ -3372,6 +3394,72 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
+      <a href="../kernel/#">kernel</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../kernel/#async_kernel.kernel.Kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Kernel</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.caller"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;caller</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../pending/#">pending</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../pending/#async_kernel.pending.PendingGroup"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingGroup</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../pending/#async_kernel.pending.PendingGroup.caller"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;caller</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+  </ul>
+
+        <b class="doc doc-backlink-type">Used by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="#">caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.caller.PendingGroup"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingGroup</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.PendingGroup.caller"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;caller</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
       <a href="../pending/#">pending</a>
   </span>
 
@@ -3405,157 +3493,197 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" __new__ (async_kernel.caller.Caller.__new__)" href="#async_kernel.caller.Caller.__new__">__new__</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            __new__ (async_kernel.caller.Caller.__new__)" href="#async_kernel.caller.Caller.__new__">__new__</a></code></b>
             –
             <div class="doc-md-description">
               <p>Create or retrieve a Caller instance.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" start_sync (async_kernel.caller.Caller.start_sync)" href="#async_kernel.caller.Caller.start_sync">start_sync</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            start_sync (async_kernel.caller.Caller.start_sync)" href="#async_kernel.caller.Caller.start_sync">start_sync</a></code></b>
             –
             <div class="doc-md-description">
               <p>Start synchronously.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" stop (async_kernel.caller.Caller.stop)" href="#async_kernel.caller.Caller.stop">stop</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            stop (async_kernel.caller.Caller.stop)" href="#async_kernel.caller.Caller.stop">stop</a></code></b>
             –
             <div class="doc-md-description">
               <p>Stop the caller cancelling all incomplete tasks.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" __asynccontextmanager__ (async_kernel.caller.Caller.__asynccontextmanager__)" href="#async_kernel.caller.Caller.__asynccontextmanager__">__asynccontextmanager__</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            __asynccontextmanager__
+
+
+  
+      async
+   (async_kernel.caller.Caller.__asynccontextmanager__)" href="#async_kernel.caller.Caller.__asynccontextmanager__">__asynccontextmanager__</a></code></b>
             –
             <div class="doc-md-description">
               <p>The asynchronous context for caller.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" id_current (async_kernel.caller.Caller.id_current)" href="#async_kernel.caller.Caller.id_current">id_current</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            id_current
+
+
+  
+      classmethod
+   (async_kernel.caller.Caller.id_current)" href="#async_kernel.caller.Caller.id_current">id_current</a></code></b>
             –
             <div class="doc-md-description">
               <p>The id that is used for a caller for the current thread in CPython or context in Pyodide.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" get_existing (async_kernel.caller.Caller.get_existing)" href="#async_kernel.caller.Caller.get_existing">get_existing</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            get_existing
+
+
+  
+      classmethod
+   (async_kernel.caller.Caller.get_existing)" href="#async_kernel.caller.Caller.get_existing">get_existing</a></code></b>
             –
             <div class="doc-md-description">
               <p>A <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#classmethod">classmethod</a> to get the caller instance from the corresponding thread if it exists.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" current_pending (async_kernel.caller.Caller.current_pending)" href="#async_kernel.caller.Caller.current_pending">current_pending</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            current_pending
+
+
+  
+      classmethod
+   (async_kernel.caller.Caller.current_pending)" href="#async_kernel.caller.Caller.current_pending">current_pending</a></code></b>
             –
             <div class="doc-md-description">
               <p>A <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#classmethod">classmethod</a> that returns the current result when called from inside a function scheduled by Caller.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" all_callers (async_kernel.caller.Caller.all_callers)" href="#async_kernel.caller.Caller.all_callers">all_callers</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            all_callers
+
+
+  
+      classmethod
+   (async_kernel.caller.Caller.all_callers)" href="#async_kernel.caller.Caller.all_callers">all_callers</a></code></b>
             –
             <div class="doc-md-description">
               <p>A <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#classmethod">classmethod</a> to get a list of the callers.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" get (async_kernel.caller.Caller.get)" href="#async_kernel.caller.Caller.get">get</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            get (async_kernel.caller.Caller.get)" href="#async_kernel.caller.Caller.get">get</a></code></b>
             –
             <div class="doc-md-description">
               <p>Retrieves an existing child caller by name and backend, or creates a new one if not found.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" schedule_call (async_kernel.caller.Caller.schedule_call)" href="#async_kernel.caller.Caller.schedule_call">schedule_call</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            schedule_call (async_kernel.caller.Caller.schedule_call)" href="#async_kernel.caller.Caller.schedule_call">schedule_call</a></code></b>
             –
             <div class="doc-md-description">
               <p>Schedule <code>func</code> to be called inside a task running in the callers thread (thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" call_later (async_kernel.caller.Caller.call_later)" href="#async_kernel.caller.Caller.call_later">call_later</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            call_later (async_kernel.caller.Caller.call_later)" href="#async_kernel.caller.Caller.call_later">call_later</a></code></b>
             –
             <div class="doc-md-description">
               <p>Schedule func to be called in caller's event loop copying the current context.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" call_soon (async_kernel.caller.Caller.call_soon)" href="#async_kernel.caller.Caller.call_soon">call_soon</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            call_soon (async_kernel.caller.Caller.call_soon)" href="#async_kernel.caller.Caller.call_soon">call_soon</a></code></b>
             –
             <div class="doc-md-description">
               <p>Schedule func to be executed.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" call_using_backend (async_kernel.caller.Caller.call_using_backend)" href="#async_kernel.caller.Caller.call_using_backend">call_using_backend</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            call_using_backend (async_kernel.caller.Caller.call_using_backend)" href="#async_kernel.caller.Caller.call_using_backend">call_using_backend</a></code></b>
             –
             <div class="doc-md-description">
               <p>Schedule func to be executed using the specified backend.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" call_direct (async_kernel.caller.Caller.call_direct)" href="#async_kernel.caller.Caller.call_direct">call_direct</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            call_direct (async_kernel.caller.Caller.call_direct)" href="#async_kernel.caller.Caller.call_direct">call_direct</a></code></b>
             –
             <div class="doc-md-description">
               <p>Schedule <code>func</code> to be called in caller's event loop directly.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" to_thread (async_kernel.caller.Caller.to_thread)" href="#async_kernel.caller.Caller.to_thread">to_thread</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            to_thread (async_kernel.caller.Caller.to_thread)" href="#async_kernel.caller.Caller.to_thread">to_thread</a></code></b>
             –
             <div class="doc-md-description">
               <p>Call func in a worker thread using the same backend as the current instance.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" queue_get (async_kernel.caller.Caller.queue_get)" href="#async_kernel.caller.Caller.queue_get">queue_get</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            queue_get (async_kernel.caller.Caller.queue_get)" href="#async_kernel.caller.Caller.queue_get">queue_get</a></code></b>
             –
             <div class="doc-md-description">
               <p>Returns <code>Pending</code> instance for <code>func</code> where the queue is running.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" queue_call (async_kernel.caller.Caller.queue_call)" href="#async_kernel.caller.Caller.queue_call">queue_call</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            queue_call (async_kernel.caller.Caller.queue_call)" href="#async_kernel.caller.Caller.queue_call">queue_call</a></code></b>
             –
             <div class="doc-md-description">
               <p>Queue the execution of <code>func</code> in a queue unique to it and the caller instance (thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" queue_close (async_kernel.caller.Caller.queue_close)" href="#async_kernel.caller.Caller.queue_close">queue_close</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            queue_close (async_kernel.caller.Caller.queue_close)" href="#async_kernel.caller.Caller.queue_close">queue_close</a></code></b>
             –
             <div class="doc-md-description">
               <p>Close the execution queue associated with <code>func</code> (thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" checkpoint (async_kernel.caller.Caller.checkpoint)" href="#async_kernel.caller.Caller.checkpoint">checkpoint</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            checkpoint
+
+
+  
+      async
+   (async_kernel.caller.Caller.checkpoint)" href="#async_kernel.caller.Caller.checkpoint">checkpoint</a></code></b>
             –
             <div class="doc-md-description">
               <p>Yield to the event loop.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" as_completed (async_kernel.caller.Caller.as_completed)" href="#async_kernel.caller.Caller.as_completed">as_completed</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            as_completed
+
+
+  
+      async
+   (async_kernel.caller.Caller.as_completed)" href="#async_kernel.caller.Caller.as_completed">as_completed</a></code></b>
             –
             <div class="doc-md-description">
               <p>An iterator to get result as they complete.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" wait (async_kernel.caller.Caller.wait)" href="#async_kernel.caller.Caller.wait">wait</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            wait
+
+
+  
+      async
+   (async_kernel.caller.Caller.wait)" href="#async_kernel.caller.Caller.wait">wait</a></code></b>
             –
             <div class="doc-md-description">
               <p>Wait for the results given by items to complete.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" create_pending_group (async_kernel.caller.Caller.create_pending_group)" href="#async_kernel.caller.Caller.create_pending_group">create_pending_group</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            create_pending_group (async_kernel.caller.Caller.create_pending_group)" href="#async_kernel.caller.Caller.create_pending_group">create_pending_group</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Create a new <a class="autorefs autorefs-internal" title=" PendingGroup" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a> instance.</p>
+              <p>Create a new <a class="autorefs autorefs-internal" title="            PendingGroup" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a> instance.</p>
             </div>
           </li>
     </ul>
@@ -3566,28 +3694,51 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" MAX_IDLE_POOL_INSTANCES (async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES)" href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES">MAX_IDLE_POOL_INSTANCES</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            MAX_IDLE_POOL_INSTANCES
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES)" href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES">MAX_IDLE_POOL_INSTANCES</a></code></b>
           –
           <div class="doc-md-description">
-            <p>The number of <code>pool</code> instances to leave idle (See also <a class="autorefs autorefs-internal" title=" to_thread" href="#async_kernel.caller.Caller.to_thread">to_thread</a>).</p>
+            <p>The number of <code>pool</code> instances to leave idle (See also <a class="autorefs autorefs-internal" title="            to_thread" href="#async_kernel.caller.Caller.to_thread">to_thread</a>).</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" IDLE_WORKER_SHUTDOWN_DURATION (async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION)" href="#async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION">IDLE_WORKER_SHUTDOWN_DURATION</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            IDLE_WORKER_SHUTDOWN_DURATION
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION)" href="#async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION">IDLE_WORKER_SHUTDOWN_DURATION</a></code></b>
           –
           <div class="doc-md-description">
             <p>The minimum duration in seconds for a worker to remain in the worker pool before it is shutdown.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" stopped (async_kernel.caller.Caller.stopped)" href="#async_kernel.caller.Caller.stopped">stopped</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            stopped
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.caller.Caller.stopped)" href="#async_kernel.caller.Caller.stopped">stopped</a></code></b>
           –
           <div class="doc-md-description">
             <p>A thread-safe Event for when the caller is stopped.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" log (async_kernel.caller.Caller.log)" href="#async_kernel.caller.Caller.log">log</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            log
+
+
+  
+      instance-attribute
+   (async_kernel.caller.Caller.log)" href="#async_kernel.caller.Caller.log">log</a></code></b>
               (<code><a class="autorefs autorefs-external" title="logging.LoggerAdapter" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter">LoggerAdapter</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
           –
           <div class="doc-md-description">
@@ -3595,7 +3746,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" iopub_sockets (async_kernel.caller.Caller.iopub_sockets)" href="#async_kernel.caller.Caller.iopub_sockets">iopub_sockets</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            iopub_sockets
+
+
+  
+      class-attribute
+   (async_kernel.caller.Caller.iopub_sockets)" href="#async_kernel.caller.Caller.iopub_sockets">iopub_sockets</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <span title="zmq.Socket">Socket</span>]</code>)
           –
           <div class="doc-md-description">
@@ -3603,7 +3759,13 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" iopub_url (async_kernel.caller.Caller.iopub_url)" href="#async_kernel.caller.Caller.iopub_url">iopub_url</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            iopub_url
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.caller.Caller.iopub_url)" href="#async_kernel.caller.Caller.iopub_url">iopub_url</a></code></b>
               (<code><a class="autorefs autorefs-external" title="typing.ClassVar" href="https://docs.python.org/3/library/typing.html#typing.ClassVar">ClassVar</a></code>)
           –
           <div class="doc-md-description">
@@ -3611,7 +3773,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" name (async_kernel.caller.Caller.name)" href="#async_kernel.caller.Caller.name">name</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            name
+
+
+  
+      property
+   (async_kernel.caller.Caller.name)" href="#async_kernel.caller.Caller.name">name</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
           –
           <div class="doc-md-description">
@@ -3619,7 +3786,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" id (async_kernel.caller.Caller.id)" href="#async_kernel.caller.Caller.id">id</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            id
+
+
+  
+      property
+   (async_kernel.caller.Caller.id)" href="#async_kernel.caller.Caller.id">id</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
           –
           <div class="doc-md-description">
@@ -3627,15 +3799,25 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" backend (async_kernel.caller.Caller.backend)" href="#async_kernel.caller.Caller.backend">backend</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></code>)
+          <b><code><a class="autorefs autorefs-internal" title="            backend
+
+
+  
+      property
+   (async_kernel.caller.Caller.backend)" href="#async_kernel.caller.Caller.backend">backend</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></code>)
           –
           <div class="doc-md-description">
             <p>The backend used by caller.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" backend_options (async_kernel.caller.Caller.backend_options)" href="#async_kernel.caller.Caller.backend_options">backend_options</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            backend_options
+
+
+  
+      property
+   (async_kernel.caller.Caller.backend_options)" href="#async_kernel.caller.Caller.backend_options">backend_options</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None</code>)
           –
           <div class="doc-md-description">
@@ -3643,15 +3825,25 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" loop (async_kernel.caller.Caller.loop)" href="#async_kernel.caller.Caller.loop">loop</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a> | None</code>)
+          <b><code><a class="autorefs autorefs-internal" title="            loop
+
+
+  
+      property
+   (async_kernel.caller.Caller.loop)" href="#async_kernel.caller.Caller.loop">loop</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a> | None</code>)
           –
           <div class="doc-md-description">
             <p>The gui event loop if there is one.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" loop_options (async_kernel.caller.Caller.loop_options)" href="#async_kernel.caller.Caller.loop_options">loop_options</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            loop_options
+
+
+  
+      property
+   (async_kernel.caller.Caller.loop_options)" href="#async_kernel.caller.Caller.loop_options">loop_options</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None</code>)
           –
           <div class="doc-md-description">
@@ -3659,7 +3851,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" protected (async_kernel.caller.Caller.protected)" href="#async_kernel.caller.Caller.protected">protected</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            protected
+
+
+  
+      property
+   (async_kernel.caller.Caller.protected)" href="#async_kernel.caller.Caller.protected">protected</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>)
           –
           <div class="doc-md-description">
@@ -3667,7 +3864,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" zmq_context (async_kernel.caller.Caller.zmq_context)" href="#async_kernel.caller.Caller.zmq_context">zmq_context</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            zmq_context
+
+
+  
+      property
+   (async_kernel.caller.Caller.zmq_context)" href="#async_kernel.caller.Caller.zmq_context">zmq_context</a></code></b>
               (<code><span title="zmq.Context">Context</span> | None</code>)
           –
           <div class="doc-md-description">
@@ -3675,14 +3877,24 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" running (async_kernel.caller.Caller.running)" href="#async_kernel.caller.Caller.running">running</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            running
+
+
+  
+      property
+   (async_kernel.caller.Caller.running)" href="#async_kernel.caller.Caller.running">running</a></code></b>
           –
           <div class="doc-md-description">
             <p>Returns <code>True</code> when the caller is available to run requests.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" children (async_kernel.caller.Caller.children)" href="#async_kernel.caller.Caller.children">children</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            children
+
+
+  
+      property
+   (async_kernel.caller.Caller.children)" href="#async_kernel.caller.Caller.children">children</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#frozenset">frozenset</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>]</code>)
           –
           <div class="doc-md-description">
@@ -3690,7 +3902,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" thread (async_kernel.caller.Caller.thread)" href="#async_kernel.caller.Caller.thread">thread</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            thread
+
+
+  
+      property
+   (async_kernel.caller.Caller.thread)" href="#async_kernel.caller.Caller.thread">thread</a></code></b>
               (<code><a class="autorefs autorefs-external" title="threading.Thread" href="https://docs.python.org/3/library/threading.html#threading.Thread">Thread</a></code>)
           –
           <div class="doc-md-description">
@@ -3698,7 +3915,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" parent (async_kernel.caller.Caller.parent)" href="#async_kernel.caller.Caller.parent">parent</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            parent
+
+
+  
+      property
+   (async_kernel.caller.Caller.parent)" href="#async_kernel.caller.Caller.parent">parent</a></code></b>
               (<code><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a> | None</code>)
           –
           <div class="doc-md-description">
@@ -5718,7 +5940,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 
     <div class="doc doc-contents ">
 
-        <p>The number of <code>pool</code> instances to leave idle (See also <a class="autorefs autorefs-internal" title=" to_thread" href="#async_kernel.caller.Caller.to_thread">to_thread</a>).</p>
+        <p>The number of <code>pool</code> instances to leave idle (See also <a class="autorefs autorefs-internal" title="            to_thread" href="#async_kernel.caller.Caller.to_thread">to_thread</a>).</p>
 
           
     </div>
@@ -5766,7 +5988,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.caller.Caller.stopped" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopped</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/latest/api.html#aiologic.Event">Event</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopped</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/latest/api.html#aiologic.Event">Event</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5911,7 +6133,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.caller.Caller.backend" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5961,7 +6183,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.caller.Caller.loop" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a></span> <span class="o">|</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6168,11 +6390,11 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 
 <a href="#async_kernel.caller.Caller.__new__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">__new__</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.__new__(modifier)">modifier</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="modifier (async_kernel.caller.Caller.__new__(modifier))" href="#async_kernel.caller.Caller.__new__(modifier)">modifier</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span>
         <span class="s2">&quot;CurrentThread&quot;</span><span class="p">,</span> <span class="s2">&quot;MainThread&quot;</span><span class="p">,</span> <span class="s2">&quot;NewThread&quot;</span><span class="p">,</span> <span class="s2">&quot;manual&quot;</span>
     <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;CurrentThread&quot;</span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.__new__(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a></span><span class="p">],</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.__new__(**kwargs))" href="#async_kernel.caller.Caller.__new__(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a></span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span>
 </code></pre></div>
 
@@ -6201,7 +6423,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.__new__(**kwargs)" class="doc doc-heading doc-heading-parameter">              <b><code>**kwargs</code></b>
-<a href="#async_kernel.caller.Caller.__new__(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a>[<a class="autorefs autorefs-internal" title=" CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a>]</code>, default:
+<a href="#async_kernel.caller.Caller.__new__(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a>[<a class="autorefs autorefs-internal" title="            CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a>]</code>, default:
                   <code>{}</code>
 )
           –
@@ -6556,7 +6778,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 
 
 <a href="#async_kernel.caller.Caller.stop" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stop</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.caller.Caller.stop(force)">force</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" CallerState (async_kernel.typing.CallerState)" href="../typing/#async_kernel.typing.CallerState">CallerState</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stop</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="force (async_kernel.caller.Caller.stop(force))" href="#async_kernel.caller.Caller.stop(force)">force</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CallerState (async_kernel.typing.CallerState)" href="../typing/#async_kernel.typing.CallerState">CallerState</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6799,7 +7021,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.caller.Caller.get_existing" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_existing</span><span class="p">(</span><span class="n"><span title="async_kernel.caller.Caller.get_existing(caller_id)">caller_id</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span> <span class="o">|</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_existing</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="caller_id (async_kernel.caller.Caller.get_existing(caller_id))" href="#async_kernel.caller.Caller.get_existing(caller_id)">caller_id</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6864,7 +7086,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.caller.Caller.current_pending" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">current_pending</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">current_pending</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6900,7 +7122,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.caller.Caller.all_callers" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">all_callers</span><span class="p">(</span><span class="n"><span title="async_kernel.caller.Caller.all_callers(running_only)">running_only</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">all_callers</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="running_only (async_kernel.caller.Caller.all_callers(running_only))" href="#async_kernel.caller.Caller.all_callers(running_only)">running_only</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6957,7 +7179,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 
 
 <a href="#async_kernel.caller.Caller.get" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get</span><span class="p">(</span><span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.get(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get</span><span class="p">(</span><span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.get(**kwargs))" href="#async_kernel.caller.Caller.get(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6969,7 +7191,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
     <ul>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.get(**kwargs)" class="doc doc-heading doc-heading-parameter">              <b><code>**kwargs</code></b>
-<a href="#async_kernel.caller.Caller.get(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a>[<a class="autorefs autorefs-internal" title=" CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a>]</code>, default:
+<a href="#async_kernel.caller.Caller.get(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Unpack" href="https://docs.python.org/3/library/typing.html#typing.Unpack">Unpack</a>[<a class="autorefs autorefs-internal" title="            CallerCreateOptions (async_kernel.typing.CallerCreateOptions)" href="../typing/#async_kernel.typing.CallerCreateOptions">CallerCreateOptions</a>]</code>, default:
                   <code>{}</code>
 )
           –
@@ -7144,21 +7366,31 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 
 <a href="#async_kernel.caller.Caller.schedule_call" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">schedule_call</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span> <span class="o">|</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">],</span>
-    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(args)">args</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(context)">context</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="contextvars.Context" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">Context</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(trackers)">trackers</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(backend)">backend</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title=" Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.schedule_call(func))" href="#async_kernel.caller.Caller.schedule_call(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span> <span class="o">|</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="args (async_kernel.caller.Caller.schedule_call(args))" href="#async_kernel.caller.Caller.schedule_call(args)">args</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="kwargs (async_kernel.caller.Caller.schedule_call(kwargs))" href="#async_kernel.caller.Caller.schedule_call(kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="context (async_kernel.caller.Caller.schedule_call(context))" href="#async_kernel.caller.Caller.schedule_call(context)">context</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="contextvars.Context" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">Context</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="trackers (async_kernel.caller.Caller.schedule_call(trackers))" href="#async_kernel.caller.Caller.schedule_call(trackers)">trackers</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(backend)">backend</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.schedule_call(**metadata)">metadata</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**metadata (async_kernel.caller.Caller.schedule_call(**metadata))" href="#async_kernel.caller.Caller.schedule_call(**metadata)">metadata</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Schedule <code>func</code> to be called inside a task running in the callers thread (thread-safe).</p>
-<p>The methods <a class="autorefs autorefs-internal" title=" call_soon" href="#async_kernel.caller.Caller.call_soon">call_soon</a> and <a class="autorefs autorefs-internal" title=" call_later" href="#async_kernel.caller.Caller.call_later">call_later</a>
+<p>The methods <a class="autorefs autorefs-internal" title="            call_soon" href="#async_kernel.caller.Caller.call_soon">call_soon</a> and <a class="autorefs autorefs-internal" title="            call_later" href="#async_kernel.caller.Caller.call_later">call_later</a>
 use this method in the background,  they should be used in preference to this method since they provide type hinting for the arguments.</p>
 
 
@@ -7200,8 +7432,8 @@ use this method in the background,  they should be used in preference to this me
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.schedule_call(trackers)" class="doc doc-heading doc-heading-parameter">              <b><code>trackers</code></b>
-<a href="#async_kernel.caller.Caller.schedule_call(trackers)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a>], ...]</code>, default:
-                  <code><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></code>
+<a href="#async_kernel.caller.Caller.schedule_call(trackers)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a>], ...]</code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></code>
 )
           –
           <div class="doc-md-description">
@@ -7310,12 +7542,12 @@ use this method in the background,  they should be used in preference to this me
 
 <a href="#async_kernel.caller.Caller.call_later" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">call_later</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.call_later(delay)">delay</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.call_later(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="delay (async_kernel.caller.Caller.call_later(delay))" href="#async_kernel.caller.Caller.call_later(delay)">delay</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.call_later(func))" href="#async_kernel.caller.Caller.call_later(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="o">*</span><span class="n"><span title="async_kernel.caller.Caller.call_later(*args)">args</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.call_later(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
+    <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.call_later(*args))" href="#async_kernel.caller.Caller.call_later(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.call_later(**kwargs))" href="#async_kernel.caller.Caller.call_later(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7455,8 +7687,8 @@ use this method in the background,  they should be used in preference to this me
 
 <a href="#async_kernel.caller.Caller.call_soon" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">call_soon</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.call_soon(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><span title="async_kernel.caller.Caller.call_soon(*args)">args</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.call_soon(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.call_soon(func))" href="#async_kernel.caller.Caller.call_soon(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.call_soon(*args))" href="#async_kernel.caller.Caller.call_soon(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.call_soon(**kwargs))" href="#async_kernel.caller.Caller.call_soon(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7613,12 +7845,12 @@ use this method in the background,  they should be used in preference to this me
 
 <a href="#async_kernel.caller.Caller.call_using_backend" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">call_using_backend</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.call_using_backend(backend)">backend</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">],</span>
-    <span class="n"><span title="async_kernel.caller.Caller.call_using_backend(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="backend (async_kernel.caller.Caller.call_using_backend(backend))" href="#async_kernel.caller.Caller.call_using_backend(backend)">backend</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.call_using_backend(func))" href="#async_kernel.caller.Caller.call_using_backend(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
-    <span class="o">*</span><span class="n"><span title="async_kernel.caller.Caller.call_using_backend(*args)">args</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.call_using_backend(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
+    <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.call_using_backend(*args))" href="#async_kernel.caller.Caller.call_using_backend(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.call_using_backend(**kwargs))" href="#async_kernel.caller.Caller.call_using_backend(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7627,7 +7859,7 @@ use this method in the background,  they should be used in preference to this me
 <p>This methods enables coroutines written for a specific function to be run irresective
 of the callers backend.</p>
 <ul>
-<li><code>backend == caller.backend</code> - <code>func</code> is executed via <a class="autorefs autorefs-internal" title=" call_soon" href="#async_kernel.caller.Caller.call_soon">Caller.call_soon</a>.</li>
+<li><code>backend == caller.backend</code> - <code>func</code> is executed via <a class="autorefs autorefs-internal" title="            call_soon" href="#async_kernel.caller.Caller.call_soon">Caller.call_soon</a>.</li>
 <li><code>backend != caller.backend</code> - <code>func</code> is executed with a backend running as a guest.</li>
 </ul>
 
@@ -7636,7 +7868,7 @@ of the callers backend.</p>
     <ul>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.call_using_backend(backend)" class="doc doc-heading doc-heading-parameter">              <b><code>backend</code></b>
-<a href="#async_kernel.caller.Caller.call_using_backend(backend)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title=" Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a> | <a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;asyncio&#39;, &#39;trio&#39;]</code>)
+<a href="#async_kernel.caller.Caller.call_using_backend(backend)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a> | <a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;asyncio&#39;, &#39;trio&#39;]</code>)
           –
           <div class="doc-md-description">
             <p>The backend in which <code>func</code> must be executed.</p>
@@ -7752,7 +7984,7 @@ of the callers backend.</p>
 
 <a href="#async_kernel.caller.Caller.call_direct" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">call_direct</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.call_direct(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><span title="async_kernel.caller.Caller.call_direct(*args)">args</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.call_direct(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.call_direct(func))" href="#async_kernel.caller.Caller.call_direct(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.call_direct(*args))" href="#async_kernel.caller.Caller.call_direct(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.call_direct(**kwargs))" href="#async_kernel.caller.Caller.call_direct(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
@@ -7896,8 +8128,8 @@ of the callers backend.</p>
 
 <a href="#async_kernel.caller.Caller.to_thread" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_thread</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.to_thread(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><span title="async_kernel.caller.Caller.to_thread(*args)">args</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.to_thread(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.to_thread(func))" href="#async_kernel.caller.Caller.to_thread(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.to_thread(*args))" href="#async_kernel.caller.Caller.to_thread(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.to_thread(**kwargs))" href="#async_kernel.caller.Caller.to_thread(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8131,7 +8363,7 @@ of the callers backend.</p>
 
 
 <a href="#async_kernel.caller.Caller.queue_get" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">queue_get</span><span class="p">(</span><span class="n"><span title="async_kernel.caller.Caller.queue_get(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">queue_get</span><span class="p">(</span><span class="n"><span title="async_kernel.caller.Caller.queue_get(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8183,8 +8415,8 @@ of the callers backend.</p>
 
 <a href="#async_kernel.caller.Caller.queue_call" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">queue_call</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.queue_call(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><span title="async_kernel.caller.Caller.queue_call(*args)">args</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><span title="async_kernel.caller.Caller.queue_call(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.queue_call(func))" href="#async_kernel.caller.Caller.queue_call(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.queue_call(*args))" href="#async_kernel.caller.Caller.queue_call(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.queue_call(**kwargs))" href="#async_kernel.caller.Caller.queue_call(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8230,7 +8462,7 @@ call once the queue has been emptied. Exceptions are not set, instead the result
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<b><code>Pending</code></b> (              <code><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a>[<span title="async_kernel.typing.T">T</span>]</code>
+<b><code>Pending</code></b> (              <code><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a>[<span title="async_kernel.typing.T">T</span>]</code>
 )          –
           <div class="doc-md-description">
             <p>The pending where the queue loop is running.</p>
@@ -8250,9 +8482,9 @@ call once the queue has been emptied. Exceptions are not set, instead the result
 <details class="notes" open>
   <summary>Notes</summary>
   <ul>
-<li>The queue runs in a <em>task</em> wrapped with a <a class="autorefs autorefs-internal" title=" Pending" href="../pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a> that remains running until one of the following occurs:<ol>
+<li>The queue runs in a <em>task</em> wrapped with a <a class="autorefs autorefs-internal" title="            Pending" href="../pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a> that remains running until one of the following occurs:<ol>
 <li>The pending is cancelled.</li>
-<li>The method <a class="autorefs autorefs-internal" title=" queue_close" href="#async_kernel.caller.Caller.queue_close">Caller.queue_close</a> is called with <code>func</code> or <code>func</code>'s hash.</li>
+<li>The method <a class="autorefs autorefs-internal" title="            queue_close" href="#async_kernel.caller.Caller.queue_close">Caller.queue_close</a> is called with <code>func</code> or <code>func</code>'s hash.</li>
 <li><code>func</code> is deleted (utilising <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/weakref.html#weakref.finalize">weakref.finalize</a>).</li>
 </ol>
 </li>
@@ -8438,7 +8670,7 @@ call once the queue has been emptied. Exceptions are not set, instead the result
 
 
 <a href="#async_kernel.caller.Caller.queue_close" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">queue_close</span><span class="p">(</span><span class="n"><span title="async_kernel.caller.Caller.queue_close(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">queue_close</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.queue_close(func))" href="#async_kernel.caller.Caller.queue_close(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8583,11 +8815,21 @@ call once the queue has been emptied. Exceptions are not set, instead the result
 
 <a href="#async_kernel.caller.Caller.as_completed" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_completed</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.as_completed(items)">items</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="items (async_kernel.caller.Caller.as_completed(items))" href="#async_kernel.caller.Caller.as_completed(items)">items</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.as_completed(max_concurrent)">max_concurrent</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.as_completed(cancel_unfinished)">cancel_unfinished</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="max_concurrent (async_kernel.caller.Caller.as_completed(max_concurrent))" href="#async_kernel.caller.Caller.as_completed(max_concurrent)">max_concurrent</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="cancel_unfinished (async_kernel.caller.Caller.as_completed(cancel_unfinished))" href="#async_kernel.caller.Caller.as_completed(cancel_unfinished)">cancel_unfinished</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8607,13 +8849,23 @@ call once the queue has been emptied. Exceptions are not set, instead the result
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.as_completed(max_concurrent)" class="doc doc-heading doc-heading-parameter">              <b><code>max_concurrent</code></b>
-<a href="#async_kernel.caller.Caller.as_completed(max_concurrent)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
-                  <code><a class="autorefs autorefs-internal" title=" NoValue (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></code>
+<a href="#async_kernel.caller.Caller.as_completed(max_concurrent)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></code>
 )
           –
           <div class="doc-md-description">
             <p>The maximum number of concurrent results to monitor at a time.
-This is useful when <code>items</code> is a generator utilising <a class="autorefs autorefs-internal" title=" to_thread" href="#async_kernel.caller.Caller.to_thread">Caller.to_thread</a>.
+This is useful when <code>items</code> is a generator utilising <a class="autorefs autorefs-internal" title="            to_thread" href="#async_kernel.caller.Caller.to_thread">Caller.to_thread</a>.
 By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
           </div>
         </li>
@@ -8801,13 +9053,13 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
 <a href="#async_kernel.caller.Caller.wait" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.wait(items)">items</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="items (async_kernel.caller.Caller.wait(items))" href="#async_kernel.caller.Caller.wait(items)">items</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.wait(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.wait(return_when)">return_when</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.caller.Caller.wait(timeout))" href="#async_kernel.caller.Caller.wait(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="return_when (async_kernel.caller.Caller.wait(return_when))" href="#async_kernel.caller.Caller.wait(return_when)">return_when</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span>
         <span class="s2">&quot;FIRST_COMPLETED&quot;</span><span class="p">,</span> <span class="s2">&quot;FIRST_EXCEPTION&quot;</span><span class="p">,</span> <span class="s2">&quot;ALL_COMPLETED&quot;</span>
     <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL_COMPLETED&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8972,12 +9224,12 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
 
 <a href="#async_kernel.caller.Caller.create_pending_group" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_pending_group</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.caller.Caller.create_pending_group(shield)">shield</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_pending_group</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.Caller.create_pending_group(shield))" href="#async_kernel.caller.Caller.create_pending_group(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Create a new <a class="autorefs autorefs-internal" title=" PendingGroup" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a> instance.</p>
+        <p>Create a new <a class="autorefs autorefs-internal" title="            PendingGroup" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a> instance.</p>
 <p>The pending group will wait for all pending created in its context to complete (except for those that opt out).
 If any pending result in exception, the pending group and all registered pending are cancelled.
 If the pending group context is cancelled or results in exception, all pending in the group are

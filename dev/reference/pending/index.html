@@ -2373,42 +2373,42 @@ viewing the latest version.
 <p><span class="doc-section-title">Classes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code></b>
           –
           <div class="doc-md-description">
             <p>Used to indicate the pending is cancelled.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" InvalidStateError (async_kernel.pending.InvalidStateError)" href="#async_kernel.pending.InvalidStateError">InvalidStateError</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            InvalidStateError (async_kernel.pending.InvalidStateError)" href="#async_kernel.pending.InvalidStateError">InvalidStateError</a></code></b>
           –
           <div class="doc-md-description">
             <p>An invalid state of the pending.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></code></b>
           –
           <div class="doc-md-description">
-            <p>The base class for tracking <a class="autorefs autorefs-internal" title=" Pending" href="#async_kernel.pending.Pending">Pending</a>.</p>
+            <p>The base class for tracking <a class="autorefs autorefs-internal" title="            Pending" href="#async_kernel.pending.Pending">Pending</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" PendingManager (async_kernel.pending.PendingManager)" href="#async_kernel.pending.PendingManager">PendingManager</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            PendingManager (async_kernel.pending.PendingManager)" href="#async_kernel.pending.PendingManager">PendingManager</a></code></b>
           –
           <div class="doc-md-description">
-            <p>PendingManager is a class that can be used to capture the creation of <a class="autorefs autorefs-internal" title=" Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a></p>
+            <p>PendingManager is a class that can be used to capture the creation of <a class="autorefs autorefs-internal" title="            Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a></p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" PendingGroup (async_kernel.pending.PendingGroup)" href="#async_kernel.pending.PendingGroup">PendingGroup</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            PendingGroup (async_kernel.pending.PendingGroup)" href="#async_kernel.pending.PendingGroup">PendingGroup</a></code></b>
           –
           <div class="doc-md-description">
-            <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title=" Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
+            <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title="            Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></code></b>
           –
           <div class="doc-md-description">
             <p>A thread-safe, cancellable, awaitable object representing a pending asynchronous result.</p>
@@ -2612,7 +2612,7 @@ viewing the latest version.
 
 
 
-        <p>The base class for tracking <a class="autorefs autorefs-internal" title=" Pending" href="#async_kernel.pending.Pending">Pending</a>.</p>
+        <p>The base class for tracking <a class="autorefs autorefs-internal" title="            Pending" href="#async_kernel.pending.Pending">Pending</a>.</p>
 
           
 
@@ -2763,21 +2763,31 @@ viewing the latest version.
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" current (async_kernel.pending.PendingTracker.current)" href="#async_kernel.pending.PendingTracker.current">current</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            current
+
+
+  
+      classmethod
+   (async_kernel.pending.PendingTracker.current)" href="#async_kernel.pending.PendingTracker.current">current</a></code></b>
             –
             <div class="doc-md-description">
               <p>The instance of the active tracker in the current context.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" active_id (async_kernel.pending.PendingTracker.active_id)" href="#async_kernel.pending.PendingTracker.active_id">active_id</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            active_id
+
+
+  
+      classmethod
+   (async_kernel.pending.PendingTracker.active_id)" href="#async_kernel.pending.PendingTracker.active_id">active_id</a></code></b>
             –
             <div class="doc-md-description">
               <p>The id of the active tracker in the current context.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" add (async_kernel.pending.PendingTracker.add)" href="#async_kernel.pending.PendingTracker.add">add</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            add (async_kernel.pending.PendingTracker.add)" href="#async_kernel.pending.PendingTracker.add">add</a></code></b>
             –
             <div class="doc-md-description">
               <p>Track <code>Pending</code> until it is done.</p>
@@ -2791,16 +2801,27 @@ viewing the latest version.
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" id (async_kernel.pending.PendingTracker.id)" href="#async_kernel.pending.PendingTracker.id">id</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
+          <b><code><a class="autorefs autorefs-internal" title="            id
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.pending.PendingTracker.id)" href="#async_kernel.pending.PendingTracker.id">id</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
           –
           <div class="doc-md-description">
             <p>The unique id of the pending tracker instance.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" pending (async_kernel.pending.PendingTracker.pending)" href="#async_kernel.pending.PendingTracker.pending">pending</a></code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a>[<a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</code>)
+          <b><code><a class="autorefs autorefs-internal" title="            pending
+
+
+  
+      property
+   (async_kernel.pending.PendingTracker.pending)" href="#async_kernel.pending.PendingTracker.pending">pending</a></code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a>[<a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</code>)
           –
           <div class="doc-md-description">
             <p>The pending currently associated with this instance.</p>
@@ -2948,7 +2969,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.pending.PendingTracker.id" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nb">id</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="uuid.uuid4" href="https://docs.python.org/3/library/uuid.html#uuid.uuid4">uuid4</a></span><span class="p">()))</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nb">id</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="uuid.uuid4" href="https://docs.python.org/3/library/uuid.html#uuid.uuid4">uuid4</a></span><span class="p">()))</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2973,7 +2994,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.pending.PendingTracker.pending" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">pending</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">pending</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3072,7 +3093,7 @@ viewing the latest version.
 
 
 <a href="#async_kernel.pending.PendingTracker.add" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add</span><span class="p">(</span><span class="n"><span title="async_kernel.pending.PendingTracker.add(pen)">pen</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add</span><span class="p">(</span><span class="n"><span title="async_kernel.pending.PendingTracker.add(pen)">pen</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3121,11 +3142,11 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></code></p>
 
 
 
-        <p>PendingManager is a class that can be used to capture the creation of <a class="autorefs autorefs-internal" title=" Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a>
+        <p>PendingManager is a class that can be used to capture the creation of <a class="autorefs autorefs-internal" title="            Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a>
 in any specific context.</p>
 <p>This class can not be used directly and must be subclassed to be useful. For any
 subclass, there is only one active instance in that context.</p>
@@ -3180,21 +3201,21 @@ finally:
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" activate (async_kernel.pending.PendingManager.activate)" href="#async_kernel.pending.PendingManager.activate">activate</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            activate (async_kernel.pending.PendingManager.activate)" href="#async_kernel.pending.PendingManager.activate">activate</a></code></b>
             –
             <div class="doc-md-description">
               <p>Start tracking <code>Pending</code> in the  current context.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" deactivate (async_kernel.pending.PendingManager.deactivate)" href="#async_kernel.pending.PendingManager.deactivate">deactivate</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            deactivate (async_kernel.pending.PendingManager.deactivate)" href="#async_kernel.pending.PendingManager.deactivate">deactivate</a></code></b>
             –
             <div class="doc-md-description">
               <p>Stop tracking using the token.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" context (async_kernel.pending.PendingManager.context)" href="#async_kernel.pending.PendingManager.context">context</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            context (async_kernel.pending.PendingManager.context)" href="#async_kernel.pending.PendingManager.context">context</a></code></b>
             –
             <div class="doc-md-description">
               <p>A context manager to activate this instance.</p>
@@ -3428,7 +3449,7 @@ finally:
 
 
 <a href="#async_kernel.pending.PendingManager.deactivate" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">deactivate</span><span class="p">(</span><span class="n"><span title="async_kernel.pending.PendingManager.deactivate(token)">token</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="contextvars.Token" href="https://docs.python.org/3/library/contextvars.html#contextvars.Token">Token</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">deactivate</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="token (async_kernel.pending.PendingManager.deactivate(token))" href="#async_kernel.pending.PendingManager.deactivate(token)">token</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="contextvars.Token" href="https://docs.python.org/3/library/contextvars.html#contextvars.Token">Token</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3443,7 +3464,7 @@ finally:
 <a href="#async_kernel.pending.PendingManager.deactivate(token)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="contextvars.Token" href="https://docs.python.org/3/library/contextvars.html#contextvars.Token">Token</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None]</code>)
           –
           <div class="doc-md-description">
-            <p>The token returned from <a class="autorefs autorefs-internal" title=" activate" href="#async_kernel.pending.PendingManager.activate">activate</a>.</p>
+            <p>The token returned from <a class="autorefs autorefs-internal" title="            activate" href="#async_kernel.pending.PendingManager.activate">activate</a>.</p>
           </div>
         </li>
     </ul>
@@ -3534,14 +3555,20 @@ finally:
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
 
 
 
-        <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title=" Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
+        <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title="            Pending" href="#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
 <p>If any pending is set with an exception, the pending group and all tracked pending
 will be cancelled. The context will exit once all registered pending are complete or
-when after the <a class="autorefs autorefs-internal" title=" cancellation_timeout" href="#async_kernel.pending.PendingGroup.cancellation_timeout">cancellation_timeout</a> period has elapsed.</p>
+when after the <a class="autorefs autorefs-internal" title="            cancellation_timeout
+
+
+  
+      class-attribute
+      instance-attribute
+  " href="#async_kernel.pending.PendingGroup.cancellation_timeout">cancellation_timeout</a> period has elapsed.</p>
 
 
 <details class="features" open>
@@ -3592,8 +3619,12 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
       <a href="../caller/#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../caller/#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
   </span>
 
       </li>
@@ -3632,14 +3663,14 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" cancel (async_kernel.pending.PendingGroup.cancel)" href="#async_kernel.pending.PendingGroup.cancel">cancel</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            cancel (async_kernel.pending.PendingGroup.cancel)" href="#async_kernel.pending.PendingGroup.cancel">cancel</a></code></b>
             –
             <div class="doc-md-description">
               <p>Cancel the pending group (thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" cancelled (async_kernel.pending.PendingGroup.cancelled)" href="#async_kernel.pending.PendingGroup.cancelled">cancelled</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            cancelled (async_kernel.pending.PendingGroup.cancelled)" href="#async_kernel.pending.PendingGroup.cancelled">cancelled</a></code></b>
             –
             <div class="doc-md-description">
               <p>Return True if the pending group is cancelled.</p>
@@ -3653,15 +3684,27 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" cancellation_timeout (async_kernel.pending.PendingGroup.cancellation_timeout)" href="#async_kernel.pending.PendingGroup.cancellation_timeout">cancellation_timeout</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            cancellation_timeout
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.pending.PendingGroup.cancellation_timeout)" href="#async_kernel.pending.PendingGroup.cancellation_timeout">cancellation_timeout</a></code></b>
           –
           <div class="doc-md-description">
             <p>The maximum time to wait for cancelled pending to be done.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" caller (async_kernel.pending.PendingGroup.caller)" href="#async_kernel.pending.PendingGroup.caller">caller</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title=" Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a>]</code>)
+          <b><code><a class="autorefs autorefs-internal" title="            caller
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.pending.PendingGroup.caller)" href="#async_kernel.pending.PendingGroup.caller">caller</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a>]</code>)
           –
           <div class="doc-md-description">
             <p>The caller where the pending group was instantiated.</p>
@@ -3987,7 +4030,7 @@ when after the <a class="autorefs autorefs-internal" title=" cancellation_timeo
   </span>
 
 <a href="#async_kernel.pending.PendingGroup.caller" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title=" Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title=" Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><span title="async_kernel.Caller">Caller</span></span><span class="p">())</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">())</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4347,98 +4390,103 @@ callback registration for completion events.</p>
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" __init__ (async_kernel.pending.Pending.__init__)" href="#async_kernel.pending.Pending.__init__">__init__</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            __init__ (async_kernel.pending.Pending.__init__)" href="#async_kernel.pending.Pending.__init__">__init__</a></code></b>
             –
             <div class="doc-md-description">
               <p>Initializes a new Pending object with optional creation options and metadata.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" wait (async_kernel.pending.Pending.wait)" href="#async_kernel.pending.Pending.wait">wait</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            wait
+
+
+  
+      async
+   (async_kernel.pending.Pending.wait)" href="#async_kernel.pending.Pending.wait">wait</a></code></b>
             –
             <div class="doc-md-description">
               <p>Wait for a result or exception to be set (thread-safe) returning the pending if specified.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" wait_sync (async_kernel.pending.Pending.wait_sync)" href="#async_kernel.pending.Pending.wait_sync">wait_sync</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            wait_sync (async_kernel.pending.Pending.wait_sync)" href="#async_kernel.pending.Pending.wait_sync">wait_sync</a></code></b>
             –
             <div class="doc-md-description">
               <p>Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" set_result (async_kernel.pending.Pending.set_result)" href="#async_kernel.pending.Pending.set_result">set_result</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            set_result (async_kernel.pending.Pending.set_result)" href="#async_kernel.pending.Pending.set_result">set_result</a></code></b>
             –
             <div class="doc-md-description">
               <p>Set the result (low-level-thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" set_exception (async_kernel.pending.Pending.set_exception)" href="#async_kernel.pending.Pending.set_exception">set_exception</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            set_exception (async_kernel.pending.Pending.set_exception)" href="#async_kernel.pending.Pending.set_exception">set_exception</a></code></b>
             –
             <div class="doc-md-description">
               <p>Set the exception (low-level-thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" cancel (async_kernel.pending.Pending.cancel)" href="#async_kernel.pending.Pending.cancel">cancel</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            cancel (async_kernel.pending.Pending.cancel)" href="#async_kernel.pending.Pending.cancel">cancel</a></code></b>
             –
             <div class="doc-md-description">
               <p>Cancel the instance.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" cancelled (async_kernel.pending.Pending.cancelled)" href="#async_kernel.pending.Pending.cancelled">cancelled</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            cancelled (async_kernel.pending.Pending.cancelled)" href="#async_kernel.pending.Pending.cancelled">cancelled</a></code></b>
             –
             <div class="doc-md-description">
               <p>Return True if the pending is cancelled.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" set_canceller (async_kernel.pending.Pending.set_canceller)" href="#async_kernel.pending.Pending.set_canceller">set_canceller</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            set_canceller (async_kernel.pending.Pending.set_canceller)" href="#async_kernel.pending.Pending.set_canceller">set_canceller</a></code></b>
             –
             <div class="doc-md-description">
               <p>Set a callback to handle cancellation (low-level).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" done (async_kernel.pending.Pending.done)" href="#async_kernel.pending.Pending.done">done</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            done (async_kernel.pending.Pending.done)" href="#async_kernel.pending.Pending.done">done</a></code></b>
             –
             <div class="doc-md-description">
               <p>Returns True if a result or exception has been set.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" add_done_callback (async_kernel.pending.Pending.add_done_callback)" href="#async_kernel.pending.Pending.add_done_callback">add_done_callback</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            add_done_callback (async_kernel.pending.Pending.add_done_callback)" href="#async_kernel.pending.Pending.add_done_callback">add_done_callback</a></code></b>
             –
             <div class="doc-md-description">
               <p>Add a callback for when the pending is done (not thread-safe).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" remove_done_callback (async_kernel.pending.Pending.remove_done_callback)" href="#async_kernel.pending.Pending.remove_done_callback">remove_done_callback</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            remove_done_callback (async_kernel.pending.Pending.remove_done_callback)" href="#async_kernel.pending.Pending.remove_done_callback">remove_done_callback</a></code></b>
             –
             <div class="doc-md-description">
               <p>Remove all instances of a callback from the callbacks list.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" result (async_kernel.pending.Pending.result)" href="#async_kernel.pending.Pending.result">result</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            result (async_kernel.pending.Pending.result)" href="#async_kernel.pending.Pending.result">result</a></code></b>
             –
             <div class="doc-md-description">
               <p>Return the result.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" exception (async_kernel.pending.Pending.exception)" href="#async_kernel.pending.Pending.exception">exception</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            exception (async_kernel.pending.Pending.exception)" href="#async_kernel.pending.Pending.exception">exception</a></code></b>
             –
             <div class="doc-md-description">
               <p>Return the exception.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title=" add_to_trackers (async_kernel.pending.Pending.add_to_trackers)" href="#async_kernel.pending.Pending.add_to_trackers">add_to_trackers</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            add_to_trackers (async_kernel.pending.Pending.add_to_trackers)" href="#async_kernel.pending.Pending.add_to_trackers">add_to_trackers</a></code></b>
             –
             <div class="doc-md-description">
               <p>Add this pending to the trackers active in the current context that are include.</p>
@@ -4452,7 +4500,12 @@ callback registration for completion events.</p>
 <p><span class="doc-section-title">Attributes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" REPR_OMIT (async_kernel.pending.Pending.REPR_OMIT)" href="#async_kernel.pending.Pending.REPR_OMIT">REPR_OMIT</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            REPR_OMIT
+
+
+  
+      class-attribute
+   (async_kernel.pending.Pending.REPR_OMIT)" href="#async_kernel.pending.Pending.REPR_OMIT">REPR_OMIT</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#set">set</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
           –
           <div class="doc-md-description">
@@ -4460,7 +4513,12 @@ callback registration for completion events.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" metadata (async_kernel.pending.Pending.metadata)" href="#async_kernel.pending.Pending.metadata">metadata</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            metadata
+
+
+  
+      property
+   (async_kernel.pending.Pending.metadata)" href="#async_kernel.pending.Pending.metadata">metadata</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
           –
           <div class="doc-md-description">
@@ -4468,11 +4526,16 @@ callback registration for completion events.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title=" trackers (async_kernel.pending.Pending.trackers)" href="#async_kernel.pending.Pending.trackers">trackers</a></code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>], ...]</code>)
+          <b><code><a class="autorefs autorefs-internal" title="            trackers
+
+
+  
+      instance-attribute
+   (async_kernel.pending.Pending.trackers)" href="#async_kernel.pending.Pending.trackers">trackers</a></code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>], ...]</code>)
           –
           <div class="doc-md-description">
-            <p>A tuple of <a class="autorefs autorefs-internal" title=" PendingTracker" href="#async_kernel.pending.PendingTracker">async_kernel.pending.PendingTracker</a> subclasses that the pending is permitted to register with.</p>
+            <p>A tuple of <a class="autorefs autorefs-internal" title="            PendingTracker" href="#async_kernel.pending.PendingTracker">async_kernel.pending.PendingTracker</a> subclasses that the pending is permitted to register with.</p>
           </div>
         </li>
     </ul>
@@ -5248,14 +5311,14 @@ callback registration for completion events.</p>
   </span>
 
 <a href="#async_kernel.pending.Pending.trackers" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">trackers</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="async_kernel.pending.Pending(trackers)">trackers</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">trackers</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="async_kernel.pending.Pending(trackers)">trackers</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>A tuple of <a class="autorefs autorefs-internal" title=" PendingTracker" href="#async_kernel.pending.PendingTracker">async_kernel.pending.PendingTracker</a> subclasses that the pending is permitted to register with.</p>
+        <p>A tuple of <a class="autorefs autorefs-internal" title="            PendingTracker" href="#async_kernel.pending.PendingTracker">async_kernel.pending.PendingTracker</a> subclasses that the pending is permitted to register with.</p>
 <p>Should be specified during init.</p>
-<p>For some pending it may not make sense for it to be added to a <a class="autorefs autorefs-internal" title=" PendingGroup" href="#async_kernel.pending.PendingGroup">PendingGroup</a>
+<p>For some pending it may not make sense for it to be added to a <a class="autorefs autorefs-internal" title="            PendingGroup" href="#async_kernel.pending.PendingGroup">PendingGroup</a>
 Instead specify <code>PendingManager</code> instead of <code>PendingTracker</code>.</p>
 
           
@@ -5275,9 +5338,9 @@ Instead specify <code>PendingManager</code> instead of <code>PendingTracker</cod
 
 <a href="#async_kernel.pending.Pending.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.pending.Pending.__init__(trackers)">trackers</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="trackers (async_kernel.pending.Pending.__init__(trackers))" href="#async_kernel.pending.Pending.__init__(trackers)">trackers</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="n"><span title="async_kernel.pending.Pending.__init__(context)">context</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="contextvars.Context" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">Context</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.pending.Pending.__init__(**metadata)">metadata</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**metadata (async_kernel.pending.Pending.__init__(**metadata))" href="#async_kernel.pending.Pending.__init__(**metadata)">metadata</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
@@ -5289,7 +5352,7 @@ Instead specify <code>PendingManager</code> instead of <code>PendingTracker</cod
     <ul>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.pending.Pending.__init__(trackers)" class="doc doc-heading doc-heading-parameter">              <b><code>trackers</code></b>
-<a href="#async_kernel.pending.Pending.__init__(trackers)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title=" PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>], ...]</code>, default:
+<a href="#async_kernel.pending.Pending.__init__(trackers)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="#async_kernel.pending.PendingTracker">PendingTracker</a>], ...]</code>, default:
                   <code>()</code>
 )
           –
@@ -5412,14 +5475,14 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
           <div class="doc-overloads">
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.pending.Pending.wait(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.pending.Pending.wait(protect)">protect</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span> <span class="o">|</span> <span class="o">...</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.pending.Pending.wait(result)">result</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait(timeout))" href="#async_kernel.pending.Pending.wait(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="protect (async_kernel.pending.Pending.wait(protect))" href="#async_kernel.pending.Pending.wait(protect)">protect</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span> <span class="o">|</span> <span class="o">...</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait(result))" href="#async_kernel.pending.Pending.wait(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span>
-</code></pre></div><div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait(protect)">protect</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait(result)">result</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">False</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div><div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait(timeout))" href="#async_kernel.pending.Pending.wait(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="protect (async_kernel.pending.Pending.wait(protect))" href="#async_kernel.pending.Pending.wait(protect)">protect</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait(result))" href="#async_kernel.pending.Pending.wait(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">False</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>          </div>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait(protect)">protect</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait(result)">result</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait(timeout))" href="#async_kernel.pending.Pending.wait(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="protect (async_kernel.pending.Pending.wait(protect))" href="#async_kernel.pending.Pending.wait(protect)">protect</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait(result))" href="#async_kernel.pending.Pending.wait(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
@@ -5457,7 +5520,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 )
           –
           <div class="doc-md-description">
-            <p>Whether the result should be returned (use <code>result=False</code> to avoid exceptions raised by <a class="autorefs autorefs-internal" title=" result" href="#async_kernel.pending.Pending.result">Pending.result</a>).</p>
+            <p>Whether the result should be returned (use <code>result=False</code> to avoid exceptions raised by <a class="autorefs autorefs-internal" title="            result" href="#async_kernel.pending.Pending.result">Pending.result</a>).</p>
           </div>
         </li>
     </ul>
@@ -5473,7 +5536,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
           </div>
         </li>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
+              <code><a class="autorefs autorefs-internal" title="            PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
             –
           <div class="doc-md-description">
             <p>If <code>result=True</code> and the pending has been cancelled.</p>
@@ -5568,10 +5631,10 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 
 <a href="#async_kernel.pending.Pending.wait_sync" class="headerlink" title="Permanent link">&para;</a></h3>
           <div class="doc-overloads">
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_sync</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait_sync(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait_sync(result)">result</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span>
-</code></pre></div><div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_sync</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait_sync(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait_sync(result)">result</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">False</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_sync</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait_sync(timeout))" href="#async_kernel.pending.Pending.wait_sync(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait_sync(result))" href="#async_kernel.pending.Pending.wait_sync(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span>
+</code></pre></div><div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_sync</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait_sync(timeout))" href="#async_kernel.pending.Pending.wait_sync(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait_sync(result))" href="#async_kernel.pending.Pending.wait_sync(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">False</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>          </div>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_sync</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait_sync(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.wait_sync(result)">result</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_sync</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait_sync(timeout))" href="#async_kernel.pending.Pending.wait_sync(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait_sync(result))" href="#async_kernel.pending.Pending.wait_sync(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5598,7 +5661,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 )
           –
           <div class="doc-md-description">
-            <p>Whether the result should be returned (use <code>result=False</code> to avoid exceptions raised by <a class="autorefs autorefs-internal" title=" result" href="#async_kernel.pending.Pending.result">Pending.result</a>).</p>
+            <p>Whether the result should be returned (use <code>result=False</code> to avoid exceptions raised by <a class="autorefs autorefs-internal" title="            result" href="#async_kernel.pending.Pending.result">Pending.result</a>).</p>
           </div>
         </li>
     </ul>
@@ -5614,7 +5677,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
           </div>
         </li>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
+              <code><a class="autorefs autorefs-internal" title="            PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
             –
           <div class="doc-md-description">
             <p>If <code>result=True</code> and the pending has been cancelled.</p>
@@ -5705,7 +5768,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 
 
 <a href="#async_kernel.pending.Pending.set_result" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_result</span><span class="p">(</span><span class="n"><span title="async_kernel.pending.Pending.set_result(value)">value</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.set_result(reset)">reset</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_result</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="value (async_kernel.pending.Pending.set_result(value))" href="#async_kernel.pending.Pending.set_result(value)">value</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="reset (async_kernel.pending.Pending.set_result(reset))" href="#async_kernel.pending.Pending.set_result(reset)">reset</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5875,7 +5938,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 
 
 <a href="#async_kernel.pending.Pending.cancel" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cancel</span><span class="p">(</span><span class="n"><span title="async_kernel.pending.Pending.cancel(msg)">msg</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.cancel(_force)">_force</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cancel</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="msg (async_kernel.pending.Pending.cancel(msg))" href="#async_kernel.pending.Pending.cancel(msg)">msg</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.Pending.cancel(_force)">_force</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5902,7 +5965,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
   <summary>Notes</summary>
   <ul>
 <li>Cancellation cannot be undone.</li>
-<li>The result will not be <em>done</em> until either <a class="autorefs autorefs-internal" title=" set_result" href="#async_kernel.pending.Pending.set_result">Pending.set_result</a> or <a class="autorefs autorefs-internal" title=" set_exception" href="#async_kernel.pending.Pending.set_exception">Pending.set_exception</a> is called.</li>
+<li>The result will not be <em>done</em> until either <a class="autorefs autorefs-internal" title="            set_result" href="#async_kernel.pending.Pending.set_result">Pending.set_result</a> or <a class="autorefs autorefs-internal" title="            set_exception" href="#async_kernel.pending.Pending.set_exception">Pending.set_exception</a> is called.</li>
 </ul>
 </details>        <p>Returns: If it has been cancelled.</p>
 
@@ -6003,7 +6066,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 
 
 <a href="#async_kernel.pending.Pending.set_canceller" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_canceller</span><span class="p">(</span><span class="n"><span title="async_kernel.pending.Pending.set_canceller(canceller)">canceller</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_canceller</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="canceller (async_kernel.pending.Pending.set_canceller(canceller))" href="#async_kernel.pending.Pending.set_canceller(canceller)">canceller</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6248,14 +6311,14 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
+              <code><a class="autorefs autorefs-internal" title="            PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
             –
           <div class="doc-md-description">
             <p>If the pending has been cancelled.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title=" InvalidStateError (async_kernel.pending.InvalidStateError)" href="#async_kernel.pending.InvalidStateError">InvalidStateError</a></code>
+              <code><a class="autorefs autorefs-internal" title="            InvalidStateError (async_kernel.pending.InvalidStateError)" href="#async_kernel.pending.InvalidStateError">InvalidStateError</a></code>
             –
           <div class="doc-md-description">
             <p>If the pending isn't done yet.</p>
@@ -6357,7 +6420,7 @@ trackers: Enabled by default. To deactivate tracking pass <code>trackers=False</
 <p><span class="doc-section-title">Raises:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title=" PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
+              <code><a class="autorefs autorefs-internal" title="            PendingCancelled (async_kernel.pending.PendingCancelled)" href="#async_kernel.pending.PendingCancelled">PendingCancelled</a></code>
             –
           <div class="doc-md-description">
             <p>If the instance has been cancelled.</p>
