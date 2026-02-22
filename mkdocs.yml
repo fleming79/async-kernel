@@ -133,7 +133,7 @@ plugins:
             signature_crossrefs: true
             summary: true
             unwrap_annotated: true
-            skip_local_inventory: true
+            skip_local_inventory: false # This feature should not be enabled globally https://github.com/mkdocstrings/autorefs/issues/79
             backlinks: tree
 
 markdown_extensions:
