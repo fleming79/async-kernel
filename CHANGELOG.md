@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.4] - 2026-02-23
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Switch from using thread ident to id of thread. Also keep a reference to the thread in the caller. [#330](https://github.com/fleming79/async-kernel/pull/330)
+
+### <!-- 1 --> 🚀 Features
+
+- Support run_guest_mode in Caller [#331](https://github.com/fleming79/async-kernel/pull/331)
+
+### <!-- 5 --> 📝 Documentation
+
+- Update README.md [#336](https://github.com/fleming79/async-kernel/pull/336)
+
+- Documentation updates [#335](https://github.com/fleming79/async-kernel/pull/335)
+
+- Compatibility fix for mkdocs-autorefs v1.4.4 [#333](https://github.com/fleming79/async-kernel/pull/333)
+
+- Fix link to command line usage in readme [#324](https://github.com/fleming79/async-kernel/pull/324)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Update the asyncio guest mode [#334](https://github.com/fleming79/async-kernel/pull/334)
+
+- Pre-commit autoupdate and uv upgrade [#332](https://github.com/fleming79/async-kernel/pull/332)
+
+- Tidy Caller.as_completed. [#329](https://github.com/fleming79/async-kernel/pull/329)
+
+- Caller refactoring [#328](https://github.com/fleming79/async-kernel/pull/328)
+
+- Pending.wait minor refactor. [#327](https://github.com/fleming79/async-kernel/pull/327)
+
+- Refactor Caller.as_completed [#326](https://github.com/fleming79/async-kernel/pull/326)
+
+- Fix spelling of subshell_id [#325](https://github.com/fleming79/async-kernel/pull/325)
+
 ## [0.12.3] - 2026-02-18
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -18,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for running various event loops with the backend running as a guest [#320](https://github.com/fleming79/async-kernel/pull/320)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.12.3 [#323](https://github.com/fleming79/async-kernel/pull/323)
 
 - Make Caller.checkpoint safer. [#321](https://github.com/fleming79/async-kernel/pull/321)
 
@@ -879,6 +917,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.12.4]: https://github.com/fleming79/async-kernel/compare/v0.12.3..v0.12.4
 [0.12.3]: https://github.com/fleming79/async-kernel/compare/v0.12.2..v0.12.3
 [0.12.2]: https://github.com/fleming79/async-kernel/compare/v0.12.1..v0.12.2
 [0.12.1]: https://github.com/fleming79/async-kernel/compare/v0.12.0..v0.12.1
