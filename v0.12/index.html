@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -471,6 +471,23 @@ viewing the latest version.
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Highlights">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prevent-asynchronous-deadlocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prevent asynchronous deadlocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1503,6 +1520,23 @@ viewing the latest version.
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Highlights">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prevent-asynchronous-deadlocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prevent asynchronous deadlocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1604,33 +1638,40 @@ viewing the latest version.
 <a href="https://squidfunk.github.io/mkdocs-material/"><img alt="Built with Material for MkDocs" src="https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&amp;logo=MaterialForMkDocs&amp;logoColor=white" /></a>
 <a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a></p>
 <p><img alt="logo-svg" src="https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587" /></p>
-<p>Async kernel is a Python <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter</a> kernel
-with concurrent message handling.</p>
-<p>Messages are processed fairly whilst preventing asynchronous deadlocks by using
-a unique message handler per <code>channel</code>, <code>message_type</code> and <code>subshell_id</code>.</p>
+<p>Async kernel is an IPython kernel for <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter</a>
+that provides concurrent message handling via an asynchronous backend (asyncio or trio).</p>
+<p>The kernel provides two external interfaces:</p>
+<ol>
+<li>Direct ZMQ socket messaging via a configuration file and kernel spec - (Jupyter, VScode, etc).</li>
+<li>An experimental callback style interface (Jupyterlite).</li>
+</ol>
+<p><strong><a href="https://fleming79.github.io/async-kernel/">Documentation</a></strong></p>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for
-  <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈</li>
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
-<li><a href="https://pypi.org/project/anyio/">anyio</a> compatible event loops<ul>
-<li><a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> (default)</li>
-<li><a href="https://pypi.org/project/trio/"><code>trio</code></a></li>
-</ul>
-</li>
+<li><a href="https://pypi.org/project/anyio/">anyio</a> compatible asynchronous backend (<a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> (default) or <a href="https://pypi.org/project/trio/"><code>trio</code></a>)</li>
 <li><a href="https://aiologic.readthedocs.io/latest/">aiologic</a> thread-safe synchronisation primitives</li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Easy multi-thread / multi-event loop management</a></li>
+<li><a href="https://fleming79.github.io/async-kernel/latest/usage/#caller">Backend agnostic multi-thread / multi-event loop management</a></li>
 <li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a></li>
 <li>Per-subshell user_ns</li>
-<li>GUI event loops <sup id="fnref:gui note"><a class="footnote-ref" href="#fn:gui note">1</a></sup><sup id="fnref:gui caller note"><a class="footnote-ref" href="#fn:gui caller note">2</a></sup><ul class="task-list">
+<li>GUI event loops <sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup><ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> tk with asyncio<sup id="fnref:asyncio guest"><a class="footnote-ref" href="#fn:asyncio guest">3</a></sup> or trio backend running as a guest</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> qt with asyncio<sup id="fnref2:asyncio guest"><a class="footnote-ref" href="#fn:asyncio guest">3</a></sup> or trio backend running as a guest</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> tk host and asyncio<sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup> or trio<sup id="fnref2:4"><a class="footnote-ref" href="#fn:4">4</a></sup> backend running as a guest</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> qt host and asyncio<sup id="fnref2:3"><a class="footnote-ref" href="#fn:3">3</a></sup> or trio<sup id="fnref3:4"><a class="footnote-ref" href="#fn:4">4</a></sup> backend running as a guest</li>
 </ul>
 </li>
+<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for
+  <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> (try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈)</li>
 </ul>
-<p><strong><a href="https://fleming79.github.io/async-kernel/">Documentation</a></strong></p>
+<h3 id="prevent-asynchronous-deadlocks">Prevent asynchronous deadlocks<a class="headerlink" href="#prevent-asynchronous-deadlocks" title="Permanent link">&para;</a></h3>
+<p>The standard (synchronous) kernel implementation processes messages sequentially irrespective
+of the message type. The problem being that long running execute requests will make the kernel
+non-responsive. Another problem exists when an asynchronous execute request awaits a result that is delivered
+via a kernel message - this will cause a deadlock because the message will be stuck in the queue behind
+the<em>blocking</em> execute request<sup id="fnref:5"><a class="footnote-ref" href="#fn:5">5</a></sup>.</p>
+<p>Async kernel handles messages according to the channel, message type and subshell id. So widget com message
+will get processed in a separate queue to an execute request. Further detail is given in the <a href="https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/">concurrency notebook</a>, a Jupyterlite version is available <a href="https://fleming79.github.io/echo-kernel/">here</a>.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>async-kernel
 </code></pre></div>
@@ -1639,24 +1680,27 @@ a unique message handler per <code>channel</code>, <code>message_type</code> and
 <p>Kernel specs can be added/removed via the command line.</p>
 <p>The kernel is configured via the interface with the options:</p>
 <ul>
+<li><code>name</code></li>
+<li><code>display_name</code></li>
+<li>Parameters on the kernel including:<ul>
 <li><a href="#backends"><code>interface.backend</code></a></li>
 <li><code>interface.backend_options</code></li>
 <li><code>interface.loop</code></li>
 <li><code>interface.loop_options</code></li>
+<li><code>shell.timeout</code></li>
+</ul>
+</li>
 </ul>
 <h3 id="backends">Backends<a class="headerlink" href="#backends" title="Permanent link">&para;</a></h3>
-<p>The backend defines the asynchronous library provided in the thread in which it is running.</p>
-<ul>
-<li>asyncio</li>
-<li>trio</li>
-</ul>
-<p><strong>Example - change kernel spec to use trio</strong></p>
+<p>The backend set on the interface is the asynchronous library the kernel uses for message handling.
+It is also the asynchronous library directly available when executing code in cells or via a console<sup id="fnref:4"><a class="footnote-ref" href="#fn:4">4</a></sup>.</p>
+<h4 id="example-overwrite-the-async-kernel-spec-to-use-a-trio-backend">Example - overwrite the 'async' kernel spec to use a trio backend<a class="headerlink" href="#example-overwrite-the-async-kernel-spec-to-use-a-trio-backend" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
 async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="w"> </span>--interface.backend<span class="o">=</span>trio
 </code></pre></div>
 <h3 id="gui-event-loop">Gui event loop<a class="headerlink" href="#gui-event-loop" title="Permanent link">&para;</a></h3>
 <p>The kernel can be started with a gui event loop as the <em>host</em> and the <em>backend</em> running as a guest.</p>
-<p><strong>asyncio backend</strong></p>
+<h4 id="asyncio-backend">asyncio backend<a class="headerlink" href="#asyncio-backend" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="c1"># tk</span>
 async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.loop<span class="o">=</span>tk
 
@@ -1664,7 +1708,7 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span clas
 pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
 async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.loop<span class="o">=</span>qt
 </code></pre></div>
-<p><strong>trio backend</strong></p>
+<h4 id="trio-backend">trio backend<a class="headerlink" href="#trio-backend" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
 <span class="c1"># tk</span>
 async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.loop<span class="o">=</span>tk<span class="w"> </span>--interface.backend<span class="o">=</span>trio
@@ -1673,29 +1717,37 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span clas
 pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
 async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.loop<span class="o">=</span>qt<span class="w"> </span>--interface.backend<span class="o">=</span>trio
 </code></pre></div>
-<p>For further detail about kernel spec customisation see <a href="https://fleming79.github.io/async-kernel/latest/commands/#command-line">command line usage</a>.</p>
+<p>For further detail about kernel spec customisation see <a href="https://fleming79.github.io/async-kernel/latest/usage/commands/">command line and kernel configuration</a>.</p>
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
 <p>Async kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
 of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to the original contributors of IPyKernel that made Async kernel possible.</p>
 <div class="footnote">
 <hr />
 <ol>
-<li id="fn:gui note">
-<p>A gui event loop is provided by starting the event loop (<em>host</em>)
-and then running an asynchronous backend as a guest in the event loop. Kernel
-messaging is performed as usual in the asynchronous backend. For this reason
-it is not possible to enable a gui event loop at runtime.&#160;<a class="footnote-backref" href="#fnref:gui note" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+<li id="fn:1">
+<p>A gui (<em>host</em>) enabled kernel runs a gui event loop with the asynchronous backend
+running as guest. The host must be set before the kernel is started. This was a
+deliberate design choice to to ensure good performance and reliability.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
 </li>
-<li id="fn:gui caller note">
+<li id="fn:2">
 <p>It is also possible to use a caller to run a gui event loop
 in a separate thread (with a backend running as a guest) if the gui allows it
 (qt will only run in the main thread). Also note that pyplot will only permit
-one interactive gui library in a process.&#160;<a class="footnote-backref" href="#fnref:gui caller note" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+one interactive gui library in a process.&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
 </li>
-<li id="fn:asyncio guest">
+<li id="fn:3">
 <p>The asyncio implementation of <code>start_guest_run</code> was written by
 <a href="https://github.com/x42005e1f/aiologic">the author of aiologic</a> and provided as a
-(<a href="https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779">gist</a>).&#160;<a class="footnote-backref" href="#fnref:asyncio guest" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:asyncio guest" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+<a href="https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779">gist</a>.&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4">
+<p>Irrespective of the configured backend, functions/coroutines can be executed using a specific backend
+with the method <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_using_backend"><code>call_using_backend</code></a>.&#160;<a class="footnote-backref" href="#fnref:4" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:4" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:4" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5">
+<p>Ipykernel <em>solves</em> this issue specifically for widgets by using the concept of
+'widget coms over subshells'. Widget messages arrive in a different thread which on
+occasion can cause unexpected behaviour, especially when using asynchronous libraries.&#160;<a class="footnote-backref" href="#fnref:5" title="Jump back to footnote 5 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>
