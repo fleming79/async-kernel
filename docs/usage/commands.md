@@ -121,6 +121,7 @@ Options can be provided for how the backend is started.
     - [trio.lowlevel.start_guest_run][]
     - asyncio
         - host_uses_signal_set_wakeup_fd
+        - host_uses_sys_set_asyncgen_hooks
         - loop_factory,
         - task_factory,
         - context,
