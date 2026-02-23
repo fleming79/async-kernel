@@ -172,14 +172,15 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
     An asynchronous context manager for tracking [async_kernel.pending.Pending][] created in the context.
 
-    If any pending is set with an exception, the pending group and all tracked pending
-    will be cancelled. The context will exit once all registered pending are complete or
-    when after the [cancellation_timeout][] period has elapsed.
+    The pending group and all tracked pending will be cancelled if any pending in the group is set with an exception.
+    The context will exit once all registered pending are complete or after the [cancellation_timeout][] period has elapsed.
 
     Features:
         - The context will exit after all tracked pending are done or removed.
-        - Cancelled or failed pending will cancel all other pending in the group.
-        - Pending can be manually removed from the group while the group is active.
+        - Failed pending will cancel all other pending in the group.
+        - Cancellation of pending in the group will **not** cause cancellation of the pending group.
+        - Unfinished pending **not** in the group can added.
+        - Unfinished pending in the group can be removed.
 
     Args:
         shield: [Shield][anyio.CancelScope.shield] from external cancellation.
