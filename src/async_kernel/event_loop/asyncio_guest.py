@@ -1,4 +1,4 @@
-# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (64th revision)
+# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (66th revision)
 
 # SPDX-FileCopyrightText: 2026 Ilya Egorov <0x42005e1f@gmail.com>
 # SPDX-License-Identifier: ISC
@@ -192,6 +192,7 @@ def start_guest_run(
     run_sync_soon_threadsafe,
     run_sync_soon_not_threadsafe=None,
     host_uses_signal_set_wakeup_fd=False,
+    host_uses_sys_set_asyncgen_hooks=False,
     loop_factory=None,
     task_factory=None,
     context=None,
@@ -235,6 +236,7 @@ def start_guest_run(
         guest_outcome = None
     finally:
         inner_wakeup_fd = _set_wakeup_fd(outer_wakeup_fd)
+    inner_asyncgen_finalizer = guest_loop._asyncgen_finalizer_hook
 
     def guest_shutdown_callback():
         nonlocal guest_outcome
@@ -258,7 +260,21 @@ def start_guest_run(
         try:
             outer_wakeup_fd = _set_wakeup_fd(inner_wakeup_fd)
             try:
-                selector_future = context.run(next, guest_run)
+                outer_asyncgen_finalizer = sys.get_asyncgen_hooks().finalizer
+                if not host_uses_sys_set_asyncgen_hooks and (
+                    outer_asyncgen_finalizer is None
+                ):
+                    sys.set_asyncgen_hooks(finalizer=inner_asyncgen_finalizer)
+                    outer_asyncgen_finalizer = inner_asyncgen_finalizer
+                try:
+                    selector_future = context.run(next, guest_run)
+                except BaseException:
+                    if not host_uses_sys_set_asyncgen_hooks and (
+                        outer_asyncgen_finalizer is inner_asyncgen_finalizer
+                    ):
+                        sys.set_asyncgen_hooks(finalizer=None)
+                        outer_asyncgen_finalizer = None
+                    raise
             finally:
                 if not host_uses_signal_set_wakeup_fd and (
                     outer_wakeup_fd == -1
