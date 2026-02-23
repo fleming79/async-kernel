@@ -58,14 +58,13 @@ The kernel provides two external interfaces:
 ### Prevent asynchronous deadlocks
 
 The standard (synchronous) kernel implementation processes messages sequentially irrespective
-of the message type. The problem being that long running requests make the kernel
-non-responsive. Furthermore, Any asynchronous request that awaits a result delivered
-via a kernel message will suffer deadlock since the message will be stuck in the queue.
+of the message type. The problem being that long running execute requests will make the kernel
+non-responsive. Another problem exists when an asynchronous execute request awaits a result that is delivered
+via a kernel message - this will cause a deadlock because the message will be stuck in the queue behind
+the*blocking* execute request[^5].
 
-One example could be an 'execute request' that awaits an event set by a widget button click[^5].
-
-Async kernel handles messages according to the message type, so widget com messages can pass
-freely while an execute request is being processed; [further detail](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/).
+Async kernel handles messages according to the channel, message type and subshell id. So widget com message
+will get processed in a separate queue to an execute request. Further detail is given in the [concurrency notebook](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/), a Jupyterlite version is available [here](https://fleming79.github.io/echo-kernel/).
 
 [^5]:
     Ipykernel _solves_ this issue specifically for widgets by using the concept of
