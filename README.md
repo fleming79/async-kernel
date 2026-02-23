@@ -11,45 +11,66 @@
 
 ![logo-svg](https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587)
 
-Async kernel is a Python [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages) kernel
-with concurrent message handling.
+Async kernel is an IPython kernel for [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
+that provides concurrent message handling via an asynchronous backend (asyncio or trio).
 
-Messages are processed fairly whilst preventing asynchronous deadlocks by using
-a unique message handler per `channel`, `message_type` and `subshell_id`.
+The kernel provides two external interfaces:
+
+1. Direct ZMQ socket messaging via a configuration file and kernel spec - (Jupyter, VScode, etc).
+2. An experimental callback style interface (Jupyterlite).
+
+**[Documentation](https://fleming79.github.io/async-kernel/)**
 
 ## Highlights
 
-- [Experimental](https://github.com/fleming79/echo-kernel) support for
-  [Jupyterlite](https://github.com/jupyterlite/jupyterlite) try it online [here](https://fleming79.github.io/echo-kernel/) 👈
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
-- [anyio](https://pypi.org/project/anyio/) compatible event loops
-    - [`asyncio`](https://docs.python.org/3/library/asyncio.html) (default)
-    - [`trio`](https://pypi.org/project/trio/)
+- [anyio](https://pypi.org/project/anyio/) compatible asynchronous backend ([`asyncio`](https://docs.python.org/3/library/asyncio.html) (default) or [`trio`](https://pypi.org/project/trio/))
 - [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
-- [Easy multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
+- [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/usage/#caller)
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
 - Per-subshell user_ns
-- GUI event loops [^gui note][^gui caller note]
+- GUI event loops [^1][^2]
     - [x] inline
     - [x] ipympl
-    - [x] tk with asyncio[^asyncio guest] or trio backend running as a guest
-    - [x] qt with asyncio[^asyncio guest] or trio backend running as a guest
+    - [x] tk host and asyncio[^3] or trio[^4] backend running as a guest
+    - [x] qt host and asyncio[^3] or trio[^4] backend running as a guest
+- [Experimental](https://github.com/fleming79/echo-kernel) support for
+  [Jupyterlite](https://github.com/jupyterlite/jupyterlite) (try it online [here](https://fleming79.github.io/echo-kernel/) 👈)
 
-[^gui note]: A gui event loop is provided by starting the event loop (_host_)
-and then running an asynchronous backend as a guest in the event loop. Kernel
-messaging is performed as usual in the asynchronous backend. For this reason
-it is not possible to enable a gui event loop at runtime.
+[^1]:
+    A gui (_host_) enabled kernel runs a gui event loop with the asynchronous backend
+    running as guest. The host must be set before the kernel is started. This was a
+    deliberate design choice to to ensure good performance and reliability.
 
-[^gui caller note]: It is also possible to use a caller to run a gui event loop
-in a separate thread (with a backend running as a guest) if the gui allows it
-(qt will only run in the main thread). Also note that pyplot will only permit
-one interactive gui library in a process.
+[^2]:
+    It is also possible to use a caller to run a gui event loop
+    in a separate thread (with a backend running as a guest) if the gui allows it
+    (qt will only run in the main thread). Also note that pyplot will only permit
+    one interactive gui library in a process.
 
-[^asyncio guest]: The asyncio implementation of `start_guest_run` was written by
-[the author of aiologic](https://github.com/x42005e1f/aiologic) and provided as a
-([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
+[^3]:
+    The asyncio implementation of `start_guest_run` was written by
+    [the author of aiologic](https://github.com/x42005e1f/aiologic) and provided as a
+    [gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779).
 
-**[Documentation](https://fleming79.github.io/async-kernel/)**
+[^4]: trio's [start_guest_run](https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run).
+
+### Prevent asynchronous deadlocks
+
+The standard (synchronous) kernel implementation processes messages sequentially irrespective
+of the message type. The problem being that long running requests make the kernel
+non-responsive. Furthermore, Any asynchronous request that awaits a result delivered
+via a kernel message will suffer deadlock since the message will be stuck in the queue.
+
+One example could be an 'execute request' that awaits an event set by a widget button click[^5].
+
+Async kernel handles messages according to the message type, so widget com messages can pass
+freely while an execute request is being processed; [further detail](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/).
+
+[^5]:
+    Ipykernel _solves_ this issue specifically for widgets by using the concept of
+    'widget coms over subshells'. Widget messages arrive in a different thread which on
+    occasion can cause unexpected behaviour, especially when using asynchronous libraries.
 
 ## Installation
 
@@ -65,19 +86,25 @@ Kernel specs can be added/removed via the command line.
 
 The kernel is configured via the interface with the options:
 
-- [`interface.backend`](#backends)
-- `interface.backend_options`
-- `interface.loop`
-- `interface.loop_options`
+- `name`
+- `display_name`
+- Parameters on the kernel including:
+    - [`interface.backend`](#backends)
+    - `interface.backend_options`
+    - `interface.loop`
+    - `interface.loop_options`
+    - `shell.timeout`
 
 ### Backends
 
-The backend defines the asynchronous library provided in the thread in which it is running.
+The backend set on the interface is the asynchronous library the kernel uses for message handling.
+It is also the asynchronous library directly available when executing code in cells or via a console[^4].
 
-- asyncio
-- trio
+[^4]:
+    Irrespective of the configured backend, functions/coroutines can be executed using a specific backend
+    with the method [`call_using_backend`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_using_backend).
 
-**Example - change kernel spec to use trio**
+#### Example - overwrite the 'async' kernel spec to use a trio backend
 
 ```bash
 pip install trio
@@ -88,7 +115,7 @@ async-kernel -a async --interface.backend=trio
 
 The kernel can be started with a gui event loop as the _host_ and the _backend_ running as a guest.
 
-**asyncio backend**
+#### asyncio backend
 
 ```bash
 # tk
@@ -99,7 +126,7 @@ pip install PySide6-Essentials
 async-kernel -a async-qt --interface.loop=qt
 ```
 
-**trio backend**
+#### trio backend
 
 ```bash
 pip install trio

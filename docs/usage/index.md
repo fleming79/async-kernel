@@ -32,21 +32,34 @@ Blocking code should be run in a separate thread using one of the following:
 
 [Caller][async_kernel.caller.Caller] was originally developed to simplify message handling in the
 [Kernel][async_kernel.kernel.Kernel]. It is now a capable tool in its own right with a convenient
-interface for executing synchronous and asynchronous code in a given thread's event loop.
-
-Job scheduling is synchronous, and for methods that return a [Pending][async_kernel.pending.Pending],
-the execution result can be cancelled, awaited from any thread or waited synchronously blocking the
-thread until the Pending is done.
+interface for executing synchronous and asynchronous code in its corresponding thread.
 
 ### Get a Caller
 
-If there is an event loop in the current thread, it is recommended to use:
+When there is a backend already running in the current thread use:
 
 ```python
 caller = Caller()
 ```
 
-### Modifier
+### Typical usage
+
+Caller is thread based scheduler that is designed to run code asynchronously.
+
+```python
+pen = Caller().call_soon(my_async_func, *args, **kwargs)
+
+my_result = await pen
+```
+
+It can also be used for structured concurrency styled workflows.
+
+```python
+async with Caller().create_pending_group() as pg:
+    pg.caller.call_soon(my_async_func, *args, **kwargs)
+```
+
+#### Modifier
 
 A modifier can be passed as the first arg to modify which caller instance is returned:
 
@@ -56,19 +69,18 @@ caller = Caller("MainThread")
 
 The options are:
 
-- "CurrentThread": A caller for the current thread. An event loop must be running in the current thread for this to work.
-- "MainThread": A caller for the main thread. An event loop must be running in the main thread and if called from inside
-  a different thread, the caller must have already been created in the main thread.
-- "NewThread": A new thread is always created.
-- "manual": A new thread is created. The scheduler must be started manually by either entering the async context
-  or calling [Caller.start_sync][async_kernel.caller.Caller.start_sync].
+- "CurrentThread": A caller for the current thread (default). An backend must already be running in the current thread.
+- "MainThread": A caller for the main thread.
+- "NewThread": A new thread is always created with the desired configuration.
+- "manual": A new caller instance is created in the current thread, there must not already be a caller
+  for the current thread. It must be started either - synchronously: with [caller.start_sync][async_kernel.caller.Caller.start_sync]. - asynchronously: by entering the async context.
 
 ### `Caller.get`
 
-Caller.get [caller.get][async_kernel.caller.Caller.get] can be used to create child callers that belong to the parent.
-When the parent is stopped the children are stopped.
+[Caller.get][async_kernel.caller.Caller.get] can be used to create a child thread with a caller.
+A child caller is closed when the parent is closed. The same caller can be access by specifying a name.
 
-The following options are copied from the parent or can be specified.
+The following options are copied from the parent when not specified in the function call.
 
 - 'zmq_context'
 - 'backend'
@@ -93,11 +105,4 @@ Pending is done the worker becomes 'idle'. The following settings affect what ha
 
 ```python
 my_worker = caller.get("my own worker", backend="trio")
-```
-
-When called inside a thread without a running event loop, a new thread can be started with
-an event loop.
-
-```python
-caller = Caller(name="my event loop", backend="asyncio")
 ```
