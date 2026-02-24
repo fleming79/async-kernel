@@ -29,7 +29,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.event_loop.run import Host, get_start_guest_run
-from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingTracker
+from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingManager, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Loop, NoValue, RunSettings, T
 
 with contextlib.suppress(ImportError):
@@ -925,6 +925,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 3. `func` is deleted (utilising [weakref.finalize][]).
             - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.
             - Exceptions are logged to caller.log but not propagated.
+            - The pending created on the first call will only registered with PendingManager subclassed trackers and **not** PendingGroup.
         """
         key = hash(func)
         if not (pen_ := self._queue_map.get(key)):
@@ -950,7 +951,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 finally:
                     self._queue_map.pop(key)
 
-            pen_ = self.schedule_call(queue_loop, (), {}, None, (), key=key, queue=queue)
+            pen_ = self.schedule_call(queue_loop, (), {}, None, PendingManager, key=key, queue=queue)
             self._queue_map[key] = pen_
         pen_.metadata["queue"].append((func, args, kwargs))
 
