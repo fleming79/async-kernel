@@ -339,13 +339,10 @@ class Pending(Awaitable[T]):
     _done: bool
     _result: T
     context: contextvars.Context
-    """
-    A tuple of [async_kernel.pending.PendingTracker][] subclasses that the pending is permitted to register with.
+    """ 
+    The context associated with Pending.
 
-    Should be specified during init.
-    
-    For some pending it may not make sense for it to be added to a [PendingGroup][]
-    Instead specify `PendingManager` instead of `PendingTracker`.
+    The context is updated for the Trackers during init.
     """
 
     @property
