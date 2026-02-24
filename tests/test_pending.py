@@ -75,19 +75,6 @@ class TestPending:
             pen.add_done_callback(callback)
             await after_done
 
-    async def test_set_result_reset(self, caller: Caller):
-        pen_resetting = Pending()
-        for _ in range(10):
-            proceed = Event()
-            pen2 = caller.call_soon(lambda: (proceed.set(), pen_resetting.wait())[1])  # noqa: B023
-            await proceed
-            caller.call_soon(pen_resetting.set_result, 1, reset=True)
-            assert await pen2 == 1
-            assert not pen_resetting.done()
-        pen_resetting.set_exception(RuntimeError("should not continue"))
-        with pytest.raises(InvalidStateError):
-            pen_resetting.set_result(2)
-
     async def test_set_and_wait_exception(self, anyio_backend: Backend):
         pen = Pending()
         done_called = False
@@ -454,21 +441,6 @@ class TestPendingGroup:
             async with caller.create_pending_group() as pg1, pg1.caller.create_pending_group() as pg2:
                 pen = pg2.caller.call_soon(lambda: 1 / 0)
         assert pen.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
-
-    async def test_queue(self, caller: Caller):
-        def func(val):
-            return val
-
-        pen = caller.queue_call(func, 1)
-        async with caller.create_pending_group() as pg:
-            assert pg.caller is caller
-            assert caller.queue_call(func, 2) is pen
-            assert pen in pg.pending
-            async with caller.create_pending_group() as pg2:
-                assert pg2._parent_id == pg.id  # pyright: ignore[reportPrivateUsage]
-        assert pen.result() == 2
-        pen = caller.queue_call(func, 3)
-        assert await pen == 3
 
     async def test_tracking(self, caller: Caller):
         pm = PendingManagerTest()

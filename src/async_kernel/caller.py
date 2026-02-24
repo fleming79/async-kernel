@@ -909,32 +909,22 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Pending[T]:
+    ) -> None:
         """
-        Queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).
-
-        The returned pending is 'resettable' and will provide the result of the most recent successful
-        call once the queue has been emptied. Exceptions are not set, instead the result would be `None`.
+        A low level function to queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).
 
         Args:
             func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
 
-        Returns:
-            Pending: The pending where the queue loop is running.
-
-        Warning:
-            - Do not assume the result corresponds to the function call.
-            - The returned pending returns the last result of the queue call once the queue becomes empty.
-
         Notes:
-            - The queue runs in a *task* wrapped with a [async_kernel.pending.Pending][] that remains running until one of the following occurs:
-                1. The pending is cancelled.
+            - The queue runs inside an untracked pending that remains running until one of the following occurs:
+                1. The queue is stopped.
                 2. The method [Caller.queue_close][] is called with `func` or `func`'s hash.
                 3. `func` is deleted (utilising [weakref.finalize][]).
             - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.
-            - Exceptions are 'swallowed'; the last successful result is set on the pending.
+            - Exceptions are logged to caller.log but not propagated.
         """
         key = hash(func)
         if not (pen_ := self._queue_map.get(key)):
@@ -956,15 +946,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                             if pen.cancelled():
                                 raise
                             self.log.exception("Execution %s failed", item, exc_info=e)
-                        if not queue.queue:
-                            pen.set_result(result, reset=True)
-                            item = result = None  # noqa: PLW2901
+                        item = result = None  # noqa: PLW2901
                 finally:
                     self._queue_map.pop(key)
 
-            self._queue_map[key] = pen_ = self.schedule_call(queue_loop, (), {}, key=key, queue=queue)
+            pen_ = self.schedule_call(queue_loop, (), {}, None, (), key=key, queue=queue)
+            self._queue_map[key] = pen_
         pen_.metadata["queue"].append((func, args, kwargs))
-        return pen_.add_to_trackers()  # pyright: ignore[reportReturnType]
 
     def queue_close(self, func: Callable | int) -> None:
         """

@@ -80,7 +80,11 @@ class PendingTracker:
         self._instances[self.id] = self
 
     def _activate(self) -> Token[str | None]:
-        return self._id_contextvar.set(self.id)
+        try:
+            return self._id_contextvar.set(self.id)
+        except AttributeError as e:
+            e.add_note("Pending tracker must be subclassed to use it!")
+            raise
 
     def _deactivate(self, token: contextvars.Token[str | None]) -> None:
         self._id_contextvar.reset(token)
@@ -498,20 +502,14 @@ class Pending(Awaitable[T]):
             except Exception:
                 pass
 
-    def set_result(self, value: T, *, reset: bool = False) -> None:
+    def set_result(self, value: T) -> None:
         """
         Set the result (low-level-thread-safe).
 
         Args:
-            value: The result.
-            reset: Revert to being not done.
-
-        Warning:
-            - When using reset ensure to proivide sufficient time for any waiters to retrieve the result.
+            value: The result to set.
         """
         self._set_done("result", value)
-        if reset:
-            self._done = False
 
     def set_exception(self, exception: BaseException) -> None:
         """
