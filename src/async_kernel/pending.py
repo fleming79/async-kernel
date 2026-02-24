@@ -172,19 +172,6 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
     An asynchronous context manager for tracking [async_kernel.pending.Pending][] created in the context.
 
-    The pending group and all tracked pending will be cancelled if any pending in the group is set with an exception.
-    The context will exit once all registered pending are complete or after the [cancellation_timeout][] period has elapsed.
-
-    Features:
-        - The context will exit after all tracked pending are done or removed.
-        - Failed pending will cancel all other pending in the group.
-        - Cancellation of pending in the group will **not** cause cancellation of the pending group.
-        - Unfinished pending **not** in the group can added.
-        - Unfinished pending in the group can be removed.
-
-    Args:
-        shield: [Shield][anyio.CancelScope.shield] from external cancellation.
-
     Usage:
         Enter the async context and create new pending.
 
@@ -205,10 +192,31 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     caller: Fixed[Self, Caller] = Fixed(lambda _: async_kernel.Caller())
     "The caller where the pending group was instantiated."
 
-    def __init__(self, *, shield: bool = False) -> None:
-        self.caller  # noqa: B018
+    def __init__(self, *, shield: bool = False, mode: int = 0) -> None:
+        """
+        An async context to capture all pending (that opt in) created in the context.
+
+        The pending group will only exit once all pending in the group are done.
+
+        Pending can be added to and removed from the group manually.
+
+        Args:
+            shield: Passed to the cancel scope.
+            mode: The mode.
+                - 0: Ignore cancellation of pending.
+                - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
+                - 2: Cancel if any pending is cancelled - exit quietly.
+        """
+        assert mode in [0, 1, 2]
+        self._mode = mode
         self._shield = shield
+        self.caller  # noqa: B018
         super().__init__()
+
+    @override
+    def __repr__(self) -> str:
+        info = " ⛔ cancelled" if self._cancelled else ""
+        return f"<PendingGroup at {id(self)}{info} | {len(self.pending)} pending | mode:{self._mode}>"
 
     @override
     def _activate(self) -> Token[str | None]:
@@ -235,9 +243,10 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                     raise
             if self._cancelled is not None:
                 if exceptions := [e for pen in self._failed if isinstance(e := pen.exception(), Exception)]:
-                    msg = "One or more exceptions occurred in this context!"
+                    msg = f"One or more exceptions occurred in this context! {list(map(str, exceptions))}"
                     raise ExceptionGroup(msg, exceptions)
-                raise PendingCancelled(self._cancelled)
+                if self._mode in [0, 1]:
+                    raise PendingCancelled(self._cancelled)
         finally:
             self._leaving_context = True
             self._deactivate(token)
@@ -261,7 +270,10 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     def _on_pending_done(self, pen: Pending) -> None:
         try:
             self._pending.remove(pen)
-            if not pen.cancelled() and (pen.exception()):
+            if pen.cancelled():
+                if self._mode in [1, 2]:
+                    self.cancel(f"A monitored pending was cancelled {pen=}")
+            elif pen.exception():
                 self._failed.append(pen)
                 self.cancel(f"Exception in member: {pen}")
         except KeyError:

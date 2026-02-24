@@ -1113,7 +1113,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         break
         return done, pending
 
-    def create_pending_group(self, *, shield: bool = False):
+    def create_pending_group(self, *, shield: bool = False, mode: Literal[0, 1, 2] = 0) -> PendingGroup:
         """
         Create a new [PendingGroup][async_kernel.pending.PendingGroup] instance.
 
@@ -1124,6 +1124,10 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Args:
             shield: Shield the pending group from external cancellation.
+            mode: The mode.
+                - 0: Ignore cancellation of pending.
+                - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
+                - 2: Cancel if any pending is cancelled - exit quietly.
 
         Usage:
 
@@ -1133,4 +1137,4 @@ class Caller(anyio.AsyncContextManagerMixin):
                 ...
             ```
         """
-        return PendingGroup(shield=shield)
+        return PendingGroup(shield=shield, mode=mode)
