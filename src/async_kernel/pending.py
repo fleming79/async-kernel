@@ -169,7 +169,7 @@ class PendingManager(PendingTracker):
         self._pending.remove(pen)
 
     @contextlib.contextmanager
-    def context(self) -> Generator[None, Any, None]:
+    def active(self) -> Generator[None, Any, None]:
         """A context manager to activate this instance."""
         token = self.activate()
         try:

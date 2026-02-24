@@ -566,7 +566,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
-        with self.pending_manager.context():
+        with self.pending_manager.active():
             yield
 
 
