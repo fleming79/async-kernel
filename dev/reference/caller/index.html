@@ -907,17 +907,6 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.PendingGroup(shield)" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;shield
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.caller.PendingGroup.cancellation_timeout" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -933,6 +922,17 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;caller
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.caller.PendingGroup.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
       
     </span>
   </a>
@@ -1985,17 +1985,6 @@ viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.PendingGroup(shield)" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;shield
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.caller.PendingGroup.cancellation_timeout" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2011,6 +2000,17 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;caller
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.caller.PendingGroup.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
       
     </span>
   </a>
@@ -2640,40 +2640,6 @@ viewing the latest version.
 
 
         <p>An asynchronous context manager for tracking <a class="autorefs autorefs-internal" title="            Pending" href="../pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a> created in the context.</p>
-<p>The pending group and all tracked pending will be cancelled if any pending in the group is set with an exception.
-The context will exit once all registered pending are complete or after the <a class="autorefs autorefs-internal" title="            cancellation_timeout
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="../pending/#async_kernel.pending.PendingGroup.cancellation_timeout">cancellation_timeout</a> period has elapsed.</p>
-
-
-<details class="features" open>
-  <summary>Features</summary>
-  <ul>
-<li>The context will exit after all tracked pending are done or removed.</li>
-<li>Failed pending will cancel all other pending in the group.</li>
-<li>Cancellation of pending in the group will <strong>not</strong> cause cancellation of the pending group.</li>
-<li>Unfinished pending <strong>not</strong> in the group can added.</li>
-<li>Unfinished pending in the group can be removed.</li>
-</ul>
-</details>
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<h3 id="async_kernel.caller.PendingGroup(shield)" class="doc doc-heading doc-heading-parameter">              <b><code>shield</code></b>
-<a href="#async_kernel.caller.PendingGroup(shield)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
-                  <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p><a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.CancelScope.shield">Shield</a> from external cancellation.</p>
-          </div>
-        </li>
-    </ul>
 
 
 <details class="usage" open>
@@ -2700,8 +2666,12 @@ The context will exit once all registered pending are complete or after the <a c
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
   </span>
 
       </li>
@@ -2724,6 +2694,28 @@ The context will exit once all registered pending are complete or after the <a c
       </li>
   </ul>
 
+        <b class="doc doc-backlink-type">Returned by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#">caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
+  </span>
+
+      </li>
+  </ul>
+
   </div>
 
 
@@ -2739,6 +2731,13 @@ The context will exit once all registered pending are complete or after the <a c
 
 <p><span class="doc-section-title">Methods:</span></p>
     <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            __init__ (async_kernel.caller.PendingGroup.__init__)" href="#async_kernel.caller.PendingGroup.__init__">__init__</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>An async context to capture all pending (that opt in) created in the context.</p>
+            </div>
+          </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            cancel (async_kernel.caller.PendingGroup.cancel)" href="#async_kernel.caller.PendingGroup.cancel">cancel</a></code></b>
             –
@@ -2904,22 +2903,21 @@ The context will exit once all registered pending are complete or after the <a c
 <span class="normal">281</span>
 <span class="normal">282</span>
 <span class="normal">283</span>
-<span class="normal">284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PendingGroup</span><span class="p">(</span><span class="n">PendingTracker</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PendingGroup</span><span class="p">(</span><span class="n">PendingTracker</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An asynchronous context manager for tracking [async_kernel.pending.Pending][] created in the context.</span>
-
-<span class="sd">    The pending group and all tracked pending will be cancelled if any pending in the group is set with an exception.</span>
-<span class="sd">    The context will exit once all registered pending are complete or after the [cancellation_timeout][] period has elapsed.</span>
-
-<span class="sd">    Features:</span>
-<span class="sd">        - The context will exit after all tracked pending are done or removed.</span>
-<span class="sd">        - Failed pending will cancel all other pending in the group.</span>
-<span class="sd">        - Cancellation of pending in the group will **not** cause cancellation of the pending group.</span>
-<span class="sd">        - Unfinished pending **not** in the group can added.</span>
-<span class="sd">        - Unfinished pending in the group can be removed.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        shield: [Shield][anyio.CancelScope.shield] from external cancellation.</span>
 
 <span class="sd">    Usage:</span>
 <span class="sd">        Enter the async context and create new pending.</span>
@@ -2941,10 +2939,31 @@ The context will exit once all registered pending are complete or after the <a c
     <span class="n">caller</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Caller</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">Caller</span><span class="p">())</span>
     <span class="s2">&quot;The caller where the pending group was instantiated.&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">caller</span>  <span class="c1"># noqa: B018</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An async context to capture all pending (that opt in) created in the context.</span>
+
+<span class="sd">        The pending group will only exit once all pending in the group are done.</span>
+
+<span class="sd">        Pending can be added to and removed from the group manually.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shield: Passed to the cancel scope.</span>
+<span class="sd">            mode: The mode.</span>
+<span class="sd">                - 0: Ignore cancellation of pending.</span>
+<span class="sd">                - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
+<span class="sd">                - 2: Cancel if any pending is cancelled - exit quietly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shield</span> <span class="o">=</span> <span class="n">shield</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">caller</span>  <span class="c1"># noqa: B018</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="nd">@override</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="s2">&quot; ⛔ cancelled&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;PendingGroup at </span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}{</span><span class="n">info</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pending</span><span class="p">)</span><span class="si">}</span><span class="s2"> pending | mode:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_activate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Token</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
@@ -2971,9 +2990,10 @@ The context will exit once all registered pending are complete or after the <a c
                     <span class="k">raise</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">exceptions</span> <span class="o">:=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span> <span class="o">:=</span> <span class="n">pen</span><span class="o">.</span><span class="n">exception</span><span class="p">(),</span> <span class="ne">Exception</span><span class="p">)]:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;One or more exceptions occurred in this context!&quot;</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;One or more exceptions occurred in this context! </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">exceptions</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="k">raise</span> <span class="n">ExceptionGroup</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">exceptions</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="n">PendingCancelled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="n">PendingCancelled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_leaving_context</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deactivate</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
@@ -2997,7 +3017,10 @@ The context will exit once all registered pending are complete or after the <a c
     <span class="k">def</span><span class="w"> </span><span class="nf">_on_pending_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pen</span><span class="p">:</span> <span class="n">Pending</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pending</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">pen</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pen</span><span class="o">.</span><span class="n">exception</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">pen</span><span class="o">.</span><span class="n">cancelled</span><span class="p">():</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A monitored pending was cancelled </span><span class="si">{</span><span class="n">pen</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">pen</span><span class="o">.</span><span class="n">exception</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exception in member: </span><span class="si">{</span><span class="n">pen</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -3053,44 +3076,6 @@ The context will exit once all registered pending are complete or after the <a c
         <p>The maximum time to wait for cancelled pending to be done.</p>
 
           
-
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#">caller</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.PendingGroup"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingGroup</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../pending/#">pending</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../pending/#async_kernel.pending.PendingGroup"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingGroup</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
-  </ul>
-
-  </div>
-
     </div>
 
 </div>
@@ -3127,6 +3112,99 @@ The context will exit once all registered pending are complete or after the <a c
 <div class="doc doc-object doc-function">
 
 
+<h3 id="async_kernel.caller.PendingGroup.__init__" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+<a href="#async_kernel.caller.PendingGroup.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.PendingGroup.__init__(shield))" href="#async_kernel.caller.PendingGroup.__init__(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (async_kernel.caller.PendingGroup.__init__(mode))" href="#async_kernel.caller.PendingGroup.__init__(mode)">mode</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The pending group will only exit once all pending in the group are done.</p>
+<p>Pending can be added to and removed from the group manually.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.caller.PendingGroup.__init__(shield)" class="doc doc-heading doc-heading-parameter">              <b><code>shield</code></b>
+<a href="#async_kernel.caller.PendingGroup.__init__(shield)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Passed to the cancel scope.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.caller.PendingGroup.__init__(mode)" class="doc doc-heading doc-heading-parameter">              <b><code>mode</code></b>
+<a href="#async_kernel.caller.PendingGroup.__init__(mode)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The mode.
+- 0: Ignore cancellation of pending.
+- 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
+- 2: Cancel if any pending is cancelled - exit quietly.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An async context to capture all pending (that opt in) created in the context.</span>
+
+<span class="sd">    The pending group will only exit once all pending in the group are done.</span>
+
+<span class="sd">    Pending can be added to and removed from the group manually.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shield: Passed to the cancel scope.</span>
+<span class="sd">        mode: The mode.</span>
+<span class="sd">            - 0: Ignore cancellation of pending.</span>
+<span class="sd">            - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
+<span class="sd">            - 2: Cancel if any pending is cancelled - exit quietly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">mode</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_shield</span> <span class="o">=</span> <span class="n">shield</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">caller</span>  <span class="c1"># noqa: B018</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="async_kernel.caller.PendingGroup.cancel" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">cancel</span>
 
@@ -3143,15 +3221,15 @@ The context will exit once all registered pending are complete or after the <a c
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@enable_signal_safety</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@enable_signal_safety</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Cancel the pending group (thread-safe).&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">msg</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
@@ -3185,9 +3263,9 @@ The context will exit once all registered pending are complete or after the <a c
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the pending group is cancelled.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4922,7 +5000,11 @@ The context will exit once all registered pending are complete or after the <a c
 <span class="normal">1133</span>
 <span class="normal">1134</span>
 <span class="normal">1135</span>
-<span class="normal">1136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Caller</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">1136</span>
+<span class="normal">1137</span>
+<span class="normal">1138</span>
+<span class="normal">1139</span>
+<span class="normal">1140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Caller</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Caller is an advanced asynchronous context manager and scheduler for managing function calls within an async kernel environment.</span>
 
@@ -5890,7 +5972,7 @@ The context will exit once all registered pending are complete or after the <a c
                         <span class="k">break</span>
         <span class="k">return</span> <span class="n">done</span><span class="p">,</span> <span class="n">pending</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a new [PendingGroup][async_kernel.pending.PendingGroup] instance.</span>
 
@@ -5901,6 +5983,10 @@ The context will exit once all registered pending are complete or after the <a c
 
 <span class="sd">        Args:</span>
 <span class="sd">            shield: Shield the pending group from external cancellation.</span>
+<span class="sd">            mode: The mode.</span>
+<span class="sd">                - 0: Ignore cancellation of pending.</span>
+<span class="sd">                - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
+<span class="sd">                - 2: Cancel if any pending is cancelled - exit quietly.</span>
 
 <span class="sd">        Usage:</span>
 
@@ -5910,7 +5996,7 @@ The context will exit once all registered pending are complete or after the <a c
 <span class="sd">                ...</span>
 <span class="sd">            ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">PendingGroup</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="n">shield</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">PendingGroup</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="n">shield</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -7746,8 +7832,12 @@ use this method in the background,  they should be used in preference to this me
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
   </span>
 
       </li>
@@ -8034,12 +8124,8 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.direct"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;direct</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -8165,6 +8251,54 @@ of the callers backend.</p>
           <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="#">caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.as_completed"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_completed</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../typing/#">typing</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
       <span>Usage</span>
   </span>
 
@@ -8202,35 +8336,6 @@ of the callers backend.</p>
 
       </li>
   </ul>
-
-      </li>
-  </ul>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#">caller</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#">typing</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
 
       </li>
   </ul>
@@ -9193,7 +9298,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
 
 <a href="#async_kernel.caller.Caller.create_pending_group" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_pending_group</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.Caller.create_pending_group(shield))" href="#async_kernel.caller.Caller.create_pending_group(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_pending_group</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.Caller.create_pending_group(shield))" href="#async_kernel.caller.Caller.create_pending_group(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (async_kernel.caller.Caller.create_pending_group(mode))" href="#async_kernel.caller.Caller.create_pending_group(mode)">mode</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            PendingGroup (async_kernel.pending.PendingGroup)" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -9215,6 +9320,19 @@ also cancelled.</p>
           –
           <div class="doc-md-description">
             <p>Shield the pending group from external cancellation.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.caller.Caller.create_pending_group(mode)" class="doc doc-heading doc-heading-parameter">              <b><code>mode</code></b>
+<a href="#async_kernel.caller.Caller.create_pending_group(mode)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[0, 1, 2]</code>, default:
+                  <code>0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The mode.
+- 0: Ignore cancellation of pending.
+- 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
+- 2: Cancel if any pending is cancelled - exit quietly.</p>
           </div>
         </li>
     </ul>
@@ -9250,7 +9368,11 @@ async with Caller().create_pending_group() as pg:
 <span class="normal">1133</span>
 <span class="normal">1134</span>
 <span class="normal">1135</span>
-<span class="normal">1136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="normal">1136</span>
+<span class="normal">1137</span>
+<span class="normal">1138</span>
+<span class="normal">1139</span>
+<span class="normal">1140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new [PendingGroup][async_kernel.pending.PendingGroup] instance.</span>
 
@@ -9261,6 +9383,10 @@ async with Caller().create_pending_group() as pg:
 
 <span class="sd">    Args:</span>
 <span class="sd">        shield: Shield the pending group from external cancellation.</span>
+<span class="sd">        mode: The mode.</span>
+<span class="sd">            - 0: Ignore cancellation of pending.</span>
+<span class="sd">            - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
+<span class="sd">            - 2: Cancel if any pending is cancelled - exit quietly.</span>
 
 <span class="sd">    Usage:</span>
 
@@ -9270,7 +9396,7 @@ async with Caller().create_pending_group() as pg:
 <span class="sd">            ...</span>
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">PendingGroup</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="n">shield</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PendingGroup</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="n">shield</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
