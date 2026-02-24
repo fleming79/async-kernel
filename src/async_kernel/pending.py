@@ -350,6 +350,7 @@ class Pending(Awaitable[T]):
         self,
         trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = (),
         context: contextvars.Context | None = None,
+        /,
         **metadata: Any,
     ) -> None:
         """
