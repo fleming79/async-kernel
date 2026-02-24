@@ -7,7 +7,7 @@ import uuid
 import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
 from aiologic import Event
@@ -177,7 +177,7 @@ class PendingManager(PendingTracker):
         finally:
             self.deactivate(token)
 
-
+@final
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
     An asynchronous context manager for tracking [async_kernel.pending.Pending][] created in the context.

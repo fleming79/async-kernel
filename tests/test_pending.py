@@ -409,15 +409,6 @@ class TestPendingGroup:
                 await anyio.sleep_forever()
         assert pg.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
-    async def test_subclass(self, caller: Caller):
-        class PendingManagerTestSubclass(PendingGroup):
-            pass
-
-        async with PendingManagerTestSubclass() as pcsub:
-            assert PendingManagerTestSubclass.current() is pcsub
-            async with PendingGroup() as pm:
-                assert PendingGroup.current() is pm
-                assert PendingManagerTestSubclass.current() is pcsub
 
     async def test_shield(self, caller: Caller):
         ok = False
