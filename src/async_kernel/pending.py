@@ -92,7 +92,7 @@ class PendingTracker:
     def add(self, pen: Pending) -> None:
         "Track `Pending` until it is done."
 
-        if isinstance(self, pen.trackers) and (pen not in self._pending):
+        if pen not in self._pending:
             self._pending.add(pen)
             pen.add_done_callback(self._on_pending_done)
 
@@ -161,6 +161,12 @@ class PendingManager(PendingTracker):
             token: The token returned from [activate][].
         """
         self._deactivate(token)
+
+    def remove(self, pen: Pending) -> None:
+        """
+        Remove a pending from the manager.
+        """
+        self._pending.remove(pen)
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
@@ -318,7 +324,6 @@ class Pending(Awaitable[T]):
         "_exception",
         "_result",
         "context",
-        "trackers",
     ]
 
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
@@ -333,7 +338,6 @@ class Pending(Awaitable[T]):
     _done: bool
     _result: T
     context: contextvars.Context
-    trackers: type[PendingTracker] | tuple[type[PendingTracker], ...]
     """
     A tuple of [async_kernel.pending.PendingTracker][] subclasses that the pending is permitted to register with.
 
@@ -352,8 +356,8 @@ class Pending(Awaitable[T]):
 
     def __init__(
         self,
-        trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = (),
         context: contextvars.Context | None = None,
+        trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = (),
         /,
         **metadata: Any,
     ) -> None:
@@ -361,9 +365,9 @@ class Pending(Awaitable[T]):
         Initializes a new Pending object with optional creation options and metadata.
 
         Args:
-            trackers: A subclass or tuple of `PendingTracker` subclasses to which the pending can be added given the context.
+            context: A context to associate with the pending.
+            trackers: A subclass or tuple of `PendingTracker` subclasses to which the pending can be added in the current context.
             **metadata: Arbitrary keyword arguments containing metadata to associate with this Pending instance.
-                trackers: Enabled by default. To deactivate tracking pass `trackers=False`
 
         Behavior:
             - Initializes internal state for tracking completion and cancellation
@@ -373,10 +377,9 @@ class Pending(Awaitable[T]):
         self._metadata_mappings[id(self)] = metadata
         self._done = False
         self._cancelled = None
-        self.trackers = trackers
 
         # A copy the context is required to avoid `PendingTracker.id` leakage.
-        self.context = context = context.copy() if context else contextvars.copy_context()
+        self.context = context = context or contextvars.copy_context()
 
         # PendingTacker registration.
         for cls in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
@@ -626,16 +629,3 @@ class Pending(Awaitable[T]):
             raise PendingCancelled(self._cancelled)
         return getattr(self, "_exception", None)
 
-    def add_to_trackers(self) -> Self:
-        """
-        Add this pending to the trackers active in the current context that are include.
-        """
-        if trackers := self.trackers:
-            for cls_ in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
-                if (
-                    issubclass(cls_, trackers)
-                    and (id_ := cls_._id_contextvar.get())  # pyright: ignore[reportPrivateUsage]
-                    and (pm := PendingTracker._instances.get(id_))  # pyright: ignore[reportPrivateUsage]
-                ):
-                    pm.add(self)
-        return self

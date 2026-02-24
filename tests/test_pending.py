@@ -282,9 +282,13 @@ class TestPendingManagerTest:
 
         pen = Pending()
         pm.add(pen)
-        assert pen not in pm.pending, ""
+        assert pen in pm.pending
+        pm.remove(pen)
+        assert pen not in pm.pending
         pm.deactivate(token)
+        pen.set_result(None)
         await caller.wait(pm.pending)
+        assert not pm.pending
 
     async def test_subclass(self, pm: PendingManagerTest, caller: Caller):
         pm_token = pm.activate()
@@ -395,7 +399,7 @@ class TestPendingGroup:
         with pytest.raises(ExceptionGroup):  # noqa: PT012
             async with PendingGroup():
                 pen = caller.call_soon(anyio.sleep_forever)
-                Pending(PendingGroup).set_exception(RuntimeError("stop"))
+                Pending(None, PendingGroup).set_exception(RuntimeError("stop"))
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_cancelled_by_pending(self, caller: Caller):
@@ -447,7 +451,7 @@ class TestPendingGroup:
         token = pm.activate()
         try:
             async with caller.create_pending_group() as pg:
-                pen = Pending(PendingTracker)
+                pen = Pending(None, PendingTracker)
                 assert pen in pg.pending
                 assert pen in pm.pending
 
@@ -455,11 +459,11 @@ class TestPendingGroup:
                 assert pen_no_track not in pm.pending
                 assert pen_no_track not in pg.pending
 
-                pen_pg = Pending(PendingGroup)
+                pen_pg = Pending(None, PendingGroup)
                 assert pen_pg in pg.pending
                 assert pen_pg not in pm.pending
 
-                pen_pm = Pending(PendingManagerTest)
+                pen_pm = Pending(None, PendingManagerTest)
                 assert pen_pm in pm.pending
                 assert pen_pm not in pg.pending
                 pg._pending.clear()  # pyright: ignore[reportPrivateUsage]

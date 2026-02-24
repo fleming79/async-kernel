@@ -726,7 +726,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             trackers: The tracker subclasses of active trackers which to add the pending.
             **metadata: Additional metadata to store in the instance.
         """
-        pen = Pending(trackers, context, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        pen = Pending(context, trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
             self._queue.append(pen)
         else:
