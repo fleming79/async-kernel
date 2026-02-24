@@ -409,7 +409,6 @@ class TestPendingGroup:
                 await anyio.sleep_forever()
         assert pg.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
-
     async def test_shield(self, caller: Caller):
         ok = False
         async with caller.create_pending_group():

@@ -177,6 +177,7 @@ class PendingManager(PendingTracker):
         finally:
             self.deactivate(token)
 
+
 @final
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
@@ -628,4 +629,3 @@ class Pending(Awaitable[T]):
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
         return getattr(self, "_exception", None)
-
