@@ -528,7 +528,6 @@ class Pending(Awaitable[T]):
 
         Args:
             msg: The message to use when cancelling.
-            force: When `True` it will be set 'done' immediately.
 
         Notes:
             - Cancellation cannot be undone.
