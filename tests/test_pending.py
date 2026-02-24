@@ -502,3 +502,22 @@ class TestPendingGroup:
 
         async with caller.create_pending_group():
             await caller.schedule_call(func, (), {}, None, ())
+
+    async def test_mode(self, caller: Caller):
+
+        # mode 1
+        with pytest.raises(PendingCancelled):  # noqa: PT012
+            async with caller.create_pending_group(mode=1) as pg:
+                pen = pg.caller.call_soon(anyio.sleep_forever)
+                pen.cancel("stop now")
+        # mode 2
+        async with caller.create_pending_group(mode=2) as pg:
+            pen = pg.caller.call_soon(anyio.sleep_forever)
+            pen.cancel("stop now")
+
+    async def test_repr(self, caller: Caller):
+
+        async with caller.create_pending_group() as pg:
+            pg.caller.call_soon(anyio.sleep, 0)
+            match = f"<PendingGroup at {id(pg)} | 1 pending | mode:0>"
+            assert repr(pg) == match
