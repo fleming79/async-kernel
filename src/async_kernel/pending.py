@@ -377,7 +377,7 @@ class Pending(Awaitable[T]):
         self._cancelled = None
 
         # A copy the context is required to avoid `PendingTracker.id` leakage.
-        self.context = context = context or contextvars.copy_context()
+        self.context = context = context.copy() if context else contextvars.copy_context()
 
         # PendingTacker registration.
         for cls in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
