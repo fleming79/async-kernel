@@ -596,7 +596,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     @staticmethod
     def _reject(item: tuple | Pending) -> None:
         if isinstance(item, Pending):
-            item.cancel("The caller has been closed", _force=True)
+            item.cancel("The caller has been closed")
+            item.set_result(None)
 
     @classmethod
     def _start_idle_worker_cleanup_thead(cls) -> None:

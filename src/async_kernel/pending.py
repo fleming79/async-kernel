@@ -519,12 +519,13 @@ class Pending(Awaitable[T]):
         self._set_done("exception", exception)
 
     @enable_signal_safety
-    def cancel(self, msg: str | None = None, *, _force: bool = False) -> bool:
+    def cancel(self, msg: str | None = None) -> bool:
         """
         Cancel the instance.
 
         Args:
             msg: The message to use when cancelling.
+            force: When `True` it will be set 'done' immediately.
 
         Notes:
             - Cancellation cannot be undone.
@@ -532,17 +533,13 @@ class Pending(Awaitable[T]):
 
         Returns: If it has been cancelled.
         """
-        try:
-            if not self._done:
-                if (cancelled := self._cancelled or "") and msg:
-                    msg = f"{cancelled}\n{msg}"
-                self._cancelled = msg or cancelled
-                if canceller := getattr(self, "_canceller", None):
-                    canceller(msg)
-            return self.cancelled()
-        finally:
-            if _force and not self._done:
-                self._set_done("result", None)
+        if not self._done:
+            if (cancelled := self._cancelled or "") and msg:
+                msg = f"{cancelled}\n{msg}"
+            self._cancelled = msg or cancelled
+            if canceller := getattr(self, "_canceller", None):
+                canceller(msg)
+        return self.cancelled()
 
     def cancelled(self) -> bool:
         """Return True if the pending is cancelled."""
