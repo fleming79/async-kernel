@@ -7,7 +7,7 @@ import uuid
 import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
 from aiologic import Event
@@ -80,7 +80,11 @@ class PendingTracker:
         self._instances[self.id] = self
 
     def _activate(self) -> Token[str | None]:
-        return self._id_contextvar.set(self.id)
+        try:
+            return self._id_contextvar.set(self.id)
+        except AttributeError as e:
+            e.add_note("Pending tracker must be subclassed to use it!")
+            raise
 
     def _deactivate(self, token: contextvars.Token[str | None]) -> None:
         self._id_contextvar.reset(token)
@@ -88,7 +92,7 @@ class PendingTracker:
     def add(self, pen: Pending) -> None:
         "Track `Pending` until it is done."
 
-        if isinstance(self, pen.trackers) and (pen not in self._pending):
+        if pen not in self._pending:
             self._pending.add(pen)
             pen.add_done_callback(self._on_pending_done)
 
@@ -99,11 +103,13 @@ class PendingTracker:
 
 class PendingManager(PendingTracker):
     """
-    PendingManager is a class that can be used to capture the creation of [async_kernel.pending.Pending][]
-    in any specific context.
+    PendingManager is a `PendingTracker` subclass for tracking the creation of [async_kernel.pending.Pending][]
+    in multiple contexts.
 
-    This class can not be used directly and must be subclassed to be useful. For any
-    subclass, there is only one active instance in that context.
+    This class must be subclassed to be useful.
+
+    For each subclass there is zero or one active trackers at a time. Activating a manager will 'replace' a
+    previously active pending manager.
 
     Notes:
 
@@ -158,9 +164,15 @@ class PendingManager(PendingTracker):
         """
         self._deactivate(token)
 
+    def remove(self, pen: Pending) -> None:
+        """
+        Remove a pending from the manager.
+        """
+        self._pending.remove(pen)
+
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
-        """A context manager to activate this instance."""
+        """A context manager where the pending manager is activated."""
         token = self.activate()
         try:
             yield
@@ -168,6 +180,7 @@ class PendingManager(PendingTracker):
             self.deactivate(token)
 
 
+@final
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
     An asynchronous context manager for tracking [async_kernel.pending.Pending][] created in the context.
@@ -314,7 +327,6 @@ class Pending(Awaitable[T]):
         "_exception",
         "_result",
         "context",
-        "trackers",
     ]
 
     REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
@@ -328,15 +340,11 @@ class Pending(Awaitable[T]):
     _exception: Exception
     _done: bool
     _result: T
-    context: contextvars.Context
-    trackers: type[PendingTracker] | tuple[type[PendingTracker], ...]
-    """
-    A tuple of [async_kernel.pending.PendingTracker][] subclasses that the pending is permitted to register with.
+    context: contextvars.Context | None
+    """ 
+    The context associated with Pending.
 
-    Should be specified during init.
-    
-    For some pending it may not make sense for it to be added to a [PendingGroup][]
-    Instead specify `PendingManager` instead of `PendingTracker`.
+    The context is updated for the Trackers during init.
     """
 
     @property
@@ -348,17 +356,18 @@ class Pending(Awaitable[T]):
 
     def __init__(
         self,
-        trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = (),
         context: contextvars.Context | None = None,
+        trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = (),
+        /,
         **metadata: Any,
     ) -> None:
         """
         Initializes a new Pending object with optional creation options and metadata.
 
         Args:
-            trackers: A subclass or tuple of `PendingTracker` subclasses to which the pending can be added given the context.
+            context: A context to associate with the pending, if provided it is copied.
+            trackers: A subclass or tuple of `PendingTracker` subclasses to which the pending can be added in the current context.
             **metadata: Arbitrary keyword arguments containing metadata to associate with this Pending instance.
-                trackers: Enabled by default. To deactivate tracking pass `trackers=False`
 
         Behavior:
             - Initializes internal state for tracking completion and cancellation
@@ -368,19 +377,21 @@ class Pending(Awaitable[T]):
         self._metadata_mappings[id(self)] = metadata
         self._done = False
         self._cancelled = None
-        self.trackers = trackers
 
-        # A copy the context is required to avoid `PendingTracker.id` leakage.
-        self.context = context = context.copy() if context else contextvars.copy_context()
+        if trackers or context:
+            # A copy the context is required to avoid `PendingTracker.id` leakage.
+            context = context.copy() if context else contextvars.copy_context()
+        self.context = context
 
         # PendingTacker registration.
-        for cls in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
-            if id_ := context.get(cls._id_contextvar):  # pyright: ignore[reportPrivateUsage]
-                if trackers and issubclass(cls, trackers) and (tracker := PendingTracker._instances.get(id_)):  # pyright: ignore[reportPrivateUsage]
-                    tracker.add(self)
-                else:
-                    # Clear `PendingTracker.id`.
-                    context.run(cls._id_contextvar.set, None)  # pyright: ignore[reportPrivateUsage]
+        if context:
+            for cls in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
+                if id_ := context.get(cls._id_contextvar):  # pyright: ignore[reportPrivateUsage]
+                    if trackers and issubclass(cls, trackers) and (tracker := PendingTracker._instances.get(id_)):  # pyright: ignore[reportPrivateUsage]
+                        tracker.add(self)
+                    else:
+                        # Clear `PendingTracker.id`.
+                        context.run(cls._id_contextvar.set, None)  # pyright: ignore[reportPrivateUsage]
 
     def __del__(self):
         self._metadata_mappings.pop(id(self), None)
@@ -497,20 +508,14 @@ class Pending(Awaitable[T]):
             except Exception:
                 pass
 
-    def set_result(self, value: T, *, reset: bool = False) -> None:
+    def set_result(self, value: T) -> None:
         """
         Set the result (low-level-thread-safe).
 
         Args:
-            value: The result.
-            reset: Revert to being not done.
-
-        Warning:
-            - When using reset ensure to proivide sufficient time for any waiters to retrieve the result.
+            value: The result to set.
         """
         self._set_done("result", value)
-        if reset:
-            self._done = False
 
     def set_exception(self, exception: BaseException) -> None:
         """
@@ -519,7 +524,7 @@ class Pending(Awaitable[T]):
         self._set_done("exception", exception)
 
     @enable_signal_safety
-    def cancel(self, msg: str | None = None, *, _force: bool = False) -> bool:
+    def cancel(self, msg: str | None = None) -> bool:
         """
         Cancel the instance.
 
@@ -532,17 +537,13 @@ class Pending(Awaitable[T]):
 
         Returns: If it has been cancelled.
         """
-        try:
-            if not self._done:
-                if (cancelled := self._cancelled or "") and msg:
-                    msg = f"{cancelled}\n{msg}"
-                self._cancelled = msg or cancelled
-                if canceller := getattr(self, "_canceller", None):
-                    canceller(msg)
-            return self.cancelled()
-        finally:
-            if _force and not self._done:
-                self._set_done("result", None)
+        if not self._done:
+            if (cancelled := self._cancelled or "") and msg:
+                msg = f"{cancelled}\n{msg}"
+            self._cancelled = msg or cancelled
+            if canceller := getattr(self, "_canceller", None):
+                canceller(msg)
+        return self.cancelled()
 
     def cancelled(self) -> bool:
         """Return True if the pending is cancelled."""
@@ -629,17 +630,3 @@ class Pending(Awaitable[T]):
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
         return getattr(self, "_exception", None)
-
-    def add_to_trackers(self) -> Self:
-        """
-        Add this pending to the trackers active in the current context that are include.
-        """
-        if trackers := self.trackers:
-            for cls_ in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
-                if (
-                    issubclass(cls_, trackers)
-                    and (id_ := cls_._id_contextvar.get())  # pyright: ignore[reportPrivateUsage]
-                    and (pm := PendingTracker._instances.get(id_))  # pyright: ignore[reportPrivateUsage]
-                ):
-                    pm.add(self)
-        return self

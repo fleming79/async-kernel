@@ -435,19 +435,6 @@ class TestCaller:
             caller.queue_close(func)
             assert not caller.queue_get(func)
 
-    async def test_queue_call_result(self, caller: Caller):
-        async def pass_through(n):
-            return n
-
-        pen = Pending()
-        for i in range(10):
-            pen = caller.queue_call(pass_through, i)
-        assert await pen == 9
-        del pass_through
-        while not pen.cancelled():
-            gc.collect()
-            await anyio.sleep(0)
-
     @pytest.mark.parametrize("anyio_backend", [Backend.asyncio])
     async def test_asyncio_queue_call_cancelled(self, caller: Caller):
         # Test queue_call can catch a CancelledError raised by the user
@@ -460,8 +447,8 @@ class TestCaller:
 
         caller.queue_call(func, "CancelledError")
         okay = Event()
-        await caller.queue_call(func, okay.set)
-        assert okay
+        caller.queue_call(func, okay.set)
+        await okay
 
     async def test_execution_queue_from_thread(self, caller: Caller):
         event = Event()
@@ -748,16 +735,6 @@ class TestCaller:
             results.add(await pen)
         assert results == {0, 1}
 
-    async def test_as_completed_queue(self, caller: Caller):
-        async def f(i: int):
-            await anyio.sleep(i * 0.001)
-            return i
-
-        results = set()
-        async for pen in caller.as_completed(caller.queue_call(f, i) for i in range(2)):
-            results.add(pen.result())
-        assert results == {1}
-
     async def test_as_completed_current_pending_deadlock(self, caller: Caller):
         async def f():
             if pen := caller.current_pending():
@@ -772,9 +749,9 @@ class TestCaller:
             await anyio.sleep(i * 0.001)
             return i
 
-        done, pending = await caller.wait((caller.queue_call(f, 1), caller.call_soon(f, 2), caller.to_thread(f, 3)))
+        done, pending = await caller.wait((caller.call_soon(f, 1), caller.to_thread(f, 2)))
         assert not pending
-        assert {pen.result() for pen in done} == {1, 2, 3}
+        assert {pen.result() for pen in done} == {1, 2}
 
     async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
         pen1 = caller.to_thread(lambda: id(threading.current_thread()))

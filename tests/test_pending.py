@@ -75,19 +75,6 @@ class TestPending:
             pen.add_done_callback(callback)
             await after_done
 
-    async def test_set_result_reset(self, caller: Caller):
-        pen_resetting = Pending()
-        for _ in range(10):
-            proceed = Event()
-            pen2 = caller.call_soon(lambda: (proceed.set(), pen_resetting.wait())[1])  # noqa: B023
-            await proceed
-            caller.call_soon(pen_resetting.set_result, 1, reset=True)
-            assert await pen2 == 1
-            assert not pen_resetting.done()
-        pen_resetting.set_exception(RuntimeError("should not continue"))
-        with pytest.raises(InvalidStateError):
-            pen_resetting.set_result(2)
-
     async def test_set_and_wait_exception(self, anyio_backend: Backend):
         pen = Pending()
         done_called = False
@@ -295,9 +282,13 @@ class TestPendingManagerTest:
 
         pen = Pending()
         pm.add(pen)
-        assert pen not in pm.pending, ""
+        assert pen in pm.pending
+        pm.remove(pen)
+        assert pen not in pm.pending
         pm.deactivate(token)
+        pen.set_result(None)
         await caller.wait(pm.pending)
+        assert not pm.pending
 
     async def test_subclass(self, pm: PendingManagerTest, caller: Caller):
         pm_token = pm.activate()
@@ -408,7 +399,7 @@ class TestPendingGroup:
         with pytest.raises(ExceptionGroup):  # noqa: PT012
             async with PendingGroup():
                 pen = caller.call_soon(anyio.sleep_forever)
-                Pending(PendingGroup).set_exception(RuntimeError("stop"))
+                Pending(None, PendingGroup).set_exception(RuntimeError("stop"))
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_cancelled_by_pending(self, caller: Caller):
@@ -417,16 +408,6 @@ class TestPendingGroup:
                 assert caller.call_soon(lambda: 1 / 0) in pg.pending
                 await anyio.sleep_forever()
         assert pg.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
-
-    async def test_subclass(self, caller: Caller):
-        class PendingManagerTestSubclass(PendingGroup):
-            pass
-
-        async with PendingManagerTestSubclass() as pcsub:
-            assert PendingManagerTestSubclass.current() is pcsub
-            async with PendingGroup() as pm:
-                assert PendingGroup.current() is pm
-                assert PendingManagerTestSubclass.current() is pcsub
 
     async def test_shield(self, caller: Caller):
         ok = False
@@ -455,27 +436,12 @@ class TestPendingGroup:
                 pen = pg2.caller.call_soon(lambda: 1 / 0)
         assert pen.exception()  # pyright: ignore[reportPossiblyUnboundVariable]
 
-    async def test_queue(self, caller: Caller):
-        def func(val):
-            return val
-
-        pen = caller.queue_call(func, 1)
-        async with caller.create_pending_group() as pg:
-            assert pg.caller is caller
-            assert caller.queue_call(func, 2) is pen
-            assert pen in pg.pending
-            async with caller.create_pending_group() as pg2:
-                assert pg2._parent_id == pg.id  # pyright: ignore[reportPrivateUsage]
-        assert pen.result() == 2
-        pen = caller.queue_call(func, 3)
-        assert await pen == 3
-
     async def test_tracking(self, caller: Caller):
         pm = PendingManagerTest()
         token = pm.activate()
         try:
             async with caller.create_pending_group() as pg:
-                pen = Pending(PendingTracker)
+                pen = Pending(None, PendingTracker)
                 assert pen in pg.pending
                 assert pen in pm.pending
 
@@ -483,11 +449,11 @@ class TestPendingGroup:
                 assert pen_no_track not in pm.pending
                 assert pen_no_track not in pg.pending
 
-                pen_pg = Pending(PendingGroup)
+                pen_pg = Pending(None, PendingGroup)
                 assert pen_pg in pg.pending
                 assert pen_pg not in pm.pending
 
-                pen_pm = Pending(PendingManagerTest)
+                pen_pm = Pending(None, PendingManagerTest)
                 assert pen_pm in pm.pending
                 assert pen_pm not in pg.pending
                 pg._pending.clear()  # pyright: ignore[reportPrivateUsage]

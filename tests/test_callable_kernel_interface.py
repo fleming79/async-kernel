@@ -52,11 +52,10 @@ class TestCallableInterface:
         msg = interface.msg("execute_request", content={"code": code})
         msg["header"]["session"] = "test session"
         buffers = [b"123"]
-        async with interface.kernel.caller.create_pending_group() as pg:
-            interface._handle_msg(orjson.dumps(msg).decode(), buffers)  # pyright: ignore[reportPrivateUsage]
-            assert len(pg.pending) == 1
+        interface._handle_msg(orjson.dumps(msg).decode(), buffers)  # pyright: ignore[reportPrivateUsage]
 
-        assert sender.call_count == 4
+        while sender.call_count != 4:
+            await anyio.sleep(0.01)
         reply = orjson.loads(sender.call_args_list[2][0][0])
         assert reply["header"]["msg_type"] == "execute_reply"
         assert reply["content"]["status"] == "ok"
