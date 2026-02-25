@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.5] - 2026-02-25
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Reduce complexity of Pending and PendingTracker and Caller [#339](https://github.com/fleming79/async-kernel/pull/339)
+
+### <!-- 1 --> 🚀 Features
+
+- Add mode option to PendingGroup [#338](https://github.com/fleming79/async-kernel/pull/338)
+
+### <!-- 5 --> 📝 Documentation
+
+- Documentation updates [#340](https://github.com/fleming79/async-kernel/pull/340)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Maker Caller.checkpoint private (Caller._checkpoint). [#341](https://github.com/fleming79/async-kernel/pull/341)
+
 ## [0.12.4] - 2026-02-23
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -26,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix link to command line usage in readme [#324](https://github.com/fleming79/async-kernel/pull/324)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.12.4 [#337](https://github.com/fleming79/async-kernel/pull/337)
 
 - Update the asyncio guest mode [#334](https://github.com/fleming79/async-kernel/pull/334)
 
@@ -917,6 +937,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.12.5]: https://github.com/fleming79/async-kernel/compare/v0.12.4..v0.12.5
 [0.12.4]: https://github.com/fleming79/async-kernel/compare/v0.12.3..v0.12.4
 [0.12.3]: https://github.com/fleming79/async-kernel/compare/v0.12.2..v0.12.3
 [0.12.2]: https://github.com/fleming79/async-kernel/compare/v0.12.1..v0.12.2
