@@ -922,7 +922,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with `func`.
 
         Notes:
-            - The queue runs inside an untracked pending that remains running until one of the following occurs:
+            - The queue runs inside a pending that remains running until one of the following occurs:
                 1. The queue is stopped.
                 2. The method [Caller.queue_close][] is called with `func` or `func`'s hash.
                 3. `func` is deleted (utilising [weakref.finalize][]).
