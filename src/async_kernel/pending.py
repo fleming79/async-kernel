@@ -311,11 +311,29 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
 class Pending(Awaitable[T]):
     """
-    A thread-safe, cancellable, awaitable object representing a pending asynchronous result.
+    A thread-safe, cancellable, awaitable object representing a pending result.
 
     The `Pending` class provides a mechanism for waiting on a result or exception to be set,
-    either asynchronously or synchronously. It supports cancellation, metadata storage, and
-    callback registration for completion events.
+    either asynchronously or synchronously. It supports cancellation, metadata storage.
+
+    **Properties**
+
+    - [Pending.metadata][]: Metadata associated with the pending.
+    - [Pending.context][]: The context associated with the pending.
+
+    **High level methods**
+
+    - [Pending.wait][]: Wait asynchronously for the pending to be complete.
+    - [Pending.wait_sync][]: Wait synchronously for the pending to be complete.
+    - [Pending.cancel][]: Cancel the pending (result must be set to finalize cancellation).
+    - [Pending.result][]: Get the result of the pending.
+    - [Pending.exception][]: Get the exception of the pending.
+
+    **Low level methods**
+
+    - [Pending.add_done_callback][]: Add a callback that is called once the pending is complete.
+    - [Pending.remove_done_callback][]: Remove a previously added callback.
+    - [Pending.set_canceller][]: Set a callback to handle cancellation.
     """
 
     __slots__ = [
@@ -341,11 +359,7 @@ class Pending(Awaitable[T]):
     _done: bool
     _result: T
     context: contextvars.Context | None
-    """ 
-    The context associated with Pending.
-
-    The context is updated for the Trackers during init.
-    """
+    """The context associated with Pending."""
 
     @property
     def metadata(self) -> dict[str, Any]:
@@ -370,8 +384,8 @@ class Pending(Awaitable[T]):
             **metadata: Arbitrary keyword arguments containing metadata to associate with this Pending instance.
 
         Behavior:
-            - Initializes internal state for tracking completion and cancellation
-            - Stores provided metadata in a class-level mapping
+            - Initializes internal state for tracking completion and cancellation.
+            - Stores provided metadata in a class-level mapping.
         """
         self._done_callbacks: deque[Callable[[Self], Any]] = deque()
         self._metadata_mappings[id(self)] = metadata
@@ -441,6 +455,9 @@ class Pending(Awaitable[T]):
             TimeoutError: When the timeout expires and a result or exception has not been set.
             PendingCancelled: If `result=True` and the pending has been cancelled.
             Exception: If `result=True` and an exception was set on the pending.
+
+        Tip:
+            - To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
         try:
             if not self._done or self._done_callbacks:
@@ -482,7 +499,7 @@ class Pending(Awaitable[T]):
             Exception: If `result=True` and an exception was set on the pending.
 
         Warning:
-            **Blocking the thread in which the result or exception is set will cause in deadlock.**
+            **Blocking the thread in which the result or exception is set will cause in deadlock (unless a greenlet based event library is in use).**
         """
         if not self._done:
             done = Event()
