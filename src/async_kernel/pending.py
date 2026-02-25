@@ -338,7 +338,7 @@ class Pending(Awaitable[T]):
     _exception: Exception
     _done: bool
     _result: T
-    context: contextvars.Context
+    context: contextvars.Context | None
     """ 
     The context associated with Pending.
 
@@ -363,7 +363,7 @@ class Pending(Awaitable[T]):
         Initializes a new Pending object with optional creation options and metadata.
 
         Args:
-            context: A context to associate with the pending.
+            context: A context to associate with the pending, if provided it is copied.
             trackers: A subclass or tuple of `PendingTracker` subclasses to which the pending can be added in the current context.
             **metadata: Arbitrary keyword arguments containing metadata to associate with this Pending instance.
 
@@ -376,17 +376,20 @@ class Pending(Awaitable[T]):
         self._done = False
         self._cancelled = None
 
-        # A copy the context is required to avoid `PendingTracker.id` leakage.
-        self.context = context = context.copy() if context else contextvars.copy_context()
+        if trackers or context:
+            # A copy the context is required to avoid `PendingTracker.id` leakage.
+            context = context.copy() if context else contextvars.copy_context()
+        self.context = context
 
         # PendingTacker registration.
-        for cls in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
-            if id_ := context.get(cls._id_contextvar):  # pyright: ignore[reportPrivateUsage]
-                if trackers and issubclass(cls, trackers) and (tracker := PendingTracker._instances.get(id_)):  # pyright: ignore[reportPrivateUsage]
-                    tracker.add(self)
-                else:
-                    # Clear `PendingTracker.id`.
-                    context.run(cls._id_contextvar.set, None)  # pyright: ignore[reportPrivateUsage]
+        if context:
+            for cls in PendingTracker._subclasses:  # pyright: ignore[reportPrivateUsage]
+                if id_ := context.get(cls._id_contextvar):  # pyright: ignore[reportPrivateUsage]
+                    if trackers and issubclass(cls, trackers) and (tracker := PendingTracker._instances.get(id_)):  # pyright: ignore[reportPrivateUsage]
+                        tracker.add(self)
+                    else:
+                        # Clear `PendingTracker.id`.
+                        context.run(cls._id_contextvar.set, None)  # pyright: ignore[reportPrivateUsage]
 
     def __del__(self):
         self._metadata_mappings.pop(id(self), None)

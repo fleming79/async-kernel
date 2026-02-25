@@ -534,7 +534,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                             task.add_done_callback(self._tasks.discard)
                         del task
                     else:
-                        item.context.run(tg.start_soon, self._call_scheduled, item)
+                        if context := item.context:
+                            context.run(tg.start_soon, self._call_scheduled, item)
+                        else:
+                            tg.start_soon(self._call_scheduled, item)
                 del item, result
         finally:
             if asyncio_backend:
