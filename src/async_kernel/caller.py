@@ -511,7 +511,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
-                    await self.checkpoint()
+                    await self._checkpoint()
 
     async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
         """
@@ -973,7 +973,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             pen.metadata["queue"].stop()
             pen.cancel()
 
-    async def checkpoint(self) -> None:
+    async def _checkpoint(self) -> None:
         "Yield to the event loop."
         if not self._use_safe_checkpoint:
             try:

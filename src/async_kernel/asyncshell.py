@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
 import anyio
 import IPython.core.release
 import orjson
+from aiologic.lowlevel import async_checkpoint
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
@@ -398,7 +399,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content |= utils.error_to_content(err)
             if (not silent) and stop_on_error:
                 with anyio.CancelScope(shield=True):
-                    await Caller().checkpoint()
+                    await async_checkpoint(force=True)
                     self._stop_on_error_info["time"] = time.monotonic() + (self.stop_on_error_time_offset)
                     self._stop_on_error_info["execution_count"] = execution_count
                     self.log.info("An error occurred in a non-silent execution request")
