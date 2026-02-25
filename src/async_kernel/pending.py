@@ -103,11 +103,13 @@ class PendingTracker:
 
 class PendingManager(PendingTracker):
     """
-    PendingManager is a class that can be used to capture the creation of [async_kernel.pending.Pending][]
-    in any specific context.
+    PendingManager is a `PendingTracker` subclass for tracking the creation of [async_kernel.pending.Pending][]
+    in multiple contexts.
 
-    This class can not be used directly and must be subclassed to be useful. For any
-    subclass, there is only one active instance in that context.
+    This class must be subclassed to be useful.
+
+    For each subclass there is zero or one active trackers at a time. Activating a manager will 'replace' a
+    previously active pending manager.
 
     Notes:
 
@@ -170,7 +172,7 @@ class PendingManager(PendingTracker):
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
-        """A context manager to activate this instance."""
+        """A context manager where the pending manager is activated."""
         token = self.activate()
         try:
             yield
