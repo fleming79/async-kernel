@@ -26,7 +26,7 @@ The kernel provides two external interfaces:
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 - [anyio](https://pypi.org/project/anyio/) compatible asynchronous backend ([`asyncio`](https://docs.python.org/3/library/asyncio.html) (default) or [`trio`](https://pypi.org/project/trio/))
 - [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
-- [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/usage/#caller)
+- [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
 - Per-subshell user_ns
 - GUI event loops [^1][^2]
