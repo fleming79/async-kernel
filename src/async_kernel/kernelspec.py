@@ -119,7 +119,7 @@ def write_kernel_spec(
     """
 
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), kernel_name)
-    path = Path(path) if path else (get_kernel_dir(folder=folder, prefix=prefix) / kernel_name)
+    path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / kernel_name)
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
@@ -177,8 +177,8 @@ def get_kernel_dir(*, folder: str = "", prefix: str = "") -> Path:
     """
     if folder:
         assert folder.endswith("kernels")
-        return Path(folder)
-    return Path(prefix or sys.prefix) / "share/jupyter/kernels"
+        return Path(folder).expanduser()
+    return Path(prefix or sys.prefix).expanduser() / "share/jupyter/kernels"
 
 
 def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
