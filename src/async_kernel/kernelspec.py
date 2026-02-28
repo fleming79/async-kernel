@@ -62,6 +62,7 @@ def write_kernel_spec(
     display_name: str = "",
     fullpath: bool = False,
     prefix: str = "",
+    folder: str = "",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
     connection_file: str = "{connection_file}",
     env: dict | None = None,
@@ -78,6 +79,7 @@ def write_kernel_spec(
         fullpath: If True the full path to the executable is used, otherwise 'python' is used.
         prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
+        folder: A direct path the the kernel spec folder (must end with a folder named 'kernels').
         start_interface: The string import path to a callable that creates the Kernel or,
             a *self-contained* function that returns an instance of a `Kernel`.
         connection_file: The path to the connection file.
@@ -117,7 +119,7 @@ def write_kernel_spec(
     """
 
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), kernel_name)
-    path = Path(path) if path else (get_kernel_dir(prefix) / kernel_name)
+    path = Path(path) if path else (get_kernel_dir(folder=folder, prefix=prefix) / kernel_name)
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
@@ -155,21 +157,27 @@ def write_kernel_spec(
         return path
 
 
-def remove_kernel_spec(kernel_name: str) -> bool:
+def remove_kernel_spec(kernel_name: str, *, folder: str = "", prefix: str = "") -> bool:
     "Remove a kernelspec returning True if it was removed."
-    if (folder := get_kernel_dir().joinpath(kernel_name)).exists():
-        shutil.rmtree(folder, ignore_errors=True)
+    if (path := get_kernel_dir(folder=folder, prefix=prefix).joinpath(kernel_name)).exists():
+        shutil.rmtree(path, ignore_errors=True)
         return True
     return False
 
 
-def get_kernel_dir(prefix: str = "") -> Path:
+def get_kernel_dir(*, folder: str = "", prefix: str = "") -> Path:
     """
     The path to where kernel specs are stored for Jupyter.
 
+    If folder is passed, it is assumed to be the full path ending in 'kernels', prefix is ignored.
+
     Args:
+        folder: The path to 'kernels' (must end with 'kernels').
         prefix: Defaults to sys.prefix (installable for a particular environment).
     """
+    if folder:
+        assert folder.endswith("kernels")
+        return Path(folder)
     return Path(prefix or sys.prefix) / "share/jupyter/kernels"
 
 

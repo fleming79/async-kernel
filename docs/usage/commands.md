@@ -10,7 +10,7 @@ The primary options available are:
 
 ## Kernel spec
 
-The kernel spec can be configured via the command line:
+Kernel specs can be added/removed via the command line:
 
 **Example**
 
@@ -45,7 +45,7 @@ The kernel spec looks like this:
 }
 ```
 
-A single kernel spec is created when async kernel is installed with the following defaults.
+A single kernel spec is created in the folder `<sys.prefix>/share/jupyter/kernels/async` when async kernel is installed with the following defaults.
 
 **Defaults**
 
@@ -58,7 +58,7 @@ A single kernel spec is created when async kernel is installed with the followin
 
 The kernel spec can be updated by adding a kernel spec with the same name ('async').
 
-## Backend
+## Backend (`interface-backend`)
 
 There are two supported backends 'asyncio' and 'trio'.
 
@@ -69,6 +69,31 @@ Options can be written as a literal python string.
 
 ```console
 async-kernel -a async-trio --interface.backend=trio
+```
+
+## Kernel spec location
+
+See [here](https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs) for a list of locations where Jupyter/IPython
+searches for the kernel specs.
+
+The path where the kernel spec is installed/deleted can also be specified by either `prefix` or `folder`.
+
+**options**
+
+- prefix (optional): the prefix to use with `PREFIX/share/jupyter/kernels` (defaults is [sys.prefix][]).
+- folder (optional) the full path to the `kernels` folder.
+
+### Examples
+
+```bash
+# Install for a user on linux
+async-kernel -a async --path="~/.local/share/jupyter/kernels"
+
+# Install for a user on Mac
+async-kernel -a async --path="~/Library/Jupyter/kernels"
+
+# Install for a user on windows
+async-kernel -a async --path="%APPDATA%\jupyter\kernels"
 ```
 
 ## Host loop (gui event loops - tk, qt)

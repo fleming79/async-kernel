@@ -5,7 +5,7 @@ import json
 import signal
 import sys
 import types
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import anyio
 import pytest
@@ -84,10 +84,16 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     }
 
 
-def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys):
+@pytest.mark.parametrize("mode", ["folder", "prefix", "default"])
+def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys, mode: Literal["folder", "prefix", "default"]):
     kernel_name = "asyncio"
     (fake_kernel_dir / kernel_name).mkdir()
-    monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
+    if mode == "folder":
+        monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name, f"--folder={fake_kernel_dir}"])
+    elif mode == "prefix":
+        monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name, f"--prefix={sys.prefix}"])
+    else:
+        monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
     command_line()
     out = capsys.readouterr().out
     assert "removed" in out
