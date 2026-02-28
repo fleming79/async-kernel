@@ -1810,7 +1810,9 @@ program is interrupted.</p>
 <span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
-<span class="normal">140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parses command-line arguments to manage kernel specs and start kernels.</span>
 
@@ -1899,8 +1901,10 @@ program is interrupted.</p>
 
     <span class="c1"># Remove kernel spec</span>
     <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">remove</span><span class="p">:</span>
+        <span class="n">folder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;folder&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;prefix&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">remove</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;removed&quot;</span> <span class="k">if</span> <span class="n">remove_kernel_spec</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;not found!&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;removed&quot;</span> <span class="k">if</span> <span class="n">remove_kernel_spec</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;not found!&quot;</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Kernel spec: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Version</span>

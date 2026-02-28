@@ -4348,7 +4348,7 @@ can with custom configuration can be added at the <a class="autorefs autorefs-in
 
     <span class="nd">@traitlets</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_connection_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proposal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">proposal</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">proposal</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -6515,12 +6515,8 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.kernel_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_info_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7096,8 +7092,12 @@ corresponding RunMode (if available).</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.comm_msg"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_msg</a>
   </span>
 
       </li>

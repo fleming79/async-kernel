@@ -745,13 +745,41 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#backend" class="md-nav__link">
+  <a href="#backend-interface-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Backend
+        Backend (interface-backend)
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kernel-spec-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel spec location
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kernel spec location">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1561,13 +1589,41 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#backend" class="md-nav__link">
+  <a href="#backend-interface-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Backend
+        Backend (interface-backend)
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kernel-spec-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel spec location
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kernel spec location">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1748,7 +1804,7 @@ viewing the latest version.
 <li><a href="#start-a-kernel">Start a kernel</a>: <code>-f &lt;path to config file&gt;</code></li>
 </ul>
 <h2 id="kernel-spec">Kernel spec<a class="headerlink" href="#kernel-spec" title="Permanent link">&para;</a></h2>
-<p>The kernel spec can be configured via the command line:</p>
+<p>Kernel specs can be added/removed via the command line:</p>
 <p><strong>Example</strong></p>
 <div class="highlight"><pre><span></span><code><span class="go">async-kernel -a async --backend=trio --loop=tk --display_name=&quot;Async python tk trio&quot;</span>
 </code></pre></div>
@@ -1776,7 +1832,7 @@ viewing the latest version.
 <span class="w">    </span><span class="nt">&quot;kernel_protocol_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5.5&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>A single kernel spec is created when async kernel is installed with the following defaults.</p>
+<p>A single kernel spec is created in the folder <code>&lt;sys.prefix&gt;/share/jupyter/kernels/async</code> when async kernel is installed with the following defaults.</p>
 <p><strong>Defaults</strong></p>
 <ul>
 <li>name: 'async'</li>
@@ -1787,7 +1843,7 @@ viewing the latest version.
 <li>loop_options: <code>None</code></li>
 </ul>
 <p>The kernel spec can be updated by adding a kernel spec with the same name ('async').</p>
-<h2 id="backend">Backend<a class="headerlink" href="#backend" title="Permanent link">&para;</a></h2>
+<h2 id="backend-interface-backend">Backend (<code>interface-backend</code>)<a class="headerlink" href="#backend-interface-backend" title="Permanent link">&para;</a></h2>
 <p>There are two supported backends 'asyncio' and 'trio'.</p>
 <p>In CPython the <a class="autorefs autorefs-internal" title="            Backend" href="../../reference/typing/#async_kernel.typing.Backend">backend</a> is started using <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a>.
 The type of backend can be specified at the attribute <a class="autorefs autorefs-internal" title="            backend
@@ -1806,6 +1862,25 @@ The backend_options can be specified at the attribute <a class="autorefs autoref
   " href="../../reference/interface/#async_kernel.interface.zmq.ZMQKernelInterface.backend_options">`interface.backend_options'</a>.
 Options can be written as a literal python string.</p>
 <div class="highlight"><pre><span></span><code><span class="go">async-kernel -a async-trio --interface.backend=trio</span>
+</code></pre></div>
+<h2 id="kernel-spec-location">Kernel spec location<a class="headerlink" href="#kernel-spec-location" title="Permanent link">&para;</a></h2>
+<p>See <a href="https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs">here</a> for a list of locations where Jupyter/IPython
+searches for the kernel specs.</p>
+<p>The path where the kernel spec is installed/deleted can also be specified by either <code>prefix</code> or <code>folder</code>.</p>
+<p><strong>options</strong></p>
+<ul>
+<li>prefix (optional): the prefix to use with <code>PREFIX/share/jupyter/kernels</code> (defaults is <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/sys.html#sys.prefix">sys.prefix</a>).</li>
+<li>folder (optional) the full path to the <code>kernels</code> folder.</li>
+</ul>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install for a user on linux</span>
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="w"> </span>--path<span class="o">=</span><span class="s2">&quot;~/.local/share/jupyter/kernels&quot;</span>
+
+<span class="c1"># Install for a user on Mac</span>
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="w"> </span>--path<span class="o">=</span><span class="s2">&quot;~/Library/Jupyter/kernels&quot;</span>
+
+<span class="c1"># Install for a user on windows</span>
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="w"> </span>--path<span class="o">=</span><span class="s2">&quot;%APPDATA%\jupyter\kernels&quot;</span>
 </code></pre></div>
 <h2 id="host-loop-gui-event-loops-tk-qt">Host loop (gui event loops - tk, qt)<a class="headerlink" href="#host-loop-gui-event-loops-tk-qt" title="Permanent link">&para;</a></h2>
 <p>Typically event loops don't like to share the thread with any other event loop.
@@ -1883,7 +1958,7 @@ at present.</p>
 <span class="gp"># </span>False
 <span class="go">--no-&lt;PARAMETER or DOTTED.ATTRIBUTE.NAME&gt;</span>
 </code></pre></div>
-<h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
+<h4 id="examples_1">Examples<a class="headerlink" href="#examples_1" title="Permanent link">&para;</a></h4>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="write_kernel_spec-argument" name="__tabbed_1" type="radio" /><input id="kernel-attribute" name="__tabbed_1" type="radio" /><input id="kernel-boolean-attribute-as-a-flag" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="write_kernel_spec-argument">write_kernel_spec argument</label><label for="kernel-attribute">Kernel attribute</label><label for="kernel-boolean-attribute-as-a-flag">Kernel Boolean attribute as a flag</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -1954,7 +2029,7 @@ prior to setting.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 23, 2026 02:54:29 UTC"><span class="timeago" datetime="2026-02-23T02:54:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 23, 2026 02:54:29 UTC">2026-02-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 28, 2026 23:33:28 UTC"><span class="timeago" datetime="2026-02-28T23:33:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 28, 2026 23:33:28 UTC">2026-02-28</span>
   </span>
 
     
