@@ -233,7 +233,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal) -> Path:
-        return pathlib.Path(proposal.value)
+        return pathlib.Path(proposal.value).expanduser()
 
     @property
     def settings(self) -> dict[str, Any]:

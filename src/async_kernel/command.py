@@ -106,8 +106,10 @@ def command_line() -> None:
 
     # Remove kernel spec
     elif args.remove:
+        folder = getattr(args, "folder", "")
+        prefix = getattr(args, "prefix", "")
         for name in args.remove.split(","):
-            msg = "removed" if remove_kernel_spec(name) else "not found!"
+            msg = "removed" if remove_kernel_spec(name, folder=folder, prefix=prefix) else "not found!"
             print(f"Kernel spec: '{name}' {msg}")
 
     # Version
