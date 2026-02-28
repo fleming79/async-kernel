@@ -86,7 +86,7 @@ class AsyncDisplayHook(DisplayHook):
     def finish_displayhook(self) -> None:
         """Finish up all displayhook activities."""
         if self.content:
-            self.kernel.iopub_send("display_data", content=self.content)
+            self.kernel.iopub_send("execute_result", content=self.content)
             self.content = {}
 
 

@@ -283,6 +283,15 @@ async def test_display_data(kernel: Kernel, client: AsyncKernelClient, clear: bo
     await utils.check_pub_message(client, msg_id, execution_state="idle")
 
 
+async def test_rich_display_data(kernel: Kernel, client: AsyncKernelClient):
+    await utils.clear_iopub(client)
+    msg_id, _ = await utils.execute(client, "1 + 1", clear_pub=False)
+    await utils.check_pub_message(client, msg_id, execution_state="busy")
+    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+    await utils.check_pub_message(client, msg_id, msg_type="execute_result", data={"text/plain": "2"})
+    await utils.check_pub_message(client, msg_id, execution_state="idle")
+
+
 async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     # Create
     msg = client.session.msg(MsgType.create_subshell_request, {})
