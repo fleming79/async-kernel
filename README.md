@@ -11,7 +11,7 @@
 
 ![logo-svg](https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587)
 
-Async kernel is an IPython kernel for [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
+Async kernel is a Python kernel for [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
 that provides concurrent message handling via an asynchronous backend (asyncio or trio).
 
 The kernel provides two external interfaces:
@@ -19,15 +19,12 @@ The kernel provides two external interfaces:
 1. Direct ZMQ socket messaging via a configuration file and kernel spec - (Jupyter, VScode, etc).
 2. An experimental callback style interface (Jupyterlite).
 
-**[Documentation](https://fleming79.github.io/async-kernel/)**
-
 ## Highlights
 
-- [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
+- [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
 - [anyio](https://pypi.org/project/anyio/) compatible asynchronous backend ([`asyncio`](https://docs.python.org/3/library/asyncio.html) (default) or [`trio`](https://pypi.org/project/trio/))
 - [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
 - [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
-- [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
 - Per-subshell user_ns
 - GUI event loops [^1][^2]
     - [x] inline
@@ -36,6 +33,7 @@ The kernel provides two external interfaces:
     - [x] qt host and asyncio[^3] or trio[^4] backend running as a guest
 - [Experimental](https://github.com/fleming79/echo-kernel) support for
   [Jupyterlite](https://github.com/jupyterlite/jupyterlite) (try it online [here](https://fleming79.github.io/echo-kernel/) 👈)
+- [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 
 [^1]:
     A gui (_host_) enabled kernel runs a gui event loop with the asynchronous backend
@@ -46,7 +44,7 @@ The kernel provides two external interfaces:
     It is also possible to use a caller to run a gui event loop
     in a separate thread (with a backend running as a guest) if the gui allows it
     (qt will only run in the main thread). Also note that pyplot will only permit
-    one interactive gui library in a process.
+    one interactive gui library per process.
 
 [^3]:
     The asyncio implementation of `start_guest_run` was written by
@@ -61,13 +59,13 @@ The standard (synchronous) kernel implementation processes messages sequentially
 of the message type. The problem being that long running execute requests will make the kernel
 non-responsive. Another problem exists when an asynchronous execute request awaits a result that is delivered
 via a kernel message - this will cause a deadlock because the message will be stuck in the queue behind
-the*blocking* execute request[^5].
+the _blocking_ execute request[^5].
 
 Async kernel handles messages according to the channel, message type and subshell id. So widget com message
 will get processed in a separate queue to an execute request. Further detail is given in the [concurrency notebook](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/), a Jupyterlite version is available [here](https://fleming79.github.io/echo-kernel/).
 
 [^5]:
-    Ipykernel _solves_ this issue specifically for widgets by using the concept of
+    IPyKernel _solves_ this issue specifically for widgets by using the concept of
     'widget coms over subshells'. Widget messages arrive in a different thread which on
     occasion can cause unexpected behaviour, especially when using asynchronous libraries.
 
@@ -82,17 +80,6 @@ pip install async-kernel
 A kernel spec with the name 'async' is added when async kernel is installed.
 
 Kernel specs can be added/removed via the command line.
-
-The kernel is configured via the interface with the options:
-
-- `name`
-- `display_name`
-- Parameters on the kernel including:
-    - [`interface.backend`](#backends)
-    - `interface.backend_options`
-    - `interface.loop`
-    - `interface.loop_options`
-    - `shell.timeout`
 
 ### Backends
 
