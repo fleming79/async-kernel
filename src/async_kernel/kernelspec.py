@@ -176,8 +176,9 @@ def get_kernel_dir(*, folder: str = "", prefix: str = "") -> Path:
         prefix: Defaults to sys.prefix (installable for a particular environment).
     """
     if folder:
-        assert folder.endswith("kernels")
-        return Path(folder).expanduser()
+        pth = Path(folder).expanduser()
+        assert pth.name.lower() == "kernels"
+        return pth
     return Path(prefix or sys.prefix).expanduser() / "share/jupyter/kernels"
 
 
