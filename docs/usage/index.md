@@ -7,7 +7,7 @@ icon: material/note-text
 
 # Usage
 
-Async kernel provides a Jupyter kernel that can be used in:
+async kernel provides a Jupyter kernel that can be used in:
 
 - Jupyter
 - VS code

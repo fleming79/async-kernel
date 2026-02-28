@@ -103,7 +103,7 @@ Trio provides the function [trio.lowlevel.start_guest_run][] which allows it to 
 as a guest alongside the host event loop by means of callbacks. The author of
 aiologic has provided an (experimental) asyncio equivalent ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
-Async kernel supports configuration of one host and one backend for the kernel.
+async kernel supports configuration of one host and one backend for the kernel.
 Below are some example kernel specs for host and backend kernel specs.
 
 ### tk

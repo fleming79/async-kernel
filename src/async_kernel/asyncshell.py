@@ -164,7 +164,7 @@ class ShellPendingManager(PendingManager):
 
 class AsyncInteractiveShell(InteractiveShell):
     """
-    An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].
+    An IPython InteractiveShell adapted to work with [async kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
         - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
@@ -237,7 +237,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _default_banner1(self) -> str:
         return (
             f"Python {sys.version}\n"
-            f"Async kernel ({self.kernel.kernel_name})\n"
+            f"async kernel ({self.kernel.kernel_name})\n"
             f"IPython shell {IPython.core.release.version}\n"
         )
 
