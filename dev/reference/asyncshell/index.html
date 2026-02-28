@@ -2359,7 +2359,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            AsyncInteractiveShell (async_kernel.asyncshell.AsyncInteractiveShell)" href="#async_kernel.asyncshell.AsyncInteractiveShell">AsyncInteractiveShell</a></code></b>
           –
           <div class="doc-md-description">
-            <p>An IPython InteractiveShell adapted to work with <a class="autorefs autorefs-internal" title="            Kernel" href="../kernel/#async_kernel.kernel.Kernel">Async kernel</a>.</p>
+            <p>An IPython InteractiveShell adapted to work with <a class="autorefs autorefs-internal" title="            Kernel" href="../kernel/#async_kernel.kernel.Kernel">async kernel</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2479,7 +2479,7 @@ viewing the latest version.
 
 
 
-        <p>An IPython InteractiveShell adapted to work with <a class="autorefs autorefs-internal" title="            Kernel" href="../kernel/#async_kernel.kernel.Kernel">Async kernel</a>.</p>
+        <p>An IPython InteractiveShell adapted to work with <a class="autorefs autorefs-internal" title="            Kernel" href="../kernel/#async_kernel.kernel.Kernel">async kernel</a>.</p>
 
 
 <details class="notable-differences" open>
@@ -3176,7 +3176,7 @@ viewing the latest version.
 <span class="normal">571</span>
 <span class="normal">572</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveShell</span><span class="p">(</span><span class="n">InteractiveShell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    An IPython InteractiveShell adapted to work with [Async kernel][async_kernel.kernel.Kernel].</span>
+<span class="sd">    An IPython InteractiveShell adapted to work with [async kernel][async_kernel.kernel.Kernel].</span>
 
 <span class="sd">    Notable differences:</span>
 <span class="sd">        - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.</span>
@@ -3249,7 +3249,7 @@ viewing the latest version.
     <span class="k">def</span><span class="w"> </span><span class="nf">_default_banner1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Python </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Async kernel (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_name</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;async kernel (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_name</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span>
             <span class="sa">f</span><span class="s2">&quot;IPython shell </span><span class="si">{</span><span class="n">IPython</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">release</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="p">)</span>
 
@@ -3752,12 +3752,8 @@ viewing the latest version.
       <a href="#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.asyncshell.AsyncInteractiveShell.timeout"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;timeout</a>
+      <a href="#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
   </span>
 
       </li>
@@ -4886,18 +4882,18 @@ protected subshell when it is no longer required.</p>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
