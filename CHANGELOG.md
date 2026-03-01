@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2026-03-01
+
+### <!-- 1 --> 🚀 Features
+
+- Revise concurrency modes with a  new RunMode - RunMode.thread_queue [#346](https://github.com/fleming79/async-kernel/pull/346)
+
+- Add 'folder' as an option for get_kernel_dir [#344](https://github.com/fleming79/async-kernel/pull/344)
+
+### <!-- 5 --> 📝 Documentation
+
+- Consistently use lower case async kernel. [#345](https://github.com/fleming79/async-kernel/pull/345)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Change msg_type from "display_data" to "execute_result" in finish_displayhook. [#343](https://github.com/fleming79/async-kernel/pull/343)
+
 ## [0.12.5] - 2026-02-25
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -20,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation updates [#340](https://github.com/fleming79/async-kernel/pull/340)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.12.5 [#342](https://github.com/fleming79/async-kernel/pull/342)
 
 - Maker Caller.checkpoint private (Caller._checkpoint). [#341](https://github.com/fleming79/async-kernel/pull/341)
 
@@ -937,6 +955,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.13.0]: https://github.com/fleming79/async-kernel/compare/v0.12.5..v0.13.0
 [0.12.5]: https://github.com/fleming79/async-kernel/compare/v0.12.4..v0.12.5
 [0.12.4]: https://github.com/fleming79/async-kernel/compare/v0.12.3..v0.12.4
 [0.12.3]: https://github.com/fleming79/async-kernel/compare/v0.12.2..v0.12.3
