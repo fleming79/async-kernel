@@ -400,7 +400,7 @@ class AsyncInteractiveShell(InteractiveShell):
             if (not silent) and stop_on_error:
                 with anyio.CancelScope(shield=True):
                     await async_checkpoint(force=True)
-                    self._stop_on_error_info["time"] = time.monotonic() + (self.stop_on_error_time_offset)
+                    self._stop_on_error_info["time"] = time.monotonic() + float(self.stop_on_error_time_offset)
                     self._stop_on_error_info["execution_count"] = execution_count
                     self.log.info("An error occurred in a non-silent execution request")
                     if stop_on_error:

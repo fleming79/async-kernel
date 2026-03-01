@@ -562,7 +562,7 @@ async def test_tag_raises_exception(client: AsyncKernelClient, mode: Literal["ra
 @pytest.mark.parametrize(("value", "expected"), [("stop-on-error=True", "error"), ("stop-on-error=False", "ok")])
 async def test_tag_stop_on_error(kernel: Kernel, client: AsyncKernelClient, value: str, expected: str):
     try:
-        kernel.shell.stop_on_error_time_offset = utils.TIMEOUT
+        kernel.shell.stop_on_error_time_offset = float(utils.TIMEOUT)
         _, content = await utils.execute(client, "fail", metadata={"tags": [Tags.raises_exception, value]})
         assert content["status"] == "error"
         _, content = await utils.execute(client, "a=10")
@@ -575,7 +575,7 @@ async def test_tag_stop_on_error(kernel: Kernel, client: AsyncKernelClient, valu
 async def test_all_concurrency_run_modes(kernel: Kernel):
     data = kernel.all_concurrency_run_modes()
     # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 931742796
+    assert murmur2_x86(str(data), 1) == 2728559755
 
 
 async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):

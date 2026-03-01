@@ -497,7 +497,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
         match (channel, msg_type):
-            case _, MsgType.comm_msg:
+            case _, MsgType.comm_msg | MsgType.comm_open | MsgType.comm_close:
                 return RunMode.queue
             case Channel.control, MsgType.execute_request:
                 return RunMode.queue
@@ -523,7 +523,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 | MsgType.debug_request
                 | MsgType.create_subshell_request
                 | MsgType.delete_subshell_request
-                | MsgType.list_subshell_request,
+                | MsgType.list_subshell_request
+                | MsgType.interrupt_request,
             ):
                 msg = f"{msg_type=} not allowed on shell!"
                 raise ValueError(msg)
@@ -536,7 +537,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 | MsgType.history_request
                 | MsgType.create_subshell_request
                 | MsgType.delete_subshell_request
-                | MsgType.is_complete_request,
+                | MsgType.is_complete_request
+                | MsgType.comm_info_request
+                | MsgType.kernel_info_request,
             ):
                 return RunMode.thread
             case _:
