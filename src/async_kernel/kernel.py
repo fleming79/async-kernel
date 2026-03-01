@@ -403,6 +403,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 self.callers[channel].call_soon(handler, job)
             case RunMode.thread:
                 self.callers[channel].to_thread(handler, job)
+            case RunMode.thread_queue:
+                self.callers[channel].get(name="async-kernel thread_queue", no_debug=True).queue_call(handler, job)
         self.log.debug("%s %s %s %s", msg_type, handler, run_mode, job)
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
@@ -496,12 +498,18 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         #     return RunMode( mode_from_metadata)
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
-        match (channel, msg_type):
-            case _, MsgType.comm_msg | MsgType.comm_open | MsgType.comm_close:
+        if channel is Channel.control:
+            match msg_type:
+                case MsgType.execute_request:
+                    return RunMode.queue
+                case MsgType.debug_request:
+                    return RunMode.queue
+                case _:
+                    return RunMode.direct
+        match msg_type:
+            case MsgType.comm_msg | MsgType.comm_open | MsgType.comm_close:
                 return RunMode.queue
-            case Channel.control, MsgType.execute_request:
-                return RunMode.queue
-            case _, MsgType.execute_request:
+            case MsgType.execute_request:
                 if job:
                     if content := job["msg"].get("content", {}):
                         if code := content.get("code"):
@@ -517,34 +525,20 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
                 return RunMode.queue
+            case MsgType.history_request:
+                return RunMode.thread
             case (
-                Channel.shell,
                 MsgType.shutdown_request
                 | MsgType.debug_request
                 | MsgType.create_subshell_request
                 | MsgType.delete_subshell_request
                 | MsgType.list_subshell_request
-                | MsgType.interrupt_request,
+                | MsgType.interrupt_request
             ):
                 msg = f"{msg_type=} not allowed on shell!"
                 raise ValueError(msg)
-            case _, MsgType.debug_request:
-                return RunMode.queue
-            case (
-                _,
-                MsgType.complete_request
-                | MsgType.inspect_request
-                | MsgType.history_request
-                | MsgType.create_subshell_request
-                | MsgType.delete_subshell_request
-                | MsgType.is_complete_request
-                | MsgType.comm_info_request
-                | MsgType.kernel_info_request,
-            ):
-                return RunMode.thread
             case _:
-                pass
-        return RunMode.direct
+                return RunMode.thread_queue
 
     def all_concurrency_run_modes(
         self,

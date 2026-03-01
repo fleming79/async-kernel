@@ -138,7 +138,7 @@ class RunMode(enum.StrEnum):
     "Run the message handler using [async_kernel.caller.Caller.call_soon][]."
 
     thread = "thread"
-    "Run the message handler using a separate thread dedicated to the message type [async_kernel.caller.Caller.to_thread][]."
+    "Run the message handler using [async_kernel.caller.Caller.to_thread][]."
 
     thread_queue = "thread_queue"
     "Run the message handler in a separate shared thread for all `thread_queue` message types running using [async_kernel.caller.Caller.queue_call][]."
