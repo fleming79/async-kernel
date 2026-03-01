@@ -1508,6 +1508,17 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#async_kernel.typing.RunMode.thread_queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread_queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.typing.RunMode.direct" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2287,6 +2298,17 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;zmq_context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.typing.CallerCreateOptions.no_debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;no_debug
       
     </span>
   </a>
@@ -2845,6 +2867,17 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#async_kernel.typing.RunMode.thread_queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread_queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#async_kernel.typing.RunMode.direct" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3624,6 +3657,17 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;zmq_context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.typing.CallerCreateOptions.no_debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;no_debug
       
     </span>
   </a>
@@ -6236,7 +6280,20 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
    (async_kernel.typing.RunMode.thread)" href="#async_kernel.typing.RunMode.thread">thread</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a> to start use a 'worker'.</p>
+            <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="            thread_queue
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.typing.RunMode.thread_queue)" href="#async_kernel.typing.RunMode.thread_queue">thread_queue</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>Run the message handler in a separate shared thread for all <code>thread_queue</code> message types running using <a class="autorefs autorefs-internal" title="            queue_call" href="../caller/#async_kernel.caller.Caller.queue_call">async_kernel.caller.Caller.queue_call</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -6305,7 +6362,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
-<span class="normal">150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunMode</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunMode</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An Enum of the run modes available for handling [Messages][async_kernel.typing.Message].</span>
 
@@ -6345,7 +6405,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
     <span class="s2">&quot;Run the message handler using [async_kernel.caller.Caller.call_soon][].&quot;</span>
 
     <span class="n">thread</span> <span class="o">=</span> <span class="s2">&quot;thread&quot;</span>
-    <span class="s2">&quot;Run the message handler using [async_kernel.caller.Caller.to_thread][] to start use a &#39;worker&#39;.&quot;</span>
+    <span class="s2">&quot;Run the message handler using [async_kernel.caller.Caller.to_thread][].&quot;</span>
+
+    <span class="n">thread_queue</span> <span class="o">=</span> <span class="s2">&quot;thread_queue&quot;</span>
+    <span class="s2">&quot;Run the message handler in a separate shared thread for all `thread_queue` message types running using [async_kernel.caller.Caller.queue_call][].&quot;</span>
 
     <span class="n">direct</span> <span class="o">=</span> <span class="s2">&quot;direct&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -6439,7 +6502,33 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
     <div class="doc doc-contents ">
 
-        <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a> to start use a 'worker'.</p>
+        <p>Run the message handler using <a class="autorefs autorefs-internal" title="            to_thread" href="../caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a>.</p>
+
+          
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="async_kernel.typing.RunMode.thread_queue" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">thread_queue</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#async_kernel.typing.RunMode.thread_queue" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">thread_queue</span> <span class="o">=</span> <span class="s1">&#39;thread_queue&#39;</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Run the message handler in a separate shared thread for all <code>thread_queue</code> message types running using <a class="autorefs autorefs-internal" title="            queue_call" href="../caller/#async_kernel.caller.Caller.queue_call">async_kernel.caller.Caller.queue_call</a>.</p>
 
           
     </div>
@@ -6926,10 +7015,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
@@ -6980,7 +7066,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">204</span>
 <span class="normal">205</span>
 <span class="normal">206</span>
-<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgType</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgType</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).</span>
 
@@ -7678,10 +7767,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
@@ -7760,7 +7846,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span>
-<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Tags</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Tags</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tags recognised by the [shell][async_kernel.asyncshell.AsyncInteractiveShell].</span>
 
@@ -8088,14 +8177,14 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">298</span>
 <span class="normal">299</span>
 <span class="normal">300</span>
 <span class="normal">301</span>
-<span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
     <span class="s2">&quot;The State of a [async_kernel.caller.Caller][].&quot;</span>
 
     <span class="n">initial</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
@@ -8364,10 +8453,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
 <span class="normal">311</span>
@@ -8380,7 +8466,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
-<span class="normal">321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgHeader</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgHeader</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="s2">&quot;A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header).&quot;</span>
 
     <span class="n">msg_id</span><span class="p">:</span> <span class="nb">str</span>
@@ -8926,10 +9015,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
@@ -8948,7 +9034,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">343</span>
 <span class="normal">344</span>
 <span class="normal">345</span>
-<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Message</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Message</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="s2">&quot;A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format).&quot;</span>
 
     <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span>
@@ -9433,17 +9522,17 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
 <span class="normal">353</span>
 <span class="normal">354</span>
 <span class="normal">355</span>
 <span class="normal">356</span>
 <span class="normal">357</span>
 <span class="normal">358</span>
-<span class="normal">359</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Job</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Job</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="s2">&quot;A `Message` bundle.&quot;</span>
 
     <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
@@ -9719,10 +9808,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">365</span>
 <span class="normal">366</span>
 <span class="normal">367</span>
 <span class="normal">368</span>
@@ -9733,7 +9819,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">373</span>
 <span class="normal">374</span>
 <span class="normal">375</span>
-<span class="normal">376</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ExecuteContent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ExecuteContent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="s2">&quot;[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).&quot;</span>
 
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>
@@ -9977,13 +10066,13 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">382</span>
 <span class="normal">383</span>
 <span class="normal">384</span>
-<span class="normal">385</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreate</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">]):</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreate</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">]):</span>
     <span class="s2">&quot;A TypedDict relevant to Fixed.&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -10138,15 +10227,15 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">391</span>
 <span class="normal">392</span>
 <span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
-<span class="normal">396</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreated</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreated</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
     <span class="s2">&quot;A TypedDict relevant to Fixed.&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -10382,10 +10471,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
 <span class="normal">405</span>
@@ -10395,7 +10481,10 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
-<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunSettings</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunSettings</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="s2">&quot;A dict of settings to use with [async_kernel.event_loop.run][].&quot;</span>
 
     <span class="n">backend</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Backend</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">]]</span>
@@ -10633,14 +10722,24 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
             <p>A zmq Context to use.</p>
           </div>
         </li>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="            no_debug
+
+
+  
+      instance-attribute
+   (async_kernel.typing.CallerCreateOptions.no_debug)" href="#async_kernel.typing.CallerCreateOptions.no_debug">no_debug</a></code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>Disable debugpy in the thread if a new thread is created.</p>
+          </div>
+        </li>
     </ul>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">418</span>
 <span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
@@ -10651,7 +10750,13 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 <span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
-<span class="normal">429</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerCreateOptions</span><span class="p">(</span><span class="n">RunSettings</span><span class="p">):</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerCreateOptions</span><span class="p">(</span><span class="n">RunSettings</span><span class="p">):</span>
     <span class="s2">&quot;Options to use when creating an instance of a [Caller][async_kernel.caller.Caller].&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -10666,6 +10771,9 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
 
     <span class="n">zmq_context</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span>
     <span class="s2">&quot;A zmq Context to use.&quot;</span>
+
+    <span class="n">no_debug</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
+    <span class="s2">&quot;Disable debugpy in the thread if a new thread is created.&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -10773,6 +10881,31 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
     <div class="doc doc-contents ">
 
         <p>A zmq Context to use.</p>
+
+          
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="async_kernel.typing.CallerCreateOptions.no_debug" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">no_debug</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#async_kernel.typing.CallerCreateOptions.no_debug" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">no_debug</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Disable debugpy in the thread if a new thread is created.</p>
 
           
     </div>

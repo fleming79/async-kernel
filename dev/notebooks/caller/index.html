@@ -2361,7 +2361,7 @@ shell caller is accessible at <code>kernel.caller</code> while the kerenel is ru
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>     Name    Running Protected     Thread             Caller       </pre>
+<pre>              Name             Running Protected             Thread                    Caller       </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2374,7 +2374,7 @@ shell caller is accessible at <code>kernel.caller</code> while the kerenel is ru
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>────────────────────────────────────────────────────────────────────────</pre>
+<pre>─────────────────────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2387,7 +2387,7 @@ shell caller is accessible at <code>kernel.caller</code> while the kerenel is ru
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell           ✓       🔐       MainThread   140102153604992 ← current</pre>
+<pre>Shell                             ✓       🔐               MainThread          140294386366704 ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2400,7 +2400,20 @@ shell caller is accessible at <code>kernel.caller</code> while the kerenel is ru
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control         ✓       🔐        Control     140102091432128</pre>
+<pre>Control                           ✓       🔐                Control            140294324773584</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>async-kernel thread_queue         ✓                async-kernel thread_queue   140294323664656</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2450,7 +2463,7 @@ Caller()</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>Caller&lt;Shell at 140102091431696 asyncio 🏃 running 1 child&gt;</pre>
+<pre>Caller&lt;Shell at 140294324772960 asyncio 🏃 running 2 children&gt;</pre>
 </div>
 </div>
 </div>
@@ -2573,61 +2586,61 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090241088 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294323874480 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090242480 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294323879424 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090212080 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294323494000 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090212272 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294323496640 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090216064 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294322843584 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090222112 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294322841664 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090482480 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294322844736 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090480176 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294322840080 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090478256 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294322845936 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140102090478064 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
+<pre>HTML(value='', description='Caller&lt;async_kernel_caller at 140294323499088 asyncio 🏃 running &gt;', style=HTMLStyl…</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2672,7 +2685,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>           Name          Running Protected          Thread                 Caller       </pre>
+<pre>              Name             Running Protected             Thread                    Caller       </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2685,7 +2698,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>─────────────────────────────────────────────────────────────────────────────────────────────</pre>
+<pre>─────────────────────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2698,7 +2711,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell                       ✓       🔐            MainThread       140102153604992 ← current</pre>
+<pre>Shell                             ✓       🔐               MainThread          140294386366704 ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2711,7 +2724,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control                     ✓       🔐             Control         140102091432128</pre>
+<pre>Control                           ✓       🔐                Control            140294324773584</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2724,7 +2737,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090241328</pre>
+<pre>async-kernel thread_queue         ✓                async-kernel thread_queue   140294323664656</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2737,7 +2750,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090242768</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294323874768</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2750,7 +2763,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090212656</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294323879760</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2763,7 +2776,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090214288</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294323494768</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2776,7 +2789,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090216400</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294323498032</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2789,7 +2802,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090222928</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294323499376</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2802,7 +2815,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090478352</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294322831488</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2815,7 +2828,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090479168</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294322832688</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2828,7 +2841,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090481616</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294322843872</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2841,7 +2854,20 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140102090482720</pre>
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294322845024</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>async_kernel_caller               ✓                   async_kernel_caller      140294322846272</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
