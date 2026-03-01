@@ -396,7 +396,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             # finalize
             if modifier != "manual":
-                inst.start_sync(no_debug=bool(not name and modifier == "NewThread"))
+                inst.start_sync(no_debug=kwargs.get("no_debug", False))
             assert inst._caller_id
             assert inst._caller_id not in cls._instances
             cls._instances[inst._caller_id] = inst
