@@ -396,20 +396,27 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             # finalize
             if modifier != "manual":
-                inst.start_sync()
+                inst.start_sync(no_debug=kwargs.get("no_debug", False))
             assert inst._caller_id
             assert inst._caller_id not in cls._instances
             cls._instances[inst._caller_id] = inst
         return inst
 
-    def start_sync(self) -> None:
-        "Start synchronously."
+    def start_sync(self, *, no_debug: bool = False) -> None:
+        """
+        Start synchronously.
+
+        Args:
+            no_debug: If debugpy should be disabled in the thread.
+        """
 
         assert self._state is CallerState.initial
         self._state = CallerState.start_sync
 
         async def run_caller_in_context() -> None:
             if self._state is CallerState.start_sync:
+                if no_debug:
+                    utils.mark_thread_pydev_do_not_trace()
                 self._state = CallerState.initial
                 async with self:
                     await self.stopped
