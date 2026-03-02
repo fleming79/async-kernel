@@ -6,7 +6,7 @@ import pathlib
 import sys
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, overload
+from typing import TYPE_CHECKING, Any, Literal, Self, overload
 
 import anyio
 import IPython.core.release
@@ -93,8 +93,6 @@ class AsyncDisplayHook(DisplayHook):
 class AsyncDisplayPublisher(DisplayPublisher):
     """A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send]."""
 
-    topic: ClassVar = b"display_data"
-
     def __init__(self, shell=None, *args, **kwargs) -> None:
         super().__init__(shell, *args, **kwargs)
         self._hooks = []
@@ -143,7 +141,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 instead waiting for the next display before clearing.
                 This reduces bounce during repeated clear & display loops.
         """
-        utils.get_kernel().iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=self.topic)
+        utils.get_kernel().iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data")
 
     def register_hook(self, hook: Callable[[dict], dict | None]) -> None:
         """Register a hook for when publish is called.
@@ -167,10 +165,8 @@ class AsyncInteractiveShell(InteractiveShell):
     An IPython InteractiveShell adapted to work with [async kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
-        - All [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request] are run asynchronously.
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
-        - Not all features are support (see "not-supported" features listed below).
-        - `user_ns` and `user_global_ns` are same dictionary which is a fixed `LastUpdatedDict`.
+        - `user_ns` and `user_global_ns` are same dictionary which is a fixed [async_kernel.common.LastUpdatedDict][].
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
@@ -546,7 +542,7 @@ class AsyncInteractiveShell(InteractiveShell):
         from IPython.core import pylabtools as pt  # noqa: PLC0415
 
         backends = self._list_matplotlib_backends_and_gui_loops()
-        gui = gui or backends[0]  # Use the
+        gui = gui or backends[0]
         gui, backend = pt.find_gui_and_backend(gui, self.pylab_gui_select)
         self.enable_gui(gui)
         try:
@@ -634,7 +630,7 @@ class SubshellManager:
 
     Warning:
 
-        **Do NOT instantiate directly.** Instead access the instance via [async_kernel.kernel.Kernel.subshell_manager][].
+        **Do NOT instantiate directly.** Instead access the instance via the kernel on [async_kernel.kernel.Kernel.subshell_manager][].
     """
 
     __slots__ = ["__weakref__"]
@@ -730,7 +726,7 @@ class KernelMagics(Magics):
 
     @line_magic
     def callers(self, _) -> None:
-        "Print a table of [Callers][async_kernel.caller.Caller], indicating its status including:  -running - protected - on the current thread."
+        "Print a table of [Callers][async_kernel.caller.Caller] indicating it's status."
         callers = Caller.all_callers(running_only=False)
         n = max(len(c.name) for c in callers) + 6
         m = max(len(repr(c.id)) for c in callers) + 6
@@ -752,10 +748,8 @@ class KernelMagics(Magics):
 
     @line_magic
     def subshell(self, _) -> None:
-        """Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
-
-        See also:
-            - [async_kernel.utils.get_kernel][]
+        """
+        Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
         """
         kernel = utils.get_kernel()
         subshells = kernel.subshell_manager.list_subshells()
