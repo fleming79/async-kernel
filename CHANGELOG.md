@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] - 2026-03-02
+
+### <!-- 2 --> 🐛 Fixes
+
+- Fix Caller.as_complete not returning for empty iterable. [#349](https://github.com/fleming79/async-kernel/pull/349)
+
+### <!-- 5 --> 📝 Documentation
+
+- Tidy up asyncshell.py. [#350](https://github.com/fleming79/async-kernel/pull/350)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump the actions group with 2 updates [#348](https://github.com/fleming79/async-kernel/pull/348)
+
 ## [0.13.0] - 2026-03-01
 
 ### <!-- 1 --> 🚀 Features
@@ -18,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consistently use lower case async kernel. [#345](https://github.com/fleming79/async-kernel/pull/345)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.13.0 [#347](https://github.com/fleming79/async-kernel/pull/347)
 
 - Change msg_type from "display_data" to "execute_result" in finish_displayhook. [#343](https://github.com/fleming79/async-kernel/pull/343)
 
@@ -955,6 +971,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.13.1]: https://github.com/fleming79/async-kernel/compare/v0.13.0..v0.13.1
 [0.13.0]: https://github.com/fleming79/async-kernel/compare/v0.12.5..v0.13.0
 [0.12.5]: https://github.com/fleming79/async-kernel/compare/v0.12.4..v0.12.5
 [0.12.4]: https://github.com/fleming79/async-kernel/compare/v0.12.3..v0.12.4
