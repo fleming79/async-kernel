@@ -1044,6 +1044,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                         if len(unfinished) == max_concurrent_:
                             await waiter
                         resume = noop
+            if not queue.queue and not unfinished:
+                queue.stop()
 
         pen_ = self.call_soon(scheduler)
         try:

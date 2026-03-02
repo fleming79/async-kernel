@@ -744,7 +744,11 @@ class TestCaller:
         with pytest.raises(RuntimeError, match="deadlock"):
             await caller.call_soon(f)
 
-    async def test_wait_awaitables(self, caller: Caller):
+    async def test_as_completed_empty_iterator(self, caller: Caller) -> None:
+        async for _ in caller.as_completed(iter(())):
+            pass
+
+    async def test_wait_awaitables(self, caller: Caller) -> None:
         async def f(i: int):
             await anyio.sleep(i * 0.001)
             return i
