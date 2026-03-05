@@ -261,12 +261,16 @@ def start_guest_run(
         run_sync_soon_not_threadsafe = run_sync_soon_threadsafe
 
     if loop_factory is None:
-        if sys.version_info >= (3, 13):
-            loop_factory = asyncio.EventLoop
-        elif sys.platform == "win32":
-            loop_factory = asyncio.ProactorEventLoop
-        else:
-            loop_factory = asyncio.SelectorEventLoop
+        loop_factory = asyncio.SelectorEventLoop
+        # Temporary disable ProactorEventLoop
+        # On windows ProactorEventLoop runs continuous utilizing single CPU core 100%
+
+        # if sys.version_info >= (3, 13):
+        #     loop_factory = asyncio.EventLoop
+        # elif sys.platform == "win32":
+        #     loop_factory = asyncio.ProactorEventLoop
+        # else:
+        #     loop_factory = asyncio.SelectorEventLoop
 
     if context is None:
         context = copy_context()
