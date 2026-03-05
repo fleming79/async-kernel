@@ -1,4 +1,4 @@
-# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (66th revision)
+# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (67th revision)
 
 # SPDX-FileCopyrightText: 2026 Ilya Egorov <0x42005e1f@gmail.com>
 # SPDX-License-Identifier: ISC
@@ -33,23 +33,101 @@ GuestInfo = namedtuple("GuestInfo", [
 
 
 class _GuestSelector(AutoObjectProxy):
-    __slots__ = "_guest_selector_future"
+    __slots__ = (
+        "_guest_selector_executor",
+        "_guest_selector_states",
+        "_guest_selector_wake",
+    )
+
+    def __init__(self, /, wrapped):
+        super().__init__(wrapped)
+
+        self._guest_selector_states = {}
+        self._guest_selector_executor = ThreadPoolExecutor(1, "_GuestSelector")
+
+    def _guest_selector_notify(self, /):
+        state = self._guest_selector_states.setdefault(None, None)
+
+        if state is None:
+            return
+
+        if state.setdefault(0, marker := object()) is marker:
+            future = state.setdefault(1, None)
+
+            if future is None or future.done():
+                return
+
+            self._guest_selector_wake()
+
+    def _guest_selector_schedule(self, /, timeout=None):
+        if timeout is None or timeout:  # timeout is non-zero
+            state = self._guest_selector_states.setdefault(None, {})
+        else:  # timeout is zero
+            state = self._guest_selector_states.setdefault(None, None)
+
+        if state is None:
+            return None
+
+        try:
+            future = state[1]
+        except KeyError:
+            future = self._guest_selector_executor.submit(
+                self.__wrapped__.select,
+                timeout,
+            )
+
+            if state.setdefault(1, future) is None:
+                if future.cancel():
+                    return None
+
+                if future.done():
+                    return future
+
+                self._guest_selector_wake()
+
+        return future
 
     def select(self, /, timeout=None):
-        if self._guest_selector_future is not None:
-            try:
-                return self._guest_selector_future.result()
-            finally:
-                self._guest_selector_future = None  # break reference cycles
+        future = self._guest_selector_schedule(timeout)
+        try:
+            if future is None:
+                return self.__wrapped__.select(0)
 
-        return self.__wrapped__.select(timeout)
+            return future.result()
+        finally:
+            del self._guest_selector_states[None]
+
+    def close(self, /):
+        try:
+            self._guest_selector_executor.shutdown(wait=False)
+            self._guest_selector_notify()
+            self._guest_selector_executor.shutdown(wait=True)
+        finally:
+            self.__wrapped__.close()
 
 
 def _patch_loop(loop, /):
+    assert loop._selector is not None
     loop_selector = loop._selector = _GuestSelector(loop._selector)
-    loop_selector._guest_selector_future = None
+    loop_selector._guest_selector_wake = loop._write_to_self
     if getattr(loop, "_proactor", None) is loop_selector.__wrapped__:
         loop._proactor = loop_selector  # Windows
+    loop_close = loop.close
+
+    def _write_to_self(self, /):
+        loop_selector._guest_selector_notify()
+
+    def close(self, /):
+        try:
+            loop_close()
+        finally:
+            # to break reference cycles
+            del loop_selector._guest_selector_wake
+            del self._write_to_self
+            del self.close
+
+    loop._write_to_self = _write_to_self.__get__(loop)
+    loop.close = close.__get__(loop)
 
     return loop
 
@@ -74,9 +152,8 @@ def _compute_nearest_timeout(loop, /):
     return timeout
 
 
-def _run_until_complete(loop, executor, future, /):
+def _run_until_complete(loop, future, /):
     selector = loop._selector
-    select = selector.__wrapped__.select
     future = asyncio.ensure_future(future, loop=loop)
 
     while True:
@@ -92,27 +169,22 @@ def _run_until_complete(loop, executor, future, /):
             loop.run_forever()
             if done:
                 break
+
             if future.done():
                 timeout = 0
             else:
                 timeout = _compute_nearest_timeout(loop)
+            selector_future = selector._guest_selector_schedule(timeout)
         finally:
             current_async_library_tlocal.name = host_library
             asyncio._set_running_loop(host_loop)
             asyncio.set_event_loop(host_loop)
 
-        if timeout is None or timeout:  # timeout is non-zero
-            selector._guest_selector_future = executor.submit(select, timeout)
-
-            yield selector._guest_selector_future
-
-            assert selector._guest_selector_future.done()
-        else:  # timeout is zero
-            yield None
+        yield selector_future
 
 
 # see asyncio.runners._cancel_all_tasks
-def _cancel_all_tasks(loop, executor, /):
+def _cancel_all_tasks(loop, /):
     to_cancel = asyncio.all_tasks(loop)
     if not to_cancel:
         return
@@ -124,7 +196,7 @@ def _cancel_all_tasks(loop, executor, /):
     async def wait_for_cancelled():
         return await asyncio.gather(*to_cancel, return_exceptions=True)
 
-    yield from _run_until_complete(loop, executor, wait_for_cancelled())
+    yield from _run_until_complete(loop, wait_for_cancelled())
 
     for task in to_cancel:
         if task.cancelled():
@@ -139,38 +211,25 @@ def _cancel_all_tasks(loop, executor, /):
         })
 
 
-def _run(loop, executor, future, /):
+def _run(loop, future, /):
     try:
-        yield from _run_until_complete(loop, executor, future)
+        yield from _run_until_complete(loop, future)
     finally:  # see asyncio.runners.Runner.close
         try:
-            yield from _cancel_all_tasks(loop, executor)
-            yield from _run_until_complete(
-                loop,
-                executor,
-                loop.shutdown_asyncgens(),
-            )
+            yield from _cancel_all_tasks(loop)
+            yield from _run_until_complete(loop, loop.shutdown_asyncgens())
             if sys.version_info >= (3, 12):
                 yield from _run_until_complete(
                     loop,
-                    executor,
                     loop.shutdown_default_executor(_THREAD_JOIN_TIMEOUT),
                 )
             elif sys.version_info >= (3, 9):
                 yield from _run_until_complete(
                     loop,
-                    executor,
                     loop.shutdown_default_executor(),
                 )
         finally:
-            try:
-                executor.shutdown(wait=False)
-
-                loop._write_to_self()  # wake up
-
-                executor.shutdown(wait=True)
-            finally:
-                loop.close()
+            loop.close()
 
 
 async def _call(async_fn, /, *args, **kwargs):
@@ -230,9 +289,7 @@ def start_guest_run(
     outer_wakeup_fd = _set_wakeup_fd(-1)
     try:
         guest_loop, guest_task = context.run(initializer)
-        guest_prefix = "asyncio-guest"
-        guest_executor = ThreadPoolExecutor(1, thread_name_prefix=guest_prefix)
-        guest_run = _run(guest_loop, guest_executor, guest_task)
+        guest_run = _run(guest_loop, guest_task)
         guest_outcome = None
     finally:
         inner_wakeup_fd = _set_wakeup_fd(outer_wakeup_fd)
