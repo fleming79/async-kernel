@@ -264,7 +264,7 @@ async def _call(async_fn, /, *args, **kwargs):
 def _set_wakeup_fd(fd):
     try:
         return signal.set_wakeup_fd(fd, warn_on_full_buffer=False)
-    except ValueError:  # not the main thread
+    except Exception:  # not the main thread or invalid fd
         return -1
 
 
