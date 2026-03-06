@@ -1,4 +1,6 @@
-# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (67th revision)
+# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (69th revision)
+
+#!/usr/bin/env python3
 
 # SPDX-FileCopyrightText: 2026 Ilya Egorov <0x42005e1f@gmail.com>
 # SPDX-License-Identifier: ISC
@@ -108,14 +110,29 @@ class _GuestSelector(AutoObjectProxy):
 
 def _patch_loop(loop, /):
     assert loop._selector is not None
+    loop_is_proactor = getattr(loop, "_proactor", None) is loop._selector
     loop_selector = loop._selector = _GuestSelector(loop._selector)
     loop_selector._guest_selector_wake = loop._write_to_self
-    if getattr(loop, "_proactor", None) is loop_selector.__wrapped__:
-        loop._proactor = loop_selector  # Windows
+    if loop_is_proactor:
+        loop._proactor = loop_selector
     loop_close = loop.close
 
     def _write_to_self(self, /):
         loop_selector._guest_selector_notify()
+
+    if loop_is_proactor:
+        loop_type = asyncio.ProactorEventLoop
+
+        def _run_forever_cleanup(self, /):
+            return super(loop_type, self)._run_forever_cleanup()
+
+        def _run_forever_setup(self, /):
+            return super(loop_type, self)._run_forever_setup()
+
+        def run_forever(self, /):
+            return super(loop_type, self).run_forever()
+
+        loop.call_soon(loop._loop_self_reading)
 
     def close(self, /):
         try:
@@ -124,9 +141,17 @@ def _patch_loop(loop, /):
             # to break reference cycles
             del loop_selector._guest_selector_wake
             del self._write_to_self
+            if loop_is_proactor:
+                del loop._run_forever_cleanup
+                del loop._run_forever_setup
+                del loop.run_forever
             del self.close
 
     loop._write_to_self = _write_to_self.__get__(loop)
+    if loop_is_proactor:
+        loop._run_forever_cleanup = _run_forever_cleanup.__get__(loop)
+        loop._run_forever_setup = _run_forever_setup.__get__(loop)
+        loop.run_forever = run_forever.__get__(loop)
     loop.close = close.__get__(loop)
 
     return loop
@@ -261,16 +286,12 @@ def start_guest_run(
         run_sync_soon_not_threadsafe = run_sync_soon_threadsafe
 
     if loop_factory is None:
-        loop_factory = asyncio.SelectorEventLoop
-        # Temporary disable ProactorEventLoop
-        # On windows ProactorEventLoop runs continuous utilizing single CPU core 100%
-
-        # if sys.version_info >= (3, 13):
-        #     loop_factory = asyncio.EventLoop
-        # elif sys.platform == "win32":
-        #     loop_factory = asyncio.ProactorEventLoop
-        # else:
-        #     loop_factory = asyncio.SelectorEventLoop
+        if sys.version_info >= (3, 13):
+            loop_factory = asyncio.EventLoop
+        elif sys.platform == "win32":
+            loop_factory = asyncio.ProactorEventLoop
+        else:
+            loop_factory = asyncio.SelectorEventLoop
 
     if context is None:
         context = copy_context()
