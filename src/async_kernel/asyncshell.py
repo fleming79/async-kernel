@@ -23,6 +23,7 @@ from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
 from typing_extensions import override
 
+import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, LastUpdatedDict
@@ -233,7 +234,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _default_banner1(self) -> str:
         return (
             f"Python {sys.version}\n"
-            f"async-kernel ({self.kernel.kernel_name})\n"
+            f"async-kernel (kernel name:{self.kernel.kernel_name} version:{async_kernel.__version__}) \n"
             f"IPython shell {IPython.core.release.version}\n"
         )
 
