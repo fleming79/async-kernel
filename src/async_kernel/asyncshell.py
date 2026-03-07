@@ -318,6 +318,7 @@ class AsyncInteractiveShell(InteractiveShell):
         user_expressions: dict[str, str] | None = None,
         allow_stdin: bool = True,
         stop_on_error: bool = True,
+        cell_id: str | None = None,
         **_ignored,
     ) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
@@ -325,84 +326,88 @@ class AsyncInteractiveShell(InteractiveShell):
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
+        token = utils._cell_id_var.set(cell_id)  # pyright: ignore[reportPrivateUsage]
+        try:
+            tags: list[str] = utils.get_tags()
+            timeout: float = utils.get_timeout(tags=tags)
+            suppress_error: bool = Tags.suppress_error in tags
+            raises_exception: bool = Tags.raises_exception in tags
+            stop_on_error_override: bool = Tags.stop_on_error in tags
 
-        tags: list[str] = utils.get_tags()
-        timeout: float = utils.get_timeout(tags=tags)
-        suppress_error: bool = Tags.suppress_error in tags
-        raises_exception: bool = Tags.raises_exception in tags
-        stop_on_error_override: bool = Tags.stop_on_error in tags
+            if stop_on_error_override:
+                stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
+            elif suppress_error or raises_exception:
+                stop_on_error = False
 
-        if stop_on_error_override:
-            stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
-        elif suppress_error or raises_exception:
-            stop_on_error = False
-
-        if silent:
-            execution_count: int = self.execution_count
-        else:
-            execution_count = self._execution_count = self._execution_count + 1
-            self.kernel.iopub_send(
-                msg_or_type="execute_input",
-                content={"code": code, "execution_count": execution_count},
-                ident=self.kernel.topic("execute_input"),
-            )
-        caller = Caller()
-        err = None
-        with anyio.CancelScope() as scope:
-
-            def cancel():
-                if not silent:
-                    caller.call_direct(scope.cancel, "Interrupted")
-
-            result = None
-            try:
-                self.kernel.interface.interrupts.add(cancel)
-                if stop_on_error:
-                    self._stop_on_error_pool.add(cancel)
-                with anyio.fail_after(delay=timeout or None):
-                    result = await self.run_cell_async(
-                        raw_cell=code,
-                        store_history=store_history,
-                        silent=silent,
-                        transformed_cell=self.transform_cell(code),
-                        shell_futures=True,
-                    )
-            except (Exception, anyio.get_cancelled_exc_class()) as e:
-                # A safeguard to catch exceptions not caught by the shell.
-                err = KernelInterruptError() if self.kernel.interface.last_interrupt_frame else e
+            if silent:
+                execution_count: int = self.execution_count
             else:
-                err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
-                if not err and Tags.raises_exception in tags:
-                    msg = "An expected exception was not raised!"
-                    err = RuntimeError(msg)
-            finally:
-                self._stop_on_error_pool.discard(cancel)
-                self.kernel.interface.interrupts.discard(cancel)
-                self.events.trigger("post_execute")
-                if not silent:
-                    self.events.trigger("post_run_cell", result)
-        if (err) and (suppress_error or (isinstance(err, anyio.get_cancelled_exc_class()) and (timeout != 0))):
-            # Suppress the error due to either:
-            # 1. tag
-            # 2. timeout
+                execution_count = self._execution_count = self._execution_count + 1
+                self.kernel.iopub_send(
+                    msg_or_type="execute_input",
+                    content={"code": code, "execution_count": execution_count},
+                    ident=self.kernel.topic("execute_input"),
+                )
+            caller = Caller()
             err = None
-        content = {
-            "status": "error" if err else "ok",
-            "execution_count": execution_count,
-            "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
-        }
-        if err:
-            content |= utils.error_to_content(err)
-            if (not silent) and stop_on_error:
-                with anyio.CancelScope(shield=True):
-                    await async_checkpoint(force=True)
-                    self._stop_on_error_info["time"] = time.monotonic() + float(self.stop_on_error_time_offset)
-                    self._stop_on_error_info["execution_count"] = execution_count
-                    self.log.info("An error occurred in a non-silent execution request")
+            with anyio.CancelScope() as scope:
+
+                def cancel():
+                    if not silent:
+                        caller.call_direct(scope.cancel, "Interrupted")
+
+                result = None
+                try:
+                    self.kernel.interface.interrupts.add(cancel)
                     if stop_on_error:
-                        for c in frozenset(self._stop_on_error_pool):
-                            c()
-        return content
+                        self._stop_on_error_pool.add(cancel)
+                    with anyio.fail_after(delay=timeout or None):
+                        result = await self.run_cell_async(
+                            raw_cell=code,
+                            store_history=store_history,
+                            silent=silent,
+                            transformed_cell=self.transform_cell(code),
+                            shell_futures=True,
+                            cell_id=cell_id,
+                        )
+                except (Exception, anyio.get_cancelled_exc_class()) as e:
+                    # A safeguard to catch exceptions not caught by the shell.
+                    err = KernelInterruptError() if self.kernel.interface.last_interrupt_frame else e
+                else:
+                    err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+                    if not err and Tags.raises_exception in tags:
+                        msg = "An expected exception was not raised!"
+                        err = RuntimeError(msg)
+                finally:
+                    self._stop_on_error_pool.discard(cancel)
+                    self.kernel.interface.interrupts.discard(cancel)
+                    self.events.trigger("post_execute")
+                    if not silent:
+                        self.events.trigger("post_run_cell", result)
+            if (err) and (suppress_error or (isinstance(err, anyio.get_cancelled_exc_class()) and (timeout != 0))):
+                # Suppress the error due to either:
+                # 1. tag
+                # 2. timeout
+                err = None
+            content = {
+                "status": "error" if err else "ok",
+                "execution_count": execution_count,
+                "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
+            }
+            if err:
+                content |= utils.error_to_content(err)
+                if (not silent) and stop_on_error:
+                    with anyio.CancelScope(shield=True):
+                        await async_checkpoint(force=True)
+                        self._stop_on_error_info["time"] = time.monotonic() + float(self.stop_on_error_time_offset)
+                        self._stop_on_error_info["execution_count"] = execution_count
+                        self.log.info("An error occurred in a non-silent execution request")
+                        if stop_on_error:
+                            for c in frozenset(self._stop_on_error_pool):
+                                c()
+            return content
+        finally:
+            utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""

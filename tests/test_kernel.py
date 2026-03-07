@@ -635,3 +635,38 @@ async def test_page(client: AsyncKernelClient, kernel: Kernel):
     await utils.check_pub_message(client, msg_id, execution_state="idle")
     page.page({"data": {"text/plain": "hello, world"}, "metadata": {}})
     await utils.check_pub_message(client, "", msg_type="display_data")
+
+
+async def test_do_complete(kernel: Kernel):
+    content = await kernel.do_complete("dir", None)
+    assert list(content) == ["matches", "cursor_end", "cursor_start", "metadata", "status"]
+
+
+async def test_do_inspect(kernel: Kernel):
+    content = await kernel.do_inspect("dir()", 4)
+    assert content["found"]
+
+
+async def test_do_history(kernel: Kernel):
+    content = await kernel.do_history(hist_access_type="", output="", raw="")
+    assert list(content) == ["history", "status"]
+
+
+async def test_do_execute(kernel: Kernel):
+    (cell_id,) = "3"
+    content = await kernel.do_execute(
+        "from async_kernel import utils\ncell_id = utils.get_cell_id()",
+        silent=False,
+        store_history=False,
+        cell_id=cell_id,
+        user_expressions={"cell_id": "cell_id"},
+    )
+    assert list(content) == ["status", "execution_count", "user_expressions"]
+    assert cell_id in content["user_expressions"]["cell_id"]["data"]["text/plain"]
+
+
+async def test_get_input(kernel: Kernel, mocker):
+    requester = mocker.patch.object(kernel.interface, "input_request")
+    kernel.raw_input()
+    kernel.getpass()
+    assert requester.call_count == 2
