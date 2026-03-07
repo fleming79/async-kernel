@@ -107,6 +107,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     _instance: Self | None = None
     _initialised = False
+    _restart = False
 
     _settings = Fixed(dict)
 
@@ -341,15 +342,19 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                         self.comm_manager.kernel = None
                         self.event_stopped.set()
         finally:
-            self.shell.reset(new_session=False)
-            self.subshell_manager.stop_all_subshells(force=True)
-            self.callers.clear()
-            Kernel._instance = None
-            AsyncInteractiveShell.clear_instance()
             with anyio.CancelScope(shield=True):
-                await anyio.sleep(0.1)
-            self.log.info("Kernel stopped: %s", self)
-            gc.collect()
+                await self.do_shutdown(self._restart)
+
+    async def do_shutdown(self, restart: bool) -> None:
+        "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
+        self.shell.reset(new_session=False)
+        self.subshell_manager.stop_all_subshells(force=True)
+        self.callers.clear()
+        Kernel._instance = None
+        AsyncInteractiveShell.clear_instance()
+        await anyio.sleep(0.1)
+        self.log.info("Kernel stopped: %s", self)
+        gc.collect()
 
     def iopub_send(
         self,
@@ -580,7 +585,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        return await self.shell.execute_request(**job["msg"]["content"])  # pyright: ignore[reportArgumentType]
+        return await self.shell.execute_request(cell_id=job["msg"]["metadata"].get("cellId"), **job["msg"]["content"])  # pyright: ignore[reportArgumentType]
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
@@ -624,8 +629,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
+        self._restart = job["msg"]["content"].get("restart", False)
         self.stop()
-        return {"restart": job["msg"]["content"].get("restart", False)}
+        return {"restart": self._restart}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only)."""
@@ -678,3 +684,60 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 is used to 'capture' output when its context has been acquired.
         """
         return utils.get_parent()
+
+    async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
+        return await self.shell.do_complete_request(code=code, cursor_pos=cursor_pos)
+
+    async def do_inspect(self, code: str, cursor_pos: int | None, detail_level=0, omit_sections=()) -> Content:
+        return await self.shell.inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType]
+
+    async def do_history(
+        self,
+        hist_access_type,
+        output,
+        raw,
+        session=None,
+        start=None,
+        stop=None,
+        n=None,
+        pattern=None,
+        unique=False,
+    ) -> Content:
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
+        return await self.shell.history_request(
+            output=output,
+            raw=raw,
+            hist_access_type=hist_access_type,
+            session=session,  # pyright: ignore[reportArgumentType]
+            start=start,  # pyright: ignore[reportArgumentType]
+            stop=stop,
+        )
+
+    async def do_execute(
+        self,
+        code: str,
+        silent: bool,
+        store_history: bool = True,
+        user_expressions: dict | None = None,
+        allow_stdin=False,
+        *,
+        cell_id: str | None = None,
+        **_ignored,
+    ) -> Content:
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."
+        return await self.shell.execute_request(
+            code=code,
+            silent=silent,
+            store_history=store_history,
+            user_expressions=user_expressions,
+            allow_stdin=allow_stdin,
+            cell_id=cell_id,
+        )
+
+    def getpass(self, prompt="", stream=None) -> str:
+        "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
+        return self.interface.getpass(prompt)
+
+    def raw_input(self, prompt="") -> str:
+        "Matches signature of [ipykernel.kernelbase.Kernel.raw_input][]."
+        return self.interface.raw_input(prompt)

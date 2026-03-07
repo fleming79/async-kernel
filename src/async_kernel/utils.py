@@ -38,7 +38,8 @@ __all__ = [
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
-_job_var: ContextVar[Job] = ContextVar("job")
+_job_var: ContextVar[Job] = ContextVar("async-kernel job")
+_cell_id_var: ContextVar[str | None] = ContextVar("async-kernel cell_id", default=None)
 
 
 def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:
@@ -97,6 +98,11 @@ def get_tags(job: Job | None = None, /) -> list[str]:
         return get_metadata(job)["tags"]  # pyright: ignore[reportOptionalSubscript]
     except Exception:
         return []
+
+
+def get_cell_id() -> str | None:
+    "The `cell_id` for the current context."
+    return _cell_id_var.get() or (metadata.get("cellId") if (metadata := get_metadata()) else None)
 
 
 _TagType = TypeVar("_TagType", str, float, int, bool)
