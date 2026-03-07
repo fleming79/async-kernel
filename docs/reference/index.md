@@ -1,13 +1,13 @@
 ---
 title: Modules
-description: API reference for async kernel.
+description: API reference for async-kernel.
 # icon: material/
 # subtitle: A sub title
 ---
 
 # Reference
 
-The reference section provides documentation for each module in async kernel.
+The reference section provides documentation for each module in async-kernel.
 
 ## Highlights
 

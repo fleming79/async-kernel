@@ -159,7 +159,7 @@ These links are not relevant for docstrings.
 - [footnotes](https://squidfunk.github.io/mkdocs-material/reference/footnotes/#usage)
 - [tooltips](https://squidfunk.github.io/mkdocs-material/reference/tooltips/#usage)
 
-## Releasing async kernel
+## Releasing async-kernel
 
 To make a new release go to the [new_release.yml](https://github.com/fleming79/async-kernel/actions/workflows/new_release.yml) action
 and click 'Run workflow'.

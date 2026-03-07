@@ -162,7 +162,7 @@ class ShellPendingManager(PendingManager):
 
 class AsyncInteractiveShell(InteractiveShell):
     """
-    An IPython InteractiveShell adapted to work with [async kernel][async_kernel.kernel.Kernel].
+    An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
@@ -233,7 +233,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _default_banner1(self) -> str:
         return (
             f"Python {sys.version}\n"
-            f"async kernel ({self.kernel.kernel_name})\n"
+            f"async-kernel ({self.kernel.kernel_name})\n"
             f"IPython shell {IPython.core.release.version}\n"
         )
 
@@ -575,7 +575,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
     """
-    An asynchronous interactive subshell for managing isolated execution contexts within an async kernel.
+    An asynchronous interactive subshell for managing isolated execution contexts within an async-kernel.
 
     Each subshell has a unique `user_ns`, but shares its `user_global_ns` with the main shell
     (which is also the `user_ns` of the main shell).
@@ -705,7 +705,7 @@ class SubshellManager:
 
 @magics_class
 class KernelMagics(Magics):
-    """Extra magics for async kernel."""
+    """Extra magics for async-kernel."""
 
     shell: AsyncInteractiveShell  # pyright: ignore[reportIncompatibleVariableOverride]
 

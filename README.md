@@ -1,4 +1,4 @@
-# async kernel
+# async-kernel
 
 [![pypi](https://img.shields.io/pypi/pyversions/async-kernel.svg)](https://pypi.python.org/pypi/async-kernel)
 [![downloads](https://img.shields.io/pypi/dm/async-kernel?logo=pypi&color=3775A9)](https://pypistats.org/packages/async-kernel)
@@ -11,7 +11,7 @@
 
 ![logo-svg](https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587)
 
-async kernel is a Python kernel for [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
+async-kernel is a Python kernel for [Jupyter](https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages)
 that provides concurrent message handling via an asynchronous backend (asyncio or trio).
 
 The kernel provides two external interfaces:
@@ -53,16 +53,33 @@ The kernel provides two external interfaces:
 
 [^4]: trio's [start_guest_run](https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run).
 
-### Prevent asynchronous deadlocks
+### Avoid deadlocks
 
 The standard (synchronous) kernel implementation processes messages sequentially irrespective
-of the message type. The problem being that long running execute requests will make the kernel
-non-responsive. Another problem exists when an asynchronous execute request awaits a result that is delivered
+of the message type. The problem being that long running execute requests make the kernel non-responsive.
+
+Another problem exists when an asynchronous execute request awaits a result that is delivered
 via a kernel message - this will cause a deadlock because the message will be stuck in the queue behind
 the _blocking_ execute request[^5].
 
-async kernel handles messages according to the channel, message type and subshell id. So widget com message
+async-kernel handles messages according to the channel, message type and subshell id. So widget com message
 will get processed in a separate queue to an execute request. Further detail is given in the [concurrency notebook](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/), a Jupyterlite version is available [here](https://fleming79.github.io/echo-kernel/).
+
+#### Example
+
+Try the following using a standard kernel and then try it with async-kernel.
+
+```python
+# Make the shell thread busy
+import time
+
+time.sleep(1e6)
+```
+
+Try the following in another cell:
+
+- code completion (`tab`)
+- docstring (`shift tab`)
 
 [^5]:
     IPyKernel _solves_ this issue specifically for widgets by using the concept of
@@ -77,7 +94,7 @@ pip install async-kernel
 
 ## Kernel specs
 
-A kernel spec with the name 'async' is added when async kernel is installed.
+A kernel spec with the name 'async' is added when async-kernel is installed.
 
 Kernel specs can be added/removed via the command line.
 
@@ -128,5 +145,5 @@ For further detail about kernel spec customisation see [command line and kernel 
 
 ## Origin
 
-async kernel started as a [fork](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)
-of [IPyKernel](https://github.com/ipython/ipykernel). Thank you to the original contributors of IPyKernel that made async kernel possible.
+async-kernel started as a [fork](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)
+of [IPyKernel](https://github.com/ipython/ipykernel). Thank you to the original contributors of IPyKernel that made async-kernel possible.

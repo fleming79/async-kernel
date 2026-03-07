@@ -1,13 +1,13 @@
 ---
 title: Usage
-description: Usage tips for async kernel.
+description: Usage tips for async-kernel.
 icon: material/note-text
 # subtitle: A sub title
 ---
 
 # Usage
 
-async kernel provides a Jupyter kernel that can be used in:
+async-kernel provides a Jupyter kernel that can be used in:
 
 - Jupyter
 - VS code

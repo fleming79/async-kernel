@@ -1,6 +1,6 @@
 ---
 title: Notebooks
-description: Example notebooks for async kernel.
+description: Example notebooks for async-kernel.
 icon: material/note-text
 # subtitle: A sub title
 ---
