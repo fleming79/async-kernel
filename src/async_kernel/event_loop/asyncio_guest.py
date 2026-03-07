@@ -1,6 +1,4 @@
-# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (69th revision)
-
-#!/usr/bin/env python3
+# from https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779 (71st revision)
 
 # SPDX-FileCopyrightText: 2026 Ilya Egorov <0x42005e1f@gmail.com>
 # SPDX-License-Identifier: ISC
@@ -264,7 +262,7 @@ async def _call(async_fn, /, *args, **kwargs):
 def _set_wakeup_fd(fd):
     try:
         return signal.set_wakeup_fd(fd, warn_on_full_buffer=False)
-    except Exception:  # not the main thread or invalid fd
+    except ValueError:  # not the main thread
         return -1
 
 
@@ -362,9 +360,9 @@ def start_guest_run(
                     outer_wakeup_fd == -1
                     or outer_wakeup_fd == inner_wakeup_fd
                 ):
-                    inner_wakeup_fd = _set_wakeup_fd(outer_wakeup_fd)
+                    inner_wakeup_fd = _set_wakeup_fd(-1)
 
-                    if outer_wakeup_fd != inner_wakeup_fd:
+                    if inner_wakeup_fd != -1:
                         _set_wakeup_fd(inner_wakeup_fd)
 
                         outer_wakeup_fd = inner_wakeup_fd
@@ -394,3 +392,4 @@ def start_guest_run(
         raise
 
     return GuestInfo(guest_loop, guest_task)
+    
