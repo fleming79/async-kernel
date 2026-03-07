@@ -3165,7 +3165,12 @@ viewing the latest version.
 <span class="normal">565</span>
 <span class="normal">566</span>
 <span class="normal">567</span>
-<span class="normal">568</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveShell</span><span class="p">(</span><span class="n">InteractiveShell</span><span class="p">):</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveShell</span><span class="p">(</span><span class="n">InteractiveShell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An IPython InteractiveShell adapted to work with [async kernel][async_kernel.kernel.Kernel].</span>
 
@@ -3323,6 +3328,7 @@ viewing the latest version.
         <span class="n">user_expressions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">allow_stdin</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">stop_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).&quot;&quot;&quot;</span>
@@ -3330,84 +3336,88 @@ viewing the latest version.
             <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Aborting due to prior exception&quot;</span><span class="p">))</span> <span class="o">|</span> <span class="p">{</span>
                 <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;execution_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="p">}</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">_cell_id_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cell_id</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
+            <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_timeout</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+            <span class="n">suppress_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">suppress_error</span> <span class="ow">in</span> <span class="n">tags</span>
+            <span class="n">raises_exception</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span>
+            <span class="n">stop_on_error_override</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span> <span class="ow">in</span> <span class="n">tags</span>
 
-        <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
-        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_timeout</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
-        <span class="n">suppress_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">suppress_error</span> <span class="ow">in</span> <span class="n">tags</span>
-        <span class="n">raises_exception</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span>
-        <span class="n">stop_on_error_override</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span> <span class="ow">in</span> <span class="n">tags</span>
+            <span class="k">if</span> <span class="n">stop_on_error_override</span><span class="p">:</span>
+                <span class="n">stop_on_error</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tag_value</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span><span class="p">,</span> <span class="n">stop_on_error</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">suppress_error</span> <span class="ow">or</span> <span class="n">raises_exception</span><span class="p">:</span>
+                <span class="n">stop_on_error</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="k">if</span> <span class="n">stop_on_error_override</span><span class="p">:</span>
-            <span class="n">stop_on_error</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tag_value</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span><span class="p">,</span> <span class="n">stop_on_error</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">suppress_error</span> <span class="ow">or</span> <span class="n">raises_exception</span><span class="p">:</span>
-            <span class="n">stop_on_error</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="k">if</span> <span class="n">silent</span><span class="p">:</span>
-            <span class="n">execution_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-                <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;execute_input&quot;</span><span class="p">,</span>
-                <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
-                <span class="n">ident</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">topic</span><span class="p">(</span><span class="s2">&quot;execute_input&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-        <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
-        <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
-
-            <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">():</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
-                    <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Interrupted&quot;</span><span class="p">)</span>
-
-            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-                <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">fail_after</span><span class="p">(</span><span class="n">delay</span><span class="o">=</span><span class="n">timeout</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">):</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">(</span>
-                        <span class="n">raw_cell</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
-                        <span class="n">store_history</span><span class="o">=</span><span class="n">store_history</span><span class="p">,</span>
-                        <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span>
-                        <span class="n">transformed_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">code</span><span class="p">),</span>
-                        <span class="n">shell_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="p">)</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="c1"># A safeguard to catch exceptions not caught by the shell.</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="n">KernelInterruptError</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">last_interrupt_frame</span> <span class="k">else</span> <span class="n">e</span>
+            <span class="k">if</span> <span class="n">silent</span><span class="p">:</span>
+                <span class="n">execution_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">error_before_exec</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">error_in_exec</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="n">KernelInterruptError</span><span class="p">()</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">err</span> <span class="ow">and</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;An expected exception was not raised!&quot;</span>
-                    <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="k">finally</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_execute&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_run_cell&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">suppress_error</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="ow">and</span> <span class="p">(</span><span class="n">timeout</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))):</span>
-            <span class="c1"># Suppress the error due to either:</span>
-            <span class="c1"># 1. tag</span>
-            <span class="c1"># 2. timeout</span>
+                <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
+                    <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;execute_input&quot;</span><span class="p">,</span>
+                    <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
+                    <span class="n">ident</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">topic</span><span class="p">(</span><span class="s2">&quot;execute_input&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
             <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
-            <span class="s2">&quot;user_expressions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
-        <span class="p">}</span>
-        <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-            <span class="n">content</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span> <span class="ow">and</span> <span class="n">stop_on_error</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-                    <span class="k">await</span> <span class="n">async_checkpoint</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_on_error_time_offset</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in a non-silent execution request&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                        <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Interrupted&quot;</span><span class="p">)</span>
+
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
-                        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="p">):</span>
-                            <span class="n">c</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">content</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
+                    <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">fail_after</span><span class="p">(</span><span class="n">delay</span><span class="o">=</span><span class="n">timeout</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">):</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">(</span>
+                            <span class="n">raw_cell</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
+                            <span class="n">store_history</span><span class="o">=</span><span class="n">store_history</span><span class="p">,</span>
+                            <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span>
+                            <span class="n">transformed_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">code</span><span class="p">),</span>
+                            <span class="n">shell_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">cell_id</span><span class="o">=</span><span class="n">cell_id</span><span class="p">,</span>
+                        <span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># A safeguard to catch exceptions not caught by the shell.</span>
+                    <span class="n">err</span> <span class="o">=</span> <span class="n">KernelInterruptError</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">last_interrupt_frame</span> <span class="k">else</span> <span class="n">e</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">error_before_exec</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">error_in_exec</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="n">KernelInterruptError</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">err</span> <span class="ow">and</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;An expected exception was not raised!&quot;</span>
+                        <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_execute&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_run_cell&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">suppress_error</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="ow">and</span> <span class="p">(</span><span class="n">timeout</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))):</span>
+                <span class="c1"># Suppress the error due to either:</span>
+                <span class="c1"># 1. tag</span>
+                <span class="c1"># 2. timeout</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
+                <span class="s2">&quot;user_expressions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">content</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span> <span class="ow">and</span> <span class="n">stop_on_error</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                        <span class="k">await</span> <span class="n">async_checkpoint</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_on_error_time_offset</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in a non-silent execution request&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="p">):</span>
+                                <span class="n">c</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">content</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">_cell_id_var</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion).&quot;&quot;&quot;</span>
@@ -3713,6 +3723,7 @@ viewing the latest version.
     <span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.execute_request(user_expressions)">user_expressions</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.execute_request(allow_stdin)">allow_stdin</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.execute_request(stop_on_error)">stop_on_error</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.execute_request(cell_id)">cell_id</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><span title="async_kernel.asyncshell.AsyncInteractiveShell.execute_request(**_ignored)">_ignored</span></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
 
@@ -3845,7 +3856,12 @@ viewing the latest version.
 <span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
-<span class="normal">405</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -3853,6 +3869,7 @@ viewing the latest version.
     <span class="n">user_expressions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">allow_stdin</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">stop_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">cell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).&quot;&quot;&quot;</span>
@@ -3860,84 +3877,88 @@ viewing the latest version.
         <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Aborting due to prior exception&quot;</span><span class="p">))</span> <span class="o">|</span> <span class="p">{</span>
             <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;execution_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="p">}</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">_cell_id_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cell_id</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_timeout</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+        <span class="n">suppress_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">suppress_error</span> <span class="ow">in</span> <span class="n">tags</span>
+        <span class="n">raises_exception</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span>
+        <span class="n">stop_on_error_override</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span> <span class="ow">in</span> <span class="n">tags</span>
 
-    <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
-    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_timeout</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
-    <span class="n">suppress_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">suppress_error</span> <span class="ow">in</span> <span class="n">tags</span>
-    <span class="n">raises_exception</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span>
-    <span class="n">stop_on_error_override</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span> <span class="ow">in</span> <span class="n">tags</span>
+        <span class="k">if</span> <span class="n">stop_on_error_override</span><span class="p">:</span>
+            <span class="n">stop_on_error</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tag_value</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span><span class="p">,</span> <span class="n">stop_on_error</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">suppress_error</span> <span class="ow">or</span> <span class="n">raises_exception</span><span class="p">:</span>
+            <span class="n">stop_on_error</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">if</span> <span class="n">stop_on_error_override</span><span class="p">:</span>
-        <span class="n">stop_on_error</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tag_value</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">stop_on_error</span><span class="p">,</span> <span class="n">stop_on_error</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">suppress_error</span> <span class="ow">or</span> <span class="n">raises_exception</span><span class="p">:</span>
-        <span class="n">stop_on_error</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">if</span> <span class="n">silent</span><span class="p">:</span>
-        <span class="n">execution_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-            <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;execute_input&quot;</span><span class="p">,</span>
-            <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
-            <span class="n">ident</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">topic</span><span class="p">(</span><span class="s2">&quot;execute_input&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-    <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
-    <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
-                <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Interrupted&quot;</span><span class="p">)</span>
-
-        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-            <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">fail_after</span><span class="p">(</span><span class="n">delay</span><span class="o">=</span><span class="n">timeout</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">):</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">(</span>
-                    <span class="n">raw_cell</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
-                    <span class="n">store_history</span><span class="o">=</span><span class="n">store_history</span><span class="p">,</span>
-                    <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span>
-                    <span class="n">transformed_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">code</span><span class="p">),</span>
-                    <span class="n">shell_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="c1"># A safeguard to catch exceptions not caught by the shell.</span>
-            <span class="n">err</span> <span class="o">=</span> <span class="n">KernelInterruptError</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">last_interrupt_frame</span> <span class="k">else</span> <span class="n">e</span>
+        <span class="k">if</span> <span class="n">silent</span><span class="p">:</span>
+            <span class="n">execution_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">error_before_exec</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">error_in_exec</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="n">KernelInterruptError</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">err</span> <span class="ow">and</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;An expected exception was not raised!&quot;</span>
-                <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_execute&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_run_cell&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">suppress_error</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="ow">and</span> <span class="p">(</span><span class="n">timeout</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))):</span>
-        <span class="c1"># Suppress the error due to either:</span>
-        <span class="c1"># 1. tag</span>
-        <span class="c1"># 2. timeout</span>
+            <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
+                <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;execute_input&quot;</span><span class="p">,</span>
+                <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
+                <span class="n">ident</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">topic</span><span class="p">(</span><span class="s2">&quot;execute_input&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
         <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
-        <span class="s2">&quot;user_expressions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-        <span class="n">content</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span> <span class="ow">and</span> <span class="n">stop_on_error</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-                <span class="k">await</span> <span class="n">async_checkpoint</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_on_error_time_offset</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in a non-silent execution request&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                    <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Interrupted&quot;</span><span class="p">)</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="p">):</span>
-                        <span class="n">c</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">content</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">fail_after</span><span class="p">(</span><span class="n">delay</span><span class="o">=</span><span class="n">timeout</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">(</span>
+                        <span class="n">raw_cell</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
+                        <span class="n">store_history</span><span class="o">=</span><span class="n">store_history</span><span class="p">,</span>
+                        <span class="n">silent</span><span class="o">=</span><span class="n">silent</span><span class="p">,</span>
+                        <span class="n">transformed_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">code</span><span class="p">),</span>
+                        <span class="n">shell_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">cell_id</span><span class="o">=</span><span class="n">cell_id</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># A safeguard to catch exceptions not caught by the shell.</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">KernelInterruptError</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">last_interrupt_frame</span> <span class="k">else</span> <span class="n">e</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">error_before_exec</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">error_in_exec</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="n">KernelInterruptError</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">err</span> <span class="ow">and</span> <span class="n">Tags</span><span class="o">.</span><span class="n">raises_exception</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;An expected exception was not raised!&quot;</span>
+                    <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupts</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">cancel</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_execute&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="s2">&quot;post_run_cell&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">suppress_error</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">())</span> <span class="ow">and</span> <span class="p">(</span><span class="n">timeout</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))):</span>
+            <span class="c1"># Suppress the error due to either:</span>
+            <span class="c1"># 1. tag</span>
+            <span class="c1"># 2. timeout</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
+            <span class="s2">&quot;user_expressions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">silent</span><span class="p">)</span> <span class="ow">and</span> <span class="n">stop_on_error</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                    <span class="k">await</span> <span class="n">async_checkpoint</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_on_error_time_offset</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in a non-silent execution request&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="p">):</span>
+                            <span class="n">c</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">content</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">_cell_id_var</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3972,12 +3993,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">412</span>
 <span class="normal">413</span>
 <span class="normal">414</span>
 <span class="normal">415</span>
@@ -3997,7 +4013,12 @@ viewing the latest version.
 <span class="normal">429</span>
 <span class="normal">430</span>
 <span class="normal">431</span>
-<span class="normal">432</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion).&quot;&quot;&quot;</span>
 
     <span class="n">cursor_pos</span> <span class="o">=</span> <span class="n">cursor_pos</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
@@ -4057,13 +4078,13 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness).&quot;&quot;&quot;</span>
     <span class="n">status</span><span class="p">,</span> <span class="n">indent_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_transformer_manager</span><span class="o">.</span><span class="n">check_complete</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">}</span>
@@ -4106,16 +4127,16 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span>
-<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection).&quot;&quot;&quot;</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;found&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
     <span class="k">try</span><span class="p">:</span>
@@ -4171,12 +4192,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
 <span class="normal">461</span>
@@ -4197,7 +4213,12 @@ viewing the latest version.
 <span class="normal">476</span>
 <span class="normal">477</span>
 <span class="normal">478</span>
-<span class="normal">479</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -4249,11 +4270,11 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_magics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize magics.&quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_magics</span><span class="p">()</span>
@@ -4310,12 +4331,7 @@ display figures inline.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">525</span>
 <span class="normal">526</span>
 <span class="normal">527</span>
 <span class="normal">528</span>
@@ -4349,7 +4365,12 @@ display figures inline.</p>
 <span class="normal">556</span>
 <span class="normal">557</span>
 <span class="normal">558</span>
-<span class="normal">559</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">enable_matplotlib</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Enable interactive matplotlib and inline figure support.</span>
@@ -4414,11 +4435,11 @@ display figures inline.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
     <span class="s2">&quot;A context manager where the shell is active.&quot;</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_manager</span><span class="o">.</span><span class="n">context</span><span class="p">():</span>
@@ -4615,12 +4636,7 @@ protected subshell when it is no longer required.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">576</span>
 <span class="normal">577</span>
 <span class="normal">578</span>
 <span class="normal">579</span>
@@ -4668,7 +4684,12 @@ protected subshell when it is no longer required.</p>
 <span class="normal">621</span>
 <span class="normal">622</span>
 <span class="normal">623</span>
-<span class="normal">624</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveSubshell</span><span class="p">(</span><span class="n">AsyncInteractiveShell</span><span class="p">):</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AsyncInteractiveSubshell</span><span class="p">(</span><span class="n">AsyncInteractiveShell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An asynchronous interactive subshell for managing isolated execution contexts within an async kernel.</span>
 
@@ -4806,14 +4827,14 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">622</span>
 <span class="normal">623</span>
-<span class="normal">624</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Stop this subshell.&quot;</span>
     <span class="k">if</span> <span class="n">force</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">protected</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_manager</span><span class="o">.</span><span class="n">pending</span><span class="p">:</span>
@@ -4871,8 +4892,12 @@ protected subshell when it is no longer required.</p>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
@@ -5770,12 +5795,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">632</span>
 <span class="normal">633</span>
 <span class="normal">634</span>
 <span class="normal">635</span>
@@ -5841,7 +5861,12 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="normal">695</span>
 <span class="normal">696</span>
 <span class="normal">697</span>
-<span class="normal">698</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SubshellManager</span><span class="p">:</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SubshellManager</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Manages all instances of [subshells][async_kernel.asyncshell.AsyncInteractiveSubshell].</span>
 
@@ -5965,17 +5990,17 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">643</span>
-<span class="normal">644</span>
-<span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span>
-<span class="normal">648</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">648</span>
 <span class="normal">649</span>
 <span class="normal">650</span>
 <span class="normal">651</span>
 <span class="normal">652</span>
-<span class="normal">653</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">protected</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new instance of the default subshell class.</span>
 
@@ -6052,12 +6077,7 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">670</span>
 <span class="normal">671</span>
 <span class="normal">672</span>
 <span class="normal">673</span>
@@ -6066,7 +6086,12 @@ protected subshell when it is no longer required.</p>
 <span class="normal">676</span>
 <span class="normal">677</span>
 <span class="normal">678</span>
-<span class="normal">679</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_shell</span><span class="p">(</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_shell</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveShell</span> <span class="o">|</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
@@ -6119,15 +6144,15 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">686</span>
 <span class="normal">687</span>
 <span class="normal">688</span>
-<span class="normal">689</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">delete_subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop a subshell unless it is protected.</span>
 
@@ -6176,14 +6201,14 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">696</span>
 <span class="normal">697</span>
-<span class="normal">698</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop_all_subshells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop_all_subshells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop all current subshells.</span>
 
 <span class="sd">    Args:</span>
@@ -6265,12 +6290,7 @@ protected subshell when it is no longer required.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">706</span>
 <span class="normal">707</span>
 <span class="normal">708</span>
 <span class="normal">709</span>
@@ -6323,7 +6343,12 @@ protected subshell when it is no longer required.</p>
 <span class="normal">756</span>
 <span class="normal">757</span>
 <span class="normal">758</span>
-<span class="normal">759</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@magics_class</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@magics_class</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">KernelMagics</span><span class="p">(</span><span class="n">Magics</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extra magics for async kernel.&quot;&quot;&quot;</span>
 
@@ -6417,12 +6442,7 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">712</span>
 <span class="normal">713</span>
 <span class="normal">714</span>
 <span class="normal">715</span>
@@ -6435,7 +6455,12 @@ protected subshell when it is no longer required.</p>
 <span class="normal">722</span>
 <span class="normal">723</span>
 <span class="normal">724</span>
-<span class="normal">725</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Print information for connecting other clients to this kernel.&quot;&quot;&quot;</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
@@ -6479,12 +6504,7 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">727</span>
-<span class="normal">728</span>
-<span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">732</span>
 <span class="normal">733</span>
 <span class="normal">734</span>
 <span class="normal">735</span>
@@ -6499,7 +6519,12 @@ protected subshell when it is no longer required.</p>
 <span class="normal">744</span>
 <span class="normal">745</span>
 <span class="normal">746</span>
-<span class="normal">747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">callers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Print a table of [Callers][async_kernel.caller.Caller] indicating it&#39;s status.&quot;</span>
     <span class="n">callers</span> <span class="o">=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">all_callers</span><span class="p">(</span><span class="n">running_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -6545,17 +6570,17 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span>
-<span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">754</span>
 <span class="normal">755</span>
 <span class="normal">756</span>
 <span class="normal">757</span>
 <span class="normal">758</span>
-<span class="normal">759</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).</span>
