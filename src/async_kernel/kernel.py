@@ -530,18 +530,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     if mode_ := set(utils.get_tags(job)).intersection(RunMode):
                         return RunMode(next(iter(mode_)))
                 return RunMode.queue
-            case MsgType.history_request:
-                return RunMode.thread
-            case (
-                MsgType.shutdown_request
-                | MsgType.debug_request
-                | MsgType.create_subshell_request
-                | MsgType.delete_subshell_request
-                | MsgType.list_subshell_request
-                | MsgType.interrupt_request
-            ):
-                msg = f"{msg_type=} not allowed on shell!"
-                raise ValueError(msg)
             case _:
                 return RunMode.thread_queue
 
