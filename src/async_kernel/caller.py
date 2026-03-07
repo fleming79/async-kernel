@@ -95,7 +95,6 @@ class SingleConsumerAsyncQueue(Generic[T]):
 
     async def __aiter__(self) -> AsyncGenerator[T]:
         if self._active is not None:
-            # Either active or stopped.
             return
         self._active = True
         try:
