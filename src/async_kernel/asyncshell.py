@@ -94,6 +94,8 @@ class AsyncDisplayHook(DisplayHook):
 class AsyncDisplayPublisher(DisplayPublisher):
     """A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send]."""
 
+    shell: AsyncInteractiveShell
+
     def __init__(self, shell=None, *args, **kwargs) -> None:
         super().__init__(shell, *args, **kwargs)
         self._hooks = []
@@ -122,7 +124,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
         """
         content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
         msg_type = "update_display_data" if update else "display_data"
-        msg = utils.get_kernel().interface.msg(msg_type, content=content, parent=utils.get_parent())
+        msg = self.shell.kernel.interface.msg(msg_type, content=content, parent=utils.get_parent())
         for hook in self._hooks:
             try:
                 msg = hook(msg)
@@ -130,7 +132,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 pass
             if msg is None:
                 return
-        utils.get_kernel().iopub_send(msg)
+        self.shell.kernel.iopub_send(msg)
 
     @override
     def clear_output(self, wait: bool = False) -> None:
