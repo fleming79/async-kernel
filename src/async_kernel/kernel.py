@@ -409,7 +409,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             case RunMode.thread:
                 self.callers[channel].to_thread(handler, job)
             case RunMode.thread_queue:
-                self.callers[channel].get(name="async-kernel thread_queue", no_debug=True).queue_call(handler, job)
+                self.callers[Channel.shell].get(name="Shell thread_queue", no_debug=True, protected=True).queue_call(
+                    handler, job
+                )
         self.log.debug("%s %s %s %s", msg_type, handler, run_mode, job)
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
