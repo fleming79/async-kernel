@@ -1,4 +1,4 @@
-# Command line and kernel configuration
+# Command line
 
 The command `async-kernel` and alias `async_kernel` are provided at the command line.
 
@@ -45,7 +45,7 @@ The kernel spec looks like this:
 }
 ```
 
-A single kernel spec is created in the folder `<sys.prefix>/share/jupyter/kernels/async` when async kernel is installed with the following defaults.
+A single kernel spec is created in the folder `<sys.prefix>/share/jupyter/kernels/async` when async-kernel is installed with the following defaults.
 
 **Defaults**
 
@@ -103,7 +103,7 @@ Trio provides the function [trio.lowlevel.start_guest_run][] which allows it to 
 as a guest alongside the host event loop by means of callbacks. The author of
 aiologic has provided an (experimental) asyncio equivalent ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
-async kernel supports configuration of one host and one backend for the kernel.
+async-kernel supports configuration of one host and one backend for the kernel.
 Below are some example kernel specs for host and backend kernel specs.
 
 ### tk

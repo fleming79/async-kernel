@@ -95,7 +95,6 @@ class SingleConsumerAsyncQueue(Generic[T]):
 
     async def __aiter__(self) -> AsyncGenerator[T]:
         if self._active is not None:
-            # Either active or stopped.
             return
         self._active = True
         try:
@@ -316,12 +315,23 @@ class Caller(anyio.AsyncContextManagerMixin):
             return inst
         return None
 
+    def _get_info(self) -> dict[str, Any]:
+        return {
+            "name": self._name,
+            "backend": str(self._backend),
+            "loop": self._loop,
+            "thread": self._thread.name,
+            "id": self._caller_id,
+        }
+
     @override
     def __repr__(self) -> str:
+        info = " ".join(f"{k}={v!r}" for k, v in self._get_info().items())
+        current = "🟢" if self.id_current() == self._caller_id else "〇"  # noqa: RUF001
+        protected = "🔐 " if self.protected else " "
         n = len(self._children)
         children = "" if not n else ("1 child" if n == 1 else f"{n} children")
-        info = f"{self.name} at {id(self)}"
-        return f"Caller<{info!s} {self.backend} {self._state_reprs.get(self._state)} {children}>"
+        return f"<Caller {current}{protected}{info}{children}>"
 
     def __new__(
         cls,

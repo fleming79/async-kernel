@@ -44,7 +44,7 @@ def command_line() -> None:
             program is interrupted.
     """
     kernel_dir: Path = get_kernel_dir()
-    title = "async kernel"
+    title = "async-kernel"
     parser = argparse.ArgumentParser(
         description="=" * len(title)
         + f"\n{title}\n"

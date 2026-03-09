@@ -408,7 +408,7 @@ class RunSettings(TypedDict):
     backend_options: NotRequired[dict | None]
     "The backend options to specify for [anyio.run][] (or `start_guest_run` when a loop is specified)."
 
-    loop: NotRequired[Loop | None]
+    loop: NotRequired[Loop | None | Literal["tk", "qt"]]
     "The type of eventloop where the backend will run."
 
     "Options to use when calling [async_kernel.eventloop.run][]."

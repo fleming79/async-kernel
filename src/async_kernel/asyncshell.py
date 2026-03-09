@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import builtins
 import contextlib
+import os
 import pathlib
 import sys
 import time
@@ -23,13 +24,14 @@ from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
 from typing_extensions import override
 
+import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
-from async_kernel.typing import Content, NoValue, Tags
+from async_kernel.typing import Channel, Content, NoValue, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -93,6 +95,8 @@ class AsyncDisplayHook(DisplayHook):
 class AsyncDisplayPublisher(DisplayPublisher):
     """A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send]."""
 
+    shell: AsyncInteractiveShell
+
     def __init__(self, shell=None, *args, **kwargs) -> None:
         super().__init__(shell, *args, **kwargs)
         self._hooks = []
@@ -121,7 +125,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
         """
         content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
         msg_type = "update_display_data" if update else "display_data"
-        msg = utils.get_kernel().interface.msg(msg_type, content=content, parent=utils.get_parent())
+        msg = self.shell.kernel.interface.msg(msg_type, content=content, parent=utils.get_parent())
         for hook in self._hooks:
             try:
                 msg = hook(msg)
@@ -129,7 +133,13 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 pass
             if msg is None:
                 return
-        utils.get_kernel().iopub_send(msg)
+        if "application/vnd.jupyter.widget-view+json" in data and os.environ.get("VSCODE_CWD"):  # pragma: no cover
+            # ref: https://github.com/microsoft/vscode-jupyter/wiki/Component:-IPyWidgets#two-widget-managers
+            # On occasion we get `Error 'widget model not found'`
+            # As a work-around inject a delay so the widget can be registered first.
+            self.shell.kernel.callers[Channel.control].call_later(0.2, self.shell.kernel.iopub_send, msg)
+        else:
+            self.shell.kernel.iopub_send(msg)
 
     @override
     def clear_output(self, wait: bool = False) -> None:
@@ -162,7 +172,7 @@ class ShellPendingManager(PendingManager):
 
 class AsyncInteractiveShell(InteractiveShell):
     """
-    An IPython InteractiveShell adapted to work with [async kernel][async_kernel.kernel.Kernel].
+    An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
@@ -233,7 +243,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _default_banner1(self) -> str:
         return (
             f"Python {sys.version}\n"
-            f"async kernel ({self.kernel.kernel_name})\n"
+            f"async-kernel (kernel name:{self.kernel.kernel_name} version:{async_kernel.__version__}) \n"
             f"IPython shell {IPython.core.release.version}\n"
         )
 
@@ -575,7 +585,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
     """
-    An asynchronous interactive subshell for managing isolated execution contexts within an async kernel.
+    An asynchronous interactive subshell for managing isolated execution contexts within an async-kernel.
 
     Each subshell has a unique `user_ns`, but shares its `user_global_ns` with the main shell
     (which is also the `user_ns` of the main shell).
@@ -705,7 +715,7 @@ class SubshellManager:
 
 @magics_class
 class KernelMagics(Magics):
-    """Extra magics for async kernel."""
+    """Extra magics for async-kernel."""
 
     shell: AsyncInteractiveShell  # pyright: ignore[reportIncompatibleVariableOverride]
 
