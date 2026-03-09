@@ -315,12 +315,21 @@ class Caller(anyio.AsyncContextManagerMixin):
             return inst
         return None
 
+    def _get_info(self) -> dict[str, Any]:
+        return {
+            "name": self._name,
+            "backend": self._backend,
+            "loop": self._loop,
+            "thread": self._thread,
+            "children": len(self._children),
+            "id": f"{self._caller_id}" + " ← current" if self.id_current() == self._caller_id else "",
+        }
+
     @override
     def __repr__(self) -> str:
-        n = len(self._children)
-        children = "" if not n else ("1 child" if n == 1 else f"{n} children")
-        info = f"{self.name} at {id(self)}"
-        return f"Caller<{info!s} {self.backend} {self._state_reprs.get(self._state)} {children}>"
+        info = " ".join(f"{k}={v}" for k, v in self._get_info().items())
+        protected = "🔐 " if self.protected else " "
+        return f"<Caller{protected}{info}>"
 
     def __new__(
         cls,
