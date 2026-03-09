@@ -39,7 +39,7 @@ from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Channel, Content, ExecuteContent, HandlerType, Job, Message, MsgType, NoValue, RunMode
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Iterable
+    from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
 
 
@@ -398,21 +398,22 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             except KeyError:
                 subshell_id = None
         handler = cache_wrap_handler(subshell_id, send_reply, self.run_handler, self.get_handler(msg_type))
-        run_mode = self.get_run_mode(msg_type, channel=channel, job=job)
-        match run_mode:
-            case RunMode.direct:
-                self.callers[channel].call_direct(handler, job)
-            case RunMode.queue:
-                self.callers[channel].queue_call(handler, job)
-            case RunMode.task:
-                self.callers[channel].call_soon(handler, job)
-            case RunMode.thread:
-                self.callers[channel].to_thread(handler, job)
-            case RunMode.thread_queue:
-                self.callers[Channel.shell].get(name="Shell thread_queue", no_debug=True, protected=True).queue_call(
-                    handler, job
-                )
-        self.log.debug("%s %s %s %s", msg_type, handler, run_mode, job)
+        caller = self.callers[channel]
+        if msg_type is MsgType.execute_request:
+            #  execute requests can be run with different run modes
+            match self.get_run_mode(job):
+                case RunMode.queue:
+                    caller.queue_call(handler, job)
+                case RunMode.task:
+                    caller.call_soon(handler, job)
+                case RunMode.thread:
+                    caller.to_thread(handler, job)
+        else:
+            if channel is Channel.shell and msg_type is not MsgType.comm_msg:
+                # Except for comm_msg, handle the message in a separate thread.
+                caller = self.callers[Channel.shell].get(name="Shell thread_queue", no_debug=True, protected=True)
+            caller.queue_call(handler, job)
+        self.log.debug("%s %s %s", msg_type, handler, job)
 
     def get_handler(self, msg_type: MsgType) -> HandlerType:
         if not callable(f := getattr(self, msg_type, None)):
@@ -480,23 +481,15 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             )
             del job
 
-    def get_run_mode(
-        self,
-        msg_type: MsgType,
-        *,
-        channel: Literal[Channel.shell, Channel.control] = Channel.shell,
-        job: Job | None = None,
-    ) -> RunMode:
+    def get_run_mode(self, job: Job, /) -> RunMode:
         """
-        Determine the run mode for a given channel, message type and job.
+        Determine the run mode `execute_request` job.
 
         Args:
-            channel: The channel the message was received on.
-            msg_type: The type of the message.
-            job: The job associated with the message, if any.
+            job: The job.
 
         Returns:
-            The run mode for the message.
+            The run mode.
         """
         # receive_msg_loop - DEBUG WARNING
 
@@ -505,57 +498,21 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         #     return RunMode( mode_from_metadata)
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
-        if channel is Channel.control:
-            match msg_type:
-                case MsgType.execute_request:
-                    return RunMode.queue
-                case MsgType.debug_request:
-                    return RunMode.queue
-                case _:
-                    return RunMode.direct
-        match msg_type:
-            case MsgType.comm_msg | MsgType.comm_open | MsgType.comm_close:
-                return RunMode.queue
-            case MsgType.execute_request:
-                if job:
-                    if content := job["msg"].get("content", {}):
-                        if code := content.get("code"):
-                            try:
-                                if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
-                                    return RunMode(code[2:])
-                                if code.startswith("RunMode."):
-                                    return RunMode(code.removeprefix("RunMode."))
-                            except ValueError:
-                                pass
-                        if content.get("silent"):
-                            return RunMode.task
-                    if mode_ := set(utils.get_tags(job)).intersection(RunMode):
-                        return RunMode(next(iter(mode_)))
-                return RunMode.queue
-            case _:
-                return RunMode.thread_queue
 
-    def all_concurrency_run_modes(
-        self,
-        channels: Iterable[Literal[Channel.shell, Channel.control]] = (Channel.shell, Channel.control),
-        msg_types: Iterable[MsgType] = MsgType,
-    ) -> dict[
-        Literal["Channel", "MsgType", "RunMode"],
-        tuple[Channel, MsgType, RunMode | None],
-    ]:
-        """
-        Generates a dictionary containing all combinations of Channel, MsgType and RunMode.
-        """
-        data: list[Any] = []
-        for channel in channels:
-            for msg_type in msg_types:
+        if content := job["msg"].get("content", {}):
+            if code := content.get("code"):
                 try:
-                    mode = self.get_run_mode(msg_type, channel=channel)
+                    if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
+                        return RunMode(code[2:])
+                    if code.startswith("RunMode."):
+                        return RunMode(code.removeprefix("RunMode."))
                 except ValueError:
-                    mode = None
-                data.append((channel, msg_type, mode))
-        data_ = zip(*data, strict=True)
-        return dict(zip(["Channel", "MsgType", "RunMode"], data_, strict=True))
+                    pass
+            if content.get("silent"):
+                return RunMode.task
+        if mode_ := set(utils.get_tags(job)).intersection(RunMode):
+            return RunMode(next(iter(mode_)))
+        return RunMode.queue
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""

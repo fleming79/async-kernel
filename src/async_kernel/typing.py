@@ -140,18 +140,6 @@ class RunMode(enum.StrEnum):
     thread = "thread"
     "Run the message handler using [async_kernel.caller.Caller.to_thread][]."
 
-    thread_queue = "thread_queue"
-    "Run the message handler in a separate shared thread for all `thread_queue` message types running using [async_kernel.caller.Caller.queue_call][]."
-
-    direct = "direct"
-    """
-    Run the message handler using [async_kernel.caller.Caller.call_direct][].
-    
-    Warning: 
-        - This mode runs directly in the caller scheduler as soon as it is received.
-        - Use this only for fast running high priority code.
-    """
-
 
 class MsgType(enum.StrEnum):
     """

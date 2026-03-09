@@ -13,15 +13,9 @@ class TestRunMode:
         assert hash(RunMode.task) == hash(RunMode.task)
 
     def test_members(self):
-        assert list(RunMode) == ["queue", "task", "thread", "thread_queue", "direct"]
-        assert list(RunMode) == ["# queue", "# task", "# thread", "# thread_queue", "# direct"]
-        assert list(RunMode) == [
-            "<RunMode.queue: 'queue'>",
-            "<RunMode.task: 'task'>",
-            "<RunMode.thread: 'thread'>",
-            "<RunMode.thread_queue: 'thread_queue'>",
-            "<RunMode.direct: 'direct'>",
-        ]
+        assert list(RunMode) == ["queue", "task", "thread"]
+        assert list(RunMode) == ["# queue", "# task", "# thread"]
+        assert list(RunMode) == ["<RunMode.queue: 'queue'>", "<RunMode.task: 'task'>", "<RunMode.thread: 'thread'>"]
 
 
 class TestMsgType:
