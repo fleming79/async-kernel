@@ -1,4 +1,4 @@
-# Command line and kernel configuration
+# Command line
 
 The command `async-kernel` and alias `async_kernel` are provided at the command line.
 

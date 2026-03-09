@@ -26,11 +26,11 @@ The kernel provides two external interfaces:
 - [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
 - [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
 - Per-subshell user_ns
-- GUI event loops [^1][^2]
+- GUI event loops [^1]
     - [x] inline
     - [x] ipympl
-    - [x] tk host and asyncio[^3] or trio[^4] backend running as a guest
-    - [x] qt host and asyncio[^3] or trio[^4] backend running as a guest
+    - [x] tk host and asyncio[^2] or trio[^3] backend running as a guest
+    - [x] qt host and asyncio[^2] or trio[^3] backend running as a guest
 - [Experimental](https://github.com/fleming79/echo-kernel) support for
   [Jupyterlite](https://github.com/jupyterlite/jupyterlite) (try it online [here](https://fleming79.github.io/echo-kernel/) 👈)
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
@@ -41,17 +41,11 @@ The kernel provides two external interfaces:
     deliberate design choice to to ensure good performance and reliability.
 
 [^2]:
-    It is also possible to use a caller to run a gui event loop
-    in a separate thread (with a backend running as a guest) if the gui allows it
-    (qt will only run in the main thread). Also note that pyplot will only permit
-    one interactive gui library per process.
-
-[^3]:
     The asyncio implementation of `start_guest_run` was written by
     [the author of aiologic](https://github.com/x42005e1f/aiologic) and provided as a
     [gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779).
 
-[^4]: trio's [start_guest_run](https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run).
+[^3]: trio's [start_guest_run](https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run).
 
 ### Avoid deadlocks
 
@@ -101,9 +95,9 @@ Kernel specs can be added/removed via the command line.
 ### Backends
 
 The backend set on the interface is the asynchronous library the kernel uses for message handling.
-It is also the asynchronous library directly available when executing code in cells or via a console[^4].
+It is also the asynchronous library directly available when executing code in cells or via a console[^3].
 
-[^4]:
+[^3]:
     Irrespective of the configured backend, functions/coroutines can be executed using a specific backend
     with the method [`call_using_backend`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_using_backend).
 

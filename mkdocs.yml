@@ -166,13 +166,9 @@ nav:
   - Home: index.md
   - Usage:
       - usage/index.md
-      - Notebooks:
-          - notebooks/index.md
-          - Simple example: notebooks/simple_example.ipynb
-          - About concurrency: notebooks/concurrency.ipynb
-          - Using caller: notebooks/caller.ipynb
-      - Commands: usage/commands.md
-      - Message handling: usage/message_handling.md
+      - "Command line": usage/commands.md
+      - notebooks/concurrency.ipynb
+      - notebooks/caller.ipynb
   - Reference:
       - reference/index.md
       - "caller": reference/caller.md
@@ -191,6 +187,7 @@ nav:
 
   - About:
       - about/index.md
+
       - Contributing: about/contributing.md
       - Changelog: about/changelog.md
       - License: about/license.md
