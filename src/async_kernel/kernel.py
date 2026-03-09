@@ -540,12 +540,11 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         channels: Iterable[Literal[Channel.shell, Channel.control]] = (Channel.shell, Channel.control),
         msg_types: Iterable[MsgType] = MsgType,
     ) -> dict[
-        Literal["SocketID", "MsgType", "RunMode"],
+        Literal["Channel", "MsgType", "RunMode"],
         tuple[Channel, MsgType, RunMode | None],
     ]:
         """
-        Generates a dictionary containing all combinations of SocketID, and MsgType, along with their
-        corresponding RunMode (if available).
+        Generates a dictionary containing all combinations of Channel, MsgType and RunMode.
         """
         data: list[Any] = []
         for channel in channels:
@@ -556,7 +555,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                     mode = None
                 data.append((channel, msg_type, mode))
         data_ = zip(*data, strict=True)
-        return dict(zip(["SocketID", "MsgType", "RunMode"], data_, strict=True))
+        return dict(zip(["Channel", "MsgType", "RunMode"], data_, strict=True))
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
