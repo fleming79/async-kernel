@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/notebooks/concurrency/">
       
       
-        <link rel="prev" href="../simple_example/">
+        <link rel="prev" href="../../usage/commands/">
       
       
         <link rel="next" href="../caller/">
@@ -27,7 +27,7 @@
     
     
       
-        <title>Concurrency - async-kernel</title>
+        <title>Concurrent message handling (notebook) - async-kernel</title>
       
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#concurrency" class="md-skip">
+        <a href="#concurrent-message-handling-notebook" class="md-skip">
           Skip to content
         </a>
       
@@ -142,7 +142,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Concurrency
+              Concurrent message handling (notebook)
             
           </span>
         </div>
@@ -506,92 +506,17 @@ viewing the latest version.
                 
   
   
-    
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
-              
-  
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 10h5.5L14 4.5zM5 3h10l6 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2m0 9v2h14v-2zm0 4v2h9v-2z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    Notebooks
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Notebooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
   
   
     <li class="md-nav__item">
-      <a href="../simple_example/" class="md-nav__link">
+      <a href="../../usage/commands/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Simple example
+    Command line
   
 
     
@@ -628,7 +553,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Concurrency
+    Concurrent message handling (notebook)
   
 
     
@@ -646,7 +571,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Concurrency
+    Concurrent message handling (notebook)
   
 
     
@@ -744,71 +669,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/commands/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Commands
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/message_handling/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Message handling
+    Caller: A backend agnostic executor (notebook)
   
 
     
@@ -1584,24 +1445,6 @@ viewing the latest version.
   
 
       
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="../" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    Notebooks
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
     </ol>
   </nav>
 
@@ -2351,14 +2194,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="concurrency">Concurrency<a class="anchor-link" href="#concurrency">¶</a></h1><p>async kernel handles message requests concurrently.</p>
-<p>How the request is handled is a function of the channel and message type.</p>
-<p>The following <code>RunModes</code> are provided.</p>
+<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel handles message requests concurrently. How the request is handled is a function of the channel and message type.</p>
+<p>The following <code>RunModes</code> are available.</p>
 <ul>
 <li>direct: Run the handler directly in the message loop (recommend only for short running code)</li>
 <li>queue: Run in a queue (default for the <code>shell</code> channel)</li>
 <li>task: Run in a task (default for the <code>control</code> channel)</li>
 <li>thread: Run in a worker thread</li>
+<li>thread_queue: Run in a queue of a child thread.</li>
 </ul>
 <p>The kernel decides the run mode dynamically with the method <a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/?h=get_run_mod#async_kernel.kernel.Kernel.get_run_mode">get_run_mode</a>.</p>
 </div>
@@ -2383,14 +2226,24 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">MsgType</span>
 
 <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
 
 <span class="n">kernel</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">from async_kernel import utils
+<div class="clipboard-copy-txt" id="cell-1">import threading
+
+import ipywidgets as ipw
+from aiologic import Event
+
+from async_kernel import utils
 from async_kernel.typing import MsgType
 
 kernel = utils.get_kernel()
@@ -2420,7 +2273,7 @@ kernel.get_run_mode(MsgType.comm_msg)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Below is a list of the run modes according to the message type and channel (SocketID).</p>
+<p>Below is a list of the run modes according to the message type and channel.</p>
 </div>
 </div>
 </div>
@@ -2451,7 +2304,7 @@ kernel.get_run_mode(MsgType.comm_msg)</div>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">"RunMode"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">RunMode</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"##"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"MsgType"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"SocketID"</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="s2">"RunMode"</span><span class="p">)</span>  <span class="c1"># noqa: PD010</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"MsgType"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"Channel"</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="s2">"RunMode"</span><span class="p">)</span>  <span class="c1"># noqa: PD010</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reindex</span><span class="p">([</span><span class="s2">"shell"</span><span class="p">,</span> <span class="s2">"control"</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">display</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
@@ -2463,7 +2316,7 @@ except ImportError:
 else:
     data = pd.DataFrame(data)
     data["RunMode"] = data.RunMode.str.replace("##", "")
-    data = data.pivot(index="MsgType", columns=["SocketID"], values="RunMode")  # noqa: PD010
+    data = data.pivot(index="MsgType", columns=["Channel"], values="RunMode")  # noqa: PD010
     data = data.reindex(["shell", "control"], axis=1)
     display(data)</div>
 </div>
@@ -2494,7 +2347,7 @@ else:
 <table border="1" class="dataframe">
 <thead>
 <tr style="text-align: right;">
-<th>SocketID</th>
+<th>Channel</th>
 <th>shell</th>
 <th>control</th>
 </tr>
@@ -2613,7 +2466,7 @@ else:
 </div>
 <h3 id="code-for-example">Code for example<a class="anchor-link" href="#code-for-example">¶</a></h3><ul>
 <li><strong>This example requires ipywidgets</strong></li>
-<li><strong>Ensure you are running an async kernel</strong></li>
+<li><strong>Ensure you are running an async-kernel</strong></li>
 </ul>
 <p>Lets define a function that we'll reuse for the remainder of the notebook.</p>
 </div>
@@ -2639,13 +2492,9 @@ else:
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">demo</span><span class="p">():</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
-
-    <span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Button</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
-    <span class="n">button</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Finish"</span><span class="p">)</span>
+    <span class="n">button</span> <span class="o">=</span> <span class="n">ipw</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Finish"</span><span class="p">)</span>
     <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
     <span class="n">button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
     <span class="n">display</span><span class="p">(</span><span class="n">button</span><span class="p">)</span>
@@ -2655,13 +2504,9 @@ else:
     <span class="k">return</span> <span class="s2">"Finished"</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">async def demo():
-    import threading
-
-    from aiologic import Event
-    from ipywidgets import Button
 
     print(f"Thread name: '{threading.current_thread().name}'")
-    button = Button(description="Finish")
+    button = ipw.Button(description="Finish")
     event = Event()
     button.on_click(lambda _: event.set())
     display(button)
@@ -2685,20 +2530,13 @@ else:
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error" id="cell-id=7">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="celltoolbar">
-<div class="button_container tags_button_container">
-<span class="tag-container">
-<span class="cell-tag">suppress-error</span>
-</span>
-</div>
-</div>
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -2757,7 +2595,7 @@ else:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="run-mode-task">Run mode: task<a class="anchor-link" href="#run-mode-task">¶</a></h3><p>The <code>task</code> mode instructs the kernel to execute the code in a task separate to the queue, Both <code>task</code> and <code>thread</code> execute modes can be started when the kernel is <em>busy executing</em>. There is no imposed limitation on the number of tasks (or threads) that can be run concurrently.</p>
+<h3 id="run-mode-task">Run mode: task<a class="anchor-link" href="#run-mode-task">¶</a></h3><p><code>task</code> mode instructs the kernel to execute the code in a task separate to the queue, Both <code>task</code> and <code>thread</code> execute modes can be started when the kernel is <em>busy executing</em>. There is no imposed limitation on the number of tasks (or threads) that can be run concurrently.</p>
 <p>See also the <a href="caller.ipynb#caller">Caller</a> example on how to call directly.</p>
 </div>
 </div>
@@ -2934,10 +2772,10 @@ await demo()</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># thread</span>
-<span class="o">%</span><span class="n">callers</span> <span class="c1"># magic provided by async kernel</span>
+<span class="o">%</span><span class="n">callers</span> <span class="c1"># magic provided by async-kernel</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-7"># thread
-%callers # magic provided by async kernel</div>
+%callers # magic provided by async-kernel</div>
 </div>
 </div>
 </div>
@@ -2949,7 +2787,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>              Name             Running Protected             Thread                    Caller       </pre>
+<pre>           Name          Running Protected          Thread                 Caller       </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2962,7 +2800,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>─────────────────────────────────────────────────────────────────────────────────────────────────────────</pre>
+<pre>─────────────────────────────────────────────────────────────────────────────────────────────</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2975,7 +2813,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell                             ✓       🔐               MainThread          140486618172976</pre>
+<pre>Shell                       ✓       🔐            MainThread       139721138818608</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2988,7 +2826,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control                           ✓       🔐                Control            140486555559760</pre>
+<pre>Control                     ✓       🔐             Control         139721076435488</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3001,7 +2839,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async-kernel thread_queue         ✓                async-kernel thread_queue   140486555763968</pre>
+<pre>Shell thread_queue          ✓       🔐        Shell thread_queue   139721076748608</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3014,7 +2852,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller               ✓                   async_kernel_caller      140485496774992 ← current</pre>
+<pre>async_kernel_caller         ✓                async_kernel_caller   139720532645056 ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3057,7 +2895,7 @@ await demo()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 28, 2026 23:42:25 UTC"><span class="timeago" datetime="2026-02-28T23:42:25+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 28, 2026 23:42:25 UTC">2026-02-28</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 9, 2026 07:13:26 UTC"><span class="timeago" datetime="2026-03-09T07:13:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 9, 2026 07:13:26 UTC">2026-03-09</span>
   </span>
 
     
@@ -3102,7 +2940,7 @@ await demo()</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../simple_example/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Simple example">
+          <a href="../../usage/commands/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Command line">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3112,20 +2950,20 @@ await demo()</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Simple example
+                Command line
               </div>
             </div>
           </a>
         
         
           
-          <a href="../caller/" class="md-footer__link md-footer__link--next" aria-label="Next: Caller">
+          <a href="../caller/" class="md-footer__link md-footer__link--next" aria-label="Next: Caller: A backend agnostic executor (notebook)">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Caller
+                Caller: A backend agnostic executor (notebook)
               </div>
             </div>
             <div class="md-footer__button md-icon">

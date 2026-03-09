@@ -503,88 +503,15 @@ viewing the latest version.
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../notebooks/" class="md-nav__link ">
-              
-  
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 10h5.5L14 4.5zM5 3h10l6 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2m0 9v2h14v-2zm0 4v2h9v-2z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    Notebooks
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Notebooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../notebooks/simple_example/" class="md-nav__link">
+      <a href="../../usage/commands/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Simple example
+    Command line
   
 
     
@@ -612,7 +539,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Concurrency
+    Concurrent message handling (notebook)
   
 
     
@@ -640,71 +567,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/commands/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Commands
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/message_handling/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Message handling
+    Caller: A backend agnostic executor (notebook)
   
 
     
@@ -4694,7 +4557,7 @@ viewing the latest version.
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../../usage/commands/#command-line-and-kernel-configuration">Command line and kernel configuration</a>
+      <a href="../../usage/commands/#command-line">Command line</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
@@ -10473,7 +10336,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
   
       instance-attribute
    (async_kernel.typing.RunSettings.loop)" href="#async_kernel.typing.RunSettings.loop">loop</a></code></b>
-              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="#async_kernel.typing.Loop">Loop</a> | None]</code>)
+              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="#async_kernel.typing.Loop">Loop</a> | None | <a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;tk&#39;, &#39;qt&#39;]]</code>)
           –
           <div class="doc-md-description">
             <p>The type of eventloop where the backend will run.</p>
@@ -10505,7 +10368,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
     <span class="n">backend_options</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
     <span class="s2">&quot;The backend options to specify for [anyio.run][] (or `start_guest_run` when a loop is specified).&quot;</span>
 
-    <span class="n">loop</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Loop</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">loop</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Loop</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;tk&quot;</span><span class="p">,</span> <span class="s2">&quot;qt&quot;</span><span class="p">]]</span>
     <span class="s2">&quot;The type of eventloop where the backend will run.&quot;</span>
 
     <span class="s2">&quot;Options to use when calling [async_kernel.eventloop.run][].&quot;</span>
@@ -10586,7 +10449,7 @@ to map the message type and channel (<code>shell</code> or <code>control</code>)
   </span>
 
 <a href="#async_kernel.typing.RunSettings.loop" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="#async_kernel.typing.Loop">Loop</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="#async_kernel.typing.Loop">Loop</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s1">&#39;tk&#39;</span><span class="p">,</span> <span class="s1">&#39;qt&#39;</span><span class="p">]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
