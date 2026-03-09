@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import builtins
 import contextlib
+import os
 import pathlib
 import sys
 import time
@@ -30,7 +31,7 @@ from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
-from async_kernel.typing import Content, NoValue, Tags
+from async_kernel.typing import Channel, Content, NoValue, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -132,7 +133,13 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 pass
             if msg is None:
                 return
-        self.shell.kernel.iopub_send(msg)
+        if "application/vnd.jupyter.widget-view+json" in data and os.environ.get("VSCODE_CWD"):  # pragma: no cover
+            # ref: https://github.com/microsoft/vscode-jupyter/wiki/Component:-IPyWidgets#two-widget-managers
+            # On occasion we get `Error 'widget model not found'`
+            # As a work-around inject a delay so the widget can be registered first.
+            self.shell.kernel.callers[Channel.control].call_later(0.2, self.shell.kernel.iopub_send, msg)
+        else:
+            self.shell.kernel.iopub_send(msg)
 
     @override
     def clear_output(self, wait: bool = False) -> None:
