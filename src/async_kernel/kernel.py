@@ -46,20 +46,6 @@ if TYPE_CHECKING:
 __all__ = ["Kernel", "KernelInterruptError"]
 
 
-@functools.cache
-def cache_wrap_handler(
-    subshell_id: str | None,
-    send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
-    runner: Callable[[str | None, Callable[[Job, dict], CoroutineType[Any, Any, None]], HandlerType, Job]],
-    handler: HandlerType,
-) -> Callable[[Job], CoroutineType[Any, Any, None]]:
-    @functools.wraps(handler)
-    async def wrap_handler(job: Job) -> None:
-        await runner(subshell_id, send_reply, handler, job)
-
-    return wrap_handler
-
-
 class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     """
     A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell]
@@ -110,6 +96,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _restart = False
 
     _settings = Fixed(dict)
+    _handler_cache: Fixed[
+        Self, dict[tuple[str | None, Callable, HandlerType], Callable[[Job], CoroutineType[Any, Any, None]]]
+    ] = Fixed(dict)
 
     interface = traitlets.Instance(BaseKernelInterface)
     "The abstraction to communicate with the kernel."
@@ -397,7 +386,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 subshell_id = job["msg"]["header"]["subshell_id"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
             except KeyError:
                 subshell_id = None
-        handler = cache_wrap_handler(subshell_id, send_reply, self.run_handler, self.get_handler(msg_type))
+        handler = self.get_handler(subshell_id, send_reply, self.run_handler, msg_type)
         caller = self.callers[channel]
         if msg_type is MsgType.execute_request:
             #  execute requests can be run with different run modes
@@ -415,11 +404,32 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             caller.queue_call(handler, job)
         self.log.debug("%s %s %s", msg_type, handler, job)
 
-    def get_handler(self, msg_type: MsgType) -> HandlerType:
-        if not callable(f := getattr(self, msg_type, None)):
-            msg = f"A handler was not found for {msg_type=}"
-            raise TypeError(msg)
-        return f  # pyright: ignore[reportReturnType]
+    def get_handler(
+        self,
+        subshell_id: str | None,
+        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
+        runner: Callable[[str | None, Callable[[Job, dict], CoroutineType[Any, Any, None]], HandlerType, Job]],
+        msg_type: MsgType,
+    ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
+
+        handler: HandlerType = getattr(self, msg_type)
+
+        key = subshell_id, send_reply, handler
+        try:
+            return self._handler_cache[key]
+        except KeyError:
+
+            @functools.wraps(handler)
+            async def wrap_handler(job: Job) -> None:
+                await runner(subshell_id, send_reply, handler, job)
+
+            self._handler_cache[key] = wrap_handler
+            return wrap_handler
+
+    def _subshell_stopped(self, subshell_id: str) -> None:
+        for key in list(self._handler_cache):
+            if key[0] == subshell_id:
+                self._handler_cache.pop(key)
 
     async def run_handler(
         self,

@@ -635,6 +635,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
             for pen in self.pending_manager.pending:
                 pen.cancel(f"Subshell {self.subshell_id} is stopping.")
             self.reset(new_session=False)
+            self.kernel._subshell_stopped(self.subshell_id)  # pyright: ignore[reportPrivateUsage]
             self.kernel.subshell_manager.subshells.pop(self.subshell_id, None)
             self.set_trait("stopped", True)
 

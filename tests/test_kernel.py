@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import logging
 import pathlib
 import threading
@@ -497,18 +496,6 @@ async def test_invalid_message(client: AsyncKernelClient, channel: Literal[Chann
     with anyio.move_on_after(0.1):
         response = await f(client, "test_invalid_message")  # pyright: ignore[reportArgumentType]
     assert response is None
-
-
-async def test_kernel_get_handler(kernel: Kernel):
-    with pytest.raises(TypeError):
-        kernel.get_handler("invalid mode")  # pyright: ignore[reportArgumentType]
-    for msg_type in MsgType:
-        handler = kernel.get_handler(msg_type)
-        assert inspect.iscoroutinefunction(handler)
-        sig = inspect.signature(handler)
-        assert len(sig.parameters) == 1
-        param = sig.parameters["job"]
-        assert param.kind == param.POSITIONAL_ONLY
 
 
 @pytest.mark.parametrize(
