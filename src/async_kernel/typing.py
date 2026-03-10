@@ -100,10 +100,7 @@ class Channel(enum.StrEnum):
 
 class RunMode(enum.StrEnum):
     """
-    An Enum of the run modes available for handling [Messages][async_kernel.typing.Message].
-
-    [async_kernel.kernel.Kernel.msg_handler][] uses [get_run_mode][async_kernel.kernel.Kernel.get_run_mode]
-    to map the message type and channel (`shell` or `control`) to the `RunMode`.
+    An Enum of the run modes available for handling `execute_request` messages.
 
     Cell overrides:
         The user can also specify an execution mode in execute requests.
@@ -115,7 +112,7 @@ class RunMode(enum.StrEnum):
             or
 
             ```python
-            ##task
+            # thread
             ```
     """
 

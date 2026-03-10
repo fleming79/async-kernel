@@ -443,7 +443,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
-        session, log, message_handler = self.session, self.log, self.kernel.msg_handler
+        session, log, message_handler = self.session, self.log, self.kernel.message_handler
         with self._bind_socket(channel) as socket:
             lock = BinarySemaphore()
 

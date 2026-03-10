@@ -514,7 +514,7 @@ async def test_invalid_message(client: AsyncKernelClient, channel: Literal[Chann
 async def test_get_run_mode(kernel: Kernel, code: str, silent: bool, expected: RunMode, job: Job[ExecuteContent]):
     job["msg"]["content"]["code"] = code
     job["msg"]["content"]["silent"] = silent
-    mode = kernel.get_run_mode(job)
+    mode = kernel._get_execute_request_run_mode(job)
     assert mode is expected
 
 

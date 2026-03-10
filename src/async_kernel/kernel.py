@@ -96,9 +96,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _restart = False
 
     _settings = Fixed(dict)
-    _handler_cache: Fixed[
-        Self, dict[tuple[str | None, Callable, HandlerType], Callable[[Job], CoroutineType[Any, Any, None]]]
-    ] = Fixed(dict)
+    _handler_cache: Fixed[Self, dict[tuple[str | None, MsgType, Callable], HandlerType]] = Fixed(dict)
 
     interface = traitlets.Instance(BaseKernelInterface)
     "The abstraction to communicate with the kernel."
@@ -339,6 +337,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self.shell.reset(new_session=False)
         self.subshell_manager.stop_all_subshells(force=True)
         self.callers.clear()
+        self._handler_cache.clear()
         Kernel._instance = None
         AsyncInteractiveShell.clear_instance()
         await anyio.sleep(0.1)
@@ -369,15 +368,33 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         """prefixed topic for IOPub messages."""
         return (f"kernel.{topic}").encode()
 
-    def msg_handler(
+    def message_handler(
         self,
         channel: Literal[Channel.shell, Channel.control],
         msg_type: MsgType,
         job: Job,
         send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
         /,
-    ):
-        """Schedule a message to be executed."""
+    ) -> None:
+        """
+        Schedule the job for execution in a dedicated handler by `(subshell_id, msg_type, send_reply)`.
+
+        'execute_request' and 'com_msg' are handled by the shells caller (typically the MainThread).
+        All other shell messages are handled in a separate thread "Shell-hidden".
+
+        'execute_request' messages can also specify alternate run modes:
+            - task: Run the execute request as a task.
+            - thread: Run the execute request in a worker thread.
+
+            The alternate run mode can be specified in a few ways:
+            - as a comment on the first line of the code block `# task` or `# thread`.
+            - As a tag `thread` or `task`
+
+        Args:
+            channel: The channel the message arrived on.
+            msg_type: The type of msg.
+            job: A dict with the msg and supporting details.
+        """
         # Note: There are never any active pending trackers in this context.
         try:
             subshell_id = job["msg"]["content"]["subshell_id"]
@@ -386,136 +403,83 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                 subshell_id = job["msg"]["header"]["subshell_id"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
             except KeyError:
                 subshell_id = None
-        handler = self.get_handler(subshell_id, send_reply, self.run_handler, msg_type)
+        handler = self._get_handler(subshell_id, msg_type, send_reply)
         caller = self.callers[channel]
+        run_mode = RunMode.queue
         if msg_type is MsgType.execute_request:
-            #  execute requests can be run with different run modes
-            match self.get_run_mode(job):
-                case RunMode.queue:
-                    caller.queue_call(handler, job)
-                case RunMode.task:
-                    caller.call_soon(handler, job)
-                case RunMode.thread:
-                    caller.to_thread(handler, job)
-        else:
-            if channel is Channel.shell and msg_type is not MsgType.comm_msg:
-                # Except for comm_msg, handle the message in a separate thread.
-                caller = self.callers[Channel.shell].get(name="Shell thread_queue", no_debug=True, protected=True)
-            caller.queue_call(handler, job)
+            run_mode = self._get_execute_request_run_mode(job)
+        elif channel is Channel.shell and msg_type is not MsgType.comm_msg:
+            caller = self.callers[Channel.shell].get(name="Shell-hidden", no_debug=True, protected=True)
+        # Schedule job
+        match run_mode:
+            case RunMode.queue:
+                caller.queue_call(handler, job)
+            case RunMode.task:
+                caller.call_soon(handler, job)
+            case RunMode.thread:
+                caller.to_thread(handler, job)
         self.log.debug("%s %s %s", msg_type, handler, job)
 
-    def get_handler(
+    def _get_handler(
         self,
         subshell_id: str | None,
-        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
-        runner: Callable[[str | None, Callable[[Job, dict], CoroutineType[Any, Any, None]], HandlerType, Job]],
         msg_type: MsgType,
-    ) -> Callable[[Job], CoroutineType[Any, Any, None]]:
+        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
+    ) -> HandlerType:
 
         handler: HandlerType = getattr(self, msg_type)
-
-        key = subshell_id, send_reply, handler
+        key = subshell_id, msg_type, send_reply
         try:
             return self._handler_cache[key]
         except KeyError:
 
             @functools.wraps(handler)
-            async def wrap_handler(job: Job) -> None:
-                await runner(subshell_id, send_reply, handler, job)
+            async def run_handler(job: Job) -> None:
+                job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+                subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
 
-            self._handler_cache[key] = wrap_handler
-            return wrap_handler
+                try:
+                    self.iopub_send(
+                        msg_or_type="status",
+                        parent=job["msg"],
+                        content={"execution_state": "busy"},
+                        ident=self.topic(topic="status"),
+                    )
+                    if (content := await handler(job)) is not None:
+                        await send_reply(job, content)
+                except Exception as e:
+                    await send_reply(job, utils.error_to_content(e))
+                    self.log.exception("Exception in message handler:", exc_info=e)
+                finally:
+                    utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
+                    ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
+                    self.iopub_send(
+                        msg_or_type="status",
+                        parent=job["msg"],
+                        content={"execution_state": "idle"},
+                        ident=self.topic("status"),
+                    )
+                    del job
+
+            self._handler_cache[key] = run_handler
+            return run_handler
 
     def _subshell_stopped(self, subshell_id: str) -> None:
         for key in list(self._handler_cache):
             if key[0] == subshell_id:
-                self._handler_cache.pop(key)
+                self._handler_cache.pop(key, None)
 
-    async def run_handler(
-        self,
-        subshell_id: str | None,
-        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
-        handler: HandlerType,
-        job: Job[dict],
-    ) -> None:
-        """
-        Asynchronously run a message handler for a given job, managing reply sending and execution state.
-
-        Args:
-            subshell_id: The id of the subshell to set the context of the handler.
-            send_reply: A coroutine function responsible for sending the reply.
-            handler: A coroutine function to handle the job / message.
-
-                - It is a method on the kernel whose name corresponds to the [message type that it handles][async_kernel.typing.MsgType].
-                - The handler should return a dict to use as 'content'in a reply.
-                - If status is not included in the dict it gets added automatically as `{'status': 'ok'}`.
-                - If a reply is not expected the handler should return `None`.
-
-            job: The job dictionary containing message, socket, and identification information.
-
-        Workflow:
-            - Sets the current job and subshell_id context variables.
-            - Sends a "busy" status message on the IOPub channel.
-            - Awaits the handler; if the handler returns a content dict, a reply is sent using send_reply.
-            - On exception, sends an error reply and logs the exception.
-            - Resets the job and subshell_id context variables.
-            - Sends an "idle" status message on the IOPub channel.
-
-        Notes:
-            - Replies are sent even if exceptions occur in the handler.
-            - The reply message type is derived from the original request type.
-        """
-        job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
-
-        try:
-            self.iopub_send(
-                msg_or_type="status",
-                parent=job["msg"],
-                content={"execution_state": "busy"},
-                ident=self.topic(topic="status"),
-            )
-            if (content := await handler(job)) is not None:
-                await send_reply(job, content)
-        except Exception as e:
-            await send_reply(job, utils.error_to_content(e))
-            self.log.exception("Exception in message handler:", exc_info=e)
-        finally:
-            utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
-            ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
-            self.iopub_send(
-                msg_or_type="status",
-                parent=job["msg"],
-                content={"execution_state": "idle"},
-                ident=self.topic("status"),
-            )
-            del job
-
-    def get_run_mode(self, job: Job, /) -> RunMode:
-        """
-        Determine the run mode `execute_request` job.
-
-        Args:
-            job: The job.
-
-        Returns:
-            The run mode.
-        """
-        # receive_msg_loop - DEBUG WARNING
-
+    def _get_execute_request_run_mode(self, job: Job, /) -> RunMode:
         # TODO: Are any of these options worth including?
         # if mode_from_metadata := job["msg"]["metadata"].get("run_mode"):
         #     return RunMode( mode_from_metadata)
         # if mode_from_header := job["msg"]["header"].get("run_mode"):
         #     return RunMode( mode_from_header)
-
         if content := job["msg"].get("content", {}):
             if code := content.get("code"):
                 try:
                     if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
                         return RunMode(code[2:])
-                    if code.startswith("RunMode."):
-                        return RunMode(code.removeprefix("RunMode."))
                 except ValueError:
                     pass
             if content.get("silent"):

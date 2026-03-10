@@ -163,7 +163,7 @@ class CallableKernelInterface(BaseKernelInterface):
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
         msg["channel"] = Channel(msg["channel"])
         job = Job(received_time=time.monotonic(), msg=msg, ident=b"")
-        self.kernel.msg_handler(msg["channel"], MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)  # pyright: ignore[reportArgumentType]
+        self.kernel.message_handler(msg["channel"], MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)  # pyright: ignore[reportArgumentType]
 
     @override
     def iopub_send(
