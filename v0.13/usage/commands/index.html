@@ -13,21 +13,21 @@
         <link rel="canonical" href="https://fleming79.github.io/async-kernel/v0.13/usage/commands/">
       
       
-        <link rel="prev" href="../../notebooks/caller/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../message_handling/">
+        <link rel="next" href="../../notebooks/concurrency/">
       
       
         
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>Commands - async-kernel</title>
+        <title>Command line - async-kernel</title>
       
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#command-line-and-kernel-configuration" class="md-skip">
+        <a href="#command-line" class="md-skip">
           Skip to content
         </a>
       
@@ -142,7 +142,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Commands
+              Command line
             
           </span>
         </div>
@@ -506,171 +506,6 @@ viewing the latest version.
                 
   
   
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../notebooks/" class="md-nav__link ">
-              
-  
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 10h5.5L14 4.5zM5 3h10l6 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2m0 9v2h14v-2zm0 4v2h9v-2z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    Notebooks
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Notebooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../notebooks/simple_example/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simple example
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../notebooks/concurrency/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Concurrency
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../notebooks/caller/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Caller
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -690,7 +525,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Commands
+    Command line
   
 
     
@@ -708,7 +543,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Commands
+    Command line
   
 
     
@@ -899,14 +734,42 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../message_handling/" class="md-nav__link">
+      <a href="../../notebooks/concurrency/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Message handling
+    Concurrent message handling (notebook)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/caller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caller: A backend agnostic executor (notebook)
   
 
     
@@ -1795,7 +1658,7 @@ viewing the latest version.
   
 
 
-<h1 id="command-line-and-kernel-configuration">Command line and kernel configuration<a class="headerlink" href="#command-line-and-kernel-configuration" title="Permanent link">&para;</a></h1>
+<h1 id="command-line">Command line<a class="headerlink" href="#command-line" title="Permanent link">&para;</a></h1>
 <p>The command <code>async-kernel</code> and alias <code>async_kernel</code> are provided at the command line.</p>
 <p>The primary options available are:</p>
 <ul>
@@ -1832,7 +1695,7 @@ viewing the latest version.
 <span class="w">    </span><span class="nt">&quot;kernel_protocol_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5.5&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>A single kernel spec is created in the folder <code>&lt;sys.prefix&gt;/share/jupyter/kernels/async</code> when async kernel is installed with the following defaults.</p>
+<p>A single kernel spec is created in the folder <code>&lt;sys.prefix&gt;/share/jupyter/kernels/async</code> when async-kernel is installed with the following defaults.</p>
 <p><strong>Defaults</strong></p>
 <ul>
 <li>name: 'async'</li>
@@ -1887,7 +1750,7 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="
 Trio provides the function <a class="autorefs autorefs-external" href="https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run">trio.lowlevel.start_guest_run</a> which allows it to run
 as a guest alongside the host event loop by means of callbacks. The author of
 aiologic has provided an (experimental) asyncio equivalent (<a href="https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779">gist</a>).</p>
-<p>async kernel supports configuration of one host and one backend for the kernel.
+<p>async-kernel supports configuration of one host and one backend for the kernel.
 Below are some example kernel specs for host and backend kernel specs.</p>
 <h3 id="tk">tk<a class="headerlink" href="#tk" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="gp"># </span>tk<span class="w"> </span>host<span class="w"> </span>asyncio<span class="w"> </span>backend
@@ -2029,7 +1892,7 @@ prior to setting.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 28, 2026 23:42:25 UTC"><span class="timeago" datetime="2026-02-28T23:42:25+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 28, 2026 23:42:25 UTC">2026-02-28</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 9, 2026 07:13:26 UTC"><span class="timeago" datetime="2026-03-09T07:13:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 9, 2026 07:13:26 UTC">2026-03-09</span>
   </span>
 
     
@@ -2074,7 +1937,7 @@ prior to setting.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../notebooks/caller/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Caller">
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Usage">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2084,20 +1947,20 @@ prior to setting.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Caller
+                Usage
               </div>
             </div>
           </a>
         
         
           
-          <a href="../message_handling/" class="md-footer__link md-footer__link--next" aria-label="Next: Message handling">
+          <a href="../../notebooks/concurrency/" class="md-footer__link md-footer__link--next" aria-label="Next: Concurrent message handling (notebook)">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Message handling
+                Concurrent message handling (notebook)
               </div>
             </div>
             <div class="md-footer__button md-icon">

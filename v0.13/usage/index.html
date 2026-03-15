@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Usage tips for async kernel.">
+        <meta name="description" content="Usage tips for async-kernel.">
       
       
       
@@ -16,14 +16,14 @@
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../notebooks/">
+        <link rel="next" href="commands/">
       
       
         
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -508,88 +508,15 @@ viewing the latest version.
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../notebooks/" class="md-nav__link ">
-              
-  
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 10h5.5L14 4.5zM5 3h10l6 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2m0 9v2h14v-2zm0 4v2h9v-2z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    Notebooks
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Notebooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../notebooks/simple_example/" class="md-nav__link">
+      <a href="commands/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Simple example
+    Command line
   
 
     
@@ -617,7 +544,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Concurrency
+    Concurrent message handling (notebook)
   
 
     
@@ -645,71 +572,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="commands/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Commands
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="message_handling/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Message handling
+    Caller: A backend agnostic executor (notebook)
   
 
     
@@ -1381,74 +1244,13 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#blocking-code" class="md-nav__link">
+  <a href="#notebooks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Blocking code
+        Notebooks
       
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#caller" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Caller
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Caller">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#get-a-caller" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get a Caller
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#typical-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Typical usage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#callerget" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Caller.get
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#callerto_thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Caller.to_thread
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1521,93 +1323,30 @@ viewing the latest version.
 
 
 <h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
-<p>async kernel provides a Jupyter kernel that can be used in:</p>
 <ul>
-<li>Jupyter</li>
-<li>VS code</li>
-<li>Other places that can us a python kernel without a gui event loop</li>
-</ul>
-<p>Normal Execute requests are queued for execution and will be run sequentially.
-Awaiting in cells is fully supported and will not block shell messaging.</p>
-<p>Please refer to the notebooks which demonstrate some usage examples.</p>
-<h2 id="blocking-code">Blocking code<a class="headerlink" href="#blocking-code" title="Permanent link">&para;</a></h2>
-<p>Blocking code should be run in a separate thread using one of the following:</p>
-<ol>
-<li><a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync">anyio</a></li>
-<li><a class="autorefs autorefs-internal" title="            to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">async_kernel.caller.Caller.to_thread</a></li>
-<li>Using the backend's library<ul>
-<li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread">asyncio.to_thread</a></li>
-<li><a class="autorefs autorefs-external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.to_thread.run_sync">trio.to_thread.run_sync</a></li>
+<li><a href="commands/">Command line</a>: Detail about command line usage including:<ul>
+<li>Adding a kernel spec</li>
+<li>Deleting a kernel spec</li>
+<li>Starting a kernel</li>
 </ul>
 </li>
+</ul>
+<h2 id="notebooks">Notebooks<a class="headerlink" href="#notebooks" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../notebooks/caller/">Caller: A backend agnostic executor</a></li>
+<li><a href="../notebooks/concurrency/">Concurrent message handling</a></li>
+</ul>
+<p>Notebooks<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> in this documentation show the result of each cell after executing for a short duration (~100ms).
+Notebooks are designed run with a Jupyter frontend.</p>
+<p>You can download the notebook with the button at the top right of the page for the notebook.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Further detail about how notebooks are generated is provided <a href="../about/contributing/#notebooks">here</a>.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
 </ol>
-<h2 id="caller">Caller<a class="headerlink" href="#caller" title="Permanent link">&para;</a></h2>
-<p><a class="autorefs autorefs-internal" title="            Caller" href="../reference/caller/#async_kernel.caller.Caller">Caller</a> was originally developed to simplify message handling in the
-<a class="autorefs autorefs-internal" title="            Kernel" href="../reference/kernel/#async_kernel.kernel.Kernel">Kernel</a>. It is now a capable tool in its own right with a convenient
-interface for executing synchronous and asynchronous code in its corresponding thread.</p>
-<h3 id="get-a-caller">Get a Caller<a class="headerlink" href="#get-a-caller" title="Permanent link">&para;</a></h3>
-<p>When there is a backend already running in the current thread use:</p>
-<div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span>
-</code></pre></div>
-<h3 id="typical-usage">Typical usage<a class="headerlink" href="#typical-usage" title="Permanent link">&para;</a></h3>
-<p>Caller is thread based scheduler that is designed to run code asynchronously.</p>
-<div class="highlight"><pre><span></span><code><span class="n">pen</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">my_async_func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-<span class="n">my_result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pen</span>
-</code></pre></div>
-<p>It can also be used for structured concurrency styled workflows.</p>
-<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">create_pending_group</span><span class="p">()</span> <span class="k">as</span> <span class="n">pg</span><span class="p">:</span>
-    <span class="n">pg</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">my_async_func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div>
-<h4 id="modifier">Modifier<a class="headerlink" href="#modifier" title="Permanent link">&para;</a></h4>
-<p>A modifier can be passed as the first arg to modify which caller instance is returned:</p>
-<div class="highlight"><pre><span></span><code><span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;MainThread&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>The options are:</p>
-<ul>
-<li>"CurrentThread": A caller for the current thread (default). An backend must already be running in the current thread.</li>
-<li>"MainThread": A caller for the main thread.</li>
-<li>"NewThread": A new thread is always created with the desired configuration.</li>
-<li>"manual": A new caller instance is created in the current thread, there must not already be a caller
-  for the current thread. It must be started either - synchronously: with <a class="autorefs autorefs-internal" title="            start_sync" href="../reference/caller/#async_kernel.caller.Caller.start_sync">caller.start_sync</a>. - asynchronously: by entering the async context.</li>
-</ul>
-<h3 id="callerget"><code>Caller.get</code><a class="headerlink" href="#callerget" title="Permanent link">&para;</a></h3>
-<p><a class="autorefs autorefs-internal" title="            get" href="../reference/caller/#async_kernel.caller.Caller.get">Caller.get</a> can be used to create a child thread with a caller.
-A child caller is closed when the parent is closed. The same caller can be access by specifying a name.</p>
-<p>The following options are copied from the parent when not specified in the function call.</p>
-<ul>
-<li>'zmq_context'</li>
-<li>'backend'</li>
-<li>'backend_options' (only if the backend matches)</li>
-</ul>
-<h3 id="callerto_thread"><code>Caller.to_thread</code><a class="headerlink" href="#callerto_thread" title="Permanent link">&para;</a></h3>
-<p><a class="autorefs autorefs-internal" title="            to_thread" href="../reference/caller/#async_kernel.caller.Caller.to_thread">Caller.to_thread</a> performs execute requests in a dedicated caller
-using the same backend and zmq context as the parent. A pool of workers is retained to handle to thread
-calls, but are shutdown when no longer required.</p>
-<h4 id="worker-lifespan">worker lifespan<a class="headerlink" href="#worker-lifespan" title="Permanent link">&para;</a></h4>
-<p>The <code>to_thread</code> call is synchronous and returns a Pending for the result of execution. When the
-Pending is done the worker becomes 'idle'. The following settings affect what happens to the idle worker:</p>
-<ul>
-<li><a class="autorefs autorefs-internal" title="            MAX_IDLE_POOL_INSTANCES
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="../reference/caller/#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES">Caller.MAX_IDLE_POOL_INSTANCES</a>:
-  When a worker becomes idle it will stop immediately if the number of idle workers equals this value.</li>
-<li><a class="autorefs autorefs-internal" title="            IDLE_WORKER_SHUTDOWN_DURATION
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="../reference/caller/#async_kernel.caller.Caller.IDLE_WORKER_SHUTDOWN_DURATION">Caller.IDLE_WORKER_SHUTDOWN_DURATION</a>:
-  If this value is greater than zero a thread is started that periodically checks and stops workers
-  that have been idle for a duration exceeding this value.</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="n">my_worker</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;my own worker&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span>
-</code></pre></div>
+</div>
 
 
 
@@ -1630,7 +1369,7 @@ Pending is done the worker becomes 'idle'. The following settings affect what ha
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 28, 2026 23:42:25 UTC"><span class="timeago" datetime="2026-02-28T23:42:25+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 28, 2026 23:42:25 UTC">2026-02-28</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 9, 2026 07:13:26 UTC"><span class="timeago" datetime="2026-03-09T07:13:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 9, 2026 07:13:26 UTC">2026-03-09</span>
   </span>
 
     
@@ -1692,13 +1431,13 @@ Pending is done the worker becomes 'idle'. The following settings affect what ha
         
         
           
-          <a href="../notebooks/" class="md-footer__link md-footer__link--next" aria-label="Next: Notebooks">
+          <a href="commands/" class="md-footer__link md-footer__link--next" aria-label="Next: Command line">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Notebooks
+                Command line
               </div>
             </div>
             <div class="md-footer__button md-icon">

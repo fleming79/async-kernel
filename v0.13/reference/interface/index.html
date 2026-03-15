@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -503,88 +503,15 @@ viewing the latest version.
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../notebooks/" class="md-nav__link ">
-              
-  
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 10h5.5L14 4.5zM5 3h10l6 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2m0 9v2h14v-2zm0 4v2h9v-2z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    Notebooks
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Notebooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../notebooks/simple_example/" class="md-nav__link">
+      <a href="../../usage/commands/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Simple example
+    Command line
   
 
     
@@ -612,7 +539,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Concurrency
+    Concurrent message handling (notebook)
   
 
     
@@ -640,71 +567,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/commands/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Commands
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../usage/message_handling/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Message handling
+    Caller: A backend agnostic executor (notebook)
   
 
     
@@ -3701,7 +3564,7 @@ viewing the latest version.
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../../usage/commands/#command-line-and-kernel-configuration">Command line and kernel configuration</a>
+      <a href="../../usage/commands/#command-line">Command line</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
@@ -5162,7 +5025,7 @@ format, which is a list of message parts.</p>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../../usage/commands/#command-line-and-kernel-configuration">Command line and kernel configuration</a>
+      <a href="../../usage/commands/#command-line">Command line</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
@@ -6307,7 +6170,7 @@ kernel_interface["stop"](msg, buffer)
         <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;buffers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="p">[:]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">buffers</span><span class="p">]</span> <span class="k">if</span> <span class="n">buffers</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">])</span>
         <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">received_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">msg_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">],</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">]),</span> <span class="n">job</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_reply</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">],</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">]),</span> <span class="n">job</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_reply</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
@@ -7288,7 +7151,8 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
-<span class="normal">533</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
+<span class="normal">533</span>
+<span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
     <span class="s2">&quot;An interface for the kernel that uses zmq sockets.&quot;</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span>
@@ -7632,7 +7496,7 @@ kernel_interface["stop"](msg, buffer)
         <span class="k">if</span> <span class="ow">not</span> <span class="n">utils</span><span class="o">.</span><span class="n">LAUNCHED_BY_DEBUGPY</span><span class="p">:</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">mark_thread_pydev_do_not_trace</span><span class="p">()</span>
 
-        <span class="n">session</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">message_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">msg_handler</span>
+        <span class="n">session</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">message_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">message_handler</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_socket</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="k">as</span> <span class="n">socket</span><span class="p">:</span>
             <span class="n">lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
 
@@ -7718,7 +7582,8 @@ kernel_interface["stop"](msg, buffer)
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform a keyboard interrupt.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">stopped_threads</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -7950,7 +7815,7 @@ will be able to connect to the Kernel, so be careful!</p>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../../usage/commands/#command-line-and-kernel-configuration">Command line and kernel configuration</a>
+      <a href="../../usage/commands/#command-line">Command line</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
@@ -8440,7 +8305,7 @@ and is called by load_connection_file.</p>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">utils</span><span class="o">.</span><span class="n">LAUNCHED_BY_DEBUGPY</span><span class="p">:</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">mark_thread_pydev_do_not_trace</span><span class="p">()</span>
 
-    <span class="n">session</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">message_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">msg_handler</span>
+    <span class="n">session</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">message_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">message_handler</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_socket</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="k">as</span> <span class="n">socket</span><span class="p">:</span>
         <span class="n">lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
 
@@ -8503,12 +8368,14 @@ and is called by load_connection_file.</p>
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
-<span class="normal">533</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">533</span>
+<span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform a keyboard interrupt.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">stopped_threads</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
