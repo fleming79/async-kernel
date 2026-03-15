@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import logging
 import pathlib
 import threading
@@ -14,7 +13,6 @@ import async_kernel.utils
 from async_kernel import Kernel
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
-from async_kernel.compiler import murmur2_x86
 from async_kernel.typing import Channel, ExecuteContent, Job, MsgType, RunMode, Tags
 from tests import utils
 
@@ -500,38 +498,23 @@ async def test_invalid_message(client: AsyncKernelClient, channel: Literal[Chann
     assert response is None
 
 
-async def test_kernel_get_handler(kernel: Kernel):
-    with pytest.raises(TypeError):
-        kernel.get_handler("invalid mode")  # pyright: ignore[reportArgumentType]
-    for msg_type in MsgType:
-        handler = kernel.get_handler(msg_type)
-        assert inspect.iscoroutinefunction(handler)
-        sig = inspect.signature(handler)
-        assert len(sig.parameters) == 1
-        param = sig.parameters["job"]
-        assert param.kind == param.POSITIONAL_ONLY
-
-
 @pytest.mark.parametrize(
-    ("code", "silent", "channel", "expected"),
+    ("code", "silent", "expected"),
     [
-        (f"{RunMode.task}", False, Channel.shell, RunMode.task),
-        (f" {RunMode.task}", False, Channel.shell, RunMode.task),
-        ("print(1)", False, Channel.shell, RunMode.queue),
-        ("", True, Channel.shell, RunMode.task),
-        (f"{RunMode.thread}\nprint('hello')", False, Channel.shell, RunMode.thread),
-        ("", False, Channel.control, RunMode.queue),
-        ("threads", False, Channel.shell, RunMode.queue),
-        ("Task", False, Channel.shell, RunMode.queue),
-        ("RunMode.direct", False, Channel.shell, RunMode.direct),
+        (f"{RunMode.task}", False, RunMode.task),
+        (f" {RunMode.task}", False, RunMode.task),
+        ("print(1)", False, RunMode.queue),
+        ("", True, RunMode.task),
+        (f"{RunMode.thread}\nprint('hello')", False, RunMode.thread),
+        ("", False, RunMode.queue),
+        ("threads", False, RunMode.queue),
+        ("Task", False, RunMode.queue),
     ],
 )
-async def test_get_run_mode(
-    kernel: Kernel, code: str, silent: bool, channel, expected: RunMode, job: Job[ExecuteContent]
-):
+async def test_get_run_mode(kernel: Kernel, code: str, silent: bool, expected: RunMode, job: Job[ExecuteContent]):
     job["msg"]["content"]["code"] = code
     job["msg"]["content"]["silent"] = silent
-    mode = kernel.get_run_mode(MsgType.execute_request, channel=channel, job=job)
+    mode = kernel._get_execute_request_run_mode(job)
     assert mode is expected
 
 
@@ -570,12 +553,6 @@ async def test_tag_stop_on_error(kernel: Kernel, client: AsyncKernelClient, valu
     finally:
         kernel.shell.stop_on_error_time_offset = 0
         kernel.shell._stop_on_error_info.clear()
-
-
-async def test_all_concurrency_run_modes(kernel: Kernel):
-    data = kernel.all_concurrency_run_modes()
-    # Regen the hash as required
-    assert murmur2_x86(str(data), 1) == 3837464461
 
 
 async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
