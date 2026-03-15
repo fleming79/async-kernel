@@ -330,7 +330,7 @@ class Debugger(HasTraits):
             "success": True,
             "command": msg["command"],
             "body": {
-                "isStarted": self.debugpy_client.connected and not utils.LAUNCHED_BY_DEBUGPY,
+                "isStarted": self.debugpy_client.connected,
                 "hashMethod": compiler.hash_method,
                 "hashSeed": compiler.hash_seed,
                 "tmpFilePrefix": compiler.tmp_file_prefix,
