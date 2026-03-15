@@ -597,6 +597,28 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#shell-messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shell messaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control messaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#execute-request-run-mode" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1339,6 +1361,28 @@ viewing the latest version.
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#shell-messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shell messaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control messaging
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#execute-request-run-mode" class="md-nav__link">
@@ -2194,21 +2238,21 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel handles message requests concurrently. How the request is handled is a function of the channel and message type.</p>
-<p>The following <code>RunModes</code> are available.</p>
+<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel provides a separate message handler for each:</p>
 <ul>
-<li>direct: Run the handler directly in the message loop (recommend only for short running code)</li>
-<li>queue: Run in a queue (default for the <code>shell</code> channel)</li>
-<li>task: Run in a task (default for the <code>control</code> channel)</li>
-<li>thread: Run in a worker thread</li>
-<li>thread_queue: Run in a queue of a child thread.</li>
+<li>channel</li>
+<li>msg_type</li>
+<li>subshell_id</li>
 </ul>
-<p>The kernel decides the run mode dynamically with the method <a href="https://fleming79.github.io/async-kernel/latest/reference/kernel/?h=get_run_mod#async_kernel.kernel.Kernel.get_run_mode">get_run_mode</a>.</p>
+<p>As messages are received they are queued for execution by the message handler using <code>queue_call</code> on a <code>Caller</code>.</p>
+<h2 id="shell-messaging">Shell messaging<a class="anchor-link" href="#shell-messaging">¶</a></h2><p>Both <code>execute_request</code> and <code>com_msg</code> are run in the shell's thread (normally the MainThread).
+All other messages on the shell channel are run in a separate <em>hidden thread</em> "Shell-hidden".</p>
+<h2 id="control-messaging">Control messaging<a class="anchor-link" href="#control-messaging">¶</a></h2><p>All messages on the control channel are handled in the control thread.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2232,11 +2276,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">MsgType</span>
 
 <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
-
-<span class="n">kernel</span><span class="o">.</span><span class="n">get_run_mode</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import threading
 
@@ -2244,23 +2285,8 @@ import ipywidgets as ipw
 from aiologic import Event
 
 from async_kernel import utils
-from async_kernel.typing import MsgType
 
-kernel = utils.get_kernel()
-
-kernel.get_run_mode(MsgType.comm_msg)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[1]:</div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;RunMode.queue: 'queue'&gt;</pre>
+kernel = utils.get_kernel()</div>
 </div>
 </div>
 </div>
@@ -2273,187 +2299,8 @@ kernel.get_run_mode(MsgType.comm_msg)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Below is a list of the run modes according to the message type and channel.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">all_concurrency_run_modes</span><span class="p">()</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">data</span><span class="p">[</span><span class="s2">"RunMode"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">RunMode</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"##"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"MsgType"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"Channel"</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="s2">"RunMode"</span><span class="p">)</span>  <span class="c1"># noqa: PD010</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reindex</span><span class="p">([</span><span class="s2">"shell"</span><span class="p">,</span> <span class="s2">"control"</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">display</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-2">data = kernel.all_concurrency_run_modes()
-try:
-    import pandas as pd
-except ImportError:
-    print(data)
-else:
-    data = pd.DataFrame(data)
-    data["RunMode"] = data.RunMode.str.replace("##", "")
-    data = data.pivot(index="MsgType", columns=["Channel"], values="RunMode")  # noqa: PD010
-    data = data.reindex(["shell", "control"], axis=1)
-    display(data)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output custom-css-classes" data-mime-type="text/html" tabindex="0">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th>Channel</th>
-<th>shell</th>
-<th>control</th>
-</tr>
-<tr>
-<th>MsgType</th>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>comm_close</th>
-<td>queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>comm_info_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>comm_msg</th>
-<td>queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>comm_open</th>
-<td>queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>complete_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>create_subshell_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>debug_request</th>
-<td>thread_queue</td>
-<td>queue</td>
-</tr>
-<tr>
-<th>delete_subshell_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>execute_request</th>
-<td>queue</td>
-<td>queue</td>
-</tr>
-<tr>
-<th>history_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>inspect_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>interrupt_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>is_complete_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>kernel_info_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>list_subshell_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-<tr>
-<th>shutdown_request</th>
-<td>thread_queue</td>
-<td>direct</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="execute-request-run-mode">Execute request run mode<a class="anchor-link" href="#execute-request-run-mode">¶</a></h2><p>There are a few options to modify how code cells are run.</p>
+<h2 id="execute-request-run-mode">Execute request run mode<a class="anchor-link" href="#execute-request-run-mode">¶</a></h2><p>The run mode of <code>execute_request</code> can be modified to run an <code>execute_request</code> separately as a task or thread.</p>
+<p>There are a few options to modify the run mode.</p>
 <ul>
 <li>Metadata</li>
 <li>Directly in code</li>
@@ -2473,15 +2320,15 @@ else:
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2503,7 +2350,7 @@ else:
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished ... thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
     <span class="k">return</span> <span class="s2">"Finished"</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">async def demo():
+<div class="clipboard-copy-txt" id="cell-2">async def demo():
 
     print(f"Thread name: '{threading.current_thread().name}'")
     button = ipw.Button(description="Finish")
@@ -2520,7 +2367,7 @@ else:
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2531,12 +2378,89 @@ else:
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-3">await demo()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Thread name: 'MainThread'</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Button(description='Finish', style=ButtonStyle())</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="run-mode-task">Run mode: task<a class="anchor-link" href="#run-mode-task">¶</a></h3><p><code>task</code> mode instructs the kernel to execute the code in a task separate to the queue, Both <code>task</code> and <code>thread</code> execute modes can be started when the kernel is <em>busy executing</em>. There is no imposed limitation on the number of tasks (or threads) that can be run concurrently.</p>
+<p>See also the <a href="caller.ipynb#caller">Caller</a> example on how to call directly.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error" id="cell-id=7">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="celltoolbar">
+<div class="button_container tags_button_container">
+<span class="tag-container">
+<span class="cell-tag">suppress-error</span>
+</span>
+</div>
+</div>
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -2549,9 +2473,13 @@ else:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># task</span>
+<span class="c1"># Tip: try running this cell while the previous cell is still busy.</span>
+<span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">await demo()</div>
+<div class="clipboard-copy-txt" id="cell-4"># task
+# Tip: try running this cell while the previous cell is still busy.
+await demo()</div>
 </div>
 </div>
 </div>
@@ -2595,19 +2523,23 @@ else:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="run-mode-task">Run mode: task<a class="anchor-link" href="#run-mode-task">¶</a></h3><p><code>task</code> mode instructs the kernel to execute the code in a task separate to the queue, Both <code>task</code> and <code>thread</code> execute modes can be started when the kernel is <em>busy executing</em>. There is no imposed limitation on the number of tasks (or threads) that can be run concurrently.</p>
-<p>See also the <a href="caller.ipynb#caller">Caller</a> example on how to call directly.</p>
+<h3 id="run-mode-thread">Run mode: thread<a class="anchor-link" href="#run-mode-thread">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error" id="cell-id=9">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_thread celltag_suppress-error">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_thread celltag_suppress-error" id="cell-id=9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="celltoolbar">
+<div class="button_container tags_button_container">
+<span class="tag-container">
+<span class="cell-tag">thread</span>
+</span>
+</div>
 <div class="button_container tags_button_container">
 <span class="tag-container">
 <span class="cell-tag">suppress-error</span>
@@ -2626,95 +2558,10 @@ else:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># task</span>
-<span class="c1"># Tip: try running this cell while the previous cell is still busy.</span>
-<span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-5"># task
-# Tip: try running this cell while the previous cell is still busy.
-await demo()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Thread name: 'MainThread'</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Button(description='Finish', style=ButtonStyle())</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=10">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="run-mode-thread">Run mode: thread<a class="anchor-link" href="#run-mode-thread">¶</a></h3>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_thread celltag_suppress-error">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_thread celltag_suppress-error" id="cell-id=11">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="celltoolbar">
-<div class="button_container tags_button_container">
-<span class="tag-container">
-<span class="cell-tag">thread</span>
-</span>
-</div>
-<div class="button_container tags_button_container">
-<span class="tag-container">
-<span class="cell-tag">suppress-error</span>
-</span>
-</div>
-</div>
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># This time we'll use the tag to run the cell in a Thread</span>
 <span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6"># This time we'll use the tag to run the cell in a Thread
+<div class="clipboard-copy-txt" id="cell-5"># This time we'll use the tag to run the cell in a Thread
 await demo()</div>
 </div>
 </div>
@@ -2753,15 +2600,15 @@ await demo()</div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=12">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=10">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2774,7 +2621,7 @@ await demo()</div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># thread</span>
 <span class="o">%</span><span class="n">callers</span> <span class="c1"># magic provided by async-kernel</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7"># thread
+<div class="clipboard-copy-txt" id="cell-6"># thread
 %callers # magic provided by async-kernel</div>
 </div>
 </div>
@@ -2813,7 +2660,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell                       ✓       🔐            MainThread       139721138818608</pre>
+<pre>Shell                       ✓       🔐            MainThread       140678434180656</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2826,7 +2673,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control                     ✓       🔐             Control         139721076435488</pre>
+<pre>Control                     ✓       🔐             Control         140678371436464</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2839,7 +2686,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell thread_queue          ✓       🔐        Shell thread_queue   139721076748608</pre>
+<pre>Shell-hidden                ✓       🔐           Shell-hidden      140678371624816</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2852,7 +2699,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   139720532645056 ← current</pre>
+<pre>async_kernel_caller         ✓                async_kernel_caller   140678247863680 ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2895,7 +2742,7 @@ await demo()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 9, 2026 07:13:26 UTC"><span class="timeago" datetime="2026-03-09T07:13:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 9, 2026 07:13:26 UTC">2026-03-09</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 15, 2026 03:09:54 UTC"><span class="timeago" datetime="2026-03-15T03:09:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 15, 2026 03:09:54 UTC">2026-03-15</span>
   </span>
 
     
