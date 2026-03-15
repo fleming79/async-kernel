@@ -7151,7 +7151,8 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
-<span class="normal">533</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
+<span class="normal">533</span>
+<span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
     <span class="s2">&quot;An interface for the kernel that uses zmq sockets.&quot;</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span>
@@ -7581,7 +7582,8 @@ kernel_interface["stop"](msg, buffer)
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform a keyboard interrupt.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">stopped_threads</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -8366,12 +8368,14 @@ and is called by load_connection_file.</p>
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
-<span class="normal">533</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">533</span>
+<span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform a keyboard interrupt.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">stopped_threads</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
