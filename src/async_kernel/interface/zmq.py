@@ -377,7 +377,7 @@ class ZMQKernelInterface(BaseKernelInterface):
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:
         job = async_kernel.utils.get_job()
-        if not job["msg"].get("content", {}).get("allow_stdin", False):
+        if job is None or not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise StdinNotImplementedError(msg)
         socket = self.sockets[Channel.stdin]
