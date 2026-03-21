@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, Self
 import comm
 from aiologic.meta import import_module
 from comm.base_comm import BaseComm, BuffersType, MaybeDict
-from traitlets import Dict, HasTraits, Instance, observe
 from typing_extensions import override
 
 from async_kernel import utils
+from async_kernel.common import Fixed
 
 if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
@@ -28,7 +28,7 @@ class Comm(BaseComm):
         - publish_msg is no-op when kernel is unset.
     """
 
-    kernel: Kernel | None = None
+    kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
 
     @override
     def publish_msg(
@@ -40,11 +40,8 @@ class Comm(BaseComm):
         **keys,
     ):
         """Helper for sending a comm message on IOPub."""
-        if (kernel := self.kernel) is None:
-            # Only send when the kernel is set
-            return
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
-        kernel.iopub_send(
+        self.kernel.iopub_send(
             msg_or_type=msg_type,
             content=content,
             metadata=metadata,
@@ -60,20 +57,18 @@ class Comm(BaseComm):
             self._msg_callback(msg)
 
 
-class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class CommManager(comm.base_comm.CommManager):
     """
     The comm manager for all Comm instances.
 
-    Notes:
-        - When the trait `CommManager.kernel` is set the `Comm.kernel` trait is set on all [Comm][] instances.
-        - The `Comm` will only send messages when the kernel is set.
-        - The `kernel` sets `CommManager.kernel` when its ready the iopub socket is open.
+    There is only one instance, whose lifetime is linked to the Kernel.
     """
 
     _instance = None
-    kernel: Instance[Kernel | None] = Instance("async_kernel.kernel.Kernel", allow_none=True)
-    comms: Dict[str, BaseComm] = Dict()  # pyright: ignore[reportIncompatibleVariableOverride]
-    targets: Dict[str, comm.base_comm.CommTargetCallback] = Dict()  # pyright: ignore[reportIncompatibleVariableOverride]
+    kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
+
+    comms: Fixed[Self, dict[str, BaseComm]] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
+    targets: Fixed[Self, dict[str, comm.base_comm.CommTargetCallback]] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def __new__(cls) -> Self:
         if cls._instance:
@@ -81,22 +76,8 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
         cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self) -> None:
-        super().__init__()
-
-    @observe("kernel")
-    def _observe_kernel(self, change: dict):
-        kernel: Kernel = change["new"]
-        for c in self.comms.values():
-            if isinstance(c, Comm):
-                c.kernel = kernel
-
-    @override
-    def register_comm(self, comm: comm.base_comm.BaseComm) -> str:
-        """Register a new comm"""
-        if isinstance(comm, Comm) and (kernel := self.kernel):
-            comm.kernel = kernel
-        return super().register_comm(comm)
+    def __init__(self) -> None:  # pyright: ignore[reportMissingSuperCall]
+        pass
 
     @staticmethod
     def patch_comm():
@@ -109,7 +90,7 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
         Also patches ipykernel.comm if ipykernel is installed.
         """
         comm.create_comm = Comm
-        comm.get_comm_manager = get_comm_manager
+        comm.get_comm_manager = CommManager
 
         if sys.platform != "emscripten":
             # Monkey patch ipykernel in case other libraries use its comm module directly. Eg: pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28
@@ -118,7 +99,3 @@ class CommManager(HasTraits, comm.base_comm.CommManager):  # pyright: ignore[rep
 
                 for k, v in {"Comm": Comm, "CommManager": CommManager}.items():
                     setattr(ipykernel_comm, k, v)
-
-
-def get_comm_manager():
-    return utils.get_kernel().comm_manager
