@@ -79,6 +79,10 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     backend = UseEnum(Backend)
     "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
 
+    loop = None
+
+    _zmq_context = None
+
     def load_connection_info(self, info: dict[str, Any]) -> None:
         raise NotImplementedError
 
@@ -99,7 +103,14 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self.backend = Backend(current_async_library())
         restore_io = None
-        caller = Caller("manual", name="Shell", protected=True, log=self.kernel.log)
+        caller = Caller(
+            "manual",
+            name="Shell",
+            protected=True,
+            log=self.kernel.log,
+            zmq_context=self._zmq_context,
+            loop=self.loop,
+        )
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
         async with caller:
