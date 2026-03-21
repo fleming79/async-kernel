@@ -307,38 +307,35 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        """Start the kernel in an already running anyio event loop."""
+        """Start the kernel."""
         assert self.main_shell
+        original_sys_hooks = sys.excepthook, sys.unraisablehook
         try:
             async with self.interface:
                 self.callers.update(self.interface.callers)
                 with anyio.CancelScope() as scope:
                     self._stop = lambda: self.caller.call_direct(scope.cancel, "Stopping kernel")
-                    sys.excepthook = self.excepthook
-                    sys.unraisablehook = self.unraisablehook
-
+                    sys.excepthook, sys.unraisablehook = self.excepthook, self.unraisablehook
                     self.comm_manager.patch_comm()
-                    try:
-                        self.event_started.set()
-                        self.log.info("Kernel started: %s", self)
-                        yield self
-                    except BaseException:
-                        if not scope.cancel_called:
-                            raise
-                    finally:
-                        self.event_stopped.set()
+                    self.event_started.set()
+                    self.log.info("Kernel started: %s", self)
+                    yield self
         finally:
+            sys.excepthook, sys.unraisablehook = original_sys_hooks
             with anyio.CancelScope(shield=True):
                 await self.do_shutdown(self._restart)
 
     async def do_shutdown(self, restart: bool) -> None:
-        "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_shutdown][]."
+        self.event_stopped.set()
         self.shell.reset(new_session=False)
         self.subshell_manager.stop_all_subshells(force=True)
         self.callers.clear()
         self._handler_cache.clear()
         Kernel._instance = None
         AsyncInteractiveShell.clear_instance()
+        for comm in tuple(self.comm_manager.comms.values()):
+            comm.close(deleting=True)
         self.comm_manager.comms.clear()
         await anyio.sleep(0.1)
         CommManager._instance = None  # pyright: ignore[reportPrivateUsage]
