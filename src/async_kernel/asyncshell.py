@@ -146,7 +146,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 instead waiting for the next display before clearing.
                 This reduces bounce during repeated clear & display loops.
         """
-        utils.get_kernel().iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data")
+        self.shell.kernel.iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data")
 
     def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
         """Register a hook for when publish is called.
@@ -720,12 +720,11 @@ class KernelMagics(Magics):
     @line_magic
     def connect_info(self, _) -> None:
         """Print information for connecting other clients to this kernel."""
-        kernel = utils.get_kernel()
-        connection_file = pathlib.Path(kernel.connection_file)
+        connection_file = pathlib.Path(self.shell.kernel.connection_file)
         # if it's in the default dir, truncate to basename
         if jupyter_runtime_dir() == str(connection_file.parent):
             connection_file = connection_file.name
-        info = kernel.get_connection_info()
+        info = self.shell.kernel.get_connection_info()
         print(
             orjson.dumps(info, option=orjson.OPT_INDENT_2).decode(),
             "Paste the above JSON into a file, and connect with:\n"
@@ -764,12 +763,11 @@ class KernelMagics(Magics):
         """
         Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
         """
-        kernel = utils.get_kernel()
-        subshells = kernel.subshell_manager.list_subshells()
+        subshells = self.shell.kernel.subshell_manager.list_subshells()
         subshell_list = (
             f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
         )
-        print(f"Current shell:\t{kernel.shell}\n\n{subshell_list}")
+        print(f"Current shell:\t{self.shell}\n\n{subshell_list}")
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)
