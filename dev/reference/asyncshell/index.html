@@ -4036,22 +4036,14 @@ protected subshell when it is no longer required.</p>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
@@ -4572,7 +4564,7 @@ protected subshell when it is no longer required.</p>
 <span class="sd">                instead waiting for the next display before clearing.</span>
 <span class="sd">                This reduces bounce during repeated clear &amp; display loops.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;clear_output&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;clear_output&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a hook for when publish is called.</span>
@@ -4811,7 +4803,7 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 <span class="sd">            instead waiting for the next display before clearing.</span>
 <span class="sd">            This reduces bounce during repeated clear &amp; display loops.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;clear_output&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;clear_output&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5512,9 +5504,7 @@ protected subshell when it is no longer required.</p>
 <span class="normal">767</span>
 <span class="normal">768</span>
 <span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@magics_class</span>
+<span class="normal">770</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@magics_class</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">KernelMagics</span><span class="p">(</span><span class="n">Magics</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extra magics for async-kernel.&quot;&quot;&quot;</span>
 
@@ -5523,12 +5513,11 @@ protected subshell when it is no longer required.</p>
     <span class="nd">@line_magic</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">connect_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print information for connecting other clients to this kernel.&quot;&quot;&quot;</span>
-        <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
-        <span class="n">connection_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">connection_file</span><span class="p">)</span>
+        <span class="n">connection_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">connection_file</span><span class="p">)</span>
         <span class="c1"># if it&#39;s in the default dir, truncate to basename</span>
         <span class="k">if</span> <span class="n">jupyter_runtime_dir</span><span class="p">()</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">connection_file</span><span class="o">.</span><span class="n">parent</span><span class="p">):</span>
             <span class="n">connection_file</span> <span class="o">=</span> <span class="n">connection_file</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get_connection_info</span><span class="p">()</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get_connection_info</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="n">orjson</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="n">orjson</span><span class="o">.</span><span class="n">OPT_INDENT_2</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
             <span class="s2">&quot;Paste the above JSON into a file, and connect with:</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -5567,12 +5556,11 @@ protected subshell when it is no longer required.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
-        <span class="n">subshells</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">list_subshells</span><span class="p">()</span>
+        <span class="n">subshells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">list_subshells</span><span class="p">()</span>
         <span class="n">subshell_list</span> <span class="o">=</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">----- </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subshells</span><span class="p">)</span><span class="si">}</span><span class="s2"> x subshell -----</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">subshells</span><span class="p">)</span> <span class="k">if</span> <span class="n">subshells</span> <span class="k">else</span> <span class="s2">&quot;-- No subshells --&quot;</span>
         <span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current shell:</span><span class="se">\t</span><span class="si">{</span><span class="n">kernel</span><span class="o">.</span><span class="n">shell</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">subshell_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current shell:</span><span class="se">\t</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">subshell_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -5625,16 +5613,14 @@ protected subshell when it is no longer required.</p>
 <span class="normal">734</span>
 <span class="normal">735</span>
 <span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">737</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Print information for connecting other clients to this kernel.&quot;&quot;&quot;</span>
-    <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
-    <span class="n">connection_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">connection_file</span><span class="p">)</span>
+    <span class="n">connection_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">connection_file</span><span class="p">)</span>
     <span class="c1"># if it&#39;s in the default dir, truncate to basename</span>
     <span class="k">if</span> <span class="n">jupyter_runtime_dir</span><span class="p">()</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">connection_file</span><span class="o">.</span><span class="n">parent</span><span class="p">):</span>
         <span class="n">connection_file</span> <span class="o">=</span> <span class="n">connection_file</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">info</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get_connection_info</span><span class="p">()</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get_connection_info</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span>
         <span class="n">orjson</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="n">orjson</span><span class="o">.</span><span class="n">OPT_INDENT_2</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
         <span class="s2">&quot;Paste the above JSON into a file, and connect with:</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -5670,7 +5656,8 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">740</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">739</span>
+<span class="normal">740</span>
 <span class="normal">741</span>
 <span class="normal">742</span>
 <span class="normal">743</span>
@@ -5689,8 +5676,7 @@ protected subshell when it is no longer required.</p>
 <span class="normal">756</span>
 <span class="normal">757</span>
 <span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">759</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">callers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Print a table of [Callers][async_kernel.caller.Caller] indicating it&#39;s status.&quot;</span>
     <span class="n">callers</span> <span class="o">=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">all_callers</span><span class="p">(</span><span class="n">running_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -5736,7 +5722,8 @@ protected subshell when it is no longer required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">762</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">761</span>
+<span class="normal">762</span>
 <span class="normal">763</span>
 <span class="normal">764</span>
 <span class="normal">765</span>
@@ -5744,19 +5731,16 @@ protected subshell when it is no longer required.</p>
 <span class="normal">767</span>
 <span class="normal">768</span>
 <span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
+<span class="normal">770</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@line_magic</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">subshell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
-    <span class="n">subshells</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">list_subshells</span><span class="p">()</span>
+    <span class="n">subshells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">list_subshells</span><span class="p">()</span>
     <span class="n">subshell_list</span> <span class="o">=</span> <span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">----- </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subshells</span><span class="p">)</span><span class="si">}</span><span class="s2"> x subshell -----</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">subshells</span><span class="p">)</span> <span class="k">if</span> <span class="n">subshells</span> <span class="k">else</span> <span class="s2">&quot;-- No subshells --&quot;</span>
     <span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current shell:</span><span class="se">\t</span><span class="si">{</span><span class="n">kernel</span><span class="o">.</span><span class="n">shell</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">subshell_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current shell:</span><span class="se">\t</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">subshell_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
