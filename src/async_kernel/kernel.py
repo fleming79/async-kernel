@@ -612,11 +612,11 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell._do_complete_request(code=code, cursor_pos=cursor_pos)
+        return await self.shell._do_complete_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportPrivateUsage]
 
     async def do_inspect(self, code: str, cursor_pos: int | None, detail_level=0, omit_sections=()) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell._inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType]
+        return await self.shell._inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType, reportPrivateUsage]
 
     async def do_history(
         self,
@@ -631,7 +631,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         unique=False,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell._history_request(
+        return await self.shell._history_request(  # pyright: ignore[reportPrivateUsage]
             output=output,
             raw=raw,
             hist_access_type=hist_access_type,
@@ -664,7 +664,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         job = Job(msg=msg, ident=[], received_time=time.monotonic())
         token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
-            return await self.shell._execute_request(
+            return await self.shell._execute_request(  # pyright: ignore[reportPrivateUsage]
                 code=code,
                 silent=silent,
                 store_history=store_history,
