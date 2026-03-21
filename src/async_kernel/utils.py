@@ -64,7 +64,7 @@ def get_job() -> Job[Any] | None:
 
 
 def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
-    "Get the [parent message]() for the current context."
+    "Get the parent message for the current context."
     return (job or get_job() or {}).get("msg")
 
 
