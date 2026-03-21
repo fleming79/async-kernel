@@ -200,7 +200,7 @@ class AsyncInteractiveShell(InteractiveShell):
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
 
     timeout = CFloat(0.0)
-    "A timeout in seconds to complete [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request]."
+    "A timeout in seconds to complete execute requests."
 
     stop_on_error_time_offset = Float(0.0)
     "An offset to add to the cancellation time to catch late arriving execute requests."
