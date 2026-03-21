@@ -416,7 +416,7 @@ class AsyncInteractiveShell(InteractiveShell):
         finally:
             utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
+    async def _do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
 
         cursor_pos = cursor_pos or len(code)
@@ -443,7 +443,7 @@ class AsyncInteractiveShell(InteractiveShell):
             "status": "ok",
         }
 
-    async def is_complete_request(self, code: str) -> Content:
+    async def _is_complete_request(self, code: str) -> Content:
         """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
         status, indent_spaces = self.input_transformer_manager.check_complete(code)
         content = {"status": status}
@@ -451,7 +451,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content["indent"] = " " * indent_spaces
         return content
 
-    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+    async def _inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         content = {"data": {}, "metadata": {}, "found": True}
         try:
@@ -462,7 +462,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content["found"] = False
         return content
 
-    async def history_request(
+    async def _history_request(
         self,
         *,
         output: bool = False,
