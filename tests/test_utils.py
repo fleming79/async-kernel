@@ -16,8 +16,7 @@ if TYPE_CHECKING:
 class TestUtils:
     async def test_get_job(self, job: Job[ExecuteContent]) -> None:
         with pytest.raises(LookupError):
-            ak_utils._job_var.get()  # pyright: ignore[reportPrivateUsage]
-        ak_utils.get_job()
+            ak_utils.get_job()
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_job() is job
 

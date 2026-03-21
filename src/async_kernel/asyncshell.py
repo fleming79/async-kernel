@@ -21,7 +21,7 @@ from IPython.core.interactiveshell import _modified_open as _modified_open_  # p
 from IPython.core.magic import Magics, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CFloat, Dict, Float, Instance, Type, default, observe, traitlets
+from traitlets import CFloat, Float, Instance, Type, default, observe, traitlets
 from typing_extensions import override
 
 import async_kernel
@@ -31,7 +31,7 @@ from async_kernel.common import Fixed, LastUpdatedDict
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
-from async_kernel.typing import Channel, Content, NoValue, Tags
+from async_kernel.typing import Channel, Content, Message, NoValue, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -48,30 +48,28 @@ __all__ = ["AsyncInteractiveShell"]
 class KernelInterruptError(Exception):
     "Raised to interrupt the kernel."
 
-    # We subclass from InterruptedError so if the backend is a SelectorEventLoop it can catch the exception.
-    # Other event loops don't appear to have this issue.
-
 
 class AsyncDisplayHook(DisplayHook):
     """
     A displayhook subclass that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send].
-
-    This is intended to work with an InteractiveShell instance. It sends a dict of different
-    representations of the object.
     """
 
-    kernel = Fixed(lambda _: utils.get_kernel())
-    content: Dict[str, Any] = Dict()
+    shell: AsyncInteractiveShell
+    _content: Fixed[Self, dict[int, dict[str, Any]]] = Fixed(dict)
 
     @property
     @override
     def prompt_count(self) -> int:
-        return self.kernel.shell.execution_count
+        return self.shell.execution_count
 
     @override
     def start_displayhook(self) -> None:
         """Start the display hook."""
-        self.content = {}
+        self._content[id(utils.get_job())] = {}
+
+    @property
+    def content(self) -> dict[str, Any]:
+        return self._content[id(utils.get_job())]
 
     @override
     def write_output_prompt(self) -> None:
@@ -87,19 +85,16 @@ class AsyncDisplayHook(DisplayHook):
     @override
     def finish_displayhook(self) -> None:
         """Finish up all displayhook activities."""
-        if self.content:
-            self.kernel.iopub_send("execute_result", content=self.content)
-            self.content = {}
+        if content := self.content:
+            self.shell.kernel.iopub_send("execute_result", content=content)
+        self._content.pop(id(utils.get_job()))
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
     """A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send]."""
 
     shell: AsyncInteractiveShell
-
-    def __init__(self, shell=None, *args, **kwargs) -> None:
-        super().__init__(shell, *args, **kwargs)
-        self._hooks = []
+    _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
 
     @override
     def publish(  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -153,7 +148,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
         """
         utils.get_kernel().iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data")
 
-    def register_hook(self, hook: Callable[[dict], dict | None]) -> None:
+    def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
         """Register a hook for when publish is called.
 
         The hook should return the message or None.
@@ -161,7 +156,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
         """
         self._hooks.append(hook)
 
-    def unregister_hook(self, hook: Callable[[dict], dict | None]) -> None:
+    def unregister_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
         while hook in self._hooks:
             self._hooks.remove(hook)
 
@@ -205,7 +200,7 @@ class AsyncInteractiveShell(InteractiveShell):
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
 
     timeout = CFloat(0.0)
-    "A timeout in seconds to complete [execute requests][async_kernel.asyncshell.AsyncInteractiveShell.execute_request]."
+    "A timeout in seconds to complete execute requests."
 
     stop_on_error_time_offset = Float(0.0)
     "An offset to add to the cancellation time to catch late arriving execute requests."
@@ -243,7 +238,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _default_banner1(self) -> str:
         return (
             f"Python {sys.version}\n"
-            f"async-kernel (kernel name:{self.kernel.kernel_name} version:{async_kernel.__version__}) \n"
+            f"async-kernel v{async_kernel.__version__}, {self.kernel.settings}) \n"
             f"IPython shell {IPython.core.release.version}\n"
         )
 
@@ -320,19 +315,21 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
-    async def execute_request(
+    async def _execute_request(
         self,
         code: str = "",
+        *,
         silent: bool = False,
         store_history: bool = True,
         user_expressions: dict[str, str] | None = None,
         allow_stdin: bool = True,
         stop_on_error: bool = True,
         cell_id: str | None = None,
+        received_time: float = 0,
         **_ignored,
     ) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        if (utils.get_job().get("received_time", 0.0) < self._stop_on_error_info.get("time", 0)) and not silent:
+        if (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
@@ -419,7 +416,7 @@ class AsyncInteractiveShell(InteractiveShell):
         finally:
             utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
+    async def _do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
 
         cursor_pos = cursor_pos or len(code)
@@ -446,7 +443,7 @@ class AsyncInteractiveShell(InteractiveShell):
             "status": "ok",
         }
 
-    async def is_complete_request(self, code: str) -> Content:
+    async def _is_complete_request(self, code: str) -> Content:
         """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
         status, indent_spaces = self.input_transformer_manager.check_complete(code)
         content = {"status": status}
@@ -454,7 +451,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content["indent"] = " " * indent_spaces
         return content
 
-    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+    async def _inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         content = {"data": {}, "metadata": {}, "found": True}
         try:
@@ -465,7 +462,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content["found"] = False
         return content
 
-    async def history_request(
+    async def _history_request(
         self,
         *,
         output: bool = False,

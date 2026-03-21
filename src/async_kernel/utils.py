@@ -38,7 +38,7 @@ __all__ = [
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
-_job_var: ContextVar[Job] = ContextVar("async-kernel job")
+_job_var: ContextVar[Job[Any]] = ContextVar("async-kernel job")
 _cell_id_var: ContextVar[str | None] = ContextVar("async-kernel cell_id", default=None)
 
 
@@ -55,17 +55,22 @@ def get_kernel() -> Kernel:
     return async_kernel.Kernel()
 
 
-def get_job() -> Job[dict] | dict:
-    "Get the job for the current context."
-    try:
-        return _job_var.get()
-    except Exception:
-        return {}
+def get_job() -> Job[Any]:
+    """
+    Get the job for the current context.
+
+    Raises:
+        LookupError: If there is no job in the current context.
+    """
+    return _job_var.get()
 
 
 def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
-    "Get the [parent message]() for the current context."
-    return (job or get_job()).get("msg")
+    "Get the parent message for the current context."
+    try:
+        return (job or get_job()).get("msg")
+    except LookupError:
+        return None
 
 
 def get_subshell_id() -> str | None:

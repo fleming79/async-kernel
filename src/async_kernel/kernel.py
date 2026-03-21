@@ -7,6 +7,7 @@ import logging
 import os
 import pathlib
 import sys
+import time
 import traceback
 import uuid
 from contextlib import asynccontextmanager
@@ -505,22 +506,26 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        return await self.shell.execute_request(cell_id=job["msg"]["metadata"].get("cellId"), **job["msg"]["content"])  # pyright: ignore[reportArgumentType]
+        return await self.shell._execute_request(  # pyright: ignore[reportPrivateUsage]
+            cell_id=job["msg"]["metadata"].get("cellId"),
+            received_time=job["received_time"],
+            **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
+        )
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
-        return await self.shell.do_complete_request(
+        return await self.shell._do_complete_request(  # pyright: ignore[reportPrivateUsage]
             code=job["msg"]["content"].get("code", ""), cursor_pos=job["msg"]["content"].get("cursor_pos", 0)
         )
 
     async def is_complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
-        return await self.shell.is_complete_request(job["msg"]["content"].get("code", ""))
+        return await self.shell._is_complete_request(job["msg"]["content"].get("code", ""))  # pyright: ignore[reportPrivateUsage]
 
     async def inspect_request(self, job: Job[Content], /) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         c = job["msg"]["content"]
-        return await self.shell.inspect_request(
+        return await self.shell._inspect_request(  # pyright: ignore[reportPrivateUsage]
             code=c.get("code", ""),
             cursor_pos=c.get("cursor_pos", 0),
             detail_level=c.get("detail_level", 0),
@@ -528,7 +533,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     async def history_request(self, job: Job[Content], /) -> Content:
         """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
-        return await self.shell.history_request(**job["msg"]["content"])
+        return await self.shell._history_request(**job["msg"]["content"])  # pyright: ignore[reportPrivateUsage]
 
     async def comm_open(self, job: Job[Content], /) -> None:
         """Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
@@ -606,10 +611,12 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return utils.get_parent()
 
     async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
-        return await self.shell.do_complete_request(code=code, cursor_pos=cursor_pos)
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
+        return await self.shell._do_complete_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportPrivateUsage]
 
     async def do_inspect(self, code: str, cursor_pos: int | None, detail_level=0, omit_sections=()) -> Content:
-        return await self.shell.inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType]
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
+        return await self.shell._inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType, reportPrivateUsage]
 
     async def do_history(
         self,
@@ -624,7 +631,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         unique=False,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell.history_request(
+        return await self.shell._history_request(  # pyright: ignore[reportPrivateUsage]
             output=output,
             raw=raw,
             hist_access_type=hist_access_type,
@@ -645,14 +652,29 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         **_ignored,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."
-        return await self.shell.execute_request(
+        content = ExecuteContent(
             code=code,
             silent=silent,
             store_history=store_history,
-            user_expressions=user_expressions,
+            user_expressions=user_expressions or {},
             allow_stdin=allow_stdin,
-            cell_id=cell_id,
+            stop_on_error=False,
         )
+        msg = self.interface.msg("execute_request", content=content)  # pyright: ignore[reportArgumentType]
+        job = Job(msg=msg, ident=[], received_time=time.monotonic())
+        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        try:
+            return await self.shell._execute_request(  # pyright: ignore[reportPrivateUsage]
+                code=code,
+                silent=silent,
+                store_history=store_history,
+                user_expressions=user_expressions,
+                allow_stdin=allow_stdin,
+                cell_id=cell_id,
+                received_time=job["received_time"],
+            )
+        finally:
+            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     def getpass(self, prompt="", stream=None) -> str:
         "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
