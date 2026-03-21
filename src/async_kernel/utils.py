@@ -55,17 +55,22 @@ def get_kernel() -> Kernel:
     return async_kernel.Kernel()
 
 
-def get_job() -> Job[Any] | None:
-    "Get the job for the current context."
-    try:
-        return _job_var.get()
-    except Exception:
-        return None
+def get_job() -> Job[Any]:
+    """
+    Get the job for the current context.
+
+    Raises:
+        LookupError: If there is no job in the current context.
+    """
+    return _job_var.get()
 
 
 def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
     "Get the parent message for the current context."
-    return (job or get_job() or {}).get("msg")
+    try:
+        return (job or get_job()).get("msg")
+    except LookupError:
+        return None
 
 
 def get_subshell_id() -> str | None:

@@ -185,7 +185,7 @@ class CallableKernelInterface(BaseKernelInterface):
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:
         job = async_kernel.utils.get_job()
-        if job is None or not job["msg"].get("content", {}).get("allow_stdin", False):
+        if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise StdinNotImplementedError(msg)
         msg = self.msg("input_request", content={"prompt": prompt, "password": password})
