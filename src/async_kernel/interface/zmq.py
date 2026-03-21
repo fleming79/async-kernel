@@ -212,27 +212,15 @@ class ZMQKernelInterface(BaseKernelInterface):
     @override
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        """Create caller, and open socketes."""
         self.backend = Backend(current_async_library())
-        sig = restore_io = None
-        caller = Caller(
-            "manual",
-            name="Shell",
-            protected=True,
-            log=self.kernel.log,
-            zmq_context=self._zmq_context,
-            loop=self.loop,
-        )
-        self.callers[Channel.shell] = caller
-        self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
+        sig = None
         start = Event()
         try:
-            async with caller:
-                self._start_hb_iopub_shell_control_threads(start)
-                with self._bind_socket(Channel.stdin):
-                    assert len(self.sockets) == len(Channel)
-                    self._write_connection_file()
-                    restore_io = self._patch_io()
+            self._start_hb_iopub_shell_control_threads(start)
+            with self._bind_socket(Channel.stdin):
+                assert len(self.sockets) == len(Channel)
+                self._write_connection_file()
+                async with super().__asynccontextmanager__():
                     with contextlib.suppress(ValueError):
                         sig = signal.signal(signal.SIGINT, self._signal_handler)
                     start.set()
@@ -241,8 +229,6 @@ class ZMQKernelInterface(BaseKernelInterface):
             start.set()
             if sig:
                 signal.signal(signal.SIGINT, sig)
-            if restore_io:
-                restore_io()
             self._zmq_context.term()
 
     def _start_hb_iopub_shell_control_threads(self, start: Event) -> None:

@@ -413,7 +413,7 @@ class CallerCreateOptions(RunSettings):
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (default=`False`)."
 
-    zmq_context: NotRequired[zmq.Context[Any]]
+    zmq_context: NotRequired[zmq.Context[Any] | None]
     "A zmq Context to use."
 
     no_debug: NotRequired[bool]
