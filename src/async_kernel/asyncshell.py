@@ -238,7 +238,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _default_banner1(self) -> str:
         return (
             f"Python {sys.version}\n"
-            f"async-kernel (kernel name:{self.kernel.kernel_name} version:{async_kernel.__version__}) \n"
+            f"async-kernel v{async_kernel.__version__}, {self.kernel.settings}) \n"
             f"IPython shell {IPython.core.release.version}\n"
         )
 
