@@ -315,19 +315,21 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
-    async def execute_request(
+    async def _execute_request(
         self,
         code: str = "",
+        *,
         silent: bool = False,
         store_history: bool = True,
         user_expressions: dict[str, str] | None = None,
         allow_stdin: bool = True,
         stop_on_error: bool = True,
         cell_id: str | None = None,
+        received_time: float = 0,
         **_ignored,
     ) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        if ((utils.get_job() or {}).get("received_time", 0.0) < self._stop_on_error_info.get("time", 0)) and not silent:
+        if (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
