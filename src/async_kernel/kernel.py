@@ -49,21 +49,14 @@ __all__ = ["Kernel", "KernelInterruptError"]
 
 class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     """
-    A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell]
-    with support for kernel subshells.
-
-    Info:
-        Only one instance of a kernel is created at a time per subprocess. The instance can be obtained
-        with `Kernel()` or [get_kernel].
+    A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
     Starting the kernel:
-        The kernel should appear in the list of kernels just as other kernels are. Variants of the kernel
-        can with custom configuration can be added at the [command line][command.command_line].
 
         === "From the shell"
 
             ``` shell
-            async-kernel -f .
+            async-kernel --kernel-name=async -f .
             ```
 
         === "Blocking"
@@ -71,20 +64,23 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             ```python
             import async_kernel.interface
 
-            async_kernel.interface.start_kernel_zmq_interface()
+            settings = {}  # Dotted name key/value pairs
+
+            async_kernel.interface.start_kernel_zmq_interface(settings)
             ```
 
-        === "Inside a coroutine"
+        === "Async"
 
             ```python
-            async with Kernel():
-                await anyio.sleep_forever()
+            settings = {}  # Dotted name key/value pairs
+            async with Kernel(settings):
+                ...
             ```
 
     Warning:
         Starting the kernel outside the main thread has the following implicatations:
-            - Execute requests won't be run in the main thread.
-            - Interrupts via signals won't work, so thread blocking calls in the shell cannot be interrupted.
+            - Execute requests are run in the thread where the kernel is started.
+            - The signal based kernel interrupt is not possible.
 
     Origins:
         - [IPyKernel Kernel][ipykernel.kernelbase.Kernel]
