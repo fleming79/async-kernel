@@ -319,7 +319,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
                     self.comm_manager.patch_comm()
                     try:
-                        self.comm_manager.kernel = self
                         self.event_started.set()
                         self.log.info("Kernel started: %s", self)
                         yield self
@@ -327,7 +326,6 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
                         if not scope.cancel_called:
                             raise
                     finally:
-                        self.comm_manager.kernel = None
                         self.event_stopped.set()
         finally:
             with anyio.CancelScope(shield=True):
@@ -341,7 +339,9 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self._handler_cache.clear()
         Kernel._instance = None
         AsyncInteractiveShell.clear_instance()
+        self.comm_manager.comms.clear()
         await anyio.sleep(0.1)
+        CommManager._instance = None  # pyright: ignore[reportPrivateUsage]
         self.log.info("Kernel stopped: %s", self)
         gc.collect()
 
@@ -356,14 +356,15 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         buffers: list[bytes] | None = None,
     ) -> None:
         """Send a message on the iopub socket."""
-        self.interface.iopub_send(
-            msg_or_type,
-            content=content,
-            metadata=metadata,
-            parent=parent,
-            ident=ident,
-            buffers=buffers,
-        )
+        if not self.event_stopped:
+            self.interface.iopub_send(
+                msg_or_type,
+                content=content,
+                metadata=metadata,
+                parent=parent,
+                ident=ident,
+                buffers=buffers,
+            )
 
     def topic(self, topic) -> bytes:
         """prefixed topic for IOPub messages."""

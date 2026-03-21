@@ -22,8 +22,6 @@ async def test_comm(kernel: Kernel) -> None:
         msgs.append(msg)
 
     c.publish_msg("foo")
-    kernel.comm_manager.kernel = None
-    c.publish_msg("foo")
     c.open({})
     c.on_msg(on_message)
     c.on_close(on_close)
@@ -89,9 +87,7 @@ async def test_comm_manager(kernel: Kernel, mocker) -> None:
     manager.register_comm(comm)
     assert manager.get_comm(comm.comm_id) == comm
     msg = {"content": {"comm_id": comm.comm_id}}
-    manager.kernel = None
-    assert comm.kernel is None
-    manager.kernel = kernel
+    assert comm.kernel is manager.kernel
     assert comm.kernel is kernel
 
     manager.comm_close(None, None, msg)  # pyright: ignore[reportArgumentType]
