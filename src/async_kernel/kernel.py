@@ -217,8 +217,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     def _observe_connection_file(self, change) -> None:
         if not self.interface.callers and (path := self.connection_file).exists():
             self.log.debug("Loading connection file %s", path)
-            with path.open("r") as f:
-                self.load_connection_info(json.load(f))
+            self.load_connection_info(json.loads(path.read_bytes()))
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal) -> Path:
@@ -591,8 +590,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     def get_connection_info(self) -> dict[str, Any]:
         """Return the connection info as a dict."""
-        with self.connection_file.open("r") as f:
-            return json.load(f)
+        return json.loads(self.connection_file.read_bytes())
 
     def get_parent(self) -> Message[dict[str, Any]] | None:
         """
