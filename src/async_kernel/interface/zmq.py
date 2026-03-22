@@ -161,7 +161,7 @@ class ZMQKernelInterface(BaseKernelInterface):
 
         async def run_kernel() -> None:
             async with self.kernel:
-                await self.wait_exit
+                await self.kernel.event_stopped
 
         settings = RunSettings(
             backend=self.backend,

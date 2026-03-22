@@ -301,7 +301,6 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             kernel.log.info("Stopping kernel: %s", kernel)
             kernel.caller.call_direct(scope.cancel, "Stopping kernel")
             kernel.event_stopped.set()
-            kernel.interface.wait_exit.set()
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:

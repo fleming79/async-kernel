@@ -6,7 +6,7 @@ import pytest
 from aiologic import Event
 from jupyter_client.kernelspec import KernelSpec
 
-from async_kernel.interface.zmq import ZMQKernelInterface
+import async_kernel
 from async_kernel.kernelspec import DEFAULT_START_INTERFACE, import_start_interface, write_kernel_spec
 
 
@@ -28,7 +28,6 @@ def test_write_kernel_spec(kernel_name, start_interface, tmp_path, monkeypatch):
                 pass
 
             kernel = MyKernel()
-            # This would normally block, however wait_exit has been patched.
             start_kernel_zmq_interface(settings)
             assert kernel.interface.kernel is kernel
             return "custom"
@@ -44,10 +43,10 @@ def test_write_kernel_spec(kernel_name, start_interface, tmp_path, monkeypatch):
         v.removeprefix("--start_interface=") for v in spec.argv if v.startswith("--start_interface=")
     )
     starter = import_start_interface(start_interface_string)
-    wait_exit = Event()
-    wait_exit.set()
+    event = Event()
+    event.set()
 
-    monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit)
+    monkeypatch.setattr(async_kernel.Kernel, "event_stopped", event)
     result = starter({"a": None})
     if start_interface == "custom":
         assert result == "custom"
