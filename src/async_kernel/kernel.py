@@ -381,7 +381,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         Schedule the job for execution in a dedicated handler by `(subshell_id, msg_type, send_reply)`.
 
         'execute_request' and 'com_msg' are handled by the shells caller (typically the MainThread).
-        All other shell messages are handled in a separate thread "Shell-hidden".
+        All other shell messages are handled in the control thread.
 
         'execute_request' messages can also specify alternate run modes:
             - task: Run the execute request as a task.
@@ -410,7 +410,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         if msg_type is MsgType.execute_request:
             run_mode = self._get_execute_request_run_mode(job)
         elif channel is Channel.shell and msg_type is not MsgType.comm_msg:
-            caller = self.callers[Channel.shell].get(name="Shell-hidden", no_debug=True, protected=True)
+            caller = self.callers[Channel.control]
         # Schedule job
         match run_mode:
             case RunMode.queue:
@@ -429,7 +429,10 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     ) -> HandlerType:
 
         handler: HandlerType = getattr(self, msg_type)
-        key = subshell_id, msg_type, send_reply
+        if msg_type is MsgType.execute_request:
+            key = (subshell_id, msg_type, send_reply)
+        else:
+            key = (None, msg_type, send_reply)
         try:
             return self._handler_cache[key]
         except KeyError:

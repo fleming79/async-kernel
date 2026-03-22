@@ -181,9 +181,10 @@ class TestCaller:
 
     def test_no_event_loop(self, anyio_backend: Backend):
         assert current_async_library(failsafe=True) is None
-        caller = Caller("NewThread", backend=anyio_backend)
+        caller = Caller("NewThread", backend=anyio_backend, no_debug=True)
         assert caller.id != id(threading.current_thread())
         assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
+        assert caller.thread.pydev_do_not_trace  # pyright: ignore[reportAttributeAccessIssue]
         caller.stop()
 
     async def test_sync(self):
