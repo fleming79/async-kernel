@@ -42,6 +42,8 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
 
+    from async_kernel.interface.zmq import ZMQKernelInterface
+
 
 __all__ = ["Kernel", "KernelInterruptError"]
 
@@ -94,7 +96,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     _settings = Fixed(dict)
     _handler_cache: Fixed[Self, dict[tuple[str | None, MsgType, Callable], HandlerType]] = Fixed(dict)
 
-    interface = traitlets.Instance(BaseKernelInterface)
+    interface: traitlets.Instance[BaseKernelInterface] = traitlets.Instance(BaseKernelInterface)
     "The abstraction to interface with the kernel."
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
@@ -114,7 +116,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
     """
-    JSON file in which to store connection info 
+    JSON file in which to store connection info.
     
     `"kernel-<pid>.json"`
 
@@ -170,11 +172,11 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 
     @traitlets.default("kernel_name")
-    def _default_kernel_name(self):
+    def _default_kernel_name(self) -> Literal["async-trio", "async"]:
         return "async-trio" if current_async_library(failsafe=True) == "trio" else "async"
 
     @traitlets.default("interface")
-    def default_interface(self):
+    def default_interface(self) -> ZMQKernelInterface:
         from async_kernel.interface.zmq import ZMQKernelInterface  # noqa: PLC0415
 
         return ZMQKernelInterface()
