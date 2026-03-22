@@ -40,7 +40,6 @@ async def test_comm_manager(kernel: Kernel, mocker) -> None:
 
     def foo(comm, msg):
         msgs.append(msg)
-        comm.close()
 
     def fizz(comm, msg):
         msg = "hi"
@@ -94,3 +93,9 @@ async def test_comm_manager(kernel: Kernel, mocker) -> None:
     assert len(msgs) == 3
 
     assert comm._closed  # pyright: ignore[reportPrivateUsage]
+
+    # Leave some comm open for the kernel to close with do_shutdown
+    for i in range(10):
+        msg = {"content": {"comm_id": str(i), "target_name": "foo"}}
+        manager.comm_open(None, None, msg)  # pyright: ignore[reportArgumentType]
+    assert manager.comms

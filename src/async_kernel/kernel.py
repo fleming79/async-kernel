@@ -327,20 +327,20 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def do_shutdown(self, restart: bool) -> None:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_shutdown][]."
+        assert self.event_stopped
         self.log.info("Kernel shutdown: %s", self)
-        self.event_stopped.set()
         await anyio.sleep(0.1)
         self.shell.reset(new_session=False)
         self.subshell_manager.stop_all_subshells(force=True)
         self.callers.clear()
         self._handler_cache.clear()
-        Kernel._instance = None
-        AsyncInteractiveShell.clear_instance()
         for comm in tuple(self.comm_manager.comms.values()):
             comm.close(deleting=True)
         self.comm_manager.comms.clear()
         await anyio.sleep(0.1)
+        AsyncInteractiveShell.clear_instance()
         CommManager._instance = None  # pyright: ignore[reportPrivateUsage]
+        Kernel._instance = None
         gc.collect()
         self.log.info("Kernel shutdown complete: %s", self)
 
