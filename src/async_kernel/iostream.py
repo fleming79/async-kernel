@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from io import TextIOBase
-from threading import Lock
 from typing import TYPE_CHECKING, Literal
 
+from aiologic import Lock
 from typing_extensions import override
 
 from async_kernel.common import Fixed
