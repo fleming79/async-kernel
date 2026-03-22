@@ -1639,7 +1639,7 @@ viewing the latest version.
         <span class="n">metadata</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">keys</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper for sending a comm message on IOPub.&quot;&quot;&quot;</span>
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;comm_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
@@ -1686,7 +1686,7 @@ viewing the latest version.
     <span class="n"><span title="async_kernel.comm.Comm.publish_msg(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.MaybeDict">MaybeDict</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.comm.Comm.publish_msg(buffers)">buffers</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.BuffersType">BuffersType</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><span title="async_kernel.comm.Comm.publish_msg(**keys)">keys</span></span><span class="p">,</span>
-<span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1723,7 +1723,7 @@ viewing the latest version.
     <span class="n">metadata</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">keys</span><span class="p">,</span>
-<span class="p">):</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for sending a comm message on IOPub.&quot;&quot;&quot;</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;comm_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
