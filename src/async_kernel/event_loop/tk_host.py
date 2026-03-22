@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import override
 
-from async_kernel.typing import Loop
+from async_kernel.typing import Loop, T
 
 from .run import Host
 
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-class TkHost(Host):
+class TkHost(Host[T]):
     LOOP = Loop.tk
     MATPLOTLIB_GUIS = ("tk",)
 
@@ -92,7 +92,7 @@ class TkHost(Host):
         self.root.destroy()
 
     @override
-    def mainloop(self) -> Any:
+    def mainloop(self) -> T:
         self.start_guest()
         self.root.mainloop()
         return super().mainloop()

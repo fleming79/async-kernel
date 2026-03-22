@@ -9,13 +9,13 @@ from typing_extensions import override
 
 from async_kernel.common import Fixed
 from async_kernel.event_loop.run import Host
-from async_kernel.typing import Loop
+from async_kernel.typing import Loop, T
 
 if TYPE_CHECKING:
     from outcome import Outcome
 
 
-class AsyncioHost(Host):
+class AsyncioHost(Host[T]):
     LOOP = Loop.asyncio
     done_event = Fixed(Event)
     host_uses_signal_set_wakeup_fd = True
@@ -23,7 +23,7 @@ class AsyncioHost(Host):
     def __init__(self, **backend_options) -> None:
         self.backend_options = backend_options
 
-    async def _start(self):
+    async def _start(self) -> None:
         loop = asyncio.get_running_loop()
         self.run_sync_soon_not_threadsafe = loop.call_soon  # pyright: ignore[reportAttributeAccessIssue]
         self.run_sync_soon_threadsafe = loop.call_soon_threadsafe  # pyright: ignore[reportAttributeAccessIssue]
@@ -36,6 +36,6 @@ class AsyncioHost(Host):
         self.done_event.set()
 
     @override
-    def mainloop(self):
+    def mainloop(self) -> T:
         anyio.run(self._start, backend="asyncio", backend_options=self.backend_options)
         return super().mainloop()

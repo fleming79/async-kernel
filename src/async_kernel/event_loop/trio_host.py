@@ -6,13 +6,13 @@ import anyio
 from typing_extensions import override
 
 from async_kernel.event_loop.run import Host
-from async_kernel.typing import Loop
+from async_kernel.typing import Loop, T
 
 if TYPE_CHECKING:
     from outcome import Outcome
 
 
-class TrioHost(Host):
+class TrioHost(Host[T]):
     LOOP = Loop.trio
     host_uses_signal_set_wakeup_fd = True
     _done = False
@@ -42,6 +42,6 @@ class TrioHost(Host):
         self.done()
 
     @override
-    def mainloop(self):
+    def mainloop(self) -> T:
         anyio.run(self._start, backend="trio", backend_options=self.backend_options)
         return super().mainloop()
