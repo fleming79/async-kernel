@@ -52,11 +52,6 @@ class OutStream(TextIOBase):
 
     @override
     def write(self, string: str) -> int:
-        """
-        Write to current stream after encoding if necessary
-
-        Returns: number of items from input parameter written to stream.
-        """
         with self._write_lock:
             self._out = string
             self.flush()
@@ -64,5 +59,4 @@ class OutStream(TextIOBase):
 
     @override
     def writelines(self, sequence) -> None:
-        """Write lines to the stream (separators are not added)."""
         self.write("".join(sequence))
