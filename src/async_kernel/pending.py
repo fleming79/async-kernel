@@ -407,7 +407,7 @@ class Pending(Awaitable[T]):
                         # Clear `PendingTracker.id`.
                         context.run(cls._id_contextvar.set, None)  # pyright: ignore[reportPrivateUsage]
 
-    def __del__(self):
+    def __del__(self) -> None:
         self._metadata_mappings.pop(id(self), None)
 
     @override
