@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Literal
 
 from typing_extensions import override
 
+from async_kernel.common import Fixed
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
 class OutStream(TextIOBase):
     """A file like object that calls the flusher with the string output when flush is called."""
 
-    _write_lock = Lock()
+    _write_lock = Fixed(Lock)
 
     def __init__(self, flusher: Callable[[str], None]) -> None:
         """
