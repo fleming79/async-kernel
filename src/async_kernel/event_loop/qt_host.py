@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from aiologic.meta import import_from
 from typing_extensions import override
 
-from async_kernel.typing import Loop
+from async_kernel.typing import Loop, T
 
 from .run import Host
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from PySide6 import QtCore, QtWidgets  # noqa: TC004
 
 
-class QtHost(Host):
+class QtHost(Host[T]):
     LOOP = Loop.qt
     MATPLOTLIB_GUIS = ("qt",)
 
@@ -78,7 +78,7 @@ class QtHost(Host):
         self.app.quit()
 
     @override
-    def mainloop(self) -> None:
+    def mainloop(self) -> T:
         self.start_guest()
         self.app.exec()
         return super().mainloop()

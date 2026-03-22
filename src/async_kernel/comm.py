@@ -38,7 +38,7 @@ class Comm(BaseComm):
         metadata: MaybeDict = None,
         buffers: BuffersType = None,
         **keys,
-    ):
+    ) -> None:
         """Helper for sending a comm message on IOPub."""
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
         self.kernel.iopub_send(
@@ -80,7 +80,7 @@ class CommManager(comm.base_comm.CommManager):
         pass
 
     @staticmethod
-    def patch_comm():
+    def patch_comm() -> None:
         """
         Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
 

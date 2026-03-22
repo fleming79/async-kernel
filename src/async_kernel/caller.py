@@ -289,7 +289,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._zmq_context
 
     @property
-    def running(self):
+    def running(self) -> bool:
         "Returns `True` when the caller is available to run requests."
         return self._state is CallerState.running
 

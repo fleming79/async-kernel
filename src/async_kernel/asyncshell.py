@@ -219,7 +219,7 @@ class AsyncInteractiveShell(InteractiveShell):
         with contextlib.suppress(AttributeError):
             utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)  # pyright: ignore[reportOptionalMemberAccess]
 
-    def _get_default_ns(self):
+    def _get_default_ns(self) -> dict[str, Any]:
         # Copied from `InteractiveShell.init_user_ns`
         history = self.history_manager
         return {
@@ -269,7 +269,7 @@ class AsyncInteractiveShell(InteractiveShell):
         return
 
     @override
-    def init_hooks(self):
+    def init_hooks(self) -> None:
         """Initialize hooks."""
         super().init_hooks()
 
@@ -504,7 +504,7 @@ class AsyncInteractiveShell(InteractiveShell):
         )
 
     @override
-    def reset(self, new_session=True, aggressive=False):
+    def reset(self, new_session=True, aggressive=False) -> None:
         if not self._resetting:
             self._resetting = True
             try:

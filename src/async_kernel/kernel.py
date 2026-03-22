@@ -21,7 +21,6 @@ import traitlets
 from aiologic import Event
 from aiologic.lowlevel import current_async_library
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CUnicode, HasTraits, Instance, Tuple
 from typing_extensions import override
 
 import async_kernel
@@ -43,27 +42,22 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
 
+    from async_kernel.interface.zmq import ZMQKernelInterface
+
 
 __all__ = ["Kernel", "KernelInterruptError"]
 
 
-class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
+class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     """
-    A Jupyter kernel that supports concurrent execution providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell]
-    with support for kernel subshells.
-
-    Info:
-        Only one instance of a kernel is created at a time per subprocess. The instance can be obtained
-        with `Kernel()` or [get_kernel].
+    A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
     Starting the kernel:
-        The kernel should appear in the list of kernels just as other kernels are. Variants of the kernel
-        can with custom configuration can be added at the [command line][command.command_line].
 
         === "From the shell"
 
             ``` shell
-            async-kernel -f .
+            async-kernel --kernel-name=async -f .
             ```
 
         === "Blocking"
@@ -71,20 +65,23 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             ```python
             import async_kernel.interface
 
-            async_kernel.interface.start_kernel_zmq_interface()
+            settings = {}  # Dotted name key/value pairs
+
+            async_kernel.interface.start_kernel_zmq_interface(settings)
             ```
 
-        === "Inside a coroutine"
+        === "Async"
 
             ```python
-            async with Kernel():
-                await anyio.sleep_forever()
+            settings = {}  # Dotted name key/value pairs
+            async with Kernel(settings):
+                ...
             ```
 
     Warning:
         Starting the kernel outside the main thread has the following implicatations:
-            - Execute requests won't be run in the main thread.
-            - Interrupts via signals won't work, so thread blocking calls in the shell cannot be interrupted.
+            - Execute requests are run in the thread where the kernel is started.
+            - The signal based kernel interrupt is not possible.
 
     Origins:
         - [IPyKernel Kernel][ipykernel.kernelbase.Kernel]
@@ -99,8 +96,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _settings = Fixed(dict)
     _handler_cache: Fixed[Self, dict[tuple[str | None, MsgType, Callable], HandlerType]] = Fixed(dict)
 
-    interface = traitlets.Instance(BaseKernelInterface)
-    "The abstraction to communicate with the kernel."
+    interface: traitlets.Instance[BaseKernelInterface] = traitlets.Instance(BaseKernelInterface)
+    "The abstraction to interface with the kernel."
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The callers associated with the kernel once it has started."
@@ -109,7 +106,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "Dedicated to management of sub shells."
 
     # Public traits
-    help_links = Tuple()
+    help_links = traitlets.Tuple()
     ""
     quiet = traitlets.Bool(True)
     "Only send stdout/stderr to output stream."
@@ -119,7 +116,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     connection_file: traitlets.TraitType[Path, Path | str] = traitlets.TraitType()
     """
-    JSON file in which to store connection info 
+    JSON file in which to store connection info.
     
     `"kernel-<pid>.json"`
 
@@ -128,10 +125,10 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     of the current profile, but can be specified by absolute path.
     """
 
-    kernel_name = CUnicode()
+    kernel_name = traitlets.CUnicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
-    log = Instance(logging.LoggerAdapter)
+    log = traitlets.Instance(logging.LoggerAdapter)
     "The logging adapter."
 
     # Public fixed
@@ -175,11 +172,11 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 
     @traitlets.default("kernel_name")
-    def _default_kernel_name(self):
+    def _default_kernel_name(self) -> Literal["async-trio", "async"]:
         return "async-trio" if current_async_library(failsafe=True) == "trio" else "async"
 
     @traitlets.default("interface")
-    def default_interface(self):
+    def default_interface(self) -> ZMQKernelInterface:
         from async_kernel.interface.zmq import ZMQKernelInterface  # noqa: PLC0415
 
         return ZMQKernelInterface()
@@ -217,8 +214,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     def _observe_connection_file(self, change) -> None:
         if not self.interface.callers and (path := self.connection_file).exists():
             self.log.debug("Loading connection file %s", path)
-            with path.open("r") as f:
-                self.load_connection_info(json.load(f))
+            self.load_connection_info(json.loads(path.read_bytes()))
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal) -> Path:
@@ -302,48 +298,51 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         Once an instance of a kernel is stopped the instance cannot be restarted.
         Instead a new instance should be started.
         """
-        if (instance := Kernel._instance) and (stop := getattr(instance, "_stop", None)):
-            stop()
+        if (kernel := Kernel._instance) and (scope := getattr(kernel, "_scope", None)):
+            del kernel._scope
+            kernel.log.info("Stopping kernel: %s", kernel)
+            kernel.caller.call_direct(scope.cancel, "Stopping kernel")
+            kernel.event_stopped.set()
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        """Start the kernel in an already running anyio event loop."""
+        """Start the kernel."""
         assert self.main_shell
+        original_sys_hooks = sys.excepthook, sys.unraisablehook
         try:
             async with self.interface:
                 self.callers.update(self.interface.callers)
                 with anyio.CancelScope() as scope:
-                    self._stop = lambda: self.caller.call_direct(scope.cancel, "Stopping kernel")
-                    sys.excepthook = self.excepthook
-                    sys.unraisablehook = self.unraisablehook
-
+                    self._scope = scope
+                    sys.excepthook, sys.unraisablehook = self.excepthook, self.unraisablehook
                     self.comm_manager.patch_comm()
-                    try:
-                        self.event_started.set()
-                        self.log.info("Kernel started: %s", self)
-                        yield self
-                    except BaseException:
-                        if not scope.cancel_called:
-                            raise
-                    finally:
-                        self.event_stopped.set()
+                    self.event_started.set()
+                    self.log.info("Kernel started: %s", self)
+                    yield self
         finally:
+            self.stop()
+            sys.excepthook, sys.unraisablehook = original_sys_hooks
             with anyio.CancelScope(shield=True):
                 await self.do_shutdown(self._restart)
 
     async def do_shutdown(self, restart: bool) -> None:
-        "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_shutdown][]."
+        assert self.event_stopped
+        self.log.info("Kernel shutdown: %s", self)
+        await anyio.sleep(0.1)
         self.shell.reset(new_session=False)
         self.subshell_manager.stop_all_subshells(force=True)
         self.callers.clear()
         self._handler_cache.clear()
-        Kernel._instance = None
-        AsyncInteractiveShell.clear_instance()
+        for comm in tuple(self.comm_manager.comms.values()):
+            comm.close(deleting=True)
         self.comm_manager.comms.clear()
         await anyio.sleep(0.1)
+        AsyncInteractiveShell.clear_instance()
         CommManager._instance = None  # pyright: ignore[reportPrivateUsage]
-        self.log.info("Kernel stopped: %s", self)
+        Kernel._instance = None
         gc.collect()
+        self.log.info("Kernel shutdown complete: %s", self)
 
     def iopub_send(
         self,
@@ -594,8 +593,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
 
     def get_connection_info(self) -> dict[str, Any]:
         """Return the connection info as a dict."""
-        with self.connection_file.open("r") as f:
-            return json.load(f)
+        return json.loads(self.connection_file.read_bytes())
 
     def get_parent(self) -> Message[dict[str, Any]] | None:
         """

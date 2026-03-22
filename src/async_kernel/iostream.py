@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from io import TextIOBase
-from threading import Lock
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
+from aiologic import Lock
 from typing_extensions import override
+
+from async_kernel.common import Fixed
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -13,9 +15,9 @@ if TYPE_CHECKING:
 class OutStream(TextIOBase):
     """A file like object that calls the flusher with the string output when flush is called."""
 
-    _write_lock = Lock()
+    _write_lock = Fixed(Lock)
 
-    def __init__(self, flusher: Callable[[str], None]):
+    def __init__(self, flusher: Callable[[str], None]) -> None:
         """
         Args:
             flusher: A callback responsible for sending the output.
@@ -27,40 +29,34 @@ class OutStream(TextIOBase):
         self._out = ""
 
     @override
-    def isatty(self):
+    def isatty(self) -> Literal[True]:
         return True
 
     @override
-    def readable(self):
+    def readable(self) -> Literal[False]:
         return False
 
     @override
-    def seekable(self):
+    def seekable(self) -> Literal[False]:
         return False
 
     @override
-    def writable(self):
+    def writable(self) -> Literal[True]:
         return True
 
     @override
-    def flush(self):
+    def flush(self) -> None:
         if out := self._out:
             self._out = ""
             self._flusher(out)
 
     @override
     def write(self, string: str) -> int:
-        """
-        Write to current stream after encoding if necessary
-
-        Returns: number of items from input parameter written to stream.
-        """
         with self._write_lock:
             self._out = string
             self.flush()
         return len(string)
 
     @override
-    def writelines(self, sequence):
-        """Write lines to the stream (separators are not added)."""
+    def writelines(self, sequence) -> None:
         self.write("".join(sequence))

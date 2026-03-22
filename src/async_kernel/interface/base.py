@@ -14,7 +14,6 @@ from uuid import uuid4
 
 import anyio
 import traitlets
-from aiologic import Event
 from aiologic.lowlevel import current_async_library
 from traitlets import HasTraits, Instance, UseEnum
 
@@ -72,9 +71,6 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
 
     last_interrupt_frame = None
     "This frame is set when an interrupt is intercepted and cleared once the interrupt has been handled."
-
-    wait_exit = Fixed(Event)
-    "An event that when set will leave the kernel context if the kernel was started by this interface."
 
     backend = UseEnum(Backend)
     "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."

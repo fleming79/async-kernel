@@ -5,8 +5,9 @@ import os
 import re
 import sys
 import threading
+from logging import Logger, LoggerAdapter
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import anyio.abc
 import orjson
@@ -33,7 +34,7 @@ _host_port: None | tuple[str, int] = None
 class _FakeCode:
     """Fake code class.  Origin: [IPyKernel][ipykernel.debugger._FakeCode]."""
 
-    def __init__(self, co_filename, co_name):
+    def __init__(self, co_filename, co_name) -> None:
         """Init."""
         self.co_filename = co_filename
         self.co_name = co_name
@@ -42,7 +43,7 @@ class _FakeCode:
 class _FakeFrame:
     """Fake frame class. Origin: [IPyKernel][ipykernel.debugger._FakeFrame]."""
 
-    def __init__(self, f_code, f_globals, f_locals):
+    def __init__(self, f_code, f_globals, f_locals) -> None:
         """Init."""
         self.f_code = f_code
         self.f_globals = f_globals
@@ -53,7 +54,7 @@ class _FakeFrame:
 class _DummyPyDB:
     """Fake PyDb class. Origin: [IPyKernel][ipykernel.debugger._DummyPyDB]."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Init."""
         from _pydevd_bundle.pydevd_api import PyDevdAPI  # type: ignore[attr-defined]  # noqa: PLC0415
 
@@ -69,7 +70,7 @@ class VariableExplorer(HasTraits):
 
     kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the explorer."""
         super().__init__()
         # This import is apparently required to provide _pydevd_bundle imports
@@ -81,7 +82,7 @@ class VariableExplorer(HasTraits):
         self.tracker = _FramesTracker(self.suspended_frame_manager, self.py_db)
         self.frame = None
 
-    def track(self):
+    def track(self) -> None:
         """Start tracking."""
         from _pydevd_bundle import pydevd_frame_utils  # type: ignore[attr-defined]  # noqa: PLC0415
 
@@ -90,11 +91,11 @@ class VariableExplorer(HasTraits):
         self.frame = _FakeFrame(_FakeCode("<module>", shell.compile.get_file_name("sys._getframe()")), var, var)
         self.tracker.track("thread1", pydevd_frame_utils.create_frames_list_from_frame(self.frame))
 
-    def untrack_all(self):
+    def untrack_all(self) -> None:
         """Stop tracking."""
         self.tracker.untrack_all()
 
-    def get_children_variables(self, variable_ref=None):
+    def get_children_variables(self, variable_ref=None) -> list[Any]:
         """Get the child variables for a variable reference."""
         var_ref = variable_ref
         if not var_ref:
@@ -119,17 +120,17 @@ class DebugpyClient(HasTraits):
     _socketstream: anyio.abc.SocketStream | None = None
     _send_lock = Instance(Lock, ())
 
-    def __init__(self, log, event_callback):
+    def __init__(self, log, event_callback) -> None:
         """Initialize the client."""
         super().__init__()
         self.log = log
         self.event_callback = event_callback
 
     @property
-    def connected(self):
+    def connected(self) -> bool:
         return bool(self._socketstream)
 
-    async def send_request(self, request: dict) -> Pending:
+    async def send_request(self, request: dict) -> Pending[dict[str, Any]]:
         if not (socketstream := self._socketstream):
             raise RuntimeError
         async with self._send_lock:
@@ -142,7 +143,7 @@ class DebugpyClient(HasTraits):
             await socketstream.send(buf)
             return pen
 
-    def put_tcp_frame(self, frame: bytes):
+    def put_tcp_frame(self, frame: bytes) -> None:
         """Buffer the frame and process the buffer."""
         self.tcp_buffer += frame
         data = self.tcp_buffer.split(self.HEADER)
@@ -158,7 +159,7 @@ class DebugpyClient(HasTraits):
                     result.set_result(msg)
             self.tcp_buffer = b""
 
-    async def connect_tcp_socket(self, ready: Event):
+    async def connect_tcp_socket(self, ready: Event) -> None:
         """Connect to the tcp socket."""
         global _host_port  # noqa: PLW0603
         if not _host_port:
@@ -199,10 +200,10 @@ class Debugger(HasTraits):
     init_event = Instance(Event, ())
 
     @default("log")
-    def _default_log(self):
+    def _default_log(self) -> LoggerAdapter[Logger]:
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the debugger."""
         super().__init__()
         self.debugpy_client = DebugpyClient(log=self.log, event_callback=self._handle_event)
@@ -226,19 +227,19 @@ class Debugger(HasTraits):
         }
         self._forbidden_names = tuple(self.kernel.shell.user_ns_hidden)
 
-    async def send_dap_request(self, msg: DebugMessage, /):
+    async def send_dap_request(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Sends a DAP request to the debug server, waits for and returns the corresponding response."""
         return await (await self.debugpy_client.send_request(msg))
 
-    def next_seq(self):
+    def next_seq(self) -> int:
         "A monotonically decreasing negative number so as not to clash with the frontend seq."
         self._seq = self._seq - 1
         return self._seq
 
-    def _handle_event(self, event):
+    def _handle_event(self, event) -> None:
         if event["event"] == "stopped":
 
-            async def _handle_stopped_event():
+            async def _handle_stopped_event() -> None:
                 names = {t.name for t in threading.enumerate() if not getattr(t, "pydev_do_not_trace", False)}
                 msg = {"seq": self.next_seq(), "type": "request", "command": "threads"}
                 rep = await self.send_dap_request(msg)
@@ -256,7 +257,7 @@ class Debugger(HasTraits):
             self.init_event.set()
         self._publish_event(event)
 
-    def _publish_event(self, event: dict):
+    def _publish_event(self, event: dict) -> None:
         self.kernel.iopub_send(
             msg_or_type="debug_event",
             content=event,
@@ -264,7 +265,7 @@ class Debugger(HasTraits):
             parent=None,
         )
 
-    def _build_variables_response(self, request, variables):
+    def _build_variables_response(self, request, variables) -> dict[str, Any]:
         var_list = [var for var in variables if self._accept_variable(var["name"])]
         return {
             "seq": request["seq"],
@@ -275,7 +276,7 @@ class Debugger(HasTraits):
             "body": {"variables": var_list},
         }
 
-    def _accept_variable(self, variable_name):
+    def _accept_variable(self, variable_name) -> bool:
         """Accept a variable by name."""
         return (
             variable_name not in self._forbidden_names
@@ -283,7 +284,7 @@ class Debugger(HasTraits):
             and not variable_name.startswith("_i")
         )
 
-    async def process_request(self, msg: DebugMessage, /):
+    async def process_request(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Process a request."""
         command = msg["command"]
         if handler := self.static_debug_handlers.get(command):
@@ -298,7 +299,7 @@ class Debugger(HasTraits):
 
     ## Static handlers
 
-    async def do_initialize(self, msg: DebugMessage, /):
+    async def do_initialize(self, msg: DebugMessage, /) -> dict[str, Any]:
         "Initialize debugpy server starting as required."
         utils.mark_thread_pydev_do_not_trace()
         for thread in threading.enumerate():
@@ -318,7 +319,7 @@ class Debugger(HasTraits):
             self.capabilities = capabilities
         return reply
 
-    async def do_debug_info(self, msg: DebugMessage, /):
+    async def do_debug_info(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a debug info message."""
         breakpoint_list = []
         for key, value in self.breakpoint_list.items():
@@ -343,7 +344,7 @@ class Debugger(HasTraits):
             },
         }
 
-    async def do_inspect_variables(self, msg: DebugMessage, /):
+    async def do_inspect_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle an inspect variables message."""
         self.variable_explorer.untrack_all()
         # looks like the implementation of untrack_all in ptvsd
@@ -354,7 +355,7 @@ class Debugger(HasTraits):
         variables = self.variable_explorer.get_children_variables()
         return self._build_variables_response(msg, variables)
 
-    async def do_rich_inspect_variables(self, msg: DebugMessage, /):
+    async def do_rich_inspect_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a rich inspect variables message."""
         reply = {
             "type": "response",
@@ -399,7 +400,7 @@ class Debugger(HasTraits):
         reply["success"] = True
         return reply
 
-    async def do_modules(self, msg: DebugMessage, /):
+    async def do_modules(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a modules message."""
         modules = list(sys.modules.values())
         startModule = msg.get("startModule", 0)
@@ -412,7 +413,7 @@ class Debugger(HasTraits):
                 mods.append({"id": i, "name": module.__name__, "path": filename})
         return {"body": {"modules": mods, "totalModules": len(modules)}}
 
-    async def do_dump_cell(self, msg: DebugMessage, /):
+    async def do_dump_cell(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a dump cell message."""
         code = msg["arguments"]["code"]
         path = self.kernel.shell.compile.get_file_name(code)
@@ -427,9 +428,7 @@ class Debugger(HasTraits):
             "body": {"sourcePath": str(path)},
         }
 
-    # Started handlers (requires debug_client connection)
-
-    async def do_copy_to_globals(self, msg: DebugMessage, /):
+    async def do_copy_to_globals(self, msg: DebugMessage, /) -> dict[str, Any]:
         dst_var_name = msg["arguments"]["dstVariableName"]
         src_var_name = msg["arguments"]["srcVariableName"]
         src_frame_id = msg["arguments"]["srcFrameId"]
@@ -440,7 +439,7 @@ class Debugger(HasTraits):
                 "command": "evaluate",
                 "seq": self.next_seq(),
                 "arguments": {
-                    "expression": f"import async_kernel;async_kernel.kernel.Kernel().shell.user_ns['{dst_var_name}'] = {src_var_name}",
+                    "expression": f"get_ipython().user_ns['{dst_var_name}'] = {src_var_name}",
                     "frameId": src_frame_id,
                     "context": "repl",
                 },
@@ -459,7 +458,7 @@ class Debugger(HasTraits):
             }
         )
 
-    async def do_set_breakpoints(self, msg: DebugMessage, /):
+    async def do_set_breakpoints(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a set breakpoints message."""
         source = msg["arguments"]["source"]["path"]
         self.breakpoint_list[source] = msg["arguments"]["breakpoints"]
@@ -472,7 +471,7 @@ class Debugger(HasTraits):
             ]
         return message_response
 
-    async def do_source(self, msg: DebugMessage, /):
+    async def do_source(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a source message."""
         reply = {"type": "response", "request_seq": msg["seq"], "command": msg["command"]}
         if (path := Path(msg["arguments"].get("source", {}).get("path", "missing"))).is_file():
@@ -486,7 +485,7 @@ class Debugger(HasTraits):
 
         return reply
 
-    async def do_stack_trace(self, msg: DebugMessage, /):
+    async def do_stack_trace(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a stack trace message."""
         reply = await self.send_dap_request(msg)
         # The stackFrames array can have the following content:
@@ -508,7 +507,7 @@ class Debugger(HasTraits):
             pass
         return reply
 
-    async def do_variables(self, msg: DebugMessage, /):
+    async def do_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a variables message."""
         reply = {}
         if not self.stopped_threads:
@@ -520,7 +519,7 @@ class Debugger(HasTraits):
             reply["body"]["variables"] = variables
         return reply
 
-    async def do_attach(self, msg: DebugMessage, /):
+    async def do_attach(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle an attach message."""
         assert _host_port
         msg["arguments"]["connect"] = {"host": _host_port[0], "port": _host_port[1]}
@@ -537,7 +536,7 @@ class Debugger(HasTraits):
         )
         return await reply
 
-    async def do_configuration_done(self, msg: DebugMessage, /):
+    async def do_configuration_done(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a configuration done message."""
         # This is only supposed to be called during initialize but can come at anytime. Ref: https://microsoft.github.io/debug-adapter-protocol/specification#Events_Initialized
         # see : https://github.com/jupyterlab/jupyterlab/issues/17673
@@ -549,7 +548,7 @@ class Debugger(HasTraits):
             "command": msg["command"],
         }
 
-    async def do_disconnect(self, msg: DebugMessage, /):
+    async def do_disconnect(self, msg: DebugMessage, /) -> dict[str, Any]:
         response = await self.send_dap_request(msg)
         # Restore the leading whitespace remove transform.
         cleanup_transforms = self.kernel.shell.input_transformer_manager.cleanup_transforms
