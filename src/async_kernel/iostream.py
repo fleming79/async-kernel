@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from io import TextIOBase
 from threading import Lock
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from typing_extensions import override
 
@@ -15,7 +15,7 @@ class OutStream(TextIOBase):
 
     _write_lock = Lock()
 
-    def __init__(self, flusher: Callable[[str], None]):
+    def __init__(self, flusher: Callable[[str], None]) -> None:
         """
         Args:
             flusher: A callback responsible for sending the output.
@@ -27,23 +27,23 @@ class OutStream(TextIOBase):
         self._out = ""
 
     @override
-    def isatty(self):
+    def isatty(self) -> Literal[True]:
         return True
 
     @override
-    def readable(self):
+    def readable(self) -> Literal[False]:
         return False
 
     @override
-    def seekable(self):
+    def seekable(self) -> Literal[False]:
         return False
 
     @override
-    def writable(self):
+    def writable(self) -> Literal[True]:
         return True
 
     @override
-    def flush(self):
+    def flush(self) -> None:
         if out := self._out:
             self._out = ""
             self._flusher(out)
@@ -61,6 +61,6 @@ class OutStream(TextIOBase):
         return len(string)
 
     @override
-    def writelines(self, sequence):
+    def writelines(self, sequence) -> None:
         """Write lines to the stream (separators are not added)."""
         self.write("".join(sequence))
