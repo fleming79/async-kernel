@@ -297,8 +297,12 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         Once an instance of a kernel is stopped the instance cannot be restarted.
         Instead a new instance should be started.
         """
-        if (instance := Kernel._instance) and (stop := getattr(instance, "_stop", None)):
-            stop()
+        if (kernel := Kernel._instance) and (scope := getattr(kernel, "_scope", None)):
+            del kernel._scope
+            kernel.log.info("Stopping kernel: %s", kernel)
+            kernel.caller.call_direct(scope.cancel, "Stopping kernel")
+            kernel.event_stopped.set()
+            kernel.interface.wait_exit.set()
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
@@ -309,20 +313,23 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
             async with self.interface:
                 self.callers.update(self.interface.callers)
                 with anyio.CancelScope() as scope:
-                    self._stop = lambda: self.caller.call_direct(scope.cancel, "Stopping kernel")
+                    self._scope = scope
                     sys.excepthook, sys.unraisablehook = self.excepthook, self.unraisablehook
                     self.comm_manager.patch_comm()
                     self.event_started.set()
                     self.log.info("Kernel started: %s", self)
                     yield self
         finally:
+            self.stop()
             sys.excepthook, sys.unraisablehook = original_sys_hooks
             with anyio.CancelScope(shield=True):
                 await self.do_shutdown(self._restart)
 
     async def do_shutdown(self, restart: bool) -> None:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_shutdown][]."
+        self.log.info("Kernel shutdown: %s", self)
         self.event_stopped.set()
+        await anyio.sleep(0.1)
         self.shell.reset(new_session=False)
         self.subshell_manager.stop_all_subshells(force=True)
         self.callers.clear()
@@ -334,8 +341,8 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
         self.comm_manager.comms.clear()
         await anyio.sleep(0.1)
         CommManager._instance = None  # pyright: ignore[reportPrivateUsage]
-        self.log.info("Kernel stopped: %s", self)
         gc.collect()
+        self.log.info("Kernel shutdown complete: %s", self)
 
     def iopub_send(
         self,

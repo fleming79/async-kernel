@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Literal
 
 import anyio
 import pytest
+from aiologic import Event
 
 import async_kernel
 from async_kernel import kernel as kernel_module
@@ -109,21 +110,17 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
 
 
 def test_command_start_kernel(monkeypatch):
-    started = False
 
     async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
     monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--no-print_kernel_messages"])
 
-    async def wait_exit():
-        nonlocal started
-        started = True
-
-    monkeypatch.setattr(ZMQKernelInterface, "wait_exit", wait_exit())
+    event = Event()
+    event.set()
+    monkeypatch.setattr(ZMQKernelInterface, "wait_exit", event)
     try:
         with pytest.raises(SystemExit) as e:
             command_line()
         assert e.value.code == 0
-        assert started
     finally:
         async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
 
