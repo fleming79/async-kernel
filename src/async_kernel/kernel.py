@@ -21,7 +21,6 @@ import traitlets
 from aiologic import Event
 from aiologic.lowlevel import current_async_library
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CUnicode, HasTraits, Instance, Tuple
 from typing_extensions import override
 
 import async_kernel
@@ -47,7 +46,7 @@ if TYPE_CHECKING:
 __all__ = ["Kernel", "KernelInterruptError"]
 
 
-class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
+class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     """
     A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
@@ -96,7 +95,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     _handler_cache: Fixed[Self, dict[tuple[str | None, MsgType, Callable], HandlerType]] = Fixed(dict)
 
     interface = traitlets.Instance(BaseKernelInterface)
-    "The abstraction to communicate with the kernel."
+    "The abstraction to interface with the kernel."
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The callers associated with the kernel once it has started."
@@ -105,7 +104,7 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     "Dedicated to management of sub shells."
 
     # Public traits
-    help_links = Tuple()
+    help_links = traitlets.Tuple()
     ""
     quiet = traitlets.Bool(True)
     "Only send stdout/stderr to output stream."
@@ -124,10 +123,10 @@ class Kernel(HasTraits, anyio.AsyncContextManagerMixin):
     of the current profile, but can be specified by absolute path.
     """
 
-    kernel_name = CUnicode()
+    kernel_name = traitlets.CUnicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
-    log = Instance(logging.LoggerAdapter)
+    log = traitlets.Instance(logging.LoggerAdapter)
     "The logging adapter."
 
     # Public fixed
