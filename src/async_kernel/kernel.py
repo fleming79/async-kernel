@@ -99,7 +99,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     interface: traitlets.Instance[BaseKernelInterface] = traitlets.Instance(BaseKernelInterface)
     "The abstraction to interface with the kernel."
 
-    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control, "Shell-hidden"], Caller]] = Fixed(dict)
     "The callers associated with the kernel once it has started."
     ""
     subshell_manager = Fixed(SubshellManager)
@@ -410,7 +410,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         if msg_type is MsgType.execute_request:
             run_mode = self._get_execute_request_run_mode(job)
         elif channel is Channel.shell and msg_type is not MsgType.comm_msg:
-            caller = self.callers[Channel.shell].get(name="Shell-hidden", no_debug=True, protected=True)
+            caller = self.callers["Shell-hidden"]
         # Schedule job
         match run_mode:
             case RunMode.queue:
@@ -429,7 +429,10 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     ) -> HandlerType:
 
         handler: HandlerType = getattr(self, msg_type)
-        key = subshell_id, msg_type, send_reply
+        if msg_type is MsgType.execute_request:
+            key = (subshell_id, msg_type, send_reply)
+        else:
+            key = (None, msg_type, send_reply)
         try:
             return self._handler_cache[key]
         except KeyError:

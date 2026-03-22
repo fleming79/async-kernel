@@ -60,7 +60,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     log = Instance(logging.LoggerAdapter)
     "The logging adapter."
 
-    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control, "Shell-hidden"], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
 
     kernel: Fixed[Self, Kernel] = Fixed(lambda _: async_kernel.Kernel())
@@ -109,6 +109,9 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
         )
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
+        self.callers["Shell-hidden"] = caller.get(
+            name="Shell-hidden", no_debug=True, log=self.kernel.log, protected=True
+        )
         async with caller:
             try:
                 restore_io = self._patch_io()
