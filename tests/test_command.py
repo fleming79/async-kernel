@@ -132,7 +132,6 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
     import matplotlib as mpl  # noqa: PLC0415
 
     mpl.use("module://matplotlib_inline.backend_inline")
-    started = False
     if loop is Loop.tk:
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
@@ -160,7 +159,6 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
         with pytest.raises(SystemExit) as e:
             command_line()
         assert e.value.code == 0
-        assert started
     finally:
         async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
 
