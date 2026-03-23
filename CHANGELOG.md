@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.3] - 2026-03-23
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Housekeeping [#365](https://github.com/fleming79/async-kernel/pull/365)
+
+- General maintenance [#361](https://github.com/fleming79/async-kernel/pull/361)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Minor SingleConsumerAsyncQueue optimization. [#368](https://github.com/fleming79/async-kernel/pull/368)
+
+- Fixtest_command_start_kernel_enable_matplotlib [#367](https://github.com/fleming79/async-kernel/pull/367)
+
+- Substitute control thread for shell-hidden thread and limit subshell handler to execute_requests [#366](https://github.com/fleming79/async-kernel/pull/366)
+
+- Refactor ZMQKernelInterface [#364](https://github.com/fleming79/async-kernel/pull/364)
+
+- Simplify CommManager and Comm - the Kernel is now Fixed [#363](https://github.com/fleming79/async-kernel/pull/363)
+
+- Access kernel from shell where it is available for AsyncDisplayPublisher and KernelMagics [#362](https://github.com/fleming79/async-kernel/pull/362)
+
 ## [0.13.2] - 2026-03-15
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -20,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update documentation [#356](https://github.com/fleming79/async-kernel/pull/356)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.13.2 [#360](https://github.com/fleming79/async-kernel/pull/360)
 
 - Prevent signal interrupt when the debugger is paused [#359](https://github.com/fleming79/async-kernel/pull/359)
 
@@ -999,6 +1023,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.13.3]: https://github.com/fleming79/async-kernel/compare/v0.13.2..v0.13.3
 [0.13.2]: https://github.com/fleming79/async-kernel/compare/v0.13.1..v0.13.2
 [0.13.1]: https://github.com/fleming79/async-kernel/compare/v0.13.0..v0.13.1
 [0.13.0]: https://github.com/fleming79/async-kernel/compare/v0.12.5..v0.13.0
