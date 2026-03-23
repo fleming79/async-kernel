@@ -597,6 +597,28 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#callers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zmq-message-handling-cpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZMQ message handling (CPython)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#shell-messaging" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1361,6 +1383,28 @@ viewing the latest version.
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#callers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zmq-message-handling-cpython" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZMQ message handling (CPython)
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#shell-messaging" class="md-nav__link">
@@ -2238,15 +2282,21 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel provides a separate message handler for each:</p>
-<ul>
-<li>channel</li>
-<li>msg_type</li>
-<li>subshell_id</li>
-</ul>
-<p>As messages are received they are queued for execution by the message handler using <code>queue_call</code> on a <code>Caller</code>.</p>
-<h2 id="shell-messaging">Shell messaging<a class="anchor-link" href="#shell-messaging">¶</a></h2><p>Both <code>execute_request</code> and <code>com_msg</code> are run in the shell's thread (normally the MainThread).
-All other messages on the shell channel are run in a separate <em>hidden thread</em> "Shell-hidden".</p>
+<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel is capable of concurrent message handling. It provides a separate message handler for each channel and msg_type.</p>
+<p>As messages are received they are queued for execution by the message handler.</p>
+<h2 id="callers">Callers<a class="anchor-link" href="#callers">¶</a></h2><p>async-kernel provides two <code>Callers</code> for the <em>shell</em> and <em>control</em> channels. The shell's <code>Caller</code> is
+associated with the thread where the kernel is started, normally this is the <em>MainThread</em>.
+In CPython, the <code>Caller</code> for the <em>control</em> channel is started as a child of the shell caller with
+it's own thread and asynchronous backend ('asyncio' or 'trio').</p>
+<h2 id="zmq-message-handling-cpython">ZMQ message handling (CPython)<a class="anchor-link" href="#zmq-message-handling-cpython">¶</a></h2><p>The kernel interface also starts two additional threads dedicated to receive the messages on
+the  <em>shell</em> and <em>control</em> channels, the specific function call is <code>session.recv(socket, mode=zmq.BLOCKY, copy=False)</code>.</p>
+<p>Each thread blocks until a new message is received on the zmq socket. When a message is received,
+the kernel's <code>message_handler</code> is called with detail of the message (Job), the channel and a function
+that is to be used to send the response corresponding to the message. The <code>message_handler</code> obtains
+the dedicated handler according to the <code>message_type</code>, <code>run_mode</code>, <code>channel</code> and <code>subshell_id</code> and
+schedules execution of the dedicated message handler in <code>Caller's</code> thread.</p>
+<h2 id="shell-messaging">Shell messaging<a class="anchor-link" href="#shell-messaging">¶</a></h2><p>Both <code>execute_request</code> and <code>com_msg</code> are always run in the shell's thread (normally the <em>MainThread</em>).
+All other messages on the shell channel are run in the control thread.</p>
 <h2 id="control-messaging">Control messaging<a class="anchor-link" href="#control-messaging">¶</a></h2><p>All messages on the control channel are handled in the control thread.</p>
 </div>
 </div>
@@ -2660,7 +2710,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell                       ✓       🔐            MainThread       140240211201584</pre>
+<pre>Shell                       ✓       🔐            MainThread       139773127216688</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2673,7 +2723,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control                     ✓       🔐             Control         140240148342512</pre>
+<pre>Control                     ✓       🔐             Control         139773061216160</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2686,20 +2736,7 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell-hidden                ✓       🔐           Shell-hidden      140240145217536</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140240025886288 ← current</pre>
+<pre>async_kernel_caller         ✓                async_kernel_caller   139773005326448 ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2742,7 +2779,7 @@ await demo()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 15, 2026 03:09:54 UTC"><span class="timeago" datetime="2026-03-15T03:09:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 15, 2026 03:09:54 UTC">2026-03-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 22, 2026 07:15:23 UTC"><span class="timeago" datetime="2026-03-22T07:15:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 22, 2026 07:15:23 UTC">2026-03-22</span>
   </span>
 
     

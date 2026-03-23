@@ -4939,7 +4939,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
                         <span class="c1"># Clear `PendingTracker.id`.</span>
                         <span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_id_contextvar</span><span class="o">.</span><span class="n">set</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_mappings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="nd">@override</span>

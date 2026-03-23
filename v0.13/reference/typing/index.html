@@ -4073,49 +4073,6 @@ viewing the latest version.
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#">asyncshell</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.do_complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_complete_request</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;execute_request</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.history_request"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;history_request</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.inspect_request"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;inspect_request</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.is_complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_complete_request</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
       <a href="../kernel/#">kernel</a>
   </span>
 
@@ -4156,6 +4113,12 @@ viewing the latest version.
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.do_complete"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_complete</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
       <a href="../kernel/#async_kernel.kernel.Kernel.do_execute"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_execute</a>
   </span>
 
@@ -4163,6 +4126,12 @@ viewing the latest version.
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="../kernel/#async_kernel.kernel.Kernel.do_history"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_history</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.do_inspect"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_inspect</a>
   </span>
 
       </li>
@@ -8336,6 +8305,20 @@ viewing the latest version.
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
+      <a href="../asyncshell/#">asyncshell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../asyncshell/#async_kernel.asyncshell.AsyncDisplayPublisher"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncDisplayPublisher</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../asyncshell/#async_kernel.asyncshell.AsyncDisplayPublisher.register_hook"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;register_hook</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#">interface</a>
   </span>
 
@@ -10217,7 +10200,7 @@ viewing the latest version.
   
       instance-attribute
    (async_kernel.typing.CallerCreateOptions.zmq_context)" href="#async_kernel.typing.CallerCreateOptions.zmq_context">zmq_context</a></code></b>
-              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<span title="zmq.Context">Context</span>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</code>)
+              (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<span title="zmq.Context">Context</span>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>] | None]</code>)
           –
           <div class="doc-md-description">
             <p>A zmq Context to use.</p>
@@ -10270,7 +10253,7 @@ viewing the latest version.
     <span class="n">protected</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
     <span class="s2">&quot;The caller should be protected against accidental closure (default=`False`).&quot;</span>
 
-    <span class="n">zmq_context</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span>
+    <span class="n">zmq_context</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
     <span class="s2">&quot;A zmq Context to use.&quot;</span>
 
     <span class="n">no_debug</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
@@ -10376,7 +10359,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.CallerCreateOptions.zmq_context" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">zmq_context</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><span title="zmq.Context">Context</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">zmq_context</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><span title="zmq.Context">Context</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
