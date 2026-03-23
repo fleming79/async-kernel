@@ -97,15 +97,16 @@ class SingleConsumerAsyncQueue(Generic[T]):
         if self._active is not None:
             return
         self._active = True
+        queue = self.queue
         try:
             while self._active:
-                if self.queue:
-                    yield self.queue.popleft()
+                if queue:
+                    yield queue.popleft()
                     await self._checkpoint()
                 else:
                     event = create_async_event()
                     self._resume = event.set
-                    if not self.queue and self._active:
+                    if not queue and self._active:
                         await event
                     self._resume = noop
         finally:
