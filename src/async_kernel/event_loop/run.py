@@ -81,7 +81,7 @@ class Host(Generic[T]):
     A class that provides the necessary callbacks to run a gui event loop with a `backend` started using `start_guest_run`.
     """
 
-    LOOP: Hosts
+    HOST: Hosts
     MATPLOTLIB_GUIS = ()
     _subclasses: dict[Hosts, type[Self]] = {}
     _instances: dict[threading.Thread, Host] = {}
@@ -91,8 +91,8 @@ class Host(Generic[T]):
     "A callback to start the guest. This must be called by a subclass."
 
     def __init_subclass__(cls) -> None:
-        if cls.LOOP is not Hosts.custom:
-            cls._subclasses[cls.LOOP] = cls
+        if cls.HOST is not Hosts.custom:
+            cls._subclasses[cls.HOST] = cls
 
     @classmethod
     def current(cls, thread: threading.Thread | None = None) -> Host | None:
@@ -127,7 +127,7 @@ class Host(Generic[T]):
                 import_module(f"async_kernel.event_loop.{loop}_host")
                 assert loop in cls._subclasses, f"Host for {loop=} is not implemented correctly!"
             cls_ = cls._subclasses[loop]
-        assert cls_.LOOP is loop
+        assert cls_.HOST is loop
 
         host = cls_(**host_options)
         # set the `start_guest` function (runs once).
