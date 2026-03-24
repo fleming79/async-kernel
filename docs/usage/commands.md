@@ -63,8 +63,8 @@ The kernel spec can be updated by adding a kernel spec with the same name ('asyn
 There are two supported backends 'asyncio' and 'trio'.
 
 In CPython the [backend][async_kernel.typing.Backend] is started using [anyio.run][].
-The type of backend can be specified at the attribute [`interface.backend`][async_kernel.interface.BaseKernelInterface.backend].
-The backend_options can be specified at the attribute [`interface.backend_options'][async_kernel.interface.zmq.ZMQKernelInterface.backend_options].
+The type of backend can be specified at the attribute [interface.backend][async_kernel.interface.BaseKernelInterface.backend].
+The backend_options can be specified at the attribute [interface.backend_options][async_kernel.interface.zmq.ZMQKernelInterface.backend_options].
 Options can be written as a literal python string.
 
 ```console
@@ -78,7 +78,7 @@ searches for the kernel specs.
 
 The path where the kernel spec is installed/deleted can also be specified by either `prefix` or `folder`.
 
-**options**
+**Options**
 
 - prefix (optional): the prefix to use with `PREFIX/share/jupyter/kernels` (defaults is [sys.prefix][]).
 - folder (optional) the full path to the `kernels` folder.
@@ -129,14 +129,14 @@ async-kernel -a async-qt-trio --interface.host=qt --interface.backend=trio
 async-kernel -a async-qt --interface.host=qt --interface.host_options={'module':'PySide2'}
 ```
 
-## Loop options
+## Host options
 
-Options can be provided to configure how a loop loads. There are only a few options available
+Options can be provided to configure how a host loads. There are only a few options available
 at present.
 
 - `host_class' `[type[Host| str]]` : A customised subclass of a [Host][async_kernel.event_loop.run.Host]
   or a dotted import path to the customised Host.
-- `'module': The module name on which to base the event loop. (Only applies to 'qt').
+- `'module': The module name on which to base the event loop. (Only applies to [qt][async_kernel.event_loop.qt_host.QtHost]).
 
 ## Backend options
 
