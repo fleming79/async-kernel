@@ -30,6 +30,8 @@ from .run import Host
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+__all__ = ["TkHost"]
+
 
 class TkHost(Host[T]):
     HOST = Hosts.tk
@@ -48,17 +50,17 @@ class TkHost(Host[T]):
     @override
     def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None:
         """
-        Use Tcl "after" command to schedule a function call
+        Use Tcl "after" command to schedule a function call.
 
-        Based on `tkinter source comments <https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1472-L1555>`_
+        Based on [tkinter source comments](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1472-L1555)
         the issuance of the tcl call to after itself is thread-safe since it is sent
-        to the `appropriate thread <https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L814-L824>`_ on line 1522.
-        Tkapp_ThreadSend effectively uses "after 0" while putting the command in the
-        event queue so the `"after idle after 0" <https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061>`_ incantation
+        to the [appropriate thread](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L814-L824>) on line 1522.
+        `Tkapp_ThreadSend` effectively uses "after 0" while putting the command in the
+        event queue so the ["after idle after 0"](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)` incantation
         is unnecessary here.
 
-        Compare to `tkthread <https://github.com/serwy/tkthread/blob/1f612e1dd46e770bd0d0bb64d7ecb6a0f04875a3/tkthread/__init__.py#L163>`_
-        where definitely thread unsafe `eval <https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1567-L1585>`_
+        Compare to [tkthread](https://github.com/serwy/tkthread/blob/1f612e1dd46e770bd0d0bb64d7ecb6a0f04875a3/tkthread/__init__.py#L163)
+        where definitely thread unsafe [eval](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1567-L1585)
         is used to send thread safe signals between tcl interpreters.
         """
         # self.root.after_idle(lambda:self.root.after(0, func)) # does a fairly intensive wrapping to each func
@@ -73,8 +75,9 @@ class TkHost(Host[T]):
         If .call is called from the Tcl thread, the locking and sending are optimized away
         so it should be fast enough.
 
-        The incantation `"after idle after 0" <https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061>`_ avoids blocking the normal event queue when
-        faced with an unending stream of tasks, for example "while True: await trio.sleep(0)".
+        The incantation ["after idle after 0"](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)
+        avoids blocking the normal event queue when faced with an unending stream of tasks, for
+        example `while True: await trio.sleep(0)`.
         """
         self._q.append(fn)
         self.root.call("after", "idle", "after", 0, self._tk_func_name)

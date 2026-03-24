@@ -33,12 +33,14 @@ if TYPE_CHECKING:
 
     from PySide6 import QtCore, QtWidgets  # noqa: TC004
 
+__all__ = ["QtHost"]
+
 
 class QtHost(Host[T]):
     HOST = Hosts.qt
     MATPLOTLIB_GUIS = ("qt",)
 
-    def __init__(self, module: str = "PySide6") -> None:
+    def __init__(self, module: Literal["PySide6", "PySide2", "PyQt5", "PyQt6"] = "PySide6") -> None:
         if threading.current_thread() is not threading.main_thread():
             msg = "QT can only be run in main thread!"
             raise RuntimeError(msg)
