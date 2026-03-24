@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from aiologic.meta import import_from
 from typing_extensions import override
 
-from async_kernel.typing import Loop, T
+from async_kernel.typing import Hosts, T
 
 from .run import Host
 
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class QtHost(Host[T]):
-    LOOP = Loop.qt
+    LOOP = Hosts.qt
     MATPLOTLIB_GUIS = ("qt",)
 
     def __init__(self, module: str = "PySide6") -> None:

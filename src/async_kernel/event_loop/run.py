@@ -8,7 +8,7 @@ import anyio
 from wrapt import lazy_import
 
 from async_kernel.common import import_item
-from async_kernel.typing import Backend, Loop, RunSettings, T
+from async_kernel.typing import Backend, Hosts, RunSettings, T
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -53,12 +53,12 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
         args: Args to use when calling func.
         settings: Settings to use when running func.
 
-    Custom loop:
+    Custom host:
         A custom event loop can be used by subclassing [Host][].
         The host can be specified in the settings as the option 'host_class'. The value
         can be the class or a dotted path if it is importable.
     """
-    if settings.get("loop"):
+    if settings.get("host"):
         # A loop with the backend running as a guest.
         return Host.run(func, args, settings)
     # backend only.
@@ -82,9 +82,9 @@ class Host(Generic[T]):
     A class that provides the necessary callbacks for `start_guest_run`.
     """
 
-    LOOP: Loop
+    LOOP: Hosts
     MATPLOTLIB_GUIS = ()
-    _subclasses: dict[Loop, type[Self]] = {}
+    _subclasses: dict[Hosts, type[Self]] = {}
     _instances: dict[threading.Thread, Host] = {}
 
     _outcome: Outcome[T] | None = None
@@ -92,7 +92,7 @@ class Host(Generic[T]):
     "A callback to start the guest. This must be called by a subclass."
 
     def __init_subclass__(cls) -> None:
-        if cls.LOOP is not Loop.custom:
+        if cls.LOOP is not Hosts.custom:
             cls._subclasses[cls.LOOP] = cls
 
     @classmethod
@@ -109,14 +109,14 @@ class Host(Generic[T]):
             msg = "A host is already running in this thread"
             raise RuntimeError(msg)
 
-        loop = Loop(settings.get("loop"))
+        loop = Hosts(settings.get("host"))
         backend = Backend(settings.get("backend", "asyncio"))
         backend_options = settings.get("backend_options") or {}
-        loop_options = settings.get("loop_options") or {}
+        host_options = settings.get("host_options") or {}
 
-        if "host_class" in loop_options:
-            loop_options = loop_options.copy()
-            cls_ = loop_options.pop("host_class")
+        if "host_class" in host_options:
+            host_options = host_options.copy()
+            cls_ = host_options.pop("host_class")
             if isinstance(cls_, str):
                 cls_ = import_item(cls_)
             if not issubclass(cls_, cls):
@@ -130,7 +130,7 @@ class Host(Generic[T]):
             cls_ = cls._subclasses[loop]
         assert cls_.LOOP is loop
 
-        host = cls_(**loop_options)
+        host = cls_(**host_options)
         # set the `start_guest` function (runs once).
         backend_options.setdefault("host_uses_signal_set_wakeup_fd", host.host_uses_signal_set_wakeup_fd)
         start_guest_run = get_start_guest_run(backend)

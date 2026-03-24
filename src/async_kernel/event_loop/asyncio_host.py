@@ -9,14 +9,14 @@ from typing_extensions import override
 
 from async_kernel.common import Fixed
 from async_kernel.event_loop.run import Host
-from async_kernel.typing import Loop, T
+from async_kernel.typing import Hosts, T
 
 if TYPE_CHECKING:
     from outcome import Outcome
 
 
 class AsyncioHost(Host[T]):
-    LOOP = Loop.asyncio
+    LOOP = Hosts.asyncio
     done_event = Fixed(Event)
     host_uses_signal_set_wakeup_fd = True
 

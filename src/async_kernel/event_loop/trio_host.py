@@ -6,14 +6,14 @@ import anyio
 from typing_extensions import override
 
 from async_kernel.event_loop.run import Host
-from async_kernel.typing import Loop, T
+from async_kernel.typing import Hosts, T
 
 if TYPE_CHECKING:
     from outcome import Outcome
 
 
 class TrioHost(Host[T]):
-    LOOP = Loop.trio
+    LOOP = Hosts.trio
     host_uses_signal_set_wakeup_fd = True
     _done = False
 

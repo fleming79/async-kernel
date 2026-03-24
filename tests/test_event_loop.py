@@ -14,7 +14,7 @@ import async_kernel.event_loop.asyncio_guest
 from async_kernel.common import Fixed
 from async_kernel.event_loop.run import Host, get_runtime_matplotlib_guis
 from async_kernel.pending import Pending
-from async_kernel.typing import Backend, Loop, RunSettings
+from async_kernel.typing import Backend, Hosts, RunSettings
 
 
 class TestHost:
@@ -28,7 +28,7 @@ class TestHost:
 
     def test_custom_host(self, mocker):
         class MyCustomHost(Host):
-            LOOP = Loop.custom
+            LOOP = Hosts.custom
             MATPLOTLIB_GUIS = ("my gui",)
             event_done = Fixed(aiologic.Event)
 
@@ -54,15 +54,15 @@ class TestHost:
 
         settings = RunSettings(
             backend="trio",
-            loop=Loop.custom,
-            loop_options={"host_class": MyCustomHost},
+            host=Hosts.custom,
+            host_options={"host_class": MyCustomHost},
         )
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == ("abc",)
         assert get_runtime_matplotlib_guis() == ()
 
     def test_custom_host_import(self):
-        settings = RunSettings(backend="trio", loop=Loop.custom, loop_options={"host_class": "async_kernel.Pending"})
+        settings = RunSettings(backend="trio", host=Hosts.custom, host_options={"host_class": "async_kernel.Pending"})
         with pytest.raises(TypeError):
             Host.run(anyio.sleep, (), settings)
 
@@ -76,8 +76,8 @@ class TestHost:
 
         settings = RunSettings(
             backend="trio",
-            loop=Loop.asyncio,
-            loop_options={"use_uvloop": True} if importlib.util.find_spec("uvloop") else {},
+            host=Hosts.asyncio,
+            host_options={"use_uvloop": True} if importlib.util.find_spec("uvloop") else {},
         )
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == "abc"
@@ -90,7 +90,7 @@ class TestHost:
                 async_kernel.event_loop.run(test_func, ("abc",), settings)
             return val
 
-        settings = RunSettings(backend=Backend.asyncio, loop=Loop.trio)
+        settings = RunSettings(backend=Backend.asyncio, host=Hosts.trio)
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == "abc"
 

@@ -15,7 +15,7 @@ import async_kernel
 from async_kernel import kernel as kernel_module
 from async_kernel.command import command_line
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Backend, Loop
+from async_kernel.typing import Backend, Hosts
 from tests import utils
 
 if TYPE_CHECKING:
@@ -127,15 +127,15 @@ def test_command_start_kernel(monkeypatch):
 # Avoid matplotlib tests generally to avoid flaky tests on ci.
 @pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Requires matplotlib")
 @pytest.mark.parametrize("backend", Backend)
-@pytest.mark.parametrize("loop", [Loop.tk, Loop.qt, None])
-def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
+@pytest.mark.parametrize("host", [Hosts.tk, Hosts.qt, None])
+def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, host):
     import matplotlib as mpl  # noqa: PLC0415
 
     mpl.use("module://matplotlib_inline.backend_inline")
-    if loop is Loop.tk:
+    if host is Hosts.tk:
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
-    elif loop is Loop.qt and not importlib.util.find_spec("PySide6"):
+    elif host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
 
     async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
@@ -146,8 +146,8 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, loop):
             "prog",
             "-f",
             ".",
-            f"--kernel_name=async-{loop}",
-            f"--interface.loop={loop}",
+            f"--kernel_name=async-{host}",
+            f"--interface.host={host}",
             f"--interface.backend={backend}",
             "--no-print_kernel_messages",
         ],
@@ -171,7 +171,7 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
         "kernel = get_ipython().kernel",
         user_expressions={
             "kernel_name": "kernel.kernel_name",
-            "loop": "kernel.interface.loop",
+            "host": "kernel.interface.host",
             "backend": "kernel.interface.backend",
             "transport": "kernel.interface.transport",
         },

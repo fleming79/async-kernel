@@ -19,7 +19,7 @@ from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller, SingleConsumerAsyncQueue
 from async_kernel.pending import Pending, PendingCancelled
-from async_kernel.typing import Backend, Loop
+from async_kernel.typing import Backend, Hosts
 
 anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
@@ -135,8 +135,8 @@ class TestCaller:
             wrong_backend = next(b for b in Backend if b != anyio_backend)
             with pytest.raises(RuntimeError, match="Backend mismatch!"):
                 caller.get(name="c1", backend=wrong_backend)
-            with pytest.raises(RuntimeError, match="Event loop mismatch!"):
-                caller.get(name="c1", loop=Loop.tk)
+            with pytest.raises(RuntimeError, match="Host mismatch!"):
+                caller.get(name="c1", host=Hosts.tk)
             # A child's child
             c2 = c1.get(name="c2")
             assert c2 in c1.children

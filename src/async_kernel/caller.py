@@ -30,7 +30,7 @@ from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingManager, PendingTracker
-from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Loop, NoValue, RunSettings, T
+from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, RunSettings, T
 
 with contextlib.suppress(ImportError):
     # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
@@ -211,8 +211,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     _idle_time: float = 0.0
     _backend: Backend
     _backend_options: dict[str, Any] | None
-    _loop: Loop | None
-    _loop_options: dict[str, Any] | None
+    _host: Hosts | None
+    _host_options: dict[str, Any] | None
     _protected = False
     _use_safe_checkpoint = False
     _state: CallerState = CallerState.initial
@@ -270,14 +270,14 @@ class Caller(anyio.AsyncContextManagerMixin):
         return self._backend_options
 
     @property
-    def loop(self) -> Loop | None:
+    def host(self) -> Hosts | None:
         "The gui event loop if there is one."
-        return self._loop
+        return self._host
 
     @property
-    def loop_options(self) -> dict | None:
+    def host_options(self) -> dict | None:
         "Options used to create the gui event loop."
-        return self._loop_options
+        return self._host_options
 
     @property
     def protected(self) -> bool:
@@ -320,7 +320,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return {
             "name": self._name,
             "backend": str(self._backend),
-            "loop": self._loop,
+            "host": self._host,
             "thread": self._thread.name,
             "id": self._caller_id,
         }
@@ -393,9 +393,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst = super().__new__(cls)
             inst._name = name
             inst._backend = Backend(backend or current_async_library())
-            inst._loop = Loop(loop) if (loop := kwargs.get("loop")) else None
+            inst._host = Hosts(loop) if (loop := kwargs.get("host")) else None
             inst._backend_options = kwargs.get("backend_options")
-            inst._loop_options = kwargs.get("loop_options")
+            inst._host_options = kwargs.get("host_options")
             inst._protected = kwargs.get("protected", False)
             inst._zmq_context = kwargs.get("zmq_context")
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
@@ -454,9 +454,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             name = self.name or "async_kernel_caller"
             settings = RunSettings(
                 backend=self.backend,
-                loop=self.loop,
+                host=self.host,
                 backend_options=self.backend_options,
-                loop_options=self.loop_options,
+                host_options=self.host_options,
             )
             args = [run_caller_in_context, (), settings]
             self._thread = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
@@ -713,8 +713,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                         if (backend := kwargs.get("backend")) and caller.backend != backend:
                             msg = f"Backend mismatch! {backend=} {caller.backend=}"
                             raise RuntimeError(msg)
-                        if (loop := kwargs.get("loop")) and caller.loop != loop:
-                            msg = f"Event loop mismatch! {loop=} {caller.loop=}"
+                        if (host := kwargs.get("host")) and caller.host != host:
+                            msg = f"Host mismatch! {host=} {caller.host=}"
                             raise RuntimeError(msg)
                         return caller
             if "backend" not in kwargs:

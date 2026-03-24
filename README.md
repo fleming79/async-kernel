@@ -116,11 +116,11 @@ The kernel can be started with a gui event loop as the _host_ and the _backend_ 
 
 ```bash
 # tk
-async-kernel -a async-tk --interface.loop=tk
+async-kernel -a async-tk --interface.host=tk
 
 # qt
 pip install PySide6-Essentials
-async-kernel -a async-qt --interface.loop=qt
+async-kernel -a async-qt --interface.host=qt
 ```
 
 #### trio backend
@@ -128,11 +128,11 @@ async-kernel -a async-qt --interface.loop=qt
 ```bash
 pip install trio
 # tk
-async-kernel -a async-tk --interface.loop=tk --interface.backend=trio
+async-kernel -a async-tk --interface.host=tk --interface.backend=trio
 
 # qt
 pip install PySide6-Essentials
-async-kernel -a async-qt --interface.loop=qt --interface.backend=trio
+async-kernel -a async-qt --interface.host=qt --interface.backend=trio
 ```
 
 For further detail about kernel spec customisation see [command line and kernel configuration](https://fleming79.github.io/async-kernel/latest/usage/commands/).
