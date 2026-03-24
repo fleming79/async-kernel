@@ -67,6 +67,17 @@ class TestHost:
         with pytest.raises(TypeError):
             Host.run(anyio.sleep, (), settings)
 
+    def test_host_import_built_in(self, monkeypatch):
+        try:
+            import tkinter as tk  # noqa: PLC0415
+        except ModuleNotFoundError:
+            pytest.skip("Tkinter can not be imported")
+
+        monkeypatch.delattr(tk, "Tk")
+        settings = RunSettings(backend="trio", host=Hosts.tk)
+        with pytest.raises(AttributeError):
+            Host.run(anyio.sleep, (), settings)
+
     def test_asyncio_host(self):
 
         class AsyncioHost(Host):
