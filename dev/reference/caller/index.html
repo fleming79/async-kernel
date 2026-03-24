@@ -952,10 +952,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.Caller.loop" class="md-nav__link">
+  <a href="#async_kernel.caller.Caller.host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host
       
     </span>
   </a>
@@ -963,10 +963,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.Caller.loop_options" class="md-nav__link">
+  <a href="#async_kernel.caller.Caller.host_options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_options
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host_options
       
     </span>
   </a>
@@ -2019,10 +2019,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.Caller.loop" class="md-nav__link">
+  <a href="#async_kernel.caller.Caller.host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host
       
     </span>
   </a>
@@ -2030,10 +2030,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.Caller.loop_options" class="md-nav__link">
+  <a href="#async_kernel.caller.Caller.host_options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_options
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host_options
       
     </span>
   </a>
@@ -2505,8 +2505,12 @@ viewing the latest version.
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
   </span>
 
       </li>
@@ -3736,25 +3740,25 @@ caller instances can exist in the same thread, but is limited to one instance pe
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            loop
+          <b><code><a class="autorefs autorefs-internal" title="            host
 
 
   
       property
-   (async_kernel.caller.Caller.loop)" href="#async_kernel.caller.Caller.loop">loop</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a> | None</code>)
+   (async_kernel.caller.Caller.host)" href="#async_kernel.caller.Caller.host">host</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a> | None</code>)
           –
           <div class="doc-md-description">
             <p>The gui event loop if there is one.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            loop_options
+          <b><code><a class="autorefs autorefs-internal" title="            host_options
 
 
   
       property
-   (async_kernel.caller.Caller.loop_options)" href="#async_kernel.caller.Caller.loop_options">loop_options</a></code></b>
+   (async_kernel.caller.Caller.host_options)" href="#async_kernel.caller.Caller.host_options">host_options</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None</code>)
           –
           <div class="doc-md-description">
@@ -4920,8 +4924,8 @@ caller instances can exist in the same thread, but is limited to one instance pe
     <span class="n">_idle_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">_backend</span><span class="p">:</span> <span class="n">Backend</span>
     <span class="n">_backend_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="n">_loop</span><span class="p">:</span> <span class="n">Loop</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="n">_loop_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">_host</span><span class="p">:</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">_host_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">_protected</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">_use_safe_checkpoint</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">_state</span><span class="p">:</span> <span class="n">CallerState</span> <span class="o">=</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">initial</span>
@@ -4979,14 +4983,14 @@ caller instances can exist in the same thread, but is limited to one instance pe
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend_options</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Loop</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="s2">&quot;The gui event loop if there is one.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">loop_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">host_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="s2">&quot;Options used to create the gui event loop.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_options</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_options</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">protected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -5029,7 +5033,7 @@ caller instances can exist in the same thread, but is limited to one instance pe
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
             <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">),</span>
-            <span class="s2">&quot;loop&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">,</span>
+            <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span><span class="p">,</span>
             <span class="s2">&quot;thread&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller_id</span><span class="p">,</span>
         <span class="p">}</span>
@@ -5102,9 +5106,9 @@ caller instances can exist in the same thread, but is limited to one instance pe
             <span class="n">inst</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">backend</span> <span class="ow">or</span> <span class="n">current_async_library</span><span class="p">())</span>
-            <span class="n">inst</span><span class="o">.</span><span class="n">_loop</span> <span class="o">=</span> <span class="n">Loop</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">loop</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">loop</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_backend_options</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span>
-            <span class="n">inst</span><span class="o">.</span><span class="n">_loop_options</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop_options&quot;</span><span class="p">)</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">_host_options</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host_options&quot;</span><span class="p">)</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_protected</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;protected&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;zmq_context&quot;</span><span class="p">)</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">())</span>
@@ -5163,9 +5167,9 @@ caller instances can exist in the same thread, but is limited to one instance pe
             <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;async_kernel_caller&quot;</span>
             <span class="n">settings</span> <span class="o">=</span> <span class="n">RunSettings</span><span class="p">(</span>
                 <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span>
-                <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
+                <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
                 <span class="n">backend_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_options</span><span class="p">,</span>
-                <span class="n">loop_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop_options</span><span class="p">,</span>
+                <span class="n">host_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host_options</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">run_caller_in_context</span><span class="p">,</span> <span class="p">(),</span> <span class="n">settings</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">async_kernel</span><span class="o">.</span><span class="n">event_loop</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5422,8 +5426,8 @@ caller instances can exist in the same thread, but is limited to one instance pe
                         <span class="k">if</span> <span class="p">(</span><span class="n">backend</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">backend</span> <span class="o">!=</span> <span class="n">backend</span><span class="p">:</span>
                             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Backend mismatch! </span><span class="si">{</span><span class="n">backend</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">caller</span><span class="o">.</span><span class="n">backend</span><span class="si">=}</span><span class="s2">&quot;</span>
                             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="n">loop</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">loop</span> <span class="o">!=</span> <span class="n">loop</span><span class="p">:</span>
-                            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Event loop mismatch! </span><span class="si">{</span><span class="n">loop</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">caller</span><span class="o">.</span><span class="n">loop</span><span class="si">=}</span><span class="s2">&quot;</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">host</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">host</span> <span class="o">!=</span> <span class="n">host</span><span class="p">:</span>
+                            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Host mismatch! </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">caller</span><span class="o">.</span><span class="n">host</span><span class="si">=}</span><span class="s2">&quot;</span>
                             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                         <span class="k">return</span> <span class="n">caller</span>
             <span class="k">if</span> <span class="s2">&quot;backend&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -6132,16 +6136,16 @@ caller instances can exist in the same thread, but is limited to one instance pe
 
 
 
-<h3 id="async_kernel.caller.Caller.loop" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">loop</span>
+<h3 id="async_kernel.caller.Caller.host" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">host</span>
 
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#async_kernel.caller.Caller.loop" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a></span> <span class="o">|</span> <span class="kc">None</span>
+<a href="#async_kernel.caller.Caller.host" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">host</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6157,16 +6161,16 @@ caller instances can exist in the same thread, but is limited to one instance pe
 
 
 
-<h3 id="async_kernel.caller.Caller.loop_options" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">loop_options</span>
+<h3 id="async_kernel.caller.Caller.host_options" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">host_options</span>
 
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#async_kernel.caller.Caller.loop_options" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop_options</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span>
+<a href="#async_kernel.caller.Caller.host_options" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">host_options</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6568,9 +6572,9 @@ caller instances can exist in the same thread, but is limited to one instance pe
         <span class="n">inst</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">backend</span> <span class="ow">or</span> <span class="n">current_async_library</span><span class="p">())</span>
-        <span class="n">inst</span><span class="o">.</span><span class="n">_loop</span> <span class="o">=</span> <span class="n">Loop</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">loop</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">inst</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">loop</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_backend_options</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span>
-        <span class="n">inst</span><span class="o">.</span><span class="n">_loop_options</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop_options&quot;</span><span class="p">)</span>
+        <span class="n">inst</span><span class="o">.</span><span class="n">_host_options</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host_options&quot;</span><span class="p">)</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_protected</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;protected&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;zmq_context&quot;</span><span class="p">)</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">())</span>
@@ -6716,9 +6720,9 @@ caller instances can exist in the same thread, but is limited to one instance pe
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;async_kernel_caller&quot;</span>
         <span class="n">settings</span> <span class="o">=</span> <span class="n">RunSettings</span><span class="p">(</span>
             <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span>
-            <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
             <span class="n">backend_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_options</span><span class="p">,</span>
-            <span class="n">loop_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop_options</span><span class="p">,</span>
+            <span class="n">host_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host_options</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">run_caller_in_context</span><span class="p">,</span> <span class="p">(),</span> <span class="n">settings</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">async_kernel</span><span class="o">.</span><span class="n">event_loop</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -7374,8 +7378,8 @@ caller instances can exist in the same thread, but is limited to one instance pe
                     <span class="k">if</span> <span class="p">(</span><span class="n">backend</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">backend</span> <span class="o">!=</span> <span class="n">backend</span><span class="p">:</span>
                         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Backend mismatch! </span><span class="si">{</span><span class="n">backend</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">caller</span><span class="o">.</span><span class="n">backend</span><span class="si">=}</span><span class="s2">&quot;</span>
                         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">loop</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">loop</span> <span class="o">!=</span> <span class="n">loop</span><span class="p">:</span>
-                        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Event loop mismatch! </span><span class="si">{</span><span class="n">loop</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">caller</span><span class="o">.</span><span class="n">loop</span><span class="si">=}</span><span class="s2">&quot;</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">host</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">host</span> <span class="o">!=</span> <span class="n">host</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Host mismatch! </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">caller</span><span class="o">.</span><span class="n">host</span><span class="si">=}</span><span class="s2">&quot;</span>
                         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                     <span class="k">return</span> <span class="n">caller</span>
         <span class="k">if</span> <span class="s2">&quot;backend&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -7674,8 +7678,12 @@ use this method in the background,  they should be used in preference to this me
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
   </span>
 
       </li>
@@ -7805,7 +7813,7 @@ use this method in the background,  they should be used in preference to this me
   </span>
 
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
+      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
   </span>
 
       </li>
@@ -8241,20 +8249,9 @@ of the callers backend.</p>
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
   </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.as_completed"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_completed</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -8262,8 +8259,12 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
   </span>
 
       </li>
@@ -8514,12 +8515,8 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>

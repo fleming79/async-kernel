@@ -1682,7 +1682,7 @@ viewing the latest version.
 <span class="w">        </span><span class="s2">&quot;--start_interface=async_kernel.interface.start_kernel_zmq_interface&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="s2">&quot;--kernel_name=async&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="s2">&quot;--backend=trio&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">&quot;--loop=tk&quot;</span>
+<span class="w">        </span><span class="s2">&quot;--host=tk&quot;</span>
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
 <span class="w">    </span><span class="nt">&quot;display_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Async python tk trio&quot;</span><span class="p">,</span>
@@ -1702,8 +1702,8 @@ viewing the latest version.
 <li>display_name: 'async'</li>
 <li>backend: <code>asyncio</code></li>
 <li>backend_options: <code>{'use_uvloop':True}</code> if uvloop or winloop is installed</li>
-<li>loop: <code>None</code></li>
-<li>loop_options: <code>None</code></li>
+<li>host: <code>None</code></li>
+<li>host_options: <code>None</code></li>
 </ul>
 <p>The kernel spec can be updated by adding a kernel spec with the same name ('async').</p>
 <h2 id="backend-interface-backend">Backend (<code>interface-backend</code>)<a class="headerlink" href="#backend-interface-backend" title="Permanent link">&para;</a></h2>
@@ -1754,20 +1754,20 @@ aiologic has provided an (experimental) asyncio equivalent (<a href="https://gis
 Below are some example kernel specs for host and backend kernel specs.</p>
 <h3 id="tk">tk<a class="headerlink" href="#tk" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="gp"># </span>tk<span class="w"> </span>host<span class="w"> </span>asyncio<span class="w"> </span>backend
-<span class="go">async-kernel -a async-tk --interface.loop=tk</span>
+<span class="go">async-kernel -a async-tk --interface.host=tk</span>
 
 <span class="gp"># </span>tk<span class="w"> </span>host<span class="w"> </span>trio<span class="w"> </span>backend
-<span class="go">async-kernel -a async-tk --interface.loop=tk --backend=trio</span>
+<span class="go">async-kernel -a async-tk --interface.host=tk --backend=trio</span>
 </code></pre></div>
 <h3 id="qt">qt<a class="headerlink" href="#qt" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="gp"># </span>qt<span class="w"> </span>host<span class="w"> </span>asyncio<span class="w"> </span>backend
-<span class="go">async-kernel -a async-qt --interface.loop=qt</span>
+<span class="go">async-kernel -a async-qt --interface.host=qt</span>
 
 <span class="gp"># </span>qt<span class="w"> </span>host<span class="w"> </span>trio<span class="w"> </span>backend
-<span class="go">async-kernel -a async-qt-trio --interface.loop=qt --interface.backend=trio</span>
+<span class="go">async-kernel -a async-qt-trio --interface.host=qt --interface.backend=trio</span>
 
-<span class="gp"># </span>PySide6<span class="w"> </span>is<span class="w"> </span>default.<span class="w">  </span>You<span class="w"> </span>can<span class="w"> </span>specify<span class="w"> </span>a<span class="w"> </span>different<span class="w"> </span>module<span class="w"> </span>via<span class="w"> </span><span class="sb">`</span>loop_options<span class="sb">`</span>
-<span class="go">async-kernel -a async-qt --interface.loop=qt --interface.loop_options={&#39;module&#39;:&#39;PySide2&#39;}</span>
+<span class="gp"># </span>PySide6<span class="w"> </span>is<span class="w"> </span>default.<span class="w">  </span>You<span class="w"> </span>can<span class="w"> </span>specify<span class="w"> </span>a<span class="w"> </span>different<span class="w"> </span>module<span class="w"> </span>via<span class="w"> </span><span class="sb">`</span>host_options<span class="sb">`</span>
+<span class="go">async-kernel -a async-qt --interface.host=qt --interface.host_options={&#39;module&#39;:&#39;PySide2&#39;}</span>
 </code></pre></div>
 <h2 id="loop-options">Loop options<a class="headerlink" href="#loop-options" title="Permanent link">&para;</a></h2>
 <p>Options can be provided to configure how a loop loads. There are only a few options available
@@ -1780,7 +1780,7 @@ at present.</p>
 <h2 id="backend-options">Backend options<a class="headerlink" href="#backend-options" title="Permanent link">&para;</a></h2>
 <p>Options can be provided for how the backend is started.</p>
 <ul>
-<li>With a (gui) loop: Options for <code>start_guest_run</code><ul>
+<li>With a (gui) host: Options for <code>start_guest_run</code><ul>
 <li><a class="autorefs autorefs-external" href="https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.start_guest_run">trio.lowlevel.start_guest_run</a></li>
 <li>asyncio<ul>
 <li>host_uses_signal_set_wakeup_fd</li>
@@ -1793,10 +1793,10 @@ at present.</p>
 </li>
 </ul>
 </li>
-<li>Without a (gui) loop: <code>backend_options</code> in <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a></li>
+<li>Without a (gui) host: <code>backend_options</code> in <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a></li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="gp"># </span>If<span class="w"> </span>uvloop<span class="w"> </span>is<span class="w"> </span>installed<span class="w"> </span>it<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>used<span class="w"> </span>by<span class="w"> </span>default.<span class="w"> </span>You<span class="w"> </span>can<span class="w"> </span><span class="k">do</span><span class="w"> </span>this<span class="w"> </span>to<span class="w"> </span>disable<span class="w"> </span>it.
-<span class="go">async-kernel -a async &quot;--interface.loop_options={&#39;use_uvloop&#39;:False}&quot;</span>
+<span class="go">async-kernel -a async &quot;--interface.host_options={&#39;use_uvloop&#39;:False}&quot;</span>
 </code></pre></div>
 <h3 id="custom-arguments">Custom arguments<a class="headerlink" href="#custom-arguments" title="Permanent link">&para;</a></h3>
 <p>Additional arguments can be included when defining the kernel spec, these include:</p>
@@ -1892,7 +1892,7 @@ prior to setting.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 9, 2026 07:13:26 UTC"><span class="timeago" datetime="2026-03-09T07:13:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 9, 2026 07:13:26 UTC">2026-03-09</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 24, 2026 02:10:34 UTC"><span class="timeago" datetime="2026-03-24T02:10:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 24, 2026 02:10:34 UTC">2026-03-24</span>
   </span>
 
     

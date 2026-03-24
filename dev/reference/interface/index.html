@@ -1407,10 +1407,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.loop" class="md-nav__link">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host
       
     </span>
   </a>
@@ -1418,10 +1418,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.loop_options" class="md-nav__link">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.host_options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_options
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host_options
       
     </span>
   </a>
@@ -2418,10 +2418,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.loop" class="md-nav__link">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host
       
     </span>
   </a>
@@ -2429,10 +2429,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.loop_options" class="md-nav__link">
+  <a href="#async_kernel.interface.zmq.ZMQKernelInterface.host_options" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;loop_options
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host_options
       
     </span>
   </a>
@@ -3145,7 +3145,7 @@ viewing the latest version.
     <span class="n">backend</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>
     <span class="s2">&quot;The type of asynchronous backend used. Options are &#39;asyncio&#39; or &#39;trio&#39;.&quot;</span>
 
-    <span class="n">loop</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -3175,7 +3175,7 @@ viewing the latest version.
             <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
             <span class="n">zmq_context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="p">,</span>
-            <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -4605,7 +4605,7 @@ format, which is a list of message parts.</p>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>
     <span class="s2">&quot;The type of asynchronous backend used. Options are &#39;asyncio&#39; or &#39;trio&#39;.&quot;</span>
 
-    <span class="n">loop</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -4635,7 +4635,7 @@ format, which is a list of message parts.</p>
             <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
             <span class="n">zmq_context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="p">,</span>
-            <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -6597,27 +6597,27 @@ kernel_interface["stop"](msg, buffer)
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            loop
+          <b><code><a class="autorefs autorefs-internal" title="            host
 
 
   
       class-attribute
       instance-attribute
-   (async_kernel.interface.zmq.ZMQKernelInterface.loop)" href="#async_kernel.interface.zmq.ZMQKernelInterface.loop">loop</a></code></b>
-              (<code><span title="traitlets.TraitType">TraitType</span>[<a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a> | None, <a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a> | None]</code>)
+   (async_kernel.interface.zmq.ZMQKernelInterface.host)" href="#async_kernel.interface.zmq.ZMQKernelInterface.host">host</a></code></b>
+              (<code><span title="traitlets.TraitType">TraitType</span>[<a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a> | None, <a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a> | None]</code>)
           –
           <div class="doc-md-description">
             <p>The name of the (gui) event loop if one is used.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            loop_options
+          <b><code><a class="autorefs autorefs-internal" title="            host_options
 
 
   
       class-attribute
       instance-attribute
-   (async_kernel.interface.zmq.ZMQKernelInterface.loop_options)" href="#async_kernel.interface.zmq.ZMQKernelInterface.loop_options">loop_options</a></code></b>
+   (async_kernel.interface.zmq.ZMQKernelInterface.host_options)" href="#async_kernel.interface.zmq.ZMQKernelInterface.host_options">host_options</a></code></b>
           –
           <div class="doc-md-description">
             <p>Options for starting the loop.</p>
@@ -7084,10 +7084,10 @@ kernel_interface["stop"](msg, buffer)
     <span class="p">)</span>
     <span class="s2">&quot;Transport for sockets.&quot;</span>
 
-    <span class="n">loop</span><span class="p">:</span> <span class="n">TraitType</span><span class="p">[</span><span class="n">Loop</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Loop</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Loop</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">host</span><span class="p">:</span> <span class="n">TraitType</span><span class="p">[</span><span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Hosts</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="s2">&quot;The name of the (gui) event loop if one is used.&quot;</span>
 
-    <span class="n">loop_options</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">host_options</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="s2">&quot;Options for starting the loop.&quot;</span>
 
     <span class="n">backend_options</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -7099,7 +7099,7 @@ kernel_interface["stop"](msg, buffer)
             <span class="k">return</span> <span class="n">Backend</span><span class="p">(</span><span class="n">current_async_library</span><span class="p">())</span>
         <span class="k">except</span> <span class="n">AsyncLibraryNotFoundError</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span>
-                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span>
                 <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trait_has_value</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span>
                 <span class="ow">and</span> <span class="p">(</span><span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;winloop&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;uvloop&quot;</span><span class="p">))</span>
             <span class="p">):</span>
@@ -7124,9 +7124,9 @@ kernel_interface["stop"](msg, buffer)
 
         <span class="n">settings</span> <span class="o">=</span> <span class="n">RunSettings</span><span class="p">(</span>
             <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span>
-            <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
             <span class="n">backend_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_options</span><span class="p">,</span>
-            <span class="n">loop_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop_options</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+            <span class="n">host_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host_options</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">async_kernel</span><span class="o">.</span><span class="n">event_loop</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_kernel</span><span class="p">,</span> <span class="p">(),</span> <span class="n">settings</span><span class="p">)</span>
 
@@ -7624,8 +7624,8 @@ will be able to connect to the Kernel, so be careful!</p>
 
 
 
-<h3 id="async_kernel.interface.zmq.ZMQKernelInterface.loop" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">loop</span>
+<h3 id="async_kernel.interface.zmq.ZMQKernelInterface.host" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">host</span>
 
 
   <span class="doc doc-labels">
@@ -7633,9 +7633,9 @@ will be able to connect to the Kernel, so be careful!</p>
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
-<a href="#async_kernel.interface.zmq.ZMQKernelInterface.loop" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop</span><span class="p">:</span> <span class="n"><span title="traitlets.TraitType">TraitType</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="            Loop (async_kernel.typing.Loop)" href="../typing/#async_kernel.typing.Loop">Loop</a></span><span class="p">,</span> <span class="n"><span title="traitlets.UseEnum(default_value)">default_value</span></span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n"><span title="traitlets.UseEnum(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span>
+<a href="#async_kernel.interface.zmq.ZMQKernelInterface.host" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">host</span><span class="p">:</span> <span class="n"><span title="traitlets.TraitType">TraitType</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span><span class="p">,</span> <span class="n"><span title="traitlets.UseEnum(default_value)">default_value</span></span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n"><span title="traitlets.UseEnum(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -7652,8 +7652,8 @@ will be able to connect to the Kernel, so be careful!</p>
 
 
 
-<h3 id="async_kernel.interface.zmq.ZMQKernelInterface.loop_options" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">loop_options</span>
+<h3 id="async_kernel.interface.zmq.ZMQKernelInterface.host_options" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">host_options</span>
 
 
   <span class="doc doc-labels">
@@ -7661,8 +7661,8 @@ will be able to connect to the Kernel, so be careful!</p>
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
-<a href="#async_kernel.interface.zmq.ZMQKernelInterface.loop_options" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">loop_options</span> <span class="o">=</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a href="#async_kernel.interface.zmq.ZMQKernelInterface.host_options" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">host_options</span> <span class="o">=</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7796,9 +7796,9 @@ will be able to connect to the Kernel, so be careful!</p>
 
     <span class="n">settings</span> <span class="o">=</span> <span class="n">RunSettings</span><span class="p">(</span>
         <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span>
-        <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
         <span class="n">backend_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_options</span><span class="p">,</span>
-        <span class="n">loop_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop_options</span><span class="p">,</span>
+        <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+        <span class="n">host_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host_options</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">async_kernel</span><span class="o">.</span><span class="n">event_loop</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_kernel</span><span class="p">,</span> <span class="p">(),</span> <span class="n">settings</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>

@@ -1655,7 +1655,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            Host (async_kernel.event_loop.run.Host)" href="#async_kernel.event_loop.run.Host">Host</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A class that provides the necessary callbacks for <code>start_guest_run</code>.</p>
+            <p>A class that provides the necessary callbacks to run a gui event loop with a <code>backend</code> started using <code>start_guest_run</code>.</p>
           </div>
         </li>
     </ul>
@@ -1705,7 +1705,7 @@ viewing the latest version.
 
 
 
-        <p>A class that provides the necessary callbacks for <code>start_guest_run</code>.</p>
+        <p>A class that provides the necessary callbacks to run a gui event loop with a <code>backend</code> started using <code>start_guest_run</code>.</p>
 
           
 
@@ -1836,7 +1836,8 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/event_loop/run.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 80</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 79</span>
+<span class="normal"> 80</span>
 <span class="normal"> 81</span>
 <span class="normal"> 82</span>
 <span class="normal"> 83</span>
@@ -1924,15 +1925,14 @@ viewing the latest version.
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Host</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Host</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A class that provides the necessary callbacks for `start_guest_run`.</span>
+<span class="sd">    A class that provides the necessary callbacks to run a gui event loop with a `backend` started using `start_guest_run`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">LOOP</span><span class="p">:</span> <span class="n">Loop</span>
+    <span class="n">HOST</span><span class="p">:</span> <span class="n">Hosts</span>
     <span class="n">MATPLOTLIB_GUIS</span> <span class="o">=</span> <span class="p">()</span>
-    <span class="n">_subclasses</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Loop</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_subclasses</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Hosts</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">_instances</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="n">Host</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">_outcome</span><span class="p">:</span> <span class="n">Outcome</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1940,8 +1940,8 @@ viewing the latest version.
     <span class="s2">&quot;A callback to start the guest. This must be called by a subclass.&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">LOOP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Loop</span><span class="o">.</span><span class="n">custom</span><span class="p">:</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">LOOP</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">HOST</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">custom</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">HOST</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">current</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Host</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -1957,28 +1957,28 @@ viewing the latest version.
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;A host is already running in this thread&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="n">loop</span> <span class="o">=</span> <span class="n">Loop</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">))</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span>
         <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">,</span> <span class="s2">&quot;asyncio&quot;</span><span class="p">))</span>
         <span class="n">backend_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-        <span class="n">loop_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">host_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
 
-        <span class="k">if</span> <span class="s2">&quot;host_class&quot;</span> <span class="ow">in</span> <span class="n">loop_options</span><span class="p">:</span>
-            <span class="n">loop_options</span> <span class="o">=</span> <span class="n">loop_options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">cls_</span> <span class="o">=</span> <span class="n">loop_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;host_class&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;host_class&quot;</span> <span class="ow">in</span> <span class="n">host_options</span><span class="p">:</span>
+            <span class="n">host_options</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">cls_</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;host_class&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">cls_</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">cls_</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cls_</span><span class="si">}</span><span class="s2"> is not a subclass of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2">!&quot;</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">loop</span> <span class="o">!=</span> <span class="n">backend</span>
-            <span class="k">if</span> <span class="n">loop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">:</span>
-                <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;async_kernel.event_loop.</span><span class="si">{</span><span class="n">loop</span><span class="si">}</span><span class="s2">_host&quot;</span><span class="p">)</span>
-                <span class="k">assert</span> <span class="n">loop</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Host for </span><span class="si">{</span><span class="n">loop</span><span class="si">=}</span><span class="s2"> is not implemented correctly!&quot;</span>
-            <span class="n">cls_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span>
-        <span class="k">assert</span> <span class="n">cls_</span><span class="o">.</span><span class="n">LOOP</span> <span class="ow">is</span> <span class="n">loop</span>
+            <span class="k">assert</span> <span class="n">host</span> <span class="o">!=</span> <span class="n">backend</span>
+            <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">:</span>
+                <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;async_kernel.event_loop.</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">_host&quot;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">host</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Host for </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> is not implemented correctly!&quot;</span>
+            <span class="n">cls_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="n">host</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">cls_</span><span class="o">.</span><span class="n">HOST</span> <span class="ow">is</span> <span class="n">host</span>
 
-        <span class="n">host</span> <span class="o">=</span> <span class="n">cls_</span><span class="p">(</span><span class="o">**</span><span class="n">loop_options</span><span class="p">)</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">cls_</span><span class="p">(</span><span class="o">**</span><span class="n">host_options</span><span class="p">)</span>
         <span class="c1"># set the `start_guest` function (runs once).</span>
         <span class="n">backend_options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;host_uses_signal_set_wakeup_fd&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span><span class="p">)</span>
         <span class="n">start_guest_run</span> <span class="o">=</span> <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
@@ -2080,11 +2080,11 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 98</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
+<span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">current</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Host</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;The host running in the corresponding thread or current thread.&quot;</span>
     <span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span> <span class="ow">or</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
@@ -2120,7 +2120,8 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">103</span>
+<span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
@@ -2167,8 +2168,7 @@ viewing the latest version.
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">RunSettings</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
     <span class="s2">&quot;Run the loop in the current thread with a backend guest.&quot;</span>
 
@@ -2176,28 +2176,28 @@ viewing the latest version.
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;A host is already running in this thread&quot;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-    <span class="n">loop</span> <span class="o">=</span> <span class="n">Loop</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">))</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">,</span> <span class="s2">&quot;asyncio&quot;</span><span class="p">))</span>
     <span class="n">backend_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-    <span class="n">loop_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">host_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
 
-    <span class="k">if</span> <span class="s2">&quot;host_class&quot;</span> <span class="ow">in</span> <span class="n">loop_options</span><span class="p">:</span>
-        <span class="n">loop_options</span> <span class="o">=</span> <span class="n">loop_options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">cls_</span> <span class="o">=</span> <span class="n">loop_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;host_class&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;host_class&quot;</span> <span class="ow">in</span> <span class="n">host_options</span><span class="p">:</span>
+        <span class="n">host_options</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">cls_</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;host_class&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">cls_</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">cls_</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cls_</span><span class="si">}</span><span class="s2"> is not a subclass of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2">!&quot;</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">loop</span> <span class="o">!=</span> <span class="n">backend</span>
-        <span class="k">if</span> <span class="n">loop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">:</span>
-            <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;async_kernel.event_loop.</span><span class="si">{</span><span class="n">loop</span><span class="si">}</span><span class="s2">_host&quot;</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">loop</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Host for </span><span class="si">{</span><span class="n">loop</span><span class="si">=}</span><span class="s2"> is not implemented correctly!&quot;</span>
-        <span class="n">cls_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="n">cls_</span><span class="o">.</span><span class="n">LOOP</span> <span class="ow">is</span> <span class="n">loop</span>
+        <span class="k">assert</span> <span class="n">host</span> <span class="o">!=</span> <span class="n">backend</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">:</span>
+            <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;async_kernel.event_loop.</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">_host&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">host</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Host for </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> is not implemented correctly!&quot;</span>
+        <span class="n">cls_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="n">host</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">cls_</span><span class="o">.</span><span class="n">HOST</span> <span class="ow">is</span> <span class="n">host</span>
 
-    <span class="n">host</span> <span class="o">=</span> <span class="n">cls_</span><span class="p">(</span><span class="o">**</span><span class="n">loop_options</span><span class="p">)</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">cls_</span><span class="p">(</span><span class="o">**</span><span class="n">host_options</span><span class="p">)</span>
     <span class="c1"># set the `start_guest` function (runs once).</span>
     <span class="n">backend_options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;host_uses_signal_set_wakeup_fd&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span><span class="p">)</span>
     <span class="n">start_guest_run</span> <span class="o">=</span> <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
@@ -2242,13 +2242,13 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/run.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
+<span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
     <span class="s2">&quot;Start the main event loop of the host.&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">start_guest</span><span class="p">()</span>  <span class="c1"># Call at an appropriate time in the overriding subclass.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outcome</span><span class="p">:</span>
@@ -2286,7 +2286,7 @@ viewing the latest version.
     <div class="doc doc-contents ">
 
         <p>Run <code>func</code> to completion asynchronously in the current thread using a <a class="autorefs autorefs-internal" title="            Backend" href="../typing/#async_kernel.typing.Backend">backend</a>
-with an optional gui event loop (<em>host</em>).</p>
+with an optional host (gui event loop).</p>
 <p>The default backend is <a class="autorefs autorefs-internal" title="            asyncio
 
 
@@ -2294,9 +2294,9 @@ with an optional gui event loop (<em>host</em>).</p>
       class-attribute
       instance-attribute
   " href="../typing/#async_kernel.typing.Backend.asyncio">'asyncio'</a>.</p>
-<p>If <a class="autorefs autorefs-internal" title="            Loop" href="../typing/#async_kernel.typing.Loop">loop</a> is specified in <code>settings</code>. A <em>host</em> (gui) mainloop
+<p>If <a class="autorefs autorefs-internal" title="            Hosts" href="../typing/#async_kernel.typing.Hosts">host</a> is specified in <code>settings</code>. A <em>host</em> (gui) mainloop
 will be started with the <code>backend</code> running as a guest (in the same thread). The <code>backend</code>
-will execute <code>func</code> asynchronously to completion. Once completed the backend and host
+will execute <code>func</code> asynchronously to completion. Once completed the <code>backend</code> and <code>host</code>
 are stopped and finally the result is returned.</p>
 
 
@@ -2329,11 +2329,10 @@ are stopped and finally the result is returned.</p>
     </ul>
 
 
-<details class="custom-loop" open>
-  <summary>Custom loop</summary>
-  <p>A custom event loop can be used by subclassing <a class="autorefs autorefs-internal" title="            Host" href="#async_kernel.event_loop.run.Host">Host</a>.
-The host can be specified in the settings as the option 'host_class'. The value
-can be the class or a dotted path if it is importable.</p>
+<details class="custom-host" open>
+  <summary>Custom host</summary>
+  <p>A custom host can be started by subclassing <a class="autorefs autorefs-internal" title="            Host" href="#async_kernel.event_loop.run.Host">Host</a> and passed as the 'host_class' as the
+class or a dotted path if it is importable.</p>
 </details>
           
 
@@ -2353,7 +2352,7 @@ can be the class or a dotted path if it is importable.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.Loop"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Loop</a>
+      <a href="../typing/#async_kernel.typing.Hosts"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Hosts</a>
   </span>
 
       </li>
@@ -2403,17 +2402,16 @@ can be the class or a dotted path if it is importable.</p>
 <span class="normal">66</span>
 <span class="normal">67</span>
 <span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">RunSettings</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">RunSettings</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend]</span>
-<span class="sd">    with an optional gui event loop (_host_).</span>
+<span class="sd">    with an optional host (gui event loop).</span>
 
 <span class="sd">    The default backend is [&#39;asyncio&#39;][async_kernel.typing.Backend.asyncio].</span>
 
-<span class="sd">    If [loop][async_kernel.typing.Loop] is specified in `settings`. A _host_ (gui) mainloop</span>
+<span class="sd">    If [host][async_kernel.typing.Hosts] is specified in `settings`. A _host_ (gui) mainloop</span>
 <span class="sd">    will be started with the `backend` running as a guest (in the same thread). The `backend`</span>
-<span class="sd">    will execute `func` asynchronously to completion. Once completed the backend and host</span>
+<span class="sd">    will execute `func` asynchronously to completion. Once completed the `backend` and `host`</span>
 <span class="sd">    are stopped and finally the result is returned.</span>
 
 <span class="sd">    Args:</span>
@@ -2421,13 +2419,12 @@ can be the class or a dotted path if it is importable.</p>
 <span class="sd">        args: Args to use when calling func.</span>
 <span class="sd">        settings: Settings to use when running func.</span>
 
-<span class="sd">    Custom loop:</span>
-<span class="sd">        A custom event loop can be used by subclassing [Host][].</span>
-<span class="sd">        The host can be specified in the settings as the option &#39;host_class&#39;. The value</span>
-<span class="sd">        can be the class or a dotted path if it is importable.</span>
+<span class="sd">    Custom host:</span>
+<span class="sd">        A custom host can be started by subclassing [Host][] and passed as the &#39;host_class&#39; as the</span>
+<span class="sd">        class or a dotted path if it is importable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">):</span>
-        <span class="c1"># A loop with the backend running as a guest.</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">):</span>
+        <span class="c1"># A gui with the backend running as a guest.</span>
         <span class="k">return</span> <span class="n">Host</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
     <span class="c1"># backend only.</span>
     <span class="k">return</span> <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>

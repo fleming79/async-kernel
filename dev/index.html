@@ -1563,20 +1563,20 @@ async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="
 <p>The kernel can be started with a gui event loop as the <em>host</em> and the <em>backend</em> running as a guest.</p>
 <h4 id="asyncio-backend">asyncio backend<a class="headerlink" href="#asyncio-backend" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="c1"># tk</span>
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.loop<span class="o">=</span>tk
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.host<span class="o">=</span>tk
 
 <span class="c1"># qt</span>
 pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.loop<span class="o">=</span>qt
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.host<span class="o">=</span>qt
 </code></pre></div>
 <h4 id="trio-backend">trio backend<a class="headerlink" href="#trio-backend" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
 <span class="c1"># tk</span>
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.loop<span class="o">=</span>tk<span class="w"> </span>--interface.backend<span class="o">=</span>trio
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.host<span class="o">=</span>tk<span class="w"> </span>--interface.backend<span class="o">=</span>trio
 
 <span class="c1"># qt</span>
 pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.loop<span class="o">=</span>qt<span class="w"> </span>--interface.backend<span class="o">=</span>trio
+async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.host<span class="o">=</span>qt<span class="w"> </span>--interface.backend<span class="o">=</span>trio
 </code></pre></div>
 <p>For further detail about kernel spec customisation see <a href="https://fleming79.github.io/async-kernel/latest/usage/commands/">command line and kernel configuration</a>.</p>
 <h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
