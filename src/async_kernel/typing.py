@@ -64,23 +64,8 @@ class Hosts(enum.StrEnum):
     qt = "qt"
     "An event loop for [Qt](https://wiki.qt.io/Qt_for_Python)."
 
-    gtk = "gtk"
-    "Not implemented [GTK](https://www.gtk.org/)."
-
-    wx = "wx"
-    "Not implemented [wxPython](https://wxpython.org/)."
-
-    osx = "osx"
-    "Not implemented"
-
     custom = "custom"
-    "A custom loop that does is fit the other values."
-
-    asyncio = "asyncio"
-    "Provided for testing purposes only."
-
-    trio = "trio"
-    "Provided for testing purposes only."
+    "A custom host."
 
 
 class Channel(enum.StrEnum):

@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class QtHost(Host[T]):
-    LOOP = Hosts.qt
+    HOST = Hosts.qt
     MATPLOTLIB_GUIS = ("qt",)
 
     def __init__(self, module: str = "PySide6") -> None:

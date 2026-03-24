@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class TkHost(Host[T]):
-    LOOP = Hosts.tk
+    HOST = Hosts.tk
     MATPLOTLIB_GUIS = ("tk",)
 
     def __init__(self) -> None:
