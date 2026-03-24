@@ -54,6 +54,9 @@ jobs:
       - name: Install the project
         run: uv sync --locked --dev
 
+      - if: ${{ startsWith(matrix.os, 'windows') }}
+        run: uv sync --locked --dev --group gui
+
       - name: Run tests
         timeout-minutes: 5
         run: uv run pytest -vvl --maxfail=1 --reruns 1
