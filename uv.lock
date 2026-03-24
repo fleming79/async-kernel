@@ -163,8 +163,19 @@ docs = [
     { name = "ruff" },
 ]
 gui = [
+    { name = "ipywidgets" },
+    { name = "jupyterlab" },
     { name = "matplotlib" },
+    { name = "mike" },
+    { name = "mkdocs-autorefs" },
+    { name = "mkdocs-git-revision-date-localized-plugin" },
+    { name = "mkdocs-jupyter" },
+    { name = "mkdocs-material" },
+    { name = "mkdocs-open-in-new-tab" },
+    { name = "mkdocstrings", extra = ["python"] },
+    { name = "pandas" },
     { name = "pyside6-essentials" },
+    { name = "ruff" },
 ]
 test = [
     { name = "pytest" },
@@ -225,8 +236,19 @@ docs = [
     { name = "ruff" },
 ]
 gui = [
-    { name = "matplotlib", specifier = ">=3.10.8" },
+    { name = "ipywidgets" },
+    { name = "jupyterlab" },
+    { name = "matplotlib" },
+    { name = "mike" },
+    { name = "mkdocs-autorefs" },
+    { name = "mkdocs-git-revision-date-localized-plugin" },
+    { name = "mkdocs-jupyter", specifier = ">=0.25.1" },
+    { name = "mkdocs-material" },
+    { name = "mkdocs-open-in-new-tab" },
+    { name = "mkdocstrings", extras = ["python"] },
+    { name = "pandas" },
     { name = "pyside6-essentials", specifier = ">=6.10.2" },
+    { name = "ruff" },
 ]
 test = [
     { name = "pytest", specifier = ">=8.4,<9" },
@@ -848,6 +870,7 @@ wheels = [
 name = "griffelib"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/06/eccbd311c9e2b3ca45dbc063b93134c57a1ccc7607c5e545264ad092c4a9/griffelib-2.0.0.tar.gz", hash = "sha256:e504d637a089f5cab9b5daf18f7645970509bf4f53eda8d79ed71cce8bd97934", size = 166312, upload-time = "2026-03-23T21:06:55.954Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4d/51/c936033e16d12b627ea334aaaaf42229c37620d0f15593456ab69ab48161/griffelib-2.0.0-py3-none-any.whl", hash = "sha256:01284878c966508b6d6f1dbff9b6fa607bc062d8261c5c7253cb285b06422a7f", size = 142004, upload-time = "2026-02-09T19:09:40.561Z" },
 ]
@@ -2149,7 +2172,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [

@@ -95,8 +95,8 @@ dev = [
   {include-group = "test"},
 ]
 gui = [
-    "matplotlib>=3.10.8",
     "pyside6-essentials>=6.10.2",
+    {include-group = "docs"},
 ]
 
 [tool.hatch.version]
