@@ -32,6 +32,7 @@ class TestHost:
             HOST = Hosts.custom
             MATPLOTLIB_GUIS = ("my gui",)
             event_done = Fixed(aiologic.Event)
+            host_uses_signal_set_wakeup_fd = True
 
             @override
             def done_callback(self, outcome: outcome.Outcome) -> None:
