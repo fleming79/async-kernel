@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import override
 
-from async_kernel.typing import Loop, T
+from async_kernel.typing import Hosts, T
 
 from .run import Host
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class TkHost(Host[T]):
-    LOOP = Loop.tk
+    HOST = Hosts.tk
     MATPLOTLIB_GUIS = ("tk",)
 
     def __init__(self) -> None:

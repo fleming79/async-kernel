@@ -75,7 +75,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     backend = UseEnum(Backend)
     "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
 
-    loop = None
+    host = None
 
     _zmq_context = None
 
@@ -105,7 +105,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
             protected=True,
             log=self.kernel.log,
             zmq_context=self._zmq_context,
-            loop=self.loop,
+            host=self.host,
         )
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)

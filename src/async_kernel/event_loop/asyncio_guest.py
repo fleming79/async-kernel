@@ -27,7 +27,7 @@ _MAXIMUM_SELECT_TIMEOUT = 24 * 60 * 60
 _THREAD_JOIN_TIMEOUT = 5 * 60
 
 GuestInfo = namedtuple("GuestInfo", [
-    "loop",
+    "host",
     "task",
 ])
 

@@ -31,7 +31,7 @@ The kernel spec looks like this:
         "--start_interface=async_kernel.interface.start_kernel_zmq_interface",
         "--kernel_name=async",
         "--backend=trio",
-        "--loop=tk"
+        "--host=tk"
     ],
     "env": {},
     "display_name": "Async python tk trio",
@@ -53,8 +53,8 @@ A single kernel spec is created in the folder `<sys.prefix>/share/jupyter/kernel
 - display_name: 'async'
 - backend: `asyncio`
 - backend_options: `{'use_uvloop':True}` if uvloop or winloop is installed
-- loop: `None`
-- loop_options: `None`
+- host: `None`
+- host_options: `None`
 
 The kernel spec can be updated by adding a kernel spec with the same name ('async').
 
@@ -110,23 +110,23 @@ Below are some example kernel specs for host and backend kernel specs.
 
 ```console
 # tk host asyncio backend
-async-kernel -a async-tk --interface.loop=tk
+async-kernel -a async-tk --interface.host=tk
 
 # tk host trio backend
-async-kernel -a async-tk --interface.loop=tk --backend=trio
+async-kernel -a async-tk --interface.host=tk --backend=trio
 ```
 
 ### qt
 
 ```console
 # qt host asyncio backend
-async-kernel -a async-qt --interface.loop=qt
+async-kernel -a async-qt --interface.host=qt
 
 # qt host trio backend
-async-kernel -a async-qt-trio --interface.loop=qt --interface.backend=trio
+async-kernel -a async-qt-trio --interface.host=qt --interface.backend=trio
 
-# PySide6 is default.  You can specify a different module via `loop_options`
-async-kernel -a async-qt --interface.loop=qt --interface.loop_options={'module':'PySide2'}
+# PySide6 is default.  You can specify a different module via `host_options`
+async-kernel -a async-qt --interface.host=qt --interface.host_options={'module':'PySide2'}
 ```
 
 ## Loop options
@@ -142,7 +142,7 @@ at present.
 
 Options can be provided for how the backend is started.
 
-- With a (gui) loop: Options for `start_guest_run`
+- With a (gui) host: Options for `start_guest_run`
     - [trio.lowlevel.start_guest_run][]
     - asyncio
         - host_uses_signal_set_wakeup_fd
@@ -151,11 +151,11 @@ Options can be provided for how the backend is started.
         - task_factory,
         - context,
         - debug,
-- Without a (gui) loop: `backend_options` in [anyio.run][]
+- Without a (gui) host: `backend_options` in [anyio.run][]
 
 ```console
 # If uvloop is installed it will be used by default. You can do this to disable it.
-async-kernel -a async "--interface.loop_options={'use_uvloop':False}"
+async-kernel -a async "--interface.host_options={'use_uvloop':False}"
 ```
 
 ### Custom arguments

@@ -34,7 +34,7 @@ from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Backend, Channel, Content, Job, Loop, Message, MsgHeader, MsgType, NoValue, RunSettings
+from async_kernel.typing import Backend, Channel, Content, Hosts, Job, Message, MsgHeader, MsgType, NoValue, RunSettings
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -125,10 +125,10 @@ class ZMQKernelInterface(BaseKernelInterface):
     )
     "Transport for sockets."
 
-    loop: TraitType[Loop | None, Loop | None] = UseEnum(Loop, default_value=None, allow_none=True)
+    host: TraitType[Hosts | None, Hosts | None] = UseEnum(Hosts, default_value=None, allow_none=True)
     "The name of the (gui) event loop if one is used."
 
-    loop_options = Dict(allow_none=True)
+    host_options = Dict(allow_none=True)
     "Options for starting the loop."
 
     backend_options = Dict(allow_none=True)
@@ -140,7 +140,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             return Backend(current_async_library())
         except AsyncLibraryNotFoundError:
             if (
-                not self.loop
+                not self.host
                 and not self.trait_has_value("backend_options")
                 and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
             ):
@@ -165,9 +165,9 @@ class ZMQKernelInterface(BaseKernelInterface):
 
         settings = RunSettings(
             backend=self.backend,
-            loop=self.loop,
             backend_options=self.backend_options,
-            loop_options=self.loop_options,
+            host=self.host,
+            host_options=self.host_options,
         )
         async_kernel.event_loop.run(run_kernel, (), settings)
 

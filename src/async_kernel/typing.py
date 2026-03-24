@@ -24,8 +24,8 @@ __all__ = [
     "FixedCreate",
     "FixedCreated",
     "HandlerType",
+    "Hosts",
     "Job",
-    "Loop",
     "Message",
     "MsgHeader",
     "MsgType",
@@ -55,7 +55,7 @@ class Backend(enum.StrEnum):
     "A trio style event loop."
 
 
-class Loop(enum.StrEnum):
+class Hosts(enum.StrEnum):
     "An enum of event loop names that available to start using [detail][async_kernel.event_loop.run.run]."
 
     tk = "tk"
@@ -64,23 +64,8 @@ class Loop(enum.StrEnum):
     qt = "qt"
     "An event loop for [Qt](https://wiki.qt.io/Qt_for_Python)."
 
-    gtk = "gtk"
-    "Not implemented [GTK](https://www.gtk.org/)."
-
-    wx = "wx"
-    "Not implemented [wxPython](https://wxpython.org/)."
-
-    osx = "osx"
-    "Not implemented"
-
     custom = "custom"
-    "A custom loop that does is fit the other values."
-
-    asyncio = "asyncio"
-    "Provided for testing purposes only."
-
-    trio = "trio"
-    "Provided for testing purposes only."
+    "A custom host."
 
 
 class Channel(enum.StrEnum):
@@ -393,11 +378,11 @@ class RunSettings(TypedDict):
     backend_options: NotRequired[dict | None]
     "The backend options to specify for [anyio.run][] (or `start_guest_run` when a loop is specified)."
 
-    loop: NotRequired[Loop | None | Literal["tk", "qt"]]
-    "The type of eventloop where the backend will run."
+    host: NotRequired[Hosts | None | Literal["tk", "qt"]]
+    "The type of host where the backend will run."
 
-    "Options to use when calling [async_kernel.eventloop.run][]."
-    loop_options: NotRequired[dict | None]
+    "Options to use when starting the host."
+    host_options: NotRequired[dict | None]
 
 
 class CallerCreateOptions(RunSettings):
