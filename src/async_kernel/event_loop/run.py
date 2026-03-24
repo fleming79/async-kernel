@@ -39,13 +39,13 @@ def get_start_guest_run(backend: Backend):
 def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
     """
     Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend]
-    with an optional gui event loop (_host_).
+    with an optional host (gui event loop).
 
     The default backend is ['asyncio'][async_kernel.typing.Backend.asyncio].
 
-    If [loop][async_kernel.typing.Loop] is specified in `settings`. A _host_ (gui) mainloop
+    If [host][async_kernel.typing.Hosts] is specified in `settings`. A _host_ (gui) mainloop
     will be started with the `backend` running as a guest (in the same thread). The `backend`
-    will execute `func` asynchronously to completion. Once completed the backend and host
+    will execute `func` asynchronously to completion. Once completed the `backend` and `host`
     are stopped and finally the result is returned.
 
     Args:
@@ -54,12 +54,11 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
         settings: Settings to use when running func.
 
     Custom host:
-        A custom event loop can be used by subclassing [Host][].
-        The host can be specified in the settings as the option 'host_class'. The value
-        can be the class or a dotted path if it is importable.
+        A custom host can be started by subclassing [Host][] and passed as the 'host_class' as the
+        class or a dotted path if it is importable.
     """
     if settings.get("host"):
-        # A loop with the backend running as a guest.
+        # A gui with the backend running as a guest.
         return Host.run(func, args, settings)
     # backend only.
     return anyio.run(
@@ -79,7 +78,7 @@ def get_runtime_matplotlib_guis(thread: threading.Thread | None = None) -> tuple
 
 class Host(Generic[T]):
     """
-    A class that provides the necessary callbacks for `start_guest_run`.
+    A class that provides the necessary callbacks to run a gui event loop with a `backend` started using `start_guest_run`.
     """
 
     LOOP: Hosts
