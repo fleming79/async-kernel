@@ -22,6 +22,7 @@ The kernel provides two external interfaces:
 ## Highlights
 
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
+    - top-level await ('asyncio' or 'trio' backend) in cells
 - [anyio](https://pypi.org/project/anyio/) compatible asynchronous backend ([`asyncio`](https://docs.python.org/3/library/asyncio.html) (default) or [`trio`](https://pypi.org/project/trio/))
 - [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
 - [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
@@ -36,9 +37,8 @@ The kernel provides two external interfaces:
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 
 [^1]:
-    A gui (_host_) enabled kernel runs a gui event loop with the asynchronous backend
-    running as guest. The host must be set before the kernel is started. This was a
-    deliberate design choice to to ensure good performance and reliability.
+    A gui (_host_) enabled kernel interface starts a gui's mainloop (host) which starts
+    the backend as a guest, then finally the Kernel is started.
 
 [^2]:
     The asyncio implementation of `start_guest_run` was written by
@@ -56,24 +56,40 @@ Another problem exists when an asynchronous execute request awaits a result that
 via a kernel message - this will cause a deadlock because the message will be stuck in the queue behind
 the _blocking_ execute request[^5].
 
-async-kernel handles messages according to the channel, message type and subshell id. So widget com message
+async-kernel handles messages according to the channel and message type. So widget com message
 will get processed in a separate queue to an execute request. Further detail is given in the [concurrency notebook](https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/), a Jupyterlite version is available [here](https://fleming79.github.io/echo-kernel/).
 
 #### Example
 
-Try the following using a standard kernel and then try it with async-kernel.
+Make a blocking call in a Jupyter lab notebook or console.
 
 ```python
-# Make the shell thread busy
+# Make the shell's thread busy
 import time
 
 time.sleep(1e6)
 ```
 
-Try the following in another cell:
+While the above is _blocking_ (the kernel is _busy_).
 
-- code completion (`tab`)
-- docstring (`shift tab`)
+```python
+dir()  # try code completion (tab) or view the docstring (shift tab)
+```
+
+Interrupt the kernel.
+
+It also works for awaitables.
+
+```python
+import ipywidgets as ipw
+from aiologic import Event
+
+b = ipw.Button(description="Click me")
+event = Event()
+b.on_click(lambda _: event.set())
+display(b)
+await event
+```
 
 [^5]:
     IPyKernel _solves_ this issue specifically for widgets by using the concept of
