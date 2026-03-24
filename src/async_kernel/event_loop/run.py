@@ -108,7 +108,7 @@ class Host(Generic[T]):
             msg = "A host is already running in this thread"
             raise RuntimeError(msg)
 
-        loop = Hosts(settings.get("host"))
+        host = Hosts(settings.get("host"))
         backend = Backend(settings.get("backend", "asyncio"))
         backend_options = settings.get("backend_options") or {}
         host_options = settings.get("host_options") or {}
@@ -122,12 +122,12 @@ class Host(Generic[T]):
                 msg = f"{cls_} is not a subclass of {cls}!"
                 raise TypeError(msg)
         else:
-            assert loop != backend
-            if loop not in cls._subclasses:
-                import_module(f"async_kernel.event_loop.{loop}_host")
-                assert loop in cls._subclasses, f"Host for {loop=} is not implemented correctly!"
-            cls_ = cls._subclasses[loop]
-        assert cls_.HOST is loop
+            assert host != backend
+            if host not in cls._subclasses:
+                import_module(f"async_kernel.event_loop.{host}_host")
+                assert host in cls._subclasses, f"Host for {host=} is not implemented correctly!"
+            cls_ = cls._subclasses[host]
+        assert cls_.HOST is host
 
         host = cls_(**host_options)
         # set the `start_guest` function (runs once).
