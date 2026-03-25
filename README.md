@@ -16,7 +16,7 @@ that provides concurrent message handling via an asynchronous backend (asyncio o
 
 The kernel provides two external interfaces:
 
-1. Direct ZMQ socket messaging via a configuration file and kernel spec - (Jupyter, VScode, etc).
+1. Direct ZMQ socket messaging via a configuration file and kernel spec - (Jupyter, VS Code, etc).
 2. An experimental callback style interface (Jupyterlite).
 
 ## Highlights

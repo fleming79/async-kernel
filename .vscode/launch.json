@@ -26,6 +26,36 @@
       },
       "justMyCode": true,
       "args": ["-X dev", "Wd"]
+    },
+    {
+      "name": "Jupyterlab",
+      "type": "debugpy",
+      "request": "launch",
+      "args": [
+        "--notebook-dir=docs/notebooks",
+        "--no-browser",
+        "--ServerApp.token=''",
+        "--port=9991"
+      ],
+      "cwd": "${workspaceFolder}",
+      "justMyCode": false,
+      "module": "jupyterlab",
+      "presentation": {
+        "hidden": false
+      }
+    },
+    {
+      "name": "Editor Browser",
+      "type": "editor-browser",
+      "request": "launch",
+      "url": "http://localhost:9991",
+      "webRoot": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Python and Jupyterlab",
+      "configurations": ["Jupyterlab", "Editor Browser"]
     }
   ]
 }
