@@ -208,3 +208,14 @@ uv run mkdocs build -s
     tests can still fail for another os or python version.
 
 [^test-pypi]: This workflow also runs on push to the main branch, but will instead publish to [TestPyPI](https://test.pypi.org/project/async-kernel/).
+
+## VS code development
+
+Debug configurations are included to support debugging with VS Code.
+
+- Python: Debug Tests: This config is for attaching a debugger when launching tests.
+  The recommended way to debug tests.
+- Python and Jupyterlab (Requires VS Code >1.112.0): This provides a compound launch configuration
+  which starts Jupyterlab and Python. The built in browser launches attaches to the Jupyter session
+  (refresh may be required after the server has started). The advantage of this configuration
+  is that all Python processes are attached to the debugger whenever a kernel is opened.
