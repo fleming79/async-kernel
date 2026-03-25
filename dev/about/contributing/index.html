@@ -1358,6 +1358,17 @@ viewing the latest version.
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#vs-code-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VS code development
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1622,6 +1633,17 @@ viewing the latest version.
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#vs-code-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VS code development
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1840,6 +1862,16 @@ uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </sp
 <p>CI checks also run for a matrix of OS's and python versions. So even if all tests pass locally,
 tests can still fail for another os or python version.</p>
 </div>
+<h2 id="vs-code-development">VS code development<a class="headerlink" href="#vs-code-development" title="Permanent link">&para;</a></h2>
+<p>Debug configurations are included to support debugging with VS Code.</p>
+<ul>
+<li>Python: Debug Tests: This config is for attaching a debugger when launching tests.
+  The recommended way to debug tests.</li>
+<li>Python and Jupyterlab (Requires VS Code &gt;1.112.0): This provides a compound launch configuration
+  which starts Jupyterlab and Python. The built in browser launches attaches to the Jupyter session
+  (refresh may be required after the server has started). The advantage of this configuration
+  is that all Python processes are attached to the debugger whenever a kernel is opened.</li>
+</ul>
 <div class="footnote">
 <hr />
 <ol>
