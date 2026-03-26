@@ -4,26 +4,19 @@ from __future__ import annotations
 
 import asyncio
 import json
-import signal
 import time
 from typing import TYPE_CHECKING, Any, TypedDict
 
-import anyio
 import orjson
-from aiologic.lowlevel import enable_signal_safety
 from IPython.core.error import StdinNotImplementedError
 from typing_extensions import override
 
 import async_kernel
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.kernel import KernelInterruptError
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from types import FrameType
-
-    from async_kernel.pending import Pending
 
 
 __all__ = ["CallableKernelInterface", "Handlers"]
@@ -108,31 +101,9 @@ class CallableKernelInterface(BaseKernelInterface):
         Returns: A pending that when resolved returns the message handler callback.
         """
         self._send = send
-        ready: Pending[Handlers] = async_kernel.Pending()
-        sig = signal.signal(signal.SIGINT, self._signal_handler)
-
-        async def run_kernel():
-            try:
-                async with self.kernel:
-                    ready.set_result(Handlers(handle_msg=self._handle_msg, stop=self.kernel.stop))
-                    await anyio.sleep_forever()
-            except Exception as e:
-                del self._send
-                if not ready.done():
-                    ready.set_exception(e)
-            finally:
-                signal.signal(signal.SIGINT, sig)
-                stopped()
-
-        self._task = asyncio.create_task(run_kernel())
-        return await ready
-
-    @enable_signal_safety
-    def _signal_handler(self, signum, frame: FrameType | None) -> None:
-        self.last_interrupt_frame = frame
-        self.interrupt()
-        self.last_interrupt_frame = None
-        raise KernelInterruptError
+        self._task = asyncio.create_task(self.kernel.run(stopped=stopped))
+        await self.kernel.event_started
+        return Handlers(handle_msg=self._handle_msg, stop=self.kernel.stop)
 
     def _send_to_frontend(
         self,

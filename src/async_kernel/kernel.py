@@ -351,6 +351,22 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         gc.collect()
         self.log.info("Kernel shutdown complete: %s", self)
 
+    async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
+        """
+        Run the kernel asynchronously.
+
+        Args:
+            stopped: An optional callback that is called when the kernel has stopped.
+
+        This method requires that a [Caller][async_kernel.caller.Caller] instance does not already exist in the current thread.
+        """
+        try:
+            async with self:
+                await self.event_stopped
+        finally:
+            if stopped:
+                stopped()
+
     def iopub_send(
         self,
         msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
