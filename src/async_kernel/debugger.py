@@ -16,7 +16,7 @@ from traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.compat.json import dump_bytes, loads
+from async_kernel.compat.json import pack_json_bytes, unpack_json
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
@@ -135,7 +135,7 @@ class DebugpyClient(HasTraits):
             raise RuntimeError
         async with self._send_lock:
             self._result_responses[request["seq"]] = pen = Pending()
-            content = dump_bytes(request)
+            content = pack_json_bytes(request)
             content_length = str(len(content)).encode()
             buf = self.HEADER + content_length + self.SEPARATOR
             buf += content
@@ -151,7 +151,7 @@ class DebugpyClient(HasTraits):
             for buf in data[1:]:
                 size, raw_msg = buf.split(self.SEPARATOR, maxsplit=1)
                 size = int(size)
-                msg: DebugMessage = loads(raw_msg[:size])
+                msg: DebugMessage = unpack_json(raw_msg[:size])
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
                     self.event_callback(msg)

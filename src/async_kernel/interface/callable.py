@@ -10,7 +10,7 @@ from IPython.core.error import StdinNotImplementedError
 from typing_extensions import override
 
 import async_kernel
-from async_kernel.compat.json import dump_string, loads
+from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
 
@@ -97,10 +97,10 @@ class CallableKernelInterface(BaseKernelInterface):
         requires_reply=False,
     ) -> Message | None:
         msg["channel"] = channel
-        reply = self._send(dump_string(msg), buffers, requires_reply)
+        reply = self._send(pack_json_str(msg), buffers, requires_reply)
         if requires_reply:
             assert reply
-            return loads(reply)
+            return unpack_json(reply)
         return None
 
     async def _send_reply(self, job: Job, content: dict, /) -> None:
@@ -112,7 +112,7 @@ class CallableKernelInterface(BaseKernelInterface):
 
     def _handle_msg(self, msg_json: str, buffers: list[bytearray] | list[bytes] | None = None, /):
         "The main message handler that gets returned by the `start` method."
-        msg: Message[dict[str, Any]] = loads(msg_json)
+        msg: Message[dict[str, Any]] = unpack_json(msg_json)
         # Copy the buffer
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
         msg["channel"] = Channel(msg["channel"])

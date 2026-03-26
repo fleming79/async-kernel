@@ -10,7 +10,7 @@ from IPython.core.error import StdinNotImplementedError
 
 import async_kernel
 from async_kernel.asyncshell import KernelInterruptError
-from async_kernel.compat.json import dump_string, loads
+from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import start_kernel_callable_interface
 from async_kernel.interface.callable import CallableKernelInterface
 
@@ -31,9 +31,9 @@ async def interface(anyio_backend):
     def send(msg_string, buffers, requires_reply, /):
         assert isinstance(msg_string, str)
         if requires_reply:
-            parent = loads(msg_string)
+            parent = unpack_json(msg_string)
             msg = interface.msg("input_reply", parent=parent, content={"value": "reply"})
-            return dump_string(msg)
+            return pack_json_str(msg)
         return None
 
     callbacks = await start_kernel_callable_interface(send=send, stopped=stopped.set)
@@ -56,11 +56,11 @@ class TestCallableInterface:
         msg = interface.msg("execute_request", content={"code": code})
         msg["header"]["session"] = "test session"
         buffers = [b"123"]
-        interface._handle_msg(dump_string(msg), buffers)  # pyright: ignore[reportPrivateUsage]
+        interface._handle_msg(pack_json_str(msg), buffers)  # pyright: ignore[reportPrivateUsage]
 
         while sender.call_count != 4:
             await anyio.sleep(0.01)
-        reply: Message = loads(sender.call_args_list[2][0][0])
+        reply: Message = unpack_json(sender.call_args_list[2][0][0])
         assert reply["header"]["msg_type"] == "execute_reply"
         assert reply["content"]["status"] == "ok"
 
@@ -68,10 +68,10 @@ class TestCallableInterface:
         sender = mocker.patch.object(interface, "_send")
         msg = interface.msg("kernel_info_request")
         msg["header"]["session"] = "test session"
-        interface._handle_msg(dump_string(msg))  # pyright: ignore[reportPrivateUsage]
+        interface._handle_msg(pack_json_str(msg))  # pyright: ignore[reportPrivateUsage]
         while sender.call_count != 3:
             await anyio.sleep(0.1)
-        reply: Message = loads(sender.call_args_list[1][0][0])
+        reply: Message = unpack_json(sender.call_args_list[1][0][0])
         assert reply["header"]["msg_type"] == "kernel_info_reply"
         assert reply["content"]["status"] == "ok"
 
