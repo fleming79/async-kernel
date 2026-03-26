@@ -159,9 +159,9 @@ For further detail about kernel spec customisation see [command line and kernel 
 
 ## Free-threading support
 
-async-kernel's Caller's are _thread-local_[^1] and it's methods are _internally synchronised_[^1].
+async-kernel's Caller's are _thread-local_ and it's methods are _internally synchronised_[^4].
 
-[^1]: [free threading terminology](https://py-free-threading.github.io/documentation-principles/#free-threading-terminology)
+[^4]: [free threading terminology](https://py-free-threading.github.io/documentation-principles/#free-threading-terminology)
 
 ## Origin
 
