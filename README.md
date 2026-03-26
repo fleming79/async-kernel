@@ -153,6 +153,16 @@ async-kernel -a async-qt --interface.host=qt --interface.backend=trio
 
 For further detail about kernel spec customisation see [command line and kernel configuration](https://fleming79.github.io/async-kernel/latest/usage/commands/).
 
+## Faster data serialization
+
+[orjson](https://github.com/ijl/orjson) (a fast JSON library) is supported and will be used by default if it has been installed.
+
+## Free-threading support
+
+async-kernel's Caller's are _thread-local_[^1] and it's methods are _internally synchronised_[^1].
+
+[^1]: [free threading terminology](https://py-free-threading.github.io/documentation-principles/#free-threading-terminology)
+
 ## Origin
 
 async-kernel started as a [fork](https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d)
