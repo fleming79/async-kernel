@@ -47,6 +47,13 @@ if TYPE_CHECKING:
 
 __all__ = ["Kernel", "KernelInterruptError"]
 
+RUN_IN_SHELL = (MsgType.execute_request, MsgType.comm_msg)
+"""
+Shell message types that are handled in the shell's thread (typically the _MainThread_).
+
+All other shell message types are handled in the control thread.
+"""
+
 
 class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     """
@@ -405,11 +412,9 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             except KeyError:
                 subshell_id = None
         handler = self._get_handler(subshell_id, msg_type, send_reply)
+        run_mode = self._get_run_mode(msg_type, job)
         caller = self.callers[channel]
-        run_mode = RunMode.queue
-        if msg_type is MsgType.execute_request:
-            run_mode = self._get_execute_request_run_mode(job)
-        elif channel is Channel.shell and msg_type is not MsgType.comm_msg:
+        if channel is Channel.shell and msg_type not in RUN_IN_SHELL:
             caller = self.callers[Channel.control]
         # Schedule job
         match run_mode:
@@ -419,7 +424,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
                 caller.call_soon(handler, job)
             case RunMode.thread:
                 caller.to_thread(handler, job)
-        self.log.debug("%s %s %s", msg_type, handler, job)
+        self.log.debug("%s %s %s %s %s", channel, msg_type, run_mode, handler, job)
 
     def _get_handler(
         self,
@@ -473,23 +478,22 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             if key[0] == subshell_id:
                 self._handler_cache.pop(key, None)
 
-    def _get_execute_request_run_mode(self, job: Job, /) -> RunMode:
+    def _get_run_mode(self, msg_type: MsgType, job: Job, /) -> RunMode:
         # TODO: Are any of these options worth including?
-        # if mode_from_metadata := job["msg"]["metadata"].get("run_mode"):
-        #     return RunMode( mode_from_metadata)
-        # if mode_from_header := job["msg"]["header"].get("run_mode"):
-        #     return RunMode( mode_from_header)
-        if content := job["msg"].get("content", {}):
-            if code := content.get("code"):
-                try:
-                    if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
-                        return RunMode(code[2:])
-                except ValueError:
-                    pass
-            if content.get("silent"):
-                return RunMode.task
-        if mode_ := set(utils.get_tags(job)).intersection(RunMode):
-            return RunMode(next(iter(mode_)))
+        # if run_mode := job["msg"]["header"].get("run_mode"):
+        #     return RunMode(run_mode)
+        if msg_type is MsgType.execute_request:
+            if content := job["msg"].get("content", {}):
+                if code := content.get("code"):
+                    try:
+                        if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
+                            return RunMode(code[2:])
+                    except ValueError:
+                        pass
+                if content.get("silent"):
+                    return RunMode.task
+            if mode_ := set(utils.get_tags(job)).intersection(RunMode):
+                return RunMode(next(iter(mode_)))
         return RunMode.queue
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
