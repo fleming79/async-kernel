@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import builtins
+import contextlib
 import getpass
 import logging
+import signal
 import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -14,10 +16,11 @@ from uuid import uuid4
 
 import anyio
 import traitlets
-from aiologic.lowlevel import current_async_library
+from aiologic.lowlevel import current_async_library, enable_signal_safety
 from traitlets import HasTraits, Instance, UseEnum
 
 import async_kernel
+from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.iostream import OutStream
@@ -25,6 +28,7 @@ from async_kernel.typing import Backend, Channel, Content, Message, MsgHeader, N
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
+    from types import FrameType
 
     from async_kernel.kernel import Kernel
 
@@ -98,7 +102,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self.backend = Backend(current_async_library())
-        restore_io = None
+        sig = restore_io = None
         caller = Caller(
             "manual",
             name="Shell",
@@ -112,10 +116,21 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
         async with caller:
             try:
                 restore_io = self._patch_io()
+                with contextlib.suppress(ValueError, AttributeError):
+                    sig = signal.signal(signal.SIGINT, self._signal_handler)
                 yield self
             finally:
+                if sig:
+                    signal.signal(signal.SIGINT, sig)
                 if restore_io:
                     restore_io()
+
+    @enable_signal_safety
+    def _signal_handler(self, signum, frame: FrameType | None) -> None:
+        self.last_interrupt_frame = frame
+        self.interrupt()
+        self.last_interrupt_frame = None
+        raise KernelInterruptError
 
     def _patch_io(self) -> Callable[[], None]:
         original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass

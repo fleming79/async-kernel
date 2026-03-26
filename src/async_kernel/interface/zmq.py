@@ -147,7 +147,7 @@ class ZMQKernelInterface(BaseKernelInterface):
                 self.backend_options["use_uvloop"] = True
             return Backend.asyncio
 
-    def start(self):
+    def start(self) -> None:
         """
         Start the kernel blocking until the kernel stops.
 
@@ -159,17 +159,13 @@ class ZMQKernelInterface(BaseKernelInterface):
                 start the kernel asynchronously instead (`async with kernel: ...`).
         """
 
-        async def run_kernel() -> None:
-            async with self.kernel:
-                await self.kernel.event_stopped
-
         settings = RunSettings(
             backend=self.backend,
             backend_options=self.backend_options,
             host=self.host,
             host_options=self.host_options,
         )
-        async_kernel.event_loop.run(run_kernel, (), settings)
+        async_kernel.event_loop.run(self.kernel.run, (), settings)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -213,7 +209,6 @@ class ZMQKernelInterface(BaseKernelInterface):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self.backend = Backend(current_async_library())
-        sig = None
         start = Event()
         try:
             self._start_hb_iopub_shell_control_threads(start)
@@ -221,14 +216,10 @@ class ZMQKernelInterface(BaseKernelInterface):
                 assert len(self.sockets) == len(Channel)
                 self._write_connection_file()
                 async with super().__asynccontextmanager__():
-                    with contextlib.suppress(ValueError):
-                        sig = signal.signal(signal.SIGINT, self._signal_handler)
                     start.set()
                     yield self
         finally:
             start.set()
-            if sig:
-                signal.signal(signal.SIGINT, sig)
             self._zmq_context.term()
 
     def _start_hb_iopub_shell_control_threads(self, start: Event) -> None:
@@ -278,7 +269,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             threading.Thread(target=self.receive_msg_loop, name=name, args=(channel, ready, start)).start()
             ready.wait()
 
-    def _pub_capture(self):
+    def _pub_capture(self) -> None:
         """
         Capture connection messages on iopub.
 
@@ -463,6 +454,7 @@ class ZMQKernelInterface(BaseKernelInterface):
                     continue
 
     @enable_signal_safety
+    @override
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
         "Handle interrupt signals."
 
