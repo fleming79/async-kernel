@@ -6,33 +6,35 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Readme.">
+        <meta name="description" content="Async-kernel for Jupyter">
       
       
       
-        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/">
+        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/thread_safety/">
       
       
+        <link rel="prev" href="../reference/utils/">
       
-        <link rel="next" href="usage/">
+      
+        <link rel="next" href="../about/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Reference - async-kernel</title>
+        <title>Thread safety - async-kernel</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -57,13 +59,13 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="css/timeago.css">
+      <link rel="stylesheet" href="../css/timeago.css">
     
-      <link rel="stylesheet" href="stylesheets/extra.css">
+      <link rel="stylesheet" href="../stylesheets/extra.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -88,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#async-kernel" class="md-skip">
+        <a href="#thread-safety-of-built-in-types" class="md-skip">
           Skip to content
         </a>
       
@@ -103,12 +105,12 @@
             <div class="md-banner__inner md-grid md-typeset">
                You're not
 viewing the latest version.
-<a href="../.">
+<a href="../..">
   <strong>Click here to go to latest.</strong>
 </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -120,7 +122,7 @@ viewing the latest version.
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="async-kernel" class="md-header__button md-logo" aria-label="async-kernel" data-md-component="logo">
+    <a href=".." title="async-kernel" class="md-header__button md-logo" aria-label="async-kernel" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -140,7 +142,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Reference
+              Thread safety
             
           </span>
         </div>
@@ -255,11 +257,9 @@ viewing the latest version.
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -282,7 +282,7 @@ viewing the latest version.
     
     
       <li class="md-tabs__item">
-        <a href="usage/" class="md-tabs__link">
+        <a href="../usage/" class="md-tabs__link">
           
   
   
@@ -306,7 +306,7 @@ viewing the latest version.
     
     
       <li class="md-tabs__item">
-        <a href="reference/" class="md-tabs__link">
+        <a href="../reference/" class="md-tabs__link">
           
   
   
@@ -324,9 +324,11 @@ viewing the latest version.
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="thread_safety/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -347,7 +349,7 @@ viewing the latest version.
     
     
       <li class="md-tabs__item">
-        <a href="about/" class="md-tabs__link">
+        <a href="../about/" class="md-tabs__link">
           
   
   
@@ -389,7 +391,7 @@ viewing the latest version.
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="async-kernel" class="md-nav__button md-logo" aria-label="async-kernel" data-md-component="logo">
+    <a href=".." title="async-kernel" class="md-nav__button md-logo" aria-label="async-kernel" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -416,39 +418,10 @@ viewing the latest version.
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -466,137 +439,6 @@ viewing the latest version.
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#highlights" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Highlights
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Highlights">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#avoid-deadlocks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Avoid deadlocks
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#kernel-specs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Kernel specs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Kernel specs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#backends" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backends
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gui-event-loop" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Gui event loop
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#faster-data-serialization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Faster data serialization
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#free-threading-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Free-threading support
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#origin" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Origin
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -635,7 +477,7 @@ viewing the latest version.
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="usage/" class="md-nav__link ">
+            <a href="../usage/" class="md-nav__link ">
               
   
   
@@ -681,7 +523,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="usage/commands/" class="md-nav__link">
+      <a href="../usage/commands/" class="md-nav__link">
         
   
   
@@ -709,7 +551,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="notebooks/concurrency/" class="md-nav__link">
+      <a href="../notebooks/concurrency/" class="md-nav__link">
         
   
   
@@ -737,7 +579,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="notebooks/caller/" class="md-nav__link">
+      <a href="../notebooks/caller/" class="md-nav__link">
         
   
   
@@ -819,7 +661,7 @@ viewing the latest version.
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/" class="md-nav__link ">
+            <a href="../reference/" class="md-nav__link ">
               
   
   
@@ -863,7 +705,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/caller/" class="md-nav__link">
+      <a href="../reference/caller/" class="md-nav__link">
         
   
   
@@ -891,7 +733,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/comm/" class="md-nav__link">
+      <a href="../reference/comm/" class="md-nav__link">
         
   
   
@@ -919,7 +761,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/command/" class="md-nav__link">
+      <a href="../reference/command/" class="md-nav__link">
         
   
   
@@ -947,7 +789,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/common/" class="md-nav__link">
+      <a href="../reference/common/" class="md-nav__link">
         
   
   
@@ -975,7 +817,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/debugger/" class="md-nav__link">
+      <a href="../reference/debugger/" class="md-nav__link">
         
   
   
@@ -1003,7 +845,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/interface/" class="md-nav__link">
+      <a href="../reference/interface/" class="md-nav__link">
         
   
   
@@ -1031,7 +873,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/kernel/" class="md-nav__link">
+      <a href="../reference/kernel/" class="md-nav__link">
         
   
   
@@ -1059,7 +901,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/kernelspec/" class="md-nav__link">
+      <a href="../reference/kernelspec/" class="md-nav__link">
         
   
   
@@ -1087,7 +929,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/asyncshell/" class="md-nav__link">
+      <a href="../reference/asyncshell/" class="md-nav__link">
         
   
   
@@ -1115,7 +957,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/pending/" class="md-nav__link">
+      <a href="../reference/pending/" class="md-nav__link">
         
   
   
@@ -1143,7 +985,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/event_loop/" class="md-nav__link">
+      <a href="../reference/event_loop/" class="md-nav__link">
         
   
   
@@ -1171,7 +1013,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/typing/" class="md-nav__link">
+      <a href="../reference/typing/" class="md-nav__link">
         
   
   
@@ -1199,7 +1041,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="reference/utils/" class="md-nav__link">
+      <a href="../reference/utils/" class="md-nav__link">
         
   
   
@@ -1231,10 +1073,37 @@ viewing the latest version.
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="thread_safety/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Thread safety
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1250,6 +1119,121 @@ viewing the latest version.
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernelpendingpending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        async_kernel.pending.Pending
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="async_kernel.pending.Pending">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernelcallercaller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        async_kernel.caller.Caller
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="async_kernel.caller.Caller">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guarantees_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernelcommonfixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        async_kernel.common.Fixed
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="async_kernel.common.Fixed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guarantees_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1288,7 +1272,7 @@ viewing the latest version.
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="about/" class="md-nav__link ">
+            <a href="../about/" class="md-nav__link ">
               
   
   
@@ -1332,7 +1316,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="about/contributing/" class="md-nav__link">
+      <a href="../about/contributing/" class="md-nav__link">
         
   
   
@@ -1360,7 +1344,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="about/changelog/" class="md-nav__link">
+      <a href="../about/changelog/" class="md-nav__link">
         
   
   
@@ -1388,7 +1372,7 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="about/license/" class="md-nav__link">
+      <a href="../about/license/" class="md-nav__link">
         
   
   
@@ -1443,22 +1427,22 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#highlights" class="md-nav__link">
+  <a href="#async_kernelpendingpending" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Highlights
+        async_kernel.pending.Pending
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Highlights">
+    <nav class="md-nav" aria-label="async_kernel.pending.Pending">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#avoid-deadlocks" class="md-nav__link">
+  <a href="#guarantees" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Avoid deadlocks
+        Guarantees
       
     </span>
   </a>
@@ -1471,44 +1455,22 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#async_kernelcallercaller" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        async_kernel.caller.Caller
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#kernel-specs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Kernel specs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Kernel specs">
+    <nav class="md-nav" aria-label="async_kernel.caller.Caller">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#backends" class="md-nav__link">
+  <a href="#guarantees_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Backends
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gui-event-loop" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Gui event loop
+        Guarantees
       
     </span>
   </a>
@@ -1521,35 +1483,41 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#faster-data-serialization" class="md-nav__link">
+  <a href="#async_kernelcommonfixed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Faster data serialization
+        async_kernel.common.Fixed
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="async_kernel.common.Fixed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guarantees_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guarantees
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#free-threading-support" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#other-classes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Free-threading support
+        Other classes
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#origin" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Origin
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1581,139 +1549,49 @@ viewing the latest version.
   
 
 
-<h1 id="async-kernel">async-kernel<a class="headerlink" href="#async-kernel" title="Permanent link">&para;</a></h1>
-<p><a href="https://pypi.python.org/pypi/async-kernel"><img alt="pypi" src="https://img.shields.io/pypi/pyversions/async-kernel.svg" /></a>
-<a href="https://pypistats.org/packages/async-kernel"><img alt="downloads" src="https://img.shields.io/pypi/dm/async-kernel?logo=pypi&amp;color=3775A9" /></a>
-<a href="https://github.com/fleming79/async-kernel/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/fleming79/async-kernel/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
-<a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" /></a>
-<a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json" /></a>
-<a href="https://docs.basedpyright.com"><img alt="basedpyright - checked" src="https://img.shields.io/badge/basedpyright-checked-42b983" /></a>
-<a href="https://squidfunk.github.io/mkdocs-material/"><img alt="Built with Material for MkDocs" src="https://img.shields.io/badge/Material_for_MkDocs-526CFE?style=plastic&amp;logo=MaterialForMkDocs&amp;logoColor=white" /></a>
-<a href="https://codecov.io/github/fleming79/async-kernel"><img alt="codecov" src="https://codecov.io/github/fleming79/async-kernel/graph/badge.svg?token=PX0RWNKT85" /></a></p>
-<p><img alt="logo-svg" src="https://github.com/user-attachments/assets/6781ec08-94e9-4640-b8f9-bb07a08e9587" /></p>
-<p>async-kernel is a Python kernel for <a href="https://docs.jupyter.org/en/latest/projects/kernels.html#kernels-programming-languages">Jupyter</a>
-that provides concurrent message handling via an asynchronous backend (asyncio or trio).</p>
-<p>The kernel provides two external interfaces:</p>
-<ol>
-<li>Direct ZMQ socket messaging via a configuration file and kernel spec - (Jupyter, VS Code, etc).</li>
-<li>An experimental callback style interface (Jupyterlite).</li>
-</ol>
-<h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
+<h1 id="thread-safety-of-built-in-types">Thread Safety of Built-in Types<a class="headerlink" href="#thread-safety-of-built-in-types" title="Permanent link">&para;</a></h1>
 <ul>
-<li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a><ul>
-<li>top-level await ('asyncio' or 'trio' backend) in cells</li>
+<li><a href="https://py-free-threading.github.io/documentation-principles/#free-threading-terminology">Terminology</a></li>
+</ul>
+<p><em>aync-kernel</em> utilises <a href="https://aiologic.readthedocs.io/latest/index.html">aiologic</a> for its <em>thread-safe</em> primitives.</p>
+<h2 id="async_kernelpendingpending"><a class="autorefs autorefs-internal" title="            Pending" href="../reference/pending/#async_kernel.pending.Pending">async_kernel.pending.Pending</a><a class="headerlink" href="#async_kernelpendingpending" title="Permanent link">&para;</a></h2>
+<h3 id="guarantees">Guarantees<a class="headerlink" href="#guarantees" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>Internally synchronised</strong></p>
+<ul>
+<li>All Public methods can be safely called from any thread.</li>
+<li>Instance are sync/async awaitable from any thread with any backend.</li>
 </ul>
 </li>
-<li><a href="https://pypi.org/project/anyio/">anyio</a> compatible asynchronous backend (<a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> (default) or <a href="https://pypi.org/project/trio/"><code>trio</code></a>)</li>
-<li><a href="https://aiologic.readthedocs.io/latest/">aiologic</a> thread-safe synchronisation primitives</li>
-<li><a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller">Backend agnostic multi-thread / multi-event loop management</a></li>
-<li>Per-subshell user_ns</li>
-<li>GUI event loops <sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup><ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> inline</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ipympl</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> tk host and asyncio<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup> or trio<sup id="fnref2:3"><a class="footnote-ref" href="#fn:3">3</a></sup> backend running as a guest</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> qt host and asyncio<sup id="fnref2:2"><a class="footnote-ref" href="#fn:2">2</a></sup> or trio<sup id="fnref3:3"><a class="footnote-ref" href="#fn:3">3</a></sup> backend running as a guest</li>
+<li>
+<p><strong>Limitations</strong></p>
+<p><a class="autorefs autorefs-internal" title="            add_done_callback" href="../reference/pending/#async_kernel.pending.Pending.add_done_callback">async_kernel.pending.Pending.add_done_callback</a>: The callback is called from the thread in which it is set
+so must handle its own synchronisation.</p>
+</li>
+</ul>
+<h2 id="async_kernelcallercaller"><a class="autorefs autorefs-internal" title="            Caller" href="../reference/caller/#async_kernel.caller.Caller">async_kernel.caller.Caller</a><a class="headerlink" href="#async_kernelcallercaller" title="Permanent link">&para;</a></h2>
+<p><code>Caller</code> is thread-local in CPython and context-local in Pyodide.</p>
+<h3 id="guarantees_1">Guarantees<a class="headerlink" href="#guarantees_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>Internally synchronised</strong></p>
+</li>
+<li>
+<p><strong>Limitations</strong></p>
+<ul>
+<li><a class="autorefs autorefs-internal" title="            queue_call" href="../reference/caller/#async_kernel.caller.Caller.queue_call">queue_call</a> is internally synchronised per-function after
+  the first call (per-function) has returned.</li>
 </ul>
 </li>
-<li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for
-  <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> (try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈)</li>
-<li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
 </ul>
-<h3 id="avoid-deadlocks">Avoid deadlocks<a class="headerlink" href="#avoid-deadlocks" title="Permanent link">&para;</a></h3>
-<p>The standard (synchronous) kernel implementation processes messages sequentially irrespective
-of the message type. The problem being that long running execute requests make the kernel non-responsive.</p>
-<p>Another problem exists when an asynchronous execute request awaits a result that is delivered
-via a kernel message - this will cause a deadlock because the message will be stuck in the queue behind
-the <em>blocking</em> execute request<sup id="fnref:5"><a class="footnote-ref" href="#fn:5">4</a></sup>.</p>
-<p>async-kernel handles messages according to the channel and message type. So widget com message
-will get processed in a separate queue to an execute request. Further detail is given in the <a href="https://fleming79.github.io/async-kernel/latest/notebooks/concurrency/">concurrency notebook</a>, a Jupyterlite version is available <a href="https://fleming79.github.io/echo-kernel/">here</a>.</p>
-<h4 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h4>
-<p>Make a blocking call in a Jupyter lab notebook or console.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Make the shell&#39;s thread busy</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
-
-<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1e6</span><span class="p">)</span>
-</code></pre></div>
-<p>While the above is <em>blocking</em> (the kernel is <em>busy</em>).</p>
-<div class="highlight"><pre><span></span><code><span class="nb">dir</span><span class="p">()</span>  <span class="c1"># try code completion (tab) or view the docstring (shift tab)</span>
-</code></pre></div>
-<p>Interrupt the kernel.</p>
-<p>It also works for awaitables.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipw</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
-
-<span class="n">b</span> <span class="o">=</span> <span class="n">ipw</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Click me&quot;</span><span class="p">)</span>
-<span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
-<span class="n">b</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
-<span class="n">display</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-<span class="k">await</span> <span class="n">event</span>
-</code></pre></div>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>async-kernel
-</code></pre></div>
-<h2 id="kernel-specs">Kernel specs<a class="headerlink" href="#kernel-specs" title="Permanent link">&para;</a></h2>
-<p>A kernel spec with the name 'async' is added when async-kernel is installed.</p>
-<p>Kernel specs can be added/removed via the command line.</p>
-<h3 id="backends">Backends<a class="headerlink" href="#backends" title="Permanent link">&para;</a></h3>
-<p>The backend set on the interface is the asynchronous library the kernel uses for message handling.
-It is also the asynchronous library directly available when executing code in cells or via a console<sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup>.</p>
-<h4 id="example-overwrite-the-async-kernel-spec-to-use-a-trio-backend">Example - overwrite the 'async' kernel spec to use a trio backend<a class="headerlink" href="#example-overwrite-the-async-kernel-spec-to-use-a-trio-backend" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async<span class="w"> </span>--interface.backend<span class="o">=</span>trio
-</code></pre></div>
-<h3 id="gui-event-loop">Gui event loop<a class="headerlink" href="#gui-event-loop" title="Permanent link">&para;</a></h3>
-<p>The kernel can be started with a gui event loop as the <em>host</em> and the <em>backend</em> running as a guest.</p>
-<h4 id="asyncio-backend">asyncio backend<a class="headerlink" href="#asyncio-backend" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="c1"># tk</span>
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.host<span class="o">=</span>tk
-
-<span class="c1"># qt</span>
-pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.host<span class="o">=</span>qt
-</code></pre></div>
-<h4 id="trio-backend">trio backend<a class="headerlink" href="#trio-backend" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>trio
-<span class="c1"># tk</span>
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-tk<span class="w"> </span>--interface.host<span class="o">=</span>tk<span class="w"> </span>--interface.backend<span class="o">=</span>trio
-
-<span class="c1"># qt</span>
-pip<span class="w"> </span>install<span class="w"> </span>PySide6-Essentials
-async-kernel<span class="w"> </span>-a<span class="w"> </span>async-qt<span class="w"> </span>--interface.host<span class="o">=</span>qt<span class="w"> </span>--interface.backend<span class="o">=</span>trio
-</code></pre></div>
-<p>For further detail about kernel spec customisation see <a href="https://fleming79.github.io/async-kernel/latest/usage/commands/">command line and kernel configuration</a>.</p>
-<h2 id="faster-data-serialization">Faster data serialization<a class="headerlink" href="#faster-data-serialization" title="Permanent link">&para;</a></h2>
-<p><a href="https://github.com/ijl/orjson">orjson</a> (a fast JSON library) is supported and will be used by default if it has been installed.</p>
-<h2 id="free-threading-support">Free-threading support<a class="headerlink" href="#free-threading-support" title="Permanent link">&para;</a></h2>
-<p>async-kernel's Caller's are <em>thread-local</em> and it's methods are <em>internally synchronised</em><sup id="fnref:4"><a class="footnote-ref" href="#fn:4">5</a></sup>.</p>
-<h2 id="origin">Origin<a class="headerlink" href="#origin" title="Permanent link">&para;</a></h2>
-<p>async-kernel started as a <a href="https://github.com/ipython/ipykernel/commit/8322a7684b004ee95f07b2f86f61e28146a5996d">fork</a>
-of <a href="https://github.com/ipython/ipykernel">IPyKernel</a>. Thank you to the original contributors of IPyKernel that made async-kernel possible.</p>
-<div class="footnote">
-<hr />
-<ol>
-<li id="fn:1">
-<p>A gui (<em>host</em>) enabled kernel interface starts a gui's mainloop (host) which starts
-the backend as a guest, then finally the Kernel is started.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-<li id="fn:2">
-<p>The asyncio implementation of <code>start_guest_run</code> was written by
-<a href="https://github.com/x42005e1f/aiologic">the author of aiologic</a> and provided as a
-<a href="https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779">gist</a>.&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
-</li>
-<li id="fn:3">
-<p>Irrespective of the configured backend, functions/coroutines can be executed using a specific backend
-with the method <a href="https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_using_backend"><code>call_using_backend</code></a>.&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
-</li>
-<li id="fn:5">
-<p>IPyKernel <em>solves</em> this issue specifically for widgets by using the concept of
-'widget coms over subshells'. Widget messages arrive in a different thread which on
-occasion can cause unexpected behaviour, especially when using asynchronous libraries.&#160;<a class="footnote-backref" href="#fnref:5" title="Jump back to footnote 4 in the text">&#8617;</a></p>
-</li>
-<li id="fn:4">
-<p><a href="https://py-free-threading.github.io/documentation-principles/#free-threading-terminology">free threading terminology</a>&#160;<a class="footnote-backref" href="#fnref:4" title="Jump back to footnote 5 in the text">&#8617;</a></p>
-</li>
-</ol>
-</div>
+<h2 id="async_kernelcommonfixed"><a class="autorefs autorefs-internal" title="            Fixed" href="../reference/common/#async_kernel.common.Fixed">async_kernel.common.Fixed</a><a class="headerlink" href="#async_kernelcommonfixed" title="Permanent link">&para;</a></h2>
+<h3 id="guarantees_2">Guarantees<a class="headerlink" href="#guarantees_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Internally synchronised</strong></li>
+</ul>
+<h3 id="other-classes">Other classes<a class="headerlink" href="#other-classes" title="Permanent link">&para;</a></h3>
+<p>TODO</p>
 
 
 
@@ -1736,7 +1614,7 @@ occasion can cause unexpected behaviour, especially when using asynchronous libr
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2025 03:03:23 UTC"><span class="timeago" datetime="2025-08-21T03:03:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2025 03:03:23 UTC">2025-08-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 27, 2026 22:34:55 UTC"><span class="timeago" datetime="2026-03-27T22:34:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 27, 2026 22:34:55 UTC">2026-03-27</span>
   </span>
 
     
@@ -1746,7 +1624,7 @@ occasion can cause unexpected behaviour, especially when using asynchronous libr
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2025 03:03:23 UTC"><span class="timeago" datetime="2025-08-21T03:03:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2025 03:03:23 UTC">2025-08-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 27, 2026 22:34:55 UTC"><span class="timeago" datetime="2026-03-27T22:34:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 27, 2026 22:34:55 UTC">2026-03-27</span>
   </span>
 
     
@@ -1780,15 +1658,31 @@ occasion can cause unexpected behaviour, especially when using asynchronous libr
       
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
+          
+          <a href="../reference/utils/" class="md-footer__link md-footer__link--prev" aria-label="Previous: utils">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                utils
+              </div>
+            </div>
+          </a>
+        
         
           
-          <a href="usage/" class="md-footer__link md-footer__link--next" aria-label="Next: Usage">
+          <a href="../about/" class="md-footer__link md-footer__link--next" aria-label="Next: About">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Usage
+                About
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1889,16 +1783,16 @@ occasion can cause unexpected behaviour, especially when using asynchronous libr
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="js/timeago.min.js"></script>
+        <script src="../js/timeago.min.js"></script>
       
-        <script src="js/timeago_mkdocs_material.js"></script>
+        <script src="../js/timeago_mkdocs_material.js"></script>
       
-        <script src="js/open_in_new_tab.js"></script>
+        <script src="../js/open_in_new_tab.js"></script>
       
     
   </body>

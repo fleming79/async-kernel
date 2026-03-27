@@ -327,6 +327,25 @@ viewing the latest version.
   
   
   
+    <li class="md-tabs__item">
+      <a href="../../thread_safety/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Thread safety
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       <li class="md-tabs__item">
@@ -1535,6 +1554,33 @@ viewing the latest version.
   
   
   
+    <li class="md-nav__item">
+      <a href="../../thread_safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Thread safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
       
@@ -1559,7 +1605,7 @@ viewing the latest version.
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -1581,14 +1627,14 @@ viewing the latest version.
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2274,7 +2320,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="#async_kernel.pending.Pending">Pending</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A thread-safe, cancellable, awaitable object representing a pending result.</p>
+            <p>Pending is an internally synchronised, cancellable, awaitable class influenced by <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future">asyncio.Future</a>.</p>
           </div>
         </li>
     </ul>
@@ -3017,6 +3063,29 @@ finally:
           
 
 
+  <div class="doc doc-backlinks">
+        <b class="doc doc-backlink-type">Referenced by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#">pending</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.pending.Pending"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Pending</a>
+  </span>
+
+      </li>
+  </ul>
+
+  </div>
+
+
+
 
 
 
@@ -3465,6 +3534,8 @@ finally:
       <span>Reference</span>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
       <a href="../caller/#">caller</a>
   </span>
@@ -3472,6 +3543,19 @@ finally:
             <span class="doc doc-backlink-crumb last">
       <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="#">pending</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.pending.Pending"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Pending</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
   </ul>
@@ -3524,7 +3608,7 @@ finally:
             <b><code><a class="autorefs autorefs-internal" title="            cancel (async_kernel.pending.PendingGroup.cancel)" href="#async_kernel.pending.PendingGroup.cancel">cancel</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Cancel the pending group (thread-safe).</p>
+              <p>Cancel the pending group (internally synchronised).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -3814,7 +3898,7 @@ finally:
 
     <span class="nd">@enable_signal_safety</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="s2">&quot;Cancel the pending group (thread-safe).&quot;</span>
+        <span class="s2">&quot;Cancel the pending group (internally synchronised).&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">msg</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancel_scope</span><span class="o">.</span><span class="n">cancel_called</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancel_scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
@@ -3999,7 +4083,7 @@ finally:
 
     <div class="doc doc-contents ">
 
-        <p>Cancel the pending group (thread-safe).</p>
+        <p>Cancel the pending group (internally synchronised).</p>
 
           
 
@@ -4015,7 +4099,7 @@ finally:
 <span class="normal">304</span>
 <span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@enable_signal_safety</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="s2">&quot;Cancel the pending group (thread-safe).&quot;</span>
+    <span class="s2">&quot;Cancel the pending group (internally synchronised).&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">msg</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancel_scope</span><span class="o">.</span><span class="n">cancel_called</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancel_scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
@@ -4083,9 +4167,12 @@ finally:
 
 
 
-        <p>A thread-safe, cancellable, awaitable object representing a pending result.</p>
-<p>The <code>Pending</code> class provides a mechanism for waiting on a result or exception to be set,
-either asynchronously or synchronously. It supports cancellation, metadata storage.</p>
+        <p>Pending is an internally synchronised, cancellable, awaitable class influenced by <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future">asyncio.Future</a>.</p>
+<ul>
+<li>It can be wait/awaited and cancelled from any thread (not considering deadlocks)</li>
+<li>Provides metadata storage</li>
+<li>Has built in support for tracking pending created in a specific context (see: <a class="autorefs autorefs-internal" title="            PendingManager" href="#async_kernel.pending.PendingManager">PendingManager</a> and <a class="autorefs autorefs-internal" title="            PendingGroup" href="#async_kernel.pending.PendingGroup">PendingGroup</a>).</li>
+</ul>
 <p><strong>Properties</strong></p>
 <ul>
 <li><a class="autorefs autorefs-internal" title="            metadata
@@ -4149,12 +4236,6 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
   </span>
 
             <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
-      </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="../caller/#async_kernel.caller.PendingGroup"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingGroup</a>
@@ -4370,28 +4451,28 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
    (async_kernel.pending.Pending.wait)" href="#async_kernel.pending.Pending.wait">wait</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Wait for a result or exception to be set (thread-safe) returning the pending if specified.</p>
+              <p>Wait for a result or exception to be set (internally synchronised) returning the pending if specified.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            wait_sync (async_kernel.pending.Pending.wait_sync)" href="#async_kernel.pending.Pending.wait_sync">wait_sync</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</p>
+              <p>Wait synchronously for the a result or exception to be set (internally synchronised) blocking the current thread.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            set_result (async_kernel.pending.Pending.set_result)" href="#async_kernel.pending.Pending.set_result">set_result</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Set the result (low-level-thread-safe).</p>
+              <p>Set the result (low-level internally synchronised).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            set_exception (async_kernel.pending.Pending.set_exception)" href="#async_kernel.pending.Pending.set_exception">set_exception</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Set the exception (low-level-thread-safe).</p>
+              <p>Set the exception (low-level internally synchronised).</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -4426,7 +4507,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
             <b><code><a class="autorefs autorefs-internal" title="            add_done_callback (async_kernel.pending.Pending.add_done_callback)" href="#async_kernel.pending.Pending.add_done_callback">add_done_callback</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Add a callback for when the pending is done (not thread-safe).</p>
+              <p>Add a callback for when the pending is done.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -4837,12 +4918,14 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">646</span>
 <span class="normal">647</span>
 <span class="normal">648</span>
-<span class="normal">649</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Pending</span><span class="p">(</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">649</span>
+<span class="normal">650</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Pending</span><span class="p">(</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A thread-safe, cancellable, awaitable object representing a pending result.</span>
+<span class="sd">    Pending is an internally synchronised, cancellable, awaitable class influenced by [asyncio.Future][].</span>
 
-<span class="sd">    The `Pending` class provides a mechanism for waiting on a result or exception to be set,</span>
-<span class="sd">    either asynchronously or synchronously. It supports cancellation, metadata storage.</span>
+<span class="sd">    - It can be wait/awaited and cancelled from any thread (not considering deadlocks)</span>
+<span class="sd">    - Provides metadata storage</span>
+<span class="sd">    - Has built in support for tracking pending created in a specific context (see: [PendingManager][] and [PendingGroup][]).</span>
 
 <span class="sd">    **Properties**</span>
 
@@ -4972,7 +5055,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Wait for a result or exception to be set (thread-safe) returning the pending if specified.</span>
+<span class="sd">        Wait for a result or exception to be set (internally synchronised) returning the pending if specified.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            timeout: Timeout in seconds.</span>
@@ -5015,7 +5098,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <span class="k">def</span><span class="w"> </span><span class="nf">wait_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</span>
+<span class="sd">        Wait synchronously for the a result or exception to be set (internally synchronised) blocking the current thread.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            timeout: Timeout in seconds.</span>
@@ -5055,7 +5138,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the result (low-level-thread-safe).</span>
+<span class="sd">        Set the result (low-level internally synchronised).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: The result to set.</span>
@@ -5064,7 +5147,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <span class="k">def</span><span class="w"> </span><span class="nf">set_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the exception (low-level-thread-safe).</span>
+<span class="sd">        Set the exception (low-level internally synchronised).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_done</span><span class="p">(</span><span class="s2">&quot;exception&quot;</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
 
@@ -5101,7 +5184,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="sd">        Args:</span>
 <span class="sd">            canceller: A callback that performs the cancellation of the pending.</span>
 <span class="sd">                - It must accept the cancellation message as the first argument.</span>
-<span class="sd">                - The cancellation call is not thread-safe.</span>
+<span class="sd">                - The canceller must be externally synchronised.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            - `set_result` must be called to mark the pending as completed.</span>
@@ -5129,7 +5212,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <span class="k">def</span><span class="w"> </span><span class="nf">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add a callback for when the pending is done (not thread-safe).</span>
+<span class="sd">        Add a callback for when the pending is done.</span>
 
 <span class="sd">        If the pending is already done it will called immediately.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -5378,8 +5461,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">371</span>
-<span class="normal">372</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">372</span>
 <span class="normal">373</span>
 <span class="normal">374</span>
 <span class="normal">375</span>
@@ -5415,7 +5497,8 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
-<span class="normal">408</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">408</span>
+<span class="normal">409</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">context</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">Context</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">trackers</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">PendingTracker</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">PendingTracker</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
@@ -5487,7 +5570,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <div class="doc doc-contents ">
 
-        <p>Wait for a result or exception to be set (thread-safe) returning the pending if specified.</p>
+        <p>Wait for a result or exception to be set (internally synchronised) returning the pending if specified.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5584,8 +5667,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">445</span>
-<span class="normal">446</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">446</span>
 <span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
@@ -5617,9 +5699,10 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">475</span>
 <span class="normal">476</span>
 <span class="normal">477</span>
-<span class="normal">478</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">478</span>
+<span class="normal">479</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wait for a result or exception to be set (thread-safe) returning the pending if specified.</span>
+<span class="sd">    Wait for a result or exception to be set (internally synchronised) returning the pending if specified.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        timeout: Timeout in seconds.</span>
@@ -5674,7 +5757,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <div class="doc doc-contents ">
 
-        <p>Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</p>
+        <p>Wait synchronously for the a result or exception to be set (internally synchronised) blocking the current thread.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5759,8 +5842,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">488</span>
-<span class="normal">489</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">489</span>
 <span class="normal">490</span>
 <span class="normal">491</span>
 <span class="normal">492</span>
@@ -5785,9 +5867,10 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
-<span class="normal">514</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">wait_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">514</span>
+<span class="normal">515</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">wait_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.</span>
+<span class="sd">    Wait synchronously for the a result or exception to be set (internally synchronised) blocking the current thread.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        timeout: Timeout in seconds.</span>
@@ -5831,7 +5914,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <div class="doc doc-contents ">
 
-        <p>Set the result (low-level-thread-safe).</p>
+        <p>Set the result (low-level internally synchronised).</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5877,16 +5960,16 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">528</span>
-<span class="normal">529</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">529</span>
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
 <span class="normal">533</span>
 <span class="normal">534</span>
-<span class="normal">535</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">535</span>
+<span class="normal">536</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Set the result (low-level-thread-safe).</span>
+<span class="sd">    Set the result (low-level internally synchronised).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        value: The result to set.</span>
@@ -5911,7 +5994,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <div class="doc doc-contents ">
 
-        <p>Set the exception (low-level-thread-safe).</p>
+        <p>Set the exception (low-level internally synchronised).</p>
 
           
 
@@ -5944,13 +6027,13 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">537</span>
-<span class="normal">538</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
-<span class="normal">541</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">541</span>
+<span class="normal">542</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Set the exception (low-level-thread-safe).</span>
+<span class="sd">    Set the exception (low-level internally synchronised).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_set_done</span><span class="p">(</span><span class="s2">&quot;exception&quot;</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -6025,8 +6108,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">543</span>
-<span class="normal">544</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">544</span>
 <span class="normal">545</span>
 <span class="normal">546</span>
 <span class="normal">547</span>
@@ -6045,7 +6127,8 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">560</span>
 <span class="normal">561</span>
 <span class="normal">562</span>
-<span class="normal">563</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@enable_signal_safety</span>
+<span class="normal">563</span>
+<span class="normal">564</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@enable_signal_safety</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Cancel the instance.</span>
@@ -6091,9 +6174,9 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancelled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the pending is cancelled.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
@@ -6127,7 +6210,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
           <div class="doc-md-description">
             <p>A callback that performs the cancellation of the pending.
 - It must accept the cancellation message as the first argument.
-- The cancellation call is not thread-safe.</p>
+- The canceller must be externally synchronised.</p>
           </div>
         </li>
     </ul>
@@ -6176,8 +6259,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
-<span class="normal">570</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">570</span>
 <span class="normal">571</span>
 <span class="normal">572</span>
 <span class="normal">573</span>
@@ -6201,14 +6283,15 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">591</span>
 <span class="normal">592</span>
 <span class="normal">593</span>
-<span class="normal">594</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_canceller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canceller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">594</span>
+<span class="normal">595</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_canceller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canceller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set a callback to handle cancellation (low-level).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        canceller: A callback that performs the cancellation of the pending.</span>
 <span class="sd">            - It must accept the cancellation message as the first argument.</span>
-<span class="sd">            - The cancellation call is not thread-safe.</span>
+<span class="sd">            - The canceller must be externally synchronised.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        - `set_result` must be called to mark the pending as completed.</span>
@@ -6252,11 +6335,11 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">596</span>
-<span class="normal">597</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">597</span>
 <span class="normal">598</span>
 <span class="normal">599</span>
-<span class="normal">600</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">600</span>
+<span class="normal">601</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns True if a result or exception has been set.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -6280,7 +6363,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
     <div class="doc doc-contents ">
 
-        <p>Add a callback for when the pending is done (not thread-safe).</p>
+        <p>Add a callback for when the pending is done.</p>
 <p>If the pending is already done it will called immediately.</p>
 
           
@@ -6303,6 +6386,20 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
   </span>
 
       </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../../thread_safety/#thread-safety-of-built-in-types">Thread Safety of Built-in Types</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../../thread_safety/#async_kernelpendingpending">async_kernel.pending.Pending</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../../thread_safety/#guarantees">Guarantees</a>
+  </span>
+
+      </li>
   </ul>
 
   </div>
@@ -6310,8 +6407,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">602</span>
-<span class="normal">603</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">603</span>
 <span class="normal">604</span>
 <span class="normal">605</span>
 <span class="normal">606</span>
@@ -6319,9 +6415,10 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">608</span>
 <span class="normal">609</span>
 <span class="normal">610</span>
-<span class="normal">611</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">611</span>
+<span class="normal">612</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Add a callback for when the pending is done (not thread-safe).</span>
+<span class="sd">    Add a callback for when the pending is done.</span>
 
 <span class="sd">    If the pending is already done it will called immediately.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -6378,8 +6475,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">613</span>
-<span class="normal">614</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">614</span>
 <span class="normal">615</span>
 <span class="normal">616</span>
 <span class="normal">617</span>
@@ -6388,7 +6484,8 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">620</span>
 <span class="normal">621</span>
 <span class="normal">622</span>
-<span class="normal">623</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="nb">object</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="normal">623</span>
+<span class="normal">624</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Self</span><span class="p">],</span> <span class="nb">object</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove all instances of a callback from the callbacks list.</span>
 
@@ -6458,20 +6555,9 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
       <a href="#async_kernel.pending.Pending"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Pending</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.pending.Pending.wait"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait</a>
   </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.pending.Pending.wait_sync"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait_sync</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -6481,8 +6567,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">625</span>
-<span class="normal">626</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">626</span>
 <span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
@@ -6494,7 +6579,8 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">635</span>
 <span class="normal">636</span>
 <span class="normal">637</span>
-<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="normal">638</span>
+<span class="normal">639</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the result.</span>
 
@@ -6568,8 +6654,7 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/pending.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">640</span>
-<span class="normal">641</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">641</span>
 <span class="normal">642</span>
 <span class="normal">643</span>
 <span class="normal">644</span>
@@ -6577,7 +6662,8 @@ either asynchronously or synchronously. It supports cancellation, metadata stora
 <span class="normal">646</span>
 <span class="normal">647</span>
 <span class="normal">648</span>
-<span class="normal">649</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exception</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">649</span>
+<span class="normal">650</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exception</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the exception.</span>
 

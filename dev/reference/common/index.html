@@ -327,6 +327,25 @@ viewing the latest version.
   
   
   
+    <li class="md-tabs__item">
+      <a href="../../thread_safety/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Thread safety
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       <li class="md-tabs__item">
@@ -850,6 +869,23 @@ viewing the latest version.
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" Fixed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.common.Fixed.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1137,6 +1173,33 @@ viewing the latest version.
   
   
   
+    <li class="md-nav__item">
+      <a href="../../thread_safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Thread safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
       
@@ -1161,7 +1224,7 @@ viewing the latest version.
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -1183,14 +1246,14 @@ viewing the latest version.
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1337,6 +1400,23 @@ viewing the latest version.
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" Fixed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.common.Fixed.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1443,7 +1523,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="#async_kernel.common.Fixed">Fixed</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A thread-safe descriptor factory for creating and caching an object.</p>
+            <p>A property-like descriptor factory that stores the value.</p>
           </div>
         </li>
     </ul>
@@ -1493,28 +1573,9 @@ viewing the latest version.
 
 
 
-        <p>A thread-safe descriptor factory for creating and caching an object.</p>
-<p>The <code>Fixed</code> descriptor provisions for each instance of the owner class
-to dynamically load or import the managed class.  The managed instance
-is created on first access and then cached for subsequent access.</p>
+        <p>A property-like descriptor factory that stores the value.</p>
+<p>The value is loaded/created on first access and cached for subsequent access.</p>
 
-
-<details class="type-hints" open>
-  <summary>Type Hints</summary>
-  <ul>
-<li><code>S</code>: Type of the owner class.</li>
-<li><code>T</code>: Type of the managed class.</li>
-</ul>
-</details>
-
-<details class="example" open>
-  <summary>Example</summary>
-  <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="n">b</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">id</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
-    <span class="n">c</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]))</span>
-</code></pre></div>
-</details>
           
 
 
@@ -1902,6 +1963,18 @@ is created on first access and then cached for subsequent access.</p>
 
 
 
+<p><span class="doc-section-title">Methods:</span></p>
+    <ul>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            __init__ (async_kernel.common.Fixed.__init__)" href="#async_kernel.common.Fixed.__init__">__init__</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Args:</p>
+            </div>
+          </li>
+    </ul>
+
+
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/common.py</code></summary>
@@ -1977,25 +2050,21 @@ is created on first access and then cached for subsequent access.</p>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
 <span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A thread-safe descriptor factory for creating and caching an object.</span>
+<span class="sd">    A property-like descriptor factory that stores the value.</span>
 
-<span class="sd">    The ``Fixed`` descriptor provisions for each instance of the owner class</span>
-<span class="sd">    to dynamically load or import the managed class.  The managed instance</span>
-<span class="sd">    is created on first access and then cached for subsequent access.</span>
-
-<span class="sd">    Type Hints:</span>
-<span class="sd">        - ``S``: Type of the owner class.</span>
-<span class="sd">        - ``T``: Type of the managed class.</span>
-
-<span class="sd">    Example:</span>
-<span class="sd">        ```python</span>
-<span class="sd">        class MyClass:</span>
-<span class="sd">            a: Fixed[Self, dict] = Fixed(dict)</span>
-<span class="sd">            b: Fixed[Self, int] = Fixed(lambda c: id(c[&quot;owner&quot;].a))</span>
-<span class="sd">            c: Fixed[Any, list[str]] = Fixed(list, created=lambda c: c[&quot;obj&quot;].append(c[&quot;name&quot;]))</span>
-<span class="sd">        ```</span>
+<span class="sd">    The value is loaded/created on first access and cached for subsequent access.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;create&quot;</span><span class="p">,</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">,</span> <span class="s2">&quot;lock&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">]</span>
@@ -2007,6 +2076,30 @@ is created on first access and then cached for subsequent access.</p>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">created</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FixedCreated</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            obj: A class, callable or dotted path.</span>
+<span class="sd">                - class: A class that is called with no arguments.</span>
+<span class="sd">                - string: A dotted path to a class to import and call with no arguments.</span>
+<span class="sd">                - callable: A callable that accepts [FixedCreate][] as the first argument.</span>
+<span class="sd">                    It should return the object to be cached.</span>
+<span class="sd">            created: An optional callback that is called with [FixedCreated][] whenever the</span>
+<span class="sd">                value is _created_.</span>
+
+<span class="sd">        Type Hints:</span>
+<span class="sd">            - ``S``: Type of the owner class.</span>
+<span class="sd">            - ``T``: Type of the managed class.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            class MyClass:</span>
+<span class="sd">                a: Fixed[Self, dict] = Fixed(dict)</span>
+<span class="sd">                b: Fixed[Self, dict] = Fixed(lambda c: id(c[&quot;owner&quot;].a))</span>
+<span class="sd">                c: Fixed[Self, list[str]] = Fixed(</span>
+<span class="sd">                    list, created=lambda c: c[&quot;obj&quot;].append(c[&quot;name&quot;])</span>
+<span class="sd">                )</span>
+<span class="sd">            ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">import_item</span><span class="p">(</span><span class="n">obj</span><span class="p">)()</span>
         <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -2065,6 +2158,146 @@ is created on first access and then cached for subsequent access.</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="async_kernel.common.Fixed.__init__" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+<a href="#async_kernel.common.Fixed.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span>
+    <span class="n"><span title="async_kernel.common.Fixed.__init__(obj)">obj</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            FixedCreate (async_kernel.typing.FixedCreate)" href="../typing/#async_kernel.typing.FixedCreate">FixedCreate</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.S">S</span></span><span class="p">]],</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.common.Fixed.__init__(created)">created</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            FixedCreated (async_kernel.typing.FixedCreated)" href="../typing/#async_kernel.typing.FixedCreated">FixedCreated</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.S">S</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <pre><code>    - class: A class that is called with no arguments.
+    - string: A dotted path to a class to import and call with no arguments.
+    - callable: A callable that accepts [FixedCreate][] as the first argument.
+        It should return the object to be cached.
+created: An optional callback that is called with [FixedCreated][] whenever the
+    value is _created_.
+</code></pre>
+
+
+<details class="type-hints" open>
+  <summary>Type Hints</summary>
+  <ul>
+<li><code>S</code>: Type of the owner class.</li>
+<li><code>T</code>: Type of the managed class.</li>
+</ul>
+</details>
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
+    <span class="n">a</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">id</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
+    <span class="n">c</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
+        <span class="nb">list</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+    <span class="p">)</span>
+</code></pre></div>
+</details>
+          
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/common.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FixedCreate</span><span class="p">[</span><span class="n">S</span><span class="p">]],</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">created</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FixedCreated</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        obj: A class, callable or dotted path.</span>
+<span class="sd">            - class: A class that is called with no arguments.</span>
+<span class="sd">            - string: A dotted path to a class to import and call with no arguments.</span>
+<span class="sd">            - callable: A callable that accepts [FixedCreate][] as the first argument.</span>
+<span class="sd">                It should return the object to be cached.</span>
+<span class="sd">        created: An optional callback that is called with [FixedCreated][] whenever the</span>
+<span class="sd">            value is _created_.</span>
+
+<span class="sd">    Type Hints:</span>
+<span class="sd">        - ``S``: Type of the owner class.</span>
+<span class="sd">        - ``T``: Type of the managed class.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        class MyClass:</span>
+<span class="sd">            a: Fixed[Self, dict] = Fixed(dict)</span>
+<span class="sd">            b: Fixed[Self, dict] = Fixed(lambda c: id(c[&quot;owner&quot;].a))</span>
+<span class="sd">            c: Fixed[Self, list[str]] = Fixed(</span>
+<span class="sd">                list, created=lambda c: c[&quot;obj&quot;].append(c[&quot;name&quot;])</span>
+<span class="sd">            )</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">import_item</span><span class="p">(</span><span class="n">obj</span><span class="p">)()</span>
+    <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">obj</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="n">obj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj</span><span class="si">=}</span><span class="s2"> is invalid! Use a lambda instead eg: lambda _: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">created</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
