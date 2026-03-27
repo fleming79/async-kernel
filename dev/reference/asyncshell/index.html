@@ -4042,12 +4042,8 @@ protected subshell when it is no longer required.</p>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
@@ -5523,7 +5519,7 @@ protected subshell when it is no longer required.</p>
             <span class="n">connection_file</span> <span class="o">=</span> <span class="n">connection_file</span><span class="o">.</span><span class="n">name</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get_connection_info</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="n">orjson</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="n">orjson</span><span class="o">.</span><span class="n">OPT_INDENT_2</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
             <span class="s2">&quot;Paste the above JSON into a file, and connect with:</span><span class="se">\n</span><span class="s2">&quot;</span>
             <span class="o">+</span> <span class="s2">&quot;    $&gt; jupyter &lt;app&gt; --existing &lt;file&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
             <span class="o">+</span> <span class="s2">&quot;or, if you are local, you can connect with just:</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -5626,7 +5622,7 @@ protected subshell when it is no longer required.</p>
         <span class="n">connection_file</span> <span class="o">=</span> <span class="n">connection_file</span><span class="o">.</span><span class="n">name</span>
     <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get_connection_info</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span>
-        <span class="n">orjson</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="n">orjson</span><span class="o">.</span><span class="n">OPT_INDENT_2</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
         <span class="s2">&quot;Paste the above JSON into a file, and connect with:</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="o">+</span> <span class="s2">&quot;    $&gt; jupyter &lt;app&gt; --existing &lt;file&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="o">+</span> <span class="s2">&quot;or, if you are local, you can connect with just:</span><span class="se">\n</span><span class="s2">&quot;</span>
