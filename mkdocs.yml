@@ -184,7 +184,7 @@ nav:
       - "event_loop": reference/event_loop.md
       - "typing": reference/typing.md
       - "utils": reference/utils.md
-
+  - Thread safety: thread_safety.md
   - About:
       - about/index.md
 

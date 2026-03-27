@@ -29,23 +29,9 @@ def import_item(dottedname: str) -> Any:
 
 class Fixed(Generic[S, T]):
     """
-    A thread-safe descriptor factory for creating and caching an object.
+    A property-like descriptor factory that stores the value.
 
-    The ``Fixed`` descriptor provisions for each instance of the owner class
-    to dynamically load or import the managed class.  The managed instance
-    is created on first access and then cached for subsequent access.
-
-    Type Hints:
-        - ``S``: Type of the owner class.
-        - ``T``: Type of the managed class.
-
-    Example:
-        ```python
-        class MyClass:
-            a: Fixed[Self, dict] = Fixed(dict)
-            b: Fixed[Self, int] = Fixed(lambda c: id(c["owner"].a))
-            c: Fixed[Any, list[str]] = Fixed(list, created=lambda c: c["obj"].append(c["name"]))
-        ```
+    The value is loaded/created on first access and cached for subsequent access.
     """
 
     __slots__ = ["create", "created", "instances", "lock", "name"]
@@ -57,6 +43,30 @@ class Fixed(Generic[S, T]):
         *,
         created: Callable[[FixedCreated[S, T]]] | None = None,
     ) -> None:
+        """
+        Args:
+            obj: A class, callable or dotted path.
+                - class: A class that is called with no arguments.
+                - string: A dotted path to a class to import and call with no arguments.
+                - callable: A callable that accepts [FixedCreate][] as the first argument.
+                    It should return the object to be cached.
+            created: An optional callback that is called with [FixedCreated][] whenever the
+                value is _created_.
+
+        Type Hints:
+            - ``S``: Type of the owner class.
+            - ``T``: Type of the managed class.
+
+        Example:
+            ```python
+            class MyClass:
+                a: Fixed[Self, dict] = Fixed(dict)
+                b: Fixed[Self, dict] = Fixed(lambda c: id(c["owner"].a))
+                c: Fixed[Self, list[str]] = Fixed(
+                    list, created=lambda c: c["obj"].append(c["name"])
+                )
+            ```
+        """
         if isinstance(obj, str):
             self.create = lambda _: import_item(obj)()
         elif inspect.isclass(obj):

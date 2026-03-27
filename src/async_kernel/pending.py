@@ -296,7 +296,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
     @enable_signal_safety
     def cancel(self, msg: str | None = None) -> bool:
-        "Cancel the pending group (thread-safe)."
+        "Cancel the pending group (internally synchronised)."
         self._cancelled = "\n".join(((self._cancelled or ""), msg or ""))
         if not self._cancel_scope.cancel_called:
             self.caller.call_direct(self._cancel_scope.cancel, msg)
@@ -311,10 +311,11 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
 class Pending(Awaitable[T]):
     """
-    A thread-safe, cancellable, awaitable object representing a pending result.
+    Pending is an internally synchronised, cancellable, awaitable class influenced by [asyncio.Future][].
 
-    The `Pending` class provides a mechanism for waiting on a result or exception to be set,
-    either asynchronously or synchronously. It supports cancellation, metadata storage.
+    - It can be wait/awaited and cancelled from any thread (not considering deadlocks)
+    - Provides metadata storage
+    - Has built in support for tracking pending created in a specific context (see: [PendingManager][] and [PendingGroup][]).
 
     **Properties**
 
@@ -444,7 +445,7 @@ class Pending(Awaitable[T]):
 
     async def wait(self, *, timeout: float | None = None, protect: bool = False, result: bool = True) -> T | None:
         """
-        Wait for a result or exception to be set (thread-safe) returning the pending if specified.
+        Wait for a result or exception to be set (internally synchronised) returning the pending if specified.
 
         Args:
             timeout: Timeout in seconds.
@@ -487,7 +488,7 @@ class Pending(Awaitable[T]):
 
     def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
         """
-        Wait synchronously for the a result or exception to be set (thread-safe) blocking the current thread.
+        Wait synchronously for the a result or exception to be set (internally synchronised) blocking the current thread.
 
         Args:
             timeout: Timeout in seconds.
@@ -527,7 +528,7 @@ class Pending(Awaitable[T]):
 
     def set_result(self, value: T) -> None:
         """
-        Set the result (low-level-thread-safe).
+        Set the result (low-level internally synchronised).
 
         Args:
             value: The result to set.
@@ -536,7 +537,7 @@ class Pending(Awaitable[T]):
 
     def set_exception(self, exception: BaseException) -> None:
         """
-        Set the exception (low-level-thread-safe).
+        Set the exception (low-level internally synchronised).
         """
         self._set_done("exception", exception)
 
@@ -573,7 +574,7 @@ class Pending(Awaitable[T]):
         Args:
             canceller: A callback that performs the cancellation of the pending.
                 - It must accept the cancellation message as the first argument.
-                - The cancellation call is not thread-safe.
+                - The canceller must be externally synchronised.
 
         Notes:
             - `set_result` must be called to mark the pending as completed.
@@ -601,7 +602,7 @@ class Pending(Awaitable[T]):
 
     def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
         """
-        Add a callback for when the pending is done (not thread-safe).
+        Add a callback for when the pending is done.
 
         If the pending is already done it will called immediately.
         """
