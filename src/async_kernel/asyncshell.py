@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import builtins
 import contextlib
+import json
 import os
 import pathlib
 import sys
@@ -11,7 +12,6 @@ from typing import TYPE_CHECKING, Any, Literal, Self, overload
 
 import anyio
 import IPython.core.release
-import orjson
 from aiologic.lowlevel import async_checkpoint
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
@@ -726,7 +726,7 @@ class KernelMagics(Magics):
             connection_file = connection_file.name
         info = self.shell.kernel.get_connection_info()
         print(
-            orjson.dumps(info, option=orjson.OPT_INDENT_2).decode(),
+            json.dumps(info, indent=2),
             "Paste the above JSON into a file, and connect with:\n"
             + "    $> jupyter <app> --existing <file>\n"
             + "or, if you are local, you can connect with just:\n"

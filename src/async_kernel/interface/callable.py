@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import time
 from typing import TYPE_CHECKING, Any, TypedDict
 
-import orjson
 from IPython.core.error import StdinNotImplementedError
 from typing_extensions import override
 
 import async_kernel
+from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
 
@@ -62,23 +61,7 @@ class CallableKernelInterface(BaseKernelInterface):
         - [async_kernel.typing.CallableKernelInterfaceReturnArgs]
     """
 
-    ORJSON_OPTION = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NAIVE_UTC | orjson.OPT_UTC_Z
     _send: Callable[[str, list | None, bool], None | str]
-
-    def pack(self, msg: Message, /) -> str:
-        """
-        Pack a message to a string.
-        """
-        return orjson.dumps(msg, default=repr, option=self.ORJSON_OPTION).decode()
-
-    def unpack(self, msg_string, /) -> Message[dict[str, Any]]:
-        """
-        Unpack a message from a json string.
-        """
-        try:
-            return orjson.loads(msg_string)
-        except Exception:
-            return json.loads(msg_string)
 
     async def start(
         self,
@@ -114,10 +97,10 @@ class CallableKernelInterface(BaseKernelInterface):
         requires_reply=False,
     ) -> Message | None:
         msg["channel"] = channel
-        reply = self._send(self.pack(msg), buffers, requires_reply)
+        reply = self._send(pack_json_str(msg), buffers, requires_reply)
         if requires_reply:
             assert reply
-            return self.unpack(reply)
+            return unpack_json(reply)
         return None
 
     async def _send_reply(self, job: Job, content: dict, /) -> None:
@@ -129,7 +112,7 @@ class CallableKernelInterface(BaseKernelInterface):
 
     def _handle_msg(self, msg_json: str, buffers: list[bytearray] | list[bytes] | None = None, /):
         "The main message handler that gets returned by the `start` method."
-        msg: Message[dict[str, Any]] = self.unpack(msg_json)
+        msg: Message[dict[str, Any]] = unpack_json(msg_json)
         # Copy the buffer
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
         msg["channel"] = Channel(msg["channel"])
