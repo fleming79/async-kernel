@@ -27,7 +27,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, LastUpdatedDict
+from async_kernel.common import Fixed
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
@@ -171,7 +171,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
-        - `user_ns` and `user_global_ns` are same dictionary which is a fixed [async_kernel.common.LastUpdatedDict][].
+        - `user_ns` and `user_global_ns` are same dictionary which is a fixed [dict][].
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
@@ -194,7 +194,7 @@ class AsyncInteractiveShell(InteractiveShell):
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
 
-    _user_ns: Fixed[Self, LastUpdatedDict] = Fixed(LastUpdatedDict)  # pyright: ignore[reportIncompatibleVariableOverride]
+    _user_ns: Fixed[Self, dict] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
     _main_mod_cache = Fixed(dict)
     _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
