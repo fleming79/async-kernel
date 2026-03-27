@@ -148,10 +148,7 @@ class SingleConsumerAsyncQueue(Generic[T]):
 @final
 class Caller(anyio.AsyncContextManagerMixin):
     """
-    Caller is a class that facilitates thread-safe function calls and coroutine execution using an asynchronous backend (asyncio or trio).
-
-    Caller uses [async_kernel.pending.Pending][] objects to support cancellation and access to results/exceptions.
-    Pending uses thread-safe synchronous and asynchronous primitives meaning results can be awaited in most places.
+    Caller is a class that facilitates inter-thread function calls and coroutine execution using an asynchronous backend (asyncio or trio).
 
     In CPython, there is only one caller instance per thread. In Pyodide (where threading does not exist), multiple
     caller instances can exist in the same thread, but is limited to one instance per context.
@@ -238,7 +235,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     )
 
     stopped = Fixed(Event)
-    "A thread-safe Event that is set when the caller has stopped."
+    "An event that is set when the caller has stopped."
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
@@ -739,7 +736,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **metadata: Any,
     ) -> Pending[T]:
         """
-        Schedule `func` to be called inside a task running in the caller's thread (thread-safe).
+        Schedule `func` to be called inside a task running in the caller's thread.
 
         The methods [call_soon][Caller.call_soon] and [call_later][Caller.call_later]
         use this method in the background,  they should be used in preference to this method since they provide type hinting for the arguments.
@@ -935,7 +932,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> None:
         """
-        A low level function to queue the execution of `func` in a queue unique to it and the caller instance (thread-safe).
+        A low level function to queue the execution of `func` in a queue unique to it and the caller instance.
 
         Args:
             func: The function.
@@ -981,7 +978,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def queue_close(self, func: Callable | int) -> None:
         """
-        Close the execution queue associated with `func` (thread-safe).
+        Close the execution queue associated with `func`.
 
         Args:
             func: The queue of the function to close.
