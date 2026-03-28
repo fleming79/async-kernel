@@ -148,16 +148,17 @@ class SingleConsumerAsyncQueue(Generic[T]):
 @final
 class Caller(anyio.AsyncContextManagerMixin):
     """
-    Caller is a class that facilitates inter-thread function calls and coroutine execution using an asynchronous backend (asyncio or trio).
+    A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).
 
-    In CPython, there is only one caller instance per thread. In Pyodide (where threading does not exist), multiple
-    caller instances can exist in the same thread, but is limited to one instance per context.
+    - CPython: there is only one caller instance per thread.
+    - Pyodide: Multiple caller instances can exist in the same thread, but is limited to one instance per context.
 
     Multi-eventloop management is supported including:
+
     - zero or one host gui event loop.
     - one or two backends.
 
-    Code execution is always performed using an asynchronous backend.
+    Code execution is always done within the context of an asynchronous backend.
 
     **High level methods**
 
@@ -268,7 +269,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @property
     def host(self) -> Hosts | None:
-        "The gui event loop if there is one."
+        "The [name][async_kernel.typing.Hosts] of the gui event loop if there is one."
         return self._host
 
     @property
@@ -1153,7 +1154,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             ```python
             async with Caller().create_pending_group() as pg:
                 pg.caller.to_thread(my_func)
-                ...
             ```
         """
         return PendingGroup(shield=shield, mode=mode)
