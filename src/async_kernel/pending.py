@@ -5,7 +5,6 @@ import contextvars
 import reprlib
 import uuid
 import weakref
-from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
@@ -388,7 +387,7 @@ class Pending(Awaitable[T]):
             - Initializes internal state for tracking completion and cancellation.
             - Stores provided metadata in a class-level mapping.
         """
-        self._done_callbacks: deque[Callable[[Self], Any]] = deque()
+        self._done_callbacks: list[Callable[[Self], Any]] = []
         self._metadata_mappings[id(self)] = metadata
         self._done = False
         self._cancelled = None
@@ -463,7 +462,7 @@ class Pending(Awaitable[T]):
         try:
             if not self._done or self._done_callbacks:
                 event = create_async_event()
-                self._done_callbacks.appendleft(lambda _: event.set())
+                self._done_callbacks.insert(0, lambda _: event.set())
                 if not self._done or self._done_callbacks:
                     if timeout is None:
                         await event
@@ -504,7 +503,7 @@ class Pending(Awaitable[T]):
         """
         if not self._done:
             done = Event()
-            self._done_callbacks.appendleft(lambda _: done.set())
+            self._done_callbacks.insert(0, lambda _: done.set())
             if not self._done:
                 done.wait(timeout)
             if not self._done:
