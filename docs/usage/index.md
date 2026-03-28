@@ -5,9 +5,19 @@ icon: material/note-text
 # subtitle: A sub title
 ---
 
-# Usage
+async-kernel feels like a standard kernel that offers advanced features that improved user experience.
 
-- [Command line](../usage/commands.md): Detail about command line usage including:
+## Features
+
+- Separate handlers for msg_type and channel allow messages to be processed concurrently.
+- Code execution is top-level awaitable.
+- Choice of async backend (asyncio or trio).
+- Choice of asyncio event loop when started by anyio (not as a guest).
+- Optional gui host event loop.
+- Using [Caller.call_using_backend][async_kernel.caller.Caller.call_using_backend], code from any backend can be called in any thread.
+
+## [Command line](../usage/commands.md): Detail about command line usage including:
+
     - Adding a kernel spec
     - Deleting a kernel spec
     - Starting a kernel
