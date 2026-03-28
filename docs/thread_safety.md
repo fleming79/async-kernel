@@ -14,8 +14,8 @@ _aync-kernel_ utilises [aiologic](https://aiologic.readthedocs.io/latest/index.h
 
 - **Limitations**
 
-    [async_kernel.pending.Pending.add_done_callback][]: The callback is called from the thread in which it is set
-    so must handle its own synchronisation.
+    [add_done_callback][async_kernel.pending.Pending.add_done_callback]: The callback is called from the thread in which it is set
+    so should provide it's own synchronisation as needed.
 
 ## [async_kernel.caller.Caller][]
 
