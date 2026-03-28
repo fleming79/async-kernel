@@ -347,11 +347,11 @@ class Pending(Awaitable[T]):
         "context",
     ]
 
-    REPR_OMIT: ClassVar[set[str]] = {"func", "args", "kwargs"}
-    "Keys of metadata to omit when creating a repr of the instance."
+    REPR_OMIT: ClassVar[list[str]] = ["func", "args", "kwargs", "caller"]
+    "Keys of metadata to omit when creating a repr of the pending."
 
     _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
-    "A mapping of instance's id its metadata."
+    "A mapping of pending ids to metadata."
 
     _cancelled: str | None
     _canceller: Callable[[str | None], Any]
@@ -364,7 +364,7 @@ class Pending(Awaitable[T]):
     @property
     def metadata(self) -> dict[str, Any]:
         """
-        The metadata passed as keyword arguments to the instance during creation.
+        The metadata associated with the pending.
         """
         return self._metadata_mappings[id(self)]
 
@@ -376,7 +376,7 @@ class Pending(Awaitable[T]):
         **metadata: Any,
     ) -> None:
         """
-        Initializes a new Pending object with optional creation options and metadata.
+        Initializes a new pending object with optional creation options and metadata.
 
         Args:
             context: A context to associate with the pending, if provided it is copied.
@@ -444,12 +444,12 @@ class Pending(Awaitable[T]):
 
     async def wait(self, *, timeout: float | None = None, protect: bool = False, result: bool = True) -> T | None:
         """
-        Wait for a result or exception to be set (internally synchronised) returning the pending if specified.
+        Wait for `result` or `exception` to be set (internally synchronised) returning the result if specified.
 
         Args:
             timeout: Timeout in seconds.
-            protect: Protect the instance from external cancellation.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Pending.result][]).
+            protect: Protect the pending from external cancellation.
+            result: If `result` should be returned.
 
         Raises:
             TimeoutError: When the timeout expires and a result or exception has not been set.
@@ -457,7 +457,7 @@ class Pending(Awaitable[T]):
             Exception: If `result=True` and an exception was set on the pending.
 
         Tip:
-            - To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
+            To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
         try:
             if not self._done or self._done_callbacks:
@@ -487,11 +487,11 @@ class Pending(Awaitable[T]):
 
     def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
         """
-        Wait synchronously for the a result or exception to be set (internally synchronised) blocking the current thread.
+        Wait synchronously for `result` or `exception` (internally synchronised) returning the result if specified.
 
         Args:
             timeout: Timeout in seconds.
-            result: Whether the result should be returned (use `result=False` to avoid exceptions raised by [Pending.result][]).
+            result: When `True` the result is returned using `result`.
 
         Raises:
             TimeoutError: When the timeout expires and a result or exception has not been set.
@@ -499,7 +499,8 @@ class Pending(Awaitable[T]):
             Exception: If `result=True` and an exception was set on the pending.
 
         Warning:
-            **Blocking the thread in which the result or exception is set will cause in deadlock (unless a greenlet based event library is in use).**
+            **Calling this method in the same thread where the result or exception is set
+            will result in deadlock unless a greenlet based event library is in use.**
         """
         if not self._done:
             done = Event()
@@ -531,28 +532,39 @@ class Pending(Awaitable[T]):
 
         Args:
             value: The result to set.
+
+        Raises:
+            InvalidStateError: If the pending is already done.
         """
         self._set_done("result", value)
 
     def set_exception(self, exception: BaseException) -> None:
         """
         Set the exception (low-level internally synchronised).
+
+        Args:
+            exception: The value to set as the exception.
+
+        Raises:
+            InvalidStateError: If the pending is already done.
         """
         self._set_done("exception", exception)
 
     @enable_signal_safety
     def cancel(self, msg: str | None = None) -> bool:
         """
-        Cancel the instance.
+        Cancel the pending if the it is not already `done`.
 
         Args:
-            msg: The message to use when cancelling.
+            msg: The message to use when a [PendingCancelled][] when accessing `result` or `exception`.
+                The msg of for multiple cancellation calls are concatenated.
 
         Notes:
             - Cancellation cannot be undone.
-            - The result will not be *done* until either [Pending.set_result][] or [Pending.set_exception][] is called.
+            - If a canceller has already been set using [set_canceller][] it will be called.
+            - The result will not be *done* until either [set_result][] or [set_exception][] is called.
 
-        Returns: If it has been cancelled.
+        Returns: If the pending was cancelled.
         """
         if not self._done:
             if (cancelled := self._cancelled or "") and msg:
@@ -563,13 +575,21 @@ class Pending(Awaitable[T]):
         return self.cancelled()
 
     async def cancel_wait_done(self, msg: str | None, *, timeout: float | None = None) -> None:
-        "Cancel the pending and wait for it to be [done][]."
+        "Cancel the pending and wait for it to be `done`."
         if not self._done:
             self.cancel(msg)
             await self.wait(result=False, timeout=timeout)
 
     def cancelled(self) -> bool:
-        """Return True if the pending is cancelled."""
+        """
+        Returns `True` if the pending is cancelled.
+
+        Notes:
+
+            - This can return `True` before a pending is `done`.
+            - To wait for a pending to complete (assuming a canceller is or will be set); use
+                `await pen.wait(result=False)` or `pen.wait_sync(result=False)`
+        """
         return self._cancelled is not None
 
     def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
@@ -578,11 +598,15 @@ class Pending(Awaitable[T]):
 
         Args:
             canceller: A callback that performs the cancellation of the pending.
+
                 - It must accept the cancellation message as the first argument.
                 - The canceller must be externally synchronised.
 
         Notes:
-            - `set_result` must be called to mark the pending as completed.
+            - [set_result][] or [set_exception][] must be called by the `canceller` to mark the pending as completed.
+
+        Raises:
+            InvalidStateError: If already `done` or the canceller is already set.
 
         Example:
             ```python
@@ -609,7 +633,9 @@ class Pending(Awaitable[T]):
         """
         Add a callback for when the pending is done.
 
-        If the pending is already done it will called immediately.
+        The callback should be internally synchronised. Callbacks are called last-in-first-out.
+
+        If the pending is already done, `fn` is called immediately.
         """
         if not self._done:
             self._done_callbacks.append(fn)
@@ -618,9 +644,9 @@ class Pending(Awaitable[T]):
 
     def remove_done_callback(self, fn: Callable[[Self], object], /) -> int:
         """
-        Remove all instances of a callback from the callbacks list.
+        Remove `fn` from the done callback list.
 
-        Returns the number of callbacks removed.
+        Returns the number of items removed.
         """
         n = 0
         while fn in self._done_callbacks:
@@ -648,7 +674,7 @@ class Pending(Awaitable[T]):
         Return the exception.
 
         Raises:
-            PendingCancelled: If the instance has been cancelled.
+            PendingCancelled: If the pending has been cancelled.
         """
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
