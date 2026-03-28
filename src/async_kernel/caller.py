@@ -926,13 +926,16 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def queue_call(
         self,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        func: Callable[P, Any | Awaitable[Any]],
         /,
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
         """
-        A low level function to queue the execution of `func` in a queue unique to it and the caller instance.
+        A low-level function to queue the execution of `func` in a queue unique to it and the caller instance.
+
+        This sets up a long-lived task to provide a fast pathway for repetitive calls to a function
+        where call order is also respected.
 
         Args:
             func: The function.
@@ -946,10 +949,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                 3. `func` is deleted (utilising [weakref.finalize][]).
             - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.
             - Exceptions are logged to caller.log but not propagated.
-            - The pending created on the first call will only registered with PendingManager subclassed trackers and **not** PendingGroup.
+            - The pending created on the first call will only registered with PendingManager subclassed
+                trackers and **not** PendingGroup.
         """
-        key = hash(func)
-        if not (pen_ := self._queue_map.get(key)):
+        if not (pen_ := self._queue_map.get(key := hash(func))):
             queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
             with contextlib.suppress(TypeError):
                 weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
@@ -957,18 +960,18 @@ class Caller(anyio.AsyncContextManagerMixin):
             async def queue_loop() -> None:
                 pen = self.current_pending()
                 assert pen
-                result = None
                 try:
                     async for item in queue:
                         try:
-                            result = item[0](*item[1], **item[2])
-                            if inspect.iscoroutine(object=result):
-                                result = await result
+                            await item[0](*item[1], **item[2])
+                        except TypeError:
+                            continue
                         except (anyio.get_cancelled_exc_class(), Exception) as e:
                             if pen.cancelled():
                                 raise
-                            self.log.exception("Execution %s failed", item, exc_info=e)
-                        item = result = None  # noqa: PLW2901
+                            self.log.exception("Execution of %s failed! args:%s kwargs:%s", *item, exc_info=e)
+                        finally:
+                            del item
                 finally:
                     self._queue_map.pop(key)
 
