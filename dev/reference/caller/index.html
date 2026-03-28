@@ -2553,12 +2553,8 @@ viewing the latest version.
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -3275,12 +3271,8 @@ caller instances can exist in the same thread, but is limited to one instance pe
       <a href="../asyncshell/#">asyncshell</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;callers</a>
+      <a href="../asyncshell/#async_kernel.asyncshell.KernelMagics"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelMagics</a>
   </span>
 
       </li>
@@ -3637,7 +3629,7 @@ caller instances can exist in the same thread, but is limited to one instance pe
             <b><code><a class="autorefs autorefs-internal" title="            queue_call (async_kernel.caller.Caller.queue_call)" href="#async_kernel.caller.Caller.queue_call">queue_call</a></code></b>
             –
             <div class="doc-md-description">
-              <p>A low level function to queue the execution of <code>func</code> in a queue unique to it and the caller instance.</p>
+              <p>A low-level function to queue the execution of <code>func</code> in a queue unique to it and the caller instance.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -4932,7 +4924,10 @@ caller instances can exist in the same thread, but is limited to one instance pe
 <span class="normal">1153</span>
 <span class="normal">1154</span>
 <span class="normal">1155</span>
-<span class="normal">1156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
+<span class="normal">1156</span>
+<span class="normal">1157</span>
+<span class="normal">1158</span>
+<span class="normal">1159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Caller</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Caller is a class that facilitates inter-thread function calls and coroutine execution using an asynchronous backend (asyncio or trio).</span>
@@ -5713,13 +5708,16 @@ caller instances can exist in the same thread, but is limited to one instance pe
 
     <span class="k">def</span><span class="w"> </span><span class="nf">queue_call</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
         <span class="o">/</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A low level function to queue the execution of `func` in a queue unique to it and the caller instance.</span>
+<span class="sd">        A low-level function to queue the execution of `func` in a queue unique to it and the caller instance.</span>
+
+<span class="sd">        This sets up a long-lived task to provide a fast pathway for repetitive calls to a function</span>
+<span class="sd">        where call order is also respected.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: The function.</span>
@@ -5733,10 +5731,10 @@ caller instances can exist in the same thread, but is limited to one instance pe
 <span class="sd">                3. `func` is deleted (utilising [weakref.finalize][]).</span>
 <span class="sd">            - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.</span>
 <span class="sd">            - Exceptions are logged to caller.log but not propagated.</span>
-<span class="sd">            - The pending created on the first call will only registered with PendingManager subclassed trackers and **not** PendingGroup.</span>
+<span class="sd">            - The pending created on the first call will only registered with PendingManager subclassed</span>
+<span class="sd">                trackers and **not** PendingGroup.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen_</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen_</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span> <span class="o">:=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">func</span><span class="p">))):</span>
             <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleConsumerAsyncQueue</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]](</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
             <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
                 <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__self__</span> <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="k">else</span> <span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_close</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
@@ -5744,18 +5742,18 @@ caller instances can exist in the same thread, but is limited to one instance pe
             <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">queue_loop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_pending</span><span class="p">()</span>
                 <span class="k">assert</span> <span class="n">pen</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">queue</span><span class="p">:</span>
                         <span class="k">try</span><span class="p">:</span>
-                            <span class="n">result</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">*</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">item</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-                            <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">iscoroutine</span><span class="p">(</span><span class="nb">object</span><span class="o">=</span><span class="n">result</span><span class="p">):</span>
-                                <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">result</span>
+                            <span class="k">await</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">*</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">item</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                            <span class="k">continue</span>
                         <span class="k">except</span> <span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">(),</span> <span class="ne">Exception</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">pen</span><span class="o">.</span><span class="n">cancelled</span><span class="p">():</span>
                                 <span class="k">raise</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Execution </span><span class="si">%s</span><span class="s2"> failed&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
-                        <span class="n">item</span> <span class="o">=</span> <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># noqa: PLW2901</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Execution of </span><span class="si">%s</span><span class="s2"> failed! args:</span><span class="si">%s</span><span class="s2"> kwargs:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">item</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                        <span class="k">finally</span><span class="p">:</span>
+                            <span class="k">del</span> <span class="n">item</span>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
@@ -7749,8 +7747,12 @@ use this method in the background,  they should be used in preference to this me
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
   </span>
 
       </li>
@@ -7879,9 +7881,20 @@ use this method in the background,  they should be used in preference to this me
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
   </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7889,12 +7902,8 @@ use this method in the background,  they should be used in preference to this me
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -8312,9 +8321,24 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.as_completed"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_completed</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -8495,20 +8519,22 @@ of the callers backend.</p>
 
 <a href="#async_kernel.caller.Caller.queue_call" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">queue_call</span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.queue_call(func))" href="#async_kernel.caller.Caller.queue_call(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.queue_call(*args))" href="#async_kernel.caller.Caller.queue_call(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.queue_call(**kwargs))" href="#async_kernel.caller.Caller.queue_call(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
+    <span class="n"><a class="autorefs autorefs-internal" title="func (async_kernel.caller.Caller.queue_call(func))" href="#async_kernel.caller.Caller.queue_call(func)">func</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n"><a class="autorefs autorefs-internal" title="*args (async_kernel.caller.Caller.queue_call(*args))" href="#async_kernel.caller.Caller.queue_call(*args)">args</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.args">args</span></span><span class="p">,</span> <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.caller.Caller.queue_call(**kwargs))" href="#async_kernel.caller.Caller.queue_call(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.P.kwargs">kwargs</span></span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>A low level function to queue the execution of <code>func</code> in a queue unique to it and the caller instance.</p>
+        <p>A low-level function to queue the execution of <code>func</code> in a queue unique to it and the caller instance.</p>
+<p>This sets up a long-lived task to provide a fast pathway for repetitive calls to a function
+where call order is also respected.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.queue_call(func)" class="doc doc-heading doc-heading-parameter">              <b><code>func</code></b>
-<a href="#async_kernel.caller.Caller.queue_call(func)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[<span title="async_kernel.typing.P">P</span>, <span title="async_kernel.typing.T">T</span> | <a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <span title="async_kernel.typing.T">T</span>]]</code>)
+<a href="#async_kernel.caller.Caller.queue_call(func)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[<span title="async_kernel.typing.P">P</span>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a> | <a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</code>)
           –
           <div class="doc-md-description">
             <p>The function.</p>
@@ -8548,7 +8574,8 @@ of the callers backend.</p>
 </li>
 <li>The <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">context</a> of the initial call is used for subsequent queue calls.</li>
 <li>Exceptions are logged to caller.log but not propagated.</li>
-<li>The pending created on the first call will only registered with PendingManager subclassed trackers and <strong>not</strong> PendingGroup.</li>
+<li>The pending created on the first call will only registered with PendingManager subclassed
+    trackers and <strong>not</strong> PendingGroup.</li>
 </ul>
 </details>
           
@@ -8578,8 +8605,12 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
   </span>
 
       </li>
@@ -8657,15 +8688,21 @@ of the callers backend.</p>
 <span class="normal">974</span>
 <span class="normal">975</span>
 <span class="normal">976</span>
-<span class="normal">977</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_call</span><span class="p">(</span>
+<span class="normal">977</span>
+<span class="normal">978</span>
+<span class="normal">979</span>
+<span class="normal">980</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_call</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A low level function to queue the execution of `func` in a queue unique to it and the caller instance.</span>
+<span class="sd">    A low-level function to queue the execution of `func` in a queue unique to it and the caller instance.</span>
+
+<span class="sd">    This sets up a long-lived task to provide a fast pathway for repetitive calls to a function</span>
+<span class="sd">    where call order is also respected.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        func: The function.</span>
@@ -8679,10 +8716,10 @@ of the callers backend.</p>
 <span class="sd">            3. `func` is deleted (utilising [weakref.finalize][]).</span>
 <span class="sd">        - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.</span>
 <span class="sd">        - Exceptions are logged to caller.log but not propagated.</span>
-<span class="sd">        - The pending created on the first call will only registered with PendingManager subclassed trackers and **not** PendingGroup.</span>
+<span class="sd">        - The pending created on the first call will only registered with PendingManager subclassed</span>
+<span class="sd">            trackers and **not** PendingGroup.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen_</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen_</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span> <span class="o">:=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">func</span><span class="p">))):</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleConsumerAsyncQueue</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]](</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
             <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__self__</span> <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="k">else</span> <span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_close</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
@@ -8690,18 +8727,18 @@ of the callers backend.</p>
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">queue_loop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_pending</span><span class="p">()</span>
             <span class="k">assert</span> <span class="n">pen</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">queue</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="n">result</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">*</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">item</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-                        <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">iscoroutine</span><span class="p">(</span><span class="nb">object</span><span class="o">=</span><span class="n">result</span><span class="p">):</span>
-                            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">result</span>
+                        <span class="k">await</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">*</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">item</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="k">continue</span>
                     <span class="k">except</span> <span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">get_cancelled_exc_class</span><span class="p">(),</span> <span class="ne">Exception</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">pen</span><span class="o">.</span><span class="n">cancelled</span><span class="p">():</span>
                             <span class="k">raise</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Execution </span><span class="si">%s</span><span class="s2"> failed&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
-                    <span class="n">item</span> <span class="o">=</span> <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># noqa: PLW2901</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Execution of </span><span class="si">%s</span><span class="s2"> failed! args:</span><span class="si">%s</span><span class="s2"> kwargs:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">item</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                    <span class="k">finally</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">item</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_queue_map</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
@@ -8757,8 +8794,12 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_call</a>
   </span>
 
       </li>
@@ -8769,17 +8810,17 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">979</span>
-<span class="normal">980</span>
-<span class="normal">981</span>
-<span class="normal">982</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">982</span>
 <span class="normal">983</span>
 <span class="normal">984</span>
 <span class="normal">985</span>
 <span class="normal">986</span>
 <span class="normal">987</span>
 <span class="normal">988</span>
-<span class="normal">989</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">989</span>
+<span class="normal">990</span>
+<span class="normal">991</span>
+<span class="normal">992</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Close the execution queue associated with `func`.</span>
 
@@ -8910,10 +8951,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1005</span>
-<span class="normal">1006</span>
-<span class="normal">1007</span>
-<span class="normal">1008</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1008</span>
 <span class="normal">1009</span>
 <span class="normal">1010</span>
 <span class="normal">1011</span>
@@ -8982,7 +9020,10 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="normal">1074</span>
 <span class="normal">1075</span>
 <span class="normal">1076</span>
-<span class="normal">1077</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
+<span class="normal">1077</span>
+<span class="normal">1078</span>
+<span class="normal">1079</span>
+<span class="normal">1080</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -9157,10 +9198,7 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1079</span>
-<span class="normal">1080</span>
-<span class="normal">1081</span>
-<span class="normal">1082</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1082</span>
 <span class="normal">1083</span>
 <span class="normal">1084</span>
 <span class="normal">1085</span>
@@ -9205,7 +9243,10 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 <span class="normal">1124</span>
 <span class="normal">1125</span>
 <span class="normal">1126</span>
-<span class="normal">1127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
+<span class="normal">1127</span>
+<span class="normal">1128</span>
+<span class="normal">1129</span>
+<span class="normal">1130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -9343,10 +9384,7 @@ async with Caller().create_pending_group() as pg:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1129</span>
-<span class="normal">1130</span>
-<span class="normal">1131</span>
-<span class="normal">1132</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1132</span>
 <span class="normal">1133</span>
 <span class="normal">1134</span>
 <span class="normal">1135</span>
@@ -9370,7 +9408,10 @@ async with Caller().create_pending_group() as pg:
 <span class="normal">1153</span>
 <span class="normal">1154</span>
 <span class="normal">1155</span>
-<span class="normal">1156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
+<span class="normal">1156</span>
+<span class="normal">1157</span>
+<span class="normal">1158</span>
+<span class="normal">1159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new [PendingGroup][async_kernel.pending.PendingGroup] instance.</span>
 
