@@ -182,7 +182,7 @@ class PendingManager(PendingTracker):
 @final
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
-    An asynchronous context manager for tracking [async_kernel.pending.Pending][] created in the context.
+    An asynchronous context manager for tracking [Pending][async_kernel.pending.Pending] created in a context.
 
     Usage:
         Enter the async context and create new pending.
