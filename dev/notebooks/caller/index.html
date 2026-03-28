@@ -2407,7 +2407,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="caller-a-backend-agnostic-executor-notebook">Caller: A backend agnostic executor (notebook)<a class="anchor-link" href="#caller-a-backend-agnostic-executor-notebook">¶</a></h1><p><em>This notebook has the Python dependencies: <code>trio</code>, <code>matplotlib</code></em></p>
-<p><code>Caller</code> is a class that enables standard functions and coroutines to be called in the event loop of a <code>asyncio</code> or <code>trio</code> backend. Scheduling is thread-safe, methods that return <code>Pending</code> are thread-safe cancellable and awaitable.</p>
+<p><code>Caller</code> is a thread-local class that coordinates the execution of functions and coroutines in the event loop of a <code>asyncio</code> or <code>trio</code> backend.</p>
 </div>
 </div>
 </div>
@@ -2433,8 +2433,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>A <code>Caller</code> instance can be started with one gui as a host to one backend started as a guest.
-A second backend can also be started in the same thread with or without a host gui event loop.
+<p>A <code>Caller</code> instance can be started with one gui as a host to one backend started as a guest.</p>
+<p>A second backend can also be started in the same thread with or without a host gui event loop.
 Potentially the same thread could have up to:</p>
 <ul>
 <li>One host gui event loop (<code>tk</code>, <code>qt</code>, <code>...</code>)</li>
@@ -2522,7 +2522,7 @@ assert async_kernel.utils.get_kernel() is get_ipython().kernel  # pyright: ignor
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell           ✓       🔐       MainThread   140166175051408 ← current</pre>
+<pre>Shell           ✓       🔐       MainThread   140087066676880 ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2535,7 +2535,7 @@ assert async_kernel.utils.get_kernel() is get_ipython().kernel  # pyright: ignor
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control         ✓       🔐        Control     140166128810560</pre>
+<pre>Control         ✓       🔐        Control     140087023024224</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2555,11 +2555,10 @@ assert async_kernel.utils.get_kernel() is get_ipython().kernel  # pyright: ignor
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>There are three caller instances associated with the Kernel:</p>
+<p>There are two caller instances associated with the Kernel:</p>
 <ul>
 <li>Shell: The caller for the shell channel (normally the MainThread).</li>
 <li>Control: The caller for the control channel (a child of the shell).</li>
-<li>Shell thread_queue: A separate thread to handle shell messages in a separate thread (queued by message type and subshell_id).</li>
 </ul>
 </div>
 </div>
@@ -2571,7 +2570,8 @@ assert async_kernel.utils.get_kernel() is get_ipython().kernel  # pyright: ignor
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Calling <code>Caller()</code> with no arguments will return the caller for the current thread (context in Pyodide). A runtime error will occur if when there is no backend running in the current thread (in Pyodide the main caller is always available).</p>
+<p>Calling <code>Caller()</code> with no arguments will return the caller for the current thread (or context in Pyodide).</p>
+<p>A runtime error will occur if there is no event loop (backend) running in the current thread (unlikely in Pyodide which provides a running event loop).</p>
 </div>
 </div>
 </div>
@@ -2613,7 +2613,7 @@ caller = Caller()</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="modifiers">Modifiers<a class="anchor-link" href="#modifiers">¶</a></h2><p>There are four modifiers that determine the instance returned when calling <code>Caller</code>.</p>
+<h2 id="modifiers">Modifiers<a class="anchor-link" href="#modifiers">¶</a></h2><p>There are four modifiers that determine which instance is returned when calling <code>Caller</code>.</p>
 <ul>
 <li><code>CurrentThread</code> (default): Access the caller that belongs to the current thread (or context with Pyodide).</li>
 <li><code>MainThread</code>: Access main thread for the Caller.</li>
@@ -2658,8 +2658,8 @@ assert caller is Caller("MainThread")</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=10">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=10">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2698,18 +2698,6 @@ await caller1.call_soon(display, "hello world!", caller1)
 # We should stop the caller when we don't need it.
 caller1.stop()
 del caller1</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>'hello world!'</pre>
 </div>
 </div>
 </div>
@@ -2976,7 +2964,8 @@ assert await caller.call_soon(lambda: add(1, 1)) == 2</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="callercall_using_backend">Caller.call_using_backend<a class="anchor-link" href="#callercall_using_backend">¶</a></h3><p>This method calls functions and coroutines using a specific asynchronous backend in the same thread. When the backend does not match the callers backend, it is run with the backend running as a guest.</p>
+<h3 id="callercall_using_backend">Caller.call_using_backend<a class="anchor-link" href="#callercall_using_backend">¶</a></h3><p>This method calls functions and coroutines using a specific asynchronous backend in the same thread.</p>
+<p>When the backend does not match the callers backend, it is run with the backend running as a guest.</p>
 </div>
 </div>
 </div>
@@ -3074,7 +3063,7 @@ for backend in ["asyncio", "trio"]:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;_MainThread(MainThread, started 140166182711424)&gt;</pre>
+<pre>&lt;_MainThread(MainThread, started 140087074619520)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3162,7 +3151,7 @@ for backend in ["asyncio", "trio"]:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;_MainThread(MainThread, started 140166182711424)&gt;</pre>
+<pre>&lt;_MainThread(MainThread, started 140087074619520)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3295,7 +3284,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=9, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=9, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3308,7 +3297,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=8, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=8, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3321,7 +3310,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=7, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=7, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3334,7 +3323,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=6, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=6, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3347,7 +3336,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=5, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=5, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3360,7 +3349,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=4, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=4, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3373,7 +3362,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=3, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=3, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3386,7 +3375,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=2, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=2, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3399,7 +3388,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=1, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=1, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3412,7 +3401,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f7ae454fed0 [value=0]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7f6884333ed0 [value=0]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3599,6 +3588,18 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>VBox(children=(RadioButtons(options=('Stop',), value=None),))</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 2</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre></pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3804,7 +3805,7 @@ print("Out of context pending=", len(pg.pending))</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 25, 2026 03:04:14 UTC"><span class="timeago" datetime="2026-03-25T03:04:14+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 25, 2026 03:04:14 UTC">2026-03-25</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 28, 2026 20:06:15 UTC"><span class="timeago" datetime="2026-03-28T20:06:15+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 28, 2026 20:06:15 UTC">2026-03-28</span>
   </span>
 
     
