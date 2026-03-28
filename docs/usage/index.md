@@ -17,6 +17,7 @@ async-kernel feels like a standard kernel that offers advanced features that imp
 - Using [Caller.call_using_backend][async_kernel.caller.Caller.call_using_backend], code from any backend can be called in any thread.
 
 ## [Command line](../usage/commands.md): Detail about command line usage including:
+
     - Adding a kernel spec
     - Deleting a kernel spec
     - Starting a kernel
