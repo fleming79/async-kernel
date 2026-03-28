@@ -562,6 +562,12 @@ class Pending(Awaitable[T]):
                 canceller(msg)
         return self.cancelled()
 
+    async def cancel_wait_done(self, msg: str | None, *, timeout: float | None = None) -> None:
+        "Cancel the pending and wait for it to be [done][]."
+        if not self._done:
+            self.cancel(msg)
+            await self.wait(result=False, timeout=timeout)
+
     def cancelled(self) -> bool:
         """Return True if the pending is cancelled."""
         return self._cancelled is not None

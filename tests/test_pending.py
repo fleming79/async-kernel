@@ -175,6 +175,12 @@ class TestPending:
             await pen.wait(timeout=0.001)
         assert pen.cancelled()
 
+    async def test_cancel_wait_done(self, caller: Caller, anyio_backend: Backend):
+        pen = caller.call_soon(anyio.sleep_forever)
+        await pen.cancel_wait_done("test cancel")
+        with pytest.raises(PendingCancelled, match="test cancel"):
+            pen.result()
+
     def test_repr(self):
         a = "long string" * 100
         b = {f"name {i}": "long_string" * 100 for i in range(100)}
