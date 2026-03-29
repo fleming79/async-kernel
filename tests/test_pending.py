@@ -126,15 +126,16 @@ class TestPending:
         pen = Pending()
         with anyio.CancelScope() as cancel_scope:
             pen.set_canceller(cancel_scope.cancel)
-            with pytest.raises(InvalidStateError):
-                pen.set_canceller(cancel_scope.cancel)
+            pen.set_canceller(cancel_scope.cancel)
+            pen.set_result(None)
+        with pytest.raises(InvalidStateError):
+            pen.set_canceller(cancel_scope.cancel)
 
     async def test_set_canceller_after_cancelled(self, anyio_backend: Backend):
         pen = Pending()
         pen.cancel()
-        with anyio.CancelScope() as cancel_scope:
-            pen.set_canceller(cancel_scope.cancel)
-            assert cancel_scope.cancel_called
+        with pytest.raises(PendingCancelled):
+            pen.set_canceller(lambda _: None)
 
     async def test_set_exception_twice_raises(self, anyio_backend: Backend):
         pen = Pending()
@@ -189,6 +190,7 @@ class TestPending:
 
     async def test_cancel(self, anyio_backend: Backend):
         pen = Pending()
+        pen.set_canceller(lambda _: None)
         assert pen.cancel("message 1")
         assert pen.cancel("message 2")
         with pytest.raises(PendingCancelled, match="message 1\nmessage 2"):
@@ -210,7 +212,8 @@ class TestPending:
 
     async def test_cancel_wait_done(self, caller: Caller, anyio_backend: Backend):
         pen = caller.call_soon(anyio.sleep_forever)
-        await pen.cancel_wait_done("test cancel")
+        await anyio.sleep(0)
+        await pen.cancel_wait("test cancel")
         with pytest.raises(PendingCancelled, match="test cancel"):
             pen.result()
 
@@ -218,6 +221,7 @@ class TestPending:
         a = "long string" * 100
         b = {f"name {i}": "long_string" * 100 for i in range(100)}
         pen = Pending()
+        pen.set_canceller(lambda _: None)
         pen.metadata.update(a=a, b=b)
         matches = [
             f"<Pending {indicator} at {id(pen)} metadata:{{'a': 'long stringl…nglong string', 'b': {{…}}}} >"

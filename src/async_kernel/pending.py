@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
 from aiologic import Event
-from aiologic.lowlevel import create_async_event, enable_signal_safety
+from aiologic.lowlevel import create_async_event
 from typing_extensions import override
 
 import async_kernel
@@ -102,8 +102,7 @@ class PendingTracker:
 
 class PendingManager(PendingTracker):
     """
-    PendingManager is a `PendingTracker` subclass for tracking the creation of [async_kernel.pending.Pending][]
-    in multiple contexts.
+    Tracks the creation of `Pending` in multiple contexts.
 
     This class must be subclassed to be useful.
 
@@ -112,11 +111,11 @@ class PendingManager(PendingTracker):
 
     Notes:
 
-        - A subclass of [PendingManager][] is required to use its functionality.
-        - Each subclass is assigned it's own context variable.
-            - This means that only one instance is ever active in a specific context at any time.
-        - It is proportionally expensive to subclass PendingManager so it's usage should
-            be limited to cases where it is necessary to start and stop tracking from specific contexts.
+        - It must be subclassed.
+        - Each subclass is assigned one context variable.
+            - This means that only one instance of the subclass can be active in a specific context at any time.
+        - It is linearly proportionally expensive to subclass PendingManager so it's usage should
+            be limited to cases where it is necessary where the exact functionality is required.
 
     Usage:
 
@@ -156,7 +155,7 @@ class PendingManager(PendingTracker):
 
     def deactivate(self, token: contextvars.Token[str | None]) -> None:
         """
-        Stop tracking using the token.
+        Stop tracking.
 
         Args:
             token: The token returned from [activate][].
@@ -182,7 +181,7 @@ class PendingManager(PendingTracker):
 @final
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
-    An asynchronous context manager for tracking [Pending][async_kernel.pending.Pending] created in a context.
+    An asynchronous context manager for tracking `Pending` that are created in it's context.
 
     Usage:
         Enter the async context and create new pending.
@@ -208,7 +207,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         """
         An async context to capture all pending (that opt in) created in the context.
 
-        The pending group will only exit once all pending in the group are done.
+        The pending group will only exit once all pending in the group are `done`.
 
         Pending can be added to and removed from the group manually.
 
@@ -293,7 +292,6 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         if self._leaving_context and not self._pending:
             self._all_done.set()
 
-    @enable_signal_safety
     def cancel(self, msg: str | None = None) -> bool:
         "Cancel the pending group (internally synchronised)."
         self._cancelled = "\n".join(((self._cancelled or ""), msg or ""))
@@ -304,8 +302,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         return self.cancelled()
 
     def cancelled(self) -> bool:
-        """Return True if the pending group is cancelled."""
-        return bool(self._cancelled)
+        """Returns: If the pending group is marked as cancelled."""
+        return self._cancelled is not None
 
 
 class Pending(Awaitable[T]):
@@ -355,7 +353,7 @@ class Pending(Awaitable[T]):
     "A mapping of pending ids to metadata."
 
     _cancelled: str | None
-    _canceller: Callable[[str | None], Any]
+    _canceller: Callable[[str | None], Any] | None
     _exception: Exception
     _done: bool
     _waiting: bool
@@ -395,6 +393,7 @@ class Pending(Awaitable[T]):
         self._done = False
         self._waiting = False
         self._cancelled = None
+        self._canceller = None
 
         if trackers or context:
             # A copy the context is required to avoid `PendingTracker.id` leakage.
@@ -491,7 +490,7 @@ class Pending(Awaitable[T]):
 
         Args:
             timeout: Timeout in seconds.
-            result: When `True` the result is returned using `result`.
+            result: When `True` the result is returned.
 
         Raises:
             TimeoutError: When the timeout expires and a result or exception has not been set.
@@ -510,15 +509,18 @@ class Pending(Awaitable[T]):
                 raise TimeoutError(msg)
         return self.result() if result else None
 
-    def _set_done(self, mode: Literal["result", "exception"], value) -> None:
+    def _set_done(self, mode: Literal["result", "exception"], value: T | BaseException | None) -> None:
         if self._done:
             raise InvalidStateError
         self._done = True
-        callbacks = self._done_callbacks
-        callbacks.reverse()
-        setattr(self, "_" + mode, None if self._cancelled else value)
         e = None
+        self._canceller = None
+        # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
         try:
+            callbacks = self._done_callbacks
+            callbacks.reverse()
+            if not self._cancelled:
+                setattr(self, "_" + mode, value)
             while callbacks:
                 try:
                     callbacks.pop()(self)
@@ -556,39 +558,46 @@ class Pending(Awaitable[T]):
         """
         self._set_done("exception", exception)
 
-    @enable_signal_safety
     def cancel(self, msg: str | None = None) -> bool:
         """
-        Cancel the pending if the it is not already `done`.
+        Cancel the pending if it is not already `done`.
 
         Args:
-            msg: The message to use when a [PendingCancelled][] when accessing `result` or `exception`.
-                The msg of for multiple cancellation calls are concatenated.
+            msg: The cancellation message.
+
+        Returns:
+            If the pending is marked as cancelled.
 
         Notes:
             - Cancellation cannot be undone.
-            - If a canceller has already been set using [set_canceller][] it will be called.
-            - The result will not be *done* until either [set_result][] or [set_exception][] is called.
-
-        Returns: If the pending was cancelled.
+            - Multiple calls append `msg` to the cancellation message with no other effect.
+            - The `done` state is a function of the canceller, if no canceller is set, `done`
+                will be set immediately.
         """
         if not self._done:
             if (cancelled := self._cancelled or "") and msg:
                 msg = f"{cancelled}\n{msg}"
             self._cancelled = msg or cancelled
-            if canceller := getattr(self, "_canceller", None):
+            if not (canceller := self._canceller):
+                try:
+                    self._set_done("result", None)
+                except InvalidStateError:
+                    pass
+            else:
                 canceller(msg)
-        return self.cancelled()
+        return self._cancelled is not None
 
-    async def cancel_wait_done(self, msg: str | None, *, timeout: float | None = None) -> None:
+    async def cancel_wait(self, msg: str | None, *, timeout: float | None = None) -> None:
         "Cancel the pending and wait for it to be `done`."
         if not self._done:
             self.cancel(msg)
-            await self.wait(result=False, timeout=timeout)
+            if not self._done:
+                await self.wait(result=False, timeout=timeout)
 
     def cancelled(self) -> bool:
         """
-        Returns `True` if the pending is cancelled.
+        Returns:
+            If the pending is marked as cancelled.
 
         Notes:
 
@@ -598,7 +607,7 @@ class Pending(Awaitable[T]):
         """
         return self._cancelled is not None
 
-    def set_canceller(self, canceller: Callable[[str | None], Any]) -> None:
+    def set_canceller(self, canceller: Callable[[str | None], Any], /) -> None:
         """
         Set a callback to handle cancellation (low-level).
 
@@ -606,13 +615,15 @@ class Pending(Awaitable[T]):
             canceller: A callback that performs the cancellation of the pending.
 
                 - It must accept the cancellation message as the first argument.
-                - The canceller must be externally synchronised.
+                - `canceller` must be externally synchronised.
 
-        Notes:
-            - [set_result][] or [set_exception][] must be called by the `canceller` to mark the pending as completed.
+        Warning:
+            - [set_result][] or [set_exception][] *MUST* be called by the `canceller`, or as a result of the call to `canceller`
+                to mark the pending as `done`.
 
         Raises:
-            InvalidStateError: If already `done` or the canceller is already set.
+            InvalidStateError: If already `done`.
+            PendingCancelled: If already `cancelled`.
 
         Example:
             ```python
@@ -623,11 +634,11 @@ class Pending(Awaitable[T]):
             assert pen.done()
             ```
         """
-        if self._done or hasattr(self, "_canceller"):
+        if self._done:
+            if self._cancelled is not None:
+                raise PendingCancelled(self._cancelled)
             raise InvalidStateError
         self._canceller = canceller
-        if self.cancelled():
-            self.cancel()
 
     def done(self) -> bool:
         """
@@ -635,11 +646,11 @@ class Pending(Awaitable[T]):
         """
         return self._done
 
-    def add_done_callback(self, fn: Callable[[Self], Any]) -> None:
+    def add_done_callback(self, fn: Callable[[Self], Any], /) -> None:
         """
         Add a callback for when the pending is done.
 
-        The callback should be internally synchronised.
+        The callback should be light weight and provide its own thread safety.
 
         Callbacks added prior to the pending being done are handled FIFO
         otherwise `fn` is called immediately.

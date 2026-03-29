@@ -29,7 +29,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.event_loop.run import Host, get_start_guest_run
-from async_kernel.pending import Pending, PendingCancelled, PendingGroup, PendingManager, PendingTracker
+from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, RunSettings, T
 
 with contextlib.suppress(ImportError):
@@ -588,14 +588,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             pen: The [async_kernel.Pending][] object containing metadata about the function to execute, its arguments, and execution state.
         """
-        md = pen.metadata
-        token_pending = self._pending_var.set(pen)
-        token_ident = self._caller_token.set(self._caller_id)
-        try:
-            if pen.cancelled():
-                if not pen.done():
-                    pen.set_exception(PendingCancelled("Cancelled before started."))
-            else:
+        if not pen.done():
+            md = pen.metadata
+            token_pending = self._pending_var.set(pen)
+            token_ident = self._caller_token.set(self._caller_id)
+            try:
                 with anyio.CancelScope() as scope:
                     pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
                     # Call later.
@@ -608,24 +605,24 @@ class Caller(anyio.AsyncContextManagerMixin):
                             result = await result
                         pen.set_result(result)
                     # Cancelled.
-                    except anyio.get_cancelled_exc_class() as e:
+                    except anyio.get_cancelled_exc_class():
                         if not pen.cancelled():
                             pen.cancel()
-                        pen.set_exception(e)
+                        pen.set_result(None)
                     # Catch exceptions.
                     except Exception as e:
                         pen.set_exception(e)
-        except Exception as e:
-            pen.set_exception(e)
-        finally:
-            self._pending_var.reset(token_pending)
-            self._caller_token.reset(token_ident)
+            except Exception as e:
+                if not pen.done():
+                    pen.set_exception(e)
+            finally:
+                self._pending_var.reset(token_pending)
+                self._caller_token.reset(token_ident)
 
     @staticmethod
     def _reject(item: tuple | Pending) -> None:
         if isinstance(item, Pending):
             item.cancel("The caller has been closed")
-            item.set_result(None)
 
     @classmethod
     def _start_idle_worker_cleanup_thead(cls) -> None:
