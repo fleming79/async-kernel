@@ -2553,8 +2553,12 @@ viewing the latest version.
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
   </span>
 
       </li>
@@ -5837,10 +5841,10 @@ viewing the latest version.
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">pen</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
                     <span class="n">unfinished</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">max_concurrent_</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_concurrent_</span><span class="p">:</span>
-                        <span class="n">waiter</span> <span class="o">=</span> <span class="n">create_async_waiter</span><span class="p">()</span>
-                        <span class="n">resume</span> <span class="o">=</span> <span class="n">waiter</span><span class="o">.</span><span class="n">wake</span>
+                        <span class="n">event</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">()</span>
+                        <span class="n">resume</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_concurrent_</span><span class="p">:</span>
-                            <span class="k">await</span> <span class="n">waiter</span>
+                            <span class="k">await</span> <span class="n">event</span>
                         <span class="n">resume</span> <span class="o">=</span> <span class="n">noop</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">queue</span><span class="o">.</span><span class="n">queue</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">unfinished</span><span class="p">:</span>
                 <span class="n">queue</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
@@ -7881,24 +7885,9 @@ use this method in the background,  they should be used in preference to this me
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7906,12 +7895,8 @@ use this method in the background,  they should be used in preference to this me
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -8347,20 +8332,9 @@ of the callers backend.</p>
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.as_completed"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_completed</a>
   </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -8368,12 +8342,8 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -9086,10 +9056,10 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">pen</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
                 <span class="n">unfinished</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">max_concurrent_</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_concurrent_</span><span class="p">:</span>
-                    <span class="n">waiter</span> <span class="o">=</span> <span class="n">create_async_waiter</span><span class="p">()</span>
-                    <span class="n">resume</span> <span class="o">=</span> <span class="n">waiter</span><span class="o">.</span><span class="n">wake</span>
+                    <span class="n">event</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">()</span>
+                    <span class="n">resume</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_concurrent_</span><span class="p">:</span>
-                        <span class="k">await</span> <span class="n">waiter</span>
+                        <span class="k">await</span> <span class="n">event</span>
                     <span class="n">resume</span> <span class="o">=</span> <span class="n">noop</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">queue</span><span class="o">.</span><span class="n">queue</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">unfinished</span><span class="p">:</span>
             <span class="n">queue</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
