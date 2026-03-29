@@ -1,11 +1,13 @@
 import gc
 import inspect
+import random
 import re
+import time
 import weakref
 
 import anyio
 import pytest
-from aiologic import Event
+from aiologic import Event, Latch
 from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
@@ -96,6 +98,24 @@ class TestPending:
         assert pen.done()
         assert done_called
 
+    async def test_wait_while_setting(self, caller: Caller):
+        callback_started = Event()
+        callback_resume = Event()
+        all_done = Event()
+
+        def done_callback(pen: Pending):
+            callback_started.set()
+            callback_resume.wait()
+            time.sleep(0.1)
+
+        pen = caller.to_thread(lambda: None)
+        pen.add_done_callback(done_callback)
+        pen.add_done_callback(lambda _: all_done.set())
+        await callback_started
+        caller.call_soon(callback_resume.set)
+        await pen
+        assert all_done
+
     async def test_set_result_twice_raises(self, anyio_backend: Backend):
         pen = Pending()
         pen.set_result(1)
@@ -153,6 +173,19 @@ class TestPending:
         pen.set_exception(TypeError("my exception"))
         with pytest.raises(TypeError, match="my exception"):
             pen.result()
+
+    def test_set_done_base_exception(self):
+        event_after = Event()
+
+        def raise_keyboard_interrupt(pen):
+            raise KeyboardInterrupt
+
+        pen = Pending()
+        pen.add_done_callback(raise_keyboard_interrupt)
+        pen.add_done_callback(lambda _: event_after.set())
+        with pytest.raises(KeyboardInterrupt):
+            pen._set_done("result", None)  # pyright: ignore[reportPrivateUsage]
+        assert event_after
 
     async def test_cancel(self, anyio_backend: Backend):
         pen = Pending()
@@ -236,6 +269,33 @@ class TestPending:
         pen = caller.call_soon(anyio.sleep_forever)
         with pytest.raises(TimeoutError):
             pen.wait_sync(timeout=0.01)
+
+    async def test_many_waiters(self, caller: Caller):
+        N = 100
+        n_threads = 20
+        barrier = Latch(N // 2 - 10)
+
+        async def f_set():
+            await barrier
+
+        pen = caller.call_soon(f_set)
+
+        async def f(i, wait_sync=False):
+            if i % 2:
+                await barrier
+            if wait_sync:
+                pen.wait_sync()
+            await pen
+
+        to_thread = random.sample(range(N), n_threads)
+        wait_sync = True
+        async with caller.create_pending_group():
+            for i in range(N):
+                if i in to_thread:
+                    caller.to_thread(f, i, wait_sync=wait_sync)
+                    wait_sync = not wait_sync
+                else:
+                    caller.call_soon(f, i)
 
 
 class TestPendingManagerTest:
