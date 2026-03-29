@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
 from aiologic import Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, enable_signal_safety, green_checkpoint
+from aiologic.lowlevel import create_async_event, enable_signal_safety
 from typing_extensions import override
 
 import async_kernel
@@ -344,10 +344,11 @@ class Pending(Awaitable[T]):
         "_done_callbacks",
         "_exception",
         "_result",
+        "_waiting",
         "context",
     ]
 
-    REPR_OMIT: ClassVar[list[str]] = ["func", "args", "kwargs", "caller"]
+    _REPR_OMIT: ClassVar[list[str]] = ["func", "args", "kwargs", "caller"]
     "Keys of metadata to omit when creating a repr of the pending."
 
     _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
@@ -357,6 +358,8 @@ class Pending(Awaitable[T]):
     _canceller: Callable[[str | None], Any]
     _exception: Exception
     _done: bool
+    _waiting: bool
+    _done_event = Fixed(Event)
     _result: T
     context: contextvars.Context | None
     """The context associated with Pending."""
@@ -390,6 +393,7 @@ class Pending(Awaitable[T]):
         self._done_callbacks: list[Callable[[Self], Any]] = []
         self._metadata_mappings[id(self)] = metadata
         self._done = False
+        self._waiting = False
         self._cancelled = None
 
         if trackers or context:
@@ -422,7 +426,7 @@ class Pending(Awaitable[T]):
             if md := self.metadata:
                 rep = f"{rep} metadata:"
                 if "func" in md:
-                    items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self.REPR_OMIT]
+                    items = [f"{k}={truncated_rep.repr(v)}" for k, v in md.items() if k not in self._REPR_OMIT]
                     rep += f" | {md['func']} {' | '.join(items) if items else ''}"
                 else:
                     rep += f"{truncated_rep.repr(md)}"
@@ -461,16 +465,12 @@ class Pending(Awaitable[T]):
         """
         try:
             if not self._done or self._done_callbacks:
-                event = create_async_event()
-                self._done_callbacks.insert(0, lambda _: event.set())
-                if not self._done or self._done_callbacks:
-                    if timeout is None:
-                        await event
-                    else:
-                        with anyio.fail_after(timeout):
-                            await event
-            else:
-                await async_checkpoint(force=True)
+                self._waiting = True
+                if timeout is None:
+                    await self._done_event
+                else:
+                    with anyio.fail_after(timeout):
+                        await self._done_event
             return self.result() if result else None
         except (anyio.get_cancelled_exc_class(), TimeoutError) as e:
             if not protect:
@@ -502,29 +502,35 @@ class Pending(Awaitable[T]):
             **Calling this method in the same thread where the result or exception is set
             will result in deadlock unless a greenlet based event library is in use.**
         """
-        if not self._done:
-            done = Event()
-            self._done_callbacks.insert(0, lambda _: done.set())
-            if not self._done:
-                done.wait(timeout)
+        if not self._done or self._done_callbacks:
+            self._waiting = True
+            self._done_event.wait(timeout)
             if not self._done:
                 msg = f"Timeout waiting for {self}"
                 raise TimeoutError(msg)
-        else:
-            green_checkpoint(force=True)
         return self.result() if result else None
 
     def _set_done(self, mode: Literal["result", "exception"], value) -> None:
         if self._done:
             raise InvalidStateError
         self._done = True
-        setattr(self, "_" + mode, value)
-        while self._done_callbacks:
-            cb = self._done_callbacks.pop()
-            try:
-                cb(self)
-            except Exception:
-                pass
+        callbacks = self._done_callbacks
+        callbacks.reverse()
+        setattr(self, "_" + mode, None if self._cancelled else value)
+        e = None
+        try:
+            while callbacks:
+                try:
+                    callbacks.pop()(self)
+                except Exception:
+                    pass
+                except BaseException as exc:
+                    e = exc
+        finally:
+            if self._waiting:
+                self._done_event.set()
+            if e:
+                raise e from None
 
     def set_result(self, value: T) -> None:
         """
@@ -633,9 +639,10 @@ class Pending(Awaitable[T]):
         """
         Add a callback for when the pending is done.
 
-        The callback should be internally synchronised. Callbacks are called last-in-first-out.
+        The callback should be internally synchronised.
 
-        If the pending is already done, `fn` is called immediately.
+        Callbacks added prior to the pending being done are handled FIFO
+        otherwise `fn` is called immediately.
         """
         if not self._done:
             self._done_callbacks.append(fn)

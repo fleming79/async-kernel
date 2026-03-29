@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack,
 import anyio
 import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, create_async_waiter, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for
 from anyio.lowlevel import current_token
 from typing_extensions import override
@@ -1051,10 +1051,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if not pen.done():
                     unfinished.add(pen)
                     if max_concurrent_ and len(unfinished) == max_concurrent_:
-                        waiter = create_async_waiter()
-                        resume = waiter.wake
+                        event = create_async_event()
+                        resume = event.set
                         if len(unfinished) == max_concurrent_:
-                            await waiter
+                            await event
                         resume = noop
             if not queue.queue and not unfinished:
                 queue.stop()

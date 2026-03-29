@@ -1,6 +1,7 @@
 import gc
 import inspect
 import re
+import time
 import weakref
 
 import anyio
@@ -96,6 +97,24 @@ class TestPending:
         assert pen.done()
         assert done_called
 
+    async def test_wait_while_setting(self, caller: Caller):
+        callback_started = Event()
+        callback_resume = Event()
+        all_done = Event()
+
+        def done_callback(pen: Pending):
+            callback_started.set()
+            callback_resume.wait()
+            time.sleep(0.1)
+
+        pen = caller.to_thread(lambda: None)
+        pen.add_done_callback(done_callback)
+        pen.add_done_callback(lambda _: all_done.set())
+        await callback_started
+        caller.call_soon(callback_resume.set)
+        await pen
+        assert all_done
+
     async def test_set_result_twice_raises(self, anyio_backend: Backend):
         pen = Pending()
         pen.set_result(1)
@@ -153,6 +172,19 @@ class TestPending:
         pen.set_exception(TypeError("my exception"))
         with pytest.raises(TypeError, match="my exception"):
             pen.result()
+
+    def test_set_done_base_exception(self):
+        event_after = Event()
+
+        def raise_keyboard_interrupt(pen):
+            raise KeyboardInterrupt
+
+        pen = Pending()
+        pen.add_done_callback(raise_keyboard_interrupt)
+        pen.add_done_callback(lambda _: event_after.set())
+        with pytest.raises(KeyboardInterrupt):
+            pen._set_done("result", None)  # pyright: ignore[reportPrivateUsage]
+        assert event_after
 
     async def test_cancel(self, anyio_backend: Backend):
         pen = Pending()
