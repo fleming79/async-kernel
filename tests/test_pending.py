@@ -1,12 +1,13 @@
 import gc
 import inspect
+import random
 import re
 import time
 import weakref
 
 import anyio
 import pytest
-from aiologic import Event
+from aiologic import Event, Latch
 from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
@@ -268,6 +269,33 @@ class TestPending:
         pen = caller.call_soon(anyio.sleep_forever)
         with pytest.raises(TimeoutError):
             pen.wait_sync(timeout=0.01)
+
+    async def test_many_waiters(self, caller: Caller):
+        N = 100
+        n_threads = 20
+        barrier = Latch(N // 2 - 10)
+
+        async def f_set():
+            await barrier
+
+        pen = caller.call_soon(f_set)
+
+        async def f(i, wait_sync=False):
+            if i % 2:
+                await barrier
+            if wait_sync:
+                pen.wait_sync()
+            await pen
+
+        to_thread = random.sample(range(N), n_threads)
+        wait_sync = True
+        async with caller.create_pending_group():
+            for i in range(N):
+                if i in to_thread:
+                    caller.to_thread(f, i, wait_sync=wait_sync)
+                    wait_sync = not wait_sync
+                else:
+                    caller.call_soon(f, i)
 
 
 class TestPendingManagerTest:
