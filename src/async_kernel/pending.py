@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
 from aiologic import Event
-from aiologic.lowlevel import create_async_event
+from aiologic.lowlevel import create_async_event, create_async_waiter
 from typing_extensions import override
 
 import async_kernel
@@ -356,8 +356,6 @@ class Pending(Awaitable[T]):
     _canceller: Callable[[str | None], Any] | None
     _exception: Exception
     _done: bool
-    _waiting: bool
-    _done_event = Fixed(Event)
     _result: T
     context: contextvars.Context | None
     """The context associated with Pending."""
@@ -391,7 +389,6 @@ class Pending(Awaitable[T]):
         self._done_callbacks: list[Callable[[Self], Any]] = []
         self._metadata_mappings[id(self)] = metadata
         self._done = False
-        self._waiting = False
         self._cancelled = None
         self._canceller = None
 
@@ -464,12 +461,17 @@ class Pending(Awaitable[T]):
         """
         try:
             if not self._done or self._done_callbacks:
-                self._waiting = True
-                if timeout is None:
-                    await self._done_event
+                waiter = create_async_waiter()
+                if self._done:
+                    self._done_callbacks.insert(0, lambda _: waiter.wake())
                 else:
-                    with anyio.fail_after(timeout):
-                        await self._done_event
+                    self._done_callbacks.append(lambda _: waiter.wake())
+                if not self._done or len(self._done_callbacks) > 1:
+                    if timeout is None:
+                        await waiter
+                    else:
+                        with anyio.fail_after(timeout):
+                            await waiter
             return self.result() if result else None
         except (anyio.get_cancelled_exc_class(), TimeoutError) as e:
             if not protect:
@@ -502,11 +504,16 @@ class Pending(Awaitable[T]):
             will result in deadlock unless a greenlet based event library is in use.**
         """
         if not self._done or self._done_callbacks:
-            self._waiting = True
-            self._done_event.wait(timeout)
-            if not self._done:
-                msg = f"Timeout waiting for {self}"
-                raise TimeoutError(msg)
+            event = Event()
+            if self._done:
+                self._done_callbacks.insert(0, lambda _: event.set())
+            else:
+                self._done_callbacks.append(lambda _: event.set())
+            if not self._done or len(self._done_callbacks) > 1:
+                event.wait(timeout)
+                if not self._done:
+                    msg = f"Timeout waiting for {self}"
+                    raise TimeoutError(msg)
         return self.result() if result else None
 
     def _set_done(self, mode: Literal["result", "exception"], value: T | BaseException | None) -> None:
@@ -516,23 +523,19 @@ class Pending(Awaitable[T]):
         e = None
         self._canceller = None
         # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
-        try:
-            callbacks = self._done_callbacks
-            callbacks.reverse()
-            if not self._cancelled:
-                setattr(self, "_" + mode, value)
-            while callbacks:
-                try:
-                    callbacks.pop()(self)
-                except Exception:
-                    pass
-                except BaseException as exc:
-                    e = exc
-        finally:
-            if self._waiting:
-                self._done_event.set()
-            if e:
-                raise e from None
+        callbacks = self._done_callbacks
+        callbacks.reverse()
+        if not self._cancelled:
+            setattr(self, "_" + mode, value)
+        while callbacks:
+            try:
+                callbacks.pop()(self)
+            except Exception:
+                pass
+            except BaseException as exc:
+                e = exc
+        if e:
+            raise e from None
 
     def set_result(self, value: T) -> None:
         """
