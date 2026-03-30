@@ -65,7 +65,7 @@ class Fixed(Generic[S, T]):
         You can use [import_item][] inside a callable to lazy import.
     """
 
-    __slots__ = ["create", "created", "instances", "instances_locks", "lock", "name"]
+    __slots__ = ["create", "created", "instances", "instances_locks", "name"]
 
     def __init__(
         self,
