@@ -106,7 +106,6 @@ class Fixed(Generic[S, T]):
                 return self.create_instance(obj, key)
             finally:
                 lock.release()
-                self.instances_locks.pop(key, None)
 
     def create_instance(self, obj: S, key: int) -> T:
         if isinstance(create := self.create, str):
@@ -116,6 +115,7 @@ class Fixed(Generic[S, T]):
         except TypeError:
             instance: T = create(FixedCreate(name=self.name, owner=obj))  # pyright: ignore[reportAssignmentType, reportCallIssue]
         self.instances[key] = instance
+        self.instances_locks.pop(key)
         weakref.finalize(obj, self.instances.pop, key)
         if self.created:
             try:
