@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2026-03-30
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Provide cancellation in Pending by default [#386](https://github.com/fleming79/async-kernel/pull/386)
+
+- Use a standard dict for the user_ns (remove LastUpdatedDict) [#380](https://github.com/fleming79/async-kernel/pull/380)
+
+### <!-- 1 --> 🚀 Features
+
+- Replace aiologic.Lock with aiologic.lowlevel.create_thread_oncelock for improved performance [#389](https://github.com/fleming79/async-kernel/pull/389)
+
+- Convert Pending._done_callbacks from deque to list [#383](https://github.com/fleming79/async-kernel/pull/383)
+
+- Free-threading preliminary support. [#379](https://github.com/fleming79/async-kernel/pull/379)
+
+### <!-- 5 --> 📝 Documentation
+
+- Update docstrings [#384](https://github.com/fleming79/async-kernel/pull/384)
+
+- Add thread_safety.md [#381](https://github.com/fleming79/async-kernel/pull/381)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Change Pending.wait_sync signature to be the same as Pending.wait [#393](https://github.com/fleming79/async-kernel/pull/393)
+
+- Tidy up [#391](https://github.com/fleming79/async-kernel/pull/391)
+
+- Pending refactoring. [#390](https://github.com/fleming79/async-kernel/pull/390)
+
+- Use aiologic.lowlevel.create_async_waiter instead of Event for better performance. [#388](https://github.com/fleming79/async-kernel/pull/388)
+
+- Pending refactoring [#385](https://github.com/fleming79/async-kernel/pull/385)
+
+- Caller.queue_call optimizations [#382](https://github.com/fleming79/async-kernel/pull/382)
+
+- Add Kernel.run and refactor the interfaces. [#378](https://github.com/fleming79/async-kernel/pull/378)
+
+- Use Kernel._get_run_mode for all message types. [#377](https://github.com/fleming79/async-kernel/pull/377)
+
+- Add a VS Code launch config for to launch Jupyterlab [#376](https://github.com/fleming79/async-kernel/pull/376)
+
+- Upgrade uv.lock and run gui tests using windows. [#375](https://github.com/fleming79/async-kernel/pull/375)
+
+- Update uv.lock [#374](https://github.com/fleming79/async-kernel/pull/374)
+
 ## [0.14.0] - 2026-03-24
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -16,6 +62,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update event loop documentation. [#372](https://github.com/fleming79/async-kernel/pull/372)
 
 - Update readme [#371](https://github.com/fleming79/async-kernel/pull/371)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.14.0 [#373](https://github.com/fleming79/async-kernel/pull/373)
 
 ## [0.13.3] - 2026-03-23
 
@@ -1037,6 +1087,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.15.0]: https://github.com/fleming79/async-kernel/compare/v0.14.0..v0.15.0
 [0.14.0]: https://github.com/fleming79/async-kernel/compare/v0.13.3..v0.14.0
 [0.13.3]: https://github.com/fleming79/async-kernel/compare/v0.13.2..v0.13.3
 [0.13.2]: https://github.com/fleming79/async-kernel/compare/v0.13.1..v0.13.2
