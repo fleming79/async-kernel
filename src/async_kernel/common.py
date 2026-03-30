@@ -5,7 +5,7 @@ import weakref
 from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
 import aiologic.meta
-from aiologic import Lock
+from aiologic.lowlevel import create_thread_oncelock
 
 from async_kernel.typing import FixedCreate, FixedCreated, S, T
 
@@ -66,7 +66,7 @@ class Fixed(Generic[S, T]):
         You can use [import_item][] inside a callable to lazy import.
     """
 
-    __slots__ = ["create", "created", "instances", "lock", "name"]
+    __slots__ = ["create", "created", "instances", "instances_locks", "lock", "name"]
 
     def __init__(
         self,
@@ -86,33 +86,46 @@ class Fixed(Generic[S, T]):
             raise TypeError(msg)
         self.created = created
         self.instances = {}
-        self.lock = Lock()
+        self.instances_locks = {}
 
     def __set_name__(self, owner_cls: type[S], name: str) -> None:
         self.name = name
 
     def __get__(self, obj: S, objtype: type[S] | None = None) -> T:
+        if obj is None:
+            return self  # pyright: ignore[reportReturnType]
+        key = id(obj)
         try:
-            return self.instances[id(obj)]
+            return self.instances[key]
         except KeyError:
-            if obj is None:
-                return self  # pyright: ignore[reportReturnType]
-            with self.lock:
-                try:
-                    return self.instances[id(obj)]
-                except KeyError:
-                    key = id(obj)
-                    instance: T = self.create({"name": self.name, "owner": obj})  # pyright: ignore[reportAssignmentType]
-                    self.instances[key] = instance
-                    weakref.finalize(obj, self.instances.pop, key)
-            if self.created:
-                try:
-                    self.created({"owner": obj, "obj": instance, "name": self.name})
-                except Exception:
-                    if log := getattr(obj, "log", None):
-                        msg = f"Callback `created` failed for {obj.__class__}.{self.name}"
-                        log.exception(msg, extra={"obj": self.created})
-            return instance
+            try:
+                lock = self.instances_locks[key]
+            except KeyError:
+                lock = self.instances_locks.setdefault(key, create_thread_oncelock())
+            lock.acquire()
+            try:
+                return self.instances[key]
+            except KeyError:
+                if lock._count > 1:
+                    msg = f"Self-referencing creation detected for {obj.__class__.__name__}.{self.name}!"
+                    raise RuntimeError(msg) from None
+                return self.create_instance(obj, key)
+            finally:
+                lock.release()
+                self.instances_locks.pop(key, None)
+
+    def create_instance(self, obj: S, key: int) -> T:
+        instance: T = self.create({"name": self.name, "owner": obj})  # pyright: ignore[reportAssignmentType]
+        self.instances[key] = instance
+        weakref.finalize(obj, self.instances.pop, key)
+        if self.created:
+            try:
+                self.created({"owner": obj, "obj": instance, "name": self.name})
+            except Exception:
+                if log := getattr(obj, "log", None):
+                    msg = f"Callback `created` failed for {obj.__class__}.{self.name}"
+                    log.exception(msg, extra={"obj": self.created})
+        return instance
 
     def __set__(self, obj: S, value: Self) -> Never:
         # Note: above we use `Self` for the `value` type hint to give a useful typing error

@@ -146,7 +146,7 @@ class TestFixed:
             fixed = Fixed(reenter)
 
         obj = MyClass()
-        with pytest.raises(RuntimeError, match="the current task is already holding this lock"):
+        with pytest.raises(RuntimeError, match="Self-referencing creation detected for MyClass\\.fixed!"):
             assert obj.fixed
 
     def test_set_forbidden(self):
