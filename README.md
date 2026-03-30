@@ -82,7 +82,7 @@ It also works for awaitables.
 
 ```python
 import ipywidgets as ipw
-from aiologic import Event
+from async_kernel.common import Event
 
 b = ipw.Button(description="Click me")
 event = Event()

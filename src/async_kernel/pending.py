@@ -9,12 +9,11 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
-from aiologic import Event
 from aiologic.lowlevel import create_async_event
 from typing_extensions import override
 
 import async_kernel
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, LiteEvent
 from async_kernel.typing import T
 
 if TYPE_CHECKING:
@@ -357,7 +356,7 @@ class Pending(Awaitable[T]):
     _exception: Exception
     _done: bool
     _waiting: bool
-    _done_event = Fixed(Event)
+    _done_event: Fixed[Self, LiteEvent] = Fixed(LiteEvent)
     _result: T
     context: contextvars.Context | None
     """The context associated with Pending."""
