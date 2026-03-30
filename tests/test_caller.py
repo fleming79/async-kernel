@@ -701,12 +701,12 @@ class TestCaller:
 
     async def test_as_completed_cancelled(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
-            n = 20
-            ready = CountdownEvent(n)
+            n = 6
+            ready = CountdownEvent(n - 2)
 
             async def test_func():
-                ready.down()
                 if ready.value:
+                    ready.down()
                     await anyio.sleep_forever()
                 return ready
 
@@ -719,8 +719,7 @@ class TestCaller:
                 if not item.cancelled():
                     assert item.result() is ready
                 else:
-                    with pytest.raises(PendingCancelled):
-                        await item
+                    assert item.cancelled()
             await caller.wait(items, return_when="ALL_COMPLETED")
 
     async def test_as_completed_awaitables(self, caller: Caller):

@@ -386,7 +386,7 @@ class Pending(Awaitable[T]):
             - Initializes internal state for tracking completion and cancellation.
             - Stores provided metadata in a class-level mapping.
         """
-        self._done_callbacks: list[Callable[[Self], Any]] = []
+        self._done_callbacks: list[Callable[[Self], Any]] | None = []
         self._metadata_mappings[id(self)] = metadata
         self._done = False
         self._cancelled = None
@@ -460,7 +460,7 @@ class Pending(Awaitable[T]):
             To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
         try:
-            if not self._done or self._done_callbacks:
+            if self._done_callbacks is not None:
                 waiter = create_async_waiter()
                 self.add_done_callback(lambda _: waiter.wake())
                 if timeout is None:
@@ -502,7 +502,7 @@ class Pending(Awaitable[T]):
             **Calling this method in the same thread where the result or exception is set
             will result in deadlock unless a greenlet based event library is in use.**
         """
-        if not self._done or self._done_callbacks:
+        if self._done_callbacks is not None:
             event = Event()
             self.add_done_callback(lambda _: event.set())
             event.wait(timeout)
@@ -521,6 +521,7 @@ class Pending(Awaitable[T]):
         self._canceller = None
         # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
         callbacks = self._done_callbacks
+        assert callbacks is not None
         callbacks.reverse()
         if not self._cancelled:
             setattr(self, "_" + mode, value)
@@ -531,6 +532,7 @@ class Pending(Awaitable[T]):
                 pass
             except BaseException as exc:
                 e = exc
+        self._done_callbacks = None
         if e:
             raise e from None
 
@@ -654,11 +656,12 @@ class Pending(Awaitable[T]):
 
         Callbacks added are handled FIFO.
         """
-        if not self._done:
-            self._done_callbacks.append(fn)
-        elif self._done_callbacks:
-            # respect FIFO - 'done_callbacks' gets reversed in `_set_done`.
-            self._done_callbacks.insert(0, fn)
+        if (callbacks := self._done_callbacks) is not None:
+            callbacks.append(fn) if not self._done else callbacks.insert(0, fn)
+            if self._done_callbacks is None and fn in callbacks:  # pragma: no cover
+                # Handle the rare case where `fn` does not get called by `_set_done`
+                callbacks.remove(fn)
+                fn(self)
         else:
             fn(self)
 
@@ -669,9 +672,13 @@ class Pending(Awaitable[T]):
         Returns the number of items removed.
         """
         n = 0
-        while fn in self._done_callbacks:
-            n += 1
-            self._done_callbacks.remove(fn)
+        if (callbacks := self._done_callbacks) is not None:
+            while fn in callbacks:
+                try:
+                    callbacks.remove(fn)
+                    n += 1
+                except IndexError:
+                    pass
         return n
 
     def result(self) -> T:
