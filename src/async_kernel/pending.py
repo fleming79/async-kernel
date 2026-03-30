@@ -502,11 +502,10 @@ class Pending(Awaitable[T]):
         if not self._done or self._done_callbacks:
             event = Event()
             self.add_done_callback(lambda _: event.set())
-            if not self._done or len(self._done_callbacks) > 1:
-                event.wait(timeout)
-                if not self._done:
-                    msg = f"Timeout waiting for {self}"
-                    raise TimeoutError(msg)
+            event.wait(timeout)
+            if not self._done:
+                msg = f"Timeout waiting for {self}"
+                raise TimeoutError(msg)
         return self.result() if result else None
 
     def _set_done(self, mode: Literal["result", "exception"], value: T | BaseException | None) -> None:
