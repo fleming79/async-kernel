@@ -6492,8 +6492,7 @@ kernel_interface["stop"](msg, buffer)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
-<span class="normal">103</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
@@ -6902,7 +6901,8 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
-<span class="normal">512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
+<span class="normal">512</span>
+<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
     <span class="s2">&quot;An interface for the kernel that uses zmq sockets.&quot;</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span>
@@ -7592,8 +7592,7 @@ will be able to connect to the Kernel, so be careful!</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
-<span class="normal">151</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
@@ -7610,7 +7609,8 @@ will be able to connect to the Kernel, so be careful!</p>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">168</span>
+<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the kernel blocking until the kernel stops.</span>
 
@@ -7669,8 +7669,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">170</span>
-<span class="normal">171</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
@@ -7697,7 +7696,8 @@ and is called by load_connection_file.</p>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
-<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">198</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load connection info from a dict containing connection info.</span>
@@ -7774,8 +7774,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">380</span>
 <span class="normal">381</span>
 <span class="normal">382</span>
 <span class="normal">383</span>
@@ -7809,7 +7808,8 @@ and is called by load_connection_file.</p>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
-<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
@@ -7871,7 +7871,7 @@ and is called by load_connection_file.</p>
   
       class-attribute
       instance-attribute
-   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">],</span> <span class="n"><span title="async_kernel.interface.zmq.ZMQKernelInterface.receive_msg_loop(ready)">ready</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/stable/api.html#aiologic.Event">Event</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.interface.zmq.ZMQKernelInterface.receive_msg_loop(start)">start</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="aiologic.Event" href="http://aiologic.readthedocs.io/stable/api.html#aiologic.Event">Event</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+   (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">],</span> <span class="n"><span title="async_kernel.interface.zmq.ZMQKernelInterface.receive_msg_loop(ready)">ready</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="threading.Event" href="https://docs.python.org/3/library/threading.html#threading.Event">Event</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.interface.zmq.ZMQKernelInterface.receive_msg_loop(start)">start</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="threading.Event" href="https://docs.python.org/3/library/threading.html#threading.Event">Event</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7882,8 +7882,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">416</span>
-<span class="normal">417</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">417</span>
 <span class="normal">418</span>
 <span class="normal">419</span>
 <span class="normal">420</span>
@@ -7920,7 +7919,8 @@ and is called by load_connection_file.</p>
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
-<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">454</span>
+<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Opens a zmq socket for the channel, receives messages and calls the message handler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -7984,14 +7984,14 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">505</span>
-<span class="normal">506</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">506</span>
 <span class="normal">507</span>
 <span class="normal">508</span>
 <span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
-<span class="normal">512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">512</span>
+<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform a keyboard interrupt.</span>
