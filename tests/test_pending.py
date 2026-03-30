@@ -2,7 +2,6 @@ import gc
 import inspect
 import random
 import re
-import time
 import weakref
 
 import anyio
@@ -98,7 +97,7 @@ class TestPending:
         assert pen.done()
         assert done_called
 
-    async def test_wait_while_setting(self, caller: Caller):
+    async def test_await_while_setting(self, caller: Caller):
         callback_started = Event()
         callback_resume = Event()
         all_done = Event()
@@ -106,15 +105,21 @@ class TestPending:
         def done_callback(pen: Pending):
             callback_started.set()
             callback_resume.wait()
-            time.sleep(0.1)
 
+        async def wait_while_setting():
+            await callback_started
+            callback_resume.set()
+            await pen
+            assert not pen._done_callbacks  # pyright: ignore[reportPrivateUsage]
+
+        pen_waiting = caller.call_soon(wait_while_setting)
         pen = caller.to_thread(lambda: None)
         pen.add_done_callback(done_callback)
         pen.add_done_callback(lambda _: all_done.set())
         await callback_started
-        caller.call_soon(callback_resume.set)
         await pen
         assert all_done
+        await pen_waiting
 
     async def test_set_result_twice_raises(self, anyio_backend: Backend):
         pen = Pending()
