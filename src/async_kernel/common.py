@@ -4,7 +4,7 @@ import weakref
 from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
 import aiologic.meta
-from aiologic.lowlevel import create_thread_oncelock
+from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_thread_oncelock
 
 from async_kernel.typing import FixedCreate, FixedCreated, S, T
 
@@ -115,6 +115,7 @@ class Fixed(Generic[S, T]):
         except TypeError:
             instance: T = create(FixedCreate(name=self.name, owner=obj))  # pyright: ignore[reportAssignmentType, reportCallIssue]
         self.instances[key] = instance
+        self.instances_locks[key] = THREAD_DUMMY_LOCK
         weakref.finalize(obj, self.instances.pop, key)
         weakref.finalize(obj, self.instances_locks.pop, key)
         if self.created:
