@@ -44,8 +44,7 @@ class Fixed(Generic[S, T]):
             - string: A dotted importable path to class or function to be used as callable.
             - class | callable: Called with zero or one positional argument [FixedCreate][].
 
-        created: An optional callback that is called with [FixedCreated][] whenever a
-            value is _created_.
+        created: A per-instance optional callback that gets called on first-access to the property.
 
     Type Hints:
         - ``S``: Type of the owner class.
