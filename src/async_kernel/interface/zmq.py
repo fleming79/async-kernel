@@ -14,11 +14,12 @@ import threading
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+from threading import Event
 from typing import TYPE_CHECKING, Any, Literal, Self
 
 import traitlets
 import zmq
-from aiologic import BinarySemaphore, Event
+from aiologic import BinarySemaphore
 from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
 from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
