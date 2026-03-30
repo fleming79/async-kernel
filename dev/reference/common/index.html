@@ -2145,7 +2145,8 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
-<span class="normal">132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
+<span class="normal">132</span>
+<span class="normal">133</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A property-like descriptor factory that always returns the same object.</span>
 
@@ -2234,6 +2235,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="n">instance</span><span class="p">:</span> <span class="n">T</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="n">FixedCreate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="n">obj</span><span class="p">))</span>  <span class="c1"># pyright: ignore[reportAssignmentType, reportCallIssue]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instances_locks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">THREAD_DUMMY_LOCK</span>
         <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">pop</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances_locks</span><span class="o">.</span><span class="n">pop</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
