@@ -462,16 +462,12 @@ class Pending(Awaitable[T]):
         try:
             if not self._done or self._done_callbacks:
                 waiter = create_async_waiter()
-                if self._done:
-                    self._done_callbacks.insert(0, lambda _: waiter.wake())
+                self.add_done_callback(lambda _: waiter.wake())
+                if timeout is None:
+                    await waiter
                 else:
-                    self._done_callbacks.append(lambda _: waiter.wake())
-                if not self._done or len(self._done_callbacks) > 1:
-                    if timeout is None:
+                    with anyio.fail_after(timeout):
                         await waiter
-                    else:
-                        with anyio.fail_after(timeout):
-                            await waiter
             return self.result() if result else None
         except (anyio.get_cancelled_exc_class(), TimeoutError) as e:
             if not protect:
@@ -505,10 +501,7 @@ class Pending(Awaitable[T]):
         """
         if not self._done or self._done_callbacks:
             event = Event()
-            if self._done:
-                self._done_callbacks.insert(0, lambda _: event.set())
-            else:
-                self._done_callbacks.append(lambda _: event.set())
+            self.add_done_callback(lambda _: event.set())
             if not self._done or len(self._done_callbacks) > 1:
                 event.wait(timeout)
                 if not self._done:
@@ -645,21 +638,23 @@ class Pending(Awaitable[T]):
 
     def done(self) -> bool:
         """
-        Returns True if a result or exception has been set.
+        Returns `True` if a result or exception has been set.
         """
         return self._done
 
     def add_done_callback(self, fn: Callable[[Self], Any], /) -> None:
         """
-        Add a callback for when the pending is done.
+        Add a callback for when the pending is `done`.
 
         The callback should be light weight and provide its own thread safety.
 
-        Callbacks added prior to the pending being done are handled FIFO
-        otherwise `fn` is called immediately.
+        Callbacks added are handled FIFO.
         """
         if not self._done:
             self._done_callbacks.append(fn)
+        elif self._done_callbacks:
+            # respect FIFO - 'done_callbacks' gets reversed in `_set_done`.
+            self._done_callbacks.insert(0, fn)
         else:
             fn(self)
 
