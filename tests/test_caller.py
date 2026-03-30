@@ -303,17 +303,17 @@ class TestCaller:
         is_cancelled = False
         async with Caller("manual") as caller:
 
-            async def my_test():
+            async def f():
                 nonlocal is_cancelled
                 started.set()
-                exception_ = anyio.get_cancelled_exc_class()
                 try:
                     await anyio.sleep_forever()
-                except exception_:
+                except anyio.get_cancelled_exc_class():
                     is_cancelled = True
+                    raise
 
             started = Event()
-            caller.call_later(0.01, my_test)
+            caller.call_soon(f)
             await started
         assert is_cancelled
 
@@ -407,10 +407,7 @@ class TestCaller:
         caller.call_soon(anyio.sleep_forever)
         assert await caller.call_soon(lambda: 1 + 1) == 2
         caller.stop()
-        try:
-            assert await caller.stopped
-        except anyio.get_cancelled_exc_class():
-            raise RuntimeError from None
+        await caller.stopped
 
     async def test_execution_queue(self, caller: Caller):
         N = 10

@@ -448,7 +448,7 @@ class Pending(Awaitable[T]):
 
         Args:
             timeout: Timeout in seconds.
-            protect: Protect the pending from external cancellation.
+            protect: Protect the pending from a `TimeoutError` or external cancellation.
             result: If `result` should be returned.
 
         Raises:
@@ -477,17 +477,20 @@ class Pending(Awaitable[T]):
     if TYPE_CHECKING:
 
         @overload
-        def wait_sync(self, *, timeout: float | None = ..., result: Literal[True] = True) -> T: ...
+        def wait_sync(
+            self, *, timeout: float | None = ..., protect: bool = False | ..., result: Literal[True] = True
+        ) -> T: ...
 
         @overload
-        def wait_sync(self, *, timeout: float | None = ..., result: Literal[False]) -> None: ...
+        def wait_sync(self, *, timeout: float | None = ..., protect: bool = ..., result: Literal[False]) -> None: ...
 
-    def wait_sync(self, *, timeout: float | None = None, result: bool = True) -> T | None:
+    def wait_sync(self, *, timeout: float | None = None, protect: bool = False, result: bool = True) -> T | None:
         """
         Wait synchronously for `result` or `exception` (internally synchronised) returning the result if specified.
 
         Args:
             timeout: Timeout in seconds.
+            protect: Protect the pending from cancellation from a `TimeoutError`.
             result: When `True` the result is returned.
 
         Raises:
@@ -505,6 +508,8 @@ class Pending(Awaitable[T]):
             event.wait(timeout)
             if not self._done:
                 msg = f"Timeout waiting for {self}"
+                if not protect:
+                    self.cancel(msg)
                 raise TimeoutError(msg)
         return self.result() if result else None
 
