@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import weakref
 from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
@@ -32,6 +31,7 @@ class Fixed(Generic[S, T]):
     A property-like descriptor factory that always returns the same object.
 
     The descriptor is defined with a callable or importable string to a callable.
+
     On first access the object is obtained as the result of the callable, cached
     and returned. Subsequent access to the property returns the cached result.
 
@@ -41,11 +41,10 @@ class Fixed(Generic[S, T]):
 
             The following types are accepted:
 
-            - class: A class that is called with no arguments.
-            - string: A dotted importable path to class or function that is called with no arguments.
-            - callable: A callable that is called with one positional argument [FixedCreate][].
+            - string: A dotted importable path to class or function to be used as callable.
+            - class | callable: Called with zero or one positional argument [FixedCreate][].
 
-        created: An optional callback that gets called with [FixedCreated][] whenever a
+        created: An optional callback that is called with [FixedCreated][] whenever a
             value is _created_.
 
     Type Hints:
@@ -75,18 +74,14 @@ class Fixed(Generic[S, T]):
         *,
         created: Callable[[FixedCreated[S, T]]] | None = None,
     ) -> None:
-        if isinstance(obj, str):
-            self.create = lambda _: import_item(obj)()
-        elif inspect.isclass(obj):
-            self.create = lambda _: obj()
-        elif callable(obj):
+        if callable(obj) or isinstance(obj, str):  # pyright: ignore[reportUnnecessaryIsInstance]
             self.create = obj
+            self.created = created
+            self.instances = {}
+            self.instances_locks = {}
         else:
             msg = f"{obj=} is invalid! Use a lambda instead eg: lambda _: {obj}"  # pyright: ignore[reportUnreachable]
             raise TypeError(msg)
-        self.created = created
-        self.instances = {}
-        self.instances_locks = {}
 
     def __set_name__(self, owner_cls: type[S], name: str) -> None:
         self.name = name
@@ -115,7 +110,12 @@ class Fixed(Generic[S, T]):
                 self.instances_locks.pop(key, None)
 
     def create_instance(self, obj: S, key: int) -> T:
-        instance: T = self.create({"name": self.name, "owner": obj})  # pyright: ignore[reportAssignmentType]
+        if isinstance(create := self.create, str):
+            self.create = create = import_item(create)
+        try:
+            instance = create()  # pyright: ignore[reportCallIssue, reportAssignmentType]
+        except TypeError:
+            instance: T = create(FixedCreate(name=self.name, owner=obj))  # pyright: ignore[reportAssignmentType, reportCallIssue]
         self.instances[key] = instance
         weakref.finalize(obj, self.instances.pop, key)
         if self.created:
