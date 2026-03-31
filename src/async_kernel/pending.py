@@ -675,12 +675,12 @@ class Pending(Awaitable[T]):
         """
         n = 0
         if (callbacks := self._done_callbacks) is not None:
-            while fn in callbacks:
+            while True:
                 try:
                     callbacks.remove(fn)
                     n += 1
-                except IndexError:
-                    pass
+                except ValueError:
+                    break
         return n
 
     def result(self) -> T:
