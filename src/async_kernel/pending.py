@@ -9,8 +9,7 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
-from aiologic import Event
-from aiologic.lowlevel import create_async_event, create_async_waiter
+from aiologic.lowlevel import create_async_event, create_async_waiter, create_green_event
 from typing_extensions import override
 
 import async_kernel
@@ -503,7 +502,7 @@ class Pending(Awaitable[T]):
             will result in deadlock unless a greenlet based event library is in use.**
         """
         if self._done_callbacks is not None:
-            event = Event()
+            event = create_green_event()
             self.add_done_callback(lambda _: event.set())
             event.wait(timeout)
             if not self._done:
