@@ -7175,7 +7175,7 @@ kernel_interface["stop"](msg, buffer)
         <span class="p">)</span>
         <span class="c1"># Poll for a reply.</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_interrupt_frame</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_interrupt_frame</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
                 <span class="k">raise</span> <span class="n">KernelInterruptError</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">socket</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>  <span class="c1"># pyright: ignore[reportOptionalSubscript]</span>
 
