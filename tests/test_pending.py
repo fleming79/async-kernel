@@ -190,7 +190,7 @@ class TestPending:
         pen.add_done_callback(raise_keyboard_interrupt)
         pen.add_done_callback(lambda _: event_after.set())
         with pytest.raises(KeyboardInterrupt):
-            pen._set_done("result", None)  # pyright: ignore[reportPrivateUsage]
+            pen._set_done(False, None)  # pyright: ignore[reportPrivateUsage]
         assert event_after
 
     async def test_cancel(self, anyio_backend: Backend):
