@@ -190,7 +190,7 @@ class TestPending:
         pen.add_done_callback(raise_keyboard_interrupt)
         pen.add_done_callback(lambda _: event_after.set())
         with pytest.raises(KeyboardInterrupt):
-            pen._set_done("result", None)  # pyright: ignore[reportPrivateUsage]
+            pen._set_done(False, None)  # pyright: ignore[reportPrivateUsage]
         assert event_after
 
     async def test_cancel(self, anyio_backend: Backend):
@@ -276,9 +276,9 @@ class TestPending:
 
     async def test_wait_sync_timeout(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
-            pen = caller.call_soon(anyio.sleep_forever)
+            pen = caller.call_soon(lambda: 0 / 1)  # should never get called
             with pytest.raises(TimeoutError):
-                pen.wait_sync(timeout=0.01)
+                pen.wait_sync(timeout=0.001)
             assert pen.cancelled()
 
     async def test_many_waiters(self, caller: Caller):
