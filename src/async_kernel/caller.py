@@ -564,16 +564,16 @@ class Caller(anyio.AsyncContextManagerMixin):
                         self.log.exception("Direct call failed", exc_info=e)
                 else:
                     if asyncio_backend:
-                        task = loop.create_task(self._wrap_call(item), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
+                        task = loop.create_task(self._wrap_call(item, backend), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
                         if not task.done():
                             self._tasks.add(task)
                             task.add_done_callback(self._tasks.discard)
                         del task
                     else:
                         if context := item.context:
-                            context.run(tg.start_soon, self._wrap_call, item)
+                            context.run(tg.start_soon, self._wrap_call, item, backend)
                         else:
-                            tg.start_soon(self._wrap_call, item)
+                            tg.start_soon(self._wrap_call, item, backend)
                 del item, result
         finally:
             if asyncio_backend:
@@ -581,7 +581,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     task.cancel()
             tg.cancel_scope.cancel()
 
-    async def _wrap_call(self, pen: Pending) -> None:
+    async def _wrap_call(self, pen: Pending, backend: Backend) -> None:
         """
         Asynchronously executes the function associated with the given pending, handling cancellation, delays, and exceptions.
 
@@ -595,9 +595,15 @@ class Caller(anyio.AsyncContextManagerMixin):
             e = None
             try:
                 if inspect.iscoroutine(result := md["func"](*md["args"], **md["kwargs"])):
-                    with anyio.CancelScope() as scope:
-                        pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                    if backend is Backend.asyncio:
+                        task = asyncio.current_task()
+                        assert task
+                        pen.set_canceller(lambda msg: self.call_direct(task.cancel, msg))
                         pen.set_result(await result)
+                    else:
+                        with anyio.CancelScope() as scope:
+                            pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                            pen.set_result(await result)
                 else:
                     pen.set_result(result)
             except Exception as exc:
