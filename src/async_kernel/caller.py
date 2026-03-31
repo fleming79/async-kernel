@@ -11,7 +11,7 @@ import threading
 import time
 import weakref
 from collections import deque
-from collections.abc import AsyncGenerator, Awaitable, Callable
+from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType, coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack, cast, final
@@ -42,8 +42,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import CoroutineType
 
+    import trio  # noqa: TC004
     import zmq
-    from anyio.abc import TaskGroup
 
     from async_kernel.typing import P
 
@@ -60,6 +60,7 @@ def noop() -> None:
 
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
+globals()["trio"] = lazy_import("trio")
 
 
 @coroutine
@@ -504,7 +505,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async with anyio.create_task_group() as tg:
             socket = None
             self._state = CallerState.running
-            tg.start_soon(self._scheduler, self.backend, self._queue, tg)
+            tg.start_soon(self._scheduler, self.backend, self._queue, tg.cancel_scope.cancel)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
@@ -529,7 +530,62 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.stopped.set()
                     await self._checkpoint()
 
-    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
+    @asynccontextmanager
+    async def _asyncio_task_factory(
+        self,
+    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, tuple], None]]:
+        loop = asyncio.get_running_loop()
+        coro = asyncio.sleep(0)
+        eager = False
+        tasks = set()
+        try:
+            await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
+            eager = True
+        except Exception:
+            coro.close()
+
+        def create_task(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
+            if eager:
+                task = loop.create_task(func(*args), context=context, eager_start=True)  # pyright: ignore[reportCallIssue]
+            else:
+                task = loop.create_task(func(*args), context=context)
+            if not task.done():
+                tasks.add(task)
+                task.add_done_callback(tasks.discard)
+
+        try:
+            yield create_task
+        finally:
+            for task in tasks:
+                task.cancel()
+
+    @asynccontextmanager
+    async def _trio_task_factory(
+        self,
+    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, tuple], None]]:
+
+        async with trio.open_nursery() as nursery:
+
+            def create_task(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
+                if context:
+                    context.run(nursery.start_soon, func, *args)
+                else:
+                    nursery.start_soon(func, *args)
+
+            try:
+                yield create_task
+            finally:
+                nursery.cancel_scope.cancel("Shutting down")
+
+    @asynccontextmanager
+    async def _get_task_factory(
+        self, backend: Backend
+    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, tuple], None]]:
+        factory = self._asyncio_task_factory if backend is Backend.asyncio else self._trio_task_factory
+        async with factory() as start_soon_async:
+            yield start_soon_async
+
+    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, done: Callable[[], None]) -> None:
         """
         An asynchronous coroutine to schedule or execute functions as they arrive in the queue.
 
@@ -542,46 +598,24 @@ class Caller(anyio.AsyncContextManagerMixin):
             tg: The task group used to manage concurrent tasks.
             task_status: Used to signal when the scheduler has started.
         """
-        kwgs = {}
-        asyncio_backend = backend == Backend.asyncio
-        if asyncio_backend:
-            loop = asyncio.get_running_loop()
-            coro = asyncio.sleep(0)
-            try:
-                await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
-                kwgs["eager_start"] = True
-            except Exception:
-                coro.close()
         try:
-            async for item in queue:
-                result = None
-                if not isinstance(item, Pending):
-                    try:
-                        result = item[0](*item[1], **item[2])
-                        if inspect.iscoroutine(result):
-                            await result
-                    except Exception as e:
-                        self.log.exception("Direct call failed", exc_info=e)
-                else:
-                    if asyncio_backend:
-                        task = loop.create_task(self._wrap_call(item), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
-                        if not task.done():
-                            self._tasks.add(task)
-                            task.add_done_callback(self._tasks.discard)
-                        del task
+            async with self._get_task_factory(backend) as create_task:
+                async for item in queue:
+                    if isinstance(item, Pending):
+                        create_task(item.context, self._wrap_call, (item, backend))
                     else:
-                        if context := item.context:
-                            context.run(tg.start_soon, self._wrap_call, item)
-                        else:
-                            tg.start_soon(self._wrap_call, item)
-                del item, result
+                        try:
+                            result = item[0](*item[1], **item[2])
+                            if inspect.iscoroutine(result):
+                                await result
+                            del result
+                        except Exception as e:
+                            self.log.exception("Direct call failed", exc_info=e)
+                    del item
         finally:
-            if asyncio_backend:
-                for task in self._tasks:
-                    task.cancel()
-            tg.cancel_scope.cancel()
+            done()
 
-    async def _wrap_call(self, pen: Pending) -> None:
+    async def _wrap_call(self, pen: Pending[Any], backend: Backend) -> None:
         """
         Asynchronously executes the function associated with the given pending, handling cancellation, delays, and exceptions.
 
@@ -592,32 +626,32 @@ class Caller(anyio.AsyncContextManagerMixin):
             md = pen.metadata
             token_pending = self._pending_var.set(pen)
             token_ident = self._caller_token.set(self._caller_id)
+            e = None
             try:
-                with anyio.CancelScope() as scope:
-                    pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
-                    # Call later.
-                    if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
-                        await anyio.sleep(delay)
-                    # Call now.
-                    try:
-                        result = md["func"](*md["args"], **md["kwargs"])
-                        if inspect.iscoroutine(result):
-                            result = await result
-                        pen.set_result(result)
-                    # Cancelled.
-                    except anyio.get_cancelled_exc_class():
-                        if not pen.cancelled():
-                            pen.cancel()
-                        pen.set_result(None)
-                    # Catch exceptions.
-                    except Exception as e:
-                        pen.set_exception(e)
-            except Exception as e:
-                if not pen.done():
-                    pen.set_exception(e)
+                if inspect.iscoroutine(result := md["func"](*md["args"], **md["kwargs"])):
+                    if backend is Backend.asyncio:
+                        task = asyncio.current_task()
+                        assert task
+                        pen.set_canceller(lambda msg: self.call_direct(task.cancel, msg))
+                        pen.set_result(await result)
+                    else:
+                        with trio.CancelScope() as scope:
+                            pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                            pen.set_result(await result)
+                else:
+                    pen.set_result(result)
+            except Exception as exc:
+                pen.set_exception(exc)
+            except BaseException as exc:
+                e = exc
             finally:
+                if not pen.done():
+                    pen.cancel("Unable to finish execution")
+                    pen.set_result(None)
                 self._pending_var.reset(token_pending)
                 self._caller_token.reset(token_ident)
+                if e:
+                    raise e from None
 
     @staticmethod
     def _reject(item: tuple | Pending) -> None:
@@ -700,7 +734,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             - The returned caller is added to `children` and stopped with this instance.
             - If 'backend' or 'zmq_context' are not specified they are copied from this instance.
         """
-
         with self._child_lock:
             if name := kwargs.get("name"):
                 for caller in self.children:
@@ -762,7 +795,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     async def _guest_backend_loop(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
         async def _guest_scheduler() -> None:
             async with anyio.create_task_group() as tg:
-                tg.start_soon(self._scheduler, Backend(backend), queue, tg)
+                tg.start_soon(self._scheduler, Backend(backend), queue, tg.cancel_scope.cancel)
 
         if self._state is CallerState.running:
             # Prefer callbacks from the host.
@@ -805,7 +838,16 @@ class Caller(anyio.AsyncContextManagerMixin):
         Info:
             All call arguments are packed into the instance's metadata.
         """
-        return self.schedule_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
+
+        async def _call_later(*args: P.args, **kwargs: P.kwargs) -> T:
+            if (delay := time.monotonic() - start_time) > 0:
+                await anyio.sleep(delay)
+            if inspect.iscoroutine(result := func(*args, **kwargs)):
+                result = await result
+            return result  # pyright: ignore[reportReturnType]
+
+        start_time = time.monotonic()
+        return self.schedule_call(_call_later, args, kwargs)
 
     def call_soon(
         self,
