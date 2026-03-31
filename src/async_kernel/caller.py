@@ -43,9 +43,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import CoroutineType
 
-    import trio  # noqa: TC004
     import zmq
-    from anyio.abc import TaskGroup
 
     from async_kernel.typing import P
 
@@ -62,7 +60,6 @@ def noop() -> None:
 
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
-globals()["trio"] = lazy_import("trio")
 
 
 @coroutine
@@ -507,7 +504,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async with anyio.create_task_group() as tg:
             socket = None
             self._state = CallerState.running
-            tg.start_soon(self._scheduler, self.backend, self._queue, tg)
+            tg.start_soon(self._scheduler, self.backend, self._queue, tg.cancel_scope.cancel)
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.linger = 50
@@ -532,7 +529,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self.stopped.set()
                     await self._checkpoint()
 
-    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, tg: TaskGroup) -> None:
+    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, done: Callable[[], None]) -> None:
         """
         An asynchronous coroutine to schedule or execute functions as they arrive in the queue.
 
@@ -545,44 +542,67 @@ class Caller(anyio.AsyncContextManagerMixin):
             tg: The task group used to manage concurrent tasks.
             task_status: Used to signal when the scheduler has started.
         """
-        kwgs = {}
-        asyncio_backend = backend == Backend.asyncio
-        if asyncio_backend:
-            loop = asyncio.get_running_loop()
-            coro = asyncio.sleep(0)
-            try:
-                await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
-                kwgs["eager_start"] = True
-            except Exception:
-                coro.close()
-        try:
-            async for item in queue:
-                result = None
-                if not isinstance(item, Pending):
-                    try:
-                        result = item[0](*item[1], **item[2])
-                        if inspect.iscoroutine(result):
-                            await result
-                    except Exception as e:
-                        self.log.exception("Direct call failed", exc_info=e)
-                else:
-                    if asyncio_backend:
-                        task = loop.create_task(self._wrap_call(item, backend), context=item.context, **kwgs)  # pyright: ignore[reportPossiblyUnboundVariable]
-                        if not task.done():
-                            self._tasks.add(task)
-                            task.add_done_callback(self._tasks.discard)
-                        del task
-                    else:
-                        if context := item.context:
-                            context.run(tg.start_soon, self._wrap_call, item, backend)
-                        else:
-                            tg.start_soon(self._wrap_call, item, backend)
-                del item, result
-        finally:
+        loop: Any = cast("asyncio.AbstractEventLoop", None)  # pyright: ignore[reportInvalidCast]
+        nursery = cast("trio.Nursery", None)  # pyright: ignore[reportInvalidCast]
+        eager_start = False
+        asyncio_backend = backend is Backend.asyncio
+
+        @asynccontextmanager
+        async def task_factory():
+            nonlocal loop, nursery, eager_start
             if asyncio_backend:
-                for task in self._tasks:
-                    task.cancel()
-            tg.cancel_scope.cancel()
+                loop = asyncio.get_running_loop()
+                coro = asyncio.sleep(0)
+                try:
+                    await loop.create_task(coro, eager_start=True)
+                    eager_start = True
+                except Exception:
+                    coro.close()
+                try:
+                    yield
+                finally:
+                    for task in self._tasks:
+                        task.cancel()
+            else:
+                import trio  # noqa: PLC0415
+
+                async with trio.open_nursery() as nursery:
+                    try:
+                        yield
+                    finally:
+                        nursery.cancel_scope.cancel("Shutting down")
+
+        try:
+            async with task_factory():
+                async for item in queue:
+                    result = None
+                    if not isinstance(item, Pending):
+                        try:
+                            result = item[0](*item[1], **item[2])
+                            if inspect.iscoroutine(result):
+                                await result
+                        except Exception as e:
+                            self.log.exception("Direct call failed", exc_info=e)
+                    else:
+                        if asyncio_backend:
+                            if eager_start:
+                                task = loop.create_task(
+                                    self._wrap_call(item, backend), context=item.context, eager_start=True
+                                )
+                            else:
+                                task = loop.create_task(self._wrap_call(item, backend), context=item.context)
+                            if not task.done():
+                                self._tasks.add(task)
+                                task.add_done_callback(self._tasks.discard)
+                            del task
+                        else:
+                            if context := item.context:
+                                context.run(nursery.start_soon, self._wrap_call, item, backend)
+                            else:
+                                nursery.start_soon(self._wrap_call, item, backend)
+                    del item, result
+        finally:
+            done()
 
     async def _wrap_call(self, pen: Pending, backend: Backend) -> None:
         """
@@ -765,7 +785,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     async def _guest_backend_loop(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
         async def _guest_scheduler() -> None:
             async with anyio.create_task_group() as tg:
-                tg.start_soon(self._scheduler, Backend(backend), queue, tg)
+                tg.start_soon(self._scheduler, Backend(backend), queue, tg.cancel_scope.cancel)
 
         if self._state is CallerState.running:
             # Prefer callbacks from the host.
