@@ -6920,7 +6920,7 @@ kernel_interface["stop"](msg, buffer)
 <span class="sd">    If the IP address is something other than localhost, then Consoles on other machines </span>
 <span class="sd">    will be able to connect to the Kernel, so be careful!</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">session</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Session</span><span class="p">)</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Session</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">],</span> <span class="s2">&quot;check_pid&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
     <span class="s2">&quot;Handles serialization and sending of messages.&quot;</span>
 
     <span class="n">transport</span><span class="p">:</span> <span class="n">CaselessStrEnum</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">CaselessStrEnum</span><span class="p">(</span>
@@ -7416,7 +7416,7 @@ will be able to connect to the Kernel, so be careful!</p>
   </span>
 
 <a href="#async_kernel.interface.zmq.ZMQKernelInterface.session" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="jupyter_client.session.Session" href="https://jupyter-client.readthedocs.io/en/stable/api/jupyter_client.html#jupyter_client.session.Session">Session</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="jupyter_client.session.Session" href="https://jupyter-client.readthedocs.io/en/stable/api/jupyter_client.html#jupyter_client.session.Session">Session</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="created (async_kernel.common.Fixed(created))" href="../common/#async_kernel.common.Fixed(created)">created</a></span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#setattr">setattr</a></span><span class="p">(</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s1">&#39;obj&#39;</span><span class="p">],</span> <span class="s1">&#39;check_pid&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
