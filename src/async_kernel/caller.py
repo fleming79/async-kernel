@@ -593,29 +593,21 @@ class Caller(anyio.AsyncContextManagerMixin):
             token_pending = self._pending_var.set(pen)
             token_ident = self._caller_token.set(self._caller_id)
             try:
-                with anyio.CancelScope() as scope:
-                    pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
-                    # Call later.
-                    if (delay := md.get("delay")) and ((delay := delay - time.monotonic() + md["start_time"]) > 0):
-                        await anyio.sleep(delay)
-                    # Call now.
-                    try:
-                        result = md["func"](*md["args"], **md["kwargs"])
-                        if inspect.iscoroutine(result):
-                            result = await result
-                        pen.set_result(result)
-                    # Cancelled.
-                    except anyio.get_cancelled_exc_class():
-                        if not pen.cancelled():
-                            pen.cancel()
-                        pen.set_result(None)
-                    # Catch exceptions.
-                    except Exception as e:
-                        pen.set_exception(e)
+                if inspect.iscoroutine(result := md["func"](*md["args"], **md["kwargs"])):
+                    with anyio.CancelScope() as scope:
+                        pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                        pen.set_result(await result)
+                else:
+                    pen.set_result(result)
             except Exception as e:
                 if not pen.done():
                     pen.set_exception(e)
+            except BaseException:
+                raise
             finally:
+                if not pen.done():
+                    pen.cancel("Unable to finish execution")
+                    pen.set_result(None)
                 self._pending_var.reset(token_pending)
                 self._caller_token.reset(token_ident)
 
@@ -805,7 +797,16 @@ class Caller(anyio.AsyncContextManagerMixin):
         Info:
             All call arguments are packed into the instance's metadata.
         """
-        return self.schedule_call(func, args, kwargs, delay=delay, start_time=time.monotonic())
+
+        async def _call_later(*args: P.args, **kwargs: P.kwargs) -> T:
+            if (delay := time.monotonic() - start_time) > 0:
+                await anyio.sleep(delay)
+            if inspect.iscoroutine(result := func(*args, **kwargs)):
+                result = await result
+            return result  # pyright: ignore[reportReturnType]
+
+        start_time = time.monotonic()
+        return self.schedule_call(_call_later, args, kwargs)
 
     def call_soon(
         self,
