@@ -544,7 +544,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         except Exception:
             coro.close()
 
-        def start_soon(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
+        def create_task(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
             if eager:
                 task = loop.create_task(func(*args), context=context, eager_start=True)  # pyright: ignore[reportCallIssue]
             else:
@@ -554,7 +554,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 task.add_done_callback(tasks.discard)
 
         try:
-            yield start_soon
+            yield create_task
         finally:
             for task in tasks:
                 task.cancel()
@@ -566,19 +566,19 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         async with trio.open_nursery() as nursery:
 
-            def start_soon(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
+            def create_task(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
                 if context:
                     context.run(nursery.start_soon, func, *args)
                 else:
                     nursery.start_soon(func, *args)
 
             try:
-                yield start_soon
+                yield create_task
             finally:
                 nursery.cancel_scope.cancel("Shutting down")
 
     @asynccontextmanager
-    async def _task_factory(
+    async def _get_task_factory(
         self, backend: Backend
     ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, tuple], None]]:
         factory = self._asyncio_task_factory if backend is Backend.asyncio else self._trio_task_factory
@@ -599,10 +599,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             task_status: Used to signal when the scheduler has started.
         """
         try:
-            async with self._task_factory(backend) as start_soon:
+            async with self._get_task_factory(backend) as create_task:
                 async for item in queue:
                     if isinstance(item, Pending):
-                        start_soon(item.context, self._wrap_call, (item, backend))
+                        create_task(item.context, self._wrap_call, (item, backend))
                     else:
                         try:
                             result = item[0](*item[1], **item[2])
