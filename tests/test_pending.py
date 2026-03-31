@@ -2,6 +2,7 @@ import gc
 import inspect
 import random
 import re
+import sysconfig
 import weakref
 
 import anyio
@@ -274,6 +275,9 @@ class TestPending:
         assert pen.wait_sync(result=result) == (2 if result else None)
         assert pen.wait_sync(result=result) == (2 if result else None)
 
+    @pytest.mark.skipif(
+        sysconfig.get_config_var("Py_GIL_DISABLED") == 1, reason="https://github.com/x42005e1f/aiologic/issues/33"
+    )
     async def test_wait_sync_timeout(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
             pen = caller.call_soon(lambda: 0 / 1)  # should never get called
