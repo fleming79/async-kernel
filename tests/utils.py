@@ -145,7 +145,7 @@ async def wait_for_idle(client: AsyncKernelClient, *, wait=1.0):
                 break
 
 
-async def clear_iopub(client, *, timeout=0.01):
+async def clear_iopub(client, *, timeout=0.02):
     "Ensure there are no further iopub messages waiting."
     await assemble_output(client, timeout=timeout, exit_at_idle=False)
 
