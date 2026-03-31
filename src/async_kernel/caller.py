@@ -592,24 +592,26 @@ class Caller(anyio.AsyncContextManagerMixin):
             md = pen.metadata
             token_pending = self._pending_var.set(pen)
             token_ident = self._caller_token.set(self._caller_id)
+            e = None
             try:
-                if inspect.iscoroutine(result := md["func"](*md["args"], **md["kwargs"])):
-                    with anyio.CancelScope() as scope:
+                with anyio.CancelScope() as scope:
+                    if inspect.iscoroutine(result := md["func"](*md["args"], **md["kwargs"])):
                         pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
                         pen.set_result(await result)
-                else:
-                    pen.set_result(result)
-            except Exception as e:
-                if not pen.done():
-                    pen.set_exception(e)
-            except BaseException:
-                raise
+                    else:
+                        pen.set_result(result)
+            except Exception as exc:
+                pen.set_exception(exc)
+            except BaseException as exc:
+                e = exc
             finally:
                 if not pen.done():
                     pen.cancel("Unable to finish execution")
                     pen.set_result(None)
                 self._pending_var.reset(token_pending)
                 self._caller_token.reset(token_ident)
+                if e:
+                    raise e from None
 
     @staticmethod
     def _reject(item: tuple | Pending) -> None:

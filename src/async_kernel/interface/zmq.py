@@ -373,7 +373,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         )
         # Poll for a reply.
         while not (socket.poll(100) & PollEvent.POLLIN):
-            if self.last_interrupt_frame:
+            if self.last_interrupt_frame:  # pragma: no cover
                 raise KernelInterruptError
         return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 
