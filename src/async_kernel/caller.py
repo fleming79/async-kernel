@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack,
 
 import anyio
 import anyio.from_thread
+import trio
 from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import CoroutineType
 
+    import trio  # noqa: TC004
     import zmq
     from anyio.abc import TaskGroup
 
@@ -60,6 +62,7 @@ def noop() -> None:
 
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
+globals()["trio"] = lazy_import("trio")
 
 
 @coroutine
@@ -601,7 +604,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         pen.set_canceller(lambda msg: self.call_direct(task.cancel, msg))
                         pen.set_result(await result)
                     else:
-                        with anyio.CancelScope() as scope:
+                        with trio.CancelScope() as scope:
                             pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
                             pen.set_result(await result)
                 else:
