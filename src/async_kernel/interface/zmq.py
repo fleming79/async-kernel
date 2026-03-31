@@ -118,7 +118,7 @@ class ZMQKernelInterface(BaseKernelInterface):
     If the IP address is something other than localhost, then Consoles on other machines 
     will be able to connect to the Kernel, so be careful!
     """
-    session = Fixed(Session)
+    session = Fixed(Session, created=lambda c: setattr(c["obj"], "check_pid", False))
     "Handles serialization and sending of messages."
 
     transport: CaselessStrEnum[str] = CaselessStrEnum(
