@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     from async_kernel.caller import Caller
 
-__all__ = ["InvalidStateError", "Pending", "PendingCancelled", "PendingGroup", "PendingManager", "PendingTracker"]
+__all__ = ["Pending", "PendingCancelled", "PendingGroup", "PendingManager", "PendingNotDone", "PendingTracker"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -30,11 +30,11 @@ truncated_rep.fillvalue = "…"
 
 
 class PendingCancelled(anyio.ClosedResourceError):
-    "Used to indicate the pending is cancelled."
+    "Used to indicate the [Pending][async_kernel.pending.Pending] is cancelled."
 
 
-class InvalidStateError(RuntimeError):
-    "An invalid state of the pending."
+class PendingNotDone(RuntimeError):
+    "Used to indicate the [Pending][async_kernel.pending.Pending] is not done."
 
 
 class PendingTracker:
@@ -88,9 +88,13 @@ class PendingTracker:
         self._id_contextvar.reset(token)
 
     def add(self, pen: Pending) -> None:
-        "Track `Pending` until it is done."
+        """
+        Add `pen` to the pending set [Pending][async_kernel.pending.Pending].
 
-        if pen not in self._pending:
+        `pen` is automatically removed from the set once it is done.
+        """
+
+        if not pen.done() and pen not in self._pending:
             self._pending.add(pen)
             pen.add_done_callback(self._on_pending_done)
 
@@ -101,7 +105,7 @@ class PendingTracker:
 
 class PendingManager(PendingTracker):
     """
-    Tracks the creation of `Pending` in multiple contexts.
+    Tracks the creation of [Pending][async_kernel.pending.Pending] in multiple contexts.
 
     This class must be subclassed to be useful.
 
@@ -148,7 +152,7 @@ class PendingManager(PendingTracker):
 
     def activate(self) -> contextvars.Token[str | None]:
         """
-        Start tracking `Pending` in the  current context.
+        Start tracking [Pending][async_kernel.pending.Pending] in the  current context.
         """
         return self._activate()
 
@@ -180,7 +184,7 @@ class PendingManager(PendingTracker):
 @final
 class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     """
-    An asynchronous context manager for tracking `Pending` that are created in it's context.
+    An asynchronous context manager for tracking [Pending][async_kernel.pending.Pending] that are created in it's context.
 
     Usage:
         Enter the async context and create new pending.
@@ -206,7 +210,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         """
         An async context to capture all pending (that opt in) created in the context.
 
-        The pending group will only exit once all pending in the group are `done`.
+        The pending group will only exit once all pending in the group are done.
 
         Pending can be added to and removed from the group manually.
 
@@ -237,7 +241,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         if self._leaving_context:
             msg = f"Re-entry of {self.__class__} is not supported!"
-            raise InvalidStateError(msg)
+            raise RuntimeError(msg)
         self._cancel_scope = anyio.CancelScope(shield=self._shield)
         self._all_done = create_async_event()
         token = self._activate()
@@ -514,7 +518,7 @@ class Pending(Awaitable[T]):
 
     def _set_done(self, result: bool, value, /) -> None:
         if self._done:
-            raise InvalidStateError
+            return
         if not self._cancelled:
             if result:
                 self._result = value
@@ -540,31 +544,25 @@ class Pending(Awaitable[T]):
 
     def set_result(self, value: T) -> None:
         """
-        Set the result (low-level internally synchronised).
+        Set the result if the pending is not already done (low-level internally synchronised).
 
         Args:
             value: The result to set.
-
-        Raises:
-            InvalidStateError: If the pending is already done.
         """
         self._set_done(True, value)
 
     def set_exception(self, exception: BaseException) -> None:
         """
-        Set the exception (low-level internally synchronised).
+        Set the exception if the pending is not already done (low-level internally synchronised).
 
         Args:
             exception: The value to set as the exception.
-
-        Raises:
-            InvalidStateError: If the pending is already done.
         """
         self._set_done(False, exception)
 
     def cancel(self, msg: str | None = None) -> bool:
         """
-        Cancel the pending if it is not already `done`.
+        Cancel the pending if it is not already done.
 
         Args:
             msg: The cancellation message.
@@ -575,24 +573,21 @@ class Pending(Awaitable[T]):
         Notes:
             - Cancellation cannot be undone.
             - Multiple calls append `msg` to the cancellation message with no other effect.
-            - The `done` state is a function of the canceller, if no canceller is set, `done`
+            - The done state is a function of the canceller, if no canceller is set, done
                 will be set immediately.
         """
         if not self._done:
             if (cancelled := self._cancelled or "") and msg:
                 msg = f"{cancelled}\n{msg}"
             self._cancelled = msg or cancelled
-            if not (canceller := self._canceller):
-                try:
-                    self._set_done(False, None)
-                except InvalidStateError:
-                    pass
+            if (canceller := self._canceller) is None:
+                self._set_done(False, None)
             else:
                 canceller(msg)
         return self._cancelled is not None
 
     async def cancel_wait(self, msg: str | None, *, timeout: float | None = None) -> None:
-        "Cancel the pending and wait for it to be `done`."
+        "Cancel the pending and wait for it to be done."
         if not self._done:
             self.cancel(msg)
             if not self._done:
@@ -605,7 +600,7 @@ class Pending(Awaitable[T]):
 
         Notes:
 
-            - This can return `True` before a pending is `done`.
+            - This can return `True` before a pending is done.
             - To wait for a pending to complete (assuming a canceller is or will be set); use
                 `await pen.wait(result=False)` or `pen.wait_sync(result=False)`
         """
@@ -620,29 +615,11 @@ class Pending(Awaitable[T]):
 
                 - It must accept the cancellation message as the first argument.
                 - `canceller` must be externally synchronised.
-
-        Warning:
-            - [set_result][] or [set_exception][] *MUST* be called by the `canceller`, or as a result of the call to `canceller`
-                to mark the pending as `done`.
-
-        Raises:
-            InvalidStateError: If already `done`.
-            PendingCancelled: If already `cancelled`.
-
-        Example:
-            ```python
-            pen = Pending()
-            pen.cancel()
-            assert not pen.done()
-            pen.set_canceller(lambda msg: pen.set_result(None))
-            assert pen.done()
-            ```
+                - [set_result][] or [set_exception][] *MUST* be called by the `canceller`,
+                    or as a result of the call to `canceller` to mark the pending as done.
         """
-        if self._done:
-            if self._cancelled is not None:
-                raise PendingCancelled(self._cancelled)
-            raise InvalidStateError
-        self._canceller = canceller
+        if not self._done:
+            self._canceller = canceller
 
     def done(self) -> bool:
         """
@@ -652,7 +629,7 @@ class Pending(Awaitable[T]):
 
     def add_done_callback(self, fn: Callable[[Self], Any], /) -> None:
         """
-        Add a callback for when the pending is `done`.
+        Add a callback for when the pending is done.
 
         The callback should be light weight and provide its own thread safety.
 
@@ -689,14 +666,17 @@ class Pending(Awaitable[T]):
 
         Raises:
             PendingCancelled: If the pending has been cancelled.
-            InvalidStateError: If the pending isn't done yet.
+            PendingNotDone: If the pending isn't done yet.
         """
-        if e := self.exception():
-            raise e from None
+        if not self._done:
+            raise PendingNotDone
+        if self._cancelled is not None:
+            raise PendingCancelled(self._cancelled)
         try:
             return self._result
         except AttributeError:
-            raise InvalidStateError from None
+            e = getattr(self, "_exception", RuntimeError)
+            raise e from None
 
     def exception(self) -> BaseException | None:
         """
@@ -704,7 +684,10 @@ class Pending(Awaitable[T]):
 
         Raises:
             PendingCancelled: If the pending has been cancelled.
+            PendingNotDone: If the pending isn't done yet.
         """
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
+        if not self._done:
+            raise PendingNotDone
         return getattr(self, "_exception", None)

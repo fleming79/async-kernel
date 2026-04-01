@@ -602,7 +602,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             async with self._get_task_factory(backend) as create_task:
                 async for item in queue:
                     if isinstance(item, Pending):
-                        create_task(item.context, self._wrap_call, (item, backend))
+                        if not item.done():
+                            create_task(item.context, self._wrap_call, (item, backend))
                     else:
                         try:
                             result = item[0](*item[1], **item[2])
