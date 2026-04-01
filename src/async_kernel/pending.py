@@ -653,9 +653,16 @@ class Pending(Awaitable[T]):
         Callbacks added are handled FIFO.
         """
         if (callbacks := self._done_callbacks) is not None:
-            callbacks.append(fn) if not self._done else callbacks.insert(0, fn)
+            if not self._done:
+                callbacks.append(fn)
+            else:
+                # The lock has already been acquired, so no risk of 'using it'.
+                # Ensure the lock has been released.
+                (lock := self._lock).acquire()
+                lock.release()
+                callbacks.insert(0, fn)
             if self._done_callbacks is None and fn in callbacks:  # pragma: no cover
-                # Handle the rare case where `fn` does not get called by `_set_done`
+                # `fn` did not get called before `_set_done` finished.
                 callbacks.remove(fn)
                 fn(self)
         else:

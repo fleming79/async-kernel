@@ -18,7 +18,7 @@ from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller, SingleConsumerAsyncQueue
-from async_kernel.pending import Pending, PendingCancelled
+from async_kernel.pending import Pending, PendingCancelled, Py_GIL_DISABLED
 from async_kernel.typing import Backend, Hosts
 
 anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
@@ -317,6 +317,10 @@ class TestCaller:
             await started
         assert is_cancelled
 
+    @pytest.mark.skipif(
+        Py_GIL_DISABLED == 1,
+        reason="Free-threaded buggy. possibly related: https://github.com/x42005e1f/aiologic/issues/33",
+    )
     @pytest.mark.parametrize("check_result", ["result", "exception"])
     @pytest.mark.parametrize("check_mode", ["main", "local", "asyncio", "trio"])
     async def test_wait_from_threads(self, anyio_backend, check_mode: str, check_result: str):
