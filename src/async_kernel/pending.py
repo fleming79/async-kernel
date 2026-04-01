@@ -540,9 +540,6 @@ class Pending(Awaitable[T]):
                     self._result = value
                 else:
                     self._exception = value
-        except Exception:  # noqa: TRY203
-            raise
-        else:
             self._done = True
             callbacks.reverse()
         finally:
