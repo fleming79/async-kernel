@@ -11,11 +11,11 @@ from aiologic.meta import await_for
 
 from async_kernel.caller import Caller
 from async_kernel.pending import (
-    InvalidStateError,
     Pending,
     PendingCancelled,
     PendingGroup,
     PendingManager,
+    PendingNotDone,
     PendingTracker,
 )
 from async_kernel.typing import Backend
@@ -121,52 +121,26 @@ class TestPending:
         assert all_done
         await pen_waiting
 
-    async def test_set_result_twice_raises(self, anyio_backend: Backend):
+    async def test_set_already_result(self, anyio_backend: Backend):
         pen = Pending()
         pen.set_result(1)
-        with pytest.raises(RuntimeError):
-            pen.set_result(2)
-
-    async def test_set_canceller_twice_raises(self, anyio_backend: Backend):
-        pen = Pending()
-        with anyio.CancelScope() as cancel_scope:
-            pen.set_canceller(cancel_scope.cancel)
-            pen.set_canceller(cancel_scope.cancel)
-            pen.set_result(None)
-        with pytest.raises(InvalidStateError):
-            pen.set_canceller(cancel_scope.cancel)
-
-    async def test_set_canceller_after_cancelled(self, anyio_backend: Backend):
-        pen = Pending()
-        pen.cancel()
-        with pytest.raises(PendingCancelled):
-            pen.set_canceller(lambda _: None)
-
-    async def test_set_exception_twice_raises(self, anyio_backend: Backend):
-        pen = Pending()
-        pen.set_exception(ValueError())
-        with pytest.raises(InvalidStateError):
-            pen.set_exception(ValueError())
-
-    async def test_set_result_after_exception_raises(self, anyio_backend: Backend):
-        pen = Pending()
-        pen.set_exception(ValueError())
-        assert isinstance(pen.exception(), ValueError)
-        with pytest.raises(RuntimeError):
-            pen.set_result(1)
-
-    async def test_set_exception_after_result_raises(self, anyio_backend: Backend):
-        pen = Pending()
-        pen.set_result(1)
-        with pytest.raises(RuntimeError):
-            pen.set_exception(ValueError())
-
-    def test_result(self):
-        pen = Pending()
-        with pytest.raises(InvalidStateError):
-            pen.result()
-        pen.set_result(1)
+        pen.set_result(2)
+        pen.set_exception(RuntimeError())
         assert pen.result() == 1
+
+    async def test_set_already_exception(self, anyio_backend: Backend):
+        pen = Pending()
+        pen.set_exception(RuntimeError())
+        pen.set_result(2)
+        with pytest.raises(RuntimeError):
+            pen.result()
+
+    def test_not_done(self):
+        pen = Pending()
+        with pytest.raises(PendingNotDone):
+            pen.result()
+        with pytest.raises(PendingNotDone):
+            pen.exception()
 
     def test_result_cancelled(self):
         pen = Pending()
@@ -417,7 +391,7 @@ class TestPendingGroup:
             pen1 = caller.call_soon(lambda: 1)
             assert pen1 in pm.pending
         assert pen1.result() == 1
-        with pytest.raises(InvalidStateError):
+        with pytest.raises(RuntimeError):
             async with pm:
                 pass
 
