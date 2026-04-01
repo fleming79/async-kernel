@@ -519,12 +519,13 @@ class Pending(Awaitable[T]):
     def _set_done(self, result: bool, value, /) -> None:
         if self._done:
             return
+        self._done = True
+        # The small gap between setting done and setting the result is unlikely to pose a problem.
         if not self._cancelled:
             if result:
                 self._result = value
             else:
                 self._exception = value
-        self._done = True
         self._canceller = None
         # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
         callbacks = self._done_callbacks
