@@ -3,13 +3,20 @@ from __future__ import annotations
 import contextlib
 import contextvars
 import reprlib
+import sysconfig
 import uuid
 import weakref
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
-from aiologic.lowlevel import create_async_event, create_async_waiter, create_green_event
+from aiologic.lowlevel import (
+    THREAD_DUMMY_LOCK,
+    create_async_event,
+    create_async_waiter,
+    create_green_event,
+    create_thread_oncelock,
+)
 from typing_extensions import override
 
 import async_kernel
@@ -27,6 +34,7 @@ truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
 truncated_rep.maxother = 100
 truncated_rep.fillvalue = "…"
+Py_GIL_DISABLED = sysconfig.get_config_var("Py_GIL_DISABLED")
 
 
 class PendingCancelled(anyio.ClosedResourceError):
@@ -344,6 +352,7 @@ class Pending(Awaitable[T]):
         "_done",
         "_done_callbacks",
         "_exception",
+        "_lock",
         "_result",
         "_waiting",
         "context",
@@ -394,6 +403,7 @@ class Pending(Awaitable[T]):
         self._done = False
         self._cancelled = None
         self._canceller = None
+        self._lock = create_thread_oncelock() if Py_GIL_DISABLED else THREAD_DUMMY_LOCK
 
         if trackers or context:
             # A copy the context is required to avoid `PendingTracker.id` leakage.
@@ -519,18 +529,27 @@ class Pending(Awaitable[T]):
     def _set_done(self, result: bool, value, /) -> None:
         if self._done:
             return
-        self._done = True
-        # The small gap between setting done and setting the result is unlikely to pose a problem.
-        if not self._cancelled:
-            if result:
-                self._result = value
-            else:
-                self._exception = value
-        self._canceller = None
+        (lock := self._lock).acquire()
+        try:
+            if self._done:
+                return  # pragma: no cover
+            callbacks = self._done_callbacks
+            assert callbacks is not None
+            if not self._cancelled:
+                if result:
+                    self._result = value
+                else:
+                    self._exception = value
+        except Exception:  # noqa: TRY203
+            raise
+        else:
+            self._done = True
+            callbacks.reverse()
+        finally:
+            lock.release()
         # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
-        callbacks = self._done_callbacks
-        assert callbacks is not None
-        callbacks.reverse()
+        self._lock = THREAD_DUMMY_LOCK
+        self._canceller = None
         e = None
         while callbacks:
             try:
@@ -669,10 +688,10 @@ class Pending(Awaitable[T]):
             PendingCancelled: If the pending has been cancelled.
             PendingNotDone: If the pending isn't done yet.
         """
-        if not self._done:
-            raise PendingNotDone
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
+        if not self._done:
+            raise PendingNotDone
         try:
             return self._result
         except AttributeError:
