@@ -17,11 +17,9 @@ from types import CoroutineType, coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack, cast, final
 
 import anyio
-import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 from aiologic.meta import await_for
-from anyio.lowlevel import current_token
 from typing_extensions import override
 from wrapt import lazy_import
 
@@ -437,13 +435,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             if self.backend == Backend.asyncio:
                 self._tasks.add(asyncio.create_task(run_caller_in_context()))
             else:
-                # trio
-                token = current_token()
+                trio_token = trio.lowlevel.current_trio_token()
 
                 def to_thread():
                     utils.mark_thread_pydev_do_not_trace()
                     try:
-                        anyio.from_thread.run(run_caller_in_context, token=token)
+                        trio.from_thread.run(run_caller_in_context, trio_token=trio_token)
                     except (BaseExceptionGroup, BaseException) as e:
                         if not "shutdown" not in str(e):
                             raise
@@ -458,7 +455,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 host_options=self.host_options,
             )
             args = [run_caller_in_context, (), settings]
-            self._thread = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=True)
+            self._thread = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=False)
             self._caller_id = id(self._thread)
             self._thread.start()
 
@@ -528,62 +525,50 @@ class Caller(anyio.AsyncContextManagerMixin):
                         parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
-                    await self._checkpoint()
-
-    @asynccontextmanager
-    async def _asyncio_task_factory(
-        self,
-    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, tuple], None]]:
-        loop = asyncio.get_running_loop()
-        coro = asyncio.sleep(0)
-        eager = False
-        tasks = set()
-        try:
-            await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
-            eager = True
-        except Exception:
-            coro.close()
-
-        def create_task(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
-            if eager:
-                task = loop.create_task(func(*args), context=context, eager_start=True)  # pyright: ignore[reportCallIssue]
-            else:
-                task = loop.create_task(func(*args), context=context)
-            if not task.done():
-                tasks.add(task)
-                task.add_done_callback(tasks.discard)
-
-        try:
-            yield create_task
-        finally:
-            for task in tasks:
-                task.cancel()
-
-    @asynccontextmanager
-    async def _trio_task_factory(
-        self,
-    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, tuple], None]]:
-
-        async with trio.open_nursery() as nursery:
-
-            def create_task(context: contextvars.Context | None, func: Callable, args: tuple) -> None:
-                if context:
-                    context.run(nursery.start_soon, func, *args)
-                else:
-                    nursery.start_soon(func, *args)
-
-            try:
-                yield create_task
-            finally:
-                nursery.cancel_scope.cancel("Shutting down")
 
     @asynccontextmanager
     async def _get_task_factory(
         self, backend: Backend
-    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, tuple], None]]:
-        factory = self._asyncio_task_factory if backend is Backend.asyncio else self._trio_task_factory
-        async with factory() as start_soon_async:
-            yield start_soon_async
+    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
+
+        if backend is Backend.asyncio:
+            loop = asyncio.get_running_loop()
+            coro = asyncio.sleep(0)
+            eager = False
+            tasks = set()
+            try:
+                await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
+                eager = True
+            except Exception:
+                coro.close()
+
+            def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
+                if eager:
+                    task = loop.create_task(func(*args), context=context, eager_start=True)  # pyright: ignore[reportCallIssue]
+                else:
+                    task = loop.create_task(func(*args), context=context)
+                if not task.done():
+                    tasks.add(task)
+                    task.add_done_callback(tasks.discard)
+
+            try:
+                yield create_task
+            finally:
+                for task in tasks:
+                    task.cancel()
+        else:
+            async with trio.open_nursery() as nursery:
+
+                def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
+                    if context:
+                        context.run(nursery.start_soon, func, *args)
+                    else:
+                        nursery.start_soon(func, *args)
+
+                try:
+                    yield create_task
+                finally:
+                    nursery.cancel_scope.cancel("Shutting down")
 
     async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, done: Callable[[], None]) -> None:
         """
@@ -598,32 +583,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             tg: The task group used to manage concurrent tasks.
             task_status: Used to signal when the scheduler has started.
         """
-        try:
-            async with self._get_task_factory(backend) as create_task:
-                async for item in queue:
-                    if isinstance(item, Pending):
-                        if not item.done():
-                            create_task(item.context, self._wrap_call, (item, backend))
-                    else:
-                        try:
-                            result = item[0](*item[1], **item[2])
-                            if inspect.iscoroutine(result):
-                                await result
-                            del result
-                        except Exception as e:
-                            self.log.exception("Direct call failed", exc_info=e)
-                    del item
-        finally:
-            done()
 
-    async def _wrap_call(self, pen: Pending[Any], backend: Backend) -> None:
-        """
-        Asynchronously executes the function associated with the given pending, handling cancellation, delays, and exceptions.
-
-        Args:
-            pen: The [async_kernel.Pending][] object containing metadata about the function to execute, its arguments, and execution state.
-        """
-        if not pen.done():
+        async def _wrap_call(pen: Pending[Any]) -> None:
+            if pen.done():
+                return  # pragma: no cover
             md = pen.metadata
             token_pending = self._pending_var.set(pen)
             token_ident = self._caller_token.set(self._caller_id)
@@ -634,11 +597,19 @@ class Caller(anyio.AsyncContextManagerMixin):
                         task = asyncio.current_task()
                         assert task
                         pen.set_canceller(lambda msg: self.call_direct(task.cancel, msg))
-                        pen.set_result(await result)
+                        try:
+                            pen.set_result(await result)
+                        except asyncio.CancelledError:
+                            pen.cancel("Task was cancelled")
+                            raise
                     else:
                         with trio.CancelScope() as scope:
                             pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
-                            pen.set_result(await result)
+                            try:
+                                pen.set_result(await result)
+                            except trio.Cancelled:
+                                pen.cancel("Task was cancelled")
+                                raise
                 else:
                     pen.set_result(result)
             except Exception as exc:
@@ -653,6 +624,24 @@ class Caller(anyio.AsyncContextManagerMixin):
                 self._caller_token.reset(token_ident)
                 if e:
                     raise e from None
+
+        try:
+            async with self._get_task_factory(backend) as create_task:
+                async for item in queue:
+                    if isinstance(item, Pending):
+                        if not item.done():
+                            create_task(item.context, _wrap_call, item)
+                    else:
+                        try:
+                            result = item[0](*item[1], **item[2])
+                            if inspect.iscoroutine(result):
+                                await result
+                            del result
+                        except Exception as e:
+                            self.log.exception("Direct call failed", exc_info=e)
+                    del item
+        finally:
+            done()
 
     @staticmethod
     def _reject(item: tuple | Pending) -> None:
@@ -681,7 +670,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 else:
                     del cls._thread_cleanup_idle_workers
 
-            cls._thread_cleanup_idle_workers = threading.Thread(target=_cleanup_workers, daemon=True)
+            cls._thread_cleanup_idle_workers = threading.Thread(target=_cleanup_workers, daemon=False)
             cls._thread_cleanup_idle_workers.start()
 
     @classmethod
@@ -812,12 +801,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             )
             if pen := self.current_pending():
                 self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]
-            with anyio.CancelScope(shield=True):
-                async for func in run_soon_threadsafe_queue:
-                    try:
-                        func()
-                    except Exception:
-                        pass
+            async for func in run_soon_threadsafe_queue:
+                try:
+                    func()
+                except Exception:
+                    pass
 
     def call_later(
         self,
@@ -1031,20 +1019,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         if pen := self._queue_map.pop(key, None):
             pen.metadata["queue"].stop()
             pen.cancel()
-
-    async def _checkpoint(self) -> None:
-        "Yield to the event loop."
-        if not self._use_safe_checkpoint:
-            try:
-                if self.backend is Backend.trio:
-                    await trio_checkpoint()
-                else:
-                    await asyncio_checkpoint()
-            except Exception:
-                self._use_safe_checkpoint = True
-            else:
-                return
-        await async_checkpoint(force=True)
 
     async def as_completed(
         self,
