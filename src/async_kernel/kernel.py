@@ -28,12 +28,11 @@ from async_kernel import Caller, utils
 from async_kernel.asyncshell import (
     AsyncInteractiveShell,
     AsyncInteractiveSubshell,
-    KernelInterruptError,
     ShellPendingManager,
     SubshellManager,
 )
 from async_kernel.comm import CommManager
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Channel, Content, ExecuteContent, HandlerType, Job, Message, MsgType, NoValue, RunMode
@@ -45,7 +44,7 @@ if TYPE_CHECKING:
     from async_kernel.interface.zmq import ZMQKernelInterface
 
 
-__all__ = ["Kernel", "KernelInterruptError"]
+__all__ = ["Kernel", "KernelInterrupt"]
 
 RUN_IN_SHELL = (MsgType.execute_request, MsgType.comm_msg)
 """

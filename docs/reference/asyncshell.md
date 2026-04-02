@@ -4,8 +4,7 @@
       members:
       - __all__
       - AsyncInteractiveShell
-      - AsyncInteractiveSubshell
-      - KernelInterruptError
+      - AsyncInteractiveSubshell 
       - AsyncDisplayHook
       - AsyncDisplayPublisher
       - SubshellManager

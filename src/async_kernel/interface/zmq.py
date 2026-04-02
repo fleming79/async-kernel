@@ -31,9 +31,8 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel.event_loop
 from async_kernel import utils
-from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Backend, Channel, Content, Hosts, Job, Message, MsgHeader, MsgType, NoValue, RunSettings
 
@@ -374,7 +373,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         # Poll for a reply.
         while not (socket.poll(100) & PollEvent.POLLIN):
             if self.last_interrupt_frame:  # pragma: no cover
-                raise KernelInterruptError
+                raise KernelInterrupt
         return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 
     @override
@@ -462,11 +461,11 @@ class ZMQKernelInterface(BaseKernelInterface):
         match self._interrupt_requested:
             case "FORCE":
                 self._interrupt_requested = False
-                raise KernelInterruptError
+                raise KernelInterrupt
             case True:
                 if frame and frame.f_locals is self.kernel.shell.user_ns:
                     self._interrupt_requested = False
-                    raise KernelInterruptError
+                    raise KernelInterrupt
                 self.last_interrupt_frame = frame
 
                 def clearlast_interrupt_frame():

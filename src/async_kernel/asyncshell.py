@@ -27,7 +27,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
@@ -43,10 +43,6 @@ if TYPE_CHECKING:
 
 
 __all__ = ["AsyncInteractiveShell"]
-
-
-class KernelInterruptError(Exception):
-    "Raised to interrupt the kernel."
 
 
 class AsyncDisplayHook(DisplayHook):
@@ -379,9 +375,9 @@ class AsyncInteractiveShell(InteractiveShell):
                         )
                 except (Exception, anyio.get_cancelled_exc_class()) as e:
                     # A safeguard to catch exceptions not caught by the shell.
-                    err = KernelInterruptError() if self.kernel.interface.last_interrupt_frame else e
+                    err = KernelInterrupt() if self.kernel.interface.last_interrupt_frame else e
                 else:
-                    err = result.error_before_exec or result.error_in_exec if result else KernelInterruptError()
+                    err = result.error_before_exec or result.error_in_exec if result else KernelInterrupt()
                     if not err and Tags.raises_exception in tags:
                         msg = "An expected exception was not raised!"
                         err = RuntimeError(msg)

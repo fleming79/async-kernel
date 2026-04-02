@@ -20,9 +20,8 @@ from aiologic.lowlevel import current_async_library, enable_signal_safety
 from traitlets import HasTraits, Instance, UseEnum
 
 import async_kernel
-from async_kernel.asyncshell import KernelInterruptError
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.iostream import OutStream
 from async_kernel.typing import Backend, Channel, Content, Message, MsgHeader, NoValue
 
@@ -130,7 +129,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
         self.last_interrupt_frame = frame
         self.interrupt()
         self.last_interrupt_frame = None
-        raise KernelInterruptError
+        raise KernelInterrupt
 
     def _patch_io(self) -> Callable[[], None]:
         original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
@@ -197,7 +196,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
 
     def interrupt(self) -> None:
         """
-        Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterruptError][].
+        Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterrupt][].
         """
         while self.interrupts:
             try:
