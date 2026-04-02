@@ -213,7 +213,6 @@ class TestCaller:
         await pen
         assert re.match(matches[1], repr(pen))
 
-
     async def test_protected(self, anyio_backend: Backend):
         async with Caller("manual", protected=True) as caller:
             caller.stop()
