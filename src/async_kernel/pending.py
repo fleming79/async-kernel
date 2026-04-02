@@ -311,14 +311,15 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
 class Pending(Awaitable[T]):
     """
-    Pending is an internally synchronised, cancellable, wait/awaitable representation of a future result.
+    Pending is an internally synchronised, cancellable, waitable/awaitable representation of a pending result.
 
     It can be thought of as a hybrid mixture of [asyncio.Future][] and [concurrent.futures.Future][].
 
+    **Features**
 
     - It can be wait/awaited and cancelled from any thread (not considering deadlocks) and event loop.
     - Provides metadata storage.
-    - Has built in support for tracking pending created in a specific context (see: [PendingManager][] and [PendingGroup][]).
+    - Has built-in support for tracking pending created in a specific context (see: [PendingManager][] and [PendingGroup][]).
 
     **Properties**
 
