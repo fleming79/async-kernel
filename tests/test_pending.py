@@ -177,7 +177,7 @@ class TestPending:
         # Inspiration: https://github.com/python/cpython/issues/146270
         exc = RuntimeError()
         with ThreadPoolExecutor(3) as executor:
-            for _ in range(1000):  # one second
+            for _ in range(1000):
                 pen = Pending()
 
                 f1 = executor.submit(pen.set_result, 1)
