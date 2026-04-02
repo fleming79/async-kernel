@@ -801,12 +801,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             )
             if pen := self.current_pending():
                 self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]
-            with anyio.CancelScope(shield=True):
-                async for func in run_soon_threadsafe_queue:
-                    try:
-                        func()
-                    except Exception:
-                        pass
+            async for func in run_soon_threadsafe_queue:
+                try:
+                    func()
+                except Exception:
+                    pass
 
     def call_later(
         self,
