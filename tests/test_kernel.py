@@ -3,14 +3,14 @@ from __future__ import annotations
 import logging
 import pathlib
 import threading
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal
 
 import anyio
 import pytest
 from IPython.core import page
 
 import async_kernel.utils
-from async_kernel import Kernel
+from async_kernel import Kernel, Pending
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
 from async_kernel.typing import Channel, ExecuteContent, Job, MsgType, RunMode, Tags
@@ -272,34 +272,34 @@ async def test_comm_info_request(client: AsyncKernelClient):
 
 
 async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
-    comm = None
+    pen = Pending[Comm]()
+    handle_msg = Pending()
+    handle_close = Pending()
 
-    def cb(comm_, _):
-        nonlocal comm
-        comm = comm_
+    def cb(comm, _):
+        pen.set_result(comm)
 
     kernel.comm_manager.register_target("my target", cb)
     # open a comm
-    with anyio.move_on_after(0.1):
-        await utils.send_shell_message(
-            client, MsgType.comm_open, {"content": {}, "comm_id": "comm id", "target_name": "my target"}
-        )
-    assert isinstance(comm, Comm)
-    comm = cast("Comm", comm)
+    await utils.send_shell_message(
+        client, MsgType.comm_open, {"content": {}, "comm_id": "comm id", "target_name": "my target"}, reply=False
+    )
+    comm = await pen
     reply = await utils.send_shell_message(client, MsgType.comm_info_request)
     assert reply["header"]["msg_type"] == "comm_info_reply"
     assert reply["content"]["status"] == "ok"
     assert reply["content"]["comms"].get("comm id") == {"target_name": "my target"}
 
-    msg_received = mocker.patch.object(comm, "handle_msg")
-    with anyio.move_on_after(0.1):
-        await utils.send_shell_message(client, MsgType.comm_msg, {"comm_id": comm.comm_id})
-    assert msg_received.call_count == 1
+    comm.handle_msg = handle_msg.set_result  # pyright: ignore[reportAttributeAccessIssue]
+    await utils.send_shell_message(client, MsgType.comm_msg, {"comm_id": comm.comm_id}, reply=False)
+    await handle_msg
+    assert isinstance(handle_msg.result(), dict)
     # close comm
-    closed = mocker.patch.object(comm, "handle_close")
-    with anyio.move_on_after(0.1):
-        await utils.send_shell_message(client, MsgType.comm_close, {"comm_id": comm.comm_id})
-    assert closed.call_count == 1
+
+    comm.handle_close = handle_close.set_result  # pyright: ignore[reportAttributeAccessIssue]
+    await utils.send_shell_message(client, MsgType.comm_close, {"comm_id": comm.comm_id}, reply=False)
+    await handle_close
+    assert isinstance(handle_close.result(), dict)
     kernel.comm_manager.unregister_target("my target", cb)
 
 
@@ -492,10 +492,8 @@ async def test_namespace_default(client: AsyncKernelClient, code: str):
 @pytest.mark.parametrize("channel", [Channel.shell, Channel.control])
 async def test_invalid_message(client: AsyncKernelClient, channel: Literal[Channel.shell, Channel.control]):
     f = utils.send_control_message if channel == "control" else utils.send_shell_message
-    response = None
-    with anyio.move_on_after(0.1):
-        response = await f(client, "test_invalid_message")  # pyright: ignore[reportArgumentType]
-    assert response is None
+    await f(client, "test_invalid_message", reply=False)  # pyright: ignore[reportArgumentType]
+    await anyio.sleep(0.1)
 
 
 @pytest.mark.parametrize(
