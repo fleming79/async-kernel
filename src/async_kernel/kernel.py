@@ -337,6 +337,12 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         self.log.info("Kernel shutdown: %s", self)
         await anyio.sleep(0.1)
         self.shell.reset(new_session=False)
+        try:
+            self.shell.history_manager.end_session()
+            self.shell.history_manager.save_thread.stop()  # pyright: ignore[reportOptionalMemberAccess]
+            self.shell.history_manager.save_thread.join()  # pyright: ignore[reportOptionalMemberAccess]
+        except AttributeError:
+            pass
         self.subshell_manager.stop_all_subshells(force=True)
         self.callers.clear()
         self._handler_cache.clear()

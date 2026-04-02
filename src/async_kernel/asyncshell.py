@@ -16,6 +16,7 @@ from aiologic.lowlevel import async_checkpoint
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
+from IPython.core.history import HistoryManager
 from IPython.core.interactiveshell import InteractiveShell, InteractiveShellABC
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_magic, magics_class
@@ -36,7 +37,6 @@ from async_kernel.typing import Channel, Content, Message, NoValue, Tags
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
 
-    from IPython.core.history import HistoryManager
     from traitlets.config import Configurable
 
     from async_kernel import Kernel
@@ -180,6 +180,7 @@ class AsyncInteractiveShell(InteractiveShell):
     display_pub_class = Type(AsyncDisplayPublisher)
     displayhook: Instance[AsyncDisplayHook]
     display_pub: Instance[AsyncDisplayPublisher]
+    history_manager: HistoryManager
     compiler_class = Type(XCachingCompiler)
     compile: Instance[XCachingCompiler]
     kernel: Instance[Kernel] = Instance("async_kernel.Kernel", (), read_only=True)
@@ -212,8 +213,6 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def __init__(self, parent: None | Configurable = None) -> None:
         super().__init__(parent=parent)
-        with contextlib.suppress(AttributeError):
-            utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)  # pyright: ignore[reportOptionalMemberAccess]
 
     def _get_default_ns(self) -> dict[str, Any]:
         # Copied from `InteractiveShell.init_user_ns`
@@ -277,6 +276,16 @@ class AsyncInteractiveShell(InteractiveShell):
                 self.kernel.interface.iopub_send("stream", content={"name": "stdout", "text": data})
 
         self.set_hook("show_in_pager", _show_in_pager, 99)
+
+    @override
+    def init_history(self) -> None:
+        if self.subshell_id is None:
+            self.history_manager = HistoryManager(shell=self, parent=self)
+            self.configurables.append(self.history_manager)  # pyright: ignore[reportArgumentType]
+            utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)
+        else:
+            self.history_manager = HistoryManager(shell=self, parent=self, hist_file=":memory:")
+            self.history_manager.output_hist.update(self.kernel.main_shell.history_manager.output_hist)
 
     @property
     @override
@@ -473,7 +482,7 @@ class AsyncInteractiveShell(InteractiveShell):
         **_ignored,
     ) -> Content:
         """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
-        history_manager: HistoryManager = self.history_manager  # pyright: ignore[reportAssignmentType]
+        history_manager = self.history_manager
         assert history_manager
         match hist_access_type:
             case "tail":
