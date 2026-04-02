@@ -535,10 +535,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         self, backend: Backend
     ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
 
-        @asynccontextmanager
-        async def _asyncio_task_factory() -> AsyncIterator[
-            Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]
-        ]:
+        if backend is Backend.asyncio:
             loop = asyncio.get_running_loop()
             coro = asyncio.sleep(0)
             eager = False
@@ -563,12 +560,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             finally:
                 for task in tasks:
                     task.cancel()
-
-        @asynccontextmanager
-        async def _trio_task_factory() -> AsyncIterator[
-            Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]
-        ]:
-
+        else:
             async with trio.open_nursery() as nursery:
 
                 def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
@@ -581,10 +573,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                     yield create_task
                 finally:
                     nursery.cancel_scope.cancel("Shutting down")
-
-        factory = _asyncio_task_factory if backend is Backend.asyncio else _trio_task_factory
-        async with factory() as start_soon_async:
-            yield start_soon_async
 
     async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, done: Callable[[], None]) -> None:
         """
