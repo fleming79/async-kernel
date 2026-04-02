@@ -17,11 +17,9 @@ from types import CoroutineType, coroutine
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack, cast, final
 
 import anyio
-import anyio.from_thread
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 from aiologic.meta import await_for
-from anyio.lowlevel import current_token
 from typing_extensions import override
 from wrapt import lazy_import
 
@@ -437,13 +435,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             if self.backend == Backend.asyncio:
                 self._tasks.add(asyncio.create_task(run_caller_in_context()))
             else:
-                # trio
-                token = current_token()
+                trio_token = trio.lowlevel.current_trio_token()
 
                 def to_thread():
                     utils.mark_thread_pydev_do_not_trace()
                     try:
-                        anyio.from_thread.run(run_caller_in_context, token=token)
+                        trio.from_thread.run(run_caller_in_context, trio_token=trio_token)
                     except (BaseExceptionGroup, BaseException) as e:
                         if not "shutdown" not in str(e):
                             raise
