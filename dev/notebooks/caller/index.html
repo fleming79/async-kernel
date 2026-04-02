@@ -2522,7 +2522,7 @@ assert async_kernel.utils.get_kernel() is get_ipython().kernel  # pyright: ignor
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell           ✓       🔐       MainThread   140189044903664 ← current</pre>
+<pre>Shell           ✓       🔐       MainThread   140437496581776 ← current</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2535,7 +2535,7 @@ assert async_kernel.utils.get_kernel() is get_ipython().kernel  # pyright: ignor
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control         ✓       🔐        Control     140189001472608</pre>
+<pre>Control         ✓       🔐        Control     140437452577328</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -2710,6 +2710,12 @@ del caller1</div>
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>'hello world!'</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>&lt;Caller 🟢 name='My caller1' backend='asyncio' host=None thread='My caller1' id=140437432062736&gt;</pre>
 </div>
 </div>
 </div>
@@ -3075,7 +3081,7 @@ for backend in ["asyncio", "trio"]:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;_MainThread(MainThread, started 140189053259904)&gt;</pre>
+<pre>&lt;_MainThread(MainThread, started 140437504344192)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3163,7 +3169,7 @@ for backend in ["asyncio", "trio"]:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;_MainThread(MainThread, started 140189053259904)&gt;</pre>
+<pre>&lt;_MainThread(MainThread, started 140437504344192)&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3296,7 +3302,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=9, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=9, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3309,7 +3315,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=8, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=8, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3322,7 +3328,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=7, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=7, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3335,7 +3341,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=6, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=6, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3348,7 +3354,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=5, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=5, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3361,7 +3367,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=4, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=4, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3374,7 +3380,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=3, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=3, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3387,7 +3393,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=2, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=2, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3400,7 +3406,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=1, waiting=1]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=1, waiting=1]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3413,7 +3419,7 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f8040927e30 [value=0]&gt;</pre>
+<pre>&lt;aiologic.CountdownEvent(10) at 0x7fba10620780 [value=0]&gt;</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
