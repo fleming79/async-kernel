@@ -528,7 +528,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                         parent._children.discard(self)
                     self._state = CallerState.stopped
                     self.stopped.set()
-                    await self._checkpoint()
 
     @asynccontextmanager
     async def _get_task_factory(
@@ -1024,20 +1023,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         if pen := self._queue_map.pop(key, None):
             pen.metadata["queue"].stop()
             pen.cancel()
-
-    async def _checkpoint(self) -> None:
-        "Yield to the event loop."
-        if not self._use_safe_checkpoint:
-            try:
-                if self.backend is Backend.trio:
-                    await trio_checkpoint()
-                else:
-                    await asyncio_checkpoint()
-            except Exception:
-                self._use_safe_checkpoint = True
-            else:
-                return
-        await async_checkpoint(force=True)
 
     async def as_completed(
         self,
