@@ -311,10 +311,13 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 
 class Pending(Awaitable[T]):
     """
-    Pending is an internally synchronised, cancellable, awaitable class influenced by [asyncio.Future][].
+    Pending is an internally synchronised, cancellable, wait/awaitable representation of a future result.
 
-    - It can be wait/awaited and cancelled from any thread (not considering deadlocks)
-    - Provides metadata storage
+    It can be thought of as a hybrid mixture of [asyncio.Future][] and [concurrent.futures.Future][].
+
+
+    - It can be wait/awaited and cancelled from any thread (not considering deadlocks) and event loop.
+    - Provides metadata storage.
     - Has built in support for tracking pending created in a specific context (see: [PendingManager][] and [PendingGroup][]).
 
     **Properties**
@@ -326,7 +329,8 @@ class Pending(Awaitable[T]):
 
     - [Pending.wait][]: Wait asynchronously for the pending to be complete.
     - [Pending.wait_sync][]: Wait synchronously for the pending to be complete.
-    - [Pending.cancel][]: Cancel the pending (result must be set to finalize cancellation).
+    - [Pending.cancel][]: Cancel the pending.
+    - [Pending.cancel_wait][]: Cancel the pending and wait for it to be done.
     - [Pending.result][]: Get the result of the pending.
     - [Pending.exception][]: Get the exception of the pending.
 
@@ -630,13 +634,14 @@ class Pending(Awaitable[T]):
 
     def add_done_callback(self, fn: Callable[[Self], Any], /) -> None:
         """
-        Add a callback for when the pending is done.
-
-        The callback should be light weight and provide its own thread safety.
+        Add a callback for when the pending is done (low-level).
 
         Notes:
-            - If the pending is *not* done callbacks are called FIFO.
-            - If the pending is done `fn` is called immediately.
+            - If the pending is:
+                - *not* done: `fn` is added to the callback list.
+                - done: `fn` is called immediately.
+            - Callbacks are called FIFO in the thread where the pending is set done (potentially any thread).
+            - The callback should be light weight and provide its own thread safety.
         """
         if not self._done and (callbacks := getattr(self, "_done_callbacks", None)) is not None:
             callbacks.append(fn)
