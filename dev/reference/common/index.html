@@ -861,6 +861,17 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#async_kernel.common.KernelInterrupt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelInterrupt
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#async_kernel.common.Fixed" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1403,6 +1414,17 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#async_kernel.common.KernelInterrupt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelInterrupt
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#async_kernel.common.Fixed" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1542,6 +1564,13 @@ viewing the latest version.
 <p><span class="doc-section-title">Classes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="            KernelInterrupt (async_kernel.common.KernelInterrupt)" href="#async_kernel.common.KernelInterrupt">KernelInterrupt</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>Raised to interrupt the kernel.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="#async_kernel.common.Fixed">Fixed</a></code></b>
           –
           <div class="doc-md-description">
@@ -1577,6 +1606,92 @@ viewing the latest version.
 
 
 
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="async_kernel.common.KernelInterrupt" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">KernelInterrupt</span>
+
+
+<a href="#async_kernel.common.KernelInterrupt" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#Exception">Exception</a></code></p>
+
+
+
+        <p>Raised to interrupt the kernel.</p>
+
+          
+
+
+  <div class="doc doc-backlinks">
+        <b class="doc doc-backlink-type">Referenced by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#">interface</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+  </ul>
+
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/async_kernel/common.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterrupt</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="s2">&quot;Raised to interrupt the kernel.&quot;</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
@@ -2042,11 +2157,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
-<span class="normal"> 30</span>
-<span class="normal"> 31</span>
-<span class="normal"> 32</span>
-<span class="normal"> 33</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 33</span>
 <span class="normal"> 34</span>
 <span class="normal"> 35</span>
 <span class="normal"> 36</span>
@@ -2146,7 +2257,11 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
-<span class="normal">133</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A property-like descriptor factory that always returns the same object.</span>
 

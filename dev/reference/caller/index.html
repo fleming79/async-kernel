@@ -5414,7 +5414,7 @@ viewing the latest version.
                                 <span class="k">raise</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">pen</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">KernelInterrupt</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="n">pen</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="n">e</span> <span class="o">=</span> <span class="n">exc</span>
@@ -7775,8 +7775,12 @@ use this method in the background,  they should be used in preference to this me
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
   </span>
 
       </li>
@@ -7919,8 +7923,12 @@ use this method in the background,  they should be used in preference to this me
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
   </span>
 
       </li>
@@ -7929,12 +7937,8 @@ use this method in the background,  they should be used in preference to this me
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -8366,8 +8370,12 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
   </span>
 
       </li>
@@ -8376,8 +8384,12 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
   </span>
 
       </li>

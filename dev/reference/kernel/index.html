@@ -945,10 +945,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernel.KernelInterruptError" class="md-nav__link">
+  <a href="#async_kernel.kernel.KernelInterrupt" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelInterruptError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelInterrupt
       
     </span>
   </a>
@@ -1964,10 +1964,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernel.KernelInterruptError" class="md-nav__link">
+  <a href="#async_kernel.kernel.KernelInterrupt" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelInterruptError
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;KernelInterrupt
       
     </span>
   </a>
@@ -2664,7 +2664,7 @@ viewing the latest version.
 <p><span class="doc-section-title">Classes:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            KernelInterruptError (async_kernel.kernel.KernelInterruptError)" href="#async_kernel.kernel.KernelInterruptError">KernelInterruptError</a></code></b>
+          <b><code><a class="autorefs autorefs-internal" title="            KernelInterrupt (async_kernel.kernel.KernelInterrupt)" href="#async_kernel.kernel.KernelInterrupt">KernelInterrupt</a></code></b>
           –
           <div class="doc-md-description">
             <p>Raised to interrupt the kernel.</p>
@@ -2699,11 +2699,11 @@ viewing the latest version.
 
 
 
-<h2 id="async_kernel.kernel.KernelInterruptError" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">KernelInterruptError</span>
+<h2 id="async_kernel.kernel.KernelInterrupt" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">KernelInterrupt</span>
 
 
-<a href="#async_kernel.kernel.KernelInterruptError" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#async_kernel.kernel.KernelInterrupt" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
@@ -2731,14 +2731,22 @@ viewing the latest version.
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
@@ -2762,9 +2770,9 @@ viewing the latest version.
 
 
               <details class="mkdocstrings-source">
-                <summary>Source code in <code>src/async_kernel/asyncshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">48</span>
-<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterruptError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+                <summary>Source code in <code>src/async_kernel/common.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterrupt</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="s2">&quot;Raised to interrupt the kernel.&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3610,7 +3618,8 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 58</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 57</span>
+<span class="normal"> 58</span>
 <span class="normal"> 59</span>
 <span class="normal"> 60</span>
 <span class="normal"> 61</span>
@@ -4258,8 +4267,7 @@ viewing the latest version.
 <span class="normal">703</span>
 <span class="normal">704</span>
 <span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Kernel</span><span class="p">(</span><span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Kernel</span><span class="p">(</span><span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].</span>
 
@@ -5446,7 +5454,8 @@ value: The value to set.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">269</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">268</span>
+<span class="normal">269</span>
 <span class="normal">270</span>
 <span class="normal">271</span>
 <span class="normal">272</span>
@@ -5462,8 +5471,7 @@ value: The value to set.</p>
 <span class="normal">282</span>
 <span class="normal">283</span>
 <span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">285</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load settings into the kernel.</span>
 
@@ -5521,7 +5529,8 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">288</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">287</span>
+<span class="normal">288</span>
 <span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span>
@@ -5530,8 +5539,7 @@ and is called by load_connection_file.</p>
 <span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">297</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load connection info from a dict containing connection info.</span>
 
@@ -5573,7 +5581,8 @@ Instead a new instance should be started.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">299</span>
+<span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
@@ -5584,8 +5593,7 @@ Instead a new instance should be started.</p>
 <span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A [staticmethod][] to stop the running kernel.</span>
@@ -5627,7 +5635,8 @@ Instead a new instance should be started.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">314</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
+<span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span>
 <span class="normal">317</span>
@@ -5645,8 +5654,7 @@ Instead a new instance should be started.</p>
 <span class="normal">329</span>
 <span class="normal">330</span>
 <span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the kernel.&quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_shell</span>
@@ -5695,7 +5703,8 @@ Instead a new instance should be started.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">335</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">334</span>
+<span class="normal">335</span>
 <span class="normal">336</span>
 <span class="normal">337</span>
 <span class="normal">338</span>
@@ -5711,8 +5720,7 @@ Instead a new instance should be started.</p>
 <span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">351</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Matches signature of [ipykernel.kernelbase.Kernel.do_shutdown][].&quot;</span>
     <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_stopped</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Kernel shutdown: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
@@ -5775,7 +5783,8 @@ Instead a new instance should be started.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">354</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">353</span>
+<span class="normal">354</span>
 <span class="normal">355</span>
 <span class="normal">356</span>
 <span class="normal">357</span>
@@ -5788,8 +5797,7 @@ Instead a new instance should be started.</p>
 <span class="normal">364</span>
 <span class="normal">365</span>
 <span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">367</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the kernel asynchronously.</span>
 
@@ -5911,7 +5919,8 @@ Instead a new instance should be started.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">370</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">369</span>
+<span class="normal">370</span>
 <span class="normal">371</span>
 <span class="normal">372</span>
 <span class="normal">373</span>
@@ -5929,8 +5938,7 @@ Instead a new instance should be started.</p>
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">388</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5975,9 +5983,9 @@ Instead a new instance should be started.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;prefixed topic for IOPub messages.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kernel.</span><span class="si">{</span><span class="n">topic</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -6072,7 +6080,8 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">395</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">394</span>
+<span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
 <span class="normal">398</span>
@@ -6119,8 +6128,7 @@ All other shell messages are handled in the control thread.</p>
 <span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">message_handler</span><span class="p">(</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">message_handler</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span><span class="p">,</span>
@@ -6219,12 +6227,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.kernel_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_info_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6235,9 +6239,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kernel_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kernel_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_info</span>
 </code></pre></div></td></tr></table></div>
@@ -6302,7 +6306,8 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">519</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">518</span>
+<span class="normal">519</span>
 <span class="normal">520</span>
 <span class="normal">521</span>
 <span class="normal">522</span>
@@ -6310,8 +6315,7 @@ All other shell messages are handled in the control thread.</p>
 <span class="normal">524</span>
 <span class="normal">525</span>
 <span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info).&quot;&quot;&quot;</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
     <span class="n">target_name</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;target_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -6366,12 +6370,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6382,13 +6382,13 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">530</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">529</span>
+<span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
 <span class="normal">533</span>
 <span class="normal">534</span>
-<span class="normal">535</span>
-<span class="normal">536</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">ExecuteContent</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">535</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">ExecuteContent</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">_execute_request</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
         <span class="n">cell_id</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cellId&quot;</span><span class="p">),</span>
@@ -6445,12 +6445,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.complete_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;complete_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6461,11 +6457,11 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">538</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">537</span>
+<span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">541</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">_do_complete_request</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
         <span class="n">code</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">cursor_pos</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cursor_pos&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -6532,9 +6528,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">544</span>
-<span class="normal">545</span>
-<span class="normal">546</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">_is_complete_request</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 </code></pre></div></td></tr></table></div>
@@ -6599,14 +6595,14 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">548</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">547</span>
+<span class="normal">548</span>
 <span class="normal">549</span>
 <span class="normal">550</span>
 <span class="normal">551</span>
 <span class="normal">552</span>
 <span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">554</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">inspect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection).&quot;&quot;&quot;</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">_inspect_request</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
@@ -6664,8 +6660,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.history_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_request</a>
   </span>
 
       </li>
@@ -6676,9 +6676,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">history_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">_history_request</span><span class="p">(</span><span class="o">**</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 </code></pre></div></td></tr></table></div>
@@ -6726,12 +6726,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_open"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_open</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6742,9 +6738,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">comm_manager</span><span class="o">.</span><span class="n">comm_open</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
 </code></pre></div></td></tr></table></div>
@@ -6792,12 +6788,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_msg"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_msg</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6808,9 +6800,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm msg request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">comm_manager</span><span class="o">.</span><span class="n">comm_msg</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
 </code></pre></div></td></tr></table></div>
@@ -6858,12 +6850,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.comm_close"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_close</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6874,9 +6862,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comm_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [comm close request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">comm_manager</span><span class="o">.</span><span class="n">comm_close</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
 </code></pre></div></td></tr></table></div>
@@ -6941,10 +6929,10 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">573</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">572</span>
+<span class="normal">573</span>
 <span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">interrupt_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">575</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">interrupt_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">{}</span>
@@ -7010,11 +6998,11 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">578</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">577</span>
+<span class="normal">578</span>
 <span class="normal">579</span>
 <span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">shutdown_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">581</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">shutdown_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_restart</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;restart&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
@@ -7069,12 +7057,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.list_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;list_subshell_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -7085,9 +7069,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">debug_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">debug_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">process_request</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
 </code></pre></div></td></tr></table></div>
@@ -7152,10 +7136,10 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">588</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">587</span>
+<span class="normal">588</span>
 <span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">590</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only).&quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subshell_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">create_subshell</span><span class="p">(</span><span class="n">protected</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">subshell_id</span><span class="p">}</span>
@@ -7225,10 +7209,10 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">593</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">592</span>
+<span class="normal">593</span>
 <span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">delete_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">595</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">delete_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only).&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">delete_subshell</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">][</span><span class="s2">&quot;subshell_id&quot;</span><span class="p">])</span>
     <span class="k">return</span> <span class="p">{}</span>
@@ -7271,9 +7255,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">598</span>
-<span class="normal">599</span>
-<span class="normal">600</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">list_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">list_subshell_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells) (control only).&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subshell_id&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">list_subshells</span><span class="p">())}</span>
 </code></pre></div></td></tr></table></div>
@@ -7301,11 +7285,11 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">602</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">601</span>
+<span class="normal">602</span>
 <span class="normal">603</span>
 <span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">excepthook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etype</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">tb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">605</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">excepthook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etype</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">tb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle an exception.&quot;&quot;&quot;</span>
     <span class="c1"># write uncaught traceback to &#39;real&#39; stderr, not zmq-forwarder</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_kernel_messages</span><span class="p">:</span>
@@ -7335,14 +7319,14 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">608</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">607</span>
+<span class="normal">608</span>
 <span class="normal">609</span>
 <span class="normal">610</span>
 <span class="normal">611</span>
 <span class="normal">612</span>
 <span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unraisablehook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unraisable</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">UnraisableHookArgs</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">614</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unraisablehook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unraisable</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">UnraisableHookArgs</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Handle unraisable exceptions (during gc for instance).&quot;</span>
     <span class="n">exc_info</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">unraisable</span><span class="o">.</span><span class="n">exc_type</span><span class="p">,</span>
@@ -7375,9 +7359,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the connection info as a dict.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
 </code></pre></div></td></tr></table></div>
@@ -7416,7 +7400,8 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">621</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">620</span>
+<span class="normal">621</span>
 <span class="normal">622</span>
 <span class="normal">623</span>
 <span class="normal">624</span>
@@ -7427,8 +7412,7 @@ All other shell messages are handled in the control thread.</p>
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A convenience method to access the &#39;message&#39; in the current context if there is one.</span>
 
@@ -7475,9 +7459,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
     <span class="s2">&quot;Matches signature of [ipykernel.kernelbase.Kernel.do_history][].&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">_do_complete_request</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="o">=</span><span class="n">cursor_pos</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 </code></pre></div></td></tr></table></div>
@@ -7516,9 +7500,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">639</span>
-<span class="normal">640</span>
-<span class="normal">641</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">omit_sections</span><span class="o">=</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">omit_sections</span><span class="o">=</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
     <span class="s2">&quot;Matches signature of [ipykernel.kernelbase.Kernel.do_history][].&quot;</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">_inspect_request</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="o">=</span><span class="n">cursor_pos</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportArgumentType, reportPrivateUsage]</span>
 </code></pre></div></td></tr></table></div>
@@ -7565,7 +7549,8 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">643</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">642</span>
+<span class="normal">643</span>
 <span class="normal">644</span>
 <span class="normal">645</span>
 <span class="normal">646</span>
@@ -7584,8 +7569,7 @@ All other shell messages are handled in the control thread.</p>
 <span class="normal">659</span>
 <span class="normal">660</span>
 <span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_history</span><span class="p">(</span>
+<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_history</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">hist_access_type</span><span class="p">,</span>
     <span class="n">output</span><span class="p">,</span>
@@ -7649,7 +7633,8 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">665</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
+<span class="normal">665</span>
 <span class="normal">666</span>
 <span class="normal">667</span>
 <span class="normal">668</span>
@@ -7682,8 +7667,7 @@ All other shell messages are handled in the control thread.</p>
 <span class="normal">695</span>
 <span class="normal">696</span>
 <span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
+<span class="normal">698</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
@@ -7743,9 +7727,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="s2">&quot;Matches signature of [ipykernel.kernelbase.Kernel.getpass][].&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">getpass</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -7773,9 +7757,9 @@ All other shell messages are handled in the control thread.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="s2">&quot;Matches signature of [ipykernel.kernelbase.Kernel.raw_input][].&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">raw_input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
