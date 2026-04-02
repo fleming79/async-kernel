@@ -389,7 +389,7 @@ class Pending(Awaitable[T]):
             - Initializes internal state for tracking completion and cancellation.
             - Stores provided metadata in a class-level mapping.
         """
-        self._done_callbacks: list[Callable[[Self], Any]] | None = []
+        self._done_callbacks: list[Callable[[Self], Any]] = []
         self._metadata_mappings[id(self)] = metadata
         self._done = False
         self._cancelled = None
@@ -463,7 +463,7 @@ class Pending(Awaitable[T]):
             To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
         try:
-            if self._done_callbacks is not None:
+            if not self._done:
                 waiter = create_async_waiter()
                 self.add_done_callback(lambda _: waiter.wake())
                 if timeout is None:
@@ -505,7 +505,7 @@ class Pending(Awaitable[T]):
             **Calling this method in the same thread where the result or exception is set
             will result in deadlock unless a greenlet based event library is in use.**
         """
-        if self._done_callbacks is not None:
+        if not self._done:
             event = create_green_event()
             self.add_done_callback(lambda _: event.set())
             event.wait(timeout)
@@ -520,18 +520,19 @@ class Pending(Awaitable[T]):
         if self._done:
             return
         self._done = True
-        # The small gap between setting done and setting the result is unlikely to pose a problem.
-        if not self._cancelled:
-            if result:
-                self._result = value
-            else:
-                self._exception = value
         self._canceller = None
-        # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
-        callbacks = self._done_callbacks
-        assert callbacks is not None
-        callbacks.reverse()
         e = None
+        try:
+            callbacks = self._done_callbacks
+            del self._done_callbacks
+        except AttributeError:
+            return
+        if result:
+            self._result = value
+        else:
+            self._exception = value
+        # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
+        callbacks.reverse()
         while callbacks:
             try:
                 callbacks.pop()(self)
@@ -539,7 +540,6 @@ class Pending(Awaitable[T]):
                 pass
             except BaseException as exc:
                 e = exc
-        self._done_callbacks = None
         if e:
             raise e from None
 
@@ -634,14 +634,11 @@ class Pending(Awaitable[T]):
 
         The callback should be light weight and provide its own thread safety.
 
-        Callbacks added are handled FIFO.
+        Callbacks added are handled FIFO until the pending is done, after which it is
+        called immediately.
         """
-        if (callbacks := self._done_callbacks) is not None:
-            callbacks.append(fn) if not self._done else callbacks.insert(0, fn)
-            if self._done_callbacks is None and fn in callbacks:  # pragma: no cover
-                # Handle the rare case where `fn` does not get called by `_set_done`
-                callbacks.remove(fn)
-                fn(self)
+        if not self._done and (callbacks := getattr(self, "_done_callbacks", None)) is not None:
+            callbacks.append(fn)
         else:
             fn(self)
 
@@ -652,7 +649,7 @@ class Pending(Awaitable[T]):
         Returns the number of items removed.
         """
         n = 0
-        if (callbacks := self._done_callbacks) is not None:
+        if not self._done and (callbacks := getattr(self, "_done_callbacks", None)):
             while True:
                 try:
                     callbacks.remove(fn)
@@ -669,10 +666,10 @@ class Pending(Awaitable[T]):
             PendingCancelled: If the pending has been cancelled.
             PendingNotDone: If the pending isn't done yet.
         """
-        if not self._done:
-            raise PendingNotDone
         if self._cancelled is not None:
             raise PendingCancelled(self._cancelled)
+        if not self._done:
+            raise PendingNotDone
         try:
             return self._result
         except AttributeError:
