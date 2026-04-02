@@ -634,8 +634,9 @@ class Pending(Awaitable[T]):
 
         The callback should be light weight and provide its own thread safety.
 
-        Callbacks added are handled FIFO until the pending is done, after which it is
-        called immediately.
+        Notes:
+            - If the pending is *not* done callbacks are called FIFO.
+            - If the pending is done `fn` is called immediately.
         """
         if not self._done and (callbacks := getattr(self, "_done_callbacks", None)) is not None:
             callbacks.append(fn)
