@@ -25,7 +25,7 @@ from wrapt import lazy_import
 
 import async_kernel.event_loop
 from async_kernel import utils
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, RunSettings, T
@@ -612,7 +612,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 raise
                 else:
                     pen.set_result(result)
-            except Exception as exc:
+            except (Exception, KernelInterrupt) as exc:
                 pen.set_exception(exc)
             except BaseException as exc:
                 e = exc

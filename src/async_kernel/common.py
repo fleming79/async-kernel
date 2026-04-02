@@ -11,7 +11,7 @@ from async_kernel.typing import FixedCreate, FixedCreated, S, T
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-__all__ = ["Fixed", "import_item"]
+__all__ = ["Fixed", "KernelInterrupt", "import_item"]
 
 
 def import_item(dottedname: str) -> Any:
@@ -24,6 +24,10 @@ def import_item(dottedname: str) -> Any:
     """
     module, name0 = dottedname.rsplit(".", maxsplit=1)
     return aiologic.meta.import_from(module, name0)
+
+
+class KernelInterrupt(Exception):
+    "Raised to interrupt the kernel."
 
 
 class Fixed(Generic[S, T]):

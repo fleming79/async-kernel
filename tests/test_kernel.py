@@ -334,7 +334,7 @@ async def test_interrupt_request_direct_exec_request(subprocess_kernels_client: 
     await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "KernelInterruptError"
+    assert reply["content"]["ename"] == "KernelInterrupt"
 
 
 async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKernelClient):
@@ -352,7 +352,7 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
     await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "KernelInterruptError"
+    assert reply["content"]["ename"] == "KernelInterrupt"
 
 
 @pytest.mark.parametrize("response", ["y", ""])
