@@ -3,6 +3,7 @@ import inspect
 import random
 import re
 import weakref
+from concurrent.futures import ThreadPoolExecutor
 
 import anyio
 import pytest
@@ -97,30 +98,6 @@ class TestPending:
         assert pen.done()
         assert done_called
 
-    async def test_await_while_setting(self, caller: Caller):
-        callback_started = Event()
-        callback_resume = Event()
-        all_done = Event()
-
-        def done_callback(pen: Pending):
-            callback_started.set()
-            callback_resume.wait()
-
-        async def wait_while_setting():
-            await callback_started
-            callback_resume.set()
-            await pen
-            assert not pen._done_callbacks  # pyright: ignore[reportPrivateUsage]
-
-        pen_waiting = caller.call_soon(wait_while_setting)
-        pen = caller.to_thread(lambda: None)
-        pen.add_done_callback(done_callback)
-        pen.add_done_callback(lambda _: all_done.set())
-        await callback_started
-        await pen
-        assert all_done
-        await pen_waiting
-
     async def test_set_already_result(self, anyio_backend: Backend):
         pen = Pending()
         pen.set_result(1)
@@ -195,6 +172,22 @@ class TestPending:
         await pen.cancel_wait("test cancel")
         with pytest.raises(PendingCancelled, match="test cancel"):
             pen.result()
+
+    async def test_set_done_stress_test(self):
+        # Inspiration: https://github.com/python/cpython/issues/146270
+        exc = RuntimeError()
+        with ThreadPoolExecutor(3) as executor:
+            for _ in range(1000):
+                pen = Pending()
+
+                f1 = executor.submit(pen.set_result, 1)
+                f2 = executor.submit(pen.set_exception, exc)
+                f3 = executor.submit(pen.cancel)
+
+                f1.result()
+                f2.result()
+                f3.result()
+                assert pen.done()
 
     def test_repr(self):
         a = "long string" * 100

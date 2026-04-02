@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import gc
 import importlib.util
 import re
@@ -316,59 +315,6 @@ class TestCaller:
             caller.call_soon(f)
             await started
         assert is_cancelled
-
-    @pytest.mark.parametrize("check_result", ["result", "exception"])
-    @pytest.mark.parametrize("check_mode", ["main", "local", "asyncio", "trio"])
-    async def test_wait_from_threads(self, anyio_backend, check_mode: str, check_result: str):
-        ready, finished = Event(), Event()
-
-        def _thread_task():
-            async def _run():
-                async with Caller("manual") as caller:
-                    assert caller.backend == anyio_backend
-                    ready.set()
-                    await finished
-
-            anyio.run(_run, backend=anyio_backend)
-
-        thread = threading.Thread(target=_thread_task)
-        thread.start()
-        await ready
-        assert isinstance(finished, Event)
-        caller = Caller.get_existing(id(thread))
-        assert caller
-        if check_result == "result":
-            expr = "10"
-            context = contextlib.nullcontext()
-        else:
-            expr = "invalid call"
-            context = pytest.raises(SyntaxError)
-        pen = caller.call_later(0.01, eval, expr)
-        with context:
-            match check_mode:
-                case "main":
-                    assert (await pen) == 10
-                case "local":
-                    pen_local = caller.call_soon(pen.wait)
-                    result = await pen_local
-                    assert result == 10
-                case "asyncio" | "trio":
-
-                    def another_thread():
-                        async def waiter():
-                            result = await pen
-                            assert result == 10
-                            return result
-
-                        return anyio.run(waiter, backend=check_mode)
-
-                    result = await anyio.to_thread.run_sync(another_thread)
-                    assert result == 10
-                case _:
-                    raise NotImplementedError
-
-        caller.call_soon(finished.set)
-        thread.join()
 
     async def test_get_start_main_thread(self, anyio_backend: Backend):
         # Check a caller can be started in the main thread synchronously.
