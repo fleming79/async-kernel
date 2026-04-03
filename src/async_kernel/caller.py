@@ -516,18 +516,17 @@ class Caller(anyio.AsyncContextManagerMixin):
             socket.connect(self.iopub_url)
             self.iopub_sockets[self._caller_id] = socket
         try:
-            async with self._get_task_factory(self.backend) as create_task:
-                with anyio.CancelScope() as scope:
-                    try:
-                        create_task(None, self._scheduler, self.backend, self._queue, scope.cancel)
-                        self._state = CallerState.running
-                        yield self
-                    finally:
-                        if stop_guest := getattr(self, "_stop_guest", None):
-                            with anyio.CancelScope(shield=True):
-                                await stop_guest()
-                        self.stop(force=True)
-                    scope.cancel()
+            async with self._get_task_factory(self.backend) as (create_task, stop):
+                try:
+                    create_task(None, self._scheduler, self.backend, self._queue, stop)
+                    self._state = CallerState.running
+                    yield self
+                finally:
+                    if stop_guest := getattr(self, "_stop_guest", None):
+                        with anyio.CancelScope(shield=True):
+                            await stop_guest()
+                    self.stop(force=True)
+                    stop()
         finally:
             if children := tuple(self._children):
                 with anyio.CancelScope(shield=True):
@@ -545,7 +544,9 @@ class Caller(anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def _get_task_factory(
         self, backend: Backend
-    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
+    ) -> AsyncIterator[
+        tuple[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None], Callable[[], None]]
+    ]:
 
         if backend is Backend.asyncio:
             loop = asyncio.get_running_loop()
@@ -574,15 +575,16 @@ class Caller(anyio.AsyncContextManagerMixin):
                     tasks.add(task)
                     task.add_done_callback(done_callback)
 
-            try:
-                yield create_task
-            finally:
-                active = False
-                while tasks:
-                    for task in tasks:
-                        task.cancel()
-                    with anyio.move_on_after(1):
-                        await all_done
+            with anyio.CancelScope() as scope:
+                try:
+                    yield create_task, lambda: scope.cancel("Shutting down")
+                finally:
+                    active = False
+                    while tasks:
+                        for task in tasks:
+                            task.cancel()
+                        with anyio.move_on_after(1):
+                            await all_done
         else:
             async with trio.open_nursery() as nursery:
 
@@ -592,12 +594,17 @@ class Caller(anyio.AsyncContextManagerMixin):
                     else:
                         nursery.start_soon(func, *args)
 
-                try:
-                    yield create_task
-                finally:
+                def stop():
                     nursery.cancel_scope.cancel("Shutting down")
 
-    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue, done: Callable[[], None]) -> None:
+                try:
+                    yield create_task, stop
+                finally:
+                    stop()
+
+    async def _scheduler(
+        self, backend: Backend, queue: SingleConsumerAsyncQueue, done_callback: Callable[[], None]
+    ) -> None:
         """
         An asynchronous coroutine to schedule or execute functions as they arrive in the queue.
 
@@ -653,7 +660,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     raise e from None
 
         try:
-            async with self._get_task_factory(backend) as create_task:
+            async with self._get_task_factory(backend) as (create_task, _):
                 async for item in queue:
                     if isinstance(item, Pending):
                         if not item.done():
@@ -668,7 +675,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                             self.log.exception("Direct call failed", exc_info=e)
                     del item
         finally:
-            done()
+            done_callback()
 
     @staticmethod
     def _reject(item: tuple | Pending) -> None:
