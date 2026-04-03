@@ -426,8 +426,12 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if no_debug:
                     utils.mark_thread_pydev_do_not_trace()
                 self._state = CallerState.initial
-                async with self:
-                    await self.stopped
+                try:
+                    async with self:
+                        await anyio.sleep_forever()
+                except RuntimeError:
+                    if self._state not in [CallerState.stopping, CallerState.stopped]:
+                        raise  # pragma: no cover
 
         if getattr(self, "_caller_id", None) is not None:
             # An event loop for the current thread.
