@@ -247,6 +247,8 @@ class TestPending:
             with pytest.raises(TimeoutError):
                 pen.wait_sync(timeout=0.001)
             assert pen.cancelled()
+            with pytest.raises(PendingCancelled):
+                await pen
 
     async def test_many_waiters(self, caller: Caller):
         N = 100
