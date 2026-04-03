@@ -192,6 +192,11 @@ class TestCaller:
             caller.call_later(0.01, is_called.set)
             await is_called
 
+    async def test_manual_stop(self):
+        async with Caller("manual") as caller:
+            caller.stop()
+            await anyio.sleep_forever()
+
     async def test_call_returns_result(self, caller: Caller) -> None:
         pen = Pending()
         caller.call_direct(lambda: pen)

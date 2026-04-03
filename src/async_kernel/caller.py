@@ -433,7 +433,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 self._state = CallerState.initial
                 try:
                     async with self:
-                        await anyio.sleep_forever()
+                        await self._stopping
                 except RuntimeError:
                     if self._state not in [CallerState.stopping, CallerState.stopped]:
                         raise  # pragma: no cover
@@ -521,7 +521,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 with anyio.CancelScope() as scope:
                     self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
                     try:
-                        create_task(None, self._scheduler, self.backend, self._queue, scope.cancel)
+                        create_task(None, self._scheduler, self.backend, self._queue)
                         self._state = CallerState.running
                         yield self
                     finally:
@@ -651,6 +651,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if not pen.done():
                     pen.cancel("Unable to finish execution")
                     pen.set_result(None)
+                del pen
                 self._pending_var.reset(token_pending)
                 self._caller_token.reset(token_ident)
                 if e:
