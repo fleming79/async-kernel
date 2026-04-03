@@ -439,9 +439,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             if self.backend == Backend.asyncio:
                 self._tasks.add(asyncio.create_task(run_caller_in_context()))
             else:
+                # Use another thread to schedule a trio Task
                 trio_token = trio.lowlevel.current_trio_token()
 
-                def to_thread():
+                def to_thread() -> None:
                     utils.mark_thread_pydev_do_not_trace()
                     try:
                         trio.from_thread.run(run_caller_in_context, trio_token=trio_token)
@@ -484,11 +485,14 @@ class Caller(anyio.AsyncContextManagerMixin):
             child.stop(force=True)
         if queue := getattr(self, "_guest_queue", None):
             queue.stop()
+        # Stopping the queue will cause the scheduler to exit which will tg.cancel_scope.cancel().
         self._queue.stop()
         for func in tuple(self._queue_map):
             self.queue_close(func)
         if set_stop:
             self._state = CallerState.stopped
+            if parent:
+                parent._children.remove(self)
             self.stopped.set()
         return self._state
 
@@ -499,7 +503,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             if state is CallerState.start_sync:
                 msg = 'Already starting! Did you mean to use Caller("manual")?'
             else:
-                msg = "Caller cannot be been re-entered!"
+                msg = f"Invalid {state=}!"
             raise RuntimeError(msg)
         if not self._name:
             self._name = threading.current_thread().name
@@ -522,13 +526,16 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if socket:
                     self.iopub_sockets.pop(self._caller_id, None)
                     socket.close()
-                with anyio.CancelScope(shield=True):
-                    while self._children:
-                        await self._children.pop().stopped
-                    if parent := self.parent:
-                        parent._children.discard(self)
-                    self._state = CallerState.stopped
-                    self.stopped.set()
+                if children := tuple(self._children):
+                    with anyio.CancelScope(shield=True):
+                        for child in children:
+                            if not (child_stopped := child.stopped):
+                                await child_stopped
+                assert not self._children
+                if parent := self.parent:
+                    parent._children.discard(self)
+                self._state = CallerState.stopped
+                self.stopped.set()
 
     @asynccontextmanager
     async def _get_task_factory(
@@ -542,7 +549,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             tasks = set()
             try:
                 await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
-                eager = True
             except Exception:
                 coro.close()
 
