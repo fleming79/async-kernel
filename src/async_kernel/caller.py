@@ -545,10 +545,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         if backend is Backend.asyncio:
             loop = asyncio.get_running_loop()
             coro = asyncio.sleep(0)
-            eager = False
             tasks = set()
+            eager = False
             try:
                 await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
+                eager = True
             except Exception:
                 coro.close()
 
