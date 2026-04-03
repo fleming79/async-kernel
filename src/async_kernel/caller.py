@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
     import trio  # noqa: TC004
     import zmq
+    from aiologic.lowlevel import AsyncEvent
 
     from async_kernel.typing import P
 
@@ -236,7 +237,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
         lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
     )
-    _stop_guest: Fixed[Any, set[Callable[[], Awaitable]]] = Fixed(set)
+    _guest_done_events: Fixed[Any, set[AsyncEvent]] = Fixed(set)
     _stopping = Fixed(Pending[None])
 
     stopped = Fixed(Event)
@@ -478,10 +479,10 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if (self._protected and not force) or self._state is CallerState.stopped:
             return self._state
-        set_stop = self._state in [CallerState.initial, CallerState.start_sync]
+        finalize = self._state in [CallerState.initial, CallerState.start_sync]
         self._state = CallerState.stopping
+        # Invoke stop callbacks
         self._stopping.set_result(None)
-        self._instances.pop(self._caller_id, None)
         if parent := self.parent:
             try:
                 parent._worker_pool.remove(self)
@@ -489,34 +490,37 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pass
         for child in self.children:
             child.stop(force=True)
-        # Stopping the queue will cause the scheduler to exit which will call `tg.cancel_scope.cancel()`.
         for func in tuple(self._queue_map):
             self.queue_close(func)
-        if set_stop:
-            self._queue.stop()
-            self._state = CallerState.stopped
-            if parent:
-                parent._children.remove(self)
-            self.stopped.set()
+        if finalize:
+            self._stop_finalize()
         return self._state
+
+    def _stop_finalize(self) -> None:
+        self._queue.stop()
+        if parent := self.parent:
+            parent._children.remove(self)
+        self._state = CallerState.stopped
+        self.stopped.set()
+        self._instances.pop(self._caller_id, None)
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         "The asynchronous context for caller."
-        if (state := self._state) is not CallerState.initial:
-            if state is CallerState.start_sync:
-                msg = 'Already starting! Did you mean to use Caller("manual")?'
-            else:
-                msg = f"Invalid {state=}!"
-            raise RuntimeError(msg)
-        if not self._name:
-            self._name = threading.current_thread().name
         socket = None
-        if self._zmq_context:
-            socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
-            socket.connect(self.iopub_url)
-            self.iopub_sockets[self._caller_id] = socket
         try:
+            if (state := self._state) is not CallerState.initial:
+                if state is CallerState.start_sync:
+                    msg = 'Already starting! Did you mean to use Caller("manual")?'
+                else:
+                    msg = f"Invalid {state=}!"
+                raise RuntimeError(msg)
+            if not self._name:
+                self._name = threading.current_thread().name
+            if self._zmq_context:
+                socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
+                socket.connect(self.iopub_url)
+                self.iopub_sockets[self._caller_id] = socket
             async with self._get_task_factory(self.backend) as create_task:
                 with anyio.CancelScope() as scope:
                     self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
@@ -526,23 +530,19 @@ class Caller(anyio.AsyncContextManagerMixin):
                         yield self
                     finally:
                         self.stop(force=True)
-                        for stopper in self._stop_guest:
-                            with anyio.CancelScope(shield=True):
-                                await stopper()
+                        for event in self._guest_done_events:
+                            await event  # Internally shielded from cancellation
+                        self._queue.stop()
         finally:
-            self._queue.stop()
             if children := tuple(self._children):
                 with anyio.CancelScope(shield=True):
                     for caller in children:
                         if not caller.stopped:
                             await caller.stopped
-            if parent := self.parent:
-                parent._children.discard(self)
             if socket:
                 self.iopub_sockets.pop(self._caller_id, None)
                 socket.close(linger=0)
-            self._state = CallerState.stopped
-            self.stopped.set()
+            self._stop_finalize()
 
     @asynccontextmanager
     async def _get_task_factory(
@@ -599,9 +599,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 finally:
                     nursery.cancel_scope.cancel("Shutting down")
 
-    async def _scheduler(
-        self, backend: Backend, queue: SingleConsumerAsyncQueue, done_callback: Callable[[], None] | None = None
-    ) -> None:
+    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
         """
         An asynchronous coroutine to schedule or execute functions as they arrive in the queue.
 
@@ -657,7 +655,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 if e:
                     raise e from None
 
-        try:
+        if not queue.stopped:
             async with self._get_task_factory(backend) as create_task:
                 async for item in queue:
                     if isinstance(item, Pending):
@@ -672,9 +670,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                         except Exception as e:
                             self.log.exception("Direct call failed", exc_info=e)
                     del item
-        finally:
-            if done_callback:
-                done_callback()
 
     @staticmethod
     def _reject(item: tuple | Pending) -> None:
@@ -812,18 +807,19 @@ class Caller(anyio.AsyncContextManagerMixin):
         else:
             if not hasattr(self, "_guest_queue"):
                 self._guest_queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
+                self._stopping.add_done_callback(lambda _: self._guest_queue.stop())
                 self.call_direct(self._start_guest, backend=backend, queue=self._guest_queue)
             self._guest_queue.append(pen)
         return pen
 
     def _start_guest(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
-
+        "Start a guest event loop"
         if self._state is CallerState.running:
-            # Prefer callbacks from the host.
+            self._guest_done_events.add(done := create_async_event(shield=True))
+
             host = Host.current(self.thread)
-            done = create_async_event(shield=True)
-            start_guest_run = get_start_guest_run(backend)
-            start_guest_run(
+
+            get_start_guest_run(backend)(
                 self._scheduler,
                 Backend(backend),
                 queue,
@@ -832,13 +828,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
                 host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
             )
-
-            async def stop_guest():
-                queue.stop()
-                await done
-
-            self._stop_guest.add(stop_guest)
-            self._stopping.add_done_callback(lambda _: queue.stop())
 
     def call_later(
         self,
