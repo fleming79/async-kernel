@@ -116,12 +116,15 @@ class SingleConsumerAsyncQueue(Generic[T]):
         Stop the queue rejecting any items currently in the queue.
         """
         self._active = False
-        self._resume()
         if self._reject:
-            for item in self.queue:
-                self._reject(item)
-        self.queue.clear()
-        self._resume = noop
+            while True:
+                try:
+                    self._reject(self.queue.popleft())
+                except IndexError:
+                    break
+        else:
+            self.queue.clear()
+        self._resume()
 
     def append(self, item: T) -> None:
         """
@@ -485,7 +488,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             child.stop(force=True)
         if queue := getattr(self, "_guest_queue", None):
             queue.stop()
-        # Stopping the queue will cause the scheduler to exit which will tg.cancel_scope.cancel().
+        # Stopping the queue will cause the scheduler to exit which will call `tg.cancel_scope.cancel()`.
         self._queue.stop()
         for func in tuple(self._queue_map):
             self.queue_close(func)
