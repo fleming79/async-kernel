@@ -507,35 +507,36 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise RuntimeError(msg)
         if not self._name:
             self._name = threading.current_thread().name
-        async with anyio.create_task_group() as tg:
-            socket = None
-            self._state = CallerState.running
-            tg.start_soon(self._scheduler, self.backend, self._queue, tg.cancel_scope.cancel)
-            if self._zmq_context:
-                socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
-                socket.linger = 50
-                socket.connect(self.iopub_url)
-                self.iopub_sockets[self._caller_id] = socket
-            try:
-                yield self
-            finally:
-                if stop_guest := getattr(self, "_stop_guest", None):
-                    with anyio.CancelScope(shield=True):
-                        await stop_guest()
-                self.stop(force=True)
-                if socket:
-                    self.iopub_sockets.pop(self._caller_id, None)
-                    socket.close()
-                if children := tuple(self._children):
-                    with anyio.CancelScope(shield=True):
-                        for child in children:
-                            if not (child_stopped := child.stopped):
-                                await child_stopped
-                assert not self._children
-                if parent := self.parent:
-                    parent._children.discard(self)
-                self._state = CallerState.stopped
-                self.stopped.set()
+        socket = None
+        try:
+            async with anyio.create_task_group() as tg:
+                try:
+                    if self._zmq_context:
+                        socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
+                        socket.connect(self.iopub_url)
+                        self.iopub_sockets[self._caller_id] = socket
+                    tg.start_soon(self._scheduler, self.backend, self._queue, tg.cancel_scope.cancel)
+                    self._state = CallerState.running
+                    yield self
+                finally:
+                    if stop_guest := getattr(self, "_stop_guest", None):
+                        with anyio.CancelScope(shield=True):
+                            await stop_guest()
+                    self.stop(force=True)
+                    tg.cancel_scope.cancel()
+        finally:
+            if children := tuple(self._children):
+                with anyio.CancelScope(shield=True):
+                    for caller in children:
+                        if not caller.stopped:
+                            await caller.stopped
+            if parent := self.parent:
+                parent._children.discard(self)
+            if socket:
+                self.iopub_sockets.pop(self._caller_id, None)
+                socket.close(linger=0)
+            self._state = CallerState.stopped
+            self.stopped.set()
 
     @asynccontextmanager
     async def _get_task_factory(
