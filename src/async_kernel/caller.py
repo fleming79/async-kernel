@@ -517,7 +517,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             socket.connect(self.iopub_url)
             self.iopub_sockets[self._caller_id] = socket
         try:
-            async with self._get_task_factory(self.backend) as (create_task, stop):
+            async with self._get_task_factory(self.backend) as create_task:
                 with anyio.CancelScope() as scope:
                     self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
                     try:
@@ -529,7 +529,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                         for stopper in self._stop_guest:
                             with anyio.CancelScope(shield=True):
                                 await stopper()
-                        stop()
         finally:
             self._queue.stop()
             if children := tuple(self._children):
@@ -548,9 +547,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def _get_task_factory(
         self, backend: Backend
-    ) -> AsyncIterator[
-        tuple[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None], Callable[[], None]]
-    ]:
+    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
 
         if backend is Backend.asyncio:
             loop = asyncio.get_running_loop()
@@ -579,16 +576,15 @@ class Caller(anyio.AsyncContextManagerMixin):
                     tasks.add(task)
                     task.add_done_callback(done_callback)
 
-            with anyio.CancelScope() as scope:
-                try:
-                    yield create_task, lambda: scope.cancel("Shutting down")
-                finally:
-                    active = False
-                    while tasks:
-                        for task in tasks:
-                            task.cancel()
-                        with anyio.move_on_after(1):
-                            await all_done
+            try:
+                yield create_task
+            finally:
+                active = False
+                while tasks:
+                    for task in tasks:
+                        task.cancel()
+                    with anyio.move_on_after(1):
+                        await all_done
         else:
             async with trio.open_nursery() as nursery:
 
@@ -598,13 +594,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                     else:
                         nursery.start_soon(func, *args)
 
-                def stop():
-                    nursery.cancel_scope.cancel("Shutting down")
-
                 try:
-                    yield create_task, stop
+                    yield create_task
                 finally:
-                    stop()
+                    nursery.cancel_scope.cancel("Shutting down")
 
     async def _scheduler(
         self, backend: Backend, queue: SingleConsumerAsyncQueue, done_callback: Callable[[], None] | None = None
@@ -664,7 +657,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     raise e from None
 
         try:
-            async with self._get_task_factory(backend) as (create_task, _):
+            async with self._get_task_factory(backend) as create_task:
                 async for item in queue:
                     if isinstance(item, Pending):
                         if not item.done():
