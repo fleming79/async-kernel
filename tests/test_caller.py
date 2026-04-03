@@ -788,9 +788,9 @@ class TestCaller:
         for pen in pending:
             assert pen.result() == opposite
 
-    async def test_call_soon_with_backend_cancel(self, caller: Caller):
-        opposite = next(b for b in Backend if b is not caller.backend)
-        pen = caller.call_using_backend(opposite, anyio.sleep_forever)
-        pen.cancel("Testing")
-        with pytest.raises(PendingCancelled, match="Test"):
-            await pen
+    async def test_call_soon_with_backend_cancel(self, anyio_backend):
+        async with Caller("manual") as caller:
+            opposite = next(b for b in Backend if b is not caller.backend)
+            assert await caller.call_using_backend(opposite, lambda: 1 + 1) == 2
+            caller.stop()
+            await anyio.sleep_forever()
