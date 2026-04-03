@@ -603,7 +603,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     stop()
 
     async def _scheduler(
-        self, backend: Backend, queue: SingleConsumerAsyncQueue, done_callback: Callable[[], None]
+        self, backend: Backend, queue: SingleConsumerAsyncQueue, done_callback: Callable[[], None] | None = None
     ) -> None:
         """
         An asynchronous coroutine to schedule or execute functions as they arrive in the queue.
@@ -675,7 +675,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                             self.log.exception("Direct call failed", exc_info=e)
                     del item
         finally:
-            done_callback()
+            if done_callback:
+                done_callback()
 
     @staticmethod
     def _reject(item: tuple | Pending) -> None:
@@ -813,36 +814,27 @@ class Caller(anyio.AsyncContextManagerMixin):
         else:
             if not hasattr(self, "_guest_queue"):
                 self._guest_queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
-                self.schedule_call(
-                    self._guest_backend_loop, (), {"backend": backend, "queue": self._guest_queue}, None, ()
-                )
+                self.call_direct(self._start_guest, backend=backend, queue=self._guest_queue)
             self._guest_queue.append(pen)
         return pen
 
-    async def _guest_backend_loop(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
-        async def _guest_scheduler() -> None:
-            async with anyio.create_task_group() as tg:
-                tg.start_soon(self._scheduler, Backend(backend), queue, tg.cancel_scope.cancel)
+    def _start_guest(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
 
         if self._state is CallerState.running:
             # Prefer callbacks from the host.
             host = Host.current(self.thread)
-            run_soon_threadsafe_queue = SingleConsumerAsyncQueue(self.backend)
+            done = create_async_event()
             start_guest_run = get_start_guest_run(backend)
             start_guest_run(
-                _guest_scheduler,
-                done_callback=lambda _: run_soon_threadsafe_queue.stop(),
-                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else run_soon_threadsafe_queue.append,
+                self._scheduler,
+                Backend(backend),
+                queue,
+                done_callback=lambda _: done.set(),
+                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
                 run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
                 host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
             )
-            if pen := self.current_pending():
-                self._stop_guest = lambda: [queue.stop(), pen.wait(result=False)][1]
-            async for func in run_soon_threadsafe_queue:
-                try:
-                    func()
-                except Exception:
-                    pass
+            self._stop_guest = lambda: [queue.stop(), done][1]
 
     def call_later(
         self,
