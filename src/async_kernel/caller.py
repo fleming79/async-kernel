@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack,
 
 import anyio
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
 from aiologic.meta import await_for
 from typing_extensions import override
 from wrapt import lazy_import
@@ -511,22 +511,23 @@ class Caller(anyio.AsyncContextManagerMixin):
         if not self._name:
             self._name = threading.current_thread().name
         socket = None
+        if self._zmq_context:
+            socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
+            socket.connect(self.iopub_url)
+            self.iopub_sockets[self._caller_id] = socket
         try:
-            async with anyio.create_task_group() as tg:
-                try:
-                    if self._zmq_context:
-                        socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
-                        socket.connect(self.iopub_url)
-                        self.iopub_sockets[self._caller_id] = socket
-                    tg.start_soon(self._scheduler, self.backend, self._queue, tg.cancel_scope.cancel)
-                    self._state = CallerState.running
-                    yield self
-                finally:
-                    if stop_guest := getattr(self, "_stop_guest", None):
-                        with anyio.CancelScope(shield=True):
-                            await stop_guest()
-                    self.stop(force=True)
-                    tg.cancel_scope.cancel()
+            async with self._get_task_factory(self.backend) as create_task:
+                with anyio.CancelScope() as scope:
+                    try:
+                        create_task(None, self._scheduler, self.backend, self._queue, scope.cancel)
+                        self._state = CallerState.running
+                        yield self
+                    finally:
+                        if stop_guest := getattr(self, "_stop_guest", None):
+                            with anyio.CancelScope(shield=True):
+                                await stop_guest()
+                        self.stop(force=True)
+                    scope.cancel()
         finally:
             if children := tuple(self._children):
                 with anyio.CancelScope(shield=True):
@@ -551,11 +552,18 @@ class Caller(anyio.AsyncContextManagerMixin):
             coro = asyncio.sleep(0)
             tasks = set()
             eager = False
+            all_done = create_async_waiter(shield=True)
+            active = True
             try:
                 await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
                 eager = True
             except Exception:
                 coro.close()
+
+            def done_callback(task: asyncio.Task) -> None:
+                tasks.discard(task)
+                if not active and not tasks:
+                    all_done.wake()
 
             def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
                 if eager:
@@ -564,13 +572,17 @@ class Caller(anyio.AsyncContextManagerMixin):
                     task = loop.create_task(func(*args), context=context)
                 if not task.done():
                     tasks.add(task)
-                    task.add_done_callback(tasks.discard)
+                    task.add_done_callback(done_callback)
 
             try:
                 yield create_task
             finally:
-                for task in tasks:
-                    task.cancel()
+                active = False
+                while tasks:
+                    for task in tasks:
+                        task.cancel()
+                    with anyio.move_on_after(1):
+                        await all_done
         else:
             async with trio.open_nursery() as nursery:
 
