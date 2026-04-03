@@ -739,6 +739,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             - The returned caller is added to `children` and stopped with this instance.
             - If 'backend' or 'zmq_context' are not specified they are copied from this instance.
         """
+        if self._state in [CallerState.stopping, CallerState.stopped]:
+            msg = f"Caller is stopping or stopped {self}"
+            raise RuntimeError(msg)
         with self._child_lock:
             if name := kwargs.get("name"):
                 for caller in self.children:
