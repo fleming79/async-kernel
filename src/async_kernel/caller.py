@@ -237,6 +237,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
     )
     _stop_guest: Fixed[Any, set[Callable[[], Awaitable]]] = Fixed(set)
+    _stopping = Fixed(Pending[None])
 
     stopped = Fixed(Event)
     "An event that is set when the caller has stopped."
@@ -479,6 +480,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             return self._state
         set_stop = self._state in [CallerState.initial, CallerState.start_sync]
         self._state = CallerState.stopping
+        self._stopping.set_result(None)
         self._instances.pop(self._caller_id, None)
         if parent := self.parent:
             try:
@@ -487,13 +489,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pass
         for child in self.children:
             child.stop(force=True)
-        if queue := getattr(self, "_guest_queue", None):
-            queue.stop()
         # Stopping the queue will cause the scheduler to exit which will call `tg.cancel_scope.cancel()`.
-        self._queue.stop()
         for func in tuple(self._queue_map):
             self.queue_close(func)
         if set_stop:
+            self._queue.stop()
             self._state = CallerState.stopped
             if parent:
                 parent._children.remove(self)
@@ -518,18 +518,20 @@ class Caller(anyio.AsyncContextManagerMixin):
             self.iopub_sockets[self._caller_id] = socket
         try:
             async with self._get_task_factory(self.backend) as (create_task, stop):
-                try:
-                    create_task(None, self._scheduler, self.backend, self._queue, stop)
-                    self._state = CallerState.running
-                    yield self
-                finally:
-                    self._state = CallerState.stopping
-                    for stopper in self._stop_guest:
-                        with anyio.CancelScope(shield=True):
-                            await stopper()
-                    self.stop(force=True)
-                    stop()
+                with anyio.CancelScope() as scope:
+                    self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
+                    try:
+                        create_task(None, self._scheduler, self.backend, self._queue, scope.cancel)
+                        self._state = CallerState.running
+                        yield self
+                    finally:
+                        self.stop(force=True)
+                        for stopper in self._stop_guest:
+                            with anyio.CancelScope(shield=True):
+                                await stopper()
+                        stop()
         finally:
+            self._queue.stop()
             if children := tuple(self._children):
                 with anyio.CancelScope(shield=True):
                     for caller in children:
@@ -842,6 +844,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 await done
 
             self._stop_guest.add(stop_guest)
+            self._stopping.add_done_callback(lambda _: queue.stop())
 
     def call_later(
         self,
