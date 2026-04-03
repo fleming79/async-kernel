@@ -236,6 +236,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
         lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
     )
+    _stop_guest: Fixed[Any, set[Callable[[], Awaitable]]] = Fixed(set)
 
     stopped = Fixed(Event)
     "An event that is set when the caller has stopped."
@@ -474,7 +475,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             force: If the caller is protected the call is a no-op unless force=True.
         """
-        if (self._protected and not force) or self._state is CallerState.stopping:
+        if (self._protected and not force) or self._state is CallerState.stopped:
             return self._state
         set_stop = self._state in [CallerState.initial, CallerState.start_sync]
         self._state = CallerState.stopping
@@ -522,9 +523,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                     self._state = CallerState.running
                     yield self
                 finally:
-                    if stop_guest := getattr(self, "_stop_guest", None):
+                    self._state = CallerState.stopping
+                    for stopper in self._stop_guest:
                         with anyio.CancelScope(shield=True):
-                            await stop_guest()
+                            await stopper()
                     self.stop(force=True)
                     stop()
         finally:
@@ -823,7 +825,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._state is CallerState.running:
             # Prefer callbacks from the host.
             host = Host.current(self.thread)
-            done = create_async_event()
+            done = create_async_event(shield=True)
             start_guest_run = get_start_guest_run(backend)
             start_guest_run(
                 self._scheduler,
@@ -834,7 +836,12 @@ class Caller(anyio.AsyncContextManagerMixin):
                 run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
                 host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
             )
-            self._stop_guest = lambda: [queue.stop(), done][1]
+
+            async def stop_guest():
+                queue.stop()
+                await done
+
+            self._stop_guest.add(stop_guest)
 
     def call_later(
         self,
