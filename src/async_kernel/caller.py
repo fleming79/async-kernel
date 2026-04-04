@@ -610,14 +610,14 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         An asynchronous coroutine to schedule or execute functions as they arrive in the queue.
 
-        It handles two different types of items in the queue:
-            - tuple: A tuple of func, args, kwargs intended to be called directly in the scheduler.
-            - Pending: A pending that is to be started as a 'task'.
-
         Args:
             backend: The backend where the scheduler is operating.
-            tg: The task group used to manage concurrent tasks.
-            task_status: Used to signal when the scheduler has started.
+            queue: The queue to access the items for scheduling.
+
+        It handles two different types of items in the queue:
+            - tuple: A tuple of `func`, `args`, `kwargs` intended to be called directly in the scheduler.
+            - Pending: A pending that is to be started as a 'task', that must provide `func`, `args` and `kwargs`
+                in it's metadata. It is set as `active_pending`in the context for the duration of execution.
         """
 
         async def _wrap_call(pen: Pending[Any]) -> None:
@@ -822,10 +822,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                         def _start_guest() -> None:
                             "Start a guest event loop"
                             if self._state is CallerState.running:
-                                self._guest_done_events.add(done := create_async_event(shield=True))
-
                                 host = Host.current(self.thread)
-
+                                done = create_async_event(shield=True)
                                 get_start_guest_run(backend)(
                                     self._scheduler,
                                     Backend(backend),
@@ -839,6 +837,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                                     if host
                                     else True,
                                 )
+                                self._guest_done_events.add(done)
 
                         self.call_direct(_start_guest)
         queue.append(pen)
