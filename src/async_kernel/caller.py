@@ -72,12 +72,13 @@ class SingleConsumerAsyncQueue(Generic[T]):
     A single use queue for a single asynchronous iterator consumer.
 
     Notes:
-        - Adding to the queue is synchronous and non-blocking.
-        - The size of the queue is not limited.
-        - The queue will only yield for one async iterator.
+        - Adding to the queue is synchronous and internally synchronised.
+        - The default queue size is unlimited.
+        - The queue will only yield for one async iterator consumer.
         - When [SingleConsumerAsyncQueue.stop][] is called:
-            - Any items in the queue are rejected.
-            - Adding more items will be rejected immediately.
+            - Any items in the queue are immediately rejected.
+            - The async iterator is stopped.
+        - Items added after stop is called will be rejected immediately.
     """
 
     __slots__ = ["__weakref__", "_active", "_checkpoint", "_reject", "_resume"]

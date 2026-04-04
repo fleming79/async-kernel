@@ -20,7 +20,6 @@ from async_kernel.compat.json import pack_json_bytes, unpack_json
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
-
     from async_kernel.kernel import Kernel
     from async_kernel.typing import DebugMessage
 
