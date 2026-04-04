@@ -627,7 +627,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 in it's metadata. It is set as `active_pending`in the context for the duration of execution.
         """
 
-        async def _wrap_call(pen: Pending[Any]) -> None:
+        async def run_pending_function(pen: Pending[Any]) -> None:
             if pen.done():
                 return  # pragma: no cover
             md = pen.metadata
@@ -674,7 +674,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 async for item in queue:
                     if isinstance(item, Pending):
                         if not item.done():
-                            create_task(item.context, _wrap_call, item)
+                            create_task(item.context, run_pending_function, item)
                     else:
                         try:
                             result = item[0](*item[1], **item[2])
