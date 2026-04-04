@@ -241,8 +241,12 @@ class Caller(anyio.AsyncContextManagerMixin):
     _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
         lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
     )
+    _guest_queues: Fixed[Self, dict[Backend, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]]] = Fixed(
+        dict
+    )
     _guest_done_events: Fixed[Any, set[AsyncEvent]] = Fixed(set)
-    _do_stop = Fixed(Pending[None])
+    _stopping = Fixed(Pending[None])
+    "A pending that is set done the first time stop is called."
 
     stopped = Fixed(Event)
     "An event that is set when the caller has stopped."
@@ -438,7 +442,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     utils.mark_thread_pydev_do_not_trace()
                 try:
                     async with self:
-                        await self._do_stop.wait(result=False)
+                        await self._stopping.wait(result=False)
                 except Exception as e:
                     self.log.exception("Caller did not exit context nicely!", exc_info=e)
 
@@ -485,7 +489,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         finalize = self._state in [CallerState.initial, CallerState.start_sync]
         self._state = CallerState.stopping
         # Invoke stop callbacks
-        self._do_stop.set_result(None)
+        self._stopping.set_result(None)
         if parent := self.parent:
             try:
                 parent._worker_pool.remove(self)
@@ -528,7 +532,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 try:
                     create_task(None, self._scheduler, self.backend, self._queue)
                     with anyio.CancelScope() as scope:
-                        self._do_stop.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
+                        self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
                         self._state = CallerState.running
                         yield self
                 finally:
@@ -608,7 +612,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         It handles two different types of items in the queue:
             - tuple: A tuple of func, args, kwargs intended to be called directly in the scheduler.
-            - Pending: A pending that is to be started as a 'task' with the backend wrapped with
+            - Pending: A pending that is to be started as a 'task'.
 
         Args:
             backend: The backend where the scheduler is operating.
@@ -806,31 +810,39 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         pen = Pending(context, trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
-            self._queue.append(pen)
+            queue = self._queue
         else:
-            if not hasattr(self, "_guest_queue"):
-                self._guest_queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
-                self._do_stop.add_done_callback(lambda _: self._guest_queue.stop())
-                self.call_direct(self._start_guest, backend=backend, queue=self._guest_queue)
-            self._guest_queue.append(pen)
+            if not (queue := self._guest_queues.get(backend)):
+                with self._child_lock:
+                    if not (queue := self._guest_queues.get(backend)):
+                        queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
+                        self._guest_queues[backend] = queue
+                        self._stopping.add_done_callback(lambda _: queue.stop())
+
+                        def _start_guest() -> None:
+                            "Start a guest event loop"
+                            if self._state is CallerState.running:
+                                self._guest_done_events.add(done := create_async_event(shield=True))
+
+                                host = Host.current(self.thread)
+
+                                get_start_guest_run(backend)(
+                                    self._scheduler,
+                                    Backend(backend),
+                                    queue,
+                                    done_callback=lambda _: done.set(),
+                                    run_sync_soon_threadsafe=host.run_sync_soon_threadsafe
+                                    if host
+                                    else self.call_direct,
+                                    run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
+                                    host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd
+                                    if host
+                                    else True,
+                                )
+
+                        self.call_direct(_start_guest)
+        queue.append(pen)
         return pen
-
-    def _start_guest(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
-        "Start a guest event loop"
-        if self._state is CallerState.running:
-            self._guest_done_events.add(done := create_async_event(shield=True))
-
-            host = Host.current(self.thread)
-
-            get_start_guest_run(backend)(
-                self._scheduler,
-                Backend(backend),
-                queue,
-                done_callback=lambda _: done.set(),
-                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
-                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
-                host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
-            )
 
     def call_later(
         self,
