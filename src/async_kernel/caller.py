@@ -109,6 +109,8 @@ class SingleConsumerAsyncQueue(Generic[T]):
                     if not queue and self._active:
                         await event
                     self._resume = noop
+        except IndexError:
+            pass
         finally:
             self._resume = noop
             self.stop()
