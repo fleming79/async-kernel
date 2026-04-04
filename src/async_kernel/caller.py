@@ -903,7 +903,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         Notes:
 
             - **Only use this to execute coroutines that require a specific backend to run in the caller's thread.**
-            - Where possible use a separate caller/thread with [Caller.get][] instead.
         """
         return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))
 
