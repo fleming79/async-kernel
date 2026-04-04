@@ -465,15 +465,22 @@ class Caller(anyio.AsyncContextManagerMixin):
 
                 threading.Thread(target=to_thread, daemon=False).start()
         else:
-            name = self.name or "async_kernel_caller"
             settings = RunSettings(
                 backend=self.backend,
                 host=self.host,
                 backend_options=self.backend_options,
                 host_options=self.host_options,
             )
-            args = [run_caller_in_context, (), settings]
-            self._thread = threading.Thread(target=async_kernel.event_loop.run, args=args, name=name, daemon=False)
+
+            def run():
+                try:
+                    async_kernel.event_loop.run(run_caller_in_context, (), settings)
+                except Exception:
+                    self.log.exception("A start_sync exception occurred.")
+                    if not self.stopped:
+                        raise
+
+            self._thread = threading.Thread(target=run, name=self.name or "async_kernel_caller", daemon=False)
             self._caller_id = id(self._thread)
             self._thread.start()
 
