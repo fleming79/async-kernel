@@ -472,11 +472,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                 host_options=self.host_options,
             )
 
-            def run():
+            def run() -> None:
                 try:
                     async_kernel.event_loop.run(run_caller_in_context, (), settings)
-                except Exception:
-                    self.log.exception("A start_sync exception occurred.")
+                except Exception as e:
+                    self.log.exception("A start_sync exception occurred.", exc_info=e)
                     if not self.stopped:
                         raise
 
