@@ -100,17 +100,15 @@ class SingleConsumerAsyncQueue(Generic[T]):
         queue = self.queue
         try:
             while self._active:
-                if queue:
+                try:
                     yield queue.popleft()
-                    await checkpoint()
-                else:
+                except IndexError:
                     event = create_async_event()
                     self._resume = event.set
                     if not queue and self._active:
                         await event
                     self._resume = noop
-        except IndexError:
-            pass
+                await checkpoint()
         finally:
             self._resume = noop
             self.stop()
