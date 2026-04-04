@@ -20,7 +20,6 @@ from async_kernel.compat.json import pack_json_bytes, unpack_json
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
-    from anyio.abc import TaskGroup
 
     from async_kernel.kernel import Kernel
     from async_kernel.typing import DebugMessage
@@ -196,7 +195,6 @@ class Debugger(HasTraits):
     debugpy_client = Instance(DebugpyClient)
     log = Instance(logging.LoggerAdapter)
     kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
-    taskgroup: TaskGroup | None = None
     init_event = Instance(Event, ())
 
     @default("log")
