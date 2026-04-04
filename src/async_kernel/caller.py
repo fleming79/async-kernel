@@ -1098,7 +1098,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                     raise RuntimeError(msg)
                 if not isinstance(pen, Pending):
                     pen = cast("Pending[T]", self.call_soon(await_for, pen))
-                pen.add_done_callback(queue.append)
                 if not pen.done():
                     unfinished.add(pen)
                     if max_concurrent_ and len(unfinished) == max_concurrent_:
@@ -1107,6 +1106,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         if len(unfinished) == max_concurrent_:
                             await event
                         resume = noop
+                pen.add_done_callback(queue.append)
             if not queue.queue and not unfinished:
                 queue.stop()
 
