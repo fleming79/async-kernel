@@ -1018,30 +1018,32 @@ class Caller(anyio.AsyncContextManagerMixin):
                 trackers and **not** PendingGroup.
         """
         if not (pen_ := self._queue_map.get(key := hash(func))):
-            queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
-            with contextlib.suppress(TypeError):
-                weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
+            with self._child_lock:
+                if not (pen_ := self._queue_map.get(key)):
+                    queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
+                    with contextlib.suppress(TypeError):
+                        weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
 
-            async def queue_loop() -> None:
-                pen = self.current_pending()
-                assert pen
-                try:
-                    async for item in queue:
+                    async def queue_loop() -> None:
+                        pen = self.current_pending()
+                        assert pen
                         try:
-                            await item[0](*item[1], **item[2])
-                        except TypeError:
-                            continue
-                        except (anyio.get_cancelled_exc_class(), Exception) as e:
-                            if pen.cancelled():
-                                raise
-                            self.log.exception("Execution of %s failed! args:%s kwargs:%s", *item, exc_info=e)
+                            async for item in queue:
+                                try:
+                                    await item[0](*item[1], **item[2])
+                                except TypeError:
+                                    continue
+                                except (anyio.get_cancelled_exc_class(), Exception) as e:
+                                    if pen.cancelled():
+                                        raise
+                                    self.log.exception("Execution of %s failed! args:%s kwargs:%s", *item, exc_info=e)
+                                finally:
+                                    del item
                         finally:
-                            del item
-                finally:
-                    self._queue_map.pop(key)
+                            self._queue_map.pop(key)
 
-            pen_ = self.schedule_call(queue_loop, (), {}, None, PendingManager, key=key, queue=queue)
-            self._queue_map[key] = pen_
+                    pen_ = self.schedule_call(queue_loop, (), {}, None, PendingManager, key=key, queue=queue)
+                    self._queue_map[key] = pen_
         pen_.metadata["queue"].append((func, args, kwargs))
 
     def queue_close(self, func: Callable | int) -> None:
@@ -1051,8 +1053,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         Args:
             func: The queue of the function to close.
         """
-        key = func if isinstance(func, int) else hash(func)
-        if pen := self._queue_map.pop(key, None):
+        if pen := self._queue_map.pop(func if isinstance(func, int) else hash(func), None):
             pen.metadata["queue"].stop()
             pen.cancel()
 
