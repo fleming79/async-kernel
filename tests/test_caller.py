@@ -37,7 +37,7 @@ class TestSingleConsumerAsyncQueue:
         def reject(item):
             rejected.add(item)
 
-        queue = SingleConsumerAsyncQueue(anyio_backend, reject=reject)
+        queue = SingleConsumerAsyncQueue(reject=reject)
         for i in range(4):
             queue.append(i)
         async for n in queue:
@@ -59,7 +59,7 @@ class TestSingleConsumerAsyncQueue:
         assert rejected == {3, 4}
 
     async def test_aiter(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue(anyio_backend)
+        queue = SingleConsumerAsyncQueue()
         aiter1 = aiter(queue)
         aiter2 = aiter(queue)
         queue.append(1)
@@ -74,7 +74,7 @@ class TestSingleConsumerAsyncQueue:
             await anext(aiter1)
 
     async def test_resume(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue(anyio_backend)
+        queue = SingleConsumerAsyncQueue()
 
         async def add():
             await anyio.sleep(0.01)
@@ -93,20 +93,20 @@ class TestSingleConsumerAsyncQueue:
                     break
 
     async def test_stop(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue[Any](anyio_backend)
+        queue = SingleConsumerAsyncQueue[Any]()
         [queue.append(i) for i in range(3)]
         async for _ in queue:
             queue.stop()
         assert not queue.queue
 
     async def test_stop_early(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue[Any](anyio_backend)
+        queue = SingleConsumerAsyncQueue[Any]()
         queue.stop()
         [queue.append(i) for i in range(3)]
         assert not queue.queue
 
     async def test_stop_waiting(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue[Any](anyio_backend)
+        queue = SingleConsumerAsyncQueue[Any]()
         queue.stop()
         [queue.append(i) for i in range(3)]
         assert not queue.queue

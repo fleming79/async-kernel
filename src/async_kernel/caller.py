@@ -81,29 +81,28 @@ class SingleConsumerAsyncQueue(Generic[T]):
         - Items added after stop is called will be rejected immediately.
     """
 
-    __slots__ = ["__weakref__", "_active", "_checkpoint", "_reject", "_resume"]
+    __slots__ = ["__weakref__", "_active", "_reject", "_resume"]
 
     _active: bool | None
     queue: Fixed[Self, deque[T]] = Fixed(deque)
 
-    def __init__(
-        self, backend: Backend | Literal["asyncio", "trio"], /, *, reject: Callable[[T], Any] | None = None
-    ) -> None:
+    def __init__(self, *, reject: Callable[[T], Any] | None = None) -> None:
         self._resume = noop
-        self._checkpoint = asyncio_checkpoint if Backend(backend) is Backend.asyncio else trio_checkpoint
         self._active = None
         self._reject = reject
 
     async def __aiter__(self) -> AsyncGenerator[T]:
         if self._active is not None:
             return
+        backend = Backend(current_async_library())
+        checkpoint = asyncio_checkpoint if backend is Backend.asyncio else trio_checkpoint
         self._active = True
         queue = self.queue
         try:
             while self._active:
                 if queue:
                     yield queue.popleft()
-                    await self._checkpoint()
+                    await checkpoint()
                 else:
                     event = create_async_event()
                     self._resume = event.set
@@ -239,7 +238,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
     _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
-        lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
+        lambda c: SingleConsumerAsyncQueue(reject=c["owner"]._reject)
     )
     _guest_queues: Fixed[Self, dict[Backend, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]]] = Fixed(
         dict
@@ -829,7 +828,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             if not (queue := self._guest_queues.get(backend)):
                 with self._child_lock:
                     if not (queue := self._guest_queues.get(backend)):
-                        queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
+                        queue = SingleConsumerAsyncQueue(reject=self._reject)
                         self._guest_queues[backend] = queue
                         self._stopping.add_done_callback(lambda _: queue.stop())
 
@@ -1033,7 +1032,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if not (pen_ := self._queue_map.get(key := hash(func))):
             with self._child_lock:
                 if not (pen_ := self._queue_map.get(key)):
-                    queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
+                    queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](reject=self._reject)
                     with contextlib.suppress(TypeError):
                         weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
 
@@ -1092,7 +1091,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             2. Pass a container with all results when the limiter is not relevant.
         """
         resume = noop
-        queue: SingleConsumerAsyncQueue[Pending[T]] = SingleConsumerAsyncQueue(self.backend)
+        queue: SingleConsumerAsyncQueue[Pending[T]] = SingleConsumerAsyncQueue()
         unfinished: set[Pending[T]] = set()
         pen_current = self.current_pending()
         if isinstance(items, set | list | tuple):
