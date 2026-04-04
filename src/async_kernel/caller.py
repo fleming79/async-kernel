@@ -506,10 +506,10 @@ class Caller(anyio.AsyncContextManagerMixin):
     def _stop_finalize(self) -> None:
         self._queue.stop()
         if parent := self.parent:
-            parent._children.remove(self)
+            parent._children.discard(self)
         self._state = CallerState.stopped
-        self.stopped.set()
         self._instances.pop(self._caller_id, None)
+        self.stopped.set()
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
