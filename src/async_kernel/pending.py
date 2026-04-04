@@ -444,13 +444,32 @@ class Pending(Awaitable[T]):
 
         @overload
         async def wait(
-            self, *, timeout: float | None = ..., protect: bool = False | ..., result: Literal[True] = True
+            self,
+            *,
+            timeout: float | None = ...,
+            protect: bool = False | ...,
+            result: Literal[True] = True,
+            shield: bool = ...,
         ) -> T: ...
 
         @overload
-        async def wait(self, *, timeout: float | None = ..., protect: bool = ..., result: Literal[False]) -> None: ...
+        async def wait(
+            self,
+            *,
+            timeout: float | None = ...,
+            protect: bool = ...,
+            result: Literal[False],
+            shield: bool = ...,
+        ) -> None: ...
 
-    async def wait(self, *, timeout: float | None = None, protect: bool = False, result: bool = True) -> T | None:
+    async def wait(
+        self,
+        *,
+        timeout: float | None = None,
+        protect: bool = False,
+        result: bool = True,
+        shield: bool = False,
+    ) -> T | None:
         """
         Wait for `result` or `exception` to be set (internally synchronised) returning the result if specified.
 
@@ -458,6 +477,7 @@ class Pending(Awaitable[T]):
             timeout: Timeout in seconds.
             protect: Protect the pending from a `TimeoutError` or external cancellation.
             result: If `result` should be returned.
+            shield: Shield from external cancellation.
 
         Raises:
             TimeoutError: When the timeout expires and a result or exception has not been set.
@@ -469,7 +489,7 @@ class Pending(Awaitable[T]):
         """
         try:
             if not self._done:
-                waiter = create_async_waiter()
+                waiter = create_async_waiter(shield=shield)
                 self.add_done_callback(lambda _: waiter.wake())
                 if timeout is None:
                     await waiter

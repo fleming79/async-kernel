@@ -144,6 +144,15 @@ class TestPending:
             pen._set_done(False, None)  # pyright: ignore[reportPrivateUsage]
         assert event_after
 
+    async def test_wait_shield(self, caller: Caller):
+        async def f():
+            await anyio.sleep(0.001)
+            return 2
+
+        with anyio.move_on_after(0):
+            result = await caller.call_soon(f).wait(shield=True)
+        assert result == 2  # pyright: ignore[reportPossiblyUnboundVariable]
+
     async def test_cancel(self, anyio_backend: Backend):
         pen = Pending()
         pen.set_canceller(lambda _: None)
