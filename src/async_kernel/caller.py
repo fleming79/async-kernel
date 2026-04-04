@@ -965,12 +965,13 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         def _to_thread_on_done(_) -> None:
             if not caller.stopped and self.running:
-                if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
-                    caller._idle_time = time.monotonic()
-                    self._worker_pool.append(caller)
-                    self._start_idle_worker_cleanup_thead()
-                else:
-                    caller.stop()
+                with self._child_lock:
+                    if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
+                        caller._idle_time = time.monotonic()
+                        self._worker_pool.append(caller)
+                        self._start_idle_worker_cleanup_thead()
+                    else:
+                        caller.stop()
 
         try:
             caller = self._worker_pool.popleft()
