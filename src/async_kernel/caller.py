@@ -56,6 +56,69 @@ truncated_rep.maxother = 100
 truncated_rep.fillvalue = "…"
 
 
+@asynccontextmanager
+async def task_factory() -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
+    """
+    An async context that yields a function to start tasks for the current async library ('asyncio' or 'trio').
+
+    Asyncio will use `eager_start` where the loop supports it.
+
+    When the context is exited:
+
+    - All unfinished tasks are cancelled.
+    - The context waits for all tasks to stop prior to returning.
+    """
+    backend = Backend(current_async_library())
+    if backend is Backend.asyncio:
+        loop = asyncio.get_running_loop()
+        coro = asyncio.sleep(0)
+        tasks = set()
+        eager = False
+        all_done = create_async_waiter(shield=True)
+        active = True
+        try:
+            await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
+            eager = True
+        except Exception:
+            coro.close()
+
+        def done_callback(task: asyncio.Task) -> None:
+            tasks.discard(task)
+            if not active and not tasks:
+                all_done.wake()
+
+        def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
+            if eager:
+                task = loop.create_task(func(*args), context=context, eager_start=True)  # pyright: ignore[reportCallIssue]
+            else:
+                task = loop.create_task(func(*args), context=context)
+            if not task.done():
+                tasks.add(task)
+                task.add_done_callback(done_callback)
+
+        try:
+            yield create_task
+        finally:
+            active = False
+            if tasks:
+                for task in tasks:
+                    task.cancel()
+                await all_done
+    else:
+        async with trio.open_nursery() as nursery:
+
+            def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
+                if context:
+                    context.run(nursery.start_soon, func, *args)
+                else:
+                    nursery.start_soon(func, *args)
+
+            try:
+                yield create_task
+            finally:
+                nursery.cancel_scope.cancel("Shutting down")
+
+
 @final
 class Caller(anyio.AsyncContextManagerMixin):
     """
@@ -437,7 +500,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.connect(self.iopub_url)
                 self.iopub_sockets[self._caller_id] = socket
-            async with self._get_task_factory() as create_task:
+            async with task_factory() as create_task:
                 try:
                     create_task(None, self._scheduler, self._queue)
                     with anyio.CancelScope() as scope:
@@ -459,68 +522,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 self.iopub_sockets.pop(self._caller_id, None)
                 socket.close(linger=0)
             self._stop_finalize()
-
-    @asynccontextmanager
-    async def _get_task_factory(
-        self,
-    ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
-        """
-        An async context that provides a callabled to run a function in a task.
-
-        When the context is exited:
-
-        - All unfinished tasks are cancelled.
-        - The context waits for all tasks to complete prior to returning.
-        """
-        backend = Backend(current_async_library())
-        if backend is Backend.asyncio:
-            loop = asyncio.get_running_loop()
-            coro = asyncio.sleep(0)
-            tasks = set()
-            eager = False
-            all_done = create_async_waiter(shield=True)
-            active = True
-            try:
-                await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
-                eager = True
-            except Exception:
-                coro.close()
-
-            def done_callback(task: asyncio.Task) -> None:
-                tasks.discard(task)
-                if not active and not tasks:
-                    all_done.wake()
-
-            def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
-                if eager:
-                    task = loop.create_task(func(*args), context=context, eager_start=True)  # pyright: ignore[reportCallIssue]
-                else:
-                    task = loop.create_task(func(*args), context=context)
-                if not task.done():
-                    tasks.add(task)
-                    task.add_done_callback(done_callback)
-
-            try:
-                yield create_task
-            finally:
-                active = False
-                if tasks:
-                    for task in tasks:
-                        task.cancel()
-                    await all_done
-        else:
-            async with trio.open_nursery() as nursery:
-
-                def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
-                    if context:
-                        context.run(nursery.start_soon, func, *args)
-                    else:
-                        nursery.start_soon(func, *args)
-
-                try:
-                    yield create_task
-                finally:
-                    nursery.cancel_scope.cancel("Shutting down")
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
         """
@@ -579,7 +580,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     raise e from None
 
         if not queue.stopped:
-            async with self._get_task_factory() as create_task:
+            async with task_factory() as create_task:
                 async for item in queue:
                     if isinstance(item, Pending):
                         if not item.done():
