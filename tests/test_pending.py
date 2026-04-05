@@ -167,8 +167,14 @@ class TestPending:
         assert pen.cancelled()
 
     async def test_cancel_wait_done(self, caller: Caller, anyio_backend: Backend):
-        pen = caller.call_soon(anyio.sleep_forever)
-        await anyio.sleep(0)
+        started = Event()
+
+        async def f():
+            started.set()
+            await anyio.sleep_forever()
+
+        pen = caller.call_soon(f)
+        await started
         await pen.cancel_wait("test cancel")
         with pytest.raises(PendingCancelled, match="test cancel"):
             pen.result()
