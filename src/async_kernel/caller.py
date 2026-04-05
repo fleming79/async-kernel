@@ -13,8 +13,8 @@ import weakref
 from collections import deque
 from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from types import CoroutineType, coroutine
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, Unpack, cast, final
+from types import CoroutineType
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast, final
 
 import anyio
 from aiologic import BinarySemaphore, Event
@@ -25,7 +25,7 @@ from wrapt import lazy_import
 
 import async_kernel.event_loop
 from async_kernel import utils
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt, SingleAsyncQueue, noop
 from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, RunSettings, T
@@ -46,150 +46,14 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller", "PendingGroup", "SingleAsyncQueue"]
+__all__ = ["Caller"]
+
+globals()["trio"] = lazy_import("trio")
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
 truncated_rep.maxother = 100
 truncated_rep.fillvalue = "…"
-
-
-def noop() -> None:
-    pass
-
-
-trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
-globals()["trio"] = lazy_import("trio")
-
-
-@coroutine
-def asyncio_checkpoint():
-    yield
-
-
-class SingleAsyncQueue(Generic[T]):
-    """
-    A single-use asynchronous iterator with a queue.
-
-    Notes:
-        - Append to the queue from anywhere (internally synchronised).
-        - The queue will only yield for one async iterator consumer.
-        - When [SingleAsyncQueue.stop][] is called:
-            - Any items in the queue are immediately rejected.
-            - The async iterator is stopped.
-        - Items added after stop is called will be rejected immediately.
-
-    Usage:
-        ```python
-        q = SingleAsyncQueue(reject=lambda item: print("rejected", item))
-
-        # In a task
-        async for item in q:
-            q
-
-        # Other threads/tasks
-        q.append(item)
-        q.extent([item1, item2])
-
-        # Stop the iterator
-        q.stop()
-        ```
-    """
-
-    __slots__ = ["__weakref__", "_active", "_reject", "_resume"]
-
-    _active: bool | None
-    queue: Fixed[Self, deque[T]] = Fixed(deque)
-
-    def __init__(self, *, reject: Callable[[T], Any] | None = None) -> None:
-        self._resume = noop
-        self._active = None
-        self._reject = reject
-
-    async def __aiter__(self) -> AsyncGenerator[T]:
-        if self._active is not None:
-            return
-        backend = Backend(current_async_library())
-        checkpoint = asyncio_checkpoint if backend is Backend.asyncio else trio_checkpoint
-        self._active = True
-        queue = self.queue
-        try:
-            while self._active:
-                await checkpoint()
-                if self._active:
-                    try:
-                        yield queue.popleft()
-                    except IndexError:
-                        event = create_async_event()
-                        self._resume = event.set
-                        if not queue and self._active:
-                            await event
-                        self._resume = noop
-        finally:
-            self._resume = noop
-            self.stop()
-
-    def stop(self) -> None:
-        """
-        Stop the queue rejecting any items currently in the queue.
-        """
-        self._active = False
-        if self._reject:
-            while True:
-                try:
-                    self._reject(self.queue.popleft())
-                except IndexError:
-                    break
-        else:
-            self.queue.clear()
-        self._resume()
-
-    def append(self, item: T, /) -> None:
-        """
-        Append `item` to the queue.
-
-        If the queue has been stopped `item` will be rejected immediately.
-        """
-        if self._active is False:
-            if self._reject:
-                self._reject(item)
-        else:
-            self.queue.append(item)
-            self._resume()
-
-    def appendleft(self, item: T, /) -> None:
-        """
-        Append `item` to the left side of the queue.
-
-        If the queue has been stopped `item` will be rejected immediately.
-        """
-        if self._active is False:
-            if self._reject:
-                self._reject(item)
-        else:
-            self.queue.appendleft(item)
-            self._resume()
-
-    def extend(self, iterable: Iterable[T], /) -> None:
-        """
-        Append all items in `iterable` to the queue.
-
-        If the queue has been stopped all items in `iterable` will be rejected immediately.
-        """
-        if self._active is False:
-            if self._reject:
-                for item in iterable:
-                    self._reject(item)
-        else:
-            self.queue.extend(iterable)
-            self._resume()
-
-    @property
-    def stopped(self) -> bool:
-        """
-        Will return `True` once stop has been called meaning there are no items left in the queue.
-        """
-        return self._active is False
 
 
 @final

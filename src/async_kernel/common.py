@@ -1,17 +1,25 @@
 from __future__ import annotations
 
 import weakref
+from collections import deque
+from types import coroutine
 from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
 import aiologic.meta
-from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_thread_oncelock
+from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
+from sniffio import current_async_library
+from wrapt import lazy_import
 
-from async_kernel.typing import FixedCreate, FixedCreated, S, T
+from async_kernel.typing import Backend, FixedCreate, FixedCreated, S, T
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 
-__all__ = ["Fixed", "KernelInterrupt", "import_item"]
+__all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
+
+
+trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
+globals()["trio"] = lazy_import("trio")
 
 
 def import_item(dottedname: str) -> Any:
@@ -24,6 +32,15 @@ def import_item(dottedname: str) -> Any:
     """
     module, name0 = dottedname.rsplit(".", maxsplit=1)
     return aiologic.meta.import_from(module, name0)
+
+
+@coroutine
+def asyncio_checkpoint():
+    yield
+
+
+def noop() -> None:
+    pass
 
 
 class KernelInterrupt(InterruptedError):
@@ -135,3 +152,128 @@ class Fixed(Generic[S, T]):
         # Note: above we use `Self` for the `value` type hint to give a useful typing error
         msg = f"Setting `Fixed` parameter {obj.__class__.__name__}.{self.name} is forbidden!"
         raise AttributeError(msg)
+
+
+class SingleAsyncQueue(Generic[T]):
+    """
+    A single-use asynchronous iterator with a queue.
+
+    Notes:
+        - Append to the queue from anywhere (internally synchronised).
+        - The queue will only yield for one async iterator consumer.
+        - When [SingleAsyncQueue.stop][] is called:
+            - Any items in the queue are immediately rejected.
+            - The async iterator is stopped.
+        - Items added after stop is called will be rejected immediately.
+
+    Usage:
+        ```python
+        q = SingleAsyncQueue(reject=lambda item: print("rejected", item))
+
+        # In a task
+        async for item in q:
+            q
+
+        # Other threads/tasks
+        q.append(item)
+        q.extent([item1, item2])
+
+        # Stop the iterator
+        q.stop()
+        ```
+    """
+
+    __slots__ = ["__weakref__", "_active", "_reject", "_resume"]
+
+    _active: bool | None
+    queue: Fixed[Self, deque[T]] = Fixed(deque)
+
+    def __init__(self, *, reject: Callable[[T], Any] | None = None) -> None:
+        self._resume = noop
+        self._active = None
+        self._reject = reject
+
+    async def __aiter__(self) -> AsyncGenerator[T]:
+        if self._active is not None:
+            return
+        backend = Backend(current_async_library())
+        checkpoint = asyncio_checkpoint if backend is Backend.asyncio else trio_checkpoint
+        self._active = True
+        queue = self.queue
+        try:
+            while self._active:
+                await checkpoint()
+                if self._active:
+                    try:
+                        yield queue.popleft()
+                    except IndexError:
+                        event = create_async_event()
+                        self._resume = event.set
+                        if not queue and self._active:
+                            await event
+                        self._resume = noop
+        finally:
+            self._resume = noop
+            self.stop()
+
+    def stop(self) -> None:
+        """
+        Stop the queue rejecting any items currently in the queue.
+        """
+        self._active = False
+        if self._reject:
+            while True:
+                try:
+                    self._reject(self.queue.popleft())
+                except IndexError:
+                    break
+        else:
+            self.queue.clear()
+        self._resume()
+
+    def append(self, item: T, /) -> None:
+        """
+        Append `item` to the queue.
+
+        If the queue has been stopped `item` will be rejected immediately.
+        """
+        if self._active is False:
+            if self._reject:
+                self._reject(item)
+        else:
+            self.queue.append(item)
+            self._resume()
+
+    def appendleft(self, item: T, /) -> None:
+        """
+        Append `item` to the left side of the queue.
+
+        If the queue has been stopped `item` will be rejected immediately.
+        """
+        if self._active is False:
+            if self._reject:
+                self._reject(item)
+        else:
+            self.queue.appendleft(item)
+            self._resume()
+
+    def extend(self, iterable: Iterable[T], /) -> None:
+        """
+        Append all items in `iterable` to the queue.
+
+        If the queue has been stopped all items in `iterable` will be rejected immediately.
+        """
+        if self._active is False:
+            if self._reject:
+                for item in iterable:
+                    self._reject(item)
+        else:
+            self.queue.extend(iterable)
+            self._resume()
+
+    @property
+    def stopped(self) -> bool:
+        """
+        Will return `True` once stop has been called meaning there are no items left in the queue.
+        """
+        return self._active is False

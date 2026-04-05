@@ -12,7 +12,7 @@ import anyio.to_thread
 import pytest
 from aiologic import Event
 
-from async_kernel.common import Fixed, import_item
+from async_kernel.common import Fixed, SingleAsyncQueue, import_item
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend, FixedCreate, FixedCreated
@@ -180,3 +180,97 @@ class TestFixed:
     def test_get_at_import(self):
         fixed = Fixed(str)
         assert fixed.__get__(None, None) is fixed
+
+
+class TestSingleAsyncQueue:
+    async def test_functional(self, anyio_backend: Backend) -> None:
+        rejected = set()
+
+        queue = SingleAsyncQueue(reject=rejected.add)
+        for i in range(4):
+            queue.append(i)
+        async for n in queue:
+            assert not queue.stopped
+            if n == 1:
+                async for m in queue:
+                    assert not m, "Nothing should iterate here"
+            if n == 2:
+                break
+
+        assert not queue.stopped, "Async exiting context is scheduled."
+        await anyio.sleep(0.01)
+        assert queue.stopped
+        assert not queue.queue
+        assert rejected == {3}
+        async for _ in queue:
+            pass
+        queue.append(4)
+        assert rejected == {3, 4}
+
+    async def test_aiter(self, anyio_backend: Backend) -> None:
+        queue = SingleAsyncQueue()
+        aiter1 = aiter(queue)
+        aiter2 = aiter(queue)
+        queue.append(1)
+        assert await anext(aiter1) == 1
+        with pytest.raises(StopAsyncIteration):
+            await anext(aiter2)
+        await aiter1.aclose()
+        await aiter2.aclose()
+
+        queue.stop()
+        with pytest.raises(StopAsyncIteration):
+            await anext(aiter1)
+
+    async def test_resume(self, anyio_backend: Backend) -> None:
+        queue = SingleAsyncQueue()
+
+        async def add():
+            await anyio.sleep(0.01)
+            for i in range(10):
+                if i % 2:
+                    await anyio.sleep(0.01)
+                queue.append(i)
+
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(add)
+            i = 0
+            async for n in queue:
+                assert n == i
+                i += 1
+                if i == 10:
+                    break
+
+    async def test_stop(self, anyio_backend: Backend) -> None:
+        queue = SingleAsyncQueue[Any]()
+        queue.extend(range(3))
+        async for _ in queue:
+            queue.stop()
+        assert not queue.queue
+
+    async def test_stop_early(self, anyio_backend: Backend) -> None:
+        queue = SingleAsyncQueue[Any]()
+        queue.stop()
+        queue.extend(range(3))
+        assert not queue.queue
+
+    async def test_stop_waiting(self, anyio_backend: Backend) -> None:
+        queue = SingleAsyncQueue[Any]()
+        queue.stop()
+        queue.extend(range(3))
+        assert not queue.queue
+
+    def test_extend_reject(self) -> None:
+        rejected = set()
+        queue = SingleAsyncQueue(reject=rejected.add)
+        queue.stop()
+        queue.extend(range(3))
+        assert rejected == {0, 1, 2}
+
+    def test_appendleft(self):
+        rejected = set()
+        queue = SingleAsyncQueue(reject=rejected.add)
+        queue.appendleft(0)
+        queue.stop()
+        queue.appendleft(1)
+        assert rejected == {0, 1}
