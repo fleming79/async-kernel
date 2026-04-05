@@ -403,13 +403,13 @@ class Caller(anyio.AsyncContextManagerMixin):
         async def run_caller_in_context() -> None:
             if self._state is CallerState.start_sync:
                 self._state = CallerState.initial
-                if no_debug:
-                    utils.mark_thread_pydev_do_not_trace()
-                try:
-                    async with self:
-                        await self._stopping.wait(result=False)
-                except Exception as e:
-                    self.log.exception("Caller did not exit context nicely!", exc_info=e)
+            if no_debug:
+                utils.mark_thread_pydev_do_not_trace()
+            try:
+                async with self:
+                    await self._stopping.wait(result=False)
+            except Exception as e:
+                self.log.exception("Caller did not exit context nicely!", exc_info=e)
 
         if getattr(self, "_caller_id", None) is not None:
             # An event loop for the current thread.
@@ -458,7 +458,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
         if (self._protected and not force) or self._state is CallerState.stopped:
             return self._state
-        finalize = self._state in [CallerState.initial, CallerState.start_sync]
+        state = self._state
         self._state = CallerState.stopping
         # Invoke stop callbacks
         self._stopping.set_result(None)
@@ -467,33 +467,34 @@ class Caller(anyio.AsyncContextManagerMixin):
                 parent._worker_pool.remove(self)
             except ValueError:
                 pass
-        for child in self.children:
-            child.stop(force=True)
         for func in tuple(self._queue_map):
             self.queue_close(func)
-        if finalize:
+        if state is CallerState.initial and not self._children:
             self._stop_finalize()
+        else:
+            for child in self.children:
+                child.stop(force=True)
         return self._state
 
     def _stop_finalize(self) -> None:
         self._queue.stop()
-        if parent := self.parent:
-            parent._children.discard(self)
         self._state = CallerState.stopped
         self._instances.pop(self._caller_id, None)
         self.stopped.set()
+        if parent := self.parent:
+            parent._children.discard(self)
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         "The asynchronous context for caller."
+        if self._state is CallerState.start_sync:
+            msg = 'Already starting! Did you mean to use Caller("manual")?'
+            raise RuntimeError(msg)
+        if self._state is CallerState.stopped:
+            msg = f"Stopped: {self}"
+            raise RuntimeError(msg)
         socket = None
         try:
-            if (state := self._state) is not CallerState.initial:
-                if state is CallerState.start_sync:
-                    msg = 'Already starting! Did you mean to use Caller("manual")?'
-                else:
-                    msg = f"Invalid {state=}!"
-                raise RuntimeError(msg)
             if not self._name:
                 self._name = threading.current_thread().name
             if self._zmq_context:
@@ -513,11 +514,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                         await event  # Internally shielded from cancellation
                     self._queue.stop()
         finally:
-            if children := tuple(self._children):
-                with anyio.CancelScope(shield=True):
-                    for caller in children:
-                        if not caller.stopped:
+            while self._children:
+                try:
+                    if not (caller := self._children.pop()).stopped:
+                        with anyio.CancelScope(shield=True):
                             await caller.stopped
+                except IndexError:
+                    pass
             if socket:
                 self.iopub_sockets.pop(self._caller_id, None)
                 socket.close(linger=0)
