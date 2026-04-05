@@ -26,7 +26,7 @@ def import_item(dottedname: str) -> Any:
     return aiologic.meta.import_from(module, name0)
 
 
-class KernelInterrupt(Exception):
+class KernelInterrupt(InterruptedError):
     "Raised to interrupt the kernel."
 
 
