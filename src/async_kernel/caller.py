@@ -157,6 +157,19 @@ class SingleAsyncQueue(Generic[T]):
             self.queue.append(item)
             self._resume()
 
+    def appendleft(self, item: T, /) -> None:
+        """
+        Append `item` to the left side of the queue.
+
+        If the queue has been stopped `item` will be rejected immediately.
+        """
+        if self._active is False:
+            if self._reject:
+                self._reject(item)
+        else:
+            self.queue.appendleft(item)
+            self._resume()
+
     def extend(self, iterable: Iterable[T], /) -> None:
         """
         Append all items in `iterable` to the queue.
