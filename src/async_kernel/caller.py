@@ -502,7 +502,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 self.iopub_sockets[self._caller_id] = socket
             async with task_factory() as create_task:
                 try:
-                    create_task(None, self._scheduler, self._queue)
+                    create_task(contextvars.Context(), self._scheduler, self._queue)
                     with anyio.CancelScope() as scope:
                         self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
                         self._state = CallerState.running
