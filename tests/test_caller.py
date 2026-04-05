@@ -115,6 +115,14 @@ class TestSingleAsyncQueue:
         queue.extend(range(3))
         assert rejected == {0, 1, 2}
 
+    def test_appendleft(self):
+        rejected = set()
+        queue = SingleAsyncQueue(reject=rejected.add)
+        queue.appendleft(0)
+        queue.stop()
+        queue.appendleft(1)
+        assert rejected == {0, 1}
+
 
 @pytest.mark.anyio
 class TestCaller:
