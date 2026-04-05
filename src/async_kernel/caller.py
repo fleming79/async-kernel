@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
     from async_kernel.typing import P
 
-__all__ = ["Caller", "PendingGroup"]
+__all__ = ["Caller", "PendingGroup", "SingleAsyncQueue"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -67,51 +67,64 @@ def asyncio_checkpoint():
     yield
 
 
-class SingleConsumerAsyncQueue(Generic[T]):
+class SingleAsyncQueue(Generic[T]):
     """
-    A single use queue for a single asynchronous iterator consumer.
+    A single-use asynchronous iterator with a queue.
 
     Notes:
-        - Adding to the queue is synchronous and internally synchronised.
-        - The default queue size is unlimited.
+        - Append to the queue from anywhere (internally synchronised).
         - The queue will only yield for one async iterator consumer.
-        - When [SingleConsumerAsyncQueue.stop][] is called:
+        - When [SingleAsyncQueue.stop][] is called:
             - Any items in the queue are immediately rejected.
             - The async iterator is stopped.
         - Items added after stop is called will be rejected immediately.
+
+    Usage:
+        ```python
+        q = SingleAsyncQueue(reject=lambda item: print("rejected", item))
+
+        # In a task
+        async for item in q:
+            q
+
+        # Other threads/tasks
+        q.append(item)
+        q.extent([item1, item2])
+
+        # Stop the iterator
+        q.stop()
+        ```
     """
 
-    __slots__ = ["__weakref__", "_active", "_checkpoint", "_reject", "_resume"]
+    __slots__ = ["__weakref__", "_active", "_reject", "_resume"]
 
     _active: bool | None
     queue: Fixed[Self, deque[T]] = Fixed(deque)
 
-    def __init__(
-        self, backend: Backend | Literal["asyncio", "trio"], /, *, reject: Callable[[T], Any] | None = None
-    ) -> None:
+    def __init__(self, *, reject: Callable[[T], Any] | None = None) -> None:
         self._resume = noop
-        self._checkpoint = asyncio_checkpoint if Backend(backend) is Backend.asyncio else trio_checkpoint
         self._active = None
         self._reject = reject
 
     async def __aiter__(self) -> AsyncGenerator[T]:
         if self._active is not None:
             return
+        backend = Backend(current_async_library())
+        checkpoint = asyncio_checkpoint if backend is Backend.asyncio else trio_checkpoint
         self._active = True
         queue = self.queue
         try:
             while self._active:
-                if queue:
-                    yield queue.popleft()
-                    await self._checkpoint()
-                else:
-                    event = create_async_event()
-                    self._resume = event.set
-                    if not queue and self._active:
-                        await event
-                    self._resume = noop
-        except IndexError:
-            pass
+                await checkpoint()
+                if self._active:
+                    try:
+                        yield queue.popleft()
+                    except IndexError:
+                        event = create_async_event()
+                        self._resume = event.set
+                        if not queue and self._active:
+                            await event
+                        self._resume = noop
         finally:
             self._resume = noop
             self.stop()
@@ -131,17 +144,31 @@ class SingleConsumerAsyncQueue(Generic[T]):
             self.queue.clear()
         self._resume()
 
-    def append(self, item: T) -> None:
+    def append(self, item: T, /) -> None:
         """
-        Append an item to the queue.
+        Append `item` to the queue.
 
-        If the queue has been stopped it will be rejected immediately.
+        If the queue has been stopped `item` will be rejected immediately.
         """
         if self._active is False:
             if self._reject:
                 self._reject(item)
         else:
             self.queue.append(item)
+            self._resume()
+
+    def extend(self, iterable: Iterable[T], /) -> None:
+        """
+        Append all items in `iterable` to the queue.
+
+        If the queue has been stopped all items in `iterable` will be rejected immediately.
+        """
+        if self._active is False:
+            if self._reject:
+                for item in iterable:
+                    self._reject(item)
+        else:
+            self.queue.extend(iterable)
             self._resume()
 
     @property
@@ -238,12 +265,10 @@ class Caller(anyio.AsyncContextManagerMixin):
     _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
     _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
-    _queue: Fixed[Self, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
-        lambda c: SingleConsumerAsyncQueue(c["owner"].backend, reject=c["owner"]._reject)
+    _queue: Fixed[Self, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
+        lambda c: SingleAsyncQueue(reject=c["owner"]._reject)
     )
-    _guest_queues: Fixed[Self, dict[Backend, SingleConsumerAsyncQueue[Pending | tuple[Callable, tuple, dict]]]] = Fixed(
-        dict
-    )
+    _guest_queues: Fixed[Self, dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]] = Fixed(dict)
     _guest_done_events: Fixed[Any, set[AsyncEvent]] = Fixed(set)
     _stopping = Fixed(Pending[None])
     "A pending that is set done the first time stop is called."
@@ -535,9 +560,9 @@ class Caller(anyio.AsyncContextManagerMixin):
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.connect(self.iopub_url)
                 self.iopub_sockets[self._caller_id] = socket
-            async with self._get_task_factory(self.backend) as create_task:
+            async with self._get_task_factory() as create_task:
                 try:
-                    create_task(None, self._scheduler, self.backend, self._queue)
+                    create_task(None, self._scheduler, self._queue)
                     with anyio.CancelScope() as scope:
                         self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
                         self._state = CallerState.running
@@ -560,9 +585,17 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def _get_task_factory(
-        self, backend: Backend
+        self,
     ) -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
+        """
+        An async context that provides a callabled to run a function in a task.
 
+        When the context is exited:
+
+        - All unfinished tasks are cancelled.
+        - The context waits for all tasks to complete prior to returning.
+        """
+        backend = Backend(current_async_library())
         if backend is Backend.asyncio:
             loop = asyncio.get_running_loop()
             coro = asyncio.sleep(0)
@@ -594,11 +627,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                 yield create_task
             finally:
                 active = False
-                while tasks:
+                if tasks:
                     for task in tasks:
                         task.cancel()
-                    with anyio.move_on_after(1):
-                        await all_done
+                    await all_done
         else:
             async with trio.open_nursery() as nursery:
 
@@ -613,21 +645,21 @@ class Caller(anyio.AsyncContextManagerMixin):
                 finally:
                     nursery.cancel_scope.cancel("Shutting down")
 
-    async def _scheduler(self, backend: Backend, queue: SingleConsumerAsyncQueue) -> None:
+    async def _scheduler(self, queue: SingleAsyncQueue) -> None:
         """
-        An asynchronous coroutine to schedule or execute functions as they arrive in the queue.
+        A function that async iterates the queue and executes items as they arrive.
+
+        It handles two types of items:
+            - tuple: A tuple of `func`, `args`, `kwargs` is called directly in the scheduler.
+            - Pending: A pending is started as an 'task'. The pending provides `func`, `args` and `kwargs`
+                in it's metadata. The pending is set as `active_pending`in the context for the duration of execution.
 
         Args:
-            backend: The backend where the scheduler is operating.
             queue: The queue to access the items for scheduling.
-
-        It handles two different types of items in the queue:
-            - tuple: A tuple of `func`, `args`, `kwargs` intended to be called directly in the scheduler.
-            - Pending: A pending that is to be started as a 'task', that must provide `func`, `args` and `kwargs`
-                in it's metadata. It is set as `active_pending`in the context for the duration of execution.
         """
+        backend = Backend(current_async_library())
 
-        async def _wrap_call(pen: Pending[Any]) -> None:
+        async def run_pending_function(pen: Pending[Any]) -> None:
             if pen.done():
                 return  # pragma: no cover
             md = pen.metadata
@@ -670,11 +702,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                     raise e from None
 
         if not queue.stopped:
-            async with self._get_task_factory(backend) as create_task:
+            async with self._get_task_factory() as create_task:
                 async for item in queue:
                     if isinstance(item, Pending):
                         if not item.done():
-                            create_task(item.context, _wrap_call, item)
+                            create_task(item.context, run_pending_function, item)
                     else:
                         try:
                             result = item[0](*item[1], **item[2])
@@ -822,7 +854,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             if not (queue := self._guest_queues.get(backend)):
                 with self._child_lock:
                     if not (queue := self._guest_queues.get(backend)):
-                        queue = SingleConsumerAsyncQueue(backend, reject=self._reject)
+                        queue = SingleAsyncQueue(reject=self._reject)
                         self._guest_queues[backend] = queue
                         self._stopping.add_done_callback(lambda _: queue.stop())
 
@@ -833,7 +865,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                                 done = create_async_event(shield=True)
                                 get_start_guest_run(backend)(
                                     self._scheduler,
-                                    Backend(backend),
                                     queue,
                                     done_callback=lambda _: done.set(),
                                     run_sync_soon_threadsafe=host.run_sync_soon_threadsafe
@@ -1027,7 +1058,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if not (pen_ := self._queue_map.get(key := hash(func))):
             with self._child_lock:
                 if not (pen_ := self._queue_map.get(key)):
-                    queue = SingleConsumerAsyncQueue[tuple[Callable, tuple, dict]](self.backend)
+                    queue = SingleAsyncQueue[tuple[Callable, tuple, dict]](reject=self._reject)
                     with contextlib.suppress(TypeError):
                         weakref.finalize(func.__self__ if inspect.ismethod(func) else func, self.queue_close, key)
 
@@ -1086,7 +1117,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             2. Pass a container with all results when the limiter is not relevant.
         """
         resume = noop
-        queue: SingleConsumerAsyncQueue[Pending[T]] = SingleConsumerAsyncQueue(self.backend)
+        queue: SingleAsyncQueue[Pending[T]] = SingleAsyncQueue()
         unfinished: set[Pending[T]] = set()
         pen_current = self.current_pending()
         if isinstance(items, set | list | tuple):

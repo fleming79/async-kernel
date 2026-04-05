@@ -16,7 +16,7 @@ import trio
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, current_async_library
 
-from async_kernel.caller import Caller, SingleConsumerAsyncQueue
+from async_kernel.caller import Caller, SingleAsyncQueue
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, Hosts
 
@@ -30,14 +30,11 @@ def anyio_backend(request):
     return request.param
 
 
-class TestSingleConsumerAsyncQueue:
+class TestSingleAsyncQueue:
     async def test_functional(self, anyio_backend: Backend) -> None:
         rejected = set()
 
-        def reject(item):
-            rejected.add(item)
-
-        queue = SingleConsumerAsyncQueue(anyio_backend, reject=reject)
+        queue = SingleAsyncQueue(reject=rejected.add)
         for i in range(4):
             queue.append(i)
         async for n in queue:
@@ -59,7 +56,7 @@ class TestSingleConsumerAsyncQueue:
         assert rejected == {3, 4}
 
     async def test_aiter(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue(anyio_backend)
+        queue = SingleAsyncQueue()
         aiter1 = aiter(queue)
         aiter2 = aiter(queue)
         queue.append(1)
@@ -74,7 +71,7 @@ class TestSingleConsumerAsyncQueue:
             await anext(aiter1)
 
     async def test_resume(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue(anyio_backend)
+        queue = SingleAsyncQueue()
 
         async def add():
             await anyio.sleep(0.01)
@@ -93,23 +90,30 @@ class TestSingleConsumerAsyncQueue:
                     break
 
     async def test_stop(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue[Any](anyio_backend)
-        [queue.append(i) for i in range(3)]
+        queue = SingleAsyncQueue[Any]()
+        queue.extend(range(3))
         async for _ in queue:
             queue.stop()
         assert not queue.queue
 
     async def test_stop_early(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue[Any](anyio_backend)
+        queue = SingleAsyncQueue[Any]()
         queue.stop()
-        [queue.append(i) for i in range(3)]
+        queue.extend(range(3))
         assert not queue.queue
 
     async def test_stop_waiting(self, anyio_backend: Backend) -> None:
-        queue = SingleConsumerAsyncQueue[Any](anyio_backend)
+        queue = SingleAsyncQueue[Any]()
         queue.stop()
-        [queue.append(i) for i in range(3)]
+        queue.extend(range(3))
         assert not queue.queue
+
+    def test_extend_reject(self) -> None:
+        rejected = set()
+        queue = SingleAsyncQueue(reject=rejected.add)
+        queue.stop()
+        queue.extend(range(3))
+        assert rejected == {0, 1, 2}
 
 
 @pytest.mark.anyio
