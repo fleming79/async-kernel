@@ -513,14 +513,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                         await event  # Internally shielded from cancellation
                     self._queue.stop()
         finally:
+            if socket:
+                self.iopub_sockets.pop(self._caller_id, None)
+                socket.close(linger=50)
             if children := tuple(self._children):
                 with anyio.CancelScope(shield=True):
                     for caller in children:
                         if not caller.stopped:
                             await caller.stopped
-            if socket:
-                self.iopub_sockets.pop(self._caller_id, None)
-                socket.close(linger=0)
             self._stop_finalize()
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
