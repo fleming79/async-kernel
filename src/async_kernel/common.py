@@ -154,8 +154,6 @@ class Fixed(Generic[S, T]):
         raise AttributeError(msg)
 
 
-
-
 class SingleAsyncQueue(Generic[T]):
     """
     A single-use asynchronous iterator with a queue.
