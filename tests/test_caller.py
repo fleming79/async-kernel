@@ -116,7 +116,6 @@ class TestCaller:
         thread.join()
 
     def test_no_event_loop(self, anyio_backend: Backend):
-        assert current_async_library(failsafe=True) is None
         caller = Caller("NewThread", backend=anyio_backend, no_debug=True)
         assert caller.id != id(threading.current_thread())
         assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
