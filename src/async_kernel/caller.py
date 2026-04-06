@@ -1042,13 +1042,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             pen_.result()
         finally:
             queue.stop()
-            pen_.cancel()
             for pen in unfinished:
                 pen.remove_done_callback(queue.append)
                 if cancel_unfinished:
                     pen.cancel("Cancelled by as_completed")
-            with anyio.CancelScope():
-                await pen_.wait(result=False)
+            await pen_.cancel_wait(shield=True)
 
     async def wait(
         self,

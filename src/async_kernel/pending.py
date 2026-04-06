@@ -612,12 +612,18 @@ class Pending(Awaitable[T]):
                 canceller(msg)
         return self._cancelled is not None
 
-    async def cancel_wait(self, msg: str | None, *, timeout: float | None = None) -> None:
-        "Cancel the pending and wait for it to be done."
+    async def cancel_wait(self, msg: str | None = None, *, timeout: float | None = None, shield: bool = False) -> None:
+        """
+        Cancel the pending and wait for it to be done.
+
+        Args:
+            timeout: Timeout in seconds.
+            shield: Shield from external cancellation.
+        """
         if not self._done:
             self.cancel(msg)
             if not self._done:
-                await self.wait(result=False, timeout=timeout)
+                await self.wait(result=False, timeout=timeout, shield=shield)
 
     def cancelled(self) -> bool:
         """
