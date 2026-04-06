@@ -5,6 +5,62 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-04-06
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Change KernelInterruptError to KernelInterrupt [#405](https://github.com/fleming79/async-kernel/pull/405)
+
+- Pending no longer raises an InvalidStateError if it is already done [#400](https://github.com/fleming79/async-kernel/pull/400)
+
+### <!-- 1 --> 🚀 Features
+
+- Caller maintenance and make SingleAsyncQueue publicly available [#411](https://github.com/fleming79/async-kernel/pull/411)
+
+- Add shield option to Pending.wait [#410](https://github.com/fleming79/async-kernel/pull/410)
+
+- Improve HistoryManager handling [#407](https://github.com/fleming79/async-kernel/pull/407)
+
+### <!-- 2 --> 🐛 Fixes
+
+- Fix Fixed.create_instance bug [#395](https://github.com/fleming79/async-kernel/pull/395)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Caller refactoring [#419](https://github.com/fleming79/async-kernel/pull/419)
+
+- Convert Caller._get_task_factory to a function [#416](https://github.com/fleming79/async-kernel/pull/416)
+
+- Move async_kernel.caller.SingleAsyncQueue to async_kernel.common.SingleAsyncQueue [#415](https://github.com/fleming79/async-kernel/pull/415)
+
+- Add SingleAsyncQueue.appendleft. [#414](https://github.com/fleming79/async-kernel/pull/414)
+
+- KernelInterrupt subclass from InterruptedError. [#413](https://github.com/fleming79/async-kernel/pull/413)
+
+- Update uv.lock. [#412](https://github.com/fleming79/async-kernel/pull/412)
+
+- Caller refactoring [#409](https://github.com/fleming79/async-kernel/pull/409)
+
+- Caller maintenance [#408](https://github.com/fleming79/async-kernel/pull/408)
+
+- Improve reliability of test_comm_open_msg_close [#406](https://github.com/fleming79/async-kernel/pull/406)
+
+- Caller maintenance [#404](https://github.com/fleming79/async-kernel/pull/404)
+
+- Improve Pending._set_done thread safety [#403](https://github.com/fleming79/async-kernel/pull/403)
+
+- Pending._set_done refactor. [#401](https://github.com/fleming79/async-kernel/pull/401)
+
+- Set session.check_pid to False  which is used for every comm message sent. (os.getpid is not cheap). [#399](https://github.com/fleming79/async-kernel/pull/399)
+
+- Caller refactoring [#398](https://github.com/fleming79/async-kernel/pull/398)
+
+- Refactor Pending [#397](https://github.com/fleming79/async-kernel/pull/397)
+
+- Use THREAD_DUMMY_LOCK to save memory [#396](https://github.com/fleming79/async-kernel/pull/396)
+
+- Bump codecov/codecov-action from 5 to 6 in the actions group [#392](https://github.com/fleming79/async-kernel/pull/392)
+
 ## [0.15.0] - 2026-03-30
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -28,6 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add thread_safety.md [#381](https://github.com/fleming79/async-kernel/pull/381)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.15.0 [#394](https://github.com/fleming79/async-kernel/pull/394)
 
 - Change Pending.wait_sync signature to be the same as Pending.wait [#393](https://github.com/fleming79/async-kernel/pull/393)
 
@@ -1087,6 +1145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.16.0]: https://github.com/fleming79/async-kernel/compare/v0.15.0..v0.16.0
 [0.15.0]: https://github.com/fleming79/async-kernel/compare/v0.14.0..v0.15.0
 [0.14.0]: https://github.com/fleming79/async-kernel/compare/v0.13.3..v0.14.0
 [0.13.3]: https://github.com/fleming79/async-kernel/compare/v0.13.2..v0.13.3
