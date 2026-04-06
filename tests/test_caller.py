@@ -30,6 +30,15 @@ def anyio_backend(request):
     return request.param
 
 
+@pytest.fixture(autouse=True)
+async def stop_caller_post_test():
+    yield
+    if caller := Caller.get_existing():
+        caller.stop(force=True)
+        with anyio.CancelScope(shield=True):
+            await caller.stopped
+
+
 @pytest.mark.anyio
 class TestCaller:
     def test_no_thread(self, anyio_backend: Backend):
