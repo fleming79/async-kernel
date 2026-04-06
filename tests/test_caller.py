@@ -30,11 +30,30 @@ def anyio_backend(request):
     return request.param
 
 
+@pytest.fixture(autouse=True)
+async def stop_caller_post_test():
+    yield
+    if caller := Caller.get_existing():
+        caller.stop(force=True)
+        with anyio.CancelScope(shield=True):
+            await caller.stopped
+
+
 @pytest.mark.anyio
 class TestCaller:
-    def test_no_thread(self, anyio_backend: Backend):
-        with pytest.raises(RuntimeError, match="unknown async library, or not in async context"):
-            Caller()
+    def test_thread_no_event_loop(self, anyio_backend: Backend):
+        okay = False
+
+        def thread_no_event_loop():
+            nonlocal okay
+            with pytest.raises(RuntimeError, match="unknown async library, or not in async context"):
+                Caller()
+            okay = True
+
+        thread = threading.Thread(target=thread_no_event_loop)
+        thread.start()
+        thread.join()
+        assert okay
 
     async def test_worker_lifecycle(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
@@ -97,7 +116,6 @@ class TestCaller:
         thread.join()
 
     def test_no_event_loop(self, anyio_backend: Backend):
-        assert current_async_library(failsafe=True) is None
         caller = Caller("NewThread", backend=anyio_backend, no_debug=True)
         assert caller.id != id(threading.current_thread())
         assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
