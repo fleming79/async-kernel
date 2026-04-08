@@ -54,7 +54,7 @@ jobs:
       - name: Install the project
         run: uv sync --locked --dev
 
-      - if: ${{ startsWith(matrix.os, 'windows') && !endsWith(matrix.python-version, 't')}}
+      - if: ${{ startsWith(matrix.os, 'windows') && !endsWith(matrix.python-version, 't') && !startsWith(matrix.python-version, '3.15')}}
         # Pyside does not have free-threaded binary
         run: uv sync --locked --dev --group gui
 
