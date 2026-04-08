@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict, TypeVar
 
 from typing_extensions import Sentinel, override
 
@@ -112,6 +112,16 @@ class RunMode(enum.StrEnum):
     @override
     def __hash__(self) -> int:
         return hash(self.name)
+
+    @classmethod
+    def to_runmode(cls, value: Any, default: T = None, /) -> Self | T:
+        "Converts value to `Runmode` or default where it is not possible."
+        try:
+            return cls(value)
+        except ValueError:
+            if isinstance(value, str) and value.startswith(("# ", "##")):
+                return cls.to_runmode(value[2:], default)
+            return default
 
     queue = "queue"
     "Run the message handler using [async_kernel.caller.Caller.queue_call][]."
