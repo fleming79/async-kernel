@@ -2731,18 +2731,18 @@ viewing the latest version.
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
@@ -4720,16 +4720,16 @@ viewing the latest version.
         <span class="c1">#     return RunMode(run_mode)</span>
         <span class="k">if</span> <span class="n">msg_type</span> <span class="ow">is</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">content</span> <span class="o">:=</span> <span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="p">{}):</span>
-                <span class="k">if</span> <span class="n">code</span> <span class="o">:=</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">):</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="n">code</span> <span class="o">:=</span> <span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;# &quot;</span><span class="p">,</span> <span class="s2">&quot;##&quot;</span><span class="p">)):</span>
-                            <span class="k">return</span> <span class="n">RunMode</span><span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
-                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                        <span class="k">pass</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">code</span> <span class="o">:=</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="n">mode</span> <span class="o">:=</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">to_runmode</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">):</span>
+                    <span class="k">return</span> <span class="n">mode</span>
                 <span class="k">if</span> <span class="n">content</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;silent&quot;</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">task</span>
-            <span class="k">if</span> <span class="n">mode_</span> <span class="o">:=</span> <span class="nb">set</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">))</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">RunMode</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">RunMode</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">mode_</span><span class="p">)))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">mode</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">:=</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">to_runmode</span><span class="p">(</span><span class="n">tag</span><span class="p">)))</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
         <span class="k">return</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">queue</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kernel_info_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
@@ -6247,8 +6247,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.kernel_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_info_request</a>
   </span>
 
       </li>
@@ -6314,8 +6318,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.comm_info_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_info_request</a>
   </span>
 
       </li>
@@ -6390,8 +6398,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.execute_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;execute_request</a>
   </span>
 
       </li>
@@ -6611,12 +6623,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.inspect_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inspect_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
@@ -6692,8 +6700,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.history_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_request</a>
   </span>
 
       </li>
@@ -6886,8 +6898,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.comm_close"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_close</a>
   </span>
 
       </li>
@@ -6953,8 +6969,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.interrupt_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupt_request</a>
   </span>
 
       </li>
@@ -7022,8 +7042,12 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.shutdown_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shutdown_request</a>
   </span>
 
       </li>
@@ -7093,12 +7117,8 @@ All other shell messages are handled in the control thread.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.MsgType.debug_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug_request</a>
+      <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
       </li>
