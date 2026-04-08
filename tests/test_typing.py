@@ -17,6 +17,11 @@ class TestRunMode:
         assert list(RunMode) == ["# queue", "# task", "# thread"]
         assert list(RunMode) == ["<RunMode.queue: 'queue'>", "<RunMode.task: 'task'>", "<RunMode.thread: 'thread'>"]
 
+    def test_is_runmode(self):
+        assert RunMode.to_runmode("# thread") is RunMode.thread
+        assert not RunMode.to_runmode(1)
+        assert RunMode.to_runmode(1, RunMode.queue) is RunMode.queue
+
 
 class TestMsgType:
     def test_all_names(self):

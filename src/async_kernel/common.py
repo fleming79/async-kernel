@@ -202,16 +202,17 @@ class SingleAsyncQueue(Generic[T]):
         queue = self.queue
         try:
             while self._active:
-                await checkpoint()
-                if self._active:
-                    try:
-                        yield queue.popleft()
-                    except IndexError:
-                        event = create_async_event()
-                        self._resume = event.set
-                        if not queue and self._active:
-                            await event
-                        self._resume = noop
+                if queue:
+                    yield queue.popleft()
+                    await checkpoint()
+                else:
+                    event = create_async_event()
+                    self._resume = event.set
+                    if not queue and self._active:
+                        await event
+                    self._resume = noop
+        except IndexError:
+            pass
         finally:
             self._resume = noop
             self.stop()

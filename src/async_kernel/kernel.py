@@ -505,16 +505,16 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         #     return RunMode(run_mode)
         if msg_type is MsgType.execute_request:
             if content := job["msg"].get("content", {}):
-                if code := content.get("code"):
-                    try:
-                        if (code := code.strip().split("\n", maxsplit=1)[0]).startswith(("# ", "##")):
-                            return RunMode(code[2:])
-                    except ValueError:
-                        pass
+                if (code := content.get("code")) and (
+                    mode := RunMode.to_runmode(code.strip().split("\n", maxsplit=1)[0])
+                ):
+                    return mode
                 if content.get("silent"):
                     return RunMode.task
-            if mode_ := set(utils.get_tags(job)).intersection(RunMode):
-                return RunMode(next(iter(mode_)))
+            try:
+                return next(mode for tag in utils.get_tags(job) if (mode := RunMode.to_runmode(tag)))
+            except Exception:
+                pass
         return RunMode.queue
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
