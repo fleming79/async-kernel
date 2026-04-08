@@ -202,7 +202,7 @@ class SingleAsyncQueue(Generic[T]):
         queue = self.queue
         try:
             while self._active:
-                if len(queue):
+                if queue:
                     yield queue.popleft()
                     await checkpoint()
                 else:
