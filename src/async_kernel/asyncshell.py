@@ -332,9 +332,10 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def transform_cell(self, raw_cell: str) -> str:
         cell = super().transform_cell(raw_cell)
-        return cell.replace("get_ipython().run_line_magic(", "await get_ipython()._run_line_magic_async(")
+        return cell.replace("get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async(")
 
-    async def _run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
+    async def run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
+        "Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."
         result = self.run_line_magic(magic_name, line, _stack_depth)
         try:
             return await result  # pyright: ignore[reportGeneralTypeIssues]
