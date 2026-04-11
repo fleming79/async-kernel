@@ -794,8 +794,19 @@ class KernelMagics(Magics):
         """
         if sys.platform == "emscripten":
             import micropip  # noqa: PLC0415
+            from IPython.display import display  # noqa: PLC0415
 
-            await micropip.install(line.strip().removeprefix("install").strip(), verbose=True)
+            match line.split(maxsplit=1)[0]:
+                case "install":
+                    await micropip.install(line.removeprefix("install").split(), verbose=True)
+                case "uninstall":
+                    micropip.uninstall(line.removeprefix("uninstall").split(), verbose=True)
+                case "freeze":
+                    display(micropip.freeze())
+                case "list":
+                    display(micropip.list())
+                case _ as name:
+                    print("Unsupported command:", name)
         else:
             await anyio.run_process([sys.executable, "-m", "pip", *line.split()])
             print("Note: you may need to restart the kernel to use updated packages.")
