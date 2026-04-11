@@ -168,6 +168,7 @@ class AsyncInteractiveShell(InteractiveShell):
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
         - `user_ns` and `user_global_ns` are same dictionary which is a fixed [dict][].
+        - Supports async magic functions (See [KernelMagics.pip][]).
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
@@ -787,7 +788,7 @@ class KernelMagics(Magics):
 
     @line_magic
     async def pip(self, line: str) -> None:
-        """Run the pip package manager within the current kernel.
+        """Run the pip package manager for the current environment.
 
         Usage:
           %pip install [pkgs]
@@ -813,7 +814,7 @@ class KernelMagics(Magics):
 
     @line_magic
     async def uv(self, line):
-        """Run the uv package manager within the current kernel.
+        """Run the uv package manager for the current environment.
 
         Usage:
           %uv pip install [pkgs]
