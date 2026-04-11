@@ -799,7 +799,10 @@ class KernelMagics(Magics):
 
             match line.split(maxsplit=1)[0]:
                 case "install":
-                    await micropip.install(line.removeprefix("install").split(), verbose=True)
+                    requirements = [
+                        f"emfs:{n}" if n.startswith(".") else n for n in line.removeprefix("install").split()
+                    ]
+                    await micropip.install(requirements, verbose=True)
                 case "uninstall":
                     micropip.uninstall(line.removeprefix("uninstall").split(), verbose=True)
                 case "freeze":
