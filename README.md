@@ -23,6 +23,7 @@ The kernel provides two external interfaces:
 
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
     - top-level await ('asyncio' or 'trio' backend) in cells
+    - async magic function support in cells
 - [anyio](https://pypi.org/project/anyio/) compatible asynchronous backend ([`asyncio`](https://docs.python.org/3/library/asyncio.html) (default) or [`trio`](https://pypi.org/project/trio/))
 - [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
 - [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
@@ -34,6 +35,7 @@ The kernel provides two external interfaces:
     - [x] qt host and asyncio[^2] or trio[^3] backend running as a guest
 - [Experimental](https://github.com/fleming79/echo-kernel) support for
   [Jupyterlite](https://github.com/jupyterlite/jupyterlite) (try it online [here](https://fleming79.github.io/echo-kernel/) 👈)
+    - `%pip install` magic (using micropip)
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
 
 [^1]:

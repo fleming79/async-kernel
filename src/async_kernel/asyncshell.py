@@ -320,6 +320,17 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
+    @override
+    def transform_cell(self, raw_cell: str) -> str:
+        cell = super().transform_cell(raw_cell)
+        return cell.replace("get_ipython().run_line_magic(", "await get_ipython()._run_line_magic_async(")
+
+    async def _run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> None:
+        try:
+            await self.run_line_magic(magic_name, line, _stack_depth)  # pyright: ignore[reportGeneralTypeIssues]
+        except TypeError:
+            pass
+
     async def _execute_request(
         self,
         code: str = "",
@@ -773,6 +784,31 @@ class KernelMagics(Magics):
             f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
         )
         print(f"Current shell:\t{self.shell}\n\n{subshell_list}")
+
+    @line_magic
+    async def pip(self, line: str) -> None:
+        """Run the pip package manager within the current kernel.
+
+        Usage:
+          %pip install [pkgs]
+        """
+        if sys.platform == "emscripten":
+            import micropip  # noqa: PLC0415
+
+            await micropip.install(line.strip().removeprefix("install").strip(), verbose=True)
+        else:
+            await anyio.run_process([sys.executable, "-m", "pip", *line.split()])
+            print("Note: you may need to restart the kernel to use updated packages.")
+
+    @line_magic
+    async def uv(self, line):
+        """Run the uv package manager within the current kernel.
+
+        Usage:
+          %uv pip install [pkgs]
+        """
+        await anyio.run_process(["uv", *line.split()])
+        print("Note: you may need to restart the kernel to use updated packages.")
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)
