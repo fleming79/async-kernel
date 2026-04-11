@@ -326,11 +326,12 @@ class AsyncInteractiveShell(InteractiveShell):
         cell = super().transform_cell(raw_cell)
         return cell.replace("get_ipython().run_line_magic(", "await get_ipython()._run_line_magic_async(")
 
-    async def _run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> None:
+    async def _run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
+        result = self.run_line_magic(magic_name, line, _stack_depth)
         try:
-            await self.run_line_magic(magic_name, line, _stack_depth)  # pyright: ignore[reportGeneralTypeIssues]
+            return await result  # pyright: ignore[reportGeneralTypeIssues]
         except TypeError:
-            pass
+            return result
 
     async def _execute_request(
         self,
@@ -787,7 +788,7 @@ class KernelMagics(Magics):
         print(f"Current shell:\t{self.shell}\n\n{subshell_list}")
 
     @line_magic
-    async def pip(self, line: str) -> None:
+    async def pip(self, line: str) -> Any | None:
         """Run the pip package manager for the current environment.
 
         Usage:
@@ -795,25 +796,25 @@ class KernelMagics(Magics):
         """
         if sys.platform == "emscripten":
             import micropip  # noqa: PLC0415
-            from IPython.display import display  # noqa: PLC0415
 
             match line.split(maxsplit=1)[0]:
                 case "install":
                     requirements = [
                         f"emfs:{n}" if n.startswith(".") else n for n in line.removeprefix("install").split()
                     ]
-                    await micropip.install(requirements, verbose=True)
+                    return await micropip.install(requirements, verbose=True)
                 case "uninstall":
-                    micropip.uninstall(line.removeprefix("uninstall").split(), verbose=True)
+                    return micropip.uninstall(line.removeprefix("uninstall").split(), verbose=True)
                 case "freeze":
-                    display(micropip.freeze())
+                    return micropip.freeze()
                 case "list":
-                    display(micropip.list())
+                    return micropip.list()
                 case _ as name:
                     print("Unsupported command:", name)
         else:
             await anyio.run_process([sys.executable, "-m", "pip", *line.split()])
             print("Note: you may need to restart the kernel to use updated packages.")
+        return None
 
     @line_magic
     async def uv(self, line):
