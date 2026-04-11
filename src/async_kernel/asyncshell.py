@@ -8,7 +8,7 @@ import pathlib
 import sys
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Literal, Self, overload
+from typing import TYPE_CHECKING, Any, Literal, Self, TextIO, overload
 
 import anyio
 import IPython.core.release
@@ -37,12 +37,20 @@ from async_kernel.typing import Channel, Content, Message, NoValue, Tags
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
 
+    from anyio.abc import ByteReceiveStream
     from traitlets.config import Configurable
 
     from async_kernel import Kernel
 
 
 __all__ = ["AsyncInteractiveShell"]
+
+
+async def _transport_to_std(transport_stream: ByteReceiveStream, std: TextIO) -> None:
+    from anyio.streams.text import TextReceiveStream  # noqa: PLC0415
+
+    async for text in TextReceiveStream(transport_stream):
+        std.write(text)
 
 
 class AsyncDisplayHook(DisplayHook):
@@ -812,19 +820,28 @@ class KernelMagics(Magics):
                 case _ as name:
                     print("Unsupported command:", name)
         else:
-            await anyio.run_process([sys.executable, "-m", "pip", *line.split()])
-            print("Note: you may need to restart the kernel to use updated packages.")
+            cmd = [sys.executable, "-m", "pip", *line.split()]
+            async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
+                if process.stdout:
+                    tg.start_soon(_transport_to_std, process.stdout, sys.stdout)
+                if process.stderr:
+                    tg.start_soon(_transport_to_std, process.stderr, sys.stderr)
+
         return None
 
     @line_magic
-    async def uv(self, line):
+    async def uv(self, line) -> None:
         """Run the uv package manager for the current environment.
 
         Usage:
           %uv pip install [pkgs]
         """
-        await anyio.run_process(["uv", *line.split()])
-        print("Note: you may need to restart the kernel to use updated packages.")
+        cmd = ["uv", *line.split()]
+        async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
+            if process.stdout:
+                tg.start_soon(_transport_to_std, process.stdout, sys.stdout)
+            if process.stderr:
+                tg.start_soon(_transport_to_std, process.stderr, sys.stdout)
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)
