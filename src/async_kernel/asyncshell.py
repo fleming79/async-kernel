@@ -329,11 +329,6 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
-    @override
-    def transform_cell(self, raw_cell: str) -> str:
-        cell = super().transform_cell(raw_cell)
-        return cell.replace("get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async(")
-
     async def run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
         "Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."
         result = self.run_line_magic(magic_name, line, _stack_depth)
@@ -400,7 +395,9 @@ class AsyncInteractiveShell(InteractiveShell):
                             raw_cell=code,
                             store_history=store_history,
                             silent=silent,
-                            transformed_cell=self.transform_cell(code),
+                            transformed_cell=self.transform_cell(code).replace(
+                                "get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async("
+                            ),
                             shell_futures=True,
                             cell_id=cell_id,
                         )

@@ -440,6 +440,12 @@ async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monke
     assert stdout
 
 
+@pytest.mark.parametrize("code", argvalues=["%connect_info"])
+async def test_magic_sync(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
+    result = kernel.main_shell.run_cell(code)
+    assert result.success
+
+
 async def test_shell_enable_gui(kernel: Kernel):
     # used by ipython AutoMagicChecker via is_shadowed (requires 'builitin')
     assert set(kernel.shell.ns_table) == {"user_global", "user_local", "builtin"}
