@@ -5,11 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.3] - 2026-04-12
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Run comm_open and com_close message handlers in the shell thread. [#426](https://github.com/fleming79/async-kernel/pull/426)
+
 ## [0.16.2] - 2026-04-12
 
 ### <!-- 1 --> 🚀 Features
 
 - Provide async line magic support [#424](https://github.com/fleming79/async-kernel/pull/424)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.16.2 [#425](https://github.com/fleming79/async-kernel/pull/425)
 
 ## [0.16.1] - 2026-04-08
 
@@ -1165,6 +1175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.16.3]: https://github.com/fleming79/async-kernel/compare/v0.16.2..v0.16.3
 [0.16.2]: https://github.com/fleming79/async-kernel/compare/v0.16.1..v0.16.2
 [0.16.1]: https://github.com/fleming79/async-kernel/compare/v0.16.0..v0.16.1
 [0.16.0]: https://github.com/fleming79/async-kernel/compare/v0.15.0..v0.16.0
