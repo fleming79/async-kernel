@@ -1602,6 +1602,7 @@ that provides concurrent message handling via an asynchronous backend (asyncio o
 <ul>
 <li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a><ul>
 <li>top-level await ('asyncio' or 'trio' backend) in cells</li>
+<li>async magic function support in cells</li>
 </ul>
 </li>
 <li><a href="https://pypi.org/project/anyio/">anyio</a> compatible asynchronous backend (<a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> (default) or <a href="https://pypi.org/project/trio/"><code>trio</code></a>)</li>
@@ -1616,7 +1617,10 @@ that provides concurrent message handling via an asynchronous backend (asyncio o
 </ul>
 </li>
 <li><a href="https://github.com/fleming79/echo-kernel">Experimental</a> support for
-  <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> (try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈)</li>
+  <a href="https://github.com/jupyterlite/jupyterlite">Jupyterlite</a> (try it online <a href="https://fleming79.github.io/echo-kernel/">here</a> 👈)<ul>
+<li><code>%pip install</code> magic (using micropip)</li>
+</ul>
+</li>
 <li><a href="https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger">Debugger client</a></li>
 </ul>
 <h3 id="avoid-deadlocks">Avoid deadlocks<a class="headerlink" href="#avoid-deadlocks" title="Permanent link">&para;</a></h3>
