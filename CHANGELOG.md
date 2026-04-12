@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.2] - 2026-04-12
+
+### <!-- 1 --> 🚀 Features
+
+- Provide async line magic support [#424](https://github.com/fleming79/async-kernel/pull/424)
+
 ## [0.16.1] - 2026-04-08
 
 ### <!-- 1 --> 🚀 Features
@@ -12,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add shield option to Pending.cancel_wait. [#421](https://github.com/fleming79/async-kernel/pull/421)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.16.1 [#423](https://github.com/fleming79/async-kernel/pull/423)
 
 - Test against Python 3.15 [#422](https://github.com/fleming79/async-kernel/pull/422)
 
@@ -1157,6 +1165,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.16.2]: https://github.com/fleming79/async-kernel/compare/v0.16.1..v0.16.2
 [0.16.1]: https://github.com/fleming79/async-kernel/compare/v0.16.0..v0.16.1
 [0.16.0]: https://github.com/fleming79/async-kernel/compare/v0.15.0..v0.16.0
 [0.15.0]: https://github.com/fleming79/async-kernel/compare/v0.14.0..v0.15.0
