@@ -8,7 +8,7 @@ import pathlib
 import sys
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Literal, Self, overload
+from typing import TYPE_CHECKING, Any, Literal, Self, TextIO, overload
 
 import anyio
 import IPython.core.release
@@ -37,12 +37,20 @@ from async_kernel.typing import Channel, Content, Message, NoValue, Tags
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
 
+    from anyio.abc import ByteReceiveStream
     from traitlets.config import Configurable
 
     from async_kernel import Kernel
 
 
 __all__ = ["AsyncInteractiveShell"]
+
+
+async def _forward_transport_stream(transport_stream: ByteReceiveStream, out: TextIO, /) -> None:
+    from anyio.streams.text import TextReceiveStream  # noqa: PLC0415
+
+    async for text in TextReceiveStream(transport_stream):
+        out.write(text)
 
 
 class AsyncDisplayHook(DisplayHook):
@@ -168,6 +176,7 @@ class AsyncInteractiveShell(InteractiveShell):
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
         - `user_ns` and `user_global_ns` are same dictionary which is a fixed [dict][].
+        - Supports async magic functions (See [KernelMagics.pip][]).
 
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
@@ -320,6 +329,14 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
+    async def run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
+        "Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."
+        result = self.run_line_magic(magic_name, line, _stack_depth)
+        try:
+            return await result  # pyright: ignore[reportGeneralTypeIssues]
+        except TypeError:
+            return result
+
     async def _execute_request(
         self,
         code: str = "",
@@ -378,7 +395,9 @@ class AsyncInteractiveShell(InteractiveShell):
                             raw_cell=code,
                             store_history=store_history,
                             silent=silent,
-                            transformed_cell=self.transform_cell(code),
+                            transformed_cell=self.transform_cell(code).replace(
+                                "get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async("
+                            ),
                             shell_futures=True,
                             cell_id=cell_id,
                         )
@@ -773,6 +792,54 @@ class KernelMagics(Magics):
             f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
         )
         print(f"Current shell:\t{self.shell}\n\n{subshell_list}")
+
+    @line_magic
+    async def pip(self, line: str) -> Any | None:
+        """Run the pip package manager for the current environment.
+
+        Usage:
+          %pip install [pkgs]
+        """
+        if sys.platform == "emscripten":
+            import micropip  # noqa: PLC0415
+
+            match line.split(maxsplit=1)[0]:
+                case "install":
+                    requirements = [
+                        f"emfs:{n}" if n.startswith(".") else n for n in line.removeprefix("install").split()
+                    ]
+                    return await micropip.install(requirements, verbose=True)
+                case "uninstall":
+                    return micropip.uninstall(line.removeprefix("uninstall").split(), verbose=True)
+                case "freeze":
+                    return micropip.freeze()
+                case "list":
+                    return micropip.list()
+                case _ as name:
+                    print("Unsupported command:", name)
+        else:
+            cmd = [sys.executable, "-m", "pip", *line.split()]
+            async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
+                if process.stdout:
+                    tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
+                if process.stderr:
+                    tg.start_soon(_forward_transport_stream, process.stderr, sys.stderr)
+
+        return None
+
+    @line_magic
+    async def uv(self, line) -> None:
+        """Run the uv package manager for the current environment.
+
+        Usage:
+          %uv pip install [pkgs]
+        """
+        cmd = ["uv", *line.split()]
+        async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
+            if process.stdout:
+                tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
+            if process.stderr:
+                tg.start_soon(_forward_transport_stream, process.stderr, sys.stdout)
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)

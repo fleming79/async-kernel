@@ -420,7 +420,16 @@ async def test_debug_static_richInspectVariables(client: AsyncKernelClient, vari
     assert reply["content"]["status"] == "ok"
 
 
-@pytest.mark.parametrize("code", argvalues=["%connect_info", "%callers", "%subshell"])
+@pytest.mark.parametrize(
+    "code",
+    argvalues=[
+        "%connect_info",
+        "%callers",
+        "%subshell",
+        "%pip install anyio",
+        "%uv pip install anyio",
+    ],
+)
 async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
     await utils.clear_iopub(client)
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
@@ -429,6 +438,12 @@ async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monke
     assert reply["status"] == "ok"
     stdout, _ = await utils.assemble_output(client)
     assert stdout
+
+
+@pytest.mark.parametrize("code", argvalues=["%connect_info"])
+async def test_magic_sync(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
+    result = kernel.main_shell.run_cell(code)
+    assert result.success
 
 
 async def test_shell_enable_gui(kernel: Kernel):
