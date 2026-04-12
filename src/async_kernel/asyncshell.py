@@ -46,11 +46,11 @@ if TYPE_CHECKING:
 __all__ = ["AsyncInteractiveShell"]
 
 
-async def _transport_to_std(transport_stream: ByteReceiveStream, std: TextIO) -> None:
+async def _forward_transport_stream(transport_stream: ByteReceiveStream, out: TextIO, /) -> None:
     from anyio.streams.text import TextReceiveStream  # noqa: PLC0415
 
     async for text in TextReceiveStream(transport_stream):
-        std.write(text)
+        out.write(text)
 
 
 class AsyncDisplayHook(DisplayHook):
@@ -824,9 +824,9 @@ class KernelMagics(Magics):
             cmd = [sys.executable, "-m", "pip", *line.split()]
             async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
                 if process.stdout:
-                    tg.start_soon(_transport_to_std, process.stdout, sys.stdout)
+                    tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
                 if process.stderr:
-                    tg.start_soon(_transport_to_std, process.stderr, sys.stderr)
+                    tg.start_soon(_forward_transport_stream, process.stderr, sys.stderr)
 
         return None
 
@@ -840,9 +840,9 @@ class KernelMagics(Magics):
         cmd = ["uv", *line.split()]
         async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
             if process.stdout:
-                tg.start_soon(_transport_to_std, process.stdout, sys.stdout)
+                tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
             if process.stderr:
-                tg.start_soon(_transport_to_std, process.stderr, sys.stdout)
+                tg.start_soon(_forward_transport_stream, process.stderr, sys.stdout)
 
 
 InteractiveShellABC.register(AsyncInteractiveShell)
