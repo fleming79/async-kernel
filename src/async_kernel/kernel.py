@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
 __all__ = ["Kernel", "KernelInterrupt"]
 
-RUN_IN_SHELL = (MsgType.execute_request, MsgType.comm_msg)
+RUN_IN_SHELL_THREAD = (MsgType.execute_request, MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close)
 """
 Shell message types that are handled in the shell's thread (typically the _MainThread_).
 
@@ -435,7 +435,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         handler = self._get_handler(subshell_id, msg_type, send_reply)
         run_mode = self._get_run_mode(msg_type, job)
         caller = self.callers[channel]
-        if channel is Channel.shell and msg_type not in RUN_IN_SHELL:
+        if channel is Channel.shell and msg_type not in RUN_IN_SHELL_THREAD:
             caller = self.callers[Channel.control]
         # Schedule job
         match run_mode:
