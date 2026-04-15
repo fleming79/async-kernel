@@ -432,7 +432,7 @@ class TestPendingGroup:
 
     async def test_cancellation(self, caller: Caller):
         with pytest.raises(PendingCancelled):  # noqa: PT012
-            async with PendingGroup() as pm:
+            async with PendingGroup(mode=1) as pm:
                 pen = caller.call_soon(anyio.sleep_forever)
                 pm.cancel("Stop")
         assert pen.cancelled()  # pyright: ignore[reportPossiblyUnboundVariable]
@@ -532,15 +532,29 @@ class TestPendingGroup:
 
     async def test_mode(self, caller: Caller):
 
+        # mode 0
+        async with caller.create_pending_group(mode=0) as pg:
+            pen = pg.caller.call_soon(anyio.sleep_forever)
+            pen.cancel("stop now")
+            await pg.caller.call_soon(lambda: 1 + 1)
+            assert not pg.cancelled()
         # mode 1
         with pytest.raises(PendingCancelled):  # noqa: PT012
             async with caller.create_pending_group(mode=1) as pg:
                 pen = pg.caller.call_soon(anyio.sleep_forever)
                 pen.cancel("stop now")
+                assert pg.cancelled()
         # mode 2
         async with caller.create_pending_group(mode=2) as pg:
             pen = pg.caller.call_soon(anyio.sleep_forever)
             pen.cancel("stop now")
+            assert pg.cancelled()
+        # mode 3
+        async with caller.create_pending_group(mode=3) as pg:
+            pen = pg.caller.call_soon(anyio.sleep_forever)
+            pen.cancel("stop now")
+            await pg.caller.call_soon(lambda: 1 + 1)
+            assert not pg.cancelled()
 
     async def test_repr(self, caller: Caller):
 

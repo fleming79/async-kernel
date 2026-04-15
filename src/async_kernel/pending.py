@@ -206,7 +206,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     caller: Fixed[Self, Caller] = Fixed(lambda _: async_kernel.Caller())
     "The caller where the pending group was instantiated."
 
-    def __init__(self, *, shield: bool = False, mode: int = 0) -> None:
+    def __init__(self, *, shield: bool = False, mode: Literal[0, 1, 2, 3] = 0) -> None:
         """
         An async context to capture all pending (that opt in) created in the context.
 
@@ -217,11 +217,12 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         Args:
             shield: Passed to the cancel scope.
             mode: The mode.
-                - 0: Ignore cancellation of pending.
+                - 0: Ignore cancellation of pending, if any pending is cancelled - exit quietly.
                 - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
                 - 2: Cancel if any pending is cancelled - exit quietly.
+                - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.
         """
-        assert mode in [0, 1, 2]
+        assert mode in [0, 1, 2, 3]
         self._mode = mode
         self._shield = shield
         self.caller  # noqa: B018
@@ -259,7 +260,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
                 if exceptions := [e for pen in self._failed if isinstance(e := pen.exception(), Exception)]:
                     msg = f"One or more exceptions occurred in this context! {list(map(str, exceptions))}"
                     raise ExceptionGroup(msg, exceptions)
-                if self._mode in [0, 1]:
+                if self._mode in [1, 3]:
                     raise PendingCancelled(self._cancelled)
         finally:
             self._leaving_context = True
