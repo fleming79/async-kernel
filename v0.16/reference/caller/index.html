@@ -4090,7 +4090,8 @@ viewing the latest version.
 <span class="normal">1124</span>
 <span class="normal">1125</span>
 <span class="normal">1126</span>
-<span class="normal">1127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
+<span class="normal">1127</span>
+<span class="normal">1128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Caller</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).</span>
@@ -5069,7 +5070,7 @@ viewing the latest version.
                         <span class="k">break</span>
         <span class="k">return</span> <span class="n">done</span><span class="p">,</span> <span class="n">pending</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a new [PendingGroup][async_kernel.pending.PendingGroup] instance.</span>
 
@@ -5084,9 +5085,10 @@ viewing the latest version.
 <span class="sd">        Args:</span>
 <span class="sd">            shield: Shield the pending group from external cancellation.</span>
 <span class="sd">            mode: The mode.</span>
-<span class="sd">                - 0: Ignore cancellation of pending.</span>
+<span class="sd">                - 0: Ignore cancellation of pending, if any pending is cancelled - exit quietly.</span>
 <span class="sd">                - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
 <span class="sd">                - 2: Cancel if any pending is cancelled - exit quietly.</span>
+<span class="sd">                - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.</span>
 
 <span class="sd">        Usage:</span>
 
@@ -7122,9 +7124,20 @@ use this method in the background,  they should be used in preference to this me
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
   </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.schedule_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;schedule_call</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7570,9 +7583,20 @@ of the callers backend.</p>
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.as_completed"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;as_completed</a>
   </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7580,8 +7604,12 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
   </span>
 
       </li>
@@ -8030,8 +8058,12 @@ where call order is also respected.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_call</a>
   </span>
 
       </li>
@@ -8535,7 +8567,9 @@ By default this will limit to <code>Caller.MAX_IDLE_POOL_INSTANCES</code>.</p>
 
 
 <a href="#async_kernel.caller.Caller.create_pending_group" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_pending_group</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.Caller.create_pending_group(shield))" href="#async_kernel.caller.Caller.create_pending_group(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (async_kernel.caller.Caller.create_pending_group(mode))" href="#async_kernel.caller.Caller.create_pending_group(mode)">mode</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            PendingGroup (async_kernel.pending.PendingGroup)" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_pending_group</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.Caller.create_pending_group(shield))" href="#async_kernel.caller.Caller.create_pending_group(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (async_kernel.caller.Caller.create_pending_group(mode))" href="#async_kernel.caller.Caller.create_pending_group(mode)">mode</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            PendingGroup (async_kernel.pending.PendingGroup)" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8563,15 +8597,16 @@ also cancelled.</p>
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.create_pending_group(mode)" class="doc doc-heading doc-heading-parameter">              <b><code>mode</code></b>
-<a href="#async_kernel.caller.Caller.create_pending_group(mode)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[0, 1, 2]</code>, default:
+<a href="#async_kernel.caller.Caller.create_pending_group(mode)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[0, 1, 2, 3]</code>, default:
                   <code>0</code>
 )
           –
           <div class="doc-md-description">
             <p>The mode.
-- 0: Ignore cancellation of pending.
+- 0: Ignore cancellation of pending, if any pending is cancelled - exit quietly.
 - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
-- 2: Cancel if any pending is cancelled - exit quietly.</p>
+- 2: Cancel if any pending is cancelled - exit quietly.
+- 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.</p>
           </div>
         </li>
     </ul>
@@ -8635,7 +8670,8 @@ async with Caller().create_pending_group() as pg:
 <span class="normal">1124</span>
 <span class="normal">1125</span>
 <span class="normal">1126</span>
-<span class="normal">1127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
+<span class="normal">1127</span>
+<span class="normal">1128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new [PendingGroup][async_kernel.pending.PendingGroup] instance.</span>
 
@@ -8650,9 +8686,10 @@ async with Caller().create_pending_group() as pg:
 <span class="sd">    Args:</span>
 <span class="sd">        shield: Shield the pending group from external cancellation.</span>
 <span class="sd">        mode: The mode.</span>
-<span class="sd">            - 0: Ignore cancellation of pending.</span>
+<span class="sd">            - 0: Ignore cancellation of pending, if any pending is cancelled - exit quietly.</span>
 <span class="sd">            - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
 <span class="sd">            - 2: Cancel if any pending is cancelled - exit quietly.</span>
+<span class="sd">            - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.</span>
 
 <span class="sd">    Usage:</span>
 
