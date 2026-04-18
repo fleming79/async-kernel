@@ -110,9 +110,6 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     subshell_manager = SubshellManager
     "Dedicated to management of sub shells."
 
-    # Public traits
-    help_links = traitlets.Tuple()
-    ""
     quiet = traitlets.Bool(True)
     "Only send stdout/stderr to output stream."
 
@@ -187,30 +184,6 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     def _default_connection_file(self) -> Path:
         return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
 
-    @traitlets.default("help_links")
-    def _default_help_links(self) -> tuple[dict[str, str], ...]:
-        return (
-            {
-                "text": "Async Kernel Reference ",
-                "url": "https://fleming79.github.io/async-kernel/",
-            },
-            {
-                "text": "IPython Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/",
-            },
-            {
-                "text": "IPython magic Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
-            },
-            {
-                "text": "Matplotlib ipympl Reference",
-                "url": "https://matplotlib.org/ipympl/",
-            },
-            {
-                "text": "Matplotlib Reference",
-                "url": "https://matplotlib.org/contents.html",
-            },
-        )
 
     @traitlets.observe("connection_file")
     def _observe_connection_file(self, change) -> None:
@@ -251,7 +224,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             "implementation_version": async_kernel.__version__,
             "language_info": async_kernel.kernel_protocol_version_info,
             "banner": self.shell.banner,
-            "help_links": self.help_links,
+            "help_links": self.shell.help_links,
             "debugger": bool(self.shell.debugger),
             "kernel_name": self.kernel_name,
             "supported_features": self.shell.supported_features,

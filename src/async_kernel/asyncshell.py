@@ -219,6 +219,10 @@ class AsyncInteractiveShell(InteractiveShell):
     loop_runner = None
     autoindent = False
 
+    # Public traits
+    help_links = traitlets.Tuple()
+    ""
+
     @override
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}  kernel_name: {self.kernel.kernel_name!r} subshell_id: {self.subshell_id}>"
@@ -740,6 +744,31 @@ class IPythonAsyncInteractiveShell(AsyncInteractiveShell):
             else None
         )
     )
+
+    @traitlets.default("help_links")
+    def _default_help_links(self) -> tuple[dict[str, str], ...]:
+        return (
+            {
+                "text": "Async Kernel Reference ",
+                "url": "https://fleming79.github.io/async-kernel/",
+            },
+            {
+                "text": "IPython Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/",
+            },
+            {
+                "text": "IPython magic Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
+            },
+            {
+                "text": "Matplotlib ipympl Reference",
+                "url": "https://matplotlib.org/ipympl/",
+            },
+            {
+                "text": "Matplotlib Reference",
+                "url": "https://matplotlib.org/contents.html",
+            },
+        )
 
 
 class IPythonInteractiveSubshell(AsyncInteractiveSubshell):
