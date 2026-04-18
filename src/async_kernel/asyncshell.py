@@ -315,13 +315,9 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def init_history(self) -> None:
-        if self.subshell_id is None:
-            self.history_manager = HistoryManager(shell=self, parent=self)
-            self.configurables.append(self.history_manager)  # pyright: ignore[reportArgumentType]
-            utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)
-        else:
-            self.history_manager = HistoryManager(shell=self, parent=self, hist_file=":memory:")
-            self.history_manager.output_hist.update(self.kernel.main_shell.history_manager.output_hist)
+        self.history_manager = HistoryManager(shell=self, parent=self)
+        self.configurables.append(self.history_manager)  # pyright: ignore[reportArgumentType]
+        utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)
 
     @property
     @override
@@ -722,7 +718,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     @property
     def debugger(self) -> Debugger | None:  # pyright: ignore[reportIncompatibleVariableOverride, reportImplicitOverride]
-        return AsyncInteractiveShell().debugger
+        return self.kernel.main_shell.debugger
 
     def __new__(cls, *, protected: bool = True) -> Self:  # noqa: ARG004
         if cls is AsyncInteractiveSubshell:
@@ -731,11 +727,15 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     @override
     def __init__(self, *, protected: bool = True) -> None:
-
         super().__init__(parent=AsyncInteractiveShell())
         self.set_trait("protected", protected)
         self.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
         SubshellManager.subshells[self.subshell_id] = self
+
+    @override
+    def init_history(self) -> None:
+        self.history_manager = HistoryManager(shell=self, parent=self, hist_file=":memory:")
+        self.history_manager.output_hist.update(self.kernel.main_shell.history_manager.output_hist)
 
     @override
     def stop(self, *, force=False) -> None:
