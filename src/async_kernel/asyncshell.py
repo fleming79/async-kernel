@@ -353,7 +353,7 @@ class AsyncInteractiveShell(InteractiveShell):
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
     @property
-    def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
+    def kernel_info(self) -> dict[str, Any]:
         "A dict of detail sent in reply to for a 'kernel_info_request'."
         return {
             "protocol_version": async_kernel.kernel_protocol_version,

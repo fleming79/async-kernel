@@ -213,6 +213,11 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         "The caller for the shell channel."
         return self.callers[Channel.shell]
 
+    @property
+    def kernel_info(self) -> dict[str, Any]:
+        "A dict of detail sent in reply to for a 'kernel_info_request'."
+        return self.main_shell.kernel_info
+
     def load_settings(self, settings: dict[str, Any]) -> None:
         """
         Load settings into the kernel.
@@ -459,7 +464,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
-        return self.main_shell.kernel_info
+        return self.kernel_info
 
     async def comm_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info)."""
