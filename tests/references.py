@@ -10,7 +10,7 @@ import re
 import sys
 
 from packaging.version import Version as PackingVersion
-from traitlets import Bool, Dict, Enum, HasTraits, Integer, List, TraitError, Unicode, observe
+from traitlets.traitlets import Bool, Dict, Enum, HasTraits, Integer, List, TraitError, Unicode, observe
 from typing_extensions import override
 
 __all__ = ["Reference", "references"]

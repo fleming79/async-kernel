@@ -15,9 +15,9 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 from uuid import uuid4
 
 import anyio
-import traitlets
 from aiologic.lowlevel import current_async_library, enable_signal_safety
-from traitlets import HasTraits, Instance, UseEnum
+from traitlets import traitlets
+from traitlets.traitlets import HasTraits, Instance, UseEnum
 
 import async_kernel
 from async_kernel.caller import Caller

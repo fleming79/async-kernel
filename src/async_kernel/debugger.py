@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Self
 import anyio.abc
 from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
-from traitlets import Bool, Dict, HasTraits, Instance, Set, default
+from traitlets.traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
 from async_kernel import utils
 from async_kernel.caller import Caller

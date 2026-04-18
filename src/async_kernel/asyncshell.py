@@ -22,7 +22,7 @@ from IPython.core.interactiveshell import _modified_open as _modified_open_  # p
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets import CFloat, Float, Instance, Type, default, observe, traitlets
+from traitlets.traitlets import Bool, CFloat, Float, Instance, Tuple, Type, default, observe
 from typing_extensions import override
 
 import async_kernel
@@ -220,7 +220,7 @@ class AsyncInteractiveShell(InteractiveShell):
     autoindent = False
 
     # Public traits
-    help_links = traitlets.Tuple()
+    help_links = Tuple()
     ""
 
     @override
@@ -697,8 +697,8 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
         - [async_kernel.utils.subshell_context][]
     """
 
-    stopped = traitlets.Bool(read_only=True)
-    protected = traitlets.Bool(read_only=True)
+    stopped = Bool(read_only=True)
+    protected = Bool(read_only=True)
     subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.id)
 
     def __init_subclass__(cls) -> None:
@@ -760,7 +760,7 @@ class IPythonAsyncInteractiveShell(AsyncInteractiveShell):
         )
     )
 
-    @traitlets.default("help_links")
+    @default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:
         return (
             {

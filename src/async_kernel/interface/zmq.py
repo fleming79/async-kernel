@@ -17,7 +17,6 @@ from pathlib import Path
 from threading import Event
 from typing import TYPE_CHECKING, Any, Literal, Self
 
-import traitlets
 import zmq
 from aiologic import BinarySemaphore
 from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
@@ -25,7 +24,8 @@ from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Dict, TraitType, Unicode, UseEnum, default
+from traitlets import traitlets
+from traitlets.traitlets import CaselessStrEnum, Dict, TraitType, Unicode, UseEnum, default
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 

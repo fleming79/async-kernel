@@ -17,10 +17,10 @@ from types import CoroutineType
 from typing import TYPE_CHECKING, Any, Literal, Self
 
 import anyio
-import traitlets
 from aiologic import Event
 from aiologic.lowlevel import current_async_library
 from jupyter_core.paths import jupyter_runtime_dir
+from traitlets import traitlets
 from typing_extensions import override
 
 from async_kernel import Caller, utils

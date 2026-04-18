@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, cast
 
 import pytest
-from traitlets import HasTraits, Instance, Int, default
+from traitlets.traitlets import HasTraits, Instance, Int, default
 
 from async_kernel import utils as ak_utils
 from async_kernel.typing import Tags

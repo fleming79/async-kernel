@@ -7,12 +7,11 @@ import anyio
 import outcome
 import pytest
 from aiologic.lowlevel import current_async_library
-from traitlets import import_item
 from typing_extensions import override
 
 import async_kernel.event_loop
 import async_kernel.event_loop.asyncio_guest
-from async_kernel.common import Fixed
+from async_kernel.common import Fixed, import_item
 from async_kernel.event_loop.run import Host, get_runtime_matplotlib_guis
 from async_kernel.pending import Pending
 from async_kernel.typing import Backend, Hosts, RunSettings
