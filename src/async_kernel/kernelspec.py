@@ -67,6 +67,7 @@ def write_kernel_spec(
     connection_file: str = "{connection_file}",
     env: dict | None = None,
     metadata: dict | None = None,
+    language="python",
     **kwargs: dict[str, Any],
 ) -> Path:
     """
@@ -142,7 +143,7 @@ def write_kernel_spec(
             "argv": argv,
             "env": env or {},
             "display_name": display_name or f"Python ({kernel_name})",
-            "language": "python",
+            "language": language,
             "interrupt_mode": "message",
             "metadata": metadata if metadata is not None else {"debugger": True, "concurrent": True},
             "kernel_protocol_version": PROTOCOL_VERSION,

@@ -28,8 +28,9 @@ from typing_extensions import override
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt, import_item
 from async_kernel.compiler import XCachingCompiler
+from async_kernel.debugger import Debugger
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
 from async_kernel.typing import Channel, Content, Message, NoValue, Tags
@@ -40,6 +41,7 @@ if TYPE_CHECKING:
     from anyio.abc import ByteReceiveStream
 
     from async_kernel import Kernel
+    from async_kernel.debugger import Debugger
 
 
 __all__ = ["AsyncInteractiveShell"]
@@ -196,6 +198,9 @@ class AsyncInteractiveShell(InteractiveShell):
     pending_manager = Fixed(ShellPendingManager)
     subshell_id = Fixed(lambda _: None)
 
+    debugger: Fixed[Self, Debugger | None] | None = None  # pyright: ignore[reportIncompatibleMethodOverride]
+    "Handles [debug requests](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."
+
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
 
@@ -347,6 +352,14 @@ class AsyncInteractiveShell(InteractiveShell):
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
+    @property
+    def supported_features(self) -> list[str]:
+        "Supported features included in the reply to a [async_kernel.kernel.Kernel.kernel_info_request][]."
+        features = ["kernel subshells"]
+        if self.debugger:
+            features.append("debugger")
+        return features
+
     async def run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
         "Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."
         result = self.run_line_magic(magic_name, line, _stack_depth)
@@ -363,7 +376,7 @@ class AsyncInteractiveShell(InteractiveShell):
         except TypeError:
             return result
 
-    async def _execute_request(
+    async def execute_request(
         self,
         code: str = "",
         *,
@@ -468,7 +481,7 @@ class AsyncInteractiveShell(InteractiveShell):
         finally:
             utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
-    async def _do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
+    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
 
         cursor_pos = cursor_pos or len(code)
@@ -495,7 +508,7 @@ class AsyncInteractiveShell(InteractiveShell):
             "status": "ok",
         }
 
-    async def _is_complete_request(self, code: str) -> Content:
+    async def is_complete_request(self, code: str) -> Content:
         """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
         status, indent_spaces = self.input_transformer_manager.check_complete(code)
         content = {"status": status}
@@ -503,7 +516,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content["indent"] = " " * indent_spaces
         return content
 
-    async def _inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         content = {"data": {}, "metadata": {}, "found": True}
         try:
@@ -514,7 +527,7 @@ class AsyncInteractiveShell(InteractiveShell):
             content["found"] = False
         return content
 
-    async def _history_request(
+    async def history_request(
         self,
         *,
         output: bool = False,
@@ -631,17 +644,18 @@ class AsyncInteractiveShell(InteractiveShell):
         with self.pending_manager.context():
             yield
 
-    def _stop(self) -> None:
+    def stop(self, *, force=False) -> None:
         "Stop the shell - do not call directly."
-        self.reset(new_session=False)
-        try:
-            self.history_manager.end_session()
-            self.history_manager.save_thread.stop()  # pyright: ignore[reportOptionalMemberAccess]
-            self.history_manager.save_thread.join()  # pyright: ignore[reportOptionalMemberAccess]
-        except AttributeError:
-            pass
-        SubshellManager.stop_all_subshells(force=True)
-        InteractiveShell._instance = None
+        if force:
+            self.reset(new_session=False)
+            try:
+                self.history_manager.end_session()
+                self.history_manager.save_thread.stop()  # pyright: ignore[reportOptionalMemberAccess]
+                self.history_manager.save_thread.join()  # pyright: ignore[reportOptionalMemberAccess]
+            except AttributeError:
+                pass
+            SubshellManager.stop_all_subshells(force=True)
+            InteractiveShell._instance = None
 
 
 class AsyncInteractiveSubshell(AsyncInteractiveShell):
@@ -687,6 +701,10 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
             self.kernel.main_shell.user_global_ns.copy() if self._resetting else self.kernel.main_shell.user_global_ns
         )
 
+    @property
+    def debugger(self) -> Debugger | None:  # pyright: ignore[reportIncompatibleVariableOverride, reportImplicitOverride]
+        return AsyncInteractiveShell().debugger
+
     def __new__(cls, *, protected: bool = True) -> Self:  # noqa: ARG004
         if cls is AsyncInteractiveSubshell:
             return cls._cls()
@@ -700,6 +718,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
         self.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
         SubshellManager.subshells[self.subshell_id] = self
 
+    @override
     def stop(self, *, force=False) -> None:
         "Stop this subshell."
         if force or not self.protected:
@@ -713,6 +732,14 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
 class IPythonAsyncInteractiveShell(AsyncInteractiveShell):
     "The default AsyncInteractiveShell"
+
+    debugger = Fixed(
+        lambda _: (
+            import_item("async_kernel.debugger.Debugger")()
+            if (not utils.LAUNCHED_BY_DEBUGPY) & (sys.platform != "emscripten")
+            else None
+        )
+    )
 
 
 class IPythonInteractiveSubshell(AsyncInteractiveSubshell):

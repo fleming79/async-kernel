@@ -33,7 +33,6 @@ from async_kernel.asyncshell import (
 )
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
-from async_kernel.debugger import Debugger
 from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Channel, Content, ExecuteContent, HandlerType, Job, Message, MsgType, NoValue, RunMode
 
@@ -141,9 +140,6 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     main_shell: Fixed[Self, AsyncInteractiveShell] = Fixed(AsyncInteractiveShell)
     "The interactive shell."
 
-    debugger = Fixed(Debugger)
-    "Handles [debug requests](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."
-
     comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
@@ -249,10 +245,6 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     @property
     def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
         "A dict of detail sent in reply to for a 'kernel_info_request'."
-        supported_features = ["kernel subshells"]
-        if not utils.LAUNCHED_BY_DEBUGPY and sys.platform != "emscripten":
-            supported_features.append("debugger")
-
         return {
             "protocol_version": async_kernel.kernel_protocol_version,
             "implementation": "async_kernel",
@@ -260,9 +252,9 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             "language_info": async_kernel.kernel_protocol_version_info,
             "banner": self.shell.banner,
             "help_links": self.help_links,
-            "debugger": (not utils.LAUNCHED_BY_DEBUGPY) & (sys.platform != "emscripten"),
+            "debugger": bool(self.shell.debugger),
             "kernel_name": self.kernel_name,
-            "supported_features": supported_features,
+            "supported_features": self.shell.supported_features,
         }
 
     def load_settings(self, settings: dict[str, Any]) -> None:
@@ -336,7 +328,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         assert self.event_stopped
         self.log.info("Kernel shutdown: %s", self)
         await anyio.sleep(0.1)
-        self.shell._stop()  # pyright: ignore[reportPrivateUsage]
+        self.shell.stop(force=True)
         self.callers.clear()
         self._handler_cache.clear()
         for comm in tuple(self.comm_manager.comms.values()):
@@ -526,7 +518,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        return await self.shell._execute_request(  # pyright: ignore[reportPrivateUsage]
+        return await self.shell.execute_request(
             cell_id=job["msg"]["metadata"].get("cellId"),
             received_time=job["received_time"],
             **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
@@ -534,18 +526,18 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
-        return await self.shell._do_complete_request(  # pyright: ignore[reportPrivateUsage]
+        return await self.shell.do_complete_request(
             code=job["msg"]["content"].get("code", ""), cursor_pos=job["msg"]["content"].get("cursor_pos", 0)
         )
 
     async def is_complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
-        return await self.shell._is_complete_request(job["msg"]["content"].get("code", ""))  # pyright: ignore[reportPrivateUsage]
+        return await self.shell.is_complete_request(job["msg"]["content"].get("code", ""))
 
     async def inspect_request(self, job: Job[Content], /) -> Content:
         """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         c = job["msg"]["content"]
-        return await self.shell._inspect_request(  # pyright: ignore[reportPrivateUsage]
+        return await self.shell.inspect_request(
             code=c.get("code", ""),
             cursor_pos=c.get("cursor_pos", 0),
             detail_level=c.get("detail_level", 0),
@@ -553,7 +545,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def history_request(self, job: Job[Content], /) -> Content:
         """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
-        return await self.shell._history_request(**job["msg"]["content"])  # pyright: ignore[reportPrivateUsage]
+        return await self.shell.history_request(**job["msg"]["content"])
 
     async def comm_open(self, job: Job[Content], /) -> None:
         """Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
@@ -580,7 +572,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only)."""
-        return await self.debugger.process_request(job["msg"]["content"])
+        return await self.shell.debugger.process_request(job["msg"]["content"])  # pyright: ignore[reportOptionalMemberAccess]
 
     async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
         """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only)."""
@@ -631,11 +623,11 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell._do_complete_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportPrivateUsage]
+        return await self.shell.do_complete_request(code=code, cursor_pos=cursor_pos)
 
     async def do_inspect(self, code: str, cursor_pos: int | None, detail_level=0, omit_sections=()) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell._inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType, reportPrivateUsage]
+        return await self.shell.inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType]
 
     async def do_history(
         self,
@@ -650,7 +642,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         unique=False,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell._history_request(  # pyright: ignore[reportPrivateUsage]
+        return await self.shell.history_request(
             output=output,
             raw=raw,
             hist_access_type=hist_access_type,
@@ -683,7 +675,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         job = Job(msg=msg, ident=[], received_time=time.monotonic())
         token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
-            return await self.shell._execute_request(  # pyright: ignore[reportPrivateUsage]
+            return await self.shell.execute_request(
                 code=code,
                 silent=silent,
                 store_history=store_history,

@@ -7,7 +7,7 @@ import sys
 import threading
 from logging import Logger, LoggerAdapter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 import anyio.abc
 from aiologic import Event, Lock
@@ -16,6 +16,7 @@ from traitlets import Bool, Dict, HasTraits, Instance, Set, default
 
 from async_kernel import utils
 from async_kernel.caller import Caller
+from async_kernel.common import Fixed
 from async_kernel.compat.json import pack_json_bytes, unpack_json
 from async_kernel.pending import Pending
 
@@ -193,7 +194,7 @@ class Debugger(HasTraits):
     variable_explorer = Instance(VariableExplorer, ())
     debugpy_client = Instance(DebugpyClient)
     log = Instance(logging.LoggerAdapter)
-    kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
+    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
     init_event = Instance(Event, ())
 
     @default("log")
