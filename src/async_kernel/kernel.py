@@ -56,7 +56,7 @@ All other shell message types are handled in the control thread.
 
 class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     """
-    A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
+    A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.IPythonAsyncInteractiveShell].
 
     Starting the kernel:
 
@@ -108,7 +108,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The callers associated with the kernel once it has started."
     ""
-    subshell_manager = Fixed(SubshellManager)
+    subshell_manager = SubshellManager
     "Dedicated to management of sub shells."
 
     # Public traits
@@ -138,7 +138,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     "The logging adapter."
 
     # Public fixed
-    main_shell = Fixed(lambda _: AsyncInteractiveShell.instance())
+    main_shell: Fixed[Self, AsyncInteractiveShell] = Fixed(AsyncInteractiveShell)
     "The interactive shell."
 
     debugger = Fixed(Debugger)
@@ -336,21 +336,13 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         assert self.event_stopped
         self.log.info("Kernel shutdown: %s", self)
         await anyio.sleep(0.1)
-        self.shell.reset(new_session=False)
-        try:
-            self.shell.history_manager.end_session()
-            self.shell.history_manager.save_thread.stop()  # pyright: ignore[reportOptionalMemberAccess]
-            self.shell.history_manager.save_thread.join()  # pyright: ignore[reportOptionalMemberAccess]
-        except AttributeError:
-            pass
-        self.subshell_manager.stop_all_subshells(force=True)
+        self.shell._stop()  # pyright: ignore[reportPrivateUsage]
         self.callers.clear()
         self._handler_cache.clear()
         for comm in tuple(self.comm_manager.comms.values()):
             comm.close(deleting=True)
         self.comm_manager.comms.clear()
         await anyio.sleep(0.1)
-        AsyncInteractiveShell.clear_instance()
         CommManager._instance = None  # pyright: ignore[reportPrivateUsage]
         Kernel._instance = None
         gc.collect()
