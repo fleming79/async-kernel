@@ -585,8 +585,8 @@ def test_subshell_manager():
 
 
 async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
-    subshell_id = SubshellManager.create_subshell(protected=True).subshell_id
-    subshell = SubshellManager.subshells[subshell_id]
+    subshell_id = kernel.subshell_manager.create_subshell(protected=True).subshell_id
+    subshell = kernel.subshell_manager.subshells[subshell_id]
 
     assert repr(kernel.main_shell) == "<IPythonAsyncInteractiveShell  kernel_name: 'async' subshell_id: None>"
     assert repr(subshell) == f"<IPythonInteractiveSubshell kernel_name: 'async'  subshell_id: {subshell_id}>"
@@ -615,10 +615,10 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
         assert pen.cancelled()
 
     # delete
-    assert subshell_id in SubshellManager.subshells
-    SubshellManager.delete_subshell(subshell_id)
-    assert subshell_id in SubshellManager.subshells, "Protected should not stop when deleted"
-    SubshellManager.stop_all_subshells(force=True)
+    assert subshell_id in kernel.subshell_manager.subshells
+    kernel.subshell_manager.delete_subshell(subshell_id)
+    assert subshell_id in kernel.subshell_manager.subshells, "Protected should not stop when deleted"
+    kernel.subshell_manager.stop_all_subshells(force=True)
     assert kernel.main_shell.user_ns["a"] == 1
     with pytest.raises(KeyError), async_kernel.utils.subshell_context(subshell.subshell_id):
         pass
