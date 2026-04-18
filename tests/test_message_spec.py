@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.asyncshell import AsyncInteractiveSubshell, SubshellManager
+from async_kernel.asyncshell import AsyncInteractiveSubshell
 from async_kernel.typing import Channel, MsgType
 from tests import utils
 
@@ -302,8 +302,8 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     utils.validate_message(reply, "create_subshell_reply", msg_id)
     assert reply["content"]["status"] == "ok"
     subshell_id = reply["content"]["subshell_id"]
-    assert subshell_id in SubshellManager.subshells
-    subshell = SubshellManager.get_shell(subshell_id)
+    assert subshell_id in kernel.subshell_manager.subshells
+    subshell = kernel.subshell_manager.get_shell(subshell_id)
     assert isinstance(subshell, AsyncInteractiveSubshell)
     assert not subshell.protected
 
@@ -323,4 +323,4 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     reply = await utils.get_reply(client, msg_id, channel=Channel.control)
     utils.validate_message(reply, "delete_subshell_reply", msg_id)
     assert reply["content"]["status"] == "ok"
-    assert subshell_id not in SubshellManager.subshells
+    assert subshell_id not in kernel.subshell_manager.subshells
