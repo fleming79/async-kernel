@@ -332,7 +332,7 @@ class TestPendingManagerTest:
         token = pm.activate()
 
         pm.add(pen := caller.call_soon(recursive))
-        while isinstance(pen, Pending):
+        while isinstance(pen, Pending):  # pyright: ignore[reportUnnecessaryIsInstance]
             pen = await pen
         assert pen == n
         assert count == n
