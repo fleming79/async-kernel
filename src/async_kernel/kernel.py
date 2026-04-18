@@ -23,7 +23,6 @@ from aiologic.lowlevel import current_async_library
 from jupyter_core.paths import jupyter_runtime_dir
 from typing_extensions import override
 
-import async_kernel
 from async_kernel import Caller, utils
 from async_kernel.asyncshell import (
     AsyncInteractiveShell,
@@ -184,7 +183,6 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     def _default_connection_file(self) -> Path:
         return Path(jupyter_runtime_dir()).joinpath(f"kernel-{uuid.uuid4()}.json")
 
-
     @traitlets.observe("connection_file")
     def _observe_connection_file(self, change) -> None:
         if not self.interface.callers and (path := self.connection_file).exists():
@@ -214,21 +212,6 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     def caller(self) -> Caller:
         "The caller for the shell channel."
         return self.callers[Channel.shell]
-
-    @property
-    def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
-        "A dict of detail sent in reply to for a 'kernel_info_request'."
-        return {
-            "protocol_version": async_kernel.kernel_protocol_version,
-            "implementation": "async_kernel",
-            "implementation_version": async_kernel.__version__,
-            "language_info": async_kernel.kernel_protocol_version_info,
-            "banner": self.shell.banner,
-            "help_links": self.shell.help_links,
-            "debugger": bool(self.shell.debugger),
-            "kernel_name": self.kernel_name,
-            "supported_features": self.shell.supported_features,
-        }
 
     def load_settings(self, settings: dict[str, Any]) -> None:
         """
@@ -476,7 +459,7 @@ class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
-        return self.kernel_info
+        return self.main_shell.kernel_info
 
     async def comm_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info)."""

@@ -357,6 +357,21 @@ class AsyncInteractiveShell(InteractiveShell):
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
     @property
+    def kernel_info(self) -> dict[str, str | dict[str, str | dict[str, str | int]] | Any | tuple[Any, ...] | bool]:
+        "A dict of detail sent in reply to for a 'kernel_info_request'."
+        return {
+            "protocol_version": async_kernel.kernel_protocol_version,
+            "implementation": "async_kernel",
+            "implementation_version": async_kernel.__version__,
+            "language_info": async_kernel.kernel_protocol_version_info,
+            "banner": self.banner,
+            "help_links": self.help_links,
+            "debugger": bool(self.debugger),
+            "kernel_name": self.kernel.kernel_name,
+            "supported_features": self.supported_features,
+        }
+
+    @property
     def supported_features(self) -> list[str]:
         "Supported features included in the reply to a [async_kernel.kernel.Kernel.kernel_info_request][]."
         features = ["kernel subshells"]
