@@ -429,6 +429,7 @@ async def test_debug_static_richInspectVariables(client: AsyncKernelClient, vari
         "%subshell",
         "%pip install anyio",
         "%uv pip install anyio",
+        "%%python\nprint('hello')",
     ],
 )
 async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
@@ -575,9 +576,11 @@ async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
     code = "assert 'header' in get_ipython().kernel.get_parent()"
     await utils.execute(client, code)
 
+
 def test_subshell_manager():
     with pytest.raises(RuntimeError):
         SubshellManager()
+
 
 async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     subshell_id = SubshellManager.create_subshell(protected=True).subshell_id

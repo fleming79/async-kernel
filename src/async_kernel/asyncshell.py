@@ -19,7 +19,7 @@ from IPython.core.displaypub import DisplayPublisher
 from IPython.core.history import HistoryManager
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
-from IPython.core.magic import Magics, line_magic, magics_class
+from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import CFloat, Float, Instance, Type, default, observe, traitlets
@@ -355,6 +355,14 @@ class AsyncInteractiveShell(InteractiveShell):
         except TypeError:
             return result
 
+    async def run_cell_magic_async(self, magic_name: str, line: str, cell: str) -> Any:
+        "Call and awaits [run_cell_magic][IPython.core.interactiveshell.InteractiveShell.run_cell_magic]."
+        result = self.run_cell_magic(magic_name, line, cell)
+        try:
+            return await result  # pyright: ignore[reportGeneralTypeIssues]
+        except TypeError:
+            return result
+
     async def _execute_request(
         self,
         code: str = "",
@@ -380,7 +388,11 @@ class AsyncInteractiveShell(InteractiveShell):
             suppress_error: bool = Tags.suppress_error in tags
             raises_exception: bool = Tags.raises_exception in tags
             stop_on_error_override: bool = Tags.stop_on_error in tags
-
+            transformed_cell = (
+                self.transform_cell(code)
+                .replace("get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async(")
+                .replace("get_ipython().run_cell_magic(", "await get_ipython().run_cell_magic_async(")
+            )
             if stop_on_error_override:
                 stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
             elif suppress_error or raises_exception:
@@ -413,9 +425,7 @@ class AsyncInteractiveShell(InteractiveShell):
                             raw_cell=code,
                             store_history=store_history,
                             silent=silent,
-                            transformed_cell=self.transform_cell(code).replace(
-                                "get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async("
-                            ),
+                            transformed_cell=transformed_cell,
                             shell_futures=True,
                             cell_id=cell_id,
                         )
@@ -887,3 +897,13 @@ class KernelMagics(Magics):
                 tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
             if process.stderr:
                 tg.start_soon(_forward_transport_stream, process.stderr, sys.stdout)
+
+    @line_cell_magic
+    async def python(self, line: str, cell: str) -> None:
+        """
+        Run python code.
+
+        Useful only when the primary language is not Python.
+        """
+        shell = SubshellManager.get_shell()
+        await shell.run_cell_async(raw_cell=line or cell, store_history=False, silent=True, cell_id=utils.get_cell_id())
