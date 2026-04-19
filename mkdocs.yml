@@ -169,6 +169,7 @@ nav:
       - "Command line": usage/commands.md
       - notebooks/concurrency.ipynb
       - notebooks/caller.ipynb
+      - notebooks/custom_kernel.ipynb
   - Reference:
       - reference/index.md
       - "caller": reference/caller.md

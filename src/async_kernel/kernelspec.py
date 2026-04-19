@@ -23,6 +23,7 @@ RESOURCES = Path(__file__).parent.joinpath("resources")
 PROTOCOL_VERSION = "5.5"
 CUSTOM_KERNEL_MARKER = "↤"
 DEFAULT_START_INTERFACE = "async_kernel.interface.start_kernel_zmq_interface"
+DEFAULT_EXECUTABLE = ("python", "-m", "async_kernel")
 
 
 def make_argv(
@@ -30,7 +31,7 @@ def make_argv(
     connection_file: str = "{connection_file}",
     kernel_name: str = "async",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
-    fullpath: bool = True,
+    executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
     **kwargs: dict[str, Any],
 ) -> list[str]:
     """Returns an argument vector (argv) that can be used to start a `Kernel`.
@@ -43,13 +44,13 @@ def make_argv(
         start_interface: Either the kernel factory object itself, or the string import path to a
             callable that returns a non-started kernel.
         kernel_name: The name of the kernel to use.
-        fullpath: If True the full path to the executable is used, otherwise 'python' is used.
+        executable: The command line executable to call.
         **kwargs: Additional settings to pass when creating the kernel passed to `start_interface`.
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
-    argv = [(sys.executable if fullpath else "python"), "-m", "async_kernel", "-f", connection_file]
+    argv = [*executable, "-f", connection_file]
     for k, v in ({"start_interface": start_interface, "kernel_name": kernel_name} | kwargs).items():
         argv.append(f"--{k}={v}")
     return argv
@@ -60,7 +61,7 @@ def write_kernel_spec(
     *,
     kernel_name: str = "async",
     display_name: str = "",
-    fullpath: bool = False,
+    executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
     prefix: str = "",
     folder: str = "",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
@@ -68,6 +69,7 @@ def write_kernel_spec(
     env: dict | None = None,
     metadata: dict | None = None,
     language="python",
+    resources: Path | None = RESOURCES,
     **kwargs: dict[str, Any],
 ) -> Path:
     """
@@ -77,7 +79,7 @@ def write_kernel_spec(
         path: The path where to write the spec.
         kernel_name: The name of the kernel to use.
         display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
-        fullpath: If True the full path to the executable is used, otherwise 'python' is used.
+        executable: The first part of 'argv' to use.
         prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
         folder: A direct path the the kernel spec folder (must end with a folder named 'kernels').
@@ -86,6 +88,7 @@ def write_kernel_spec(
         connection_file: The path to the connection file.
         env: A mapping environment variables for the kernel to set prior to starting.
         metadata: A mapping of additional attributes to aid the client in kernel selection.
+        resources: The path to the resources folder to include with the kernel spec.
         **kwargs: Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
             For example `..., **{'shell.timeout'=0.1})`.
@@ -130,16 +133,16 @@ def write_kernel_spec(
         # validate
         if start_interface != DEFAULT_START_INTERFACE:
             import_start_interface(start_interface)
-        shutil.copytree(src=RESOURCES, dst=path, dirs_exist_ok=True)
-
+        if resources:
+            shutil.copytree(src=resources, dst=path, dirs_exist_ok=True)
         argv = make_argv(
             start_interface=start_interface,
             connection_file=connection_file,
             kernel_name=kernel_name,
-            fullpath=fullpath,
+            executable=executable,
             **kwargs,
         )
-        spec = {
+        spec: dict[str, list[Any] | Any | dict[Any, Any] | str | dict[str, bool]] = {
             "argv": argv,
             "env": env or {},
             "display_name": display_name or f"Python ({kernel_name})",
@@ -148,7 +151,6 @@ def write_kernel_spec(
             "metadata": metadata if metadata is not None else {"debugger": True, "concurrent": True},
             "kernel_protocol_version": PROTOCOL_VERSION,
         }
-
         # write kernel.json
         path.joinpath("kernel.json").write_text(json.dumps(spec, indent=2))
     except Exception:

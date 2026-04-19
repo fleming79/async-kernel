@@ -63,8 +63,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     assert "Added kernel spec" in out
     kernel_dir = fake_kernel_dir.joinpath("async-trio")
     assert (kernel_dir).exists()
-    with kernel_dir.joinpath("kernel.json").open("rb") as f:
-        spec = json.load(f)
+    spec = json.loads(kernel_dir.joinpath("kernel.json").read_bytes())
     assert spec == {
         "argv": [
             "python",
@@ -79,7 +78,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
         "display_name": "my kernel",
         "language": "python",
         "interrupt_mode": "message",
-        "metadata": {"concurrent": True, "debugger": True},
+        "metadata": {"debugger": True, "concurrent": True},
         "kernel_protocol_version": "5.5",
     }
 
