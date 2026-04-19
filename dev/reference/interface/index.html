@@ -2689,7 +2689,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="traitlets.HasTraits">HasTraits</span></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
+              Bases: <code><span title="traitlets.traitlets.HasTraits">HasTraits</span></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
 
 
 
@@ -2925,6 +2925,7 @@ viewing the latest version.
       class-attribute
       instance-attribute
    (async_kernel.interface.BaseKernelInterface.backend)" href="#async_kernel.interface.BaseKernelInterface.backend">backend</a></code></b>
+              (<code><span title="traitlets.traitlets.TraitType">TraitType</span>[<a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a>, <a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a>]</code>)
           –
           <div class="doc-md-description">
             <p>The type of asynchronous backend used. Options are 'asyncio' or 'trio'.</p>
@@ -2934,7 +2935,8 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 56</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 55</span>
+<span class="normal"> 56</span>
 <span class="normal"> 57</span>
 <span class="normal"> 58</span>
 <span class="normal"> 59</span>
@@ -3132,15 +3134,14 @@ viewing the latest version.
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class for interfacing with the kernel.</span>
 
 <span class="sd">    Must be overloaded to be useful.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">log</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Instance</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">)</span>
     <span class="s2">&quot;The logging adapter.&quot;</span>
 
     <span class="n">callers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span> <span class="n">Caller</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -3155,7 +3156,7 @@ viewing the latest version.
     <span class="n">last_interrupt_frame</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="s2">&quot;This frame is set when an interrupt is intercepted and cleared once the interrupt has been handled.&quot;</span>
 
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">TraitType</span><span class="p">[</span><span class="n">Backend</span><span class="p">,</span> <span class="n">Backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>
     <span class="s2">&quot;The type of asynchronous backend used. Options are &#39;asyncio&#39; or &#39;trio&#39;.&quot;</span>
 
     <span class="n">host</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3360,7 +3361,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.interface.BaseKernelInterface.log" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">log</span> <span class="o">=</span> <span class="n"><span title="traitlets.Instance">Instance</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="logging.LoggerAdapter" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter">LoggerAdapter</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">log</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.Instance">Instance</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="logging.LoggerAdapter" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter">LoggerAdapter</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3502,7 +3503,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.interface.BaseKernelInterface.backend" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span><span class="p">:</span> <span class="n"><span title="traitlets.traitlets.TraitType">TraitType</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.UseEnum">UseEnum</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3594,7 +3595,8 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
+<span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
@@ -3604,8 +3606,7 @@ viewing the latest version.
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -3669,7 +3670,8 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">172</span>
+<span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
@@ -3678,8 +3680,7 @@ viewing the latest version.
 <span class="normal">179</span>
 <span class="normal">180</span>
 <span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward a raw_input request to the client.</span>
 
@@ -3742,7 +3743,8 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
+<span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
@@ -3751,8 +3753,7 @@ viewing the latest version.
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward getpass to the client.</span>
 
@@ -3788,15 +3789,15 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
+<span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterrupt][].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3847,7 +3848,8 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
+<span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
 <span class="normal">210</span>
@@ -3881,8 +3883,7 @@ format, which is a list of message parts.</p>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -3966,7 +3967,8 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">243</span>
+<span class="normal">244</span>
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
@@ -3976,8 +3978,7 @@ format, which is a list of message parts.</p>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -4171,7 +4172,7 @@ format, which is a list of message parts.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="traitlets.HasTraits">HasTraits</span></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
+              Bases: <code><span title="traitlets.traitlets.HasTraits">HasTraits</span></code>, <code><a class="autorefs autorefs-external" title="anyio.AsyncContextManagerMixin" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.AsyncContextManagerMixin">AsyncContextManagerMixin</a></code></p>
 
 
 
@@ -4407,6 +4408,7 @@ format, which is a list of message parts.</p>
       class-attribute
       instance-attribute
    (async_kernel.interface.base.BaseKernelInterface.backend)" href="#async_kernel.interface.base.BaseKernelInterface.backend">backend</a></code></b>
+              (<code><span title="traitlets.traitlets.TraitType">TraitType</span>[<a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a>, <a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a>]</code>)
           –
           <div class="doc-md-description">
             <p>The type of asynchronous backend used. Options are 'asyncio' or 'trio'.</p>
@@ -4416,7 +4418,8 @@ format, which is a list of message parts.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 56</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 55</span>
+<span class="normal"> 56</span>
 <span class="normal"> 57</span>
 <span class="normal"> 58</span>
 <span class="normal"> 59</span>
@@ -4614,15 +4617,14 @@ format, which is a list of message parts.</p>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseKernelInterface</span><span class="p">(</span><span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class for interfacing with the kernel.</span>
 
 <span class="sd">    Must be overloaded to be useful.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">log</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Instance</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">)</span>
     <span class="s2">&quot;The logging adapter.&quot;</span>
 
     <span class="n">callers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span> <span class="n">Caller</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -4637,7 +4639,7 @@ format, which is a list of message parts.</p>
     <span class="n">last_interrupt_frame</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="s2">&quot;This frame is set when an interrupt is intercepted and cleared once the interrupt has been handled.&quot;</span>
 
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">TraitType</span><span class="p">[</span><span class="n">Backend</span><span class="p">,</span> <span class="n">Backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">UseEnum</span><span class="p">(</span><span class="n">Backend</span><span class="p">)</span>
     <span class="s2">&quot;The type of asynchronous backend used. Options are &#39;asyncio&#39; or &#39;trio&#39;.&quot;</span>
 
     <span class="n">host</span> <span class="o">=</span> <span class="kc">None</span>
@@ -4842,7 +4844,7 @@ format, which is a list of message parts.</p>
   </span>
 
 <a href="#async_kernel.interface.base.BaseKernelInterface.log" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">log</span> <span class="o">=</span> <span class="n"><span title="traitlets.Instance">Instance</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="logging.LoggerAdapter" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter">LoggerAdapter</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">log</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.Instance">Instance</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="logging.LoggerAdapter" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter">LoggerAdapter</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4984,7 +4986,7 @@ format, which is a list of message parts.</p>
   </span>
 
 <a href="#async_kernel.interface.base.BaseKernelInterface.backend" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span><span class="p">:</span> <span class="n"><span title="traitlets.traitlets.TraitType">TraitType</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.UseEnum">UseEnum</span></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5076,7 +5078,8 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
+<span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
@@ -5086,8 +5089,7 @@ format, which is a list of message parts.</p>
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -5151,7 +5153,8 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">172</span>
+<span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
@@ -5160,8 +5163,7 @@ format, which is a list of message parts.</p>
 <span class="normal">179</span>
 <span class="normal">180</span>
 <span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward a raw_input request to the client.</span>
 
@@ -5224,7 +5226,8 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
+<span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
@@ -5233,8 +5236,7 @@ format, which is a list of message parts.</p>
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">getpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward getpass to the client.</span>
 
@@ -5270,15 +5272,15 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
+<span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterrupt][].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -5329,7 +5331,8 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
+<span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
 <span class="normal">210</span>
@@ -5363,8 +5366,7 @@ format, which is a list of message parts.</p>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5448,7 +5450,8 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">243</span>
+<span class="normal">244</span>
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
@@ -5458,8 +5461,7 @@ format, which is a list of message parts.</p>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -6442,7 +6444,7 @@ kernel_interface["stop"](msg, buffer)
       class-attribute
       instance-attribute
    (async_kernel.interface.zmq.ZMQKernelInterface.transport)" href="#async_kernel.interface.zmq.ZMQKernelInterface.transport">transport</a></code></b>
-              (<code><span title="traitlets.CaselessStrEnum">CaselessStrEnum</span>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
+              (<code><span title="traitlets.traitlets.CaselessStrEnum">CaselessStrEnum</span>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
           –
           <div class="doc-md-description">
             <p>Transport for sockets.</p>
@@ -6456,7 +6458,7 @@ kernel_interface["stop"](msg, buffer)
       class-attribute
       instance-attribute
    (async_kernel.interface.zmq.ZMQKernelInterface.host)" href="#async_kernel.interface.zmq.ZMQKernelInterface.host">host</a></code></b>
-              (<code><span title="traitlets.TraitType">TraitType</span>[<a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a> | None, <a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a> | None]</code>)
+              (<code><span title="traitlets.traitlets.TraitType">TraitType</span>[<a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a> | None, <a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a> | None]</code>)
           –
           <div class="doc-md-description">
             <p>The name of the (gui) event loop if one is used.</p>
@@ -6492,7 +6494,8 @@ kernel_interface["stop"](msg, buffer)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
+<span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
@@ -6902,7 +6905,8 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
-<span class="normal">512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
+<span class="normal">512</span>
+<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQKernelInterface</span><span class="p">(</span><span class="n">BaseKernelInterface</span><span class="p">):</span>
     <span class="s2">&quot;An interface for the kernel that uses zmq sockets.&quot;</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span>
@@ -6913,7 +6917,7 @@ kernel_interface["stop"](msg, buffer)
     <span class="s2">&quot;&quot;</span>
     <span class="n">ports</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Channel</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
     <span class="s2">&quot;&quot;</span>
-    <span class="n">ip</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Unicode</span><span class="p">()</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The kernel&#39;s IP address [default localhost].</span>
 
@@ -6923,21 +6927,23 @@ kernel_interface["stop"](msg, buffer)
     <span class="n">session</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Session</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">],</span> <span class="s2">&quot;check_pid&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
     <span class="s2">&quot;Handles serialization and sending of messages.&quot;</span>
 
-    <span class="n">transport</span><span class="p">:</span> <span class="n">CaselessStrEnum</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">CaselessStrEnum</span><span class="p">(</span>
+    <span class="n">transport</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CaselessStrEnum</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CaselessStrEnum</span><span class="p">(</span>
         <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">,</span> <span class="s2">&quot;ipc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;linux&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">],</span> <span class="n">default_value</span><span class="o">=</span><span class="s2">&quot;tcp&quot;</span>
     <span class="p">)</span>
     <span class="s2">&quot;Transport for sockets.&quot;</span>
 
-    <span class="n">host</span><span class="p">:</span> <span class="n">TraitType</span><span class="p">[</span><span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">UseEnum</span><span class="p">(</span><span class="n">Hosts</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">host</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">TraitType</span><span class="p">[</span><span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">UseEnum</span><span class="p">(</span>
+        <span class="n">Hosts</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
     <span class="s2">&quot;The name of the (gui) event loop if one is used.&quot;</span>
 
-    <span class="n">host_options</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">host_options</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="s2">&quot;Options for starting the loop.&quot;</span>
 
-    <span class="n">backend_options</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">backend_options</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Dict</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="s2">&quot;Options for starting the backend.&quot;</span>
 
-    <span class="nd">@default</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">)</span>
+    <span class="nd">@traitlets</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_default_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Backend</span><span class="p">(</span><span class="n">current_async_library</span><span class="p">())</span>
@@ -7310,7 +7316,7 @@ kernel_interface["stop"](msg, buffer)
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform a keyboard interrupt.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">stopped_threads</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">debugger</span><span class="p">,</span> <span class="s2">&quot;stopped_threads&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -7388,7 +7394,7 @@ kernel_interface["stop"](msg, buffer)
   </span>
 
 <a href="#async_kernel.interface.zmq.ZMQKernelInterface.ip" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">ip</span> <span class="o">=</span> <span class="n"><span title="traitlets.Unicode">Unicode</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">ip</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.Unicode">Unicode</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7442,8 +7448,8 @@ will be able to connect to the Kernel, so be careful!</p>
   </span>
 
 <a href="#async_kernel.interface.zmq.ZMQKernelInterface.transport" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">transport</span><span class="p">:</span> <span class="n"><span title="traitlets.CaselessStrEnum">CaselessStrEnum</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.CaselessStrEnum">CaselessStrEnum</span></span><span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">,</span> <span class="s2">&quot;ipc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n"><a class="autorefs autorefs-external" title="sys.platform" href="https://docs.python.org/3/library/sys.html#sys.platform">platform</a></span> <span class="o">==</span> <span class="s2">&quot;linux&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">],</span> <span class="n"><span title="traitlets.CaselessStrEnum(default_value)">default_value</span></span><span class="o">=</span><span class="s2">&quot;tcp&quot;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">transport</span><span class="p">:</span> <span class="n"><span title="traitlets.traitlets.CaselessStrEnum">CaselessStrEnum</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.CaselessStrEnum">CaselessStrEnum</span></span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">,</span> <span class="s2">&quot;ipc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n"><a class="autorefs autorefs-external" title="sys.platform" href="https://docs.python.org/3/library/sys.html#sys.platform">platform</a></span> <span class="o">==</span> <span class="s2">&quot;linux&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">],</span> <span class="n"><span title="traitlets.traitlets.CaselessStrEnum(default_value)">default_value</span></span><span class="o">=</span><span class="s2">&quot;tcp&quot;</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -7470,8 +7476,8 @@ will be able to connect to the Kernel, so be careful!</p>
   </span>
 
 <a href="#async_kernel.interface.zmq.ZMQKernelInterface.host" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">host</span><span class="p">:</span> <span class="n"><span title="traitlets.TraitType">TraitType</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.UseEnum">UseEnum</span></span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span><span class="p">,</span> <span class="n"><span title="traitlets.UseEnum(default_value)">default_value</span></span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n"><span title="traitlets.UseEnum(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">host</span><span class="p">:</span> <span class="n"><span title="traitlets.traitlets.TraitType">TraitType</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.UseEnum">UseEnum</span></span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="../typing/#async_kernel.typing.Hosts">Hosts</a></span><span class="p">,</span> <span class="n"><span title="traitlets.traitlets.UseEnum(default_value)">default_value</span></span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n"><span title="traitlets.traitlets.UseEnum(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -7498,7 +7504,7 @@ will be able to connect to the Kernel, so be careful!</p>
   </span>
 
 <a href="#async_kernel.interface.zmq.ZMQKernelInterface.host_options" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">host_options</span> <span class="o">=</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">host_options</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7524,7 +7530,7 @@ will be able to connect to the Kernel, so be careful!</p>
   </span>
 
 <a href="#async_kernel.interface.zmq.ZMQKernelInterface.backend_options" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend_options</span> <span class="o">=</span> <span class="n"><span title="traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend_options</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.Dict">Dict</span></span><span class="p">(</span><span class="n"><span title="traitlets.traitlets.Dict(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7592,8 +7598,7 @@ will be able to connect to the Kernel, so be careful!</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
-<span class="normal">151</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
@@ -7610,7 +7615,8 @@ will be able to connect to the Kernel, so be careful!</p>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">168</span>
+<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the kernel blocking until the kernel stops.</span>
 
@@ -7669,8 +7675,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">170</span>
-<span class="normal">171</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
@@ -7697,7 +7702,8 @@ and is called by load_connection_file.</p>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
-<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">198</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_connection_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load connection info from a dict containing connection info.</span>
@@ -7774,8 +7780,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">380</span>
 <span class="normal">381</span>
 <span class="normal">382</span>
 <span class="normal">383</span>
@@ -7809,7 +7814,8 @@ and is called by load_connection_file.</p>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
-<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
@@ -7882,8 +7888,7 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">416</span>
-<span class="normal">417</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">417</span>
 <span class="normal">418</span>
 <span class="normal">419</span>
 <span class="normal">420</span>
@@ -7920,7 +7925,8 @@ and is called by load_connection_file.</p>
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
-<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">454</span>
+<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Opens a zmq socket for the channel, receives messages and calls the message handler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -7984,19 +7990,19 @@ and is called by load_connection_file.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">505</span>
-<span class="normal">506</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">506</span>
 <span class="normal">507</span>
 <span class="normal">508</span>
 <span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
-<span class="normal">512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">512</span>
+<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform a keyboard interrupt.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">debugger</span><span class="o">.</span><span class="n">stopped_threads</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">debugger</span><span class="p">,</span> <span class="s2">&quot;stopped_threads&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_interrupt_now</span><span class="p">()</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>

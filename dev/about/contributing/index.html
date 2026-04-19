@@ -1812,7 +1812,7 @@ are generated with <a href="https://about.codecov.io/">Codecov</a>.</p>
 <p>Type checking is performed separately to pre-commit checks. Currently type checking is done
 using <a href="https://docs.basedpyright.com/">basedpyright</a>. Other type checkers might be added
 in the future.</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>basedpyright
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>basedpyright
 </code></pre></div>
 <h3 id="update-packages">Update packages<a class="headerlink" href="#update-packages" title="Permanent link">&para;</a></h3>
 <p>To upgrade all packages use the command:</p>
@@ -1900,7 +1900,7 @@ to PyPi. If it is published to PyPI successfully, it will also create a Github r
 <p>You can run tests locally to see if there is anything that might be caught by CI.</p>
 <div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>prek<span class="w"> </span>run<span class="w"> </span>-a
 uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-vv<span class="w"> </span>--cov<span class="w"> </span>--cov-fail-under<span class="o">=</span><span class="m">100</span>
-uv<span class="w"> </span>run<span class="w"> </span>basedpyright
+uvx<span class="w"> </span>basedpyright
 uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>-s
 </code></pre></div>
 <div class="admonition note">
