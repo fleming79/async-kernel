@@ -91,6 +91,7 @@ uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and impl
 "winloop; sys_platform == 'win32' and implementation_name == 'cpython'"
 ]    
 dev = [
+  "basedpyright",
   "debugpy",
   "ipykernel; implementation_name == 'cpython'",
   "pip; implementation_name == 'cpython'",
