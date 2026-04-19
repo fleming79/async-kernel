@@ -25,7 +25,7 @@ jobs:
       - name: Type checking with basedpyright
         run: |
           uv sync
-          uv run basedpyright
+          uvx basedpyright@1.39.2
 
   test:
     needs: type-checking
