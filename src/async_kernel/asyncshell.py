@@ -723,10 +723,6 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
             self.kernel.main_shell.user_global_ns.copy() if self._resetting else self.kernel.main_shell.user_global_ns
         )
 
-    @property
-    def debugger(self) -> Debugger | None:  # pyright: ignore[reportIncompatibleVariableOverride, reportImplicitOverride]
-        return self.kernel.main_shell.debugger
-
     def __new__(cls, *, protected: bool = True) -> Self:  # noqa: ARG004
         if cls is AsyncInteractiveSubshell:
             return cls._cls()
