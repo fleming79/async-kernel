@@ -11,7 +11,7 @@ from IPython.core import page
 
 import async_kernel.utils
 from async_kernel import Kernel, Pending
-from async_kernel.asyncshell import SubshellManager
+from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell, SubshellManager
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
 from async_kernel.typing import Channel, ExecuteContent, Job, MsgType, RunMode, Tags
@@ -618,7 +618,7 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     assert subshell_id in kernel.subshell_manager.subshells
     kernel.subshell_manager.delete_subshell(subshell_id)
     assert subshell_id in kernel.subshell_manager.subshells, "Protected should not stop when deleted"
-    kernel.subshell_manager.stop_all_subshells(force=True)
+    SubshellManager.stop_all_subshells(force=True)
     assert kernel.main_shell.user_ns["a"] == 1
     with pytest.raises(KeyError), async_kernel.utils.subshell_context(subshell.subshell_id):
         pass
@@ -670,3 +670,15 @@ async def test_get_input(kernel: Kernel, mocker):
     kernel.raw_input()
     kernel.getpass()
     assert requester.call_count == 2
+
+
+async def test_AsyncInteractiveShell_subclass(kernel):
+    with pytest.raises(RuntimeError, match="too late"):
+
+        class MyShell(AsyncInteractiveShell):  # pyright: ignore[reportUnusedClass]
+            pass
+
+    with pytest.raises(RuntimeError, match="too late"):
+
+        class MySubshell(AsyncInteractiveSubshell):  # pyright: ignore[reportUnusedClass]
+            pass

@@ -174,8 +174,10 @@ class AsyncInteractiveShell(InteractiveShell):
     An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
     Info:
-        - The last defined subclass is used when creating the shell.
         - There is only one interactive shell instance.
+        - When subclassing:
+            - The last defined subclass is used when creating the shell.
+            - A matching subclass of [AsyncInteractiveSubshell][] should also be defined.
 
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
@@ -261,12 +263,15 @@ class AsyncInteractiveShell(InteractiveShell):
         }
 
     def __init_subclass__(cls) -> None:
+        if AsyncInteractiveShell._instance:
+            msg = "It is too late to define a subclass of AsyncInteractiveShell!"
+            raise RuntimeError(msg)
         try:
             if not issubclass(cls, AsyncInteractiveSubshell):
                 AsyncInteractiveShell._cls = cls
         except NameError:
             pass
-        return super().__init_subclass__()
+        super().__init_subclass__()
 
     @default("banner1")
     def _default_banner1(self) -> str:
@@ -708,8 +713,8 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
     subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.id)
 
     def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
         AsyncInteractiveSubshell._cls = cls
-        return super().__init_subclass__()
 
     @override
     def __repr__(self) -> str:
