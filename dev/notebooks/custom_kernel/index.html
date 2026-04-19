@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/notebooks/concurrency/">
+        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/notebooks/custom_kernel/">
       
       
-        <link rel="prev" href="../../usage/commands/">
+        <link rel="prev" href="../caller/">
       
       
-        <link rel="next" href="../caller/">
+        <link rel="next" href="../../reference/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Concurrent message handling (notebook) - async-kernel</title>
+        <title>Define custom kernels (notebook) - async-kernel</title>
       
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#concurrent-message-handling-notebook" class="md-skip">
+        <a href="#define-custom-kernels-notebook" class="md-skip">
           Skip to content
         </a>
       
@@ -142,7 +142,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Concurrent message handling (notebook)
+              Define custom kernels (notebook)
             
           </span>
         </div>
@@ -555,37 +555,10 @@ viewing the latest version.
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Concurrent message handling (notebook)
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../concurrency/" class="md-nav__link">
         
   
   
@@ -601,120 +574,6 @@ viewing the latest version.
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#callers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Callers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zmq-message-handling-cpython" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ZMQ message handling (CPython)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#shell-messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shell messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#control-messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Control messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#execute-request-run-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Execute request run mode
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Execute request run mode">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#code-for-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code for example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-mode-task" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run mode: task
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-mode-thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run mode: thread
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -752,10 +611,37 @@ viewing the latest version.
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../custom_kernel/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Define custom kernels (notebook)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -771,6 +657,37 @@ viewing the latest version.
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#uv-managed-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        uv managed virtual environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1461,96 +1378,13 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#callers" class="md-nav__link">
+  <a href="#uv-managed-virtual-environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callers
+        uv managed virtual environment
       
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#zmq-message-handling-cpython" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ZMQ message handling (CPython)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#shell-messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shell messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#control-messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Control messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#execute-request-run-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Execute request run mode
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Execute request run mode">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#code-for-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code for example
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-mode-task" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run mode: task
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-mode-thread" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run mode: thread
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1616,7 +1450,7 @@ viewing the latest version.
               <article class="md-content__inner md-typeset">
                  
 <a
-  href="/async-kernel/dev/notebooks/concurrency/concurrency.ipynb"
+  href="/async-kernel/dev/notebooks/custom_kernel/custom_kernel.ipynb"
   title="Download Notebook"
   class="md-content__button md-icon"
   download=""
@@ -2358,27 +2192,26 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel is capable of concurrent message handling. It provides a separate message handler for each channel and msg_type.</p>
-<p>As messages are received they are queued for execution by the message handler.</p>
-<h2 id="callers">Callers<a class="anchor-link" href="#callers">¶</a></h2><p>async-kernel provides two <code>Callers</code> for the <em>shell</em> and <em>control</em> channels. The shell's <code>Caller</code> is
-associated with the thread where the kernel is started, normally this is the <em>MainThread</em>.
-In CPython, the <code>Caller</code> for the <em>control</em> channel is started as a child of the shell caller with
-it's own thread and asynchronous backend ('asyncio' or 'trio').</p>
-<h2 id="zmq-message-handling-cpython">ZMQ message handling (CPython)<a class="anchor-link" href="#zmq-message-handling-cpython">¶</a></h2><p>The kernel interface also starts two additional threads dedicated to receive the messages on
-the  <em>shell</em> and <em>control</em> channels, the specific function call is <code>session.recv(socket, mode=zmq.BLOCKY, copy=False)</code>.</p>
-<p>Each thread blocks until a new message is received on the zmq socket. When a message is received,
-the kernel's <code>message_handler</code> is called with detail of the message (Job), the channel and a function
-that is to be used to send the response corresponding to the message. The <code>message_handler</code> obtains
-the dedicated handler according to the <code>message_type</code>, <code>run_mode</code>, <code>channel</code> and <code>subshell_id</code> and
-schedules execution of the dedicated message handler in <code>Caller's</code> thread.</p>
-<h2 id="shell-messaging">Shell messaging<a class="anchor-link" href="#shell-messaging">¶</a></h2><p>Both <code>execute_request</code> and <code>com_msg</code> are always run in the shell's thread (normally the <em>MainThread</em>).
-All other messages on the shell channel are run in the control thread.</p>
-<h2 id="control-messaging">Control messaging<a class="anchor-link" href="#control-messaging">¶</a></h2><p>All messages on the control channel are handled in the control thread.</p>
+<h1 id="define-custom-kernels-notebook">Define custom kernels (notebook)<a class="anchor-link" href="#define-custom-kernels-notebook">¶</a></h1><ul>
+<li><a href="#uv-managed-virtual-environment">Using a uv virtual environment</a></li>
+</ul>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="uv-managed-virtual-environment">uv managed virtual environment<a class="anchor-link" href="#uv-managed-virtual-environment">¶</a></h2><p>We can use uv to create a virtual environment for different versions of Python.</p>
+<p>Let's create a new virtual environment in the folder named ".venv_py315" using uv.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2396,57 +2229,41 @@ All other messages on the shell channel are run in the control thread.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipw</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
-
-<span class="n">kernel</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="o">%</span><span class="n">uv</span> <span class="n">venv</span> <span class="o">.</span><span class="n">venv_py315</span> <span class="o">--</span><span class="n">python</span> <span class="mf">3.15</span>
+<span class="o">%</span><span class="n">uv</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">directory</span> <span class="o">.</span><span class="n">venv_py315</span> <span class="o">--</span><span class="n">python</span> <span class="mf">3.15</span> <span class="k">async</span><span class="o">-</span><span class="n">kernel</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import threading
-
-import ipywidgets as ipw
-from aiologic import Event
-
-from async_kernel import utils
-
-kernel = utils.get_kernel()</div>
+<div class="clipboard-copy-txt" id="cell-1">%uv venv .venv_py315 --python 3.15
+%uv pip install --directory .venv_py315 --python 3.15 async-kernel</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="execute-request-run-mode">Execute request run mode<a class="anchor-link" href="#execute-request-run-mode">¶</a></h2><p>The run mode of <code>execute_request</code> can be modified to run an <code>execute_request</code> separately as a task or thread.</p>
-<p>There are a few options to modify the run mode.</p>
-<ul>
-<li>Metadata</li>
-<li>Directly in code</li>
-<li>tags</li>
-<li>Message header (in custom messages)</li>
-</ul>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Only Jupyter lab is known to allow concurrent execution of cells.</p>
-</div>
-<h3 id="code-for-example">Code for example<a class="anchor-link" href="#code-for-example">¶</a></h3><ul>
-<li><strong>This example requires ipywidgets</strong></li>
-<li><strong>Ensure you are running an async-kernel</strong></li>
-</ul>
-<p>Lets define a function that we'll reuse for the remainder of the notebook.</p>
+<p>Now we can write a kernel spec that uses uv to start the kernel from the virtual environment.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=3">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2464,364 +2281,71 @@ kernel = utils.get_kernel()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">demo</span><span class="p">():</span>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
-    <span class="n">button</span> <span class="o">=</span> <span class="n">ipw</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Finish"</span><span class="p">)</span>
-    <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
-    <span class="n">button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
-    <span class="n">display</span><span class="p">(</span><span class="n">button</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">event</span>
-    <span class="n">button</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished ... thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s2">"Finished"</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-2">async def demo():
+<span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.kernelspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_kernel_spec</span>
 
-    print(f"Thread name: '{threading.current_thread().name}'")
-    button = ipw.Button(description="Finish")
-    event = Event()
-    button.on_click(lambda _: event.set())
-    display(button)
-    await event
-    button.close()
-    print(f"Finished ... thread name: '{threading.current_thread().name}'")
-    return "Finished"</div>
+<span class="n">uv_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">".venv_py315"</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">uv_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+
+<span class="n">write_kernel_spec</span><span class="p">(</span>
+    <span class="n">kernel_name</span><span class="o">=</span><span class="s2">"async-kernel-315"</span><span class="p">,</span>
+    <span class="n">display_name</span><span class="o">=</span><span class="s2">"Python 3.15 (async kernel)"</span><span class="p">,</span>
+    <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s2">"UV_PROJECT_ENVIRONMENT"</span><span class="p">:</span> <span class="n">uv_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()},</span>
+    <span class="n">executable</span><span class="o">=</span><span class="p">(</span><span class="s2">"uv"</span><span class="p">,</span> <span class="s2">"run"</span><span class="p">,</span> <span class="s2">"python"</span><span class="p">,</span> <span class="s2">"-m"</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-2">import pathlib
+
+from async_kernel.kernelspec import write_kernel_spec
+
+uv_path = pathlib.Path.cwd().joinpath(".venv_py315")
+assert uv_path.exists()
+
+write_kernel_spec(
+    kernel_name="async-kernel-315",
+    display_name="Python 3.15 (async kernel)",
+    env={"UV_PROJECT_ENVIRONMENT": uv_path.as_posix()},
+    executable=("uv", "run", "python", "-m"),
+)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">AssertionError</span>                            Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 6</span>
+<span class="ansi-green-fg">      2</span> 
+<span class="ansi-green-fg">      3</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> async_kernel.kernelspec <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> write_kernel_spec
+<span class="ansi-green-fg">      4</span> 
+<span class="ansi-green-fg">      5</span> uv_path = pathlib.Path.cwd().joinpath(<span class="ansi-yellow-fg">".venv_py315"</span>)
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">assert</span> uv_path.exists()
+<span class="ansi-green-fg">      7</span> 
+<span class="ansi-green-fg">      8</span> write_kernel_spec(
+<span class="ansi-green-fg">      9</span>     kernel_name=<span class="ansi-yellow-fg">"async-kernel-315"</span>,
+
+<span class="ansi-red-fg">AssertionError</span>: </pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Lets run it normally (queue)</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-3">await demo()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Thread name: 'MainThread'</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Button(description='Finish', style=ButtonStyle())</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="run-mode-task">Run mode: task<a class="anchor-link" href="#run-mode-task">¶</a></h3><p><code>task</code> mode instructs the kernel to execute the code in a task separate to the queue, Both <code>task</code> and <code>thread</code> execute modes can be started when the kernel is <em>busy executing</em>. There is no imposed limitation on the number of tasks (or threads) that can be run concurrently.</p>
-<p>See also the <a href="caller.ipynb#caller">Caller</a> example on how to call directly.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_suppress-error" id="cell-id=7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="celltoolbar">
-<div class="button_container tags_button_container">
-<span class="tag-container">
-<span class="cell-tag">suppress-error</span>
-</span>
-</div>
-</div>
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># task</span>
-<span class="c1"># Tip: try running this cell while the previous cell is still busy.</span>
-<span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-4"># task
-# Tip: try running this cell while the previous cell is still busy.
-await demo()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Thread name: 'MainThread'</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Button(description='Finish', style=ButtonStyle())</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="run-mode-thread">Run mode: thread<a class="anchor-link" href="#run-mode-thread">¶</a></h3>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_thread celltag_suppress-error">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_thread celltag_suppress-error" id="cell-id=9">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="celltoolbar">
-<div class="button_container tags_button_container">
-<span class="tag-container">
-<span class="cell-tag">thread</span>
-</span>
-</div>
-<div class="button_container tags_button_container">
-<span class="tag-container">
-<span class="cell-tag">suppress-error</span>
-</span>
-</div>
-</div>
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># This time we'll use the tag to run the cell in a Thread</span>
-<span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-5"># This time we'll use the tag to run the cell in a Thread
-await demo()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Thread name: 'MainThread'</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Button(description='Finish', style=ButtonStyle())</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=10">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># thread</span>
-<span class="o">%</span><span class="n">callers</span> <span class="c1"># magic provided by async-kernel</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-6"># thread
-%callers # magic provided by async-kernel</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>           Name          Running Protected          Thread                 Caller       </pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>─────────────────────────────────────────────────────────────────────────────────────────────</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Shell                       ✓       🔐            MainThread       140364637326992</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Control                     ✓       🔐             Control         140364575124144</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>async_kernel_caller         ✓                async_kernel_caller   140364567649392 ← current</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>
-</pre>
-</div>
-</div>
+<p>The kernel spec with the display name "Python 3.15 (async kernel)" has been added.</p>
 </div>
 </div>
 </div>
@@ -2855,7 +2379,7 @@ await demo()</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 22, 2026 07:15:23 UTC"><span class="timeago" datetime="2026-03-22T07:15:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 22, 2026 07:15:23 UTC">2026-03-22</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 19, 2026 08:11:45 UTC"><span class="timeago" datetime="2026-04-19T08:11:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 19, 2026 08:11:45 UTC">2026-04-19</span>
   </span>
 
     
@@ -2865,7 +2389,7 @@ await demo()</div>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2025 03:03:23 UTC"><span class="timeago" datetime="2025-08-21T03:03:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2025 03:03:23 UTC">2025-08-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 19, 2026 08:11:45 UTC"><span class="timeago" datetime="2026-04-19T08:11:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 19, 2026 08:11:45 UTC">2026-04-19</span>
   </span>
 
     
@@ -2900,7 +2424,7 @@ await demo()</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../usage/commands/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Command line">
+          <a href="../caller/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Caller: A backend agnostic executor (notebook)">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2910,20 +2434,20 @@ await demo()</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Command line
+                Caller: A backend agnostic executor (notebook)
               </div>
             </div>
           </a>
         
         
           
-          <a href="../caller/" class="md-footer__link md-footer__link--next" aria-label="Next: Caller: A backend agnostic executor (notebook)">
+          <a href="../../reference/" class="md-footer__link md-footer__link--next" aria-label="Next: Modules">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Caller: A backend agnostic executor (notebook)
+                Modules
               </div>
             </div>
             <div class="md-footer__button md-icon">
