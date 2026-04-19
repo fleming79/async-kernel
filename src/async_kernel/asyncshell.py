@@ -174,6 +174,10 @@ class AsyncInteractiveShell(InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
+    Info:
+        - The last defined subclass is used when creating the shell.
+        - There is only one interactive shell instance.
+
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
         - `user_ns` and `user_global_ns` are same dictionary which is a fixed [dict][].
@@ -692,6 +696,9 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
     Methods:
         stop: Stops the subshell, deactivating pending operations and removing it from the manager.
 
+    Info:
+        - The last defined subclass is used for all new subshells automatically.
+
     See also:
         - [async_kernel.utils.get_subshell_id][]
         - [async_kernel.utils.subshell_context][]
@@ -793,7 +800,7 @@ class IPythonInteractiveSubshell(AsyncInteractiveSubshell):
 @final
 class SubshellManager:
     """
-    Manages all instances of [subshells][async_kernel.asyncshell.IPythonInteractiveSubshell].
+    Manages all instances of [subshells][async_kernel.asyncshell.AsyncInteractiveSubshell].
 
     Note:
 
@@ -811,7 +818,7 @@ class SubshellManager:
         """
         Create a new instance of the default subshell class.
 
-        Call [`subshell.stop(force=True)`][async_kernel.asyncshell.IPythonInteractiveSubshell.stop] to stop a
+        Call [`subshell.stop(force=True)`][async_kernel.asyncshell.AsyncInteractiveSubshell.stop] to stop a
         protected subshell when it is no longer required.
 
         Args:
@@ -857,7 +864,7 @@ class SubshellManager:
         """Stop all current subshells.
 
         Args:
-            force: Passed to [async_kernel.asyncshell.IPythonInteractiveSubshell.stop][].
+            force: Passed to [async_kernel.asyncshell.AsyncInteractiveSubshell.stop][].
         """
         for subshell in set(cls.subshells.values()):
             subshell.stop(force=force)

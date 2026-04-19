@@ -54,7 +54,7 @@ All other shell message types are handled in the control thread.
 
 class Kernel(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     """
-    A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.IPythonAsyncInteractiveShell].
+    A Jupyter kernel providing an [IPython InteractiveShell][async_kernel.asyncshell.AsyncInteractiveShell].
 
     Starting the kernel:
 
