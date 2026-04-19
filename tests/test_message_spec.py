@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from async_kernel.asyncshell import AsyncInteractiveSubshell
 from async_kernel.typing import Channel, MsgType
 from tests import utils
 
@@ -302,6 +303,9 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     assert reply["content"]["status"] == "ok"
     subshell_id = reply["content"]["subshell_id"]
     assert subshell_id in kernel.subshell_manager.subshells
+    subshell = kernel.subshell_manager.get_shell(subshell_id)
+    assert isinstance(subshell, AsyncInteractiveSubshell)
+    assert not subshell.protected
 
     # List
     msg = client.session.msg(MsgType.list_subshell_request, {})

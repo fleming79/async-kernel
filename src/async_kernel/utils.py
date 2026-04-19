@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
+from traitlets import traitlets
 from typing_extensions import TypeVar
 
 import async_kernel
@@ -166,7 +167,6 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
         The mapping of the name to the set value if the value has been set.
         An empty dict indicates the value was not set.
     """
-    import traitlets  # noqa: PLC0415
 
     if len(bits := name.split(".")) > 1:
         try:

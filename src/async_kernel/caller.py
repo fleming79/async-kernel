@@ -11,7 +11,7 @@ import threading
 import time
 import weakref
 from collections import deque
-from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast, final
@@ -57,7 +57,7 @@ truncated_rep.fillvalue = "…"
 
 
 @asynccontextmanager
-async def task_factory() -> AsyncIterator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
+async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
     """
     An async context that yields a function to start tasks for the current async library ('asyncio' or 'trio').
 

@@ -15,9 +15,8 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 from uuid import uuid4
 
 import anyio
-import traitlets
 from aiologic.lowlevel import current_async_library, enable_signal_safety
-from traitlets import HasTraits, Instance, UseEnum
+from traitlets import traitlets
 
 import async_kernel
 from async_kernel.caller import Caller
@@ -53,14 +52,14 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
     return h
 
 
-class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
+class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     """
     The base class for interfacing with the kernel.
 
     Must be overloaded to be useful.
     """
 
-    log = Instance(logging.LoggerAdapter)
+    log = traitlets.Instance(logging.LoggerAdapter)
     "The logging adapter."
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
@@ -75,7 +74,7 @@ class BaseKernelInterface(HasTraits, anyio.AsyncContextManagerMixin):
     last_interrupt_frame = None
     "This frame is set when an interrupt is intercepted and cleared once the interrupt has been handled."
 
-    backend = UseEnum(Backend)
+    backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend)
     "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
 
     host = None

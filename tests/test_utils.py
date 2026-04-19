@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, cast
 
 import pytest
-from traitlets import HasTraits, Instance, Int, default
+from traitlets import traitlets
 
 from async_kernel import utils as ak_utils
 from async_kernel.typing import Tags
@@ -78,12 +78,12 @@ class TestUtils:
         assert not hasattr(test_obj, "not_an_attribute")
 
     def test_setattr_nested_has_traits(self):
-        class TestObj(HasTraits):
-            k = Int()
-            nested = Instance(HasTraits)
-            nested_with_default = Instance(cast("type[TestObj]", HasTraits))
+        class TestObj(traitlets.HasTraits):
+            k = traitlets.Int()
+            nested = traitlets.Instance(traitlets.HasTraits)
+            nested_with_default = traitlets.Instance(cast("type[TestObj]", traitlets.HasTraits))
 
-            @default("nested_with_default")
+            @traitlets.default("nested_with_default")
             def _default_nested_with_default(self):
                 return TestObj()
 

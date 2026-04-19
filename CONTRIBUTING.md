@@ -78,7 +78,7 @@ using [basedpyright](https://docs.basedpyright.com/). Other type checkers might 
 in the future.
 
 ```bash
-uv run basedpyright
+uvx basedpyright
 ```
 
 ### Update packages
@@ -198,7 +198,7 @@ You can run tests locally to see if there is anything that might be caught by CI
 ```bash
 uvx prek run -a
 uv run pytest -vv --cov --cov-fail-under=100
-uv run basedpyright
+uvx basedpyright
 uv run mkdocs build -s
 ```
 

@@ -17,7 +17,6 @@ from pathlib import Path
 from threading import Event
 from typing import TYPE_CHECKING, Any, Literal, Self
 
-import traitlets
 import zmq
 from aiologic import BinarySemaphore
 from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
@@ -25,7 +24,7 @@ from IPython.core.error import StdinNotImplementedError
 from jupyter_client import write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
-from traitlets import CaselessStrEnum, Dict, TraitType, Unicode, UseEnum, default
+from traitlets import traitlets
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
@@ -110,7 +109,7 @@ class ZMQKernelInterface(BaseKernelInterface):
     ""
     ports: Fixed[Self, dict[Channel, int]] = Fixed(dict)
     ""
-    ip = Unicode()
+    ip = traitlets.Unicode()
     """
     The kernel's IP address [default localhost].
     
@@ -120,21 +119,23 @@ class ZMQKernelInterface(BaseKernelInterface):
     session = Fixed(Session, created=lambda c: setattr(c["obj"], "check_pid", False))
     "Handles serialization and sending of messages."
 
-    transport: CaselessStrEnum[str] = CaselessStrEnum(
+    transport: traitlets.CaselessStrEnum[str] = traitlets.CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
     )
     "Transport for sockets."
 
-    host: TraitType[Hosts | None, Hosts | None] = UseEnum(Hosts, default_value=None, allow_none=True)
+    host: traitlets.TraitType[Hosts | None, Hosts | None] = traitlets.UseEnum(
+        Hosts, default_value=None, allow_none=True
+    )
     "The name of the (gui) event loop if one is used."
 
-    host_options = Dict(allow_none=True)
+    host_options = traitlets.Dict(allow_none=True)
     "Options for starting the loop."
 
-    backend_options = Dict(allow_none=True)
+    backend_options = traitlets.Dict(allow_none=True)
     "Options for starting the backend."
 
-    @default("backend")
+    @traitlets.default("backend")
     def _default_backend(self) -> Backend:
         try:
             return Backend(current_async_library())
@@ -507,6 +508,6 @@ class ZMQKernelInterface(BaseKernelInterface):
         """
         Perform a keyboard interrupt.
         """
-        if not self.kernel.debugger.stopped_threads:
+        if not getattr(self.kernel.shell.debugger, "stopped_threads", None):
             self._interrupt_now()
         super().interrupt()
