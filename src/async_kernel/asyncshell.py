@@ -984,4 +984,11 @@ class KernelMagics(Magics):
         Useful only when the primary language is not Python.
         """
         shell = SubshellManager.get_shell()
-        await shell.run_cell_async(raw_cell=line or cell, store_history=False, silent=True, cell_id=utils.get_cell_id())
+        cell = cell or line
+        await shell.run_cell_async(
+            raw_cell=cell,
+            store_history=False,
+            silent=True,
+            cell_id=utils.get_cell_id(),
+            transformed_cell=shell.transform_cell(cell),
+        )
