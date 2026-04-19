@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Self
 import anyio.abc
 from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
-from traitlets.traitlets import Bool, Dict, HasTraits, Instance, Set, default
+from traitlets import traitlets
 
 from async_kernel import utils
 from async_kernel.caller import Caller
@@ -60,14 +60,14 @@ class _DummyPyDB:
         self.variable_presentation = PyDevdAPI.VariablePresentation()
 
 
-class VariableExplorer(HasTraits):
+class VariableExplorer(traitlets.HasTraits):
     """
     A variable explorer.
 
     Origin: [IPyKernel][ipykernel.debugger.VariableExplorer]
     """
 
-    kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
+    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
 
     def __init__(self) -> None:
         """Initialize the explorer."""
@@ -106,18 +106,18 @@ class VariableExplorer(HasTraits):
         return [x.get_var_data() for x in variables.get_children_variables()]
 
 
-class DebugpyClient(HasTraits):
+class DebugpyClient(traitlets.HasTraits):
     """A client for debugpy. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     HEADER = b"Content-Length: "
     SEPARATOR = b"\r\n\r\n"
     SEPARATOR_LENGTH = 4
     tcp_buffer = b""
-    _result_responses: Dict[int, Pending] = Dict()
-    capabilities = Dict()
-    kernel: Instance[Kernel] = Instance("async_kernel.kernel.Kernel", ())
+    _result_responses: traitlets.Dict[int, Pending] = traitlets.Dict()
+    capabilities = traitlets.Dict()
+    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
     _socketstream: anyio.abc.SocketStream | None = None
-    _send_lock = Instance(Lock, ())
+    _send_lock = traitlets.Instance(Lock, ())
 
     def __init__(self, log, event_callback) -> None:
         """Initialize the client."""
@@ -181,23 +181,23 @@ class DebugpyClient(HasTraits):
             self._socketstream = None
 
 
-class Debugger(HasTraits):
+class Debugger(traitlets.HasTraits):
     """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     NO_DEBUG = {"IPythonHistorySavingThread"}
     _seq = 0
-    breakpoint_list = Dict()
-    capabilities = Dict()
-    stopped_threads = Set()
-    _removed_cleanup = Dict()
-    just_my_code = Bool(True)
-    variable_explorer = Instance(VariableExplorer, ())
-    debugpy_client = Instance(DebugpyClient)
-    log = Instance(logging.LoggerAdapter)
+    breakpoint_list = traitlets.Dict()
+    capabilities = traitlets.Dict()
+    stopped_threads = traitlets.Set()
+    _removed_cleanup = traitlets.Dict()
+    just_my_code = traitlets.Bool(True)
+    variable_explorer = traitlets.Instance(VariableExplorer, ())
+    debugpy_client = traitlets.Instance(DebugpyClient)
+    log = traitlets.Instance(logging.LoggerAdapter)
     kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
-    init_event = Instance(Event, ())
+    init_event = traitlets.Instance(Event, ())
 
-    @default("log")
+    @traitlets.default("log")
     def _default_log(self) -> LoggerAdapter[Logger]:
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 

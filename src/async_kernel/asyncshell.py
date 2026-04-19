@@ -22,7 +22,7 @@ from IPython.core.interactiveshell import _modified_open as _modified_open_  # p
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
-from traitlets.traitlets import Bool, CFloat, Float, Instance, Tuple, Type, default, observe
+from traitlets import traitlets
 from typing_extensions import override
 
 import async_kernel
@@ -191,14 +191,14 @@ class AsyncInteractiveShell(InteractiveShell):
 
     _execution_count = 0
     _resetting = False
-    displayhook_class = Type(AsyncDisplayHook)
-    display_pub_class = Type(AsyncDisplayPublisher)
-    displayhook: Instance[AsyncDisplayHook]
-    display_pub: Instance[AsyncDisplayPublisher]
+    displayhook_class = traitlets.Type(AsyncDisplayHook)
+    display_pub_class = traitlets.Type(AsyncDisplayPublisher)
+    displayhook: traitlets.Instance[AsyncDisplayHook]
+    display_pub: traitlets.Instance[AsyncDisplayPublisher]
     history_manager: HistoryManager
-    compiler_class = Type(XCachingCompiler)
-    compile: Instance[XCachingCompiler]
-    kernel: Instance[Kernel] = Instance("async_kernel.Kernel", (), read_only=True)
+    compiler_class = traitlets.Type(XCachingCompiler)
+    compile: traitlets.Instance[XCachingCompiler]
+    kernel: traitlets.Instance[Kernel] = traitlets.Instance("async_kernel.Kernel", (), read_only=True)
 
     pending_manager = Fixed(ShellPendingManager)
     subshell_id = Fixed(lambda _: None)
@@ -214,18 +214,17 @@ class AsyncInteractiveShell(InteractiveShell):
     _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
 
-    timeout = CFloat(0.0)
+    timeout = traitlets.CFloat(0.0)
     "A timeout in seconds to complete execute requests."
 
-    stop_on_error_time_offset = Float(0.0)
+    stop_on_error_time_offset = traitlets.Float(0.0)
     "An offset to add to the cancellation time to catch late arriving execute requests."
 
     loop_runner_map = None
     loop_runner = None
     autoindent = False
 
-    # Public traits
-    help_links = Tuple()
+    help_links = traitlets.Tuple()
     ""
 
     @override
@@ -273,7 +272,7 @@ class AsyncInteractiveShell(InteractiveShell):
             pass
         super().__init_subclass__()
 
-    @default("banner1")
+    @traitlets.default("banner1")
     def _default_banner1(self) -> str:
         return (
             f"Python {sys.version}\n"
@@ -281,7 +280,7 @@ class AsyncInteractiveShell(InteractiveShell):
             f"IPython shell {IPython.core.release.version}\n"
         )
 
-    @observe("exit_now")
+    @traitlets.observe("exit_now")
     def _update_exit_now(self, _) -> None:
         """Stop eventloop when `exit_now` fires."""
         if self.exit_now:
@@ -708,8 +707,8 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
         - [async_kernel.utils.subshell_context][]
     """
 
-    stopped = Bool(read_only=True)
-    protected = Bool(read_only=True)
+    stopped = traitlets.Bool(read_only=True)
+    protected = traitlets.Bool(read_only=True)
     subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.id)
 
     def __init_subclass__(cls) -> None:
@@ -767,7 +766,7 @@ class IPythonAsyncInteractiveShell(AsyncInteractiveShell):
         )
     )
 
-    @default("help_links")
+    @traitlets.default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:
         return (
             {
