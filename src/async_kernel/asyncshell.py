@@ -30,7 +30,6 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt, import_item
 from async_kernel.compiler import XCachingCompiler
-from async_kernel.debugger import Debugger
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
 from async_kernel.typing import Channel, Content, Message, NoValue, Tags
