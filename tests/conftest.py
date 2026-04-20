@@ -90,7 +90,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
         try:
             yield kernel
         finally:
-            kernel.stop()
+            kernel.interface.stop()
             thread.join()
 
 

@@ -4,11 +4,8 @@ import json
 import logging
 import os
 import pathlib
-import sys
 import time
-import traceback
 import uuid
-from contextlib import asynccontextmanager
 from logging import Logger, LoggerAdapter
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self
@@ -32,8 +29,6 @@ from async_kernel.interface.base import BaseKernelInterface
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, NoValue
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-
     from async_kernel.interface.zmq import ZMQKernelInterface
 
 
@@ -138,6 +133,7 @@ class Kernel(traitlets.HasTraits):
     def __init__(self, settings: dict | None = None, /) -> None:
         if not self._initialised:
             self._initialised = True
+            assert self.main_shell
             super().__init__()
             if not os.environ.get("MPLBACKEND"):
                 os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
@@ -232,39 +228,6 @@ class Kernel(traitlets.HasTraits):
             info: Dictionary containing connection_info. See the connection_file spec for details.
         """
         self.interface.load_connection_info(info)
-
-    @staticmethod
-    def stop() -> None:
-        """
-        A [staticmethod][] to stop the running kernel.
-
-        Once an instance of a kernel is stopped the instance cannot be restarted.
-        Instead a new instance should be started.
-        """
-        if (kernel := Kernel._instance) and (scope := getattr(kernel, "_scope", None)):
-            del kernel._scope
-            kernel.log.info("Stopping kernel: %s", kernel)
-            kernel.caller.call_direct(scope.cancel, "Stopping kernel")
-            kernel.event_stopped.set()
-
-    @asynccontextmanager
-    async def _start(self) -> AsyncGenerator[Self]:
-        # This context gets entered by the interface.
-        assert self.main_shell
-        original_sys_hooks = sys.excepthook, sys.unraisablehook
-        try:
-            with anyio.CancelScope() as scope:
-                self._scope = scope
-                sys.excepthook, sys.unraisablehook = self.excepthook, self.unraisablehook
-                self.comm_manager.patch_comm()
-                self.event_started.set()
-                self.log.info("Kernel started: %s", self)
-                yield self
-        finally:
-            self.stop()
-            sys.excepthook, sys.unraisablehook = original_sys_hooks
-            with anyio.CancelScope(shield=True):
-                await self.do_shutdown(self._restart)
 
     async def do_shutdown(self, restart: bool) -> None:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_shutdown][]."
@@ -367,7 +330,7 @@ class Kernel(traitlets.HasTraits):
     async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
         self._restart = job["msg"]["content"].get("restart", False)
-        self.stop()
+        self.interface.stop()
         return {"restart": self._restart}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
@@ -387,21 +350,6 @@ class Kernel(traitlets.HasTraits):
     async def list_subshell_request(self, job: Job[Content], /) -> Content:
         """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells) (control only)."""
         return {"subshell_id": list(self.subshell_manager.list_subshells())}
-
-    def excepthook(self, etype, evalue, tb) -> None:
-        """Handle an exception."""
-        # write uncaught traceback to 'real' stderr, not zmq-forwarder
-        if self.print_kernel_messages:
-            traceback.print_exception(etype, evalue, tb, file=sys.__stderr__)
-
-    def unraisablehook(self, unraisable: sys.UnraisableHookArgs, /) -> None:
-        "Handle unraisable exceptions (during gc for instance)."
-        exc_info = (
-            unraisable.exc_type,
-            unraisable.exc_value or unraisable.exc_type(unraisable.err_msg),
-            unraisable.exc_traceback,
-        )
-        self.log.exception(unraisable.err_msg, exc_info=exc_info, extra={"object": unraisable.object})
 
     def get_connection_info(self) -> dict[str, Any]:
         """Return the connection info as a dict."""

@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 async def test_kernel_subclass(anyio_backend: Backend):
     # Ensure the subclass correctly overrides the kernel.
-    Kernel.stop()
 
     class MyKernel(Kernel):
         print_kernel_messages = False

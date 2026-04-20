@@ -284,7 +284,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _update_exit_now(self, _) -> None:
         """Stop eventloop when `exit_now` fires."""
         if self.exit_now:
-            self.kernel.stop()
+            self.kernel.interface.stop()
 
     def ask_exit(self) -> None:
         if self.kernel.interface.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":

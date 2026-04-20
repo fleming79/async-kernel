@@ -124,6 +124,8 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     async def __asynccontextmanager__(self) -> AsyncGenerator[Kernel]:
         self.backend = Backend(current_async_library())
         sig = restore_io = None
+        kernel = self.kernel
+        kernel.comm_manager.patch_comm()
         caller = Caller(
             "manual",
             name="Shell",
@@ -133,21 +135,41 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             host=self.host,
         )
         self.callers[Channel.shell] = caller
-        self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
+        self.callers[Channel.control] = caller.get(name="Control", log=kernel.log, protected=True)
+
         async with caller:
             try:
                 restore_io = self._patch_io()
                 with contextlib.suppress(ValueError, AttributeError):
                     sig = signal.signal(signal.SIGINT, self._signal_handler)
-                async with self.kernel._start() as kernel:  # pyright: ignore[reportPrivateUsage]
+                with anyio.CancelScope() as scope:
+                    self._scope = scope
+                    kernel.event_started.set()
+                    self.log.info("Kernel started: %s", self)
                     yield kernel
             finally:
+                self.stop()
+                with anyio.CancelScope(shield=True):
+                    await kernel.do_shutdown(kernel._restart)  # pyright: ignore[reportPrivateUsage]
                 if sig:
                     signal.signal(signal.SIGINT, sig)
                 if restore_io:
                     restore_io()
                 self._handler_cache.clear()
                 gc.collect()
+
+    def stop(self) -> None:
+        """
+        A [staticmethod][] to stop the running kernel.
+
+        Once an instance of a kernel is stopped the instance cannot be restarted.
+        Instead a new instance should be started.
+        """
+        if scope := getattr(self, "_scope", None):
+            del self._scope
+            self.kernel.log.info("Stopping kernel: %s", self.kernel)
+            self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
+            self.kernel.event_stopped.set()
 
     @enable_signal_safety
     def _signal_handler(self, signum, frame: FrameType | None) -> None:

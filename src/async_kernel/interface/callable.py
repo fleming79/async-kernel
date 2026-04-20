@@ -86,7 +86,7 @@ class CallableKernelInterface(BaseKernelInterface):
         self._send = send
         self._task = asyncio.create_task(coro=self.run(stopped=stopped))
         await self.kernel.event_started
-        return Handlers(handle_msg=self._handle_msg, stop=self.kernel.stop)
+        return Handlers(handle_msg=self._handle_msg, stop=self.kernel.interface.stop)
 
     def _send_to_frontend(
         self,
