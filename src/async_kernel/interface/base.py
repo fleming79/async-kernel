@@ -162,10 +162,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     def stop(self) -> None:
         """
-        A [staticmethod][] to stop the running kernel.
-
-        Once an instance of a kernel is stopped the instance cannot be restarted.
-        Instead a new instance should be started.
+        Stop the kernel.
         """
         if scope := getattr(self, "_scope", None):
             del self._scope
@@ -310,7 +307,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """
-        Run the kernel asynchronously.
+        Run the kernel.
 
         Args:
             stopped: An optional callback that is called when the kernel has stopped.
@@ -333,10 +330,10 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         /,
     ) -> None:
         """
-        Schedule the job for execution in a dedicated handler by `(subshell_id, msg_type, send_reply)`.
+        Schedule handling of the job with a handler running in a Task.
 
-        'execute_request' and 'com_msg' are handled by the shells caller (typically the MainThread).
-        All other shell messages are handled in the control thread.
+        Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
+        Typically, jobs are queued for execution by either the 'shell' or 'control' caller using `queue_call`.
 
         'execute_request' messages can also specify alternate run modes:
             - task: Run the execute request as a task.
@@ -350,6 +347,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             channel: The channel the message arrived on.
             msg_type: The type of msg.
             job: A dict with the msg and supporting details.
+            send_reply: The function for the handler to use to send the reply to the message.
         """
         # Note: There are never any active pending trackers in this context.
         try:
@@ -380,7 +378,17 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         msg_type: MsgType,
         send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
     ) -> HandlerType:
+        """
+        Returns a function to run the kernel handler for the corresponding `msg_type`.
 
+        The function is cached by `(subshell_id or None, msg_type, send_reply)` and is responsible
+        for publishing 'busy' and 'idle' messages plus sending the reply.
+
+        Args:
+            subshell_id: The id of an existing subshell.
+            msg_type: The Kernel `msg_type`.
+            send_reply: The function for the handler to use to send the reply.
+        """
         if msg_type is MsgType.execute_request:
             key = (subshell_id, msg_type, send_reply)
         else:
@@ -422,6 +430,9 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             return run_handler
 
     def get_run_mode(self, msg_type: MsgType, job: Job, /) -> RunMode:
+        """
+        Get the run mode for the job.
+        """
         # TODO: Are any of these options worth including?
         # if run_mode := job["msg"]["header"].get("run_mode"):
         #     return RunMode(run_mode)
