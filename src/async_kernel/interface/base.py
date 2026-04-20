@@ -48,13 +48,6 @@ if TYPE_CHECKING:
 
 __all__ = ["BaseKernelInterface"]
 
-RUN_IN_SHELL_THREAD = (MsgType.execute_request, MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close)
-"""
-Shell message types that are handled in the shell's thread (typically the _MainThread_).
-
-All other shell message types are handled in the control thread.
-"""
-
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
     """Given a message or header, return the header."""
@@ -100,6 +93,15 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
 
     host = None
+
+    run_in_shell_thread = traitlets.List(
+        traitlets.UseEnum(MsgType), [MsgType.execute_request, MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close]
+    )
+    """
+    Message types that are handled in the shell's thread (typically the _MainThread_).
+
+    All other shell message types are handled in the control thread.
+    """
 
     _zmq_context = None
     _handler_cache: dict[tuple[str | None, MsgType, Callable], HandlerType] = {}
@@ -360,7 +362,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         handler = self.get_handler(subshell_id, msg_type, send_reply)
         run_mode = self.get_run_mode(msg_type, job)
         caller = self.callers[channel]
-        if channel is Channel.shell and msg_type not in RUN_IN_SHELL_THREAD:
+        if channel is Channel.shell and msg_type not in self.run_in_shell_thread:
             caller = self.callers[Channel.control]
         # Schedule job
         match run_mode:
