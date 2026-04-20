@@ -136,7 +136,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
             # ref: https://github.com/microsoft/vscode-jupyter/wiki/Component:-IPyWidgets#two-widget-managers
             # On occasion we get `Error 'widget model not found'`
             # As a work-around inject a delay so the widget can be registered first.
-            self.shell.kernel.callers[Channel.control].call_later(0.2, self.shell.kernel.iopub_send, msg)
+            self.shell.kernel.interface.callers[Channel.control].call_later(0.2, self.shell.kernel.iopub_send, msg)
         else:
             self.shell.kernel.iopub_send(msg)
 
@@ -440,7 +440,7 @@ class AsyncInteractiveShell(InteractiveShell):
                 self.kernel.iopub_send(
                     msg_or_type="execute_input",
                     content={"code": code, "execution_count": execution_count},
-                    ident=self.kernel.topic("execute_input"),
+                    ident=b"kernel.execute_input",
                 )
             caller = Caller()
             err = None
@@ -750,7 +750,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
             for pen in self.pending_manager.pending:
                 pen.cancel(f"Subshell {self.subshell_id} is stopping.")
             self.reset(new_session=False)
-            self.kernel._subshell_stopped(self.subshell_id)  # pyright: ignore[reportPrivateUsage]
+            self.kernel.interface._subshell_stopped(self.subshell_id)  # pyright: ignore[reportPrivateUsage]
             SubshellManager.subshells.pop(self.subshell_id, None)
             self.set_trait("stopped", True)
 

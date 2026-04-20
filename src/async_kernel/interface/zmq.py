@@ -29,7 +29,7 @@ from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel.event_loop
-from async_kernel import utils
+from async_kernel import Kernel, utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface
@@ -166,7 +166,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             host=self.host,
             host_options=self.host_options,
         )
-        async_kernel.event_loop.run(self.kernel.run, (), settings)
+        async_kernel.event_loop.run(self.run, (), settings)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -208,7 +208,7 @@ class ZMQKernelInterface(BaseKernelInterface):
 
     @override
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Kernel]:
         self.backend = Backend(current_async_library())
         start = Event()
         try:
@@ -216,9 +216,9 @@ class ZMQKernelInterface(BaseKernelInterface):
             with self._bind_socket(Channel.stdin):
                 assert len(self.sockets) == len(Channel)
                 self._write_connection_file()
-                async with super().__asynccontextmanager__():
+                async with super().__asynccontextmanager__() as kernel:
                     start.set()
-                    yield self
+                    yield kernel
         finally:
             start.set()
             self._zmq_context.term()
@@ -421,7 +421,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
-        session, log, message_handler = self.session, self.log, self.kernel.message_handler
+        session, log, message_handler = self.session, self.log, self.message_handler
         with self._bind_socket(channel) as socket:
             lock = BinarySemaphore()
 

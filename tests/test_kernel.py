@@ -532,7 +532,7 @@ async def test_get_run_mode(kernel: Kernel, code: str, silent: bool, expected: R
     job["msg"]["content"]["code"] = code
     job["msg"]["content"]["silent"] = silent
     msg_type = job["msg"]["header"]["msg_type"]
-    mode = kernel._get_run_mode(msg_type, job)  # pyright: ignore[reportArgumentType]
+    mode = kernel.interface.get_run_mode(msg_type, job)  # pyright: ignore[reportArgumentType]
     assert mode is expected
 
 

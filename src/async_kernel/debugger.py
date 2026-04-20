@@ -259,7 +259,7 @@ class Debugger(traitlets.HasTraits):
         self.kernel.iopub_send(
             msg_or_type="debug_event",
             content=event,
-            ident=self.kernel.topic("debug_event"),
+            ident=b"kernel.debug_event",
             parent=None,
         )
 

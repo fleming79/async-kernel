@@ -77,7 +77,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     kernel.print_kernel_messages = False
 
     if request.param == "MainThread":
-        async with kernel:
+        async with kernel.interface:
             await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
             yield kernel
     else:

@@ -16,7 +16,7 @@ async def test_kernel_subclass(anyio_backend: Backend):
     class MyKernel(Kernel):
         print_kernel_messages = False
 
-    async with MyKernel() as kernel:
+    async with MyKernel().interface as kernel:
         assert Kernel._instance is kernel  # pyright: ignore[reportPrivateUsage]
         assert isinstance(kernel, MyKernel)
         assert isinstance(Kernel(), MyKernel)
