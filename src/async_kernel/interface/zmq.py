@@ -226,7 +226,7 @@ class ZMQKernelInterface(BaseKernelInterface):
     def _start_hb_iopub_shell_control_threads(self, start: Event) -> None:
         def heartbeat(ready: Event) -> None:
             # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
-            async_kernel.utils.mark_thread_pydev_do_not_trace()
+            utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(Channel.heartbeat) as socket:
                 ready.set()
                 try:
@@ -354,7 +354,7 @@ class ZMQKernelInterface(BaseKernelInterface):
 
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:
-        job = async_kernel.utils.get_job()
+        job = utils.get_job()
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise StdinNotImplementedError(msg)
