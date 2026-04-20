@@ -348,11 +348,11 @@ class Kernel(traitlets.HasTraits):
         return utils.get_parent()
 
     async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
-        "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_complete][]."
         return await self.shell.do_complete_request(code=code, cursor_pos=cursor_pos)
 
     async def do_inspect(self, code: str, cursor_pos: int | None, detail_level=0, omit_sections=()) -> Content:
-        "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
+        "Matches signature of [ipykernel.kernelbase.Kernel.do_inspect][]."
         return await self.shell.inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType]
 
     async def do_history(

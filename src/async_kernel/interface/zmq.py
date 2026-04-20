@@ -422,24 +422,24 @@ class ZMQKernelInterface(BaseKernelInterface):
             utils.mark_thread_pydev_do_not_trace()
 
         session, log, message_handler = self.session, self.log, self.message_handler
+        lock = BinarySemaphore()
+
+        async def send_reply(job: Job, content: dict, /) -> None:
+            if "status" not in content:
+                content["status"] = "ok"
+            async with lock:
+                msg = session.send(
+                    stream=socket,
+                    msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
+                    content=content,
+                    parent=job["msg"],  # pyright: ignore[reportArgumentType]
+                    ident=job["ident"],
+                    buffers=content.pop("buffers", None),
+                )
+                if msg:
+                    log.debug("*** send_reply %s*** %s", channel, msg)
+
         with self._bind_socket(channel) as socket:
-            lock = BinarySemaphore()
-
-            async def send_reply(job: Job, content: dict, /) -> None:
-                if "status" not in content:
-                    content["status"] = "ok"
-                async with lock:
-                    msg = session.send(
-                        stream=socket,
-                        msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
-                        content=content,
-                        parent=job["msg"],  # pyright: ignore[reportArgumentType]
-                        ident=job["ident"],
-                        buffers=content.pop("buffers", None),
-                    )
-                    if msg:
-                        log.debug("*** send_reply %s*** %s", channel, msg)
-
             ready.set()
             start.wait()
             while True:
