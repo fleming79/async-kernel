@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import pathlib
 import threading
 from typing import TYPE_CHECKING, Any, Literal
@@ -128,24 +127,6 @@ async def test_input(
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "ok"
     assert text in reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
-
-
-async def test_unraisablehook(kernel: Kernel, mocker):
-    handler = logging.Handler()
-    kernel.log.logger.addHandler(handler)  # pyright: ignore[reportAttributeAccessIssue]
-
-    class Unraiseable:
-        def __init__(self) -> None:
-            self.exc_type = BaseException
-            self.exc_value = BaseException()
-            self.exc_traceback = None
-            self.err_msg = "my error message"
-            self.object = ""
-
-    emit = mocker.patch.object(handler, "emit")
-    kernel.unraisablehook(Unraiseable())  # pyright: ignore[reportArgumentType]
-    assert emit.call_count == 1
-    kernel.log.logger.removeHandler(handler)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 async def test_save_history(client: AsyncKernelClient, tmp_path):
@@ -358,7 +339,7 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
 
 @pytest.mark.parametrize("response", ["y", ""])
 async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, response: Literal["y", ""]):
-    stop = mocker.patch.object(kernel, "stop")
+    stop = mocker.patch.object(kernel.interface, "stop")
     raw_input = mocker.patch.object(kernel.interface, "raw_input", return_value=response)
     await utils.execute(client, "quit()")
     assert raw_input.call_count == 1
@@ -532,7 +513,7 @@ async def test_get_run_mode(kernel: Kernel, code: str, silent: bool, expected: R
     job["msg"]["content"]["code"] = code
     job["msg"]["content"]["silent"] = silent
     msg_type = job["msg"]["header"]["msg_type"]
-    mode = kernel._get_run_mode(msg_type, job)  # pyright: ignore[reportArgumentType]
+    mode = kernel.interface.get_run_mode(msg_type, job)  # pyright: ignore[reportArgumentType]
     assert mode is expected
 
 

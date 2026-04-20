@@ -29,7 +29,7 @@ from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel.event_loop
-from async_kernel import utils
+from async_kernel import Kernel, utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface
@@ -166,7 +166,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             host=self.host,
             host_options=self.host_options,
         )
-        async_kernel.event_loop.run(self.kernel.run, (), settings)
+        async_kernel.event_loop.run(self.run, (), settings)
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
@@ -208,7 +208,7 @@ class ZMQKernelInterface(BaseKernelInterface):
 
     @override
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Kernel]:
         self.backend = Backend(current_async_library())
         start = Event()
         try:
@@ -216,9 +216,9 @@ class ZMQKernelInterface(BaseKernelInterface):
             with self._bind_socket(Channel.stdin):
                 assert len(self.sockets) == len(Channel)
                 self._write_connection_file()
-                async with super().__asynccontextmanager__():
+                async with super().__asynccontextmanager__() as kernel:
                     start.set()
-                    yield self
+                    yield kernel
         finally:
             start.set()
             self._zmq_context.term()
@@ -226,7 +226,7 @@ class ZMQKernelInterface(BaseKernelInterface):
     def _start_hb_iopub_shell_control_threads(self, start: Event) -> None:
         def heartbeat(ready: Event) -> None:
             # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
-            async_kernel.utils.mark_thread_pydev_do_not_trace()
+            utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(Channel.heartbeat) as socket:
                 ready.set()
                 try:
@@ -354,7 +354,7 @@ class ZMQKernelInterface(BaseKernelInterface):
 
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:
-        job = async_kernel.utils.get_job()
+        job = utils.get_job()
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise StdinNotImplementedError(msg)
@@ -421,25 +421,25 @@ class ZMQKernelInterface(BaseKernelInterface):
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
-        session, log, message_handler = self.session, self.log, self.kernel.message_handler
+        session, log, message_handler = self.session, self.log, self.message_handler
+        lock = BinarySemaphore()
+
+        async def send_reply(job: Job, content: dict, /) -> None:
+            if "status" not in content:
+                content["status"] = "ok"
+            async with lock:
+                msg = session.send(
+                    stream=socket,
+                    msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
+                    content=content,
+                    parent=job["msg"],  # pyright: ignore[reportArgumentType]
+                    ident=job["ident"],
+                    buffers=content.pop("buffers", None),
+                )
+                if msg:
+                    log.debug("*** send_reply %s*** %s", channel, msg)
+
         with self._bind_socket(channel) as socket:
-            lock = BinarySemaphore()
-
-            async def send_reply(job: Job, content: dict, /) -> None:
-                if "status" not in content:
-                    content["status"] = "ok"
-                async with lock:
-                    msg = session.send(
-                        stream=socket,
-                        msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
-                        content=content,
-                        parent=job["msg"],  # pyright: ignore[reportArgumentType]
-                        ident=job["ident"],
-                        buffers=content.pop("buffers", None),
-                    )
-                    if msg:
-                        log.debug("*** send_reply %s*** %s", channel, msg)
-
             ready.set()
             start.wait()
             while True:

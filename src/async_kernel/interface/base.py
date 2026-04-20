@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import builtins
 import contextlib
+import functools
+import gc
 import getpass
 import logging
 import signal
@@ -19,14 +21,27 @@ from aiologic.lowlevel import current_async_library, enable_signal_safety
 from traitlets import traitlets
 
 import async_kernel
+from async_kernel import utils
+from async_kernel.asyncshell import ShellPendingManager
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.iostream import OutStream
-from async_kernel.typing import Backend, Channel, Content, Message, MsgHeader, NoValue
+from async_kernel.typing import (
+    Backend,
+    Channel,
+    Content,
+    HandlerType,
+    Job,
+    Message,
+    MsgHeader,
+    MsgType,
+    NoValue,
+    RunMode,
+)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
-    from types import FrameType
+    from types import CoroutineType, FrameType
 
     from async_kernel.kernel import Kernel
 
@@ -79,7 +94,17 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     host = None
 
+    run_in_shell_thread = traitlets.List(
+        traitlets.UseEnum(MsgType), [MsgType.execute_request, MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close]
+    )
+    """
+    Message types that are handled in the shell's thread (typically the _MainThread_).
+
+    All other shell message types are handled in the control thread.
+    """
+
     _zmq_context = None
+    _handler_cache: dict[tuple[str | None, MsgType, Callable], HandlerType] = {}
 
     def load_connection_info(self, info: dict[str, Any]) -> None:
         raise NotImplementedError
@@ -92,15 +117,17 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         if self.kernel.trait_has_value("interface"):
             msg = "The kernel already has an interface!"
             raise RuntimeError(msg)
-        super().__init__()
         self.kernel.interface = self
+        super().__init__()
         if kernel_settings:
             self.kernel.load_settings(kernel_settings)
 
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Kernel]:
         self.backend = Backend(current_async_library())
         sig = restore_io = None
+        kernel = self.kernel
+        kernel.comm_manager.patch_comm()
         caller = Caller(
             "manual",
             name="Shell",
@@ -110,18 +137,38 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             host=self.host,
         )
         self.callers[Channel.shell] = caller
-        self.callers[Channel.control] = caller.get(name="Control", log=self.kernel.log, protected=True)
+        self.callers[Channel.control] = caller.get(name="Control", log=kernel.log, protected=True)
+
         async with caller:
             try:
                 restore_io = self._patch_io()
                 with contextlib.suppress(ValueError, AttributeError):
                     sig = signal.signal(signal.SIGINT, self._signal_handler)
-                yield self
+                with anyio.CancelScope() as scope:
+                    self._scope = scope
+                    kernel.event_started.set()
+                    self.log.info("Kernel started: %s", self)
+                    yield kernel
             finally:
+                self.stop()
+                with anyio.CancelScope(shield=True):
+                    await kernel.do_shutdown(kernel._restart)  # pyright: ignore[reportPrivateUsage]
                 if sig:
                     signal.signal(signal.SIGINT, sig)
                 if restore_io:
                     restore_io()
+                self._handler_cache.clear()
+                gc.collect()
+
+    def stop(self) -> None:
+        """
+        Stop the kernel.
+        """
+        if scope := getattr(self, "_scope", None):
+            del self._scope
+            self.kernel.log.info("Stopping kernel: %s", self.kernel)
+            self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
+            self.kernel.event_stopped.set()
 
     @enable_signal_safety
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
@@ -129,6 +176,11 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         self.interrupt()
         self.last_interrupt_frame = None
         raise KernelInterrupt
+
+    def _subshell_stopped(self, subshell_id: str) -> None:
+        for key in list(self._handler_cache):
+            if key[0] == subshell_id:
+                self._handler_cache.pop(key, None)
 
     def _patch_io(self) -> Callable[[], None]:
         original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
@@ -219,7 +271,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         serialize/deserialize methods converts this nested message dict to the wire
         format, which is a list of message parts.
         """
-        parent = parent or async_kernel.utils.get_parent()
+        parent = parent or utils.get_parent()
         if header is None:
             session = ""
             if parent and (header := parent.get("header")):
@@ -252,3 +304,148 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     ) -> None:
         """Send an iopub message."""
         raise NotImplementedError
+
+    async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
+        """
+        Run the kernel.
+
+        Args:
+            stopped: An optional callback that is called when the kernel has stopped.
+
+        This method requires that a [Caller][async_kernel.caller.Caller] instance does not already exist in the current thread.
+        """
+        try:
+            async with self as kernel:
+                await kernel.event_stopped
+        finally:
+            if stopped:
+                stopped()
+
+    def message_handler(
+        self,
+        channel: Literal[Channel.shell, Channel.control],
+        msg_type: MsgType,
+        job: Job,
+        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
+        /,
+    ) -> None:
+        """
+        Schedule handling of the job with a handler running in a Task.
+
+        Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
+        Typically, jobs are queued for execution by either the 'shell' or 'control' caller using `queue_call`.
+
+        'execute_request' messages can also specify alternate run modes:
+            - task: Run the execute request as a task.
+            - thread: Run the execute request in a worker thread.
+
+            The alternate run mode can be specified in a few ways:
+            - as a comment on the first line of the code block `# task` or `# thread`.
+            - As a tag `thread` or `task`
+
+        Args:
+            channel: The channel the message arrived on.
+            msg_type: The type of msg.
+            job: A dict with the msg and supporting details.
+            send_reply: The function for the handler to use to send the reply to the message.
+        """
+        # Note: There are never any active pending trackers in this context.
+        try:
+            subshell_id = job["msg"]["content"]["subshell_id"]
+        except KeyError:
+            try:
+                subshell_id = job["msg"]["header"]["subshell_id"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            except KeyError:
+                subshell_id = None
+        handler = self.get_handler(subshell_id, msg_type, send_reply)
+        run_mode = self.get_run_mode(msg_type, job)
+        caller = self.callers[channel]
+        if channel is Channel.shell and msg_type not in self.run_in_shell_thread:
+            caller = self.callers[Channel.control]
+        # Schedule job
+        match run_mode:
+            case RunMode.queue:
+                caller.queue_call(handler, job)
+            case RunMode.task:
+                caller.call_soon(handler, job)
+            case RunMode.thread:
+                caller.to_thread(handler, job)
+        self.log.debug("%s %s %s %s %s", channel, msg_type, run_mode, handler, job)
+
+    def get_handler(
+        self,
+        subshell_id: str | None,
+        msg_type: MsgType,
+        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
+    ) -> HandlerType:
+        """
+        Returns a function to run the kernel handler for the corresponding `msg_type`.
+
+        The function is cached by `(subshell_id or None, msg_type, send_reply)` and is responsible
+        for publishing 'busy' and 'idle' messages plus sending the reply.
+
+        Args:
+            subshell_id: The id of an existing subshell.
+            msg_type: The Kernel `msg_type`.
+            send_reply: The function for the handler to use to send the reply.
+        """
+        if msg_type is MsgType.execute_request:
+            key = (subshell_id, msg_type, send_reply)
+        else:
+            key = (None, msg_type, send_reply)
+        try:
+            return self._handler_cache[key]
+        except KeyError:
+            handler: HandlerType = getattr(self.kernel, msg_type)
+
+            @functools.wraps(handler)
+            async def run_handler(job: Job) -> None:
+                job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+                subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
+
+                try:
+                    self.iopub_send(
+                        msg_or_type="status",
+                        parent=job["msg"],
+                        content={"execution_state": "busy"},
+                        ident=b"kernel.status",
+                    )
+                    if (content := await handler(job)) is not None:
+                        await send_reply(job, content)
+                except Exception as e:
+                    await send_reply(job, utils.error_to_content(e))
+                    self.log.exception("Exception in message handler:", exc_info=e)
+                finally:
+                    utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
+                    ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
+                    self.iopub_send(
+                        msg_or_type="status",
+                        parent=job["msg"],
+                        content={"execution_state": "idle"},
+                        ident=b"kernel.status",
+                    )
+                    del job
+
+            self._handler_cache[key] = run_handler
+            return run_handler
+
+    def get_run_mode(self, msg_type: MsgType, job: Job, /) -> RunMode:
+        """
+        Get the run mode for the job.
+        """
+        # TODO: Are any of these options worth including?
+        # if run_mode := job["msg"]["header"].get("run_mode"):
+        #     return RunMode(run_mode)
+        if msg_type is MsgType.execute_request:
+            if content := job["msg"].get("content", {}):
+                if (code := content.get("code")) and (
+                    mode := RunMode.to_runmode(code.strip().split("\n", maxsplit=1)[0])
+                ):
+                    return mode
+                if content.get("silent"):
+                    return RunMode.task
+            try:
+                return next(mode for tag in utils.get_tags(job) if (mode := RunMode.to_runmode(tag)))
+            except Exception:
+                pass
+        return RunMode.queue

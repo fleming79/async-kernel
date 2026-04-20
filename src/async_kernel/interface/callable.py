@@ -84,9 +84,9 @@ class CallableKernelInterface(BaseKernelInterface):
         Returns: A pending that when resolved returns the message handler callback.
         """
         self._send = send
-        self._task = asyncio.create_task(self.kernel.run(stopped=stopped))
+        self._task = asyncio.create_task(coro=self.run(stopped=stopped))
         await self.kernel.event_started
-        return Handlers(handle_msg=self._handle_msg, stop=self.kernel.stop)
+        return Handlers(handle_msg=self._handle_msg, stop=self.kernel.interface.stop)
 
     def _send_to_frontend(
         self,
@@ -117,7 +117,7 @@ class CallableKernelInterface(BaseKernelInterface):
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
         msg["channel"] = Channel(msg["channel"])
         job = Job(received_time=time.monotonic(), msg=msg, ident=b"")
-        self.kernel.message_handler(msg["channel"], MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)  # pyright: ignore[reportArgumentType]
+        self.message_handler(msg["channel"], MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)  # pyright: ignore[reportArgumentType]
 
     @override
     def iopub_send(

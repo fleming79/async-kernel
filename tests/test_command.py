@@ -4,7 +4,6 @@ import importlib.util
 import json
 import signal
 import sys
-import types
 from typing import TYPE_CHECKING, Literal
 
 import anyio
@@ -12,7 +11,6 @@ import pytest
 from aiologic import Event
 
 import async_kernel
-from async_kernel import kernel as kernel_module
 from async_kernel.command import command_line
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
@@ -33,7 +31,6 @@ def transport(request):
 def fake_kernel_dir(tmp_path, monkeypatch):
     kernel_dir = tmp_path / "share/jupyter/kernels"
     kernel_dir.mkdir(parents=True)
-    monkeypatch.setattr(kernel_module, "sys", types.SimpleNamespace(prefix=str(tmp_path)))
     monkeypatch.setattr(sys, "prefix", str(tmp_path))
     return kernel_dir
 

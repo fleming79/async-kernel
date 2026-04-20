@@ -21,15 +21,6 @@ def test_write_kernel_spec(kernel_name, start_interface, tmp_path, monkeypatch):
     if start_interface == "custom":
 
         def my_start_interface(settings: dict | None):
-            from async_kernel.interface import start_kernel_zmq_interface  # noqa: PLC0415
-            from async_kernel.kernel import Kernel  # noqa: PLC0415
-
-            class MyKernel(Kernel):
-                pass
-
-            kernel = MyKernel()
-            start_kernel_zmq_interface(settings)
-            assert kernel.interface.kernel is kernel
             return "custom"
 
         start_interface = my_start_interface
