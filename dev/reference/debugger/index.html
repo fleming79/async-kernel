@@ -3542,10 +3542,10 @@ viewing the latest version.
         <span class="bp">self</span><span class="o">.</span><span class="n">_publish_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_publish_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
             <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;debug_event&quot;</span><span class="p">,</span>
             <span class="n">content</span><span class="o">=</span><span class="n">event</span><span class="p">,</span>
-            <span class="n">ident</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">topic</span><span class="p">(</span><span class="s2">&quot;debug_event&quot;</span><span class="p">),</span>
+            <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;kernel.debug_event&quot;</span><span class="p">,</span>
             <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
