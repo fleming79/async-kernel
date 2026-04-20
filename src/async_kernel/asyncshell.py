@@ -55,7 +55,7 @@ async def _forward_transport_stream(transport_stream: ByteReceiveStream, out: Te
 
 class AsyncDisplayHook(DisplayHook):
     """
-    A displayhook subclass that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send].
+    A displayhook subclass that publishes data using [iopub_send][async_kernel.kernel.kernel.interface.iopub_send].
     """
 
     shell: AsyncInteractiveShell
@@ -90,12 +90,12 @@ class AsyncDisplayHook(DisplayHook):
     def finish_displayhook(self) -> None:
         """Finish up all displayhook activities."""
         if content := self.content:
-            self.shell.kernel.iopub_send("execute_result", content=content)
+            self.shell.kernel.interface.iopub_send("execute_result", content=content)
         self._content.pop(id(utils.get_job()))
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
-    """A display publisher that publishes data using [iopub_send][async_kernel.kernel.Kernel.iopub_send]."""
+    """A display publisher that publishes data using [iopub_send][async_kernel.kernel.kernel.interface.iopub_send]."""
 
     shell: AsyncInteractiveShell
     _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
@@ -136,9 +136,11 @@ class AsyncDisplayPublisher(DisplayPublisher):
             # ref: https://github.com/microsoft/vscode-jupyter/wiki/Component:-IPyWidgets#two-widget-managers
             # On occasion we get `Error 'widget model not found'`
             # As a work-around inject a delay so the widget can be registered first.
-            self.shell.kernel.interface.callers[Channel.control].call_later(0.2, self.shell.kernel.iopub_send, msg)
+            self.shell.kernel.interface.callers[Channel.control].call_later(
+                0.2, self.shell.kernel.interface.iopub_send, msg
+            )
         else:
-            self.shell.kernel.iopub_send(msg)
+            self.shell.kernel.interface.iopub_send(msg)
 
     @override
     def clear_output(self, wait: bool = False) -> None:
@@ -150,7 +152,9 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 instead waiting for the next display before clearing.
                 This reduces bounce during repeated clear & display loops.
         """
-        self.shell.kernel.iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data")
+        self.shell.kernel.interface.iopub_send(
+            msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data"
+        )
 
     def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
         """Register a hook for when publish is called.
@@ -437,7 +441,7 @@ class AsyncInteractiveShell(InteractiveShell):
                 execution_count: int = self.execution_count
             else:
                 execution_count = self._execution_count = self._execution_count + 1
-                self.kernel.iopub_send(
+                self.kernel.interface.iopub_send(
                     msg_or_type="execute_input",
                     content={"code": code, "execution_count": execution_count},
                     ident=b"kernel.execute_input",
@@ -585,7 +589,7 @@ class AsyncInteractiveShell(InteractiveShell):
             return
         if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
-        self.kernel.iopub_send(
+        self.kernel.interface.iopub_send(
             msg_or_type="error",
             content={"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)},
         )

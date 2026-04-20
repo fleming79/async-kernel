@@ -26,7 +26,7 @@ from async_kernel.asyncshell import (
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, NoValue
+from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message
 
 if TYPE_CHECKING:
     from async_kernel.interface.zmq import ZMQKernelInterface
@@ -243,27 +243,6 @@ class Kernel(traitlets.HasTraits):
         Kernel._instance = None
         self.log.info("Kernel shutdown complete: %s", self)
 
-    def iopub_send(
-        self,
-        msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
-        *,
-        content: Content | None = None,
-        metadata: dict[str, Any] | None = None,
-        parent: Message[dict[str, Any]] | dict[str, Any] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        ident: bytes | list[bytes] | None = None,
-        buffers: list[bytes] | None = None,
-    ) -> None:
-        """Send a message on the iopub socket."""
-        if not self.event_stopped:
-            self.interface.iopub_send(
-                msg_or_type,
-                content=content,
-                metadata=metadata,
-                parent=parent,
-                ident=ident,
-                buffers=buffers,
-            )
-
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
         """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
         return self.kernel_info
@@ -362,7 +341,7 @@ class Kernel(traitlets.HasTraits):
         'parent' is the parameter name used by [Session.send][jupyter_client.session.Session.send] to provide context when sending a reply.
 
         See also:
-            - [Kernel.iopub_send][Kernel.iopub_send]
+            - [kernel.interface.iopub_send][kernel.interface.iopub_send]
             - [ipywidgets.Output][ipywidgets.widgets.widget_output.Output]:
                 Uses `get_ipython().kernel.get_parent()` to obtain the `msg_id` which
                 is used to 'capture' output when its context has been acquired.

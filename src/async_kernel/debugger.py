@@ -256,7 +256,7 @@ class Debugger(traitlets.HasTraits):
         self._publish_event(event)
 
     def _publish_event(self, event: dict) -> None:
-        self.kernel.iopub_send(
+        self.kernel.interface.iopub_send(
             msg_or_type="debug_event",
             content=event,
             ident=b"kernel.debug_event",

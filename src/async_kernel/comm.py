@@ -41,7 +41,7 @@ class Comm(BaseComm):
     ) -> None:
         """Helper for sending a comm message on IOPub."""
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
-        self.kernel.iopub_send(
+        self.kernel.interface.iopub_send(
             msg_or_type=msg_type,
             content=content,
             metadata=metadata,
