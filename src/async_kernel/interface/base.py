@@ -178,6 +178,11 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         self.last_interrupt_frame = None
         raise KernelInterrupt
 
+    def _subshell_stopped(self, subshell_id: str) -> None:
+        for key in list(self._handler_cache):
+            if key[0] == subshell_id:
+                self._handler_cache.pop(key, None)
+
     def _patch_io(self) -> Callable[[], None]:
         original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
 
@@ -413,11 +418,6 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
             self._handler_cache[key] = run_handler
             return run_handler
-
-    def _subshell_stopped(self, subshell_id: str) -> None:
-        for key in list(self._handler_cache):
-            if key[0] == subshell_id:
-                self._handler_cache.pop(key, None)
 
     def get_run_mode(self, msg_type: MsgType, job: Job, /) -> RunMode:
         # TODO: Are any of these options worth including?

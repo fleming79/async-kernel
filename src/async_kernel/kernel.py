@@ -341,7 +341,6 @@ class Kernel(traitlets.HasTraits):
         'parent' is the parameter name used by [Session.send][jupyter_client.session.Session.send] to provide context when sending a reply.
 
         See also:
-            - [kernel.interface.iopub_send][kernel.interface.iopub_send]
             - [ipywidgets.Output][ipywidgets.widgets.widget_output.Output]:
                 Uses `get_ipython().kernel.get_parent()` to obtain the `msg_id` which
                 is used to 'capture' output when its context has been acquired.

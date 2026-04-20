@@ -55,7 +55,7 @@ async def _forward_transport_stream(transport_stream: ByteReceiveStream, out: Te
 
 class AsyncDisplayHook(DisplayHook):
     """
-    A displayhook subclass that publishes data using [iopub_send][async_kernel.kernel.kernel.interface.iopub_send].
+    A displayhook subclass that publishes data using [iopub_send][async_kernel.interface.base.BaseKernelInterface.iopub_send].
     """
 
     shell: AsyncInteractiveShell
@@ -95,7 +95,7 @@ class AsyncDisplayHook(DisplayHook):
 
 
 class AsyncDisplayPublisher(DisplayPublisher):
-    """A display publisher that publishes data using [iopub_send][async_kernel.kernel.kernel.interface.iopub_send]."""
+    """A display publisher that publishes data using [iopub_send][async_kernel.interface.base.BaseKernelInterface.iopub_send]."""
 
     shell: AsyncInteractiveShell
     _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
