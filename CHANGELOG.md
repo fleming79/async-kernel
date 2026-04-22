@@ -5,11 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 2026-04-20
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Transfer methods from Kernel to interface [#432](https://github.com/fleming79/async-kernel/pull/432)
+
+- Improve kernelspec to simplify creating kernelspecs for virtual environments. [#431](https://github.com/fleming79/async-kernel/pull/431)
+
+- Make AsyncInteractiveShell and AsyncInteractiveSubshell easier to subclass. [#430](https://github.com/fleming79/async-kernel/pull/430)
+
 ## [0.16.4] - 2026-04-15
 
 ### <!-- 2 --> 🐛 Fixes
 
 - Fix PendingGroup mode 0 and add mode 3. [#428](https://github.com/fleming79/async-kernel/pull/428)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.16.4 [#429](https://github.com/fleming79/async-kernel/pull/429)
 
 ## [0.16.3] - 2026-04-12
 
@@ -1183,6 +1197,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.17.0]: https://github.com/fleming79/async-kernel/compare/v0.16.4..v0.17.0
 [0.16.4]: https://github.com/fleming79/async-kernel/compare/v0.16.3..v0.16.4
 [0.16.3]: https://github.com/fleming79/async-kernel/compare/v0.16.2..v0.16.3
 [0.16.2]: https://github.com/fleming79/async-kernel/compare/v0.16.1..v0.16.2
