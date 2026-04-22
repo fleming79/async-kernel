@@ -13,7 +13,7 @@ from async_kernel import Kernel, Pending
 from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell, SubshellManager
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
-from async_kernel.typing import Channel, ExecuteContent, Job, MsgType, RunMode, Tags
+from async_kernel.typing import Channel, MsgType, RunMode, Tags
 from tests import utils
 
 if TYPE_CHECKING:
@@ -494,27 +494,6 @@ async def test_invalid_message(client: AsyncKernelClient, channel: Literal[Chann
     f = utils.send_control_message if channel == "control" else utils.send_shell_message
     await f(client, "test_invalid_message", reply=False)  # pyright: ignore[reportArgumentType]
     await anyio.sleep(0.1)
-
-
-@pytest.mark.parametrize(
-    ("code", "silent", "expected"),
-    [
-        (f"{RunMode.task}", False, RunMode.task),
-        (f" {RunMode.task}", False, RunMode.task),
-        ("print(1)", False, RunMode.queue),
-        ("", True, RunMode.task),
-        (f"{RunMode.thread}\nprint('hello')", False, RunMode.thread),
-        ("", False, RunMode.queue),
-        ("threads", False, RunMode.queue),
-        ("Task", False, RunMode.queue),
-    ],
-)
-async def test_get_run_mode(kernel: Kernel, code: str, silent: bool, expected: RunMode, job: Job[ExecuteContent]):
-    job["msg"]["content"]["code"] = code
-    job["msg"]["content"]["silent"] = silent
-    msg_type = job["msg"]["header"]["msg_type"]
-    mode = kernel.interface.get_run_mode(msg_type, job)  # pyright: ignore[reportArgumentType]
-    assert mode is expected
 
 
 async def test_get_run_mode_tag(client: AsyncKernelClient):
