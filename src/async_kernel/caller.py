@@ -834,8 +834,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with `func`.
 
         Notes:
-
-            - **Only use this to execute coroutines that require a specific backend to run in the caller's thread.**
+            **Only use this method to execute coroutines that require a specific backend to run in the caller's thread.**
         """
         return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))
 
