@@ -176,14 +176,6 @@ async def test_message_order(client: AsyncKernelClient):
         assert reply["parent_header"]["msg_id"] == msg_id
 
 
-async def test_execute_request_error_tag_ignore_error(client: AsyncKernelClient):
-    await utils.clear_iopub(client)
-    metadata = {"tags": [Tags.suppress_error]}
-    await utils.execute(client, "stop - suppress me", metadata=metadata, clear_pub=False)
-    stdout, _ = await utils.assemble_output(client)
-    assert "⚠" in stdout
-
-
 @pytest.mark.parametrize("run_mode", RunMode)
 @pytest.mark.parametrize(
     "code",

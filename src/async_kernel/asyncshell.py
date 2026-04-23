@@ -424,7 +424,6 @@ class AsyncInteractiveShell(InteractiveShell):
         try:
             tags: list[str] = utils.get_tags()
             timeout: float = utils.get_timeout(tags=tags)
-            suppress_error: bool = Tags.suppress_error in tags
             raises_exception: bool = Tags.raises_exception in tags
             stop_on_error_override: bool = Tags.stop_on_error in tags
             transformed_cell = (
@@ -434,7 +433,7 @@ class AsyncInteractiveShell(InteractiveShell):
             )
             if stop_on_error_override:
                 stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
-            elif suppress_error or raises_exception:
+            elif raises_exception:
                 stop_on_error = False
 
             if silent:
@@ -482,7 +481,7 @@ class AsyncInteractiveShell(InteractiveShell):
                     self.events.trigger("post_execute")
                     if not silent:
                         self.events.trigger("post_run_cell", result)
-            if (err) and (suppress_error or (isinstance(err, anyio.get_cancelled_exc_class()) and (timeout != 0))):
+            if (err) and (isinstance(err, anyio.get_cancelled_exc_class()) and (timeout != 0)):
                 # Suppress the error due to either:
                 # 1. tag
                 # 2. timeout
@@ -583,10 +582,6 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def _showtraceback(self, etype, evalue, stb) -> None:
-        if Tags.suppress_error in utils.get_tags():
-            if msg := utils.get_tag_value(Tags.suppress_error, "⚠"):
-                print(msg)
-            return
         if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
         self.kernel.interface.iopub_send(

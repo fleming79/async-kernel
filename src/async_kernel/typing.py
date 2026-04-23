@@ -266,21 +266,6 @@ class Tags(enum.StrEnum):
         - When an exception is **not** raised an exception will be raise and stop_on_error is True.
     """
 
-    suppress_error = "suppress-error"
-    """
-    Suppress exceptions that occur during execution of the code cell.
-
-    The default message is '⚠'
-
-    Examples:
-
-        - suppress-error 
-        - suppress-error=The suppression message.
-
-    Warning:
-        The code block will return as 'ok' (not published).
-    """
-
     stop_on_error = "stop-on-error"
     """
     Override `stop_on_error`.

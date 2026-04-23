@@ -47,7 +47,6 @@ class TestUtils:
             (Tags.timeout, 0.0, "", 0.0),  # float
             (Tags.timeout, 0, "timeout=0.0", 0),  # int
             (Tags.stop_on_error, True, "stop_on_error", True),  # bool
-            (Tags.suppress_error, "", "suppress-error=Msg", "Msg"),  # str
             (Tags.raises_exception, True, "raises-exception", True),  # bool
             (Tags.raises_exception, True, "raises-exception=false", False),  # bool
             (Tags.raises_exception, True, "raises-exception=False", False),  # bool
