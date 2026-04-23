@@ -402,6 +402,14 @@ class AsyncInteractiveShell(InteractiveShell):
         except TypeError:
             return result
 
+    def transform_cell_async(self, raw_cell: str) -> str:
+        "Transform the cell and substitute magic calls with an awaitable wrapper."
+        return (
+            self.transform_cell(raw_cell)
+            .replace("get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async(")
+            .replace("get_ipython().run_cell_magic(", "await get_ipython().run_cell_magic_async(")
+        )
+
     async def execute_request(
         self,
         code: str = "",
@@ -426,11 +434,6 @@ class AsyncInteractiveShell(InteractiveShell):
             timeout: float = utils.get_timeout(tags=tags)
             raises_exception: bool = Tags.raises_exception in tags
             stop_on_error_override: bool = Tags.stop_on_error in tags
-            transformed_cell = (
-                self.transform_cell(code)
-                .replace("get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async(")
-                .replace("get_ipython().run_cell_magic(", "await get_ipython().run_cell_magic_async(")
-            )
             if stop_on_error_override:
                 stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
             elif raises_exception:
@@ -463,7 +466,7 @@ class AsyncInteractiveShell(InteractiveShell):
                             raw_cell=code,
                             store_history=store_history,
                             silent=silent,
-                            transformed_cell=transformed_cell,
+                            transformed_cell=self.transform_cell_async(code),
                             shell_futures=True,
                             cell_id=cell_id,
                         )
@@ -1001,6 +1004,30 @@ class KernelMagics(Magics):
             raw_cell=cell,
             store_history=False,
             silent=True,
-            cell_id=utils.get_cell_id(),
-            transformed_cell=shell.transform_cell(cell),
+            cell_id=None,
+            transformed_cell=shell.transform_cell_async(cell),
         )
+
+    async def _call_using_backend(self, backend: Literal["asyncio", "trio"], code: str):
+        shell: AsyncInteractiveShell | AsyncInteractiveSubshell = SubshellManager.get_shell()
+        await Caller().call_using_backend(
+            backend,
+            shell.run_cell_async,
+            raw_cell=code,
+            store_history=False,
+            silent=True,
+            cell_id=None,
+            transformed_cell=shell.transform_cell_async(code),
+        )
+
+    @no_var_expand
+    @line_cell_magic
+    async def asyncio(self, line: str, cell: str | None = None) -> None:
+        ""
+        await self._call_using_backend("asyncio", cell or line)
+
+    @no_var_expand
+    @line_cell_magic
+    async def trio(self, line: str, cell: str | None = None) -> None:
+        ""
+        await self._call_using_backend("trio", cell or line)
