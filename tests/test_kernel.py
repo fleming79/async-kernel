@@ -507,6 +507,7 @@ async def test_run_mode_tag(client: AsyncKernelClient):
     assert content["status"] == "ok"
     assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
 
+
 async def test_get_run_mode_cell_top_line(client: AsyncKernelClient):
     _, content = await utils.execute(
         client,
