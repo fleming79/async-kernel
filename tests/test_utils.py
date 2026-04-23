@@ -58,6 +58,9 @@ class TestUtils:
         assert value == expected_value
         assert type(value) is type(expected_value)
 
+    def test_tags_get_string(self):
+        assert ak_utils.get_tag_value(Tags.stop_on_error, "", tags=["stop_on_error=Tag value "]) == "Tag value"
+
     def test_setattr_nested(self):
         class TestObj:
             k = None

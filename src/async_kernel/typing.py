@@ -239,21 +239,24 @@ class Tags(enum.StrEnum):
     def __hash__(self) -> int:
         return hash(self.name)
 
-    def get_bool(self, value: str | Tags, default: bool = True) -> bool:
+    @classmethod
+    def get_bool(cls, value: str | Tags, default: bool = True) -> bool:
         try:
             return value.split("=")[1].lower() == "true"
         except Exception:
             return default
 
-    def get_float(self, value: str | Tags, default: float = 0.0) -> float:
+    @classmethod
+    def get_float(cls, value: str | Tags, default: float = 0.0) -> float:
         try:
             return float(value.split("=")[1])
         except Exception:
             return default
 
-    def get_string(self, value: str | Tags, default: str = "") -> str:
+    @classmethod
+    def get_string(cls, value: str | Tags, default: str = "") -> str:
         try:
-            return value.split("=")[1]
+            return value.split("=")[1].strip()
         except Exception:
             return default
 
