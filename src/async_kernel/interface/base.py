@@ -28,6 +28,7 @@ from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.iostream import OutStream
 from async_kernel.typing import (
     Backend,
+    CallerCreateOptions,
     Channel,
     Content,
     HandlerType,
@@ -282,22 +283,22 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
         handler = self._get_handler(job, send_reply)
 
-        run_mode = RunMode.queue
+        run_mode: RunMode | CallerCreateOptions | None = None
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
 
         if msg_type is MsgType.execute_request:
             caller = self.callers[job["msg"]["channel"]]  # pyright: ignore[reportArgumentType]
-            if content := job["msg"].get("content", {}):
-                if (code := content.get("code")) and (
-                    mode := RunMode.to_runmode(code.strip().split("\n", maxsplit=1)[0])
-                ):
-                    run_mode = mode
-                if content.get("silent"):
-                    run_mode = RunMode.task
             try:
                 run_mode = next(mode for tag in utils.get_tags(job) if (mode := RunMode.to_runmode(tag)))
-            except Exception:
-                pass
+            except StopIteration:
+                if content := job["msg"].get("content", {}):
+                    if (code := content.get("code")) and (
+                        mode := RunMode.to_runmode(code.strip().split("\n", maxsplit=1)[0])
+                    ):
+                        run_mode = mode
+                    if content.get("silent"):
+                        run_mode = RunMode.task
+
         elif msg_type in self.handle_in_shell_thread:
             caller = self.callers[Channel.shell]
         else:
@@ -306,12 +307,14 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
                 caller = caller.get(name=thread_name, no_debug=True)
 
         match run_mode:
-            case RunMode.queue:
+            case RunMode.queue | None:
                 caller.queue_call(handler, job)
             case RunMode.task:
                 caller.call_soon(handler, job)
             case RunMode.thread:
                 caller.to_thread(handler, job)
+            case _ as options:
+                caller.get(**options).call_soon(handler, job)
 
         self.log.debug("%s %s %s %s", msg_type, run_mode, handler, job)
 
