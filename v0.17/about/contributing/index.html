@@ -1803,7 +1803,7 @@ uv<span class="w"> </span>sync
 </code></pre></div>
 <p>Additional steps to build documentation (optional):</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
-uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">0</span>.1
+uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">1</span>
 </code></pre></div>
 <h3 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest
@@ -1854,7 +1854,7 @@ in the future.</p>
 <p>The 'docs' group specified extra packages are required to build documentation.</p>
 <h4 id="sync-docs-group">Sync 'docs' group<a class="headerlink" href="#sync-docs-group" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
-uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">0</span>.1
+uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">1</span>
 </code></pre></div>
 <h4 id="test-the-docs">Test the docs<a class="headerlink" href="#test-the-docs" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>-s
@@ -1862,7 +1862,7 @@ uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"
 <details class="info">
 <summary>Info</summary>
 <p>The command:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">0</span>.1
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>async-kernel<span class="w"> </span>-a<span class="w"> </span>async-docs<span class="w"> </span>--main_shell.timeout<span class="o">=</span><span class="m">1</span>
 </code></pre></div>
 <p>Defines a new kernel spec with the name "async-docs" that sets the <code>shell.timeout</code> to 100ms.</p>
 <p>The "async-docs" named kernel spec is used by <a href="#notebooks">mkdocs-jupyter</a> to convert the notebooks
@@ -1883,17 +1883,8 @@ Typing information is included automatically by <a href="https://mkdocstrings.gi
 <p>Notebooks are included in the documentation by the plugin <a href="https://github.com/danielfrg/mkdocs-jupyter">mkdocs-jupyter</a>.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
-<p>We use the kernel spec named 'async-docs' which has a cell execute timeout of 100ms. This is used
+<p>We use the kernel spec named 'async-docs' which has a cell execute timeout of 1s. This is used
 to advance execution through long running cells.</p>
-<p>The <a class="autorefs autorefs-internal" title="            suppress_error
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="../../reference/typing/#async_kernel.typing.Tags.suppress_error">suppress-error</a> tag is inserted in code cells to enable
-with generating documentation. The symbol '⚠' is an indicator that the error was suppressed. Normally
-this is due to the timeout but there is no distinction on the type of error.</p>
 </div>
 <h4 id="useful-links">Useful links<a class="headerlink" href="#useful-links" title="Permanent link">&para;</a></h4>
 <p>These links are not relevant for docstrings.</p>
