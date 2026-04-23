@@ -28,12 +28,12 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.0
+    rev: 0.37.1
     hooks:
       - id: check-github-workflows
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.8.1
+    rev: v3.8.3
     hooks:
       - id: prettier
         types_or: [yaml, html, json]
@@ -59,7 +59,7 @@ repos:
       - id: python-use-type-annotations
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.6
+    rev: v0.15.11
     hooks:
       - id: ruff-check
         types_or: [python, jupyter]
@@ -68,7 +68,7 @@ repos:
         types_or: [python, jupyter]
 
   - repo: https://github.com/scientific-python/cookie
-    rev: 2026.03.02
+    rev: 2026.04.04
     hooks:
       - id: sp-repo-review
         additional_dependencies: ["repo-review[cli]"]
