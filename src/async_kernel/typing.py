@@ -4,7 +4,7 @@ import enum
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict, TypeVar
 
-from typing_extensions import Sentinel, override
+from typing_extensions import Sentinel, get_annotations, override
 
 if TYPE_CHECKING:
     import datetime
@@ -114,14 +114,44 @@ class RunMode(enum.StrEnum):
         return hash(self.name)
 
     @classmethod
-    def to_runmode(cls, value: Any, default: T = None, /) -> Self | T:
-        "Converts value to `Runmode` or default where it is not possible."
+    def to_runmode(cls, value: Any, default: T = None, /) -> Self | T | CallerCreateOptions:
+        """
+        Converts value to `Runmode`, `CallerCreateOptions` or  default where it is not possible.
+
+        `CallerCreateOptions` will only return when a string is passed specifying a thread and options.
+
+        Example:
+            `value = "# thread name='My exeecutor' backend=trio`
+        """
         try:
             return cls(value)
         except ValueError:
-            if isinstance(value, str) and value.startswith(("# ", "##")):
-                return cls.to_runmode(value[2:], default)
+            if isinstance(value, str):
+                if value.startswith(("# ", "##")):
+                    return cls.to_runmode(value[2:].strip(), default)
+                if value.startswith("thread"):
+                    return cls.line_to_options(value.removeprefix("thread"))
             return default
+
+    @classmethod
+    def line_to_options(cls, line: str, /) -> CallerCreateOptions:
+        "Convert the line string to CallerCreateOptions."
+        import shlex  # noqa: PLC0415
+
+        items = CallerCreateOptions()
+        for v in shlex.split(line):
+            k, val = v.split("=", maxsplit=1)
+            try:
+                items[k] = eval(val)
+            except Exception:
+                items[k] = val
+        if items and not items.get("name"):
+            msg = "'name' must be specified when providing settings!"
+            raise ValueError(msg)
+        if invalid := set(items).difference(get_annotations(CallerCreateOptions)):
+            msg = f"One or more invalid options found! valid={list(get_annotations(CallerCreateOptions))} invalid={list(invalid)}"
+            raise ValueError(msg)
+        return items
 
     queue = "queue"
     "Run the message handler using [async_kernel.caller.Caller.queue_call][]."

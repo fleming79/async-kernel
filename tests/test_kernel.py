@@ -412,7 +412,8 @@ async def test_debug_static_richInspectVariables(client: AsyncKernelClient, vari
         "%subshell",
         "%pip install anyio",
         "%uv pip install anyio",
-        "%%python\nprint('hello')",
+        "%thread\nprint('okay')",
+        """%%thread name="Trio executor" backend=trio\nfrom async_kernel import Caller; assert Caller().name == "Trio executor";print('okay')""",
     ],
 )
 async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
@@ -423,6 +424,15 @@ async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monke
     assert reply["status"] == "ok"
     stdout, _ = await utils.assemble_output(client)
     assert stdout
+
+
+async def test_magic_error(client: AsyncKernelClient):
+    _, reply = await utils.execute(client, "%%thread backend=trio\npass")
+    assert reply["status"] == "error"
+    assert "'name' must be specified when providing settings!" in reply["evalue"]
+    _, reply = await utils.execute(client, "%%thread name=test not_an_option=True\npass")
+    assert reply["status"] == "error"
+    assert "One or more invalid options found" in reply["evalue"]
 
 
 @pytest.mark.parametrize("code", argvalues=["%connect_info"])
@@ -508,7 +518,7 @@ async def test_run_mode_tag(client: AsyncKernelClient):
     assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
-async def test_get_run_mode_cell_top_line(client: AsyncKernelClient):
+async def test_cell_top_line_to_thread(client: AsyncKernelClient):
     _, content = await utils.execute(
         client,
         "# thread\nimport threading;thread_name=threading.current_thread().name",
@@ -516,6 +526,16 @@ async def test_get_run_mode_cell_top_line(client: AsyncKernelClient):
     )
     assert content["status"] == "ok"
     assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
+
+
+async def test_cell_top_line_to_thread_named(client: AsyncKernelClient):
+    _, content = await utils.execute(
+        client,
+        "# thread name='My thread'\nimport threading;thread_name=threading.current_thread().name",
+        user_expressions={"thread_name": "thread_name"},
+    )
+    assert content["status"] == "ok"
+    assert "My thread" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
 @pytest.mark.parametrize("mode", ["raises", "not raised"])

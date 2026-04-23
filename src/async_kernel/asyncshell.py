@@ -19,7 +19,7 @@ from IPython.core.displaypub import DisplayPublisher
 from IPython.core.history import HistoryManager
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
-from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class
+from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class, no_var_expand
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
@@ -32,7 +32,7 @@ from async_kernel.common import Fixed, KernelInterrupt, import_item
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import PendingManager
-from async_kernel.typing import Channel, Content, Message, NoValue, Tags
+from async_kernel.typing import Channel, Content, Message, NoValue, RunMode, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -931,6 +931,7 @@ class KernelMagics(Magics):
         )
         print(f"Current shell:\t{self.shell}\n\n{subshell_list}")
 
+    @no_var_expand
     @line_magic
     async def pip(self, line: str) -> Any | None:
         """Run the pip package manager for the current environment.
@@ -965,6 +966,7 @@ class KernelMagics(Magics):
 
         return None
 
+    @no_var_expand
     @line_magic
     async def uv(self, line) -> None:
         """Run the uv package manager for the current environment.
@@ -979,16 +981,28 @@ class KernelMagics(Magics):
             if process.stderr:
                 tg.start_soon(_forward_transport_stream, process.stderr, sys.stdout)
 
+    @no_var_expand
     @line_cell_magic
-    async def python(self, line: str, cell: str) -> None:
+    async def thread(self, line: str, cell: str | None = None) -> None:
         """
-        Run python code.
+        Run the python code in a caller managed child thread.
 
-        Useful only when the primary language is not Python.
+        Both line and cell magic are supported.
+
+        For cell_magic, [CallerCreateOptions][async_kernel.typing.CallerCreateOptions] can be passed as literals.
+
+        Example:
+            %%thread name="Trio executor" backend=trio
         """
-        shell = SubshellManager.get_shell()
-        cell = cell or line
-        await shell.run_cell_async(
+        shell: AsyncInteractiveShell | AsyncInteractiveSubshell = SubshellManager.get_shell()
+        if cell is None:
+            cell = line
+            options: Any = None
+        else:
+            options = RunMode.line_to_options(line)
+        caller = shell.kernel.caller
+        await (caller.get(**options).call_soon if options else caller.to_thread)(
+            shell.run_cell_async,
             raw_cell=cell,
             store_history=False,
             silent=True,
