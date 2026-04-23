@@ -25,7 +25,7 @@ Additional steps to build documentation (optional):
 
 ```bash
 uv sync --group docs
-uv run async-kernel -a async-docs --main_shell.timeout=0.1
+uv run async-kernel -a async-docs --main_shell.timeout=1
 ```
 
 ### Running tests
@@ -100,7 +100,7 @@ The 'docs' group specified extra packages are required to build documentation.
 
 ```bash
 uv sync --group docs
-uv run async-kernel -a async-docs --main_shell.timeout=0.1
+uv run async-kernel -a async-docs --main_shell.timeout=1
 ```
 
 #### Test the docs
@@ -114,7 +114,7 @@ uv run mkdocs build -s
     The command:
 
     ```bash
-    uv run async-kernel -a async-docs --main_shell.timeout=0.1
+    uv run async-kernel -a async-docs --main_shell.timeout=1
     ```
 
     Defines a new kernel spec with the name "async-docs" that sets the `shell.timeout` to 100ms.
