@@ -1883,17 +1883,8 @@ Typing information is included automatically by <a href="https://mkdocstrings.gi
 <p>Notebooks are included in the documentation by the plugin <a href="https://github.com/danielfrg/mkdocs-jupyter">mkdocs-jupyter</a>.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
-<p>We use the kernel spec named 'async-docs' which has a cell execute timeout of 100ms. This is used
+<p>We use the kernel spec named 'async-docs' which has a cell execute timeout of 1s. This is used
 to advance execution through long running cells.</p>
-<p>The <a class="autorefs autorefs-internal" title="            suppress_error
-
-
-  
-      class-attribute
-      instance-attribute
-  " href="../../reference/typing/#async_kernel.typing.Tags.suppress_error">suppress-error</a> tag is inserted in code cells to enable
-with generating documentation. The symbol '⚠' is an indicator that the error was suppressed. Normally
-this is due to the timeout but there is no distinction on the type of error.</p>
 </div>
 <h4 id="useful-links">Useful links<a class="headerlink" href="#useful-links" title="Permanent link">&para;</a></h4>
 <p>These links are not relevant for docstrings.</p>
