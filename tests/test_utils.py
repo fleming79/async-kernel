@@ -47,7 +47,6 @@ class TestUtils:
             (Tags.timeout, 0.0, "", 0.0),  # float
             (Tags.timeout, 0, "timeout=0.0", 0),  # int
             (Tags.stop_on_error, True, "stop_on_error", True),  # bool
-            (Tags.suppress_error, "", "suppress-error=Msg", "Msg"),  # str
             (Tags.raises_exception, True, "raises-exception", True),  # bool
             (Tags.raises_exception, True, "raises-exception=false", False),  # bool
             (Tags.raises_exception, True, "raises-exception=False", False),  # bool
@@ -58,6 +57,9 @@ class TestUtils:
         value = ak_utils.get_tag_value(tag, default, tags=[str_tag])
         assert value == expected_value
         assert type(value) is type(expected_value)
+
+    def test_tags_get_string(self):
+        assert ak_utils.get_tag_value(Tags.stop_on_error, "", tags=["stop_on_error=Tag value "]) == "Tag value"
 
     def test_setattr_nested(self):
         class TestObj:

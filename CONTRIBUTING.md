@@ -145,12 +145,8 @@ Notebooks are included in the documentation by the plugin [mkdocs-jupyter](https
 
 !!! info
 
-    We use the kernel spec named 'async-docs' which has a cell execute timeout of 100ms. This is used
+    We use the kernel spec named 'async-docs' which has a cell execute timeout of 1s. This is used
     to advance execution through long running cells.
-
-    The [suppress-error][async_kernel.typing.Tags.suppress_error] tag is inserted in code cells to enable
-    with generating documentation. The symbol '⚠' is an indicator that the error was suppressed. Normally
-    this is due to the timeout but there is no distinction on the type of error.
 
 #### Useful links
 

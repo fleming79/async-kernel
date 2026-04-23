@@ -30,9 +30,9 @@ class TestMsgType:
 
 class TestTags:
     def test_equality(self):
-        assert Tags.suppress_error == str(Tags.suppress_error)
-        assert Tags.suppress_error == Tags.suppress_error.name
+        assert Tags.raises_exception == str(Tags.raises_exception)
+        assert Tags.raises_exception == Tags.raises_exception.name
         assert Tags.timeout == Tags.timeout.name
 
     def test_hash(self):
-        assert hash(Tags.suppress_error) == hash(Tags.suppress_error)
+        assert hash(Tags.raises_exception) == hash(Tags.raises_exception)
