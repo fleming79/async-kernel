@@ -33,7 +33,7 @@ from async_kernel import Kernel, utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Backend, Channel, Content, Hosts, Job, Message, MsgHeader, MsgType, NoValue, RunSettings
+from async_kernel.typing import Backend, Channel, Content, Hosts, Job, Message, MsgHeader, NoValue, RunSettings
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -447,7 +447,7 @@ class ZMQKernelInterface(BaseKernelInterface):
                     ident, msg = session.recv(socket, mode=zmq.BLOCKY, copy=False)
                     msg["channel"] = channel  # pyright: ignore[reportOptionalSubscript]
                     job = Job(received_time=time.monotonic(), msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(channel, MsgType(job["msg"]["header"]["msg_type"]), job, send_reply)
+                    message_handler(job, send_reply)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:

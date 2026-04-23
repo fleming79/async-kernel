@@ -12,7 +12,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import BaseKernelInterface
-from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue
+from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -117,7 +117,7 @@ class CallableKernelInterface(BaseKernelInterface):
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
         msg["channel"] = Channel(msg["channel"])
         job = Job(received_time=time.monotonic(), msg=msg, ident=b"")
-        self.message_handler(msg["channel"], MsgType(job["msg"]["header"]["msg_type"]), job, self._send_reply)  # pyright: ignore[reportArgumentType]
+        self.message_handler(job, self._send_reply)
 
     @override
     def iopub_send(
