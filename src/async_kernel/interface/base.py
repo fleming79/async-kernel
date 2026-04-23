@@ -94,13 +94,16 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     host = None
 
-    run_in_shell_thread = traitlets.List(
+    handle_in_shell_thread = traitlets.List(
         traitlets.UseEnum(MsgType), [MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close]
     )
     """
-    Message types that are handled in the shell's thread (typically the _MainThread_).
+    A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_).
+    """
 
-    All other shell message types are handled in the control thread.
+    handle_in_thread = traitlets.Dict(key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Unicode())
+    """
+    A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler.
     """
 
     _zmq_context = None
@@ -112,6 +115,14 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     @traitlets.default("log")
     def _default_log(self) -> LoggerAdapter[Logger]:
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
+
+    @traitlets.default("handle_in_thread")
+    def _default_handle_in_thread(self) -> dict[MsgType, str]:
+        return {
+            MsgType.inspect_request: "language_server",
+            MsgType.complete_request: "language_server",
+            MsgType.is_complete_request: "language_server",
+        }
 
     def __init__(self, kernel_settings: dict[str, Any] | None = None, /) -> None:
         if self.kernel.trait_has_value("interface"):
@@ -159,16 +170,6 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
                     restore_io()
                 self._handler_cache.clear()
                 gc.collect()
-
-    def stop(self) -> None:
-        """
-        Stop the kernel.
-        """
-        if scope := getattr(self, "_scope", None):
-            del self._scope
-            self.kernel.log.info("Stopping kernel: %s", self.kernel)
-            self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
-            self.kernel.event_stopped.set()
 
     @enable_signal_safety
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
@@ -283,28 +284,26 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
         run_mode = RunMode.queue
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
-        channel: Literal[Channel.shell, Channel.control] = job["msg"]["channel"]  # pyright: ignore[reportAssignmentType]
-        caller = self.callers[channel]
 
-        match msg_type:
-            case MsgType.execute_request:
-                if content := job["msg"].get("content", {}):
-                    if (code := content.get("code")) and (
-                        mode := RunMode.to_runmode(code.strip().split("\n", maxsplit=1)[0])
-                    ):
-                        run_mode = mode
-                    if content.get("silent"):
-                        run_mode = RunMode.task
-                try:
-                    run_mode = next(mode for tag in utils.get_tags(job) if (mode := RunMode.to_runmode(tag)))
-                except Exception:
-                    pass
-            case MsgType.inspect_request:
-                caller = caller.get(name=f"kernel: {msg_type=}", no_debug=True)
-            case self.run_in_shell_thread:
-                caller = self.callers[Channel.control]
-            case _:
+        if msg_type is MsgType.execute_request:
+            caller = self.callers[job["msg"]["channel"]]  # pyright: ignore[reportArgumentType]
+            if content := job["msg"].get("content", {}):
+                if (code := content.get("code")) and (
+                    mode := RunMode.to_runmode(code.strip().split("\n", maxsplit=1)[0])
+                ):
+                    run_mode = mode
+                if content.get("silent"):
+                    run_mode = RunMode.task
+            try:
+                run_mode = next(mode for tag in utils.get_tags(job) if (mode := RunMode.to_runmode(tag)))
+            except Exception:
                 pass
+        elif msg_type in self.handle_in_shell_thread:
+            caller = self.callers[Channel.shell]
+        else:
+            caller = self.callers[Channel.control]
+            if thread_name := self.handle_in_thread.get(msg_type):
+                caller = caller.get(name=thread_name, no_debug=True)
 
         match run_mode:
             case RunMode.queue:
@@ -315,6 +314,32 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
                 caller.to_thread(handler, job)
 
         self.log.debug("%s %s %s %s", msg_type, run_mode, handler, job)
+
+    async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
+        """
+        Run the kernel.
+
+        Args:
+            stopped: An optional callback that is called when the kernel has stopped.
+
+        This method requires that a [Caller][async_kernel.caller.Caller] instance does not already exist in the current thread.
+        """
+        try:
+            async with self as kernel:
+                await kernel.event_stopped
+        finally:
+            if stopped:
+                stopped()
+
+    def stop(self) -> None:
+        """
+        Stop the kernel.
+        """
+        if scope := getattr(self, "_scope", None):
+            del self._scope
+            self.kernel.log.info("Stopping kernel: %s", self.kernel)
+            self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
+            self.kernel.event_stopped.set()
 
     def input_request(self, prompt: str, *, password: bool = False) -> str:
         """
@@ -412,19 +437,3 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     ) -> None:
         """Send an iopub message."""
         raise NotImplementedError
-
-    async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
-        """
-        Run the kernel.
-
-        Args:
-            stopped: An optional callback that is called when the kernel has stopped.
-
-        This method requires that a [Caller][async_kernel.caller.Caller] instance does not already exist in the current thread.
-        """
-        try:
-            async with self as kernel:
-                await kernel.event_stopped
-        finally:
-            if stopped:
-                stopped()

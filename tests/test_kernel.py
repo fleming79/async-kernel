@@ -496,12 +496,21 @@ async def test_invalid_message(client: AsyncKernelClient, channel: Literal[Chann
     await anyio.sleep(0.1)
 
 
-async def test_get_run_mode_tag(client: AsyncKernelClient):
+async def test_run_mode_tag(client: AsyncKernelClient):
     metadata = {"tags": [RunMode.thread]}
     _, content = await utils.execute(
         client,
         "import threading;thread_name=threading.current_thread().name",
         metadata=metadata,
+        user_expressions={"thread_name": "thread_name"},
+    )
+    assert content["status"] == "ok"
+    assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
+
+async def test_get_run_mode_cell_top_line(client: AsyncKernelClient):
+    _, content = await utils.execute(
+        client,
+        "# thread\nimport threading;thread_name=threading.current_thread().name",
         user_expressions={"thread_name": "thread_name"},
     )
     assert content["status"] == "ok"
