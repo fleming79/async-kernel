@@ -34,7 +34,7 @@
       "args": [
         "--notebook-dir=docs/notebooks",
         "--no-browser",
-        "--ServerApp.token=''",
+        "--IdentityProvider.token=''",
         "--port=9991"
       ],
       "cwd": "${workspaceFolder}",
