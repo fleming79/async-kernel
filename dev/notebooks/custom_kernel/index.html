@@ -2207,6 +2207,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="uv-managed-virtual-environment">uv managed virtual environment<a class="anchor-link" href="#uv-managed-virtual-environment">¶</a></h2><p>We can use uv to create a virtual environment for different versions of Python.</p>
 <p>Let's create a new virtual environment in the folder named ".venv_py315" using uv.</p>
+<p><strong>Requires a recent version of uv to be installed.</strong></p>
 </div>
 </div>
 </div>
@@ -2229,10 +2230,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="o">%</span><span class="n">uv</span> <span class="n">venv</span> <span class="o">.</span><span class="n">venv_py315</span> <span class="o">--</span><span class="n">python</span> <span class="mf">3.15</span>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="o">%</span><span class="n">uv</span> <span class="n">venv</span> <span class="o">.</span><span class="n">venv_py315</span> <span class="o">--</span><span class="n">python</span> <span class="mf">3.15</span> <span class="o">--</span><span class="n">clear</span>
 <span class="o">%</span><span class="n">uv</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">directory</span> <span class="o">.</span><span class="n">venv_py315</span> <span class="o">--</span><span class="n">python</span> <span class="mf">3.15</span> <span class="k">async</span><span class="o">-</span><span class="n">kernel</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">%uv venv .venv_py315 --python 3.15
+<div class="clipboard-copy-txt" id="cell-1">%uv venv .venv_py315 --python 3.15 --clear
 %uv pip install --directory .venv_py315 --python 3.15 async-kernel</div>
 </div>
 </div>
@@ -2246,13 +2247,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>Downloading cpython-3.15.0a5-linux-x86_64-gnu (download) (35.1MiB)
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre> Downloaded cpython-3.15.0a5-linux-x86_64-gnu (download)
 </pre>
 </div>
 </div>
@@ -2303,10 +2297,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="k">assert</span> <span class="n">uv_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 
 <span class="n">write_kernel_spec</span><span class="p">(</span>
-    <span class="n">kernel_name</span><span class="o">=</span><span class="s2">"async-kernel-315"</span><span class="p">,</span>
-    <span class="n">display_name</span><span class="o">=</span><span class="s2">"Python 3.15 (async kernel)"</span><span class="p">,</span>
-    <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s2">"UV_PROJECT_ENVIRONMENT"</span><span class="p">:</span> <span class="n">uv_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()},</span>
-    <span class="n">executable</span><span class="o">=</span><span class="p">(</span><span class="s2">"uv"</span><span class="p">,</span> <span class="s2">"run"</span><span class="p">,</span> <span class="s2">"python"</span><span class="p">,</span> <span class="s2">"-m"</span><span class="p">),</span>
+    <span class="n">kernel_name</span><span class="o">=</span><span class="s2">"async_3.15"</span><span class="p">,</span>
+    <span class="n">display_name</span><span class="o">=</span><span class="s2">"Python 3.15 (async)"</span><span class="p">,</span>
+    <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s2">"UV_PROJECT_ENVIRONMENT"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">uv_path</span><span class="p">)},</span>
+    <span class="n">executable</span><span class="o">=</span><span class="p">(</span><span class="s2">"uv"</span><span class="p">,</span> <span class="s2">"run"</span><span class="p">,</span> <span class="s2">"--no-sync"</span><span class="p">,</span> <span class="s2">"python"</span><span class="p">,</span> <span class="s2">"-m"</span><span class="p">,</span> <span class="s2">"async_kernel"</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">import pathlib
@@ -2317,10 +2311,10 @@ uv_path = pathlib.Path.cwd().joinpath(".venv_py315")
 assert uv_path.exists()
 
 write_kernel_spec(
-    kernel_name="async-kernel-315",
-    display_name="Python 3.15 (async kernel)",
-    env={"UV_PROJECT_ENVIRONMENT": uv_path.as_posix()},
-    executable=("uv", "run", "python", "-m"),
+    kernel_name="async_3.15",
+    display_name="Python 3.15 (async)",
+    env={"UV_PROJECT_ENVIRONMENT": str(uv_path)},
+    executable=("uv", "run", "--no-sync", "python", "-m", "async_kernel"),
 )</div>
 </div>
 </div>
@@ -2344,7 +2338,7 @@ write_kernel_spec(
 <span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">assert</span> uv_path.exists()
 <span class="ansi-green-fg">      7</span> 
 <span class="ansi-green-fg">      8</span> write_kernel_spec(
-<span class="ansi-green-fg">      9</span>     kernel_name=<span class="ansi-yellow-fg">"async-kernel-315"</span>,
+<span class="ansi-green-fg">      9</span>     kernel_name=<span class="ansi-yellow-fg">"async_3.15"</span>,
 
 <span class="ansi-red-fg">AssertionError</span>: </pre>
 </div>
@@ -2359,7 +2353,7 @@ write_kernel_spec(
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>The kernel spec with the display name "Python 3.15 (async kernel)" has been added.</p>
+<p>The kernel spec with the display name "Python 3.15 (async kernel)" has been added. You will need to refresh the list of kernels for it to be available.</p>
 </div>
 </div>
 </div>
@@ -2393,7 +2387,7 @@ write_kernel_spec(
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 19, 2026 08:11:45 UTC"><span class="timeago" datetime="2026-04-19T08:11:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 19, 2026 08:11:45 UTC">2026-04-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 24, 2026 04:17:01 UTC"><span class="timeago" datetime="2026-04-24T04:17:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 24, 2026 04:17:01 UTC">2026-04-24</span>
   </span>
 
     
