@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Literal
 from aiologic import Lock
 from typing_extensions import override
 
+import async_kernel
 from async_kernel.common import Fixed
 
 if TYPE_CHECKING:
@@ -17,16 +18,18 @@ class OutStream(TextIOBase):
 
     _write_lock = Fixed(Lock)
 
-    def __init__(self, flusher: Callable[[str], None]) -> None:
+    def __init__(self, flusher: Callable[[str], None], *, mode: str) -> None:
         """
         Args:
             flusher: A callback responsible for sending the output.
+            ctx: The context variable to redirect output.
 
         [reference for IOBase](https://docs.python.org/3/library/io.html#io.IOBase)
         """
         super().__init__()
         self._flusher = flusher
         self._out = ""
+        self._ctx = {"stdout": async_kernel.utils._stdout_context, "stderr": async_kernel.utils._stdout_context}[mode]  # pyright: ignore[reportPrivateUsage]
 
     @override
     def isatty(self) -> Literal[True]:
@@ -52,9 +55,13 @@ class OutStream(TextIOBase):
 
     @override
     def write(self, string: str) -> int:
-        with self._write_lock:
-            self._out = string
-            self.flush()
+        if out := self._ctx.get():
+            out.write(string)
+            out.flush()
+        else:
+            with self._write_lock:
+                self._out = string
+                self.flush()
         return len(string)
 
     @override

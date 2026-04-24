@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import io
 import pathlib
+import sys
 import threading
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -667,3 +669,19 @@ async def test_AsyncInteractiveShell_subclass(kernel):
 
         class MySubshell(AsyncInteractiveSubshell):  # pyright: ignore[reportUnusedClass]
             pass
+
+
+async def test_redirect_stdout(kernel: Kernel):
+
+    with async_kernel.utils.redirect_stdout(io.StringIO()) as f:
+        print("hello")
+        print("world")
+    assert f.getvalue() == "hello\nworld\n"
+
+
+async def test_redirect_stderr(kernel: Kernel):
+
+    with async_kernel.utils.redirect_stderr(io.StringIO()) as f:
+        sys.stderr.write("hello")
+        sys.stderr.flush()
+    assert f.getvalue() == "hello"

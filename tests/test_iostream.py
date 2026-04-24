@@ -15,7 +15,7 @@ def test_io_api():
         nonlocal output
         output += string
 
-    stream = OutStream(flusher)
+    stream = OutStream(flusher, mode="stdout")
 
     assert stream.errors is None
     with pytest.raises(io.UnsupportedOperation):
