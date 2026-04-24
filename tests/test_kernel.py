@@ -368,7 +368,7 @@ async def test_debug_static(client: AsyncKernelClient, command: str, mocker):
 
 
 async def test_debug_raises_no_socket(kernel: Kernel):
-    debugger = kernel.shell.debugger
+    debugger = kernel.interface.debugger
     assert debugger
     with pytest.raises(RuntimeError):
         await debugger.debugpy_client.send_request({})

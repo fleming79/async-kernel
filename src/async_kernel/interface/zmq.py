@@ -508,6 +508,6 @@ class ZMQKernelInterface(BaseKernelInterface):
         """
         Perform a keyboard interrupt.
         """
-        if not getattr(self.kernel.shell.debugger, "stopped_threads", None):
+        if not getattr(self.debugger, "stopped_threads", None):
             self._interrupt_now()
         super().interrupt()
