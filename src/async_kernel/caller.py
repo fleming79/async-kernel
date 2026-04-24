@@ -734,6 +734,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         else:
             if not (queue := self._guest_queues.get(backend)):
                 with self._child_lock:
+                    if backend:
+                        trio.sleep  # noqa: B018 # Check trio is available.
                     if not (queue := self._guest_queues.get(backend)):
                         queue = SingleAsyncQueue(reject=self._reject)
                         self._guest_queues[backend] = queue
