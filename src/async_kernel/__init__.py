@@ -7,7 +7,8 @@ from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import PROTOCOL_VERSION
 from async_kernel.pending import Pending
 
-__version__ = version(distribution_name="async-kernel")
+distribution_name = "async-kernel"
+__version__ = version(distribution_name=distribution_name)
 
 kernel_protocol_version = PROTOCOL_VERSION
 kernel_protocol_version_info = {
