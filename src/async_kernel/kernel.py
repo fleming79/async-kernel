@@ -110,6 +110,15 @@ class Kernel(traitlets.HasTraits):
     kernel_name = traitlets.CUnicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
+    help_links = traitlets.List(trait=traitlets.Dict())
+    "A list of links provided kernel info request."
+
+    supported_features = traitlets.List(traitlets.Unicode())
+    "A list of features supported by the kernel."
+
+    banner = traitlets.Unicode()
+    "The banner to display in a console."
+
     log = traitlets.Instance(logging.LoggerAdapter)
     "The logging adapter."
 
@@ -125,11 +134,6 @@ class Kernel(traitlets.HasTraits):
 
     event_stopped = Fixed(Event)
     "An event that occurs when the kernel is stopped."
-
-    help_links = traitlets.Tuple()
-    ""
-    kernel_info: traitlets.Dict[str, Any] = traitlets.Dict()
-    ""
 
     def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
         #  There is only one instance (including subclasses).
@@ -207,21 +211,31 @@ class Kernel(traitlets.HasTraits):
             },
         )
 
-    @traitlets.default("kernel_info")
-    def _default_kernel_info(self) -> dict[str, Any]:
+    @traitlets.default("supported_features")
+    def _default_supported_features(self) -> list[str]:
         features = ["kernel subshells"]
         if self.interface.debugger:
             features.append("debugger")
+        return features
+
+    @traitlets.default("banner")
+    def _default_banner(self) -> str:
+        return self.main_shell.banner
+
+    @property
+    def kernel_info(self) -> dict[str, Any]:
+        "Info provided to a kernel info request."
+
         return {
             "protocol_version": async_kernel.kernel_protocol_version,
-            "implementation": "async_kernel",
+            "implementation": async_kernel.distribution_name,
             "implementation_version": async_kernel.__version__,
             "language_info": async_kernel.kernel_protocol_version_info,
-            "banner": self.main_shell.banner,
+            "banner": self.banner,
             "help_links": self.help_links,
             "debugger": bool(self.interface.debugger),
             "kernel_name": self.kernel_name,
-            "supported_features": features,
+            "supported_features": self.supported_features,
         }
 
     @property
