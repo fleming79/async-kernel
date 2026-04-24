@@ -18,7 +18,7 @@ from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
 from IPython.core.history import HistoryManager
-from IPython.core.interactiveshell import ExecutionResult, InteractiveShell
+from IPython.core.interactiveshell import InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class, no_var_expand
 from IPython.utils.tokenutil import token_at_cursor
@@ -990,7 +990,7 @@ class KernelMagics(Magics):
 
     @no_var_expand
     @line_cell_magic
-    def thread(self, line: str, cell: str | None = None) -> Pending[ExecutionResult]:
+    async def thread(self, line: str, cell: str | None = None) -> None:
         """
         Run the python code in a caller managed child thread.
 
@@ -1008,7 +1008,7 @@ class KernelMagics(Magics):
         else:
             options = RunMode.line_to_options(line)
         caller = shell.kernel.caller
-        return (caller.get(**options).call_soon if options else caller.to_thread)(
+        await (caller.get(**options).call_soon if options else caller.to_thread)(
             shell.run_cell_async,
             raw_cell=cell,
             store_history=False,
@@ -1017,9 +1017,9 @@ class KernelMagics(Magics):
             transformed_cell=shell.transform_cell_async(cell),
         )
 
-    def _call_using_backend(self, backend: Literal["asyncio", "trio"], code: str) -> Pending[ExecutionResult]:
+    async def _call_using_backend(self, backend: Literal["asyncio", "trio"], code: str) -> None:
         shell: AsyncInteractiveShell | AsyncInteractiveSubshell = SubshellManager.get_shell()
-        return Caller().call_using_backend(
+        await Caller().call_using_backend(
             backend,
             shell.run_cell_async,
             raw_cell=code,
@@ -1031,12 +1031,12 @@ class KernelMagics(Magics):
 
     @no_var_expand
     @line_cell_magic
-    def asyncio(self, line: str, cell: str | None = None) -> Pending[ExecutionResult]:
+    async def asyncio(self, line: str, cell: str | None = None) -> None:
         ""
-        return self._call_using_backend("asyncio", cell or line)
+        await self._call_using_backend("asyncio", cell or line)
 
     @no_var_expand
     @line_cell_magic
-    def trio(self, line: str, cell: str | None = None) -> Pending[ExecutionResult]:
+    async def trio(self, line: str, cell: str | None = None) -> None:
         ""
-        return self._call_using_backend("trio", cell or line)
+        await self._call_using_backend("trio", cell or line)
