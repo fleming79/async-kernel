@@ -7182,21 +7182,36 @@ protected subshell when it is no longer required.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            thread (async_kernel.asyncshell.KernelMagics.thread)" href="#async_kernel.asyncshell.KernelMagics.thread">thread</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            thread
+
+
+  
+      async
+   (async_kernel.asyncshell.KernelMagics.thread)" href="#async_kernel.asyncshell.KernelMagics.thread">thread</a></code></b>
             –
             <div class="doc-md-description">
               <p>Run the python code in a caller managed child thread.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            asyncio (async_kernel.asyncshell.KernelMagics.asyncio)" href="#async_kernel.asyncshell.KernelMagics.asyncio">asyncio</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            asyncio
+
+
+  
+      async
+   (async_kernel.asyncshell.KernelMagics.asyncio)" href="#async_kernel.asyncshell.KernelMagics.asyncio">asyncio</a></code></b>
             –
             <div class="doc-md-description">
               
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            trio (async_kernel.asyncshell.KernelMagics.trio)" href="#async_kernel.asyncshell.KernelMagics.trio">trio</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            trio
+
+
+  
+      async
+   (async_kernel.asyncshell.KernelMagics.trio)" href="#async_kernel.asyncshell.KernelMagics.trio">trio</a></code></b>
             –
             <div class="doc-md-description">
               
@@ -7455,7 +7470,7 @@ protected subshell when it is no longer required.</p>
 
     <span class="nd">@no_var_expand</span>
     <span class="nd">@line_cell_magic</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run the python code in a caller managed child thread.</span>
 
@@ -7473,7 +7488,7 @@ protected subshell when it is no longer required.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">options</span> <span class="o">=</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">line_to_options</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
         <span class="n">caller</span> <span class="o">=</span> <span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">caller</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">call_soon</span> <span class="k">if</span> <span class="n">options</span> <span class="k">else</span> <span class="n">caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">)(</span>
+        <span class="k">await</span> <span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">call_soon</span> <span class="k">if</span> <span class="n">options</span> <span class="k">else</span> <span class="n">caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">)(</span>
             <span class="n">shell</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">,</span>
             <span class="n">raw_cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span>
             <span class="n">store_history</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -7482,9 +7497,9 @@ protected subshell when it is no longer required.</p>
             <span class="n">transformed_cell</span><span class="o">=</span><span class="n">shell</span><span class="o">.</span><span class="n">transform_cell_async</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_call_using_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">],</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_call_using_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">],</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">shell</span><span class="p">:</span> <span class="n">AsyncInteractiveShell</span> <span class="o">|</span> <span class="n">AsyncInteractiveSubshell</span> <span class="o">=</span> <span class="n">SubshellManager</span><span class="o">.</span><span class="n">get_shell</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">call_using_backend</span><span class="p">(</span>
+        <span class="k">await</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">call_using_backend</span><span class="p">(</span>
             <span class="n">backend</span><span class="p">,</span>
             <span class="n">shell</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">,</span>
             <span class="n">raw_cell</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
@@ -7496,15 +7511,15 @@ protected subshell when it is no longer required.</p>
 
     <span class="nd">@no_var_expand</span>
     <span class="nd">@line_cell_magic</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">asyncio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">asyncio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="s2">&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
 
     <span class="nd">@no_var_expand</span>
     <span class="nd">@line_cell_magic</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">trio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="s2">&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;trio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;trio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -7857,8 +7872,12 @@ protected subshell when it is no longer required.</p>
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">thread</span>
 
 
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
 <a href="#async_kernel.asyncshell.KernelMagics.thread" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">thread</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.KernelMagics.thread(line)">line</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.KernelMagics.thread(cell)">cell</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="IPython.core.interactiveshell.ExecutionResult" href="https://ipython.readthedocs.io/en/stable/api/generated/IPython.core.interactiveshell.html#IPython.core.interactiveshell.ExecutionResult">ExecutionResult</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">thread</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.KernelMagics.thread(line)">line</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.KernelMagics.thread(cell)">cell</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7905,7 +7924,7 @@ protected subshell when it is no longer required.</p>
 <span class="normal">1017</span>
 <span class="normal">1018</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@no_var_expand</span>
 <span class="nd">@line_cell_magic</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the python code in a caller managed child thread.</span>
 
@@ -7923,7 +7942,7 @@ protected subshell when it is no longer required.</p>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">options</span> <span class="o">=</span> <span class="n">RunMode</span><span class="o">.</span><span class="n">line_to_options</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
     <span class="n">caller</span> <span class="o">=</span> <span class="n">shell</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">caller</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">call_soon</span> <span class="k">if</span> <span class="n">options</span> <span class="k">else</span> <span class="n">caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">)(</span>
+    <span class="k">await</span> <span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">call_soon</span> <span class="k">if</span> <span class="n">options</span> <span class="k">else</span> <span class="n">caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">)(</span>
         <span class="n">shell</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">,</span>
         <span class="n">raw_cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span>
         <span class="n">store_history</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -7944,8 +7963,12 @@ protected subshell when it is no longer required.</p>
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">asyncio</span>
 
 
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
 <a href="#async_kernel.asyncshell.KernelMagics.asyncio" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">asyncio</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.KernelMagics.asyncio(line)">line</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.KernelMagics.asyncio(cell)">cell</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="IPython.core.interactiveshell.ExecutionResult" href="https://ipython.readthedocs.io/en/stable/api/generated/IPython.core.interactiveshell.html#IPython.core.interactiveshell.ExecutionResult">ExecutionResult</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">asyncio</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.KernelMagics.asyncio(line)">line</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.KernelMagics.asyncio(cell)">cell</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7960,9 +7983,9 @@ protected subshell when it is no longer required.</p>
 <span class="normal">1035</span>
 <span class="normal">1036</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@no_var_expand</span>
 <span class="nd">@line_cell_magic</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">asyncio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">asyncio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7976,8 +7999,12 @@ protected subshell when it is no longer required.</p>
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">trio</span>
 
 
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
 <a href="#async_kernel.asyncshell.KernelMagics.trio" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">trio</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.KernelMagics.trio(line)">line</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.KernelMagics.trio(cell)">cell</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="IPython.core.interactiveshell.ExecutionResult" href="https://ipython.readthedocs.io/en/stable/api/generated/IPython.core.interactiveshell.html#IPython.core.interactiveshell.ExecutionResult">ExecutionResult</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">trio</span><span class="p">(</span><span class="n"><span title="async_kernel.asyncshell.KernelMagics.trio(line)">line</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.asyncshell.KernelMagics.trio(cell)">cell</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7992,9 +8019,9 @@ protected subshell when it is no longer required.</p>
 <span class="normal">1041</span>
 <span class="normal">1042</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@no_var_expand</span>
 <span class="nd">@line_cell_magic</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">trio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;trio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_using_backend</span><span class="p">(</span><span class="s2">&quot;trio&quot;</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">line</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
