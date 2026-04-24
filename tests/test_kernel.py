@@ -408,6 +408,7 @@ async def test_debug_static_richInspectVariables(client: AsyncKernelClient, vari
         """%%thread name="Trio executor" backend=trio\nfrom async_kernel import Caller; assert Caller().name == "Trio executor";print('okay')""",
         "import asyncio\n%asyncio await asyncio.sleep(0)\nprint('okay')",
         "import trio\n%trio await trio.sleep(0)\nprint('okay')",
+        "%mkdir test\n%rmdir test\n%ls",
     ],
 )
 async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):

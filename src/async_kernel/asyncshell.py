@@ -5,6 +5,7 @@ import contextlib
 import json
 import os
 import pathlib
+import shlex
 import sys
 import time
 from collections.abc import Callable
@@ -17,7 +18,7 @@ from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
 from IPython.core.history import HistoryManager
-from IPython.core.interactiveshell import InteractiveShell
+from IPython.core.interactiveshell import ExecutionResult, InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class, no_var_expand
 from IPython.utils.tokenutil import token_at_cursor
@@ -31,7 +32,7 @@ from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt, import_item
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
-from async_kernel.pending import PendingManager
+from async_kernel.pending import Pending, PendingManager
 from async_kernel.typing import Channel, Content, Message, NoValue, RunMode, Tags
 
 if TYPE_CHECKING:
@@ -227,7 +228,6 @@ class AsyncInteractiveShell(InteractiveShell):
     loop_runner_map = None
     loop_runner = None
     autoindent = False
-
     help_links = traitlets.Tuple()
     ""
 
@@ -388,26 +388,43 @@ class AsyncInteractiveShell(InteractiveShell):
 
     async def run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
         "Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."
-        result = self.run_line_magic(magic_name, line, _stack_depth)
-        try:
-            return await result  # pyright: ignore[reportGeneralTypeIssues]
-        except TypeError:
-            return result
+        async with Caller().create_pending_group(mode=1):
+            result = self.run_line_magic(magic_name, line, _stack_depth)
+            try:
+                return await result  # pyright: ignore[reportGeneralTypeIssues]
+            except TypeError:
+                return result
 
     async def run_cell_magic_async(self, magic_name: str, line: str, cell: str) -> Any:
         "Call and awaits [run_cell_magic][IPython.core.interactiveshell.InteractiveShell.run_cell_magic]."
-        result = self.run_cell_magic(magic_name, line, cell)
-        try:
-            return await result  # pyright: ignore[reportGeneralTypeIssues]
-        except TypeError:
-            return result
+        async with Caller().create_pending_group(mode=1):
+            result = self.run_cell_magic(magic_name, line, cell)
+            try:
+                return await result  # pyright: ignore[reportGeneralTypeIssues]
+            except TypeError:
+                return result
+
+    @override
+    def system(self, cmd: list[str], *, stderr_to_stdout=False) -> Pending[None]:
+        async def system_call() -> None:
+            async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
+                if process.stdout:
+                    tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
+                if process.stderr:
+                    tg.start_soon(
+                        _forward_transport_stream, process.stderr, sys.stdout if stderr_to_stdout else sys.stderr
+                    )
+
+        return Caller().to_thread(system_call)
 
     def transform_cell_async(self, raw_cell: str) -> str:
         "Transform the cell and substitute magic calls with an awaitable wrapper."
+
         return (
             self.transform_cell(raw_cell)
             .replace("get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async(")
             .replace("get_ipython().run_cell_magic(", "await get_ipython().run_cell_magic_async(")
+            .replace("get_ipython().system(", "await get_ipython().system(")
         )
 
     async def execute_request(
@@ -611,6 +628,9 @@ class AsyncInteractiveShell(InteractiveShell):
         """Initialize magics."""
         super().init_magics()
         self.register_magics(KernelMagics)
+        self.magics_manager.register_alias("python", "thread")
+        self.magics_manager.register_alias("python3", "thread")
+        self.magics_manager.register_alias("!", "system")
 
     @override
     def enable_gui(self, gui=None) -> None:
@@ -955,33 +975,22 @@ class KernelMagics(Magics):
                 case _ as name:
                     print("Unsupported command:", name)
         else:
-            cmd = [sys.executable, "-m", "pip", *line.split()]
-            async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
-                if process.stdout:
-                    tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
-                if process.stderr:
-                    tg.start_soon(_forward_transport_stream, process.stderr, sys.stderr)
-
+            await SubshellManager.get_shell().system([sys.executable, "-m", "pip", *line.split()])
         return None
 
     @no_var_expand
     @line_magic
-    async def uv(self, line) -> None:
+    def uv(self, line) -> Pending[None]:
         """Run the uv package manager for the current environment.
 
         Usage:
           %uv pip install [pkgs]
         """
-        cmd = ["uv", *line.split()]
-        async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
-            if process.stdout:
-                tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
-            if process.stderr:
-                tg.start_soon(_forward_transport_stream, process.stderr, sys.stdout)
+        return SubshellManager.get_shell().system(["uv", *shlex.split(line)], stderr_to_stdout=True)
 
     @no_var_expand
     @line_cell_magic
-    async def thread(self, line: str, cell: str | None = None) -> None:
+    def thread(self, line: str, cell: str | None = None) -> Pending[ExecutionResult]:
         """
         Run the python code in a caller managed child thread.
 
@@ -999,7 +1008,7 @@ class KernelMagics(Magics):
         else:
             options = RunMode.line_to_options(line)
         caller = shell.kernel.caller
-        await (caller.get(**options).call_soon if options else caller.to_thread)(
+        return (caller.get(**options).call_soon if options else caller.to_thread)(
             shell.run_cell_async,
             raw_cell=cell,
             store_history=False,
@@ -1008,9 +1017,9 @@ class KernelMagics(Magics):
             transformed_cell=shell.transform_cell_async(cell),
         )
 
-    async def _call_using_backend(self, backend: Literal["asyncio", "trio"], code: str):
+    def _call_using_backend(self, backend: Literal["asyncio", "trio"], code: str) -> Pending[ExecutionResult]:
         shell: AsyncInteractiveShell | AsyncInteractiveSubshell = SubshellManager.get_shell()
-        await Caller().call_using_backend(
+        return Caller().call_using_backend(
             backend,
             shell.run_cell_async,
             raw_cell=code,
@@ -1022,12 +1031,12 @@ class KernelMagics(Magics):
 
     @no_var_expand
     @line_cell_magic
-    async def asyncio(self, line: str, cell: str | None = None) -> None:
+    def asyncio(self, line: str, cell: str | None = None) -> Pending[ExecutionResult]:
         ""
-        await self._call_using_backend("asyncio", cell or line)
+        return self._call_using_backend("asyncio", cell or line)
 
     @no_var_expand
     @line_cell_magic
-    async def trio(self, line: str, cell: str | None = None) -> None:
+    def trio(self, line: str, cell: str | None = None) -> Pending[ExecutionResult]:
         ""
-        await self._call_using_backend("trio", cell or line)
+        return self._call_using_backend("trio", cell or line)
