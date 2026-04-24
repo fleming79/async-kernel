@@ -29,7 +29,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt, import_item
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import Pending, PendingManager
@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from anyio.abc import ByteReceiveStream
 
     from async_kernel import Kernel
-    from async_kernel.debugger import Debugger
 
 
 __all__ = ["AsyncInteractiveShell"]
@@ -208,9 +207,6 @@ class AsyncInteractiveShell(InteractiveShell):
     pending_manager = Fixed(ShellPendingManager)
     subshell_id = Fixed(lambda _: None)
 
-    debugger: Fixed[Self, Debugger | None] | None = None  # pyright: ignore[reportIncompatibleMethodOverride]
-    "Handles [debug requests](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."
-
     user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
     user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
 
@@ -228,8 +224,6 @@ class AsyncInteractiveShell(InteractiveShell):
     loop_runner_map = None
     loop_runner = None
     autoindent = False
-    help_links = traitlets.Tuple()
-    ""
 
     @override
     def __repr__(self) -> str:
@@ -362,29 +356,6 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def ns_table(self) -> dict[str, dict[Any, Any] | dict[str, Any]]:
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
-
-    @property
-    def kernel_info(self) -> dict[str, Any]:
-        "A dict of detail sent in reply to for a 'kernel_info_request'."
-        return {
-            "protocol_version": async_kernel.kernel_protocol_version,
-            "implementation": "async_kernel",
-            "implementation_version": async_kernel.__version__,
-            "language_info": async_kernel.kernel_protocol_version_info,
-            "banner": self.banner,
-            "help_links": self.help_links,
-            "debugger": bool(self.debugger),
-            "kernel_name": self.kernel.kernel_name,
-            "supported_features": self.supported_features,
-        }
-
-    @property
-    def supported_features(self) -> list[str]:
-        "Supported features included in the reply to a [async_kernel.kernel.Kernel.kernel_info_request][]."
-        features = ["kernel subshells"]
-        if self.debugger:
-            features.append("debugger")
-        return features
 
     async def run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
         "Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."
@@ -779,39 +750,6 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
 class IPythonAsyncInteractiveShell(AsyncInteractiveShell):
     "The default AsyncInteractiveShell"
-
-    debugger = Fixed(
-        lambda _: (
-            import_item("async_kernel.debugger.Debugger")()
-            if (not utils.LAUNCHED_BY_DEBUGPY) & (sys.platform != "emscripten")
-            else None
-        )
-    )
-
-    @traitlets.default("help_links")
-    def _default_help_links(self) -> tuple[dict[str, str], ...]:
-        return (
-            {
-                "text": "Async Kernel Reference ",
-                "url": "https://fleming79.github.io/async-kernel/",
-            },
-            {
-                "text": "IPython Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/",
-            },
-            {
-                "text": "IPython magic Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
-            },
-            {
-                "text": "Matplotlib ipympl Reference",
-                "url": "https://matplotlib.org/ipympl/",
-            },
-            {
-                "text": "Matplotlib Reference",
-                "url": "https://matplotlib.org/contents.html",
-            },
-        )
 
 
 class IPythonInteractiveSubshell(AsyncInteractiveSubshell):

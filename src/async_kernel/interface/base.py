@@ -12,7 +12,6 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from logging import Logger, LoggerAdapter
 from typing import TYPE_CHECKING, Any, Literal, Self
 from uuid import uuid4
 
@@ -24,7 +23,7 @@ import async_kernel
 from async_kernel import utils
 from async_kernel.asyncshell import ShellPendingManager
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt, import_item
 from async_kernel.iostream import OutStream
 from async_kernel.typing import (
     Backend,
@@ -110,12 +109,17 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     _zmq_context = None
     _handler_cache: dict[tuple[str | None, MsgType, Callable], HandlerType] = {}
 
+    debugger = Fixed(
+        lambda _: (
+            import_item("async_kernel.debugger.Debugger")()
+            if (not utils.LAUNCHED_BY_DEBUGPY) & (sys.platform != "emscripten")
+            else None
+        )
+    )
+    "A debugger adapter."
+
     def load_connection_info(self, info: dict[str, Any]) -> None:
         raise NotImplementedError
-
-    @traitlets.default("log")
-    def _default_log(self) -> LoggerAdapter[Logger]:
-        return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 
     @traitlets.default("handle_in_thread")
     def _default_handle_in_thread(self) -> dict[MsgType, str]:
@@ -130,6 +134,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
             msg = "The kernel already has an interface!"
             raise RuntimeError(msg)
         self.kernel.interface = self
+        self.log = self.kernel.log
         super().__init__()
         if kernel_settings:
             self.kernel.load_settings(kernel_settings)

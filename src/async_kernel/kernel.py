@@ -18,6 +18,7 @@ from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
 from typing_extensions import override
 
+import async_kernel
 from async_kernel import Caller, utils
 from async_kernel.asyncshell import (
     AsyncInteractiveShell,
@@ -125,6 +126,11 @@ class Kernel(traitlets.HasTraits):
     event_stopped = Fixed(Event)
     "An event that occurs when the kernel is stopped."
 
+    help_links = traitlets.Tuple()
+    ""
+    kernel_info: traitlets.Dict[str, Any] = traitlets.Dict()
+    ""
+
     def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
         #  There is only one instance (including subclasses).
         if not (instance := Kernel._instance):
@@ -176,6 +182,48 @@ class Kernel(traitlets.HasTraits):
     def _validate_connection_file(self, proposal) -> Path:
         return pathlib.Path(proposal.value).expanduser()
 
+    @traitlets.default("help_links")
+    def _default_help_links(self) -> tuple[dict[str, str], ...]:
+        return (
+            {
+                "text": "Async Kernel Reference ",
+                "url": "https://fleming79.github.io/async-kernel/",
+            },
+            {
+                "text": "IPython Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/",
+            },
+            {
+                "text": "IPython magic Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
+            },
+            {
+                "text": "Matplotlib ipympl Reference",
+                "url": "https://matplotlib.org/ipympl/",
+            },
+            {
+                "text": "Matplotlib Reference",
+                "url": "https://matplotlib.org/contents.html",
+            },
+        )
+
+    @traitlets.default("kernel_info")
+    def _default_kernel_info(self) -> dict[str, Any]:
+        features = ["kernel subshells"]
+        if self.interface.debugger:
+            features.append("debugger")
+        return {
+            "protocol_version": async_kernel.kernel_protocol_version,
+            "implementation": "async_kernel",
+            "implementation_version": async_kernel.__version__,
+            "language_info": async_kernel.kernel_protocol_version_info,
+            "banner": self.main_shell.banner,
+            "help_links": self.help_links,
+            "debugger": bool(self.interface.debugger),
+            "kernel_name": self.kernel_name,
+            "supported_features": features,
+        }
+
     @property
     def settings(self) -> dict[str, Any]:
         "Settings that have been set to customise the behaviour of the kernel."
@@ -195,11 +243,6 @@ class Kernel(traitlets.HasTraits):
     def caller(self) -> Caller:
         "The caller for the shell channel."
         return self.interface.callers[Channel.shell]
-
-    @property
-    def kernel_info(self) -> dict[str, Any]:
-        "A dict of detail sent in reply to for a 'kernel_info_request'."
-        return self.main_shell.kernel_info
 
     def load_settings(self, settings: dict[str, Any]) -> None:
         """
@@ -305,32 +348,32 @@ class Kernel(traitlets.HasTraits):
         self.comm_manager.comm_close(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
     async def interrupt_request(self, job: Job[Content], /) -> Content:
-        """Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt) (control only)."""
+        """Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt)."""
         self.interface.interrupt()
         return {}
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
-        """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown) (control only)."""
+        """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
         self._restart = job["msg"]["content"].get("restart", False)
         self.interface.stop()
         return {"restart": self._restart}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
-        """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request) (control only)."""
-        return await self.shell.debugger.process_request(job["msg"]["content"])  # pyright: ignore[reportOptionalMemberAccess]
+        """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""
+        return await self.interface.debugger.process_request(job["msg"]["content"])  # pyright: ignore[reportOptionalMemberAccess]
 
     async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
-        """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell) (control only)."""
+        """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell)."""
 
         return {"subshell_id": self.subshell_manager.create_subshell(protected=False).subshell_id}
 
     async def delete_subshell_request(self, job: Job[Content], /) -> Content:
-        """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell) (control only)."""
+        """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell)."""
         self.subshell_manager.delete_subshell(job["msg"]["content"]["subshell_id"])
         return {}
 
     async def list_subshell_request(self, job: Job[Content], /) -> Content:
-        """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells) (control only)."""
+        """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells)."""
         return {"subshell_id": list(self.subshell_manager.list_subshells())}
 
     def get_connection_info(self) -> dict[str, Any]:
