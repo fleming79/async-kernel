@@ -145,8 +145,7 @@ def write_kernel_spec(
         spec: dict[str, list[Any] | Any | dict[Any, Any] | str | dict[str, bool]] = {
             "argv": argv,
             "env": env or {},
-            "display_name": display_name
-            or f"Python {sys.version_info.major}.{sys.version_info.minor} {sys.version} ({kernel_name})",
+            "display_name": display_name or f"Python {sys.version_info.major}.{sys.version_info.minor} ({kernel_name})",
             "language": language,
             "interrupt_mode": "message",
             "metadata": metadata if metadata is not None else {"debugger": True, "concurrent": True},
