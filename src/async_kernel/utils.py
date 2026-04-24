@@ -4,6 +4,7 @@ import math
 import sys
 import threading
 import traceback
+from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
@@ -16,6 +17,7 @@ from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from contextlib import _SupportsRedirect, _SupportsRedirectT  # pyright: ignore[reportPrivateUsage]
 
     from async_kernel.kernel import Kernel
     from async_kernel.typing import Content, Job, Message
@@ -33,14 +35,19 @@ __all__ = [
     "get_tags",
     "get_timeout",
     "mark_thread_pydev_do_not_trace",
+    "redirect_stderr",
+    "redirect_stdout",
     "setattr_nested",
     "subshell_context",
 ]
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 
+
 _job_var: ContextVar[Job[Any]] = ContextVar("async-kernel job")
 _cell_id_var: ContextVar[str | None] = ContextVar("async-kernel cell_id", default=None)
+_stdout_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel std_out", default=None)
+_stderr_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel std_err", default=None)
 
 
 def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:
@@ -195,3 +202,36 @@ def error_to_content(error: BaseException, /) -> Content:
         "evalue": str(error),
         "traceback": traceback.format_exception(error),
     }
+
+
+@contextmanager
+def redirect_stdout(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirectT, Any, None]:
+    """
+    Re-direct [sys.stdout][] generated in the current context.
+
+    See also:
+        - [contextlib.redirect_stdout][]
+    """
+    assert get_kernel().event_started
+    token = _stdout_context.set(stream)
+    try:
+        yield stream
+    finally:
+        _stdout_context.reset(token)
+
+
+@contextmanager
+def redirect_stderr(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirectT, Any, None]:
+    """
+    Re-direct [sys.stderr][] generated in the current context.
+
+    See also:
+        - [contextlib.redirect_stderr][]
+    """
+
+    assert get_kernel().event_started
+    token = _stdout_context.set(stream)
+    try:
+        yield stream
+    finally:
+        _stdout_context.reset(token)

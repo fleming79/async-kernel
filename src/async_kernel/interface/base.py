@@ -205,7 +205,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
                     echo.write(string)  # pragma: no cover
                     echo.flush()  # pragma: no cover
 
-            wrapper = OutStream(flusher=flusher)
+            wrapper = OutStream(flusher=flusher, mode=name)
             setattr(sys, name, wrapper)
 
         return restore
