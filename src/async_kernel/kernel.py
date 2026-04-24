@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import pathlib
+import sys
 import time
 import uuid
 from logging import Logger, LoggerAdapter
@@ -137,6 +138,8 @@ class Kernel(traitlets.HasTraits):
             super().__init__()
             if not os.environ.get("MPLBACKEND"):
                 os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+            if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
+                os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
         if settings:
             self.load_settings(settings)
 
