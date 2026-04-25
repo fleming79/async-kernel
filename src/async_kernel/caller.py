@@ -125,7 +125,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).
 
     - CPython: there is only one caller instance per thread.
-    - Pyodide: Multiple caller instances can exist in the same thread, but is limited to one instance per context.
+    - Pyodide: Pyodide does not support threads, It is a context-varible local class instead.
 
     Multi-eventloop management is supported including:
 
@@ -317,15 +317,17 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
         """
-        Create or retrieve a Caller instance.
+        Create or retrieve a caller.
 
         Args:
-            modifier: Specifies how the Caller instance should be created or retrieved.
+            modifier: Specifies the caller instance to retrieve.
 
-                - "CurrentThread": Automatically create or retrieve the instance.
-                - "MainThread": Use the main thread for the Caller.
-                - "NewThread": Create a new thread.
-                - "manual": Manually create a new instance for the current thread.
+                - "CurrentThread": The caller for the current thread.
+                - "MainThread": The Caller associated with the main thread.
+                - Advanced:
+                    - "NewThread": Create a caller with a new thread.
+                        [Caller.get][] and [Caller.to_thread][] are recommended for normal usage.
+                    - "manual": Create a instance for the current thread.
 
             **kwargs: Additional options for Caller creation, such as:
                 - name: The name to use.
@@ -664,20 +666,20 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """
-        Retrieves an existing child caller by name and backend, or creates a new one if not found.
+        Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.
 
         Args:
-            **kwargs: Options for creating or retrieving a caller instance.
+            **kwargs: Options for creating or retrieving a caller.
 
         Returns:
-            Self: The retrieved or newly created caller instance.
+            Self: The retrieved or newly created caller.
 
         Raises:
             RuntimeError: If a caller with the specified name exists but the backend does not match.
 
         Notes:
-            - The returned caller is added to `children` and stopped with this instance.
-            - If 'backend' or 'zmq_context' are not specified they are copied from this instance.
+            - The returned caller is added to `children` and stopped with the caller.
+            - If 'backend' or 'zmq_context' are not specified they are copied from the caller.
         """
         if self._state in [CallerState.stopping, CallerState.stopped]:
             msg = f"Caller is stopping or stopped {self}"
@@ -715,18 +717,18 @@ class Caller(anyio.AsyncContextManagerMixin):
         **metadata: Any,
     ) -> Pending[T]:
         """
-        Schedule `func` to be called inside a task running in the caller's thread.
-
-        The methods [call_soon][Caller.call_soon] and [call_later][Caller.call_later]
-        use this method in the background,  they should be used in preference to this method since they provide type hinting for the arguments.
+        A low-level function to schedule execution of `func`in a task running in the caller's thread.
 
         Args:
-            func: The function to be called. If it returns a coroutine, it will be awaited and its result will be returned.
+            func: The function to be called.
             args: Arguments corresponding to in the call to  `func`.
             kwargs: Keyword arguments to use with in the call to `func`.
-            context: The context to use, if not provided the current context is used.
+            context: A context to copy, if not provided the current context is copied.
             trackers: The tracker subclasses of active trackers which to add the pending.
             **metadata: Additional metadata to store in the instance.
+
+        Returns:
+            Pending: A pending that can be awaited to obtain the result of func.
         """
         pen = Pending(context, trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
@@ -821,7 +823,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Pending[T]:
         """
-        Schedule func to be executed using the specified backend.
+        Schedule func to be executed using the specified `backend`.
 
         This methods enables coroutines written for a specific function to be run irresective
         of the callers backend.
@@ -835,8 +837,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
 
-        Notes:
-            **Only use this method to execute coroutines that require a specific backend to run in the caller's thread.**
+        See also:
+            - [Caller.get][]
         """
         return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))
 
@@ -848,7 +850,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> None:
         """
-        Schedule `func` to be called in caller's event loop directly.
+        A low-level function to schedule execution of `func` in caller's scheduler.
 
         Use this for short-running function calls only.
 
@@ -871,7 +873,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> Pending[T]:
         """
-        Call func in a worker thread using the same backend as the current instance.
+        Call `func` in a worker thread using the same backend as the caller.
 
         Args:
             func: The function.
@@ -879,8 +881,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with func.
 
         Notes:
-            - A minimum number of caller instances are retained for this method.
-            - Async code run inside func should use taskgroups for creating task.
+            - A pool of workers are maintained.
+            - Structured concurrency tools should be used to creating task such as:
+                - [Caller.create_pending_group][]
+                - [asyncio.TaskGroup][]
+                - [anyio.create_task_group][]
         """
 
         def _to_thread_on_done(_) -> None:
@@ -902,7 +907,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         return pen
 
     def queue_get(self, func: Callable) -> Pending[None] | None:
-        """Returns `Pending` instance for `func` where the queue is running.
+        """
+        Returns the pending associated with the `queue_call` for func.
 
         Notes:
             - `queue_close` is the preferred means to shutdown the queue.
@@ -917,10 +923,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         **kwargs: P.kwargs,
     ) -> None:
         """
-        A low-level function to queue the execution of `func` in a queue unique to it and the caller instance.
+        A low-level function to queue the execution of `func` in a queue unique to it and the caller.
 
-        This sets up a long-lived task to provide a fast pathway for repetitive calls to a function
-        where call order is also respected.
+        This sets up a long-lived task to provide a fast pathway for repetitive calls to a function.
 
         Args:
             func: The function.
@@ -928,7 +933,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with `func`.
 
         Notes:
-            - The queue runs inside a pending that remains running until one of the following occurs:
+            - The queue runs inside a task that remains running until one of the following occurs:
                 1. The queue is stopped.
                 2. The method [Caller.queue_close][] is called with `func` or `func`'s hash.
                 3. `func` is deleted (utilising [weakref.finalize][]).
@@ -968,7 +973,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def queue_close(self, func: Callable | int) -> None:
         """
-        Close the execution queue associated with `func`.
+        Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.
 
         Args:
             func: The queue of the function to close.
@@ -985,18 +990,17 @@ class Caller(anyio.AsyncContextManagerMixin):
         cancel_unfinished: bool = True,
     ) -> AsyncGenerator[Pending[T], Any]:
         """
-        An iterator to get result as they complete.
+        An async iterator to yield a pending for each awaitable in items as they complete.
 
         Args:
-            items: Either a container with existing results or generator of Pendings.
-            max_concurrent: The maximum number of concurrent results to monitor at a time.
-                This is useful when `items` is a generator utilising [Caller.to_thread][].
-                By default this will limit to `Caller.MAX_IDLE_POOL_INSTANCES`.
+            items: A container or a generator that yields awaitables.
+            max_concurrent: The maximum number of pending to monitor at a time if `items` is a generator.
             cancel_unfinished: Cancel any `pending` when exiting.
 
         Tip:
-            1. Pass a generator if you wish to limit the number result jobs when calling to_thread/to_task etc.
-            2. Pass a container with all results when the limiter is not relevant.
+            - Pass a generator if you wish to limit the number result jobs when calling to_thread/to_task etc.
+            - Pass a container with all results when the limiter is not relevant.
+            -  `Caller.MAX_IDLE_POOL_INSTANCES`
         """
         resume = noop
         queue: SingleAsyncQueue[Pending[T]] = SingleAsyncQueue()
@@ -1057,7 +1061,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
     ) -> tuple[set[Pending[T]], set[Pending[T]]]:
         """
-        Wait for the results given by items to complete.
+        Wait for one or more of the awaitable items to complete.
 
         Returns two sets of the results: (done, pending).
 
@@ -1101,15 +1105,13 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     def create_pending_group(self, *, shield: bool = False, mode: Literal[0, 1, 2, 3] = 0) -> PendingGroup:
         """
-        Create a new [PendingGroup][async_kernel.pending.PendingGroup] instance.
+        Create a new [PendingGroup][async_kernel.pending.PendingGroup].
 
-        The pending group registers all pending created in its context that opt in (via trackers). On exiting
-        the context, it will await all remaining pending to complete. The exit and cancellation behaviour of
-        the instance is a function of `mode`.
+        [Pending][async_kernel.pending.Pending] created in the context that opt-in by including `PendingTracker`
+        as a 'tracker', including all methods on [Caller][] that return pending are automatically registered.
 
-        If any pending result in exception, the pending group and all registered pending are cancelled.
-        If the pending group context is cancelled or results in exception, all pending in the group are
-        also cancelled.
+        The context will not exit until all registered pending are complete. The exit and cancellation behaviour
+        is determined by the `mode`.
 
         Args:
             shield: Shield the pending group from external cancellation.
