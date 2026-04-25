@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2026-04-25
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Move kernel_info, help_links and debugger from the shell to the kernel or interface. [#444](https://github.com/fleming79/async-kernel/pull/444)
+
+### <!-- 1 --> 🚀 Features
+
+- Add utils.redirect_stdout and utils.redirect_stderr. [#442](https://github.com/fleming79/async-kernel/pull/442)
+
+- Make system calls asynchronous and convert uv and pip magics to use it. [#441](https://github.com/fleming79/async-kernel/pull/441)
+
+### <!-- 2 --> 🐛 Fixes
+
+- Improve uv support and fix example kernel spec [#440](https://github.com/fleming79/async-kernel/pull/440)
+
+### <!-- 5 --> 📝 Documentation
+
+- Update Caller docstrings [#446](https://github.com/fleming79/async-kernel/pull/446)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Refactor AsyncInteractiveShell.shell method [#448](https://github.com/fleming79/async-kernel/pull/448)
+
+- Refactor Caller.as_completed. [#447](https://github.com/fleming79/async-kernel/pull/447)
+
+- Change kernel_info back to a property. [#445](https://github.com/fleming79/async-kernel/pull/445)
+
+- Change magics thread, asynio and trio back to coroutines that don't return results. [#443](https://github.com/fleming79/async-kernel/pull/443)
+
 ## [0.17.1] - 2026-04-23
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -20,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support specifing the thread with cell magic and passing thread options [#435](https://github.com/fleming79/async-kernel/pull/435)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.17.1 [#439](https://github.com/fleming79/async-kernel/pull/439)
 
 - Update pre-commit, uv.lock and basedpyright [#438](https://github.com/fleming79/async-kernel/pull/438)
 
@@ -1219,6 +1251,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.18.0]: https://github.com/fleming79/async-kernel/compare/v0.17.1..v0.18.0
 [0.17.1]: https://github.com/fleming79/async-kernel/compare/v0.17.0..v0.17.1
 [0.17.0]: https://github.com/fleming79/async-kernel/compare/v0.16.4..v0.17.0
 [0.16.4]: https://github.com/fleming79/async-kernel/compare/v0.16.3..v0.16.4
