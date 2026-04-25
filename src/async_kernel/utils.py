@@ -230,8 +230,8 @@ def redirect_stderr(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirec
     """
 
     assert get_kernel().event_started
-    token = _stdout_context.set(stream)
+    token = _stderr_context.set(stream)
     try:
         yield stream
     finally:
-        _stdout_context.reset(token)
+        _stderr_context.reset(token)

@@ -210,7 +210,8 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
                     echo.write(string)  # pragma: no cover
                     echo.flush()  # pragma: no cover
 
-            wrapper = OutStream(flusher=flusher, mode=name)
+            context = utils._stdout_context if name == "stdout" else utils._stderr_context  # pyright: ignore[reportPrivateUsage]
+            wrapper = OutStream(send=flusher, context=context)
             setattr(sys, name, wrapper)
 
         return restore

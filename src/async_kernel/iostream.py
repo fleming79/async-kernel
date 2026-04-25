@@ -3,33 +3,29 @@ from __future__ import annotations
 from io import TextIOBase
 from typing import TYPE_CHECKING, Literal
 
-from aiologic import Lock
 from typing_extensions import override
-
-import async_kernel
-from async_kernel.common import Fixed
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from contextlib import _SupportsRedirect  # pyright: ignore[reportPrivateUsage]
+    from contextvars import ContextVar
 
 
 class OutStream(TextIOBase):
-    """A file like object that calls the flusher with the string output when flush is called."""
+    """
+    A file like object that sends or redirects text as it is written.
+    """
 
-    _write_lock = Fixed(Lock)
-
-    def __init__(self, flusher: Callable[[str], None], *, mode: str) -> None:
+    def __init__(self, send: Callable[[str], None], context: ContextVar[_SupportsRedirect | None]) -> None:
         """
         Args:
-            flusher: A callback responsible for sending the output.
-            ctx: The context variable to redirect output.
-
-        [reference for IOBase](https://docs.python.org/3/library/io.html#io.IOBase)
+            send: A callback to send text as it is written.
+            context: A context variable to an potential alternate target for the text.
         """
         super().__init__()
-        self._flusher = flusher
+        self._send = send
         self._out = ""
-        self._ctx = {"stdout": async_kernel.utils._stdout_context, "stderr": async_kernel.utils._stdout_context}[mode]  # pyright: ignore[reportPrivateUsage]
+        self._context: ContextVar[_SupportsRedirect | None] = context
 
     @override
     def isatty(self) -> Literal[True]:
@@ -49,21 +45,18 @@ class OutStream(TextIOBase):
 
     @override
     def flush(self) -> None:
-        if out := self._out:
-            self._out = ""
-            self._flusher(out)
+        if c_out := self._context.get():
+            c_out.flush()
 
     @override
     def write(self, string: str) -> int:
-        if out := self._ctx.get():
+        if out := self._context.get():
             out.write(string)
-            out.flush()
         else:
-            with self._write_lock:
-                self._out = string
-                self.flush()
+            self._send(string)
         return len(string)
 
     @override
     def writelines(self, sequence) -> None:
         self.write("".join(sequence))
+        self.flush()
