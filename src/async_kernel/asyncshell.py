@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO, final
 import anyio
 import IPython.core.release
 from aiologic.lowlevel import async_checkpoint
+from anyio.streams.text import TextReceiveStream
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
@@ -44,13 +45,6 @@ if TYPE_CHECKING:
 
 
 __all__ = ["AsyncInteractiveShell"]
-
-
-async def _forward_transport_stream(transport_stream: ByteReceiveStream, out: TextIO, /) -> None:
-    from anyio.streams.text import TextReceiveStream  # noqa: PLC0415
-
-    async for text in TextReceiveStream(transport_stream):
-        out.write(text)
 
 
 class AsyncDisplayHook(DisplayHook):
@@ -376,17 +370,31 @@ class AsyncInteractiveShell(InteractiveShell):
                 return result
 
     @override
-    def system(self, cmd: list[str], *, stderr_to_stdout=False) -> Pending[None]:
-        async def system_call() -> None:
-            async with await anyio.open_process(cmd) as process, anyio.create_task_group() as tg:
-                if process.stdout:
-                    tg.start_soon(_forward_transport_stream, process.stdout, sys.stdout)
-                if process.stderr:
-                    tg.start_soon(
-                        _forward_transport_stream, process.stderr, sys.stdout if stderr_to_stdout else sys.stderr
-                    )
+    def system(self, cmd: list[str] | str, *, stderr_to_stdout: bool = False, **kwargs: Any) -> Pending[None]:
+        """
+        Make a system call in a separate thread.
 
-        return Caller().to_thread(system_call)
+        Args:
+            cmd: Passed as the first argument 'command' when calling [anyio.open_process][].
+            stderr_to_stdout: Send stderr output to stdout.
+            **kwargs: Keyword arguments are passed to [anyio.open_process][].
+
+        Tip:
+            - The output can be redicted by making the call in the context of
+                [async_kernel.utils.redirect_stdout][] and/or [async_kernel.utils.redirect_stderr][].
+        """
+
+        async def forward_output(transport_stream: ByteReceiveStream | None, out: TextIO, /) -> None:
+            if transport_stream:
+                async for text in TextReceiveStream(transport_stream):
+                    out.write(text)
+
+        async def open_process() -> None:
+            async with await anyio.open_process(cmd, **kwargs) as process, anyio.create_task_group() as tg:
+                tg.start_soon(forward_output, process.stdout, sys.stdout)
+                tg.start_soon(forward_output, process.stderr, sys.stdout if stderr_to_stdout else sys.stderr)
+
+        return Caller().to_thread(open_process)
 
     def transform_cell_async(self, raw_cell: str) -> str:
         "Transform the cell and substitute magic calls with an awaitable wrapper."
