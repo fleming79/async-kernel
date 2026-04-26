@@ -4,6 +4,7 @@ import io
 
 import pytest
 
+from async_kernel import utils as as_utils
 from async_kernel.iostream import OutStream
 
 
@@ -15,7 +16,7 @@ def test_io_api():
         nonlocal output
         output += string
 
-    stream = OutStream(flusher, mode="stdout")
+    stream = OutStream(flusher, context=as_utils._stdout_context)  # pyright: ignore[reportPrivateUsage]
 
     assert stream.errors is None
     with pytest.raises(io.UnsupportedOperation):
