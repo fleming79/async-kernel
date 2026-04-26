@@ -24,7 +24,6 @@ class OutStream(TextIOBase):
         """
         super().__init__()
         self._send = send
-        self._out = ""
         self._context: ContextVar[_SupportsRedirect | None] = context
 
     @override
