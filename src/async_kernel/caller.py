@@ -371,6 +371,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst = super().__new__(cls)
             inst._name = name
             inst._backend = Backend(backend or current_async_library())
+            if inst._backend is Backend.trio:
+                trio.sleep  # noqa: B018 # Check trio is available.
             inst._host = Hosts(loop) if (loop := kwargs.get("host")) else None
             inst._backend_options = kwargs.get("backend_options")
             inst._host_options = kwargs.get("host_options")
@@ -736,7 +738,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         else:
             if not (queue := self._guest_queues.get(backend)):
                 with self._child_lock:
-                    if backend:
+                    if backend is Backend.trio:
                         trio.sleep  # noqa: B018 # Check trio is available.
                     if not (queue := self._guest_queues.get(backend)):
                         queue = SingleAsyncQueue(reject=self._reject)
