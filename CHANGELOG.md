@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.2] - 2026-05-03
+
+### <!-- 2 --> 🐛 Fixes
+
+- Fix Caller.call_later not sleeping correctly. [#454](https://github.com/fleming79/async-kernel/pull/454)
+
 ## [0.18.1] - 2026-04-26
 
 ### <!-- 2 --> 🐛 Fixes
@@ -12,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor OutStream and fix utils.redirect_stderr. [#450](https://github.com/fleming79/async-kernel/pull/450)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.18.1 [#453](https://github.com/fleming79/async-kernel/pull/453)
 
 - Check trio is available early when creating a Caller for a trio backend. [#452](https://github.com/fleming79/async-kernel/pull/452)
 
@@ -1265,6 +1273,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.18.2]: https://github.com/fleming79/async-kernel/compare/v0.18.1..v0.18.2
 [0.18.1]: https://github.com/fleming79/async-kernel/compare/v0.18.0..v0.18.1
 [0.18.0]: https://github.com/fleming79/async-kernel/compare/v0.17.1..v0.18.0
 [0.17.1]: https://github.com/fleming79/async-kernel/compare/v0.17.0..v0.17.1
