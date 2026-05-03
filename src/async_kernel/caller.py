@@ -790,8 +790,8 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
 
         async def _call_later(*args: P.args, **kwargs: P.kwargs) -> T:
-            if (delay := time.monotonic() - start_time) > 0:
-                await anyio.sleep(delay)
+            if (delay_ := start_time - time.monotonic() + delay) > 0:
+                await anyio.sleep(delay_)
             if inspect.iscoroutine(result := func(*args, **kwargs)):
                 result = await result
             return result  # pyright: ignore[reportReturnType]

@@ -124,9 +124,9 @@ class TestCaller:
 
     async def test_sync(self):
         async with Caller("manual") as caller:
-            is_called = Event()
-            caller.call_later(0.01, is_called.set)
-            await is_called
+            start_time = time.monotonic()
+            dt = await caller.call_later(0.01, time.monotonic) - start_time
+            assert dt > 0.01
 
     async def test_manual_stop(self):
         async with Caller("manual") as caller:
