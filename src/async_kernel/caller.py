@@ -735,36 +735,31 @@ class Caller(anyio.AsyncContextManagerMixin):
         pen = Pending(context, trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
             queue = self._queue
-        else:
-            if not (queue := self._guest_queues.get(backend)):
-                with self._child_lock:
-                    if backend is Backend.trio:
-                        trio.sleep  # noqa: B018 # Check trio is available.
-                    if not (queue := self._guest_queues.get(backend)):
-                        queue = SingleAsyncQueue(reject=self._reject)
-                        self._guest_queues[backend] = queue
-                        self._stopping.add_done_callback(lambda _: queue.stop())
+        elif not (queue := self._guest_queues.get(backend)):
+            with self._child_lock:
+                if backend is Backend.trio:
+                    trio.sleep  # noqa: B018 # Check trio is available.
+                if not (queue := self._guest_queues.get(backend)):
+                    queue = SingleAsyncQueue(reject=self._reject)
+                    self._guest_queues[backend] = queue
+                    self._stopping.add_done_callback(lambda _: queue.stop())
 
-                        def _start_guest() -> None:
-                            "Start a guest event loop"
-                            if self._state is CallerState.running:
-                                host = Host.current(self.thread)
-                                done = create_async_event(shield=True)
-                                get_start_guest_run(backend)(
-                                    self._scheduler,
-                                    queue,
-                                    done_callback=lambda _: done.set(),
-                                    run_sync_soon_threadsafe=host.run_sync_soon_threadsafe
-                                    if host
-                                    else self.call_direct,
-                                    run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
-                                    host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd
-                                    if host
-                                    else True,
-                                )
-                                self._guest_done_events.add(done)
+                    def _start_guest() -> None:
+                        "Start a guest event loop"
+                        if self._state is CallerState.running:
+                            host = Host.current(self.thread)
+                            done = create_async_event(shield=True)
+                            get_start_guest_run(backend)(
+                                self._scheduler,
+                                queue,
+                                done_callback=lambda _: done.set(),
+                                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
+                                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
+                                host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
+                            )
+                            self._guest_done_events.add(done)
 
-                        self.call_direct(_start_guest)
+                    self.call_direct(_start_guest)
         queue.append(pen)
         return pen
 
@@ -1045,9 +1040,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 yield pen
                 if pen_.done() and not unfinished and not done.queue:
                     break
-                else:
-                    if max_concurrent_ and len(unfinished) < max_concurrent_:
-                        resume()
+                elif max_concurrent_ and len(unfinished) < max_concurrent_:
+                    resume()
             pen_.result()
         finally:
             done.stop()

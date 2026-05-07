@@ -170,7 +170,6 @@ extend-select = [
   "PGH",      # pygrep-hooks
   "PIE",      # flake8-pie
   "PL",       # pylint
-  "PLR",      # Refactor
   "PT",       # flake8-pytest-style
   "PTH",      # flake8-use-pathlib
   "RET",      # flake8-return
@@ -188,16 +187,14 @@ extend-select = [
   "TC",       # flake8-type-checking
 ]
 ignore = [
-  "PLR",    # Design related pylint codes
-  "B027", # Allow non-abstract empty methods in abstract base classes
   "T201", # `print` found
   "SIM105", # Use `contextlib.suppress(ValueError)` instead of try-except-pass
-  "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
   "ARG001", # Unused function argument
-  "ARG002",  # Unused method argument
-  "PTH123", # `open()` should be replaced by `Path.open()`
-  "UP031", # Use format specifiers instead of percent format
-  "PT023", # Use `@pytest.mark.skip` over `@pytest.mark.skip()`
+  "ARG002",  # Unused method argument 
+  "PLR2004", # magic-value-comparison
+  "PLR0915", # Too-many-statements
+  "PLR0913", # Too many arguments in function definition
+  "PLR0912", # Too many branches
 ]
 
 [tool.ruff.lint.per-file-ignores]

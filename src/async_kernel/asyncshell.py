@@ -9,7 +9,7 @@ import shlex
 import sys
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO, final
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, TextIO, final
 
 import anyio
 import IPython.core.release
@@ -185,7 +185,7 @@ class AsyncInteractiveShell(InteractiveShell):
         [^1]: When the execution time exceeds the timeout value, the code execution will "move on".
     """
 
-    DEFAULT_MATPLOTLIB_BACKENDS = ["inline", "ipympl"]
+    DEFAULT_MATPLOTLIB_BACKENDS: ClassVar = ["inline", "ipympl"]
 
     _execution_count = 0
     _resetting = False
@@ -774,7 +774,7 @@ class SubshellManager:
         - All methods are [classmethod][].
     """
 
-    subshells: dict[str, AsyncInteractiveSubshell] = {}
+    subshells: ClassVar[dict[str, AsyncInteractiveSubshell]] = {}
 
     def __new__(cls) -> Never:
         msg = "Instantiation is not required, use classmethods directly."

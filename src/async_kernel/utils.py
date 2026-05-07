@@ -55,7 +55,6 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
     thread = thread or threading.current_thread()
     thread.pydev_do_not_trace = not remove  # pyright: ignore[reportAttributeAccessIssue]
     thread.is_pydev_daemon_thread = not remove  # pyright: ignore[reportAttributeAccessIssue]
-    return
 
 
 def get_kernel() -> Kernel:
