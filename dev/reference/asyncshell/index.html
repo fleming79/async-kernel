@@ -3510,7 +3510,7 @@ viewing the latest version.
 <span class="sd">        [^1]: When the execution time exceeds the timeout value, the code execution will &quot;move on&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">DEFAULT_MATPLOTLIB_BACKENDS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;inline&quot;</span><span class="p">,</span> <span class="s2">&quot;ipympl&quot;</span><span class="p">]</span>
+    <span class="n">DEFAULT_MATPLOTLIB_BACKENDS</span><span class="p">:</span> <span class="n">ClassVar</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;inline&quot;</span><span class="p">,</span> <span class="s2">&quot;ipympl&quot;</span><span class="p">]</span>
 
     <span class="n">_execution_count</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">_resetting</span> <span class="o">=</span> <span class="kc">False</span>
@@ -6602,7 +6602,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="sd">        - All methods are [classmethod][].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">subshells</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">subshells</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Never</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Instantiation is not required, use classmethods directly.&quot;</span>

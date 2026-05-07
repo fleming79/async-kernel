@@ -3712,7 +3712,7 @@ viewing the latest version.
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_handler_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">Callable</span><span class="p">],</span> <span class="n">HandlerType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_handler_cache</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">Callable</span><span class="p">],</span> <span class="n">HandlerType</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">debugger</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
         <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span>
@@ -6047,7 +6047,7 @@ format, which is a list of message parts.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_zmq_context</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_handler_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">Callable</span><span class="p">],</span> <span class="n">HandlerType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_handler_cache</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">MsgType</span><span class="p">,</span> <span class="n">Callable</span><span class="p">],</span> <span class="n">HandlerType</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">debugger</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
         <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span>

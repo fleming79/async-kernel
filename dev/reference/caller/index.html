@@ -4137,13 +4137,7 @@ viewing the latest version.
 <span class="normal">1127</span>
 <span class="normal">1128</span>
 <span class="normal">1129</span>
-<span class="normal">1130</span>
-<span class="normal">1131</span>
-<span class="normal">1132</span>
-<span class="normal">1133</span>
-<span class="normal">1134</span>
-<span class="normal">1135</span>
-<span class="normal">1136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
+<span class="normal">1130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Caller</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).</span>
@@ -4759,36 +4753,31 @@ viewing the latest version.
         <span class="n">pen</span> <span class="o">=</span> <span class="n">Pending</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">trackers</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="n">NoValue</span> <span class="ow">or</span> <span class="p">(</span><span class="n">backend</span> <span class="o">:=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">:</span>
             <span class="n">queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
-                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_child_lock</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span><span class="p">:</span>
-                        <span class="n">trio</span><span class="o">.</span><span class="n">sleep</span>  <span class="c1"># noqa: B018 # Check trio is available.</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
-                        <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">(</span><span class="n">reject</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reject</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="p">[</span><span class="n">backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_stopping</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">stop</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_child_lock</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span><span class="p">:</span>
+                    <span class="n">trio</span><span class="o">.</span><span class="n">sleep</span>  <span class="c1"># noqa: B018 # Check trio is available.</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
+                    <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">(</span><span class="n">reject</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reject</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="p">[</span><span class="n">backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stopping</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">stop</span><span class="p">())</span>
 
-                        <span class="k">def</span><span class="w"> </span><span class="nf">_start_guest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="s2">&quot;Start a guest event loop&quot;</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
-                                <span class="n">host</span> <span class="o">=</span> <span class="n">Host</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
-                                <span class="n">done</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                                <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)(</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span><span class="p">,</span>
-                                    <span class="n">queue</span><span class="p">,</span>
-                                    <span class="n">done_callback</span><span class="o">=</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">done</span><span class="o">.</span><span class="n">set</span><span class="p">(),</span>
-                                    <span class="n">run_sync_soon_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_threadsafe</span>
-                                    <span class="k">if</span> <span class="n">host</span>
-                                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">,</span>
-                                    <span class="n">run_sync_soon_not_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_not_threadsafe</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                                    <span class="n">host_uses_signal_set_wakeup_fd</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span>
-                                    <span class="k">if</span> <span class="n">host</span>
-                                    <span class="k">else</span> <span class="kc">True</span><span class="p">,</span>
-                                <span class="p">)</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">_guest_done_events</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">done</span><span class="p">)</span>
+                    <span class="k">def</span><span class="w"> </span><span class="nf">_start_guest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="s2">&quot;Start a guest event loop&quot;</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+                            <span class="n">host</span> <span class="o">=</span> <span class="n">Host</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
+                            <span class="n">done</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                            <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)(</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span><span class="p">,</span>
+                                <span class="n">queue</span><span class="p">,</span>
+                                <span class="n">done_callback</span><span class="o">=</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">done</span><span class="o">.</span><span class="n">set</span><span class="p">(),</span>
+                                <span class="n">run_sync_soon_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_threadsafe</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">,</span>
+                                <span class="n">run_sync_soon_not_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_not_threadsafe</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                                <span class="n">host_uses_signal_set_wakeup_fd</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="kc">True</span><span class="p">,</span>
+                            <span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_guest_done_events</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">done</span><span class="p">)</span>
 
-                        <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">_start_guest</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">_start_guest</span><span class="p">)</span>
         <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pen</span>
 
@@ -5069,9 +5058,8 @@ viewing the latest version.
                 <span class="k">yield</span> <span class="n">pen</span>
                 <span class="k">if</span> <span class="n">pen_</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">unfinished</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">done</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
                     <span class="k">break</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">max_concurrent_</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_concurrent_</span><span class="p">:</span>
-                        <span class="n">resume</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">max_concurrent_</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_concurrent_</span><span class="p">:</span>
+                    <span class="n">resume</span><span class="p">()</span>
             <span class="n">pen_</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">done</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
@@ -6626,9 +6614,24 @@ viewing the latest version.
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
   </ul>
@@ -6909,12 +6912,7 @@ viewing the latest version.
 <span class="normal">761</span>
 <span class="normal">762</span>
 <span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">schedule_call</span><span class="p">(</span>
+<span class="normal">764</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">schedule_call</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="n">T</span><span class="p">],</span>
     <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
@@ -6942,36 +6940,31 @@ viewing the latest version.
     <span class="n">pen</span> <span class="o">=</span> <span class="n">Pending</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">trackers</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="n">NoValue</span> <span class="ow">or</span> <span class="p">(</span><span class="n">backend</span> <span class="o">:=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">:</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
-            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_child_lock</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span><span class="p">:</span>
-                    <span class="n">trio</span><span class="o">.</span><span class="n">sleep</span>  <span class="c1"># noqa: B018 # Check trio is available.</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
-                    <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">(</span><span class="n">reject</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reject</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="p">[</span><span class="n">backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_stopping</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">stop</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_child_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="n">Backend</span><span class="o">.</span><span class="n">trio</span><span class="p">:</span>
+                <span class="n">trio</span><span class="o">.</span><span class="n">sleep</span>  <span class="c1"># noqa: B018 # Check trio is available.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backend</span><span class="p">)):</span>
+                <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">(</span><span class="n">reject</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reject</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="p">[</span><span class="n">backend</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stopping</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">stop</span><span class="p">())</span>
 
-                    <span class="k">def</span><span class="w"> </span><span class="nf">_start_guest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="s2">&quot;Start a guest event loop&quot;</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
-                            <span class="n">host</span> <span class="o">=</span> <span class="n">Host</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
-                            <span class="n">done</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                            <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)(</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span><span class="p">,</span>
-                                <span class="n">queue</span><span class="p">,</span>
-                                <span class="n">done_callback</span><span class="o">=</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">done</span><span class="o">.</span><span class="n">set</span><span class="p">(),</span>
-                                <span class="n">run_sync_soon_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_threadsafe</span>
-                                <span class="k">if</span> <span class="n">host</span>
-                                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">,</span>
-                                <span class="n">run_sync_soon_not_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_not_threadsafe</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                                <span class="n">host_uses_signal_set_wakeup_fd</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span>
-                                <span class="k">if</span> <span class="n">host</span>
-                                <span class="k">else</span> <span class="kc">True</span><span class="p">,</span>
-                            <span class="p">)</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_guest_done_events</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">done</span><span class="p">)</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">_start_guest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="s2">&quot;Start a guest event loop&quot;</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+                        <span class="n">host</span> <span class="o">=</span> <span class="n">Host</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
+                        <span class="n">done</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span><span class="p">,</span>
+                            <span class="n">queue</span><span class="p">,</span>
+                            <span class="n">done_callback</span><span class="o">=</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">done</span><span class="o">.</span><span class="n">set</span><span class="p">(),</span>
+                            <span class="n">run_sync_soon_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_threadsafe</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">,</span>
+                            <span class="n">run_sync_soon_not_threadsafe</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">run_sync_soon_not_threadsafe</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="n">host_uses_signal_set_wakeup_fd</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_guest_done_events</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">done</span><span class="p">)</span>
 
-                    <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">_start_guest</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">_start_guest</span><span class="p">)</span>
     <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pen</span>
 </code></pre></div></td></tr></table></div>
@@ -7074,7 +7067,12 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">771</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
 <span class="normal">772</span>
 <span class="normal">773</span>
 <span class="normal">774</span>
@@ -7098,12 +7096,7 @@ viewing the latest version.
 <span class="normal">792</span>
 <span class="normal">793</span>
 <span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_later</span><span class="p">(</span>
+<span class="normal">795</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_later</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
@@ -7206,8 +7199,12 @@ viewing the latest version.
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
   </span>
 
       </li>
@@ -7216,8 +7213,12 @@ viewing the latest version.
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
   </span>
 
       </li>
@@ -7231,7 +7232,12 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">802</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">797</span>
+<span class="normal">798</span>
+<span class="normal">799</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
 <span class="normal">803</span>
 <span class="normal">804</span>
 <span class="normal">805</span>
@@ -7241,12 +7247,7 @@ viewing the latest version.
 <span class="normal">809</span>
 <span class="normal">810</span>
 <span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_soon</span><span class="p">(</span>
+<span class="normal">812</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_soon</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
@@ -7384,7 +7385,12 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">819</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
 <span class="normal">820</span>
 <span class="normal">821</span>
 <span class="normal">822</span>
@@ -7405,12 +7411,7 @@ of the callers backend.</p>
 <span class="normal">837</span>
 <span class="normal">838</span>
 <span class="normal">839</span>
-<span class="normal">840</span>
-<span class="normal">841</span>
-<span class="normal">842</span>
-<span class="normal">843</span>
-<span class="normal">844</span>
-<span class="normal">845</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_using_backend</span><span class="p">(</span>
+<span class="normal">840</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_using_backend</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">],</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
@@ -7524,7 +7525,12 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">847</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
 <span class="normal">848</span>
 <span class="normal">849</span>
 <span class="normal">850</span>
@@ -7540,12 +7546,7 @@ of the callers backend.</p>
 <span class="normal">860</span>
 <span class="normal">861</span>
 <span class="normal">862</span>
-<span class="normal">863</span>
-<span class="normal">864</span>
-<span class="normal">865</span>
-<span class="normal">866</span>
-<span class="normal">867</span>
-<span class="normal">868</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_direct</span><span class="p">(</span>
+<span class="normal">863</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_direct</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
@@ -7653,9 +7654,24 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7663,12 +7679,8 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -7682,7 +7694,12 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">870</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
 <span class="normal">871</span>
 <span class="normal">872</span>
 <span class="normal">873</span>
@@ -7716,12 +7733,7 @@ of the callers backend.</p>
 <span class="normal">901</span>
 <span class="normal">902</span>
 <span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_thread</span><span class="p">(</span>
+<span class="normal">904</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_thread</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
@@ -7816,14 +7828,14 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">911</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span>
+<span class="normal">911</span>
 <span class="normal">912</span>
-<span class="normal">913</span>
-<span class="normal">914</span>
-<span class="normal">915</span>
-<span class="normal">916</span>
-<span class="normal">917</span>
-<span class="normal">918</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">913</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns the pending associated with the `queue_call` for func.</span>
 
@@ -7921,8 +7933,12 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_close"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_close</a>
   </span>
 
       </li>
@@ -7960,12 +7976,8 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -7993,7 +8005,12 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">920</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">915</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
 <span class="normal">921</span>
 <span class="normal">922</span>
 <span class="normal">923</span>
@@ -8042,12 +8059,7 @@ of the callers backend.</p>
 <span class="normal">966</span>
 <span class="normal">967</span>
 <span class="normal">968</span>
-<span class="normal">969</span>
-<span class="normal">970</span>
-<span class="normal">971</span>
-<span class="normal">972</span>
-<span class="normal">973</span>
-<span class="normal">974</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_call</span><span class="p">(</span>
+<span class="normal">969</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_call</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
@@ -8151,8 +8163,12 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_call</a>
   </span>
 
       </li>
@@ -8163,16 +8179,16 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">976</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">971</span>
+<span class="normal">972</span>
+<span class="normal">973</span>
+<span class="normal">974</span>
+<span class="normal">975</span>
+<span class="normal">976</span>
 <span class="normal">977</span>
 <span class="normal">978</span>
 <span class="normal">979</span>
-<span class="normal">980</span>
-<span class="normal">981</span>
-<span class="normal">982</span>
-<span class="normal">983</span>
-<span class="normal">984</span>
-<span class="normal">985</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">980</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.</span>
 
@@ -8301,7 +8317,12 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 987</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 982</span>
+<span class="normal"> 983</span>
+<span class="normal"> 984</span>
+<span class="normal"> 985</span>
+<span class="normal"> 986</span>
+<span class="normal"> 987</span>
 <span class="normal"> 988</span>
 <span class="normal"> 989</span>
 <span class="normal"> 990</span>
@@ -8366,13 +8387,7 @@ of the callers backend.</p>
 <span class="normal">1049</span>
 <span class="normal">1050</span>
 <span class="normal">1051</span>
-<span class="normal">1052</span>
-<span class="normal">1053</span>
-<span class="normal">1054</span>
-<span class="normal">1055</span>
-<span class="normal">1056</span>
-<span class="normal">1057</span>
-<span class="normal">1058</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
+<span class="normal">1052</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -8433,9 +8448,8 @@ of the callers backend.</p>
             <span class="k">yield</span> <span class="n">pen</span>
             <span class="k">if</span> <span class="n">pen_</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">unfinished</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">done</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
                 <span class="k">break</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">max_concurrent_</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_concurrent_</span><span class="p">:</span>
-                    <span class="n">resume</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">max_concurrent_</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_concurrent_</span><span class="p">:</span>
+                <span class="n">resume</span><span class="p">()</span>
         <span class="n">pen_</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">done</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
@@ -8546,7 +8560,13 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1060</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
 <span class="normal">1061</span>
 <span class="normal">1062</span>
 <span class="normal">1063</span>
@@ -8589,13 +8609,7 @@ of the callers backend.</p>
 <span class="normal">1100</span>
 <span class="normal">1101</span>
 <span class="normal">1102</span>
-<span class="normal">1103</span>
-<span class="normal">1104</span>
-<span class="normal">1105</span>
-<span class="normal">1106</span>
-<span class="normal">1107</span>
-<span class="normal">1108</span>
-<span class="normal">1109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
+<span class="normal">1103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -8722,8 +8736,12 @@ async with Caller().create_pending_group() as pg:
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.to_thread"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_thread</a>
   </span>
 
       </li>
@@ -8734,7 +8752,13 @@ async with Caller().create_pending_group() as pg:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1111</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1105</span>
+<span class="normal">1106</span>
+<span class="normal">1107</span>
+<span class="normal">1108</span>
+<span class="normal">1109</span>
+<span class="normal">1110</span>
+<span class="normal">1111</span>
 <span class="normal">1112</span>
 <span class="normal">1113</span>
 <span class="normal">1114</span>
@@ -8753,13 +8777,7 @@ async with Caller().create_pending_group() as pg:
 <span class="normal">1127</span>
 <span class="normal">1128</span>
 <span class="normal">1129</span>
-<span class="normal">1130</span>
-<span class="normal">1131</span>
-<span class="normal">1132</span>
-<span class="normal">1133</span>
-<span class="normal">1134</span>
-<span class="normal">1135</span>
-<span class="normal">1136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
+<span class="normal">1130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new [PendingGroup][async_kernel.pending.PendingGroup].</span>
 

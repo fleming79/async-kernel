@@ -3443,7 +3443,7 @@ viewing the latest version.
 <span class="normal">558</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Debugger</span><span class="p">(</span><span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient].&quot;&quot;&quot;</span>
 
-    <span class="n">NO_DEBUG</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;IPythonHistorySavingThread&quot;</span><span class="p">}</span>
+    <span class="n">NO_DEBUG</span><span class="p">:</span> <span class="n">ClassVar</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;IPythonHistorySavingThread&quot;</span><span class="p">]</span>
     <span class="n">_seq</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">breakpoint_list</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Dict</span><span class="p">()</span>
     <span class="n">capabilities</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Dict</span><span class="p">()</span>
