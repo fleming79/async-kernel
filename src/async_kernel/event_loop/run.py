@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import threading
 from importlib import import_module
-from typing import TYPE_CHECKING, Any, Generic, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Self
 
 import anyio
 from wrapt import lazy_import
@@ -83,8 +83,8 @@ class Host(Generic[T]):
 
     HOST: Hosts
     MATPLOTLIB_GUIS = ()
-    _subclasses: dict[Hosts, type[Self]] = {}
-    _instances: dict[threading.Thread, Host] = {}
+    _subclasses: ClassVar[dict[Hosts, type[Self]]] = {}
+    _instances: ClassVar[dict[threading.Thread, Host]] = {}
 
     _outcome: Outcome[T] | None = None
     start_guest: Callable[[], Any] = staticmethod(lambda: None)

@@ -7,7 +7,7 @@ import sys
 import threading
 from logging import Logger, LoggerAdapter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Self
 
 import anyio.abc
 from aiologic import Event, Lock
@@ -184,7 +184,7 @@ class DebugpyClient(traitlets.HasTraits):
 class Debugger(traitlets.HasTraits):
     """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
-    NO_DEBUG = {"IPythonHistorySavingThread"}
+    NO_DEBUG: ClassVar = ["IPythonHistorySavingThread"]
     _seq = 0
     breakpoint_list = traitlets.Dict()
     capabilities = traitlets.Dict()

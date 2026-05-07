@@ -12,7 +12,7 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 from uuid import uuid4
 
 import anyio
@@ -107,7 +107,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     """
 
     _zmq_context = None
-    _handler_cache: dict[tuple[str | None, MsgType, Callable], HandlerType] = {}
+    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
 
     debugger = Fixed(
         lambda _: (
