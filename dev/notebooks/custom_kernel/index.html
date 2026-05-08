@@ -2252,13 +2252,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre> Downloaded cpython-3.15.0a5-linux-x86_64-gnu (download)
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
 <pre></pre>
 </div>
@@ -2304,7 +2297,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="k">assert</span> <span class="n">uv_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 
 <span class="n">write_kernel_spec</span><span class="p">(</span>
-    <span class="n">kernel_name</span><span class="o">=</span><span class="s2">"async_3.15"</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"async_3.15"</span><span class="p">,</span>
     <span class="n">display_name</span><span class="o">=</span><span class="s2">"Python 3.15 (async)"</span><span class="p">,</span>
     <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s2">"UV_PROJECT_ENVIRONMENT"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">uv_path</span><span class="p">)},</span>
     <span class="n">executable</span><span class="o">=</span><span class="p">(</span><span class="s2">"uv"</span><span class="p">,</span> <span class="s2">"run"</span><span class="p">,</span> <span class="s2">"--no-sync"</span><span class="p">,</span> <span class="s2">"python"</span><span class="p">,</span> <span class="s2">"-m"</span><span class="p">,</span> <span class="s2">"async_kernel"</span><span class="p">),</span>
@@ -2318,7 +2311,7 @@ uv_path = pathlib.Path.cwd().joinpath(".venv_py315")
 assert uv_path.exists()
 
 write_kernel_spec(
-    kernel_name="async_3.15",
+    name="async_3.15",
     display_name="Python 3.15 (async)",
     env={"UV_PROJECT_ENVIRONMENT": str(uv_path)},
     executable=("uv", "run", "--no-sync", "python", "-m", "async_kernel"),
@@ -2381,7 +2374,7 @@ write_kernel_spec(
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 24, 2026 04:17:01 UTC"><span class="timeago" datetime="2026-04-24T04:17:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 24, 2026 04:17:01 UTC">2026-04-24</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 8, 2026 23:58:18 UTC"><span class="timeago" datetime="2026-05-08T23:58:18+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 8, 2026 23:58:18 UTC">2026-05-08</span>
   </span>
 
     

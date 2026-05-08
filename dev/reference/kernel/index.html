@@ -1053,10 +1053,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernel.Kernel.kernel_name" class="md-nav__link">
+  <a href="#async_kernel.kernel.Kernel.name" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_name
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
       
     </span>
   </a>
@@ -1984,10 +1984,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernel.Kernel.kernel_name" class="md-nav__link">
+  <a href="#async_kernel.kernel.Kernel.name" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel_name
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;name
       
     </span>
   </a>
@@ -2585,18 +2585,18 @@ viewing the latest version.
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
+      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
   </span>
 
       </li>
@@ -3212,13 +3212,13 @@ viewing the latest version.
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            kernel_name
+          <b><code><a class="autorefs autorefs-internal" title="            name
 
 
   
       class-attribute
       instance-attribute
-   (async_kernel.kernel.Kernel.kernel_name)" href="#async_kernel.kernel.Kernel.kernel_name">kernel_name</a></code></b>
+   (async_kernel.kernel.Kernel.name)" href="#async_kernel.kernel.Kernel.name">name</a></code></b>
           –
           <div class="doc-md-description">
             <p>The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend.</p>
@@ -3897,7 +3897,7 @@ viewing the latest version.
 <span class="sd">    of the current profile, but can be specified by absolute path.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kernel_name</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CUnicode</span><span class="p">()</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CUnicode</span><span class="p">()</span>
     <span class="s2">&quot;The kernels name - if it contains &#39;trio&#39; a trio backend will be used instead of an asyncio backend.&quot;</span>
 
     <span class="n">help_links</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">List</span><span class="p">(</span><span class="n">trait</span><span class="o">=</span><span class="n">traitlets</span><span class="o">.</span><span class="n">Dict</span><span class="p">())</span>
@@ -3952,8 +3952,8 @@ viewing the latest version.
     <span class="k">def</span><span class="w"> </span><span class="nf">_default_log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoggerAdapter</span><span class="p">[</span><span class="n">Logger</span><span class="p">]:</span>
         <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
 
-    <span class="nd">@traitlets</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s2">&quot;kernel_name&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_default_kernel_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;async-trio&quot;</span><span class="p">,</span> <span class="s2">&quot;async&quot;</span><span class="p">]:</span>
+    <span class="nd">@traitlets</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_default_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;async-trio&quot;</span><span class="p">,</span> <span class="s2">&quot;async&quot;</span><span class="p">]:</span>
         <span class="k">return</span> <span class="s2">&quot;async-trio&quot;</span> <span class="k">if</span> <span class="n">current_async_library</span><span class="p">(</span><span class="n">failsafe</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;trio&quot;</span> <span class="k">else</span> <span class="s2">&quot;async&quot;</span>
 
     <span class="nd">@traitlets</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s2">&quot;interface&quot;</span><span class="p">)</span>
@@ -4024,14 +4024,14 @@ viewing the latest version.
             <span class="s2">&quot;banner&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">banner</span><span class="p">,</span>
             <span class="s2">&quot;help_links&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">help_links</span><span class="p">,</span>
             <span class="s2">&quot;debugger&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">debugger</span><span class="p">),</span>
-            <span class="s2">&quot;kernel_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_name</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;supported_features&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_features</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="s2">&quot;Settings that have been set to customise the behaviour of the kernel.&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;kernel_name&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">)}</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">)}</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">shell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncInteractiveShell</span> <span class="o">|</span> <span class="n">AsyncInteractiveSubshell</span><span class="p">:</span>
@@ -4062,7 +4062,7 @@ viewing the latest version.
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_started</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;It is too late to load settings!&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="n">settings_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="ow">or</span> <span class="p">{</span><span class="s2">&quot;kernel_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_name</span><span class="p">}</span>
+        <span class="n">settings_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="ow">or</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">settings_</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">setattr_nested</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">settings_</span><span class="p">)</span>
@@ -4421,8 +4421,8 @@ of the current profile, but can be specified by absolute path.</p>
 
 
 
-<h3 id="async_kernel.kernel.Kernel.kernel_name" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">kernel_name</span>
+<h3 id="async_kernel.kernel.Kernel.name" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">name</span>
 
 
   <span class="doc doc-labels">
@@ -4430,8 +4430,8 @@ of the current profile, but can be specified by absolute path.</p>
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
-<a href="#async_kernel.kernel.Kernel.kernel_name" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">kernel_name</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.CUnicode">CUnicode</span></span><span class="p">()</span>
+<a href="#async_kernel.kernel.Kernel.name" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets.CUnicode">CUnicode</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4826,7 +4826,7 @@ value: The value to set.</p>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_started</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;It is too late to load settings!&quot;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-    <span class="n">settings_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="ow">or</span> <span class="p">{</span><span class="s2">&quot;kernel_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_name</span><span class="p">}</span>
+    <span class="n">settings_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="ow">or</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">settings_</span> <span class="o">|=</span> <span class="n">utils</span><span class="o">.</span><span class="n">setattr_nested</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">settings_</span><span class="p">)</span>
@@ -5452,8 +5452,12 @@ and is called by load_connection_file.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.history_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_request</a>
   </span>
 
       </li>
@@ -5869,9 +5873,20 @@ and is called by load_connection_file.</p>
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.debug_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debug_request</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="../typing/#async_kernel.typing.MsgType.list_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;list_subshell_request</a>
   </span>
+
+      </li>
+  </ul>
 
       </li>
   </ul>
@@ -5936,8 +5951,12 @@ and is called by load_connection_file.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.MsgType"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MsgType</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.MsgType.create_subshell_request"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;create_subshell_request</a>
   </span>
 
       </li>
