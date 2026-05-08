@@ -29,7 +29,7 @@ DEFAULT_EXECUTABLE = ("python", "-m", "async_kernel")
 def make_argv(
     *,
     connection_file: str = "{connection_file}",
-    kernel_name: str = "async",
+    name: str = "async",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
     executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
     **kwargs: dict[str, Any],
@@ -43,7 +43,7 @@ def make_argv(
         connection_file: The path to the connection file.
         start_interface: Either the kernel factory object itself, or the string import path to a
             callable that returns a non-started kernel.
-        kernel_name: The name of the kernel to use.
+        name: The name to use for the kernel.
         executable: The command line executable to call.
         **kwargs: Additional settings to pass when creating the kernel passed to `start_interface`.
 
@@ -51,7 +51,7 @@ def make_argv(
         list: A list of command-line arguments to launch the kernel module.
     """
     argv = [*executable, "-f", connection_file]
-    for k, v in ({"start_interface": start_interface, "kernel_name": kernel_name} | kwargs).items():
+    for k, v in ({"start_interface": start_interface, "name": name} | kwargs).items():
         argv.append(f"--{k}={v}")
     return argv
 
@@ -59,7 +59,7 @@ def make_argv(
 def write_kernel_spec(
     path: Path | str | None = None,
     *,
-    kernel_name: str = "async",
+    name: str = "async",
     display_name: str = "",
     executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
     prefix: str = "",
@@ -77,8 +77,8 @@ def write_kernel_spec(
 
     Args:
         path: The path where to write the spec.
-        kernel_name: The name of the kernel to use.
-        display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({kernel_name})"`.
+        name: The name of the kernel to use.
+        display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({name})"`.
         executable: The first part of 'argv' to use.
         prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
@@ -114,7 +114,7 @@ def write_kernel_spec(
 
 
         async_kernel.kernelspec.write_kernel_spec(
-            kernel_name="async-print-job", start_interface=start_interface
+            name="async-print-job", start_interface=start_interface
         )
         ```
 
@@ -122,8 +122,8 @@ def write_kernel_spec(
             Moving the spec folder will break the import which is stored as an absolute path.
     """
 
-    assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), kernel_name)
-    path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / kernel_name)
+    assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name)
+    path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / name)
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
@@ -138,14 +138,14 @@ def write_kernel_spec(
         argv = make_argv(
             start_interface=start_interface,
             connection_file=connection_file,
-            kernel_name=kernel_name,
+            name=name,
             executable=executable,
             **kwargs,
         )
         spec: dict[str, list[Any] | Any | dict[Any, Any] | str | dict[str, bool]] = {
             "argv": argv,
             "env": env or {},
-            "display_name": display_name or f"Python {sys.version_info.major}.{sys.version_info.minor} ({kernel_name})",
+            "display_name": display_name or f"Python {sys.version_info.major}.{sys.version_info.minor} ({name})",
             "language": language,
             "interrupt_mode": "message",
             "metadata": metadata if metadata is not None else {"debugger": True, "concurrent": True},
@@ -160,9 +160,9 @@ def write_kernel_spec(
         return path
 
 
-def remove_kernel_spec(kernel_name: str, *, folder: str = "", prefix: str = "") -> bool:
+def remove_kernel_spec(name: str, *, folder: str = "", prefix: str = "") -> bool:
     "Remove a kernelspec returning True if it was removed."
-    if (path := get_kernel_dir(folder=folder, prefix=prefix).joinpath(kernel_name)).exists():
+    if (path := get_kernel_dir(folder=folder, prefix=prefix).joinpath(name)).exists():
         shutil.rmtree(path, ignore_errors=True)
         return True
     return False

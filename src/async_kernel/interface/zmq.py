@@ -335,7 +335,7 @@ class ZMQKernelInterface(BaseKernelInterface):
                 ip=self.ip,
                 key=self.session.key,
                 signature_scheme=self.session.signature_scheme,
-                kernel_name=self.kernel.kernel_name,
+                kernel_name=self.kernel.name,
                 **{f"{channel}_port": self.ports[channel] for channel in Channel},
             )
             ip_files: list[pathlib.Path] = []

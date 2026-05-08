@@ -11,13 +11,13 @@ from async_kernel.kernelspec import DEFAULT_START_INTERFACE, import_start_interf
 
 
 @pytest.mark.parametrize(
-    ("kernel_name", "start_interface"),
+    ("name", "start_interface"),
     [
         ("trio", DEFAULT_START_INTERFACE),
         ("function_factory", "custom"),
     ],
 )
-def test_write_kernel_spec(kernel_name, start_interface, tmp_path, monkeypatch):
+def test_write_kernel_spec(name, start_interface, tmp_path, monkeypatch):
     if start_interface == "custom":
 
         def my_start_interface(settings: dict | None):
@@ -25,7 +25,7 @@ def test_write_kernel_spec(kernel_name, start_interface, tmp_path, monkeypatch):
 
         start_interface = my_start_interface
 
-    path = write_kernel_spec(tmp_path, kernel_name=kernel_name, start_interface=start_interface)
+    path = write_kernel_spec(tmp_path, name=name, start_interface=start_interface)
     kernel_json = path.joinpath("kernel.json")
     assert kernel_json.exists()
     data = json.loads(kernel_json.read_bytes())
@@ -45,4 +45,4 @@ def test_write_kernel_spec(kernel_name, start_interface, tmp_path, monkeypatch):
 
 def test_write_kernel_spec_fails():
     with pytest.raises(ValueError, match="not enough values to unpack"):
-        write_kernel_spec(kernel_name="never-works", start_interface="not a factory")
+        write_kernel_spec(name="never-works", start_interface="not a factory")

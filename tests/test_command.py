@@ -69,7 +69,7 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "-f",
             "{connection_file}",
             "--start_interface=async_kernel.kernel.Kernel",
-            "--kernel_name=async-trio",
+            "--name=async-trio",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -82,23 +82,23 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
 
 @pytest.mark.parametrize("mode", ["folder", "prefix", "default"])
 def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys, mode: Literal["folder", "prefix", "default"]):
-    kernel_name = "asyncio"
-    (fake_kernel_dir / kernel_name).mkdir()
+    name = "asyncio"
+    (fake_kernel_dir / name).mkdir()
     if mode == "folder":
-        monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name, f"--folder={fake_kernel_dir}"])
+        monkeypatch.setattr(sys, "argv", ["prog", "-r", name, f"--folder={fake_kernel_dir}"])
     elif mode == "prefix":
-        monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name, f"--prefix={sys.prefix}"])
+        monkeypatch.setattr(sys, "argv", ["prog", "-r", name, f"--prefix={sys.prefix}"])
     else:
-        monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
+        monkeypatch.setattr(sys, "argv", ["prog", "-r", name])
     command_line()
     out = capsys.readouterr().out
     assert "removed" in out
-    assert not (fake_kernel_dir / kernel_name).exists()
+    assert not (fake_kernel_dir / name).exists()
 
 
 def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
-    kernel_name = "not a kernel"
-    monkeypatch.setattr(sys, "argv", ["prog", "-r", kernel_name])
+    name = "not a kernel"
+    monkeypatch.setattr(sys, "argv", ["prog", "-r", name])
     command_line()
     out = capsys.readouterr().out
     assert "not found!" in out
@@ -142,7 +142,7 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, host):
             "prog",
             "-f",
             ".",
-            f"--kernel_name=async-{host}",
+            f"--name=async-{host}",
             f"--interface.host={host}",
             f"--interface.backend={backend}",
             "--no-print_kernel_messages",
@@ -159,20 +159,20 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, host):
         async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
 
 
-async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, kernel_name, transport):
+async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, name, transport):
     # Start & Stop a kernel
-    backend = Backend.trio if "trio" in kernel_name.lower() else Backend.asyncio
+    backend = Backend.trio if "trio" in name.lower() else Backend.asyncio
     _, reply = await utils.execute(
         subprocess_kernels_client,
         "kernel = get_ipython().kernel",
         user_expressions={
-            "kernel_name": "kernel.kernel_name",
+            "name": "kernel.name",
             "host": "kernel.interface.host",
             "backend": "kernel.interface.backend",
             "transport": "kernel.interface.transport",
         },
     )
-    assert kernel_name in reply["user_expressions"]["kernel_name"]["data"]["text/plain"]
+    assert name in reply["user_expressions"]["name"]["data"]["text/plain"]
     assert backend in reply["user_expressions"]["backend"]["data"]["text/plain"]
     assert transport in reply["user_expressions"]["transport"]["data"]["text/plain"]
 

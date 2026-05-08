@@ -29,7 +29,7 @@ The kernel spec looks like this:
         "-f",
         "{connection_file}",
         "--start_interface=async_kernel.interface.start_kernel_zmq_interface",
-        "--kernel_name=async",
+        "--name=async",
         "--backend=trio",
         "--host=tk"
     ],
@@ -258,7 +258,7 @@ async-kernel -f .
 Additional settings can be passed as arguments.
 
 ```bash
-async-kernel -f . --kernel_name=async-trio-custom --display_name='My custom kernel' --quiet=False
+async-kernel -f . --name=async-trio-custom --display_name='My custom kernel' --quiet=False
 ```
 
 The call above will start a new kernel with a 'trio' backend. The quiet setting is

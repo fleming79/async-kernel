@@ -97,8 +97,8 @@ def command_line() -> None:
 
     # Add kernel spec
     if args.add:
-        if not hasattr(args, "kernel_name"):
-            args.kernel_name = args.add
+        if not hasattr(args, "name"):
+            args.name = args.add
         for name in cl_names:
             delattr(args, name)
         path = write_kernel_spec(**vars(args))

@@ -221,7 +221,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}  kernel_name: {self.kernel.kernel_name!r} subshell_id: {self.subshell_id}>"
+        return f"<{self.__class__.__name__}  name: {self.kernel.name!r} subshell_id: {self.subshell_id}>"
 
     def __new__(cls) -> Self:
         if issubclass(cls, AsyncInteractiveSubshell):
@@ -718,7 +718,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} kernel_name: {self.kernel.kernel_name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
+        return f"<{self.__class__.__name__} name: {self.kernel.name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
 
     @property
     @override
