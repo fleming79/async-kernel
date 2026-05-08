@@ -575,8 +575,8 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     subshell_id = kernel.subshell_manager.create_subshell(protected=True).subshell_id
     subshell = kernel.subshell_manager.subshells[subshell_id]
 
-    assert repr(kernel.main_shell) == "<IPythonAsyncInteractiveShell  kernel_name: 'async' subshell_id: None>"
-    assert repr(subshell) == f"<IPythonInteractiveSubshell kernel_name: 'async'  subshell_id: {subshell_id}>"
+    assert repr(kernel.main_shell) == "<IPythonAsyncInteractiveShell  name: 'async' subshell_id: None>"
+    assert repr(subshell) == f"<IPythonInteractiveSubshell name: 'async'  subshell_id: {subshell_id}>"
 
     assert kernel.main_shell.user_ns is kernel.main_shell.user_global_ns
     assert subshell.user_ns is not kernel.main_shell.user_ns

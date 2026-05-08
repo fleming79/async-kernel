@@ -107,7 +107,7 @@ class Kernel(traitlets.HasTraits):
     of the current profile, but can be specified by absolute path.
     """
 
-    kernel_name = traitlets.CUnicode()
+    name = traitlets.CUnicode()
     "The kernels name - if it contains 'trio' a trio backend will be used instead of an asyncio backend."
 
     help_links = traitlets.List(trait=traitlets.Dict())
@@ -162,8 +162,8 @@ class Kernel(traitlets.HasTraits):
     def _default_log(self) -> LoggerAdapter[Logger]:
         return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
 
-    @traitlets.default("kernel_name")
-    def _default_kernel_name(self) -> Literal["async-trio", "async"]:
+    @traitlets.default("name")
+    def _default_name(self) -> Literal["async-trio", "async"]:
         return "async-trio" if current_async_library(failsafe=True) == "trio" else "async"
 
     @traitlets.default("interface")
@@ -234,14 +234,14 @@ class Kernel(traitlets.HasTraits):
             "banner": self.banner,
             "help_links": self.help_links,
             "debugger": bool(self.interface.debugger),
-            "kernel_name": self.kernel_name,
+            "name": self.name,
             "supported_features": self.supported_features,
         }
 
     @property
     def settings(self) -> dict[str, Any]:
         "Settings that have been set to customise the behaviour of the kernel."
-        return {k: getattr(self, k) for k in ("kernel_name", "connection_file")} | self._settings
+        return {k: getattr(self, k) for k in ("name", "connection_file")} | self._settings
 
     @property
     def shell(self) -> AsyncInteractiveShell | AsyncInteractiveSubshell:
@@ -272,7 +272,7 @@ class Kernel(traitlets.HasTraits):
         if self.event_started:
             msg = "It is too late to load settings!"
             raise RuntimeError(msg)
-        settings_ = self._settings or {"kernel_name": self.kernel_name}
+        settings_ = self._settings or {"name": self.name}
         for k, v in settings.items():
             settings_ |= utils.setattr_nested(self, k, v)
         self._settings.update(settings_)
