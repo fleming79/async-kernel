@@ -16,14 +16,29 @@ if TYPE_CHECKING:
 
     InterfaceStartType = Callable[[None | dict[str, Any]], Any]
 
-__all__ = ["PROTOCOL_VERSION", "get_kernel_dir", "import_start_interface", "make_argv", "write_kernel_spec"]
+__all__ = [
+    "DEFAULT_EXECUTABLE",
+    "DEFAULT_START_INTERFACE",
+    "PROTOCOL_VERSION",
+    "get_kernel_dir",
+    "import_start_interface",
+    "make_argv",
+    "write_kernel_spec",
+]
 
 # path to kernelspec resources
-RESOURCES = Path(__file__).parent.joinpath("resources")
-PROTOCOL_VERSION = "5.5"
-CUSTOM_KERNEL_MARKER = "↤"
-DEFAULT_START_INTERFACE = "async_kernel.interface.start_kernel_zmq_interface"
-DEFAULT_EXECUTABLE = ("python", "-m", "async_kernel")
+RESOURCES: Path = Path(__file__).parent.joinpath("resources")
+
+CUSTOM_START_INTERFACE_SYMBOL: str = "↤"
+
+PROTOCOL_VERSION: str = "5.5"
+"The protocol that is supported by the kernel."
+
+DEFAULT_START_INTERFACE: str = "async_kernel.interface.start_kernel_zmq_interface"
+"An importable path to the default interface to start the kernel."
+
+DEFAULT_EXECUTABLE: tuple[str, ...] = ("python", "-m", "async_kernel")
+""
 
 
 def make_argv(
@@ -76,50 +91,34 @@ def write_kernel_spec(
     Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).
 
     Args:
-        path: The path where to write the spec.
-        name: The name of the kernel to use.
-        display_name: The display name for Jupyter to use for the kernel. The default is `"Python ({name})"`.
-        executable: The first part of 'argv' to use.
-        prefix: given, the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
+        path:
+            The path where to write the spec.
+        name:
+            The name of the kernel to use.
+        display_name:
+            The display name for Jupyter to use for the kernel. The default is `"Python ({name})"`.
+        executable:
+            The first part of 'argv' to use.
+        prefix:
+            When provided the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
-        folder: A direct path the the kernel spec folder (must end with a folder named 'kernels').
-        start_interface: The string import path to a callable that creates the Kernel or,
-            a *self-contained* function that returns an instance of a `Kernel`.
-        connection_file: The path to the connection file.
-        env: A mapping environment variables for the kernel to set prior to starting.
-        metadata: A mapping of additional attributes to aid the client in kernel selection.
-        resources: The path to the resources folder to include with the kernel spec.
-        **kwargs: Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
+        folder:
+            A direct path the the kernel spec folder (must end with a folder named 'kernels').
+        start_interface:
+            The string import path to a callable that creates the Kernel or, a *self-contained*
+            function that returns an instance of a `Kernel`.
+        connection_file:
+            The path to the connection file.
+        env:
+            A mapping environment variables for the kernel to set prior to starting.
+        metadata:
+            A mapping of additional attributes to aid the client in kernel selection.
+        resources:
+            The path to the resources folder to include with the kernel spec.
+        **kwargs:
+            Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
             For example `..., **{'shell.timeout'=0.1})`.
-
-    Example passing a callable start_interface:
-
-        When `start_interface` is passed as a callable, the callable is stored in the file
-        'kernel_spec.py' inside the kernelspec folder.
-
-        ```python
-        import async_kernel.kernelspec
-
-
-        def start_interface(settings):
-            from async_kernel import Kernel
-
-            class MyKernel(Kernel):
-                async def execute_request(self, job):
-                    print(job)
-                    return await super().execute_request(job)
-
-            return MyKernel(settings)
-
-
-        async_kernel.kernelspec.write_kernel_spec(
-            name="async-print-job", start_interface=start_interface
-        )
-        ```
-
-        Warning:
-            Moving the spec folder will break the import which is stored as an absolute path.
     """
 
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name)
@@ -129,7 +128,7 @@ def write_kernel_spec(
         path.mkdir(parents=True, exist_ok=True)
         if callable(start_interface):
             path.joinpath("start_interface.py").write_text(textwrap.dedent(inspect.getsource(start_interface)))
-            start_interface = f"{path}{CUSTOM_KERNEL_MARKER}{start_interface.__name__}"
+            start_interface = f"{path}{CUSTOM_START_INTERFACE_SYMBOL}{start_interface.__name__}"
         # validate
         if start_interface != DEFAULT_START_INTERFACE:
             import_start_interface(start_interface)
@@ -196,8 +195,8 @@ def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
         The kernel factory.
     """
 
-    if CUSTOM_KERNEL_MARKER in start_interface:
-        path, factory_name = start_interface.split(CUSTOM_KERNEL_MARKER)
+    if CUSTOM_START_INTERFACE_SYMBOL in start_interface:
+        path, factory_name = start_interface.split(CUSTOM_START_INTERFACE_SYMBOL)
         try:
             sys.path.insert(0, path)
             import start_interface as kf  # noqa: PLC0415
