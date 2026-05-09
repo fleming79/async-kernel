@@ -72,7 +72,7 @@ async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None,
     if backend is Backend.asyncio:
         loop = asyncio.get_running_loop()
         coro = asyncio.sleep(0)
-        tasks = set()
+        tasks: set[asyncio.Task] = set()
         eager = False
         all_done = create_async_waiter(shield=True)
         active = True
@@ -102,7 +102,7 @@ async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None,
             active = False
             if tasks:
                 for task in tasks:
-                    task.cancel()
+                    task.cancel("Shutting down")
                 await all_done
     else:
         async with trio.open_nursery() as nursery:
