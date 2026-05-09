@@ -685,3 +685,10 @@ async def test_redirect_stderr(kernel: Kernel):
         sys.stderr.write("hello")
         sys.stderr.flush()
     assert f.getvalue() == "hello"
+
+
+async def test_subclass_kernel_too_late(kernel: Kernel):
+    with pytest.raises(RuntimeError, match="too late"):
+
+        class SubKernel(Kernel):  # pyright: ignore[reportUnusedClass]
+            pass

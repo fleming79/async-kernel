@@ -78,6 +78,7 @@ class Kernel(traitlets.HasTraits):
         - [IPyKernel IPythonKernel][ipykernel.ipkernel.IPythonKernel]
     """
 
+    _cls: type[Self] | None = None
     _instance: Self | None = None
     _initialised = False
     _restart = False
@@ -135,10 +136,20 @@ class Kernel(traitlets.HasTraits):
     event_stopped = Fixed(Event)
     "An event that occurs when the kernel is stopped."
 
+    def __init_subclass__(cls) -> None:
+        if cls._instance:
+            msg = "It is too late to subclass the kernel!"
+            raise RuntimeError(msg)
+        Kernel._cls = cls
+        super().__init_subclass__()
+
     def __new__(cls, settings: dict | None = None, /) -> Self:  # noqa: ARG004
         #  There is only one instance (including subclasses).
         if not (instance := Kernel._instance):
-            Kernel._instance = instance = super().__new__(cls)
+            Kernel._instance = instance = super().__new__(cls._cls or cls if cls is Kernel else cls)
+        if not isinstance(instance, cls):
+            msg = f"Another kernel has already been created that is not a subclass of {cls}"
+            raise TypeError(msg)
         return instance  # pyright: ignore[reportReturnType]
 
     def __init__(self, settings: dict | None = None, /) -> None:
