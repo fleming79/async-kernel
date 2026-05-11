@@ -84,7 +84,7 @@ test = [
     "pytest-timeout",
     "pytest-mock",
     "pytest-rerunfailures",
-    "pytest>=8.4,<9",
+    "pytest>=8.4,<10",
     "trio>=0.31.0",
     ]
 uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and implementation_name == 'cpython'",
