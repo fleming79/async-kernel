@@ -60,7 +60,7 @@ jobs:
 
       - name: Run tests
         timeout-minutes: 5
-        run: uv run pytest -vvl --maxfail=1 --reruns 1
+        run: uv run pytest -vvl --maxfail=10 --reruns 0
 
   coverage:
     needs: type-checking

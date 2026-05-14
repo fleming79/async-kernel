@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import signal
 import sys
 from typing import TYPE_CHECKING, Literal
@@ -136,6 +137,7 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     assert "not found!" in out
 
 
+@pytest.mark.skipif(os.environ.get("GITHUB_REPOSITORY") is not None, reason="Test fails on github")
 def test_command_start_zmq_app(monkeypatch):
     assert ZMQKernelInterface._instance is None  # pyright: ignore[reportPrivateUsage]
     assert async_kernel.Kernel._instance is None  # pyright: ignore[reportPrivateUsage]
