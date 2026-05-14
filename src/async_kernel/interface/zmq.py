@@ -105,6 +105,21 @@ def bind_socket(
     raise RuntimeError(msg)
 
 
+class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
+    "A trait for a [pathlib.Path][] that casts strings to paths."
+
+    def validate(self, obj: traitlets.HasTraits, value: pathlib.Path | str) -> Path:
+        if not isinstance(value, pathlib.Path):
+            value = pathlib.Path(value)
+        if self.name and obj.trait_has_value(self.name) and getattr(obj, self.name) == value:
+            return getattr(obj, self.name)
+        return value
+
+    @override
+    def from_string(self, s: str) -> pathlib.Path:
+        return pathlib.Path(s)
+
+
 class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonApplication, InteractiveShellApp):  # pyright: ignore[reportUnsafeMultipleInheritance]
     description = traitlets.Unicode(
         "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",
@@ -152,7 +167,7 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
     gui = None
     "Not supported. If a gui event loop is required use 'host'."
 
-    connection_file: traitlets.TraitType[pathlib.Path, pathlib.Path | str] = traitlets.TraitType().tag(config=True)
+    connection_file = PathTrait().tag(config=True)
     """JSON file in which to store connection info."""
 
     session = traitlets.Instance(Session)
@@ -200,11 +215,12 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
         return super()._default_banner() + f" host:{str(self.host or '')!r} f:{str(self.connection_file)!r}"
 
     @traitlets.validate("connection_file")
-    def _validate_connection_file(self, proposal) -> Path:
-        if self.hb_port and proposal.value != self.connection_file:
+    def _validate_connection_file(self, proposal: dict) -> Path:
+
+        if self._sockets and self.trait_has_value("connection_file") and proposal["value"] != self.connection_file:
             msg = "It is too late to set the connection file!"
             raise RuntimeError(msg)
-        return Path(proposal["value"]).expanduser()
+        return proposal["value"]
 
     @traitlets.default("connection_file")
     def _default_connection_file(self) -> Path:
@@ -212,14 +228,14 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
 
     @traitlets.observe("connection_file")
     def _observe_connection_file(self, change) -> None:
-        if (path := self.connection_file).exists() and not self.hb_port:
+        if (path := change["new"]).exists() and path != change["old"] and not self._sockets:
             self.log.debug("Loading connection file %s", path)
             self.load_connection_info(json.loads(path.read_bytes()))
 
     @override
     def load_connection_info(self, info: dict[str, Any]) -> None:
-        if self.hb_port:
-            msg = "Already configured!"
+        if self._sockets:
+            msg = "It is too late to configure!"
             raise RuntimeError(msg)
         super().load_connection_info(info)
 
