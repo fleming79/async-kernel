@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+import sys
 
 import pytest
 from jupyter_client.kernelspec import KernelSpec
 
-from async_kernel.kernelspec import import_start_interface, write_kernel_spec
+from async_kernel.kernelspec import get_kernel_dir, import_start_interface, write_kernel_spec
 
 
 def test_write_kernel_spec(name, tmp_path, monkeypatch):
@@ -32,3 +33,18 @@ def test_write_kernel_spec(name, tmp_path, monkeypatch):
 def test_write_kernel_spec_fails():
     with pytest.raises(ValueError, match="not enough values to unpack"):
         write_kernel_spec(name="never-works", start_interface="not a factory")
+    with pytest.raises(ValueError, match="Invalid signature"):
+        write_kernel_spec(name="bad_interface", start_interface=lambda: None)  # pyright: ignore[reportArgumentType]
+
+
+def test_get_kernel_dir():
+
+    if sys.platform == "win32":
+        folder = "%APPDATA%\\jupyter\\kernels"
+    elif sys.platform == "darwin":
+        folder = "~/Library/Jupyter/kernels"
+    else:
+        folder = "~/.local/share/jupyter/kernels"
+    path = get_kernel_dir(folder=folder)
+    assert path.is_absolute()
+    assert path.as_posix().endswith("/jupyter/kernels")

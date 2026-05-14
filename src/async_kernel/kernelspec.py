@@ -131,8 +131,8 @@ def write_kernel_spec(
     path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / name)
 
     if callable(start_interface) and len(inspect.signature(start_interface).parameters) != 1:
-        msg = "start_interface"
-        raise RuntimeError(msg)
+        msg = "Invalid signature! `start_interface` must accept exactly one argument (a dict of settings)."
+        raise ValueError(msg)
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
@@ -194,7 +194,7 @@ def get_kernel_dir(*, folder: str = "", prefix: str = "") -> Path:
         pth = Path(folder).expanduser()
         assert pth.name.lower() == "kernels"
         return pth
-    return Path(prefix or sys.prefix).expanduser() / "share/jupyter/kernels"
+    return Path(prefix or sys.prefix).expanduser().joinpath("share", "jupyter", "kernels")
 
 
 def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
