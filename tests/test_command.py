@@ -85,7 +85,7 @@ def test_add_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, ca
             "start",
             "-f",
             "{connection_file}",
-            "--start_interface=start_zmq_app",
+            "--start_interface=launch_zmq_kernel",
             "--name=async-trio",
             "--AsyncInteractiveShell.timeout=0.01",
         ],
@@ -167,7 +167,7 @@ def test_command_start_zmq_app(monkeypatch):
             "use_uv=False",
             "--AsyncInteractiveShell.timeout=0.123",
             "--no-automagic",
-            "--start_interface=start_zmq_app",
+            "--start_interface=launch_zmq_kernel",
         ],
     )
 

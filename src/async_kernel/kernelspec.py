@@ -34,7 +34,7 @@ CUSTOM_START_INTERFACE_SYMBOL: str = "↤"
 PROTOCOL_VERSION: str = "5.5"
 "The protocol that is supported by the kernel."
 
-DEFAULT_START_INTERFACE: str = "start_zmq_app"
+DEFAULT_START_INTERFACE: str = "launch_zmq_kernel"
 "An importable path to the default interface to start the kernel."
 
 DEFAULT_EXECUTABLE: tuple[str, ...] = ("python", "-m", "async_kernel", "start")
@@ -62,7 +62,7 @@ def make_argv(
             Or as string import path to a callable.
             be saved as a python file in the kernelspec folder.
             Or can be one of the names of the methods in the interface folder:
-                - "start_zmq_app"
+                - "launch_zmq_kernel"
                 - "start_kernel_zmq_interface"
         name: The name to use for the kernel.
         executable: The command line executable to call.
@@ -215,7 +215,7 @@ def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
         return glbls[factory_name]
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    if start_interface in ["start_zmq_app", "start_kernel_zmq_interface"]:
+    if start_interface in ["launch_zmq_kernel", "start_kernel_zmq_interface"]:
         return import_item(f"async_kernel.interface.{start_interface}")
 
     return import_item(start_interface)

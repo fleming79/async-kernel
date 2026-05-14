@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
     from async_kernel.interface.callable import Handlers
 
-__all__ = ["BaseKernelInterface", "start_kernel_callable_interface", "start_kernel_zmq_interface", "start_zmq_app"]
+__all__ = ["BaseKernelInterface", "launch_zmq_kernel", "start_kernel_callable_interface", "start_kernel_zmq_interface"]
 
 
 async def start_kernel_callable_interface(
@@ -44,7 +44,7 @@ def start_kernel_zmq_interface(settings: dict) -> None:
     app.exit()
 
 
-def start_zmq_app(settings: dict) -> None:
+def launch_zmq_kernel(settings: dict) -> None:
     """
     Start the kernel with the zmq socket based kernel interface [ZMQKernelInterface][async_kernel.interface.zmq.ZMQKernelInterface] using the traitlets style configuration.
 

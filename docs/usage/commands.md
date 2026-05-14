@@ -28,7 +28,7 @@ The kernel spec looks like this:
         "async_kernel",
         "-f",
         "{connection_file}",
-        "--start_interface=start_zmq_app",
+        "--start_interface=launch_zmq_kernel",
         "--name=async",
         "--backend=trio",
         "--host=tk"
