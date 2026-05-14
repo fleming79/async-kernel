@@ -25,6 +25,7 @@ from IPython.core.application import BaseIPythonApplication
 from IPython.core.error import StdinNotImplementedError
 from IPython.core.profiledir import ProfileDir
 from IPython.core.shellapp import InteractiveShellApp, shell_aliases, shell_flags
+from jupyter_client import write_connection_file
 from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
@@ -312,7 +313,7 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
             self._start_hb_iopub_shell_control_threads(start)
             with self._bind_socket(Channel.stdin):
                 assert len(self._sockets) == len(Channel)
-                self.write_connection_file()
+                self._write_connection_file()
                 async with super().__asynccontextmanager__() as kernel:
                     start.set()
                     yield kernel
@@ -420,9 +421,26 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
             self._sockets.pop(channel)
 
     @override
-    def write_connection_file(self, **kwargs) -> None:
-        if (path := self.connection_file) and not path.exists():
-            super().write_connection_file(**kwargs)
+    def write_connection_file(self, **kwargs: Any) -> None:
+        raise NotImplementedError
+
+    def _write_connection_file(
+        self,
+    ) -> None:
+        """
+        Write connection info to JSON dict in kernel.connection_file.
+        """
+        if not (path := self.connection_file).exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            write_connection_file(
+                str(path),
+                transport=self.transport,
+                ip=str(self.ip),
+                key=self.session.key,
+                signature_scheme=self.session.signature_scheme,
+                kernel_name=self.name,
+                **{f"{channel}_port": getattr(self, f"{channel}_port") for channel in Channel},
+            )
             ip_files: list[pathlib.Path] = []
             if self.transport == "ipc":
                 for s in self._sockets.values():
