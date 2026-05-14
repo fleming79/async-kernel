@@ -217,7 +217,6 @@ async def test_kernel_info_request(client: AsyncKernelClient):
         "banner",
         "help_links",
         "debugger",
-        "name",
         "supported_features",
         "status",
     ]

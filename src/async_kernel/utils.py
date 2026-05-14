@@ -16,16 +16,16 @@ import async_kernel
 from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Generator, Mapping
     from contextlib import _SupportsRedirect, _SupportsRedirectT  # pyright: ignore[reportPrivateUsage]
 
     from async_kernel.kernel import Kernel
     from async_kernel.typing import Content, Job, Message
 
 __all__ = [
+    "apply_settings",
     "error_to_content",
     "error_to_content",
-    "get_execution_count",
     "get_job",
     "get_kernel",
     "get_metadata",
@@ -151,13 +151,7 @@ def get_timeout(*, tags: list[str] | None = None) -> float:
     return max(timeout, 0.0)
 
 
-def get_execution_count() -> int:
-    "Gets the execution count for the current context, defaults to the current kernel count."
-
-    return get_kernel().shell.execution_count
-
-
-def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
+def setattr_nested(obj: object, name: str, value: str | Any, *, _return_value=False) -> dict[str, Any]:
     """
     Replace an existing nested attribute/trait of an object.
 
@@ -173,20 +167,37 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
         The mapping of the name to the set value if the value has been set.
         An empty dict indicates the value was not set.
     """
-
-    if len(bits := name.split(".")) > 1:
-        try:
-            obj = getattr(obj, bits[0])
-        except Exception:
-            return {}
-        setattr_nested(obj, ".".join(bits[1:]), value)
-    if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
-        try:
-            setattr(obj, name, value)
-        except Exception:
-            setattr(obj, name, eval(value))
-        return {name: getattr(obj, name)}
+    try:
+        if len(bits := name.split(".")) > 1:
+            try:
+                obj = getattr(obj, bits[0])
+            except Exception:
+                return {}
+            value = setattr_nested(obj, ".".join(bits[1:]), value, _return_value=True)
+            return value if _return_value else {name: value}
+        if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
+            try:
+                setattr(obj, name, value)
+            except Exception:
+                setattr(obj, name, eval(value))
+            return value if _return_value else {name: value}  # pyright: ignore[reportReturnType]
+    except Exception:
+        if not _return_value:
+            raise
     return {}
+
+
+def apply_settings(obj: object, settings: Mapping[str, Any]) -> dict[str, Any]:
+    """
+    Apply the settings onto the object.
+
+    Returns:
+        dict: A copy of the settings that were applied.
+    """
+    values = {}
+    for k, v in settings.items():
+        values.update(setattr_nested(obj, k, v))
+    return values
 
 
 def error_to_content(error: BaseException, /) -> Content:

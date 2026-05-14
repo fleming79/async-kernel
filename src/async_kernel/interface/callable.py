@@ -63,7 +63,7 @@ class CallableKernelInterface(BaseKernelInterface):
 
     _send: Callable[[str, list | None, bool], None | str]
 
-    async def start(
+    async def start_async(
         self,
         *,
         send: Callable[[str, list | None, bool], None | str],

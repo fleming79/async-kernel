@@ -218,7 +218,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
-    log: logging.LoggerAdapter[Any]
+    log: logging.Logger | logging.LoggerAdapter
     ""
     iopub_sockets: ClassVar[dict[int, zmq.Socket]] = {}
     ""

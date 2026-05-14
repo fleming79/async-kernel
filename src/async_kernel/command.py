@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import argparse
-import gc
+import ast
+import logging
 import sys
-import traceback
 from typing import TYPE_CHECKING
 
 import async_kernel
 from async_kernel.kernelspec import get_kernel_dir, import_start_interface, remove_kernel_spec, write_kernel_spec
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from async_kernel.kernelspec import InterfaceStartType
 
     __all__ = ["command_line"]
@@ -43,20 +41,8 @@ def command_line() -> None:
         SystemExit: If an error occurs during kernel execution or if the
             program is interrupted.
     """
-    kernel_dir: Path = get_kernel_dir()
-    title = "async-kernel"
-    parser = argparse.ArgumentParser(
-        description="=" * len(title)
-        + f"\n{title}\n"
-        + "=" * len(title)
-        + "\n\n"
-        + "With the async-kernel command line tool you can:\n\n"
-        + "    - Add/remove kernel specs\n"
-        + "    - start kernels\n\n"
-        + "Online help: https://fleming79.github.io/async-kernel/latest/usage/commands/ \n\n"
-        + f"Jupyter kernel directory: '{kernel_dir}'",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
+
+    parser = argparse.ArgumentParser("", formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         "-f",
         "--connection_file",
@@ -69,12 +55,11 @@ def command_line() -> None:
         dest="add",
         help="Write a kernel spec with the corresponding name. This will overwrite existing kernel specs of the same name.",
     )
-    kernels = [] if not kernel_dir.exists() else [item.name for item in kernel_dir.iterdir() if item.is_dir()]
     parser.add_argument(
         "-r",
         "--remove",
         dest="remove",
-        help=f"Remove existing kernel specs. Installed kernels: {kernels}.",
+        help="Remove existing kernel specs.",
     )
     parser.add_argument(
         "-V",
@@ -83,31 +68,44 @@ def command_line() -> None:
         help="Print version",
         action="store_true",
     )
+
     args, unknownargs = parser.parse_known_args()
-    cl_names = set(vars(args))
+
+    settings = {}
+
+    def safe_eval(val: str):
+        try:
+            return ast.literal_eval(val.strip())
+        except Exception:
+            return val
 
     # Convert unknownargs from flags to mappings
-    for v in (v.lstrip("-") for v in unknownargs):
-        if "=" in v:
-            k, v_ = v.split("=", maxsplit=1)
-            setattr(args, k, v_.strip("'\"").strip())
+    while unknownargs:
+        k = unknownargs.pop(0).strip("-")
+        if "=" in k:
+            a, v = k.split("=", maxsplit=1)
+            settings[a] = safe_eval(v)
+        elif unknownargs and not unknownargs[0].startswith("-"):
+            v = unknownargs.pop(0)
+            if "=" in v:
+                a, v = v.split("=", maxsplit=1)
+                settings[k] = {a: safe_eval(v)}
+            else:
+                settings[k] = safe_eval(v)
+        # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
         else:
-            # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
-            setattr(args, v.removeprefix("no-"), False) if v.startswith("no-") else setattr(args, v, True)
+            settings[k.removeprefix("no-")] = not k.startswith("no-")
 
     # Add kernel spec
     if args.add:
-        if not hasattr(args, "name"):
-            args.name = args.add
-        for name in cl_names:
-            delattr(args, name)
-        path = write_kernel_spec(**vars(args))
+        settings["name"] = settings.get("name") or args.add
+        path = write_kernel_spec(**settings)
         print(f"Added kernel spec {path!s}")
 
     # Remove kernel spec
     elif args.remove:
-        folder = getattr(args, "folder", "")
-        prefix = getattr(args, "prefix", "")
+        folder = getattr(settings, "folder", "")
+        prefix = getattr(settings, "prefix", "")
         for name in args.remove.split(","):
             msg = "removed" if remove_kernel_spec(name, folder=folder, prefix=prefix) else "not found!"
             print(f"Kernel spec: '{name}' {msg}")
@@ -118,25 +116,51 @@ def command_line() -> None:
 
     # Start kernel
     elif args.connection_file:
-        settings = vars(args)
-        for k in cl_names.difference(["connection_file"]):
-            settings.pop(k, None)
-        if settings.get("connection_file") in {None, "", "."}:
-            settings.pop("connection_file", None)
-        factory: InterfaceStartType = import_start_interface(getattr(args, "start_interface", ""))
+        if args.connection_file == ".":
+            logging.basicConfig(level=logging.INFO)
+        else:
+            settings["connection_file"] = args.connection_file
+        start_interface: InterfaceStartType = import_start_interface(settings.pop("start_interface", ""))
         try:
-            factory(settings)
-            gc.collect()
+            start_interface(settings)
         except KeyboardInterrupt:
-            pass
-        except BaseException as e:
-            if "Stopping kernel" not in str(e):
-                traceback.print_exception(e, file=sys.stderr)
-                if sys.__stderr__ is not sys.stderr:
-                    traceback.print_exception(e, file=sys.__stderr__)
-                    sys.exit(1)
-        sys.exit(0)
+            sys.exit(0)
+
+    # Passthrough for show_config, show_config_json, help_all
+    elif settings:
+        if "start" in settings:
+            logging.basicConfig(level=logging.INFO)
+        start_interface = import_start_interface(settings.pop("start_interface", ""))
+        start_interface(settings)
 
     # Print help
     else:
-        parser.print_help()
+        _print_help(parser.format_help())
+    sys.exit(0)
+
+
+def _print_help(help_body: str, /) -> None:
+
+    kernel_dir = get_kernel_dir()
+
+    header = """
+============
+async-kernel  
+============
+
+With the async-kernel command line tool you can:
+   - Add/remove kernel specs
+   - start kernels
+
+"""
+    footer = f"""
+- online Help: https://fleming79.github.io/async-kernel/latest/usage/commands/
+- Jupyter kernel directory: {str(kernel_dir)!r}
+- Installed kernels {[] if not kernel_dir.exists() else [item.name for item in kernel_dir.iterdir() if item.is_dir()]}
+- Pass through arguments:
+    --help-all: Print all config options
+    --show_config: Display the currently set configuration (may be nothing) 
+    --show_config_json: Display the current configuration in json format.
+"""
+
+    sys.stdout.write(header + help_body + footer)

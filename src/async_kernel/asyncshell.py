@@ -27,7 +27,6 @@ from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
 from typing_extensions import override
 
-import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
@@ -209,7 +208,7 @@ class AsyncInteractiveShell(InteractiveShell):
     _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
 
-    timeout = traitlets.CFloat(0.0)
+    timeout = traitlets.CFloat(0.0).tag(config=True)
     "A timeout in seconds to complete execute requests."
 
     stop_on_error_time_offset = traitlets.Float(0.0)
@@ -221,7 +220,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}  name: {self.kernel.name!r} subshell_id: {self.subshell_id}>"
+        return f"<{self.__class__.__name__}  name: {self.kernel.interface.name!r} subshell_id: {self.subshell_id}>"
 
     def __new__(cls) -> Self:
         if issubclass(cls, AsyncInteractiveSubshell):
@@ -234,9 +233,9 @@ class AsyncInteractiveShell(InteractiveShell):
         return InteractiveShell._instance  # pyright: ignore[reportReturnType]
 
     @override
-    def __init__(self, parent=None) -> None:  # pyright: ignore[reportInconsistentConstructor]
+    def __init__(self) -> None:
         if not hasattr(self, "configurables"):
-            super().__init__(parent=parent)
+            super().__init__(parent=self.kernel)
 
     def _get_default_ns(self) -> dict[str, Any]:
         # Copied from `InteractiveShell.init_user_ns`
@@ -266,11 +265,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @traitlets.default("banner1")
     def _default_banner1(self) -> str:
-        return (
-            f"Python {sys.version}\n"
-            f"async-kernel v{async_kernel.__version__}, {self.kernel.settings}) \n"
-            f"IPython shell {IPython.core.release.version}\n"
-        )
+        return f"Python {sys.version}\n{self.kernel.interface.banner}) \nIPython shell {IPython.core.release.version}\n"
 
     @traitlets.observe("exit_now")
     def _update_exit_now(self, _) -> None:
@@ -607,8 +602,7 @@ class AsyncInteractiveShell(InteractiveShell):
         """Initialize magics."""
         super().init_magics()
         self.register_magics(KernelMagics)
-        self.magics_manager.register_alias("python", "thread")
-        self.magics_manager.register_alias("python3", "thread")
+        # Line magics
         self.magics_manager.register_alias("!", "system")
 
     @override
@@ -718,7 +712,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} name: {self.kernel.name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
+        return f"<{self.__class__.__name__} name: {self.kernel.interface.name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
 
     @property
     @override
@@ -734,7 +728,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     @override
     def __init__(self, *, protected: bool = True) -> None:
-        super().__init__(parent=AsyncInteractiveShell())
+        super().__init__()
         self.set_trait("protected", protected)
         self.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
         SubshellManager.subshells[self.subshell_id] = self
@@ -846,21 +840,24 @@ class KernelMagics(Magics):
     @line_magic
     def connect_info(self, _) -> None:
         """Print information for connecting other clients to this kernel."""
-        connection_file = pathlib.Path(self.shell.kernel.connection_file)
-        # if it's in the default dir, truncate to basename
-        if jupyter_runtime_dir() == str(connection_file.parent):
-            connection_file = connection_file.name
-        info = self.shell.kernel.get_connection_info()
-        print(
-            json.dumps(info, indent=2),
-            "Paste the above JSON into a file, and connect with:\n"
-            + "    $> jupyter <app> --existing <file>\n"
-            + "or, if you are local, you can connect with just:\n"
-            + f"    $> jupyter <app> --existing {connection_file}\n"
-            + "or even just:\n"
-            + "    $> jupyter <app> --existing\n"
-            + "if this is the most recent Jupyter kernel you have started.",
-        )
+        if isinstance(f := getattr(self.shell.kernel.interface, "connection_file", None), pathlib.Path) and f.exists():
+            connection_file = f
+            # if it's in the default dir, truncate to basename
+            if jupyter_runtime_dir() == str(connection_file.parent):
+                connection_file = connection_file.name
+            info = json.loads(f.read_bytes()) if f.exists() else ""
+            print(
+                json.dumps(info, indent=2),
+                "Paste the above JSON into a file, and connect with:\n"
+                + "    $> jupyter <app> --existing <file>\n"
+                + "or, if you are local, you can connect with just:\n"
+                + f"    $> jupyter <app> --existing {connection_file}\n"
+                + "or even just:\n"
+                + "    $> jupyter <app> --existing\n"
+                + "if this is the most recent Jupyter kernel you have started.",
+            )
+        else:
+            print("No connection info")  # pragma: no cover
 
     @line_magic
     def callers(self, _) -> None:
@@ -958,7 +955,7 @@ class KernelMagics(Magics):
             shell.run_cell_async,
             raw_cell=cell,
             store_history=False,
-            silent=True,
+            silent=False,
             cell_id=None,
             transformed_cell=shell.transform_cell_async(cell),
         )
@@ -970,7 +967,7 @@ class KernelMagics(Magics):
             shell.run_cell_async,
             raw_cell=code,
             store_history=False,
-            silent=True,
+            silent=False,
             cell_id=None,
             transformed_cell=shell.transform_cell_async(code),
         )

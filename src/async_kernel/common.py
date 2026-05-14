@@ -23,15 +23,16 @@ globals()["trio"] = lazy_import("trio")
 
 
 def import_item(dottedname: str) -> Any:
-    """Import an item from a module, given its dotted name.
+    """
+    Import an item from a module, given its dotted name.
 
     Example:
         ```python
         import_item("os.path.join")
         ```
     """
-    module, name0 = dottedname.rsplit(".", maxsplit=1)
-    return aiologic.meta.import_from(module, name0)
+    module, name = dottedname.rsplit(".", maxsplit=1)
+    return aiologic.meta.import_from(module, name)
 
 
 @coroutine

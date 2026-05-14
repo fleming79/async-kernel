@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    InterfaceStartType = Callable[[None | dict[str, Any]], Any]
+    InterfaceStartType = Callable[[dict[str, Any]], Any]
 
 __all__ = [
     "DEFAULT_EXECUTABLE",
@@ -34,7 +34,7 @@ CUSTOM_START_INTERFACE_SYMBOL: str = "↤"
 PROTOCOL_VERSION: str = "5.5"
 "The protocol that is supported by the kernel."
 
-DEFAULT_START_INTERFACE: str = "async_kernel.interface.start_kernel_zmq_interface"
+DEFAULT_START_INTERFACE: str = "start_zmq_app"
 "An importable path to the default interface to start the kernel."
 
 DEFAULT_EXECUTABLE: tuple[str, ...] = ("python", "-m", "async_kernel")
@@ -47,7 +47,7 @@ def make_argv(
     name: str = "async",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
     executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
-    **kwargs: dict[str, Any],
+    **kwargs: Any,
 ) -> list[str]:
     """Returns an argument vector (argv) that can be used to start a `Kernel`.
 
@@ -56,8 +56,14 @@ def make_argv(
 
     Args:
         connection_file: The path to the connection file.
-        start_interface: Either the kernel factory object itself, or the string import path to a
-            callable that returns a non-started kernel.
+        start_interface:
+            A self-contained function that accepts a dict of settings. The function
+            is stored as a python file in the kernelspec folder.
+            Or as string import path to a callable.
+            be saved as a python file in the kernelspec folder.
+            Or can be one of the names of the methods in the interface folder:
+                - "start_zmq_app"
+                - "start_kernel_zmq_interface"
         name: The name to use for the kernel.
         executable: The command line executable to call.
         **kwargs: Additional settings to pass when creating the kernel passed to `start_interface`.
@@ -68,7 +74,7 @@ def make_argv(
     argv = [*executable, "-f", connection_file]
     for k, v in ({"start_interface": start_interface, "name": name} | kwargs).items():
         argv.append(f"--{k}={v}")
-    return argv
+    return list(map(str, argv))
 
 
 def write_kernel_spec(
@@ -85,7 +91,7 @@ def write_kernel_spec(
     metadata: dict | None = None,
     language="python",
     resources: Path | None = RESOURCES,
-    **kwargs: dict[str, Any],
+    **kwargs: Any,
 ) -> Path:
     """
     Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).
@@ -123,15 +129,22 @@ def write_kernel_spec(
 
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name)
     path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / name)
+
+    if callable(start_interface) and len(inspect.signature(start_interface).parameters) != 1:
+        msg = "start_interface"
+        raise RuntimeError(msg)
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
+
+        # start_interface
         if callable(start_interface):
-            path.joinpath("start_interface.py").write_text(textwrap.dedent(inspect.getsource(start_interface)))
-            start_interface = f"{path}{CUSTOM_START_INTERFACE_SYMBOL}{start_interface.__name__}"
+            f = path.joinpath("start_interface.py")
+            f.write_text(textwrap.dedent(inspect.getsource(start_interface)))
+            start_interface = f"{f}{CUSTOM_START_INTERFACE_SYMBOL}{start_interface.__name__}"
         # validate
         if start_interface != DEFAULT_START_INTERFACE:
-            import_start_interface(start_interface)
+            assert len(inspect.signature(import_start_interface(start_interface)).parameters) == 1
         if resources:
             shutil.copytree(src=resources, dst=path, dirs_exist_ok=True)
         argv = make_argv(
@@ -194,18 +207,15 @@ def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
     Returns:
         The kernel factory.
     """
-
+    start_interface = start_interface or DEFAULT_START_INTERFACE
     if CUSTOM_START_INTERFACE_SYMBOL in start_interface:
-        path, factory_name = start_interface.split(CUSTOM_START_INTERFACE_SYMBOL)
-        try:
-            sys.path.insert(0, path)
-            import start_interface as kf  # noqa: PLC0415
-
-            factory = getattr(kf, factory_name)
-            assert len(inspect.signature(factory).parameters) == 1
-            return factory
-        finally:
-            sys.path.remove(path)
+        name, factory_name = start_interface.split(CUSTOM_START_INTERFACE_SYMBOL)
+        glbls = {}
+        exec(Path(name).read_bytes(), glbls)
+        return glbls[factory_name]
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    return import_item(start_interface or DEFAULT_START_INTERFACE)
+    if start_interface in ["start_zmq_app", "start_kernel_zmq_interface"]:
+        return import_item(f"async_kernel.interface.{start_interface}")
+
+    return import_item(start_interface)

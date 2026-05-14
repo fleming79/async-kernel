@@ -15,6 +15,8 @@ from async_kernel import Kernel, Pending
 from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell, SubshellManager
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
+from async_kernel.debugger import Debugger
+from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.typing import Channel, MsgType, RunMode, Tags
 from tests import utils
 
@@ -27,9 +29,10 @@ if TYPE_CHECKING:
 # pyright: reportPrivateUsage=false
 
 
-async def test_load_connection_info_error(kernel: Kernel, tmp_path):
+async def test_load_connection_info_error(kernel: Kernel):
+    assert isinstance(kernel.interface, ZMQKernelInterface)
     with pytest.raises(RuntimeError):
-        kernel.load_connection_info({})
+        kernel.interface.load_connection_info({})
 
 
 async def test_execute_request_success(client: AsyncKernelClient):
@@ -368,8 +371,8 @@ async def test_debug_static(client: AsyncKernelClient, command: str, mocker):
 
 
 async def test_debug_raises_no_socket(kernel: Kernel):
-    debugger = kernel.interface.debugger
-    assert debugger
+    debugger = kernel.debugger
+    assert isinstance(debugger, Debugger)
     with pytest.raises(RuntimeError):
         await debugger.debugpy_client.send_request({})
 
@@ -379,7 +382,7 @@ async def test_debug_not_connected(client: AsyncKernelClient):
         client, MsgType.debug_request, {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
     )
     assert reply["content"]["status"] == "error"
-    assert reply["content"]["evalue"] == "Debugy client not connected."
+    assert reply["content"]["evalue"] == "Debugpy client not connected."
 
 
 @pytest.mark.parametrize("variable_name", ["my_variable", "invalid variable name", "special variables"])
@@ -415,7 +418,8 @@ async def test_debug_static_richInspectVariables(client: AsyncKernelClient, vari
 )
 async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
     await utils.clear_iopub(client)
-    monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
+    assert isinstance(kernel.interface, ZMQKernelInterface)
+    monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.interface.connection_file).parent))
     assert code
     _, reply = await utils.execute(client, code, clear_pub=False)
     assert reply["status"] == "ok"
@@ -575,8 +579,8 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     subshell_id = kernel.subshell_manager.create_subshell(protected=True).subshell_id
     subshell = kernel.subshell_manager.subshells[subshell_id]
 
-    assert repr(kernel.main_shell) == "<IPythonAsyncInteractiveShell  name: 'async' subshell_id: None>"
-    assert repr(subshell) == f"<IPythonInteractiveSubshell name: 'async'  subshell_id: {subshell_id}>"
+    assert repr(kernel.main_shell) == "<IPythonAsyncInteractiveShell  name: 'async-kernel' subshell_id: None>"
+    assert repr(subshell) == f"<IPythonInteractiveSubshell name: 'async-kernel'  subshell_id: {subshell_id}>"
 
     assert kernel.main_shell.user_ns is kernel.main_shell.user_global_ns
     assert subshell.user_ns is not kernel.main_shell.user_ns

@@ -4,7 +4,7 @@ import importlib.util
 import json
 import signal
 import sys
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, override
 
 import anyio
 import pytest
@@ -12,6 +12,7 @@ from aiologic import Event
 
 import async_kernel
 from async_kernel.command import command_line
+from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
 from tests import utils
@@ -37,25 +38,40 @@ def fake_kernel_dir(tmp_path, monkeypatch):
 
 def test_prints_help_when_no_args(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["prog"])
-    command_line()
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
     out = capsys.readouterr().out
     assert "usage:" in out
 
 
 def test_prints_version_info(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["prog", "-V"])
-    command_line()
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
     out = capsys.readouterr().out
     assert f"async-kernel {async_kernel.__version__}" in out
 
 
-def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
+def test_prints_help_all(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["prog", "--help-all"])
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
+    out = capsys.readouterr().out
+    assert "aliases" in out
+
+
+def test_add_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--start_interface=async_kernel.kernel.Kernel"],
+        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--AsyncInteractiveShell.timeout=0.01"],
     )
-    command_line()
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
     out = capsys.readouterr().out
     assert "Added kernel spec" in out
     kernel_dir = fake_kernel_dir.joinpath("async-trio")
@@ -68,8 +84,9 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
             "async_kernel",
             "-f",
             "{connection_file}",
-            "--start_interface=async_kernel.kernel.Kernel",
+            "--start_interface=start_zmq_app",
             "--name=async-trio",
+            "--AsyncInteractiveShell.timeout=0.01",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -78,6 +95,15 @@ def test_add_kernel(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
         "metadata": {"debugger": True, "concurrent": True},
         "kernel_protocol_version": "5.5",
     }
+
+
+def test_no_args(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
+    monkeypatch.setattr(sys, "argv", ["prog"])
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
+    out = capsys.readouterr().out
+    assert out.startswith("\n============\nasync-kernel")
 
 
 @pytest.mark.parametrize("mode", ["folder", "prefix", "default"])
@@ -90,7 +116,9 @@ def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys, mode: Lite
         monkeypatch.setattr(sys, "argv", ["prog", "-r", name, f"--prefix={sys.prefix}"])
     else:
         monkeypatch.setattr(sys, "argv", ["prog", "-r", name])
-    command_line()
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
     out = capsys.readouterr().out
     assert "removed" in out
     assert not (fake_kernel_dir / name).exists()
@@ -99,42 +127,97 @@ def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys, mode: Lite
 def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
     name = "not a kernel"
     monkeypatch.setattr(sys, "argv", ["prog", "-r", name])
-    command_line()
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
     out = capsys.readouterr().out
     assert "not found!" in out
 
 
-def test_command_start_kernel(monkeypatch):
+def test_command_start_zmq_app(monkeypatch):
 
-    async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
-    monkeypatch.setattr(sys, "argv", ["prog", "-f", ".", "--no-print_kernel_messages"])
+    assert async_kernel.Kernel._instance is None  # pyright: ignore[reportPrivateUsage]
+
+    class EventSet(Event):
+        @override
+        def set(self):
+            nonlocal okay
+            kernel = async_kernel.Kernel()
+            assert isinstance(kernel.interface, ZMQKernelInterface)
+            assert kernel.interface.backend_options == {"use_uv": False}
+            assert kernel.shell.timeout == 0.123
+            assert kernel.shell.automagic is False
+            okay = True
+            super().set()
 
     event = Event()
     event.set()
+    event_started = EventSet()
+
     monkeypatch.setattr(async_kernel.Kernel, "event_stopped", event)
+    monkeypatch.setattr(async_kernel.Kernel, "event_started", event_started)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "prog",
+            "-f",
+            ".",
+            "--backend_options",
+            "use_uv=False",
+            "--AsyncInteractiveShell.timeout=0.123",
+            "--no-automagic",
+            "--start_interface=start_zmq_app",
+        ],
+    )
+
+    okay = False
+
     try:
         with pytest.raises(SystemExit) as e:
             command_line()
         assert e.value.code == 0
+        assert okay
     finally:
         async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
+
+
+def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathlib.Path):
+    connection_file = fake_kernel_dir.joinpath("test_start_kernel_zmq_interface.json")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "prog",
+            "-f",
+            str(connection_file),
+            "--display_name='my kernel'",
+            "--start_interface=start_kernel_zmq_interface",
+            "--shell.timeout=0.01",
+            "--quiet",
+        ],
+    )
+    event = Event()
+    event.set()
+    monkeypatch.setattr(async_kernel.Kernel, "event_stopped", event)
+    patched_event = mocker.patch.object(async_kernel.Kernel, "event_started")
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
+    assert str(patched_event.method_calls) == "[call.set()]"
 
 
 # Avoid matplotlib tests generally to avoid flaky tests on ci.
 @pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Requires matplotlib")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("host", [Hosts.tk, Hosts.qt, None])
-def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, host):
-    import matplotlib as mpl  # noqa: PLC0415
-
-    mpl.use("module://matplotlib_inline.backend_inline")
+def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, host):
     if host is Hosts.tk:
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
     elif host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
 
-    async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
     monkeypatch.setattr(
         sys,
         "argv",
@@ -143,20 +226,18 @@ def test_command_start_kernel_enable_matplotlib(monkeypatch, backend, host):
             "-f",
             ".",
             f"--name=async-{host}",
-            f"--interface.host={host}",
-            f"--interface.backend={backend}",
-            "--no-print_kernel_messages",
+            f"--host={host}",
+            f"--backend={backend}",
         ],
     )
     event = Event()
     event.set()
     monkeypatch.setattr(async_kernel.Kernel, "event_stopped", event)
-    try:
-        with pytest.raises(SystemExit) as e:
-            command_line()
-        assert e.value.code == 0
-    finally:
-        async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
+    patched_event = mocker.patch.object(async_kernel.Kernel, "event_started")
+    with pytest.raises(SystemExit) as e:
+        command_line()
+    assert e.value.code == 0
+    assert str(patched_event.method_calls) == "[call.set()]"
 
 
 async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, name, transport):
@@ -166,8 +247,7 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
         subprocess_kernels_client,
         "kernel = get_ipython().kernel",
         user_expressions={
-            "name": "kernel.name",
-            "host": "kernel.interface.host",
+            "name": "kernel.interface.name",
             "backend": "kernel.interface.backend",
             "transport": "kernel.interface.transport",
         },

@@ -6,6 +6,7 @@ import atexit
 import contextlib
 import errno
 import importlib.util
+import json
 import os
 import pathlib
 import signal
@@ -20,24 +21,30 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 import zmq
 from aiologic import BinarySemaphore
 from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
+from IPython.core.application import BaseIPythonApplication
 from IPython.core.error import StdinNotImplementedError
-from jupyter_client import write_connection_file
+from IPython.core.profiledir import ProfileDir
+from IPython.core.shellapp import InteractiveShellApp, shell_aliases, shell_flags
+from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
+from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel.event_loop
 from async_kernel import Kernel, utils
+from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
-from async_kernel.interface.base import BaseKernelInterface
+from async_kernel.interface.base import BaseKernelInterface, DictValueLiteralEval
 from async_kernel.typing import Backend, Channel, Content, Hosts, Job, Message, MsgHeader, NoValue, RunSettings
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
     from types import FrameType
+
 
 __all__ = ["ZMQKernelInterface"]
 
@@ -98,42 +105,81 @@ def bind_socket(
     raise RuntimeError(msg)
 
 
-class ZMQKernelInterface(BaseKernelInterface):
-    "An interface for the kernel that uses zmq sockets."
+class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonApplication, InteractiveShellApp):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleMethodOverride]
+    description = traitlets.Unicode(
+        "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",
+    ).tag(config=True)
+    "A description to use for the command line interface."
 
-    _zmq_context = Fixed(zmq.Context)
-    _interrupt_requested: bool | Literal["FORCE"] = False
-    _iopub_url = "inproc://iopub-capture"
+    classes = [Kernel, AsyncInteractiveShell, AsyncInteractiveSubshell, ProfileDir, Session]  # noqa: RUF012
 
-    sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
-    ""
-    ports: Fixed[Self, dict[Channel, int]] = Fixed(dict)
-    ""
-    ip = traitlets.Unicode()
-    """
-    The kernel's IP address [default localhost].
-    
-    If the IP address is something other than localhost, then Consoles on other machines 
-    will be able to connect to the Kernel, so be careful!
-    """
-    session = Fixed(Session, created=lambda c: setattr(c["obj"], "check_pid", False))
-    "Handles serialization and sending of messages."
+    aliases = (
+        shell_aliases
+        | BaseIPythonApplication.aliases
+        | {
+            "name": "ZMQKernelInterface.name",
+            "start_interface": "ZMQKernelInterface.start_interface",
+            "kernel_class": "ZMQKernelInterface.kernel_class",
+            "quiet": "ZMQKernelInterface.quiet",
+            "timeout": "AsyncInteractiveShell.timeout",
+            "f": "ZMQKernelInterface.connection_file",
+            "connection_file": "ZMQKernelInterface.connection_file",
+            "ip": "ZMQKernelInterface.ip",
+            "hb": "ZMQKernelInterface.hb_port",
+            "shell": "ZMQKernelInterface.shell_port",
+            "iopub": "ZMQKernelInterface.iopub_port",
+            "stdin": "ZMQKernelInterface.stdin_port",
+            "control": "ZMQKernelInterface.control_port",
+            "transport": "ZMQKernelInterface.transport",
+            "backend": "ZMQKernelInterface.backend",
+            "host": "ZMQKernelInterface.host",
+            "backend_options": "ZMQKernelInterface.backend_options",
+            "host_options": "ZMQKernelInterface.host_options",
+        }
+    )
+    flags = shell_flags | BaseIPythonApplication.flags
+
+    # Disabled unsupported InteractiveShellApp configurable traits
+
+    # Remove associated aliases and flags
+    for _n in ["matplotlib", "gui", "pylab", "pdb", "autoindent", "pprint"]:
+        aliases.pop(_n, None)
+        flags.pop(_n, None)
+    del _n  # cleanup symbol
+
+    matplotlib = None
+    "Not supported. If a gui event loop is required use 'host'."
+    gui = None
+    "Not supported. If a gui event loop is required use 'host'."
+
+    connection_file: traitlets.TraitType[pathlib.Path, pathlib.Path | str] = traitlets.TraitType().tag(config=True)
+    """JSON file in which to store connection info."""
+
+    session = traitlets.Instance(Session)
 
     transport: traitlets.CaselessStrEnum[str] = traitlets.CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
-    )
+    ).tag(config=True)
     "Transport for sockets."
 
     host: traitlets.TraitType[Hosts | None, Hosts | None] = traitlets.UseEnum(
         Hosts, default_value=None, allow_none=True
-    )
+    ).tag(config=True)
     "The name of the (gui) event loop if one is used."
 
-    host_options = traitlets.Dict(allow_none=True)
+    host_options = DictValueLiteralEval(allow_none=True).tag(config=True)
     "Options for starting the loop."
 
-    backend_options = traitlets.Dict(allow_none=True)
+    backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
     "Options for starting the backend."
+
+    pre_start = traitlets.List(["init_path", "init_extensions", "init_code"]).tag(config=True)
+    ""
+
+    _zmq_context = Fixed(zmq.Context)
+    _interrupt_requested: bool | Literal["FORCE"] = False
+    _iopub_url = "inproc://iopub-capture"
+    _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
 
     @traitlets.default("backend")
     def _default_backend(self) -> Backend:
@@ -148,6 +194,83 @@ class ZMQKernelInterface(BaseKernelInterface):
                 self.backend_options["use_uvloop"] = True
             return Backend.asyncio
 
+    @traitlets.default("banner")
+    @override
+    def _default_banner(self):
+        return super()._default_banner() + f" host:{str(self.host or '')!r} f:{str(self.connection_file)!r}"
+
+    @traitlets.validate("connection_file")
+    def _validate_connection_file(self, proposal) -> Path:
+        if self.hb_port and proposal.value != self.connection_file:
+            msg = "It is too late to set the connection file!"
+            raise RuntimeError(msg)
+        return Path(proposal["value"]).expanduser()
+
+    @traitlets.default("connection_file")
+    def _default_connection_file(self) -> Path:
+        return Path(jupyter_runtime_dir()).joinpath(f"kernel-{os.getpid()}.json")
+
+    @traitlets.observe("connection_file")
+    def _observe_connection_file(self, change) -> None:
+        if (path := self.connection_file).exists() and not self.hb_port:
+            self.log.debug("Loading connection file %s", path)
+            self.load_connection_info(json.loads(path.read_bytes()))
+
+    @override
+    def load_connection_info(self, info: dict[str, Any]) -> None:
+        if self.hb_port:
+            msg = "Already configured!"
+            raise RuntimeError(msg)
+        super().load_connection_info(info)
+
+    @traitlets.validate("ip")
+    def _validate_ip(self, proposal) -> str:
+        return "0.0.0.0" if (val := proposal["value"]) == "*" else val
+
+    @traitlets.default("ip")
+    def _default_ip(self) -> str:
+        return str(self.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
+
+    @traitlets.default("session")
+    def _default_session(self) -> Session:
+        session = Session(parent=self)
+        if not session.trait_has_value(" check_pid"):
+            session.check_pid = False
+        return session
+
+    @classmethod
+    def _clean_argv(cls, argv_in: list[str], /) -> list[str]:
+        "Clean up argv."
+
+        argv = []
+        for v in map(str, argv_in):
+            # check for starting from the command line.
+            if v == "." and argv and argv[-1] in ["-f", "--connection_file"]:
+                argv.pop()
+            else:
+                argv.append(v)
+        return argv
+
+    @override
+    def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
+        """Initialize the application."""
+
+        if not os.environ.get("MPLBACKEND"):
+            os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+        if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
+            os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
+        # if "pytest" not in sys.modules and not os.environ.get("IPYTHON_SUPPRESS_CONFIG_ERRORS"):
+        #     os.environ["IPYTHON_SUPPRESS_CONFIG_ERRORS"] = "1"
+
+        if not self.trait_has_value("kernel"):
+            argv = [] if argv is NoValue else self._clean_argv(sys.argv) if argv is None else argv
+            super().initialize(argv)
+            self.log = self.kernel.log
+        elif argv is not NoValue:
+            msg = "Already initialized!"
+            raise RuntimeError(msg)
+
+    @override
     def start(self) -> None:
         """
         Start the kernel blocking until the kernel stops.
@@ -159,7 +282,6 @@ class ZMQKernelInterface(BaseKernelInterface):
             - If there is an `asyncio` or `trio` event loop already running in the 'MainThread`;
                 start the kernel asynchronously instead (`async with kernel: ...`).
         """
-
         settings = RunSettings(
             backend=self.backend,
             backend_options=self.backend_options,
@@ -169,44 +291,6 @@ class ZMQKernelInterface(BaseKernelInterface):
         async_kernel.event_loop.run(self.run, (), settings)
 
     @override
-    def load_connection_info(self, info: dict[str, Any]) -> None:
-        """
-        Load connection info from a dict containing connection info.
-
-        Typically this data comes from a connection file
-        and is called by load_connection_file.
-
-        Args:
-            info: Dictionary containing connection_info. See the connection_file spec for details.
-        """
-        if self.ports:
-            msg = "Connection info is already loaded!"
-            raise RuntimeError(msg)
-        self.transport = info.get("transport", self.transport)
-        self.ip = info.get("ip") or self.ip
-        for channel in Channel:
-            name = f"{channel}_port"
-            if channel not in self.ports and name in info:
-                self.ports[channel] = info[name]
-        if "key" in info:
-            key = info["key"]
-            if isinstance(key, str):
-                key = key.encode()
-            assert isinstance(key, bytes)
-
-            self.session.key = key
-        if "signature_scheme" in info:
-            self.session.signature_scheme = info["signature_scheme"]
-
-    @traitlets.validate("ip")
-    def _validate_ip(self, proposal) -> str:
-        return "0.0.0.0" if (val := proposal["value"]) == "*" else val
-
-    @traitlets.default("ip")
-    def _default_ip(self) -> str:
-        return str(self.kernel.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
-
-    @override
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Kernel]:
         self.backend = Backend(current_async_library())
@@ -214,8 +298,8 @@ class ZMQKernelInterface(BaseKernelInterface):
         try:
             self._start_hb_iopub_shell_control_threads(start)
             with self._bind_socket(Channel.stdin):
-                assert len(self.sockets) == len(Channel)
-                self._write_connection_file()
+                assert len(self._sockets) == len(Channel)
+                self.write_connection_file()
                 async with super().__asynccontextmanager__() as kernel:
                     start.set()
                     yield kernel
@@ -244,7 +328,7 @@ class ZMQKernelInterface(BaseKernelInterface):
             frontend: zmq.Socket = self._zmq_context.socket(zmq.XSUB)
             frontend.bind(Caller.iopub_url)
 
-            # Capture broadcasts messages received on both frontend and backend
+            # Capture broadcast messages received on both frontend and backend
             capture = self._zmq_context.socket(zmq.PUB)
             capture.bind(self._iopub_url)
             threading.Thread(target=self._pub_capture).start()
@@ -311,36 +395,24 @@ class ZMQKernelInterface(BaseKernelInterface):
                 socket_type = zmq.XPUB
         socket: zmq.Socket = self._zmq_context.socket(socket_type)
         socket.linger = 50
-        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=self.ports.get(channel, 0))  # pyright: ignore[reportArgumentType]
-        self.ports[channel] = port
+        name = f"{channel}_port"
+        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=getattr(self, name))  # pyright: ignore[reportArgumentType]
+        self.set_trait(name, port)
         self.log.debug("%s socket on port: %i", channel, port)
-        self.sockets[channel] = socket
+        self._sockets[channel] = socket
         try:
             yield socket
         finally:
             socket.close(linger=50)
-            self.sockets.pop(channel)
+            self._sockets.pop(channel)
 
-    def _write_connection_file(
-        self,
-    ) -> None:
-        """
-        Write connection info to JSON dict in kernel.connection_file.
-        """
-        if not (path := self.kernel.connection_file).exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            write_connection_file(
-                str(path),
-                transport=self.transport,
-                ip=self.ip,
-                key=self.session.key,
-                signature_scheme=self.session.signature_scheme,
-                kernel_name=self.kernel.name,
-                **{f"{channel}_port": self.ports[channel] for channel in Channel},
-            )
+    @override
+    def write_connection_file(self, **kwargs) -> None:
+        if (path := self.connection_file) and not path.exists():
+            super().write_connection_file(**kwargs)
             ip_files: list[pathlib.Path] = []
             if self.transport == "ipc":
-                for s in self.sockets.values():
+                for s in self._sockets.values():
                     f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
                     assert f.exists()
                     ip_files.append(f)
@@ -358,7 +430,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise StdinNotImplementedError(msg)
-        socket = self.sockets[Channel.stdin]
+        socket = self._sockets[Channel.stdin]
         # Clear messages on the stdin socket
         while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
             socket.recv_multipart(flags=Flag.DONTWAIT, copy=False)
@@ -508,6 +580,7 @@ class ZMQKernelInterface(BaseKernelInterface):
         """
         Perform a keyboard interrupt.
         """
-        if not getattr(self.debugger, "stopped_threads", None):
+
+        if not getattr(self.kernel.debugger, "stopped_threads", None):
             self._interrupt_now()
         super().interrupt()

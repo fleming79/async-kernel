@@ -13,6 +13,7 @@ from async_kernel.common import KernelInterrupt
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import start_kernel_callable_interface
 from async_kernel.interface.callable import CallableKernelInterface
+from async_kernel.interface.zmq import ZMQKernelInterface
 
 if TYPE_CHECKING:
     from async_kernel.typing import Message
@@ -37,8 +38,8 @@ async def interface(anyio_backend):
         return None
 
     callbacks = await start_kernel_callable_interface(send=send, stopped=stopped.set)
-    interface = async_kernel.Kernel().interface
-    assert isinstance(interface, CallableKernelInterface)
+
+    interface = CallableKernelInterface.instance()
     try:
         yield interface
     finally:
@@ -86,8 +87,9 @@ class TestCallableInterface:
             async_kernel.utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     async def test_prevent_multiple_instances(self, interface):
-        with pytest.raises(RuntimeError):
-            CallableKernelInterface()
+        assert CallableKernelInterface() is interface
+        with pytest.raises(TypeError):
+            ZMQKernelInterface()
 
     async def test_keyboard_interrupt(self, interface):
         with pytest.raises(KernelInterrupt):
