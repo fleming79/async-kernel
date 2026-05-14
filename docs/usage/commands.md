@@ -26,6 +26,7 @@ The kernel spec looks like this:
         "python",
         "-m",
         "async_kernel",
+        "start",
         "-f",
         "{connection_file}",
         "--start_interface=launch_zmq_kernel",
