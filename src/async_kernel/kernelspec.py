@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import re
 import shutil
 import sys
@@ -20,6 +21,7 @@ __all__ = [
     "DEFAULT_EXECUTABLE",
     "DEFAULT_START_INTERFACE",
     "PROTOCOL_VERSION",
+    "expand_path",
     "get_kernel_dir",
     "import_start_interface",
     "make_argv",
@@ -189,12 +191,38 @@ def get_kernel_dir(*, folder: str = "", prefix: str = "") -> Path:
     Args:
         folder: The path to 'kernels' (must end with 'kernels').
         prefix: Defaults to sys.prefix (installable for a particular environment).
+
+    Search locations: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs
     """
     if folder:
-        pth = Path(folder).expanduser()
-        assert pth.name.lower() == "kernels"
+        path = expand_path(folder)
+        assert path.name.lower() == "kernels"
+        return path
+    return expand_path(prefix or sys.prefix).joinpath("share", "jupyter", "kernels")
+
+
+def expand_path(path: str | Path) -> Path:
+    """
+    Make the path absolute returning a new path object.
+
+    Args:
+        path: The path to process.
+
+    Substitutions:
+        - Windows environment variables are accepted such as `%APPDATA%` and `%PROGRAMDATA%`.
+        -`~` is also substituted with  [pathlib.Path.expanduser][].
+    """
+    if sys.platform == "win32" and str(path).startswith("%"):
+        key, base = str(path).split("%")[1:3]
+        key = key.strip("%").upper()
+        pth_ = Path(os.environ[key])
+        assert pth_.exists()
+        pth = pth_.joinpath(base.strip("\\/"))
+        assert pth.parts[0] == pth_.parts[0]
         return pth
-    return Path(prefix or sys.prefix).expanduser().joinpath("share", "jupyter", "kernels")
+    if isinstance(path, str):
+        path = Path(path)
+    return path.expanduser().absolute()
 
 
 def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:

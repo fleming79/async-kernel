@@ -40,6 +40,7 @@ from async_kernel.asyncshell import AsyncInteractiveShell
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface, DictValueLiteralEval
+from async_kernel.kernelspec import expand_path
 from async_kernel.typing import Backend, Channel, Content, Hosts, Job, Message, MsgHeader, NoValue, RunSettings
 
 if TYPE_CHECKING:
@@ -111,14 +112,14 @@ class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
 
     def validate(self, obj: traitlets.HasTraits, value: pathlib.Path | str) -> Path:
         if not isinstance(value, pathlib.Path):
-            value = pathlib.Path(value)
+            value = expand_path(value)
         if self.name and obj.trait_has_value(self.name) and getattr(obj, self.name) == value:
             return getattr(obj, self.name)
         return value
 
     @override
     def from_string(self, s: str) -> pathlib.Path:
-        return pathlib.Path(s)
+        return expand_path(s)
 
 
 class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonApplication, InteractiveShellApp):  # pyright: ignore[reportUnsafeMultipleInheritance]

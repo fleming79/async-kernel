@@ -42,9 +42,9 @@ def test_get_kernel_dir():
     if sys.platform == "win32":
         folder = "%APPDATA%\\jupyter\\kernels"
     elif sys.platform == "darwin":
-        folder = "~/Library/Jupyter/kernels"
+        folder = "~/library/jupyter/kernels"
     else:
         folder = "~/.local/share/jupyter/kernels"
     path = get_kernel_dir(folder=folder)
     assert path.is_absolute()
-    assert path.as_posix().endswith("/jupyter/kernels")
+    assert path.as_posix().lower().endswith("/jupyter/kernels")
