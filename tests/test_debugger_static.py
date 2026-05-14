@@ -1,20 +1,12 @@
 from __future__ import annotations
 
-import io
-import sys
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
-import anyio
 import pytest
-from IPython.core import page
 
 import async_kernel.utils
-from async_kernel import Kernel, Pending
-from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell, SubshellManager
-from async_kernel.caller import Caller
-from async_kernel.comm import Comm
-from async_kernel.debugger import Debugger
-from async_kernel.typing import Channel, MsgType, RunMode, Tags
+from async_kernel import Kernel
+from async_kernel.typing import MsgType
 from tests import utils
 
 if TYPE_CHECKING:
@@ -22,11 +14,10 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize("command", ["debugInfo", "inspectVariables", "modules", "dumpCell", "source"])
-async def test_debug_static(client: AsyncKernelClient, command: str, mocker, kernel:Kernel):
+async def test_debug_static(client: AsyncKernelClient, command: str, mocker, kernel: Kernel):
     # These are tests on the debugger that don't required the debugger to be connected.
-    kernel._traits.pop('debugger')
     mocker.patch.object(async_kernel.utils, "LAUNCHED_BY_DEBUGPY", new=True)
-    assert 
+
     code = "my_variable=123"
     if command == "debugInfo":
         assert async_kernel.utils.LAUNCHED_BY_DEBUGPY
@@ -46,18 +37,18 @@ async def test_debug_static(client: AsyncKernelClient, command: str, mocker, ker
 
 
 async def test_debug_raises_no_socket(kernel: Kernel):
-    debugger = kernel.debugger
-    assert isinstance(debugger, Debugger)
     with pytest.raises(RuntimeError):
-        await debugger.debugpy_client.send_request({})
+        await kernel.debugger.debugpy_client.send_request({})
 
 
-async def test_debug_not_connected(client: AsyncKernelClient):
+async def test_debug_not_connected(client: AsyncKernelClient, kernel: Kernel, mocker):
+    mock_method = mocker.patch.object(kernel.interface.log, "exception")
     reply = await utils.send_control_message(
         client, MsgType.debug_request, {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
     )
     assert reply["content"]["status"] == "error"
     assert reply["content"]["evalue"] == "Debugpy client not connected."
+    assert str(mock_method.call_args).startswith("call('Exception in message handler:'")
 
 
 @pytest.mark.parametrize("variable_name", ["my_variable", "invalid variable name", "special variables"])
@@ -74,4 +65,3 @@ async def test_debug_static_richInspectVariables(client: AsyncKernelClient, vari
         },
     )
     assert reply["content"]["status"] == "ok"
-

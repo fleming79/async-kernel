@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import time
 from typing import TYPE_CHECKING, Any, Self, cast
 
@@ -14,13 +13,13 @@ import async_kernel
 from async_kernel import Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell, SubshellManager
 from async_kernel.comm import CommManager
-from async_kernel.common import Fixed, KernelInterrupt, import_item
+from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.debugger import Debugger
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message
 
 globals()["BaseKernelInterface"] = lazy_import("async_kernel.interface.base", "BaseKernelInterface")
 
 if TYPE_CHECKING:
-    from async_kernel.debugger import Debugger
     from async_kernel.interface.base import BaseKernelInterface  # noqa: TC004
 
 
@@ -50,7 +49,8 @@ class Kernel(LoggingConfigurable):
     subshell_manager = SubshellManager
     "Dedicated to management of sub shells."
 
-    debugger: traitlets.Instance[Debugger] | None = traitlets.Instance(traitlets.HasTraits, allow_none=True)  # pyright: ignore[reportAssignmentType]
+    debugger = traitlets.Instance(Debugger)
+    "The debugger for handling debug requests."
 
     help_links = traitlets.List(trait=traitlets.Dict()).tag(config=True)
     "A list of links provided kernel info request."
@@ -108,12 +108,8 @@ class Kernel(LoggingConfigurable):
             assert self.main_shell
 
     @traitlets.default("debugger")
-    def _default_debugger(self) -> Debugger | None:
-        return (
-            import_item("async_kernel.debugger.Debugger")()
-            if (not utils.LAUNCHED_BY_DEBUGPY) & (sys.platform != "emscripten")
-            else None
-        )
+    def _default_debugger(self) -> Debugger:
+        return Debugger(parent=self)
 
     @traitlets.default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:

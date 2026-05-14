@@ -190,9 +190,9 @@ class Debugger(LoggingConfigurable):
     kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
     init_event = traitlets.Instance(Event, ())
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         """Initialize the debugger."""
-        super().__init__()
+        super().__init__(**kwargs)
         self.debugpy_client = DebugpyClient(parent=self)
         self.started_debug_handlers = {
             "setBreakpoints": self.do_set_breakpoints,
