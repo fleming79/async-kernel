@@ -195,5 +195,18 @@ async def test_load_connection_file_too_late(kernel: Kernel):
 
 async def test_already_initialized(kernel: Kernel):
     assert isinstance(kernel.interface, ZMQKernelInterface)
-    with pytest.raises(RuntimeError, match="Already initialized"):
-        kernel.interface.initialize([])
+    assert kernel.config is kernel.interface.config
+    config = kernel.config.copy()
+    kernel.interface.initialize(["prog", "--quiet=False"])
+    assert kernel.config == config
+
+
+async def test_launch_too_late(kernel: Kernel):
+    with pytest.raises(RuntimeError, match="An instance has already been created"):
+        ZMQKernelInterface.launch_instance()
+
+
+async def test_already_entered(kernel: Kernel):
+    with pytest.raises(RuntimeError, match="this ZMQKernelInterface has already been entered"):
+        async with ZMQKernelInterface():
+            pass

@@ -105,7 +105,7 @@ class Kernel(LoggingConfigurable):
     def __init__(self) -> None:
         if not self._initialised:
             self._initialised = True
-            super().__init__(config=self.interface.config)
+            super().__init__(parent=self.interface)
             assert self.main_shell
 
     @traitlets.default("debugger")

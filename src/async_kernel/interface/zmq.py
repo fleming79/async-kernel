@@ -105,7 +105,7 @@ def bind_socket(
     raise RuntimeError(msg)
 
 
-class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonApplication, InteractiveShellApp):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleMethodOverride]
+class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonApplication, InteractiveShellApp):  # pyright: ignore[reportUnsafeMultipleInheritance]
     description = traitlets.Unicode(
         "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",
     ).tag(config=True)
@@ -241,7 +241,7 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
     @override
     def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
         """Initialize the application."""
-
+        assert self._instance is self
         if not os.environ.get("MPLBACKEND"):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
         if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
@@ -251,10 +251,6 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
 
         if not self.trait_has_value("kernel"):
             super().initialize([] if argv is NoValue else argv)
-            self.log = self.kernel.log
-        elif argv is not NoValue:
-            msg = "Already initialized!"
-            raise RuntimeError(msg)
 
     @override
     def start(self) -> None:
@@ -275,6 +271,21 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
             host_options=self.host_options,
         )
         async_kernel.event_loop.run(self.run, (), settings)
+
+    @classmethod
+    @override
+    def launch_instance(cls, argv: list[str] | None = None, **kwargs: Any) -> None:
+        if BaseKernelInterface._instance:
+            msg = "An instance has already been created!"
+            raise RuntimeError(msg)
+        app = cls.instance(**kwargs)
+        try:
+            app.initialize(argv)
+            app.start()
+        finally:
+            if inst := BaseKernelInterface._instance:
+                inst.clear_instance()
+            app.exit()
 
     @override
     @asynccontextmanager

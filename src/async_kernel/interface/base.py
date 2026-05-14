@@ -153,10 +153,12 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
     def instance(cls, **kwargs) -> Self:
         return cls(**kwargs)
 
-    @staticmethod
+    @classmethod
     @override
-    def clear_instance() -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
-        raise NotImplementedError
+    def clear_instance(cls) -> None:
+        if inst := BaseKernelInterface._instance:
+            BaseKernelInterface._instance = None
+            inst.stop()
 
     def __new__(cls, **kwargs) -> Self:
         if (interface := BaseKernelInterface._instance) is None:
@@ -403,6 +405,7 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
             del self._scope
             self.log.info("Stopping kernel")
             self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
+        if self.trait_has_value("kernel"):
             self.kernel.event_stopped.set()
 
     def load_settings(self, settings: Mapping[str, Any]) -> dict[str, Any]:

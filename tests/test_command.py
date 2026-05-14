@@ -137,7 +137,7 @@ def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
 
 
 def test_command_start_zmq_app(monkeypatch):
-
+    assert ZMQKernelInterface._instance is None  # pyright: ignore[reportPrivateUsage]
     assert async_kernel.Kernel._instance is None  # pyright: ignore[reportPrivateUsage]
 
     class EventSet(Event):
