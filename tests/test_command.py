@@ -143,13 +143,15 @@ def test_command_start_zmq_app(monkeypatch):
     class EventSet(Event):
         @override
         def set(self):
-            nonlocal okay
             kernel = async_kernel.Kernel()
-            assert isinstance(kernel.interface, ZMQKernelInterface)
-            assert kernel.interface.backend_options == {"use_uv": False}
-            assert kernel.shell.timeout == 0.123
-            assert kernel.shell.automagic is False
-            okay = True
+            try:
+                assert isinstance(kernel.interface, ZMQKernelInterface)
+                assert kernel.interface.backend_options == {"use_uv": False}
+                assert kernel.shell.timeout == 0.123
+                assert kernel.shell.automagic is False
+            except Exception as e:
+                pen.set_exception(e)
+            pen.set_result(True)
             super().set()
 
     event = Event()
@@ -172,13 +174,13 @@ def test_command_start_zmq_app(monkeypatch):
         ],
     )
 
-    okay = False
+    pen = async_kernel.Pending()
 
     try:
         with pytest.raises(SystemExit) as e:
             command_line()
         assert e.value.code == 0
-        assert okay
+        assert pen.result() is True
     finally:
         async_kernel.Kernel._instance = None  # pyright: ignore[reportPrivateUsage]
 
