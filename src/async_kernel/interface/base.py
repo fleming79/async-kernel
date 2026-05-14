@@ -114,7 +114,6 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
     banner = traitlets.Unicode().tag(config=True)
     "Info to insert into shell banner."
 
-    print_kernel_messages = traitlets.Bool().tag(config=True)
 
     handle_in_shell_thread = traitlets.List(
         traitlets.UseEnum(MsgType), [MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close]
