@@ -37,7 +37,7 @@ PROTOCOL_VERSION: str = "5.5"
 DEFAULT_START_INTERFACE: str = "start_zmq_app"
 "An importable path to the default interface to start the kernel."
 
-DEFAULT_EXECUTABLE: tuple[str, ...] = ("python", "-m", "async_kernel")
+DEFAULT_EXECUTABLE: tuple[str, ...] = ("python", "-m", "async_kernel", "start")
 ""
 
 

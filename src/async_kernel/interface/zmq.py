@@ -111,7 +111,7 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
     ).tag(config=True)
     "A description to use for the command line interface."
 
-    classes = [Kernel, AsyncInteractiveShell, AsyncInteractiveSubshell, ProfileDir, Session]  # noqa: RUF012
+    classes = [Kernel, AsyncInteractiveShell, AsyncInteractiveSubshell, InteractiveShellApp, ProfileDir, Session]  # noqa: RUF012
 
     aliases = (
         shell_aliases
@@ -238,19 +238,6 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
             session.check_pid = False
         return session
 
-    @classmethod
-    def _clean_argv(cls, argv_in: list[str], /) -> list[str]:
-        "Clean up argv."
-
-        argv = []
-        for v in map(str, argv_in):
-            # check for starting from the command line.
-            if v == "." and argv and argv[-1] in ["-f", "--connection_file"]:
-                argv.pop()
-            else:
-                argv.append(v)
-        return argv
-
     @override
     def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
         """Initialize the application."""
@@ -263,8 +250,7 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
         #     os.environ["IPYTHON_SUPPRESS_CONFIG_ERRORS"] = "1"
 
         if not self.trait_has_value("kernel"):
-            argv = [] if argv is NoValue else self._clean_argv(sys.argv) if argv is None else argv
-            super().initialize(argv)
+            super().initialize([] if argv is NoValue else argv)
             self.log = self.kernel.log
         elif argv is not NoValue:
             msg = "Already initialized!"

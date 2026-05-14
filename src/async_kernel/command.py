@@ -4,6 +4,7 @@ import argparse
 import ast
 import logging
 import sys
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import async_kernel
@@ -42,13 +43,38 @@ def command_line() -> None:
             program is interrupted.
     """
 
-    parser = argparse.ArgumentParser("", formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument(
-        "-f",
-        "--connection_file",
-        dest="connection_file",
-        help="Start a kernel with a connection file. To start a kernel without a file use a period `.`.",
+    class Mode(StrEnum):
+        add = "add"
+        remove = "remove"
+        version = "version"
+        help_all = "help_all"
+        help = "help"
+        start = "start"
+
+    def safe_eval(val: str):
+        try:
+            return ast.literal_eval(val.strip())
+        except Exception:
+            return val
+
+    kernel_dir = get_kernel_dir()
+    description = """
+Subcommands:
+    start: Start the kernel. See `help_all` for detail about configuration options available.
+"""
+    epilog = f"""
+- online Help: https://fleming79.github.io/async-kernel/latest/usage/commands/
+- Jupyter kernel directory: {str(kernel_dir)!r}
+- Installed kernels {[] if not kernel_dir.exists() else [item.name for item in kernel_dir.iterdir() if item.is_dir()]}
+"""
+
+    parser = argparse.ArgumentParser(
+        prog="async-kernel",
+        description=description,
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+
     parser.add_argument(
         "-a",
         "--add",
@@ -65,21 +91,27 @@ def command_line() -> None:
         "-V",
         "--version",
         dest="version",
-        help="Print version",
+        help="Print version.",
         action="store_true",
     )
-
+    parser.add_argument(
+        "--help-all",
+        dest="help_all",
+        help="Print help all.",
+        action="store_true",
+    )
     args, unknownargs = parser.parse_known_args()
-
-    settings = {}
-
-    def safe_eval(val: str):
-        try:
-            return ast.literal_eval(val.strip())
-        except Exception:
-            return val
+    if unknownargs and unknownargs[0] == Mode.start:
+        mode = Mode(unknownargs.pop(0))
+    else:
+        mode = Mode.help
+        for mode_ in Mode:
+            if getattr(args, mode_, None):
+                mode = mode_
+                break
 
     # Convert unknownargs from flags to mappings
+    settings = {}
     while unknownargs:
         k = unknownargs.pop(0).strip("-")
         if "=" in k:
@@ -96,71 +128,27 @@ def command_line() -> None:
         else:
             settings[k.removeprefix("no-")] = not k.startswith("no-")
 
-    # Add kernel spec
-    if args.add:
-        settings["name"] = settings.get("name") or args.add
-        path = write_kernel_spec(**settings)
-        print(f"Added kernel spec {path!s}")
-
-    # Remove kernel spec
-    elif args.remove:
-        folder = getattr(settings, "folder", "")
-        prefix = getattr(settings, "prefix", "")
-        for name in args.remove.split(","):
-            msg = "removed" if remove_kernel_spec(name, folder=folder, prefix=prefix) else "not found!"
-            print(f"Kernel spec: '{name}' {msg}")
-
-    # Version
-    elif args.version:
-        print("async-kernel", async_kernel.__version__)
-
-    # Start kernel
-    elif args.connection_file:
-        if args.connection_file == ".":
-            logging.basicConfig(level=logging.INFO)
-        else:
-            settings["connection_file"] = args.connection_file
-        start_interface: InterfaceStartType = import_start_interface(settings.pop("start_interface", ""))
-        try:
-            start_interface(settings)
-        except KeyboardInterrupt:
-            sys.exit(0)
-
-    # Passthrough for show_config, show_config_json, help_all
-    elif settings:
-        if "start" in settings:
-            logging.basicConfig(level=logging.INFO)
-        start_interface = import_start_interface(settings.pop("start_interface", ""))
-        start_interface(settings)
-
-    # Print help
-    else:
-        _print_help(parser.format_help())
+    match mode:
+        case Mode.add:
+            settings["name"] = settings.get("name") or args.add
+            path = write_kernel_spec(**settings)
+            print(f"Added kernel spec {path!s}")
+        case Mode.remove:
+            folder = getattr(settings, "folder", "")
+            prefix = getattr(settings, "prefix", "")
+            for name in args.remove.split(","):
+                msg = "removed" if remove_kernel_spec(name, folder=folder, prefix=prefix) else "not found!"
+                print(f"Kernel spec: '{name}' {msg}")
+        case Mode.version:
+            print("async-kernel", async_kernel.__version__)
+        case Mode.start | Mode.help_all:
+            if "connection_file" not in settings:
+                logging.basicConfig(level=logging.INFO)
+            start_interface: InterfaceStartType = import_start_interface(settings.get("start_interface", ""))
+            try:
+                start_interface(settings)
+            except KeyboardInterrupt:
+                sys.exit(0)
+        case _:
+            parser.print_help()
     sys.exit(0)
-
-
-def _print_help(help_body: str, /) -> None:
-
-    kernel_dir = get_kernel_dir()
-
-    header = """
-============
-async-kernel  
-============
-
-With the async-kernel command line tool you can:
-   - Add/remove kernel specs
-   - start kernels
-
-"""
-    footer = f"""
-- online Help: https://fleming79.github.io/async-kernel/latest/usage/commands/
-- Jupyter kernel directory: {str(kernel_dir)!r}
-- Installed kernels {[] if not kernel_dir.exists() else [item.name for item in kernel_dir.iterdir() if item.is_dir()]}
-- Pass through arguments:
-    --help-all: Print all config options
-    --show_config: Display the currently set configuration (may be nothing) 
-    --show_config_json: Display the current configuration in json format.
-"""
-
-    sys.stdout.write(header + help_body + footer)

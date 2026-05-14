@@ -82,6 +82,7 @@ def test_add_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, ca
             "python",
             "-m",
             "async_kernel",
+            "start",
             "-f",
             "{connection_file}",
             "--start_interface=start_zmq_app",
@@ -103,7 +104,7 @@ def test_no_args(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
         command_line()
     assert e.value.code == 0
     out = capsys.readouterr().out
-    assert out.startswith("\n============\nasync-kernel")
+    assert out.startswith("usage: async-kernel")
 
 
 @pytest.mark.parametrize("mode", ["folder", "prefix", "default"])
@@ -161,8 +162,7 @@ def test_command_start_zmq_app(monkeypatch):
         "argv",
         [
             "prog",
-            "-f",
-            ".",
+            "start",
             "--backend_options",
             "use_uv=False",
             "--AsyncInteractiveShell.timeout=0.123",
@@ -189,12 +189,15 @@ def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathli
         "argv",
         [
             "prog",
+            "start",
             "-f",
             str(connection_file),
             "--display_name='my kernel'",
             "--start_interface=start_kernel_zmq_interface",
             "--shell.timeout=0.01",
             "--quiet",
+            "--no-quiet",
+            "--quiet=True",
         ],
     )
     event = Event()
@@ -223,8 +226,7 @@ def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, ho
         "argv",
         [
             "prog",
-            "-f",
-            ".",
+            "start",
             f"--name=async-{host}",
             f"--host={host}",
             f"--backend={backend}",
