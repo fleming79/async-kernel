@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import time
 from typing import TYPE_CHECKING, Any, Self, cast
 
@@ -158,7 +159,7 @@ class Kernel(LoggingConfigurable):
             "language_info": async_kernel.kernel_protocol_version_info,
             "banner": self.banner,
             "help_links": self.help_links,
-            "debugger": bool(self.debugger),
+            "debugger": bool((not utils.LAUNCHED_BY_DEBUGPY) and sys.platform != "emscripten"),
             "supported_features": self.supported_features,
         }
 
