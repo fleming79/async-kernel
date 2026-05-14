@@ -92,7 +92,7 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
     ""
 
     start_interface = traitlets.Unicode("").tag(config=True)
-    "The value used to import the interface using [async_kerenel.kernel_spec.import_start_interface][]."
+    "The value used to import the interface using [async_kernel.kernelspec.import_start_interface][]."
 
     quiet = traitlets.Bool(True).tag(config=True)
     "Only send stdout/stderr to output stream."
@@ -476,7 +476,8 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
         metadata: dict[str, Any] | None = None,
         channel: Channel = Channel.shell,
     ) -> Message[dict[str, Any]]:
-        """Return the nested message dict.
+        """
+        Create a new message.
 
         This format is different from what is sent over the wire. The
         serialize/deserialize methods converts this nested message dict to the wire

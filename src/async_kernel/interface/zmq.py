@@ -35,7 +35,7 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel.event_loop
 from async_kernel import Kernel, utils
-from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell
+from async_kernel.asyncshell import AsyncInteractiveShell
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface, DictValueLiteralEval
@@ -111,7 +111,7 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
     ).tag(config=True)
     "A description to use for the command line interface."
 
-    classes = [Kernel, AsyncInteractiveShell, AsyncInteractiveSubshell, InteractiveShellApp, ProfileDir, Session]  # noqa: RUF012
+    classes = [Kernel, AsyncInteractiveShell, InteractiveShellApp, ProfileDir, Session]  # noqa: RUF012
 
     aliases = (
         shell_aliases

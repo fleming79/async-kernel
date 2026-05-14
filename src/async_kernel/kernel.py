@@ -262,7 +262,7 @@ class Kernel(LoggingConfigurable):
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""
-        return await self.debugger.process_request(job["msg"]["content"])  # pyright: ignore[reportOptionalMemberAccess]
+        return await self.debugger.process_request(job["msg"]["content"])
 
     async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
         """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell)."""

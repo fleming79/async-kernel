@@ -1,12 +1,15 @@
 # Command line
 
-The command `async-kernel` and alias `async_kernel` are provided at the command line.
+The command `async-kernel` is provided at the command line.
 
 The primary options available are:
 
-- [Add kernel spec](#kernel-spec): `-a <name> <options>`
-- [Remove a kernel spec](#remove-a-kernel-spec) `-r <name>`
-- [Start a kernel](#start-a-kernel): `-f <path to config file>`
+- "start": [Start a kernel](#start-a-kernel)
+- "--add": [Add kernel spec](#kernel-spec)
+- "--remove": [Remove a kernel spec](#remove-a-kernel-spec)
+- "-h": Display short help
+- "--help-all": Display all config options available when the kernel
+  is started the launcher [launch_zmq_kernel][async_kernel.interface.launch_zmq_kernel]( default).
 
 ## Kernel spec
 
