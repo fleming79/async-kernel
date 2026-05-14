@@ -12,13 +12,14 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, override
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 from uuid import uuid4
 
 import anyio
 from aiologic.lowlevel import current_async_library, enable_signal_safety
 from traitlets import traitlets
 from traitlets.config.configurable import SingletonConfigurable
+from typing_extensions import override
 
 import async_kernel
 from async_kernel import utils

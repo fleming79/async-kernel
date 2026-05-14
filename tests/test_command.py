@@ -4,11 +4,12 @@ import importlib.util
 import json
 import signal
 import sys
-from typing import TYPE_CHECKING, Literal, override
+from typing import TYPE_CHECKING, Literal
 
 import anyio
 import pytest
 from aiologic import Event
+from typing_extensions import override
 
 import async_kernel
 from async_kernel.command import command_line
