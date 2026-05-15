@@ -523,7 +523,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not (caller := self._children.pop()).stopped:
                         with anyio.CancelScope(shield=True):
                             await caller.stopped
-                except IndexError:
+                except KeyError:
                     pass
             if socket:
                 self.iopub_sockets.pop(self._caller_id, None)
