@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import logging
 import sys
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
@@ -99,6 +98,9 @@ def command_line() -> None:
     description = """
 Subcommands:
     start: Start the kernel. See `help_all` for detail about configuration options available.
+
+Tips:
+    - When starting from command line, add `--log-level=INFO` to show logged output. 
 """
     epilog = f"""
 - online Help: https://fleming79.github.io/async-kernel/latest/usage/commands/
@@ -166,8 +168,6 @@ Subcommands:
         case Mode.version:
             print("async-kernel", async_kernel.__version__)
         case Mode.start | Mode.help_all:
-            if "connection_file" not in settings:
-                logging.basicConfig(level=logging.INFO)
             start_interface: InterfaceStartType = import_start_interface(settings.get("start_interface", ""))
             try:
                 start_interface(settings)
