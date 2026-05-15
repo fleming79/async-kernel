@@ -117,7 +117,6 @@ class DebugpyClient(LoggingConfigurable):
     kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
     _socketstream: anyio.abc.SocketStream | None = None
     _send_lock = traitlets.Instance(Lock, ())
-    parent: Debugger
 
     @property
     def connected(self) -> bool:
@@ -147,7 +146,7 @@ class DebugpyClient(LoggingConfigurable):
                 msg: DebugMessage = unpack_json(raw_msg[:size])
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
-                    self.parent.handle_event(msg)
+                    self.kernel.debugger.handle_event(msg)
                 elif result := self._result_responses.pop(msg["request_seq"], None):
                     result.set_result(msg)
             self.tcp_buffer = b""
@@ -193,7 +192,7 @@ class Debugger(LoggingConfigurable):
     def __init__(self, **kwargs) -> None:
         """Initialize the debugger."""
         super().__init__(**kwargs)
-        self.debugpy_client = DebugpyClient(parent=self)
+        self.debugpy_client = DebugpyClient()
         self.started_debug_handlers = {
             "setBreakpoints": self.do_set_breakpoints,
             "stackTrace": self.do_stack_trace,

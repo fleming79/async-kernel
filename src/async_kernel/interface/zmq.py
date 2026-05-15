@@ -193,10 +193,16 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
     pre_start = traitlets.List(["init_path", "init_extensions", "init_code"]).tag(config=True)
     ""
 
+    _initialized = False
     _zmq_context = Fixed(zmq.Context)
     _interrupt_requested: bool | Literal["FORCE"] = False
     _iopub_url = "inproc://iopub-capture"
     _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
+
+    @traitlets.default("kernel")
+    def default_kernel(self):
+        self.initialize()
+        return self.kernel_class()
 
     @traitlets.default("backend")
     def _default_backend(self) -> Backend:
@@ -251,23 +257,37 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
 
     @traitlets.default("session")
     def _default_session(self) -> Session:
-        session = Session(parent=self)
+        session = Session(config=self.config)
         if not session.trait_has_value(" check_pid"):
             session.check_pid = False
         return session
 
+    @classmethod
+    @override
+    def initialized(cls) -> bool:
+        """Has an instance been created and initialized?"""
+        return getattr(cls._instance, "_initialized", False)
+
     @override
     def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
-        """Initialize the application."""
+        """
+        Initialize the interface.
+
+        This may be called more than once, however configuration is only done on the first call.
+        """
         assert self._instance is self
+        initialize = not self._initialized
+        self._initialized = True
+
+        # Environment variables
         if not os.environ.get("MPLBACKEND"):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
         if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
             os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
-        # if "pytest" not in sys.modules and not os.environ.get("IPYTHON_SUPPRESS_CONFIG_ERRORS"):
-        #     os.environ["IPYTHON_SUPPRESS_CONFIG_ERRORS"] = "1"
+        if "pytest" not in sys.modules and "IPYTHON_SUPPRESS_CONFIG_ERRORS" not in os.environ:
+            os.environ["IPYTHON_SUPPRESS_CONFIG_ERRORS"] = "1"  # pragma: no cover
 
-        if not self.trait_has_value("kernel"):
+        if initialize:
             super().initialize([] if argv is NoValue else argv)
 
     @override
@@ -308,6 +328,7 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
     @override
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Kernel]:
+        self.initialize()
         self.backend = Backend(current_async_library())
         start = Event()
         try:

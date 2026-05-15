@@ -235,7 +235,7 @@ class AsyncInteractiveShell(InteractiveShell):
     @override
     def __init__(self) -> None:
         if not hasattr(self, "configurables"):
-            super().__init__(parent=self.kernel)
+            super().__init__(config=self.kernel.config)
 
     def _get_default_ns(self) -> dict[str, Any]:
         # Copied from `InteractiveShell.init_user_ns`

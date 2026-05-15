@@ -71,12 +71,12 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
     interface = ZMQKernelInterface()
     interface.connection_file = connection_file
-    os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
     interface.transport = transport
 
     if request.param == "MainThread":
         async with interface as kernel:
             await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
+            assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
             yield kernel
     else:
         if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
@@ -85,6 +85,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
         thread.start()
         kernel = interface.kernel
         kernel.event_started.wait()
+        assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
         await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
         try:
             yield kernel

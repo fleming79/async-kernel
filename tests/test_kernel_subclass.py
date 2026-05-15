@@ -42,7 +42,7 @@ async def test_kernel_subclass_override(anyio_backend: Backend):
         async with ZMQKernelInterface() as kernel:
             assert isinstance(kernel, MyKernelB)
             assert MyKernelB() is kernel
-            with pytest.raises(TypeError, match="A different kernel was loaded"):
+            with pytest.raises(TypeError, match="An incompatible kernel is loaded"):
                 MyKernelA()
 
         async with ZMQKernelInterface(kernel_class=MyKernelA) as kernel:

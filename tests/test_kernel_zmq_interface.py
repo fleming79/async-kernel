@@ -195,7 +195,7 @@ async def test_load_connection_file_too_late(kernel: Kernel):
 
 async def test_already_initialized(kernel: Kernel):
     assert isinstance(kernel.interface, ZMQKernelInterface)
-    assert kernel.config is kernel.interface.config
+    assert kernel.config == kernel.interface.config
     config = kernel.config.copy()
     kernel.interface.initialize(["prog", "--quiet=False"])
     assert kernel.config == config

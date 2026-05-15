@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 import time
-from typing import TYPE_CHECKING, Any, Self, cast
+from typing import TYPE_CHECKING, Any, Self
 
 import anyio
 from aiologic import Event
@@ -85,32 +85,25 @@ class Kernel(LoggingConfigurable):
     def __new__(cls) -> Self:
         #  There is only one instance allowed - ever - (including subclasses).
         if not (kernel := Kernel._instance):
-            if not (interface := BaseKernelInterface._instance):  # pyright: ignore[reportPrivateUsage]
+            if not (BaseKernelInterface._instance):  # pyright: ignore[reportPrivateUsage]
                 msg = "An interface must be created prior to creating the kernel."
                 raise RuntimeError(msg)
-            # Identify the preferred kernel
-            cls_ = cls
-            if interface.trait_has_value("kernel_class"):
-                # A subclass specified on the interface
-                cls_ = cast("Any", interface.kernel_class)
-            elif cls is Kernel:
-                # The last defined subclass
-                cls_ = cast("Any", Kernel._cls or cls)
+            cls_: type[Self] = Kernel._cls or cls if cls is Kernel else cls  # pyright: ignore[reportAssignmentType]
             Kernel._instance = kernel = super().__new__(cls_)
         if not isinstance(kernel, cls):
-            msg = f"A different kernel was loaded {cls=} {kernel=}"
+            msg = f"An incompatible kernel is loaded {cls=} {kernel=}"
             raise TypeError(msg)
         return kernel  # pyright: ignore[reportReturnType]
 
     def __init__(self) -> None:
         if not self._initialised:
             self._initialised = True
-            super().__init__(parent=self.interface)
+            super().__init__(config=self.interface.config)
             assert self.main_shell
 
     @traitlets.default("debugger")
     def _default_debugger(self) -> Debugger:
-        return Debugger(parent=self)
+        return Debugger(config=self.config)
 
     @traitlets.default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:
