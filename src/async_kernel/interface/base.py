@@ -8,24 +8,25 @@ import contextlib
 import functools
 import gc
 import getpass
+import os
 import signal
 import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final
 from uuid import uuid4
 
 import anyio
 from aiologic.lowlevel import current_async_library, enable_signal_safety
 from traitlets import traitlets
-from traitlets.config.configurable import SingletonConfigurable
+from traitlets.config.application import Application, ClassesType
 from typing_extensions import override
 
 import async_kernel
 from async_kernel import utils
 from async_kernel.asyncshell import AsyncInteractiveShell, ShellPendingManager
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, HasParentInterface, KernelInterrupt
 from async_kernel.iostream import OutStream
 from async_kernel.kernel import Kernel
 from async_kernel.typing import (
@@ -82,12 +83,15 @@ class DictValueLiteralEval(traitlets.Dict):
         return d
 
 
-class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin):
+class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
     """
     The base class for interfacing with the kernel.
 
     Must be overloaded to be useful.
     """
+
+    classes: ClassesType = final([Kernel, AsyncInteractiveShell])
+    "The classes regisered with the interface."
 
     name = traitlets.Unicode("async-kernel").tag(config=True)
     ""
@@ -127,6 +131,7 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
     A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler.
     """
 
+    _initialized = False
     _instance: Self | None = None
     _zmq_context = None
     _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
@@ -135,7 +140,7 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
     kernel_class = traitlets.Type(default_value=Kernel, klass=Kernel).tag(config=True)
     "The Kernel subclass to be used."
 
-    pre_start = traitlets.List(["init_path", "init_extensions", "init_code"]).tag(config=True)
+    pre_start = traitlets.List().tag(config=True)
     """
     A list of method names to call when the kernel is ready but prior to handling messages. 
 
@@ -147,6 +152,34 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
 
     kernel = traitlets.Instance(Kernel, (), read_only=True)
     "The kernel."
+
+    @classmethod
+    @override
+    def initialized(cls) -> bool:
+        """Has an instance been created and initialized?"""
+        return getattr(cls._instance, "_initialized", False)
+
+    @override
+    def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
+        """
+        Initialize the interface.
+
+        This may be called more than once, however configuration is only done on the first call.
+        """
+        assert self._instance is self
+        initialize = not self._initialized
+        self._initialized = True
+
+        # Environment variables
+        if not os.environ.get("MPLBACKEND"):
+            os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+        if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
+            os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
+        if "pytest" not in sys.modules and "IPYTHON_SUPPRESS_CONFIG_ERRORS" not in os.environ:
+            os.environ["IPYTHON_SUPPRESS_CONFIG_ERRORS"] = "1"  # pragma: no cover
+
+        if initialize:
+            super().initialize([] if argv is NoValue else argv)
 
     @classmethod
     @override
@@ -518,3 +551,6 @@ class BaseKernelInterface(SingletonConfigurable, anyio.AsyncContextManagerMixin)
     ) -> None:
         """Send an iopub message."""
         raise NotImplementedError
+
+
+HasParentInterface.register_once()

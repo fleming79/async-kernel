@@ -3,11 +3,12 @@ from __future__ import annotations
 import weakref
 from collections import deque
 from types import coroutine
-from typing import TYPE_CHECKING, Any, Generic, Never, Self, final
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Never, Self, final
 
 import aiologic.meta
 from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
 from sniffio import current_async_library
+from traitlets.config import Configurable
 from wrapt import lazy_import
 
 from async_kernel.typing import Backend, FixedCreate, FixedCreated, S, T
@@ -291,6 +292,7 @@ class HasParentInterface:
     """
 
     parent = final(Fixed(BaseKernelInterface))
+    _defer_reg: ClassVar[list[type[Self]] | None] = []
 
     def __init_subclass__(cls, **kwargs) -> None:
         if not isinstance(cls.parent, Fixed):
@@ -300,6 +302,10 @@ class HasParentInterface:
             )
             raise TypeError(msg)
         super().__init_subclass__(**kwargs)
+        if HasParentInterface._defer_reg is not None:
+            HasParentInterface._defer_reg.append(cls)
+        else:
+            cls._register()
 
     def __new__(cls, *args, **kwargs) -> Self:
 
@@ -309,3 +315,17 @@ class HasParentInterface:
         if (new := super().__new__) is object.__new__:
             return new(cls)
         return new(cls, *args, **kwargs)
+
+    @classmethod
+    def _register(cls) -> None:
+        # Called by BaseKernelInterface once it is imported to avoid circular import.
+        if issubclass(cls, Configurable):
+            BaseKernelInterface.classes.insert(0, cls)
+
+    @staticmethod
+    def register_once() -> None:
+        "Called to work-around circular-import with `BaseKernelInterface`."
+        if (reg := HasParentInterface._defer_reg) is not None:
+            HasParentInterface._defer_reg = None
+            for cls_ in reg:
+                cls_._register()

@@ -83,6 +83,7 @@ class CallableKernelInterface(BaseKernelInterface):
 
         Returns: A pending that when resolved returns the message handler callback.
         """
+        self.initialize()
         self._send = send
         self._task = asyncio.create_task(coro=self.run(stopped=stopped))
         await self.kernel.event_started

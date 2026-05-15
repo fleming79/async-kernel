@@ -36,7 +36,6 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 
 import async_kernel.event_loop
 from async_kernel import Kernel, utils
-from async_kernel.asyncshell import AsyncInteractiveShell
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseKernelInterface, DictValueLiteralEval
@@ -122,13 +121,14 @@ class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
         return expand_path(s)
 
 
+BaseKernelInterface.classes.extend((InteractiveShellApp, ProfileDir, Session))
+
+
 class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonApplication, InteractiveShellApp):  # pyright: ignore[reportUnsafeMultipleInheritance]
     description = traitlets.Unicode(
         "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",
     ).tag(config=True)
     "A description to use for the command line interface."
-
-    classes = [Kernel, AsyncInteractiveShell, InteractiveShellApp, ProfileDir, Session]  # noqa: RUF012
 
     aliases = (
         shell_aliases
@@ -261,34 +261,6 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
         if not session.trait_has_value(" check_pid"):
             session.check_pid = False
         return session
-
-    @classmethod
-    @override
-    def initialized(cls) -> bool:
-        """Has an instance been created and initialized?"""
-        return getattr(cls._instance, "_initialized", False)
-
-    @override
-    def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
-        """
-        Initialize the interface.
-
-        This may be called more than once, however configuration is only done on the first call.
-        """
-        assert self._instance is self
-        initialize = not self._initialized
-        self._initialized = True
-
-        # Environment variables
-        if not os.environ.get("MPLBACKEND"):
-            os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
-        if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
-            os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
-        if "pytest" not in sys.modules and "IPYTHON_SUPPRESS_CONFIG_ERRORS" not in os.environ:
-            os.environ["IPYTHON_SUPPRESS_CONFIG_ERRORS"] = "1"  # pragma: no cover
-
-        if initialize:
-            super().initialize([] if argv is NoValue else argv)
 
     @override
     def start(self) -> None:
