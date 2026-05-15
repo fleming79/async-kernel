@@ -9,7 +9,8 @@ from aiologic.meta import import_module
 from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from typing_extensions import override
 
-from async_kernel.common import Fixed, HasParentInterface
+from async_kernel.common import Fixed
+from async_kernel.interface import HasParentInterface
 
 if TYPE_CHECKING:
     from async_kernel.kernel import Kernel

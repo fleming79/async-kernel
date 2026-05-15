@@ -3,12 +3,11 @@ from __future__ import annotations
 import weakref
 from collections import deque
 from types import coroutine
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Never, Self, final
+from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
 import aiologic.meta
 from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
 from sniffio import current_async_library
-from traitlets.config import Configurable
 from wrapt import lazy_import
 
 from async_kernel.typing import Backend, FixedCreate, FixedCreated, S, T
@@ -22,9 +21,6 @@ __all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
 globals()["trio"] = lazy_import("trio")
 globals()["BaseKernelInterface"] = lazy_import("async_kernel.interface.base", "BaseKernelInterface")
-
-if TYPE_CHECKING:
-    from async_kernel.interface.base import BaseKernelInterface  # noqa: TC004
 
 
 def import_item(dottedname: str) -> Any:
@@ -284,48 +280,3 @@ class SingleAsyncQueue(Generic[T]):
         Will return `True` once stop has been called meaning there are no items left in the queue.
         """
         return self._active is False
-
-
-class HasParentInterface:
-    """
-    A mix in class that overrides the parent.
-    """
-
-    parent = final(Fixed(BaseKernelInterface))
-    _defer_reg: ClassVar[list[type[Self]] | None] = []
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        if not isinstance(cls.parent, Fixed):
-            msg = (
-                f"The attribute `parent` has been replaced in {cls=}!"
-                + "\nTip: to fix mro issues make `HasParentInterface` left most."
-            )
-            raise TypeError(msg)
-        super().__init_subclass__(**kwargs)
-        if HasParentInterface._defer_reg is not None:
-            HasParentInterface._defer_reg.append(cls)
-        else:
-            cls._register()
-
-    def __new__(cls, *args, **kwargs) -> Self:
-
-        if not BaseKernelInterface.initialized():
-            msg = "A global BaseKernelInterface has not been created yet!"
-            raise RuntimeError(msg)
-        if (new := super().__new__) is object.__new__:
-            return new(cls)
-        return new(cls, *args, **kwargs)
-
-    @classmethod
-    def _register(cls) -> None:
-        # Called by BaseKernelInterface once it is imported to avoid circular import.
-        if issubclass(cls, Configurable):
-            BaseKernelInterface.classes.insert(0, cls)
-
-    @staticmethod
-    def register_once() -> None:
-        "Called to work-around circular-import with `BaseKernelInterface`."
-        if (reg := HasParentInterface._defer_reg) is not None:
-            HasParentInterface._defer_reg = None
-            for cls_ in reg:
-                cls_._register()

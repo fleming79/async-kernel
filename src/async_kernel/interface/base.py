@@ -19,16 +19,16 @@ from uuid import uuid4
 import anyio
 from aiologic.lowlevel import current_async_library, enable_signal_safety
 from traitlets import traitlets
+from traitlets.config import Configurable
 from traitlets.config.application import Application, ClassesType
 from typing_extensions import override
+from wrapt import lazy_import
 
 import async_kernel
 from async_kernel import utils
-from async_kernel.asyncshell import AsyncInteractiveShell, ShellPendingManager
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, HasParentInterface, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.iostream import OutStream
-from async_kernel.kernel import Kernel
 from async_kernel.typing import (
     Backend,
     CallerCreateOptions,
@@ -43,12 +43,19 @@ from async_kernel.typing import (
     RunMode,
 )
 
+globals()["AsyncInteractiveShell"] = lazy_import("async_kernel.asyncshell", "AsyncInteractiveShell")
+globals()["ShellPendingManager"] = lazy_import("async_kernel.asyncshell", "ShellPendingManager")
+globals()["Kernel"] = lazy_import("async_kernel", "Kernel")
+
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable, Mapping
     from types import CoroutineType, FrameType
 
+    from async_kernel.asyncshell import AsyncInteractiveShell, ShellPendingManager  # noqa: TC004
+    from async_kernel.kernel import Kernel  # noqa: TC004
 
-__all__ = ["BaseKernelInterface"]
+
+__all__ = ["BaseKernelInterface", "HasParentInterface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -90,8 +97,8 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
     Must be overloaded to be useful.
     """
 
-    classes: ClassesType = final([Kernel, AsyncInteractiveShell])
-    "The classes regisered with the interface."
+    classes: ClassesType = final([])
+    "The classes registered with the interface."
 
     name = traitlets.Unicode("async-kernel").tag(config=True)
     ""
@@ -137,7 +144,9 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
     _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
 
     # the kernel class, as an importstring
-    kernel_class = traitlets.Type(default_value=Kernel, klass=Kernel).tag(config=True)
+    kernel_class: traitlets.Type[type[Kernel], type[Kernel] | str] = traitlets.Type("async_kernel.Kernel").tag(  # pyright: ignore[reportAssignmentType]
+        config=True
+    )
     "The Kernel subclass to be used."
 
     pre_start = traitlets.List().tag(config=True)
@@ -150,7 +159,7 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
         - To bypass the pending group, use the `call_direct` method. 
     """
 
-    kernel = traitlets.Instance(Kernel, (), read_only=True)
+    kernel: traitlets.Instance[Kernel] = traitlets.Instance("async_kernel.Kernel", (), read_only=True)
     "The kernel."
 
     @classmethod
@@ -553,4 +562,37 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
         raise NotImplementedError
 
 
-HasParentInterface.register_once()
+class HasParentInterface:
+    """
+    A mix in class providing a single fixed attribute named "parent" pointing to an instance of [BaseKernelInterface][].
+
+    It is designed to be compatible with [traitlets.conf.Configurable][] objects enabling
+    the sharing of configuration and log.
+
+    Requirements:
+        - A global instance of `BaseKernelInterface` (or a subclass) is initialized.
+        - Merge subclassing expects this class is higher than any other subclass which defines a parent.
+        - `parent` cannot be change.
+    """
+
+    parent = final(Fixed(BaseKernelInterface))
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        if not isinstance(cls.parent, Fixed):
+            msg = (
+                f"The attribute `parent` has been replaced in {cls=}!"
+                + "\nTip: to fix mro issues make `HasParentInterface` left most."
+            )
+            raise TypeError(msg)
+        super().__init_subclass__(**kwargs)
+        if issubclass(cls, Configurable):
+            BaseKernelInterface.classes.insert(0, cls)
+
+    def __new__(cls, *args, **kwargs) -> Self:
+
+        if not BaseKernelInterface.initialized():
+            msg = "A global BaseKernelInterface has not been created yet!"
+            raise RuntimeError(msg)
+        if (new := super().__new__) is object.__new__:
+            return new(cls)
+        return new(cls, *args, **kwargs)

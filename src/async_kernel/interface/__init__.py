@@ -2,14 +2,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from async_kernel.interface.base import BaseKernelInterface
+from async_kernel.interface.base import BaseKernelInterface, HasParentInterface
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from async_kernel.interface.callable import Handlers
 
-__all__ = ["BaseKernelInterface", "launch_zmq_kernel", "start_kernel_callable_interface", "start_kernel_zmq_interface"]
+__all__ = [
+    "BaseKernelInterface",
+    "HasParentInterface",
+    "launch_zmq_kernel",
+    "start_kernel_callable_interface",
+    "start_kernel_zmq_interface",
+]
 
 
 async def start_kernel_callable_interface(

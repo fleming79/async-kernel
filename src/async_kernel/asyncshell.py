@@ -29,9 +29,10 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, HasParentInterface, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
+from async_kernel.interface import HasParentInterface
 from async_kernel.pending import Pending, PendingManager
 from async_kernel.typing import Channel, Content, Message, NoValue, RunMode, Tags
 

@@ -14,8 +14,9 @@ import async_kernel
 from async_kernel import Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell, SubshellManager
 from async_kernel.comm import CommManager
-from async_kernel.common import Fixed, HasParentInterface, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
+from async_kernel.interface import HasParentInterface
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message
 
 globals()["BaseKernelInterface"] = lazy_import("async_kernel.interface.base", "BaseKernelInterface")

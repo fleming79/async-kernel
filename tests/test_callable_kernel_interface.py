@@ -7,11 +7,12 @@ import anyio
 import pytest
 from aiologic import Event
 from IPython.core.error import StdinNotImplementedError
+from traitlets.config.configurable import Configurable
 
 import async_kernel
 from async_kernel.common import KernelInterrupt
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.interface import start_kernel_callable_interface
+from async_kernel.interface import HasParentInterface, start_kernel_callable_interface
 from async_kernel.interface.callable import CallableKernelInterface
 from async_kernel.interface.zmq import ZMQKernelInterface
 
@@ -94,3 +95,16 @@ class TestCallableInterface:
     async def test_keyboard_interrupt(self, interface):
         with pytest.raises(KernelInterrupt):
             signal.raise_signal(signal.SIGINT)
+
+
+class TestHasParentInterface:
+    def test_no_global_interface(self):
+        with pytest.raises(RuntimeError):
+            HasParentInterface()
+
+    def test_invalidMRO(self):
+
+        with pytest.raises(TypeError, match="The attribute `parent` has been replaced in"):
+
+            class InvalidMRO(Configurable, HasParentInterface):  # pyright: ignore[reportUnusedClass]
+                pass
