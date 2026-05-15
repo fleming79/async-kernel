@@ -152,7 +152,7 @@ class Fixed(Generic[S, T]):
 
     def __set__(self, obj: S, value: Self) -> Never:
         # Note: above we use `Self` for the `value` type hint to give a useful typing error
-        msg = f"Setting `Fixed` parameter {obj.__class__.__name__}.{self.name} is forbidden!"
+        msg = f"Setting `Fixed` parameter {obj.__class__.__module__}.{obj.__class__.__name__}.{self.name} is forbidden!"
         raise AttributeError(msg)
 
 
