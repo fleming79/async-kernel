@@ -80,12 +80,11 @@ def test_add_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, ca
     spec = json.loads(kernel_dir.joinpath("kernel.json").read_bytes())
     assert spec == {
         "argv": [
-            "python",
+            sys.executable,
             "-m",
             "async_kernel",
             "start",
-            "-f",
-            "{connection_file}",
+            "--connection_file={connection_file}",
             "--start_interface=launch_zmq_kernel",
             "--name=async-trio",
             "--AsyncInteractiveShell.timeout=0.01",
@@ -193,8 +192,7 @@ def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathli
         [
             "prog",
             "start",
-            "-f",
-            str(connection_file),
+            f"--connection_file={connection_file}",
             "--display_name='my kernel'",
             "--start_interface=start_kernel_zmq_interface",
             "--shell.timeout=0.01",

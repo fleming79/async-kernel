@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     InterfaceStartType = Callable[[dict[str, Any]], Any]
 
 __all__ = [
-    "DEFAULT_EXECUTABLE",
+    "DEFAULT_COMMAND",
     "DEFAULT_START_INTERFACE",
     "PROTOCOL_VERSION",
     "expand_path",
@@ -39,7 +39,7 @@ PROTOCOL_VERSION: str = "5.5"
 DEFAULT_START_INTERFACE: str = "launch_zmq_kernel"
 "An importable path to the default interface to start the kernel."
 
-DEFAULT_EXECUTABLE: tuple[str, ...] = ("python", "-m", "async_kernel", "start")
+DEFAULT_COMMAND: tuple[str, ...] = (sys.executable, "-m", "async_kernel", "start")
 ""
 
 
@@ -48,7 +48,7 @@ def make_argv(
     connection_file: str = "{connection_file}",
     name: str = "async",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
-    executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
+    command: tuple[str, ...] = DEFAULT_COMMAND,
     **kwargs: Any,
 ) -> list[str]:
     """Returns an argument vector (argv) that can be used to start a `Kernel`.
@@ -67,13 +67,16 @@ def make_argv(
                 - "launch_zmq_kernel"
                 - "start_kernel_zmq_interface"
         name: The name to use for the kernel.
-        executable: The command line executable to call.
+        command: The command line command to call.
         **kwargs: Additional settings to pass when creating the kernel passed to `start_interface`.
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
-    argv = [*executable, "-f", connection_file]
+    argv = [
+        *command,
+        f"--connection_file={connection_file}",
+    ]
     for k, v in ({"start_interface": start_interface, "name": name} | kwargs).items():
         argv.append(f"--{k}={v}")
     return list(map(str, argv))
@@ -84,7 +87,7 @@ def write_kernel_spec(
     *,
     name: str = "async",
     display_name: str = "",
-    executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
+    command: tuple[str, ...] = DEFAULT_COMMAND,
     prefix: str = "",
     folder: str = "",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
@@ -105,8 +108,8 @@ def write_kernel_spec(
             The name of the kernel to use.
         display_name:
             The display name for Jupyter to use for the kernel. The default is `"Python ({name})"`.
-        executable:
-            The first part of 'argv' to use.
+        command:
+            The command to execute, passing .
         prefix:
             When provided the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
@@ -153,7 +156,7 @@ def write_kernel_spec(
             start_interface=start_interface,
             connection_file=connection_file,
             name=name,
-            executable=executable,
+            command=command,
             **kwargs,
         )
         spec: dict[str, list[Any] | Any | dict[Any, Any] | str | dict[str, bool]] = {
