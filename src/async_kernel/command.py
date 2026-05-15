@@ -5,7 +5,7 @@ import ast
 import logging
 import sys
 from enum import StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import async_kernel
 from async_kernel.kernelspec import get_kernel_dir, import_start_interface, remove_kernel_spec, write_kernel_spec
@@ -14,6 +14,47 @@ if TYPE_CHECKING:
     from async_kernel.kernelspec import InterfaceStartType
 
     __all__ = ["command_line"]
+
+
+def args_to_dict(args: list[str]) -> dict[str, Any]:
+    "Convert a list of setting arguments ('beginning with '-' or '--') to a dict."
+
+    def safe_eval(val: str) -> Any:
+        try:
+            return ast.literal_eval(val.strip())
+        except Exception:
+            return val
+
+    def add(k: str, v: Any) -> None:
+        settings[k.strip()] = safe_eval(v)
+
+    settings = {}
+    args = list(args)
+    while args:
+        k = args.pop(0)
+        if k.startswith("--"):
+            k = k.removeprefix("--")
+            if "=" in k:
+                k, v = k.split("=", maxsplit=1)
+                add(k, safe_eval(v))
+            elif args:
+                v = args.pop(0)
+                if "=" in v:
+                    # Value is a dict
+                    a, v = v.split("=", maxsplit=1)
+                    v = settings.get(k, {}) | {a: safe_eval(v)}
+                    add(k, v)
+                else:
+                    add(k, safe_eval(v))
+        elif k.startswith("-"):
+            # Flags
+            # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
+            k = k.removeprefix("-")
+            add(k.removeprefix("no-"), not k.startswith("no-"))
+        else:
+            msg = f"Invalid arg detected: {k!r} is not prefixed with '-'!"
+            raise ValueError(msg)
+    return settings
 
 
 def command_line() -> None:
@@ -50,12 +91,6 @@ def command_line() -> None:
         help_all = "help_all"
         help = "help"
         start = "start"
-
-    def safe_eval(val: str):
-        try:
-            return ast.literal_eval(val.strip())
-        except Exception:
-            return val
 
     kernel_dir = get_kernel_dir()
     description = """
@@ -101,6 +136,8 @@ Subcommands:
         action="store_true",
     )
     args, unknownargs = parser.parse_known_args()
+
+    # Check for the 'start' command
     if unknownargs and unknownargs[0] == Mode.start:
         mode = Mode(unknownargs.pop(0))
     else:
@@ -110,23 +147,7 @@ Subcommands:
                 mode = mode_
                 break
 
-    # Convert unknownargs from flags to mappings
-    settings = {}
-    while unknownargs:
-        k = unknownargs.pop(0).strip("-")
-        if "=" in k:
-            a, v = k.split("=", maxsplit=1)
-            settings[a] = safe_eval(v)
-        elif unknownargs and not unknownargs[0].startswith("-"):
-            v = unknownargs.pop(0)
-            if "=" in v:
-                a, v = v.split("=", maxsplit=1)
-                settings[k] = {a: safe_eval(v)}
-            else:
-                settings[k] = safe_eval(v)
-        # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
-        else:
-            settings[k.removeprefix("no-")] = not k.startswith("no-")
+    settings = args_to_dict(unknownargs)
 
     match mode:
         case Mode.add:

@@ -12,7 +12,7 @@ from aiologic import Event
 from typing_extensions import override
 
 import async_kernel
-from async_kernel.command import command_line
+from async_kernel.command import args_to_dict, command_line
 from async_kernel.interface.zmq import ZMQKernelInterface
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
@@ -35,6 +35,32 @@ def fake_kernel_dir(tmp_path, monkeypatch):
     kernel_dir.mkdir(parents=True)
     monkeypatch.setattr(sys, "prefix", str(tmp_path))
     return kernel_dir
+
+
+def test_args_to_dict():
+    unknown_args = [
+        "--display_name='my kernel'",
+        "--dict_value",
+        "option_A=False",
+        "--dict_value",
+        "Some other value=142",
+        "--start_interface=start_kernel_zmq_interface",
+        "--shell.timeout=0.01",
+        "--shell.timeout",
+        "2",
+        "-quiet",
+        "-no-quiet",
+    ]
+    settings = args_to_dict(unknown_args)
+    assert settings == {
+        "display_name": "my kernel",
+        "dict_value": {"option_A": False, "Some other value": 142},
+        "start_interface": "start_kernel_zmq_interface",
+        "shell.timeout": 2,
+        "quiet": False,
+    }
+    with pytest.raises(ValueError, match="Invalid arg detected"):
+        args_to_dict(["no-prefix"])
 
 
 def test_prints_help_when_no_args(monkeypatch, capsys):
@@ -153,6 +179,7 @@ def test_command_start_zmq_app(monkeypatch):
             pen.set_result(True)
             super().set()
 
+    pen = async_kernel.Pending()
     event = Event()
     event.set()
     event_started = EventSet()
@@ -172,9 +199,6 @@ def test_command_start_zmq_app(monkeypatch):
             "--start_interface=launch_zmq_kernel",
         ],
     )
-
-    pen = async_kernel.Pending()
-
     try:
         with pytest.raises(SystemExit) as e:
             command_line()
@@ -185,6 +209,32 @@ def test_command_start_zmq_app(monkeypatch):
 
 
 def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathlib.Path):
+
+    assert ZMQKernelInterface._instance is None  # pyright: ignore[reportPrivateUsage]
+    assert async_kernel.Kernel._instance is None  # pyright: ignore[reportPrivateUsage]
+
+    class EventSet(Event):
+        @override
+        def set(self):
+            kernel = async_kernel.Kernel()
+            try:
+                assert isinstance(kernel.interface, ZMQKernelInterface)
+                assert kernel.interface.backend_options == {"use_uv": False}
+                assert kernel.shell.timeout == 2.0
+                assert kernel.interface.quiet is False
+            except Exception as e:
+                pen.set_exception(e)
+            pen.set_result(True)
+            super().set()
+
+    pen = async_kernel.Pending()
+    event = Event()
+    event.set()
+    event_started = EventSet()
+
+    monkeypatch.setattr(async_kernel.Kernel, "event_stopped", event)
+    monkeypatch.setattr(async_kernel.Kernel, "event_started", event_started)
+
     connection_file = fake_kernel_dir.joinpath("test_start_kernel_zmq_interface.json")
     monkeypatch.setattr(
         sys,
@@ -194,21 +244,19 @@ def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathli
             "start",
             f"--connection_file={connection_file}",
             "--display_name='my kernel'",
+            "--backend_options",
+            "use_uv=False",
             "--start_interface=start_kernel_zmq_interface",
-            "--shell.timeout=0.01",
-            "--quiet",
-            "--no-quiet",
-            "--quiet=True",
+            "--shell.timeout",
+            "2",
+            "-no-quiet",
         ],
     )
-    event = Event()
-    event.set()
-    monkeypatch.setattr(async_kernel.Kernel, "event_stopped", event)
-    patched_event = mocker.patch.object(async_kernel.Kernel, "event_started")
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
-    assert str(patched_event.method_calls) == "[call.set()]"
+    assert pen.result() is True
+    assert async_kernel.Kernel._instance is None  # pyright: ignore[reportPrivateUsage]
 
 
 # Avoid matplotlib tests generally to avoid flaky tests on ci.

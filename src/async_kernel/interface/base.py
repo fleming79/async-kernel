@@ -184,8 +184,6 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
             os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
         if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
             os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
-        if "pytest" not in sys.modules and "IPYTHON_SUPPRESS_CONFIG_ERRORS" not in os.environ:
-            os.environ["IPYTHON_SUPPRESS_CONFIG_ERRORS"] = "1"  # pragma: no cover
 
         if initialize:
             super().initialize([] if argv is NoValue else argv)
