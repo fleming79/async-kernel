@@ -43,21 +43,23 @@ def test_args_to_dict():
         "--dict_value",
         "option_A=False",
         "--dict_value",
-        "Some other value=142",
+        "Some other value='142'",
         "--start_interface=start_kernel_zmq_interface",
         "--shell.timeout=0.01",
         "--shell.timeout",
         "2",
         "-quiet",
-        "-no-quiet",
+        "--automagic",
+        "--no-automagic",  # not a flag
     ]
     settings = args_to_dict(unknown_args)
     assert settings == {
         "display_name": "my kernel",
-        "dict_value": {"option_A": False, "Some other value": 142},
+        "dict_value": {"option_A": False, "Some other value": "142"},
         "start_interface": "start_kernel_zmq_interface",
         "shell.timeout": 2,
-        "quiet": False,
+        "quiet": True,
+        "automagic": False,
     }
     with pytest.raises(ValueError, match="Invalid arg detected"):
         args_to_dict(["no-prefix"])

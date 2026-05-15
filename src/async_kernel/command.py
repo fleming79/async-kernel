@@ -17,7 +17,14 @@ if TYPE_CHECKING:
 
 
 def args_to_dict(args: list[str]) -> dict[str, Any]:
-    "Convert a list of setting arguments ('beginning with '-' or '--') to a dict."
+    """
+    Convert a list of setting arguments ('beginning with '-' or '--') to a dict.
+
+    There is no distinction made between '-' and '--'.
+
+    Args:
+        args: A list of arguments, the first of which must start with '-' or '--'.
+    """
 
     def safe_eval(val: str) -> Any:
         try:
@@ -32,28 +39,24 @@ def args_to_dict(args: list[str]) -> dict[str, Any]:
     args = list(args)
     while args:
         k = args.pop(0)
-        if k.startswith("--"):
-            k = k.removeprefix("--")
-            if "=" in k:
-                k, v = k.split("=", maxsplit=1)
-                add(k, safe_eval(v))
-            elif args:
-                v = args.pop(0)
-                if "=" in v:
-                    # Value is a dict
-                    a, v = v.split("=", maxsplit=1)
-                    v = settings.get(k, {}) | {a: safe_eval(v)}
-                    add(k, v)
-                else:
-                    add(k, safe_eval(v))
-        elif k.startswith("-"):
-            # Flags
-            # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
-            k = k.removeprefix("-")
-            add(k.removeprefix("no-"), not k.startswith("no-"))
-        else:
-            msg = f"Invalid arg detected: {k!r} is not prefixed with '-'!"
+        if not k.startswith("-"):
+            msg = f"Invalid arg detected: {k!r} is not prefixed with '-' or '--'!"
             raise ValueError(msg)
+        k = k.strip("-")
+        if "=" in k:
+            add(*k.split("=", maxsplit=1))
+        elif args and not args[0].startswith("-"):
+            v = args.pop(0)
+            if "=" in v:
+                # Value is a dict
+                a, v = v.split("=", maxsplit=1)
+                v = settings.get(k, {}) | {a: safe_eval(v)}
+                add(k, v)
+            else:
+                add(k, v)
+        else:
+            # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
+            add(k.removeprefix("no-"), not k.startswith("no-"))
     return settings
 
 
