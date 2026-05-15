@@ -3,7 +3,7 @@ from __future__ import annotations
 import weakref
 from collections import deque
 from types import coroutine
-from typing import TYPE_CHECKING, Any, Generic, Never, Self
+from typing import TYPE_CHECKING, Any, Generic, Never, Self, final
 
 import aiologic.meta
 from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
@@ -20,6 +20,10 @@ __all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
 globals()["trio"] = lazy_import("trio")
+globals()["BaseKernelInterface"] = lazy_import("async_kernel.interface.base", "BaseKernelInterface")
+
+if TYPE_CHECKING:
+    from async_kernel.interface.base import BaseKernelInterface  # noqa: TC004
 
 
 def import_item(dottedname: str) -> Any:
@@ -279,3 +283,29 @@ class SingleAsyncQueue(Generic[T]):
         Will return `True` once stop has been called meaning there are no items left in the queue.
         """
         return self._active is False
+
+
+class HasParentInterface:
+    """
+    A mix in class that overrides the parent.
+    """
+
+    parent = final(Fixed(BaseKernelInterface))
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        if not isinstance(cls.parent, Fixed):
+            msg = (
+                f"The attribute `parent` has been replaced in {cls=}!"
+                + "\nTip: to fix mro issues make `HasParentInterface` left most."
+            )
+            raise TypeError(msg)
+        super().__init_subclass__(**kwargs)
+
+    def __new__(cls, *args, **kwargs) -> Self:
+
+        if not BaseKernelInterface.initialized():
+            msg = "A global BaseKernelInterface has not been created yet!"
+            raise RuntimeError(msg)
+        if (new := super().__new__) is object.__new__:
+            return new(cls)
+        return new(cls, *args, **kwargs)

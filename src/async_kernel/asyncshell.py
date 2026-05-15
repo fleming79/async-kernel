@@ -29,7 +29,7 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, HasParentInterface, KernelInterrupt
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.pending import Pending, PendingManager
@@ -83,7 +83,7 @@ class AsyncDisplayHook(DisplayHook):
     def finish_displayhook(self) -> None:
         """Finish up all displayhook activities."""
         if content := self.content:
-            self.shell.kernel.interface.iopub_send("execute_result", content=content)
+            self.shell.parent.iopub_send("execute_result", content=content)
         self._content.pop(id(utils.get_job()))
 
 
@@ -117,7 +117,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
         """
         content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
         msg_type = "update_display_data" if update else "display_data"
-        msg = self.shell.kernel.interface.msg(msg_type, content=content, parent=utils.get_parent())
+        msg = self.shell.parent.msg(msg_type, content=content, parent=utils.get_parent())
         for hook in self._hooks:
             try:
                 msg = hook(msg)
@@ -129,11 +129,9 @@ class AsyncDisplayPublisher(DisplayPublisher):
             # ref: https://github.com/microsoft/vscode-jupyter/wiki/Component:-IPyWidgets#two-widget-managers
             # On occasion we get `Error 'widget model not found'`
             # As a work-around inject a delay so the widget can be registered first.
-            self.shell.kernel.interface.callers[Channel.control].call_later(
-                0.2, self.shell.kernel.interface.iopub_send, msg
-            )
+            self.shell.parent.callers[Channel.control].call_later(0.2, self.shell.parent.iopub_send, msg)
         else:
-            self.shell.kernel.interface.iopub_send(msg)
+            self.shell.parent.iopub_send(msg)
 
     @override
     def clear_output(self, wait: bool = False) -> None:
@@ -145,9 +143,7 @@ class AsyncDisplayPublisher(DisplayPublisher):
                 instead waiting for the next display before clearing.
                 This reduces bounce during repeated clear & display loops.
         """
-        self.shell.kernel.interface.iopub_send(
-            msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data"
-        )
+        self.shell.parent.iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data")
 
     def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
         """Register a hook for when publish is called.
@@ -166,7 +162,7 @@ class ShellPendingManager(PendingManager):
     "A pending manager to track the active shell/subshell."
 
 
-class AsyncInteractiveShell(InteractiveShell):
+class AsyncInteractiveShell(HasParentInterface, InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
@@ -220,7 +216,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}  name: {self.kernel.interface.name!r} subshell_id: {self.subshell_id}>"
+        return f"<{self.__class__.__name__}  name: {self.parent.name!r} subshell_id: {self.subshell_id}>"
 
     def __new__(cls) -> Self:
         if issubclass(cls, AsyncInteractiveSubshell):
@@ -265,16 +261,16 @@ class AsyncInteractiveShell(InteractiveShell):
 
     @traitlets.default("banner1")
     def _default_banner1(self) -> str:
-        return f"Python {sys.version}\n{self.kernel.interface.banner}) \nIPython shell {IPython.core.release.version}\n"
+        return f"Python {sys.version}\n{self.parent.banner}) \nIPython shell {IPython.core.release.version}\n"
 
     @traitlets.observe("exit_now")
     def _update_exit_now(self, _) -> None:
         """Stop eventloop when `exit_now` fires."""
         if self.exit_now:
-            self.kernel.interface.stop()
+            self.parent.stop()
 
     def ask_exit(self) -> None:
-        if self.kernel.interface.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
+        if self.parent.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
             self.exit_now = True
 
     @override
@@ -301,9 +297,9 @@ class AsyncInteractiveShell(InteractiveShell):
         def _show_in_pager(self, data: str | dict, start=0, screen_lines=0, pager_cmd=None) -> None:
             "Handle IPython page calls"
             if isinstance(data, dict):
-                self.kernel.interface.iopub_send("display_data", content=data)
+                self.parent.iopub_send("display_data", content=data)
             else:
-                self.kernel.interface.iopub_send("stream", content={"name": "stdout", "text": data})
+                self.parent.iopub_send("stream", content={"name": "stdout", "text": data})
 
         self.set_hook("show_in_pager", _show_in_pager, 99)
 
@@ -434,7 +430,7 @@ class AsyncInteractiveShell(InteractiveShell):
                 execution_count: int = self.execution_count
             else:
                 execution_count = self._execution_count = self._execution_count + 1
-                self.kernel.interface.iopub_send(
+                self.parent.iopub_send(
                     msg_or_type="execute_input",
                     content={"code": code, "execution_count": execution_count},
                     ident=b"kernel.execute_input",
@@ -449,7 +445,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
                 result = None
                 try:
-                    self.kernel.interface.interrupts.add(cancel)
+                    self.parent.interrupts.add(cancel)
                     if stop_on_error:
                         self._stop_on_error_pool.add(cancel)
                     with anyio.fail_after(delay=timeout or None):
@@ -463,7 +459,7 @@ class AsyncInteractiveShell(InteractiveShell):
                         )
                 except (Exception, anyio.get_cancelled_exc_class()) as e:
                     # A safeguard to catch exceptions not caught by the shell.
-                    err = KernelInterrupt() if self.kernel.interface.last_interrupt_frame else e
+                    err = KernelInterrupt() if self.parent.last_interrupt_frame else e
                 else:
                     err = result.error_before_exec or result.error_in_exec if result else KernelInterrupt()
                     if not err and Tags.raises_exception in tags:
@@ -471,7 +467,7 @@ class AsyncInteractiveShell(InteractiveShell):
                         err = RuntimeError(msg)
                 finally:
                     self._stop_on_error_pool.discard(cancel)
-                    self.kernel.interface.interrupts.discard(cancel)
+                    self.parent.interrupts.discard(cancel)
                     self.events.trigger("post_execute")
                     if not silent:
                         self.events.trigger("post_run_cell", result)
@@ -578,7 +574,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _showtraceback(self, etype, evalue, stb) -> None:
         if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
-        self.kernel.interface.iopub_send(
+        self.parent.iopub_send(
             msg_or_type="error",
             content={"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)},
         )
@@ -712,7 +708,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} name: {self.kernel.interface.name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
+        return f"<{self.__class__.__name__} name: {self.parent.name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
 
     @property
     @override
@@ -745,7 +741,7 @@ class AsyncInteractiveSubshell(AsyncInteractiveShell):
             for pen in self.pending_manager.pending:
                 pen.cancel(f"Subshell {self.subshell_id} is stopping.")
             self.reset(new_session=False)
-            self.kernel.interface._subshell_stopped(self.subshell_id)  # pyright: ignore[reportPrivateUsage]
+            self.parent._subshell_stopped(self.subshell_id)  # pyright: ignore[reportPrivateUsage]
             SubshellManager.subshells.pop(self.subshell_id, None)
             self.set_trait("stopped", True)
 
@@ -840,7 +836,7 @@ class KernelMagics(Magics):
     @line_magic
     def connect_info(self, _) -> None:
         """Print information for connecting other clients to this kernel."""
-        if isinstance(f := getattr(self.shell.kernel.interface, "connection_file", None), pathlib.Path) and f.exists():
+        if isinstance(f := getattr(self.shell.parent, "connection_file", None), pathlib.Path) and f.exists():
             connection_file = f
             # if it's in the default dir, truncate to basename
             if jupyter_runtime_dir() == str(connection_file.parent):

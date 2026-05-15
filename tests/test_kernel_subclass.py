@@ -11,11 +11,6 @@ if TYPE_CHECKING:
     from async_kernel.typing import Backend
 
 
-def test_kernel_validators():
-    with pytest.raises(RuntimeError, match="An interface must be created prior to creating the kernel"):
-        Kernel()
-
-
 async def test_kernel_subclass(anyio_backend: Backend):
     # Ensure the subclass correctly overrides the kernel.
     try:

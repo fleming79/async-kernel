@@ -14,20 +14,20 @@ import async_kernel
 from async_kernel import Caller, utils
 from async_kernel.asyncshell import AsyncInteractiveShell, AsyncInteractiveSubshell, SubshellManager
 from async_kernel.comm import CommManager
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, HasParentInterface, KernelInterrupt
 from async_kernel.debugger import Debugger
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message
 
 globals()["BaseKernelInterface"] = lazy_import("async_kernel.interface.base", "BaseKernelInterface")
 
 if TYPE_CHECKING:
-    from async_kernel.interface.base import BaseKernelInterface  # noqa: TC004
+    from async_kernel.interface.base import BaseKernelInterface
 
 
 __all__ = ["Kernel", "KernelInterrupt"]
 
 
-class Kernel(LoggingConfigurable):
+class Kernel(HasParentInterface, LoggingConfigurable):
     """
     A Jupyter kernel.
 
@@ -84,16 +84,13 @@ class Kernel(LoggingConfigurable):
 
     def __new__(cls) -> Self:
         #  There is only one instance allowed - ever - (including subclasses).
-        if not (kernel := Kernel._instance):
-            if not (BaseKernelInterface._instance):  # pyright: ignore[reportPrivateUsage]
-                msg = "An interface must be created prior to creating the kernel."
-                raise RuntimeError(msg)
+        if not (inst := Kernel._instance):
             cls_: type[Self] = Kernel._cls or cls if cls is Kernel else cls  # pyright: ignore[reportAssignmentType]
-            Kernel._instance = kernel = super().__new__(cls_)
-        if not isinstance(kernel, cls):
-            msg = f"An incompatible kernel is loaded {cls=} {kernel=}"
+            Kernel._instance = inst = super().__new__(cls_)
+        if not isinstance(inst, cls):
+            msg = f"An incompatible kernel is loaded {cls=} {inst=}"
             raise TypeError(msg)
-        return kernel  # pyright: ignore[reportReturnType]
+        return inst  # pyright: ignore[reportReturnType]
 
     def __init__(self) -> None:
         if not self._initialised:

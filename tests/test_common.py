@@ -11,8 +11,9 @@ import anyio
 import anyio.to_thread
 import pytest
 from aiologic import Event
+from traitlets.config.configurable import Configurable
 
-from async_kernel.common import Fixed, SingleAsyncQueue, import_item
+from async_kernel.common import Fixed, HasParentInterface, SingleAsyncQueue, import_item
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend, FixedCreate, FixedCreated
@@ -274,3 +275,16 @@ class TestSingleAsyncQueue:
         queue.stop()
         queue.appendleft(1)
         assert rejected == {0, 1}
+
+
+class TestHasParentInterface:
+    def test_no_global_interface(self):
+        with pytest.raises(RuntimeError):
+            HasParentInterface()
+
+    def test_invalidMRO(self):
+
+        with pytest.raises(TypeError, match="The attribute `parent` has been replaced in"):
+
+            class InvalidMRO(Configurable, HasParentInterface):  # pyright: ignore[reportUnusedClass]
+                pass
