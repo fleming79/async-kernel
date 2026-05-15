@@ -564,15 +564,15 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
 
 class HasParentInterface:
     """
-    A mix in class providing a single fixed attribute named "parent" pointing to an instance of [BaseKernelInterface][].
+    A mix in class providing a single fixed attribute named "parent" pointing to an instance of [BaseKernelInterface][async_kernel.interface.base.BaseKernelInterface].
 
-    It is designed to be compatible with [traitlets.conf.Configurable][] objects enabling
-    the sharing of configuration and log.
+    It is designed to be compatible with [Configurable][] objects enabling the sharing of configuration and log.
 
-    Requirements:
-        - A global instance of `BaseKernelInterface` (or a subclass) is initialized.
-        - Merge subclassing expects this class is higher than any other subclass which defines a parent.
-        - `parent` cannot be change.
+    Notes:
+        - A global instance of `BaseKernelInterface` (or a subclass) must be
+            available when creating a new instance.
+        - If merge subclassing with a configurable, this class must be higher in the [mro][type.__mro__]
+            to ensure parent is not overwritten, or alternatively, parent can be copied to the subclass.
     """
 
     parent = final(Fixed(BaseKernelInterface))
