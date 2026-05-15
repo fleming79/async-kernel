@@ -147,7 +147,7 @@ def get_tag_value(tag: Tags, default: _TagType, /, *, tags: list[str] | None = N
 def get_timeout(*, tags: list[str] | None = None) -> float:
     "Gets the timeout from tags or using the current context."
     if math.isnan(timeout := get_tag_value(Tags.timeout, math.nan, tags=tags)):
-        return get_kernel().shell.timeout
+        return get_kernel().timeout
     return max(timeout, 0.0)
 
 

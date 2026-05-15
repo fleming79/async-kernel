@@ -126,7 +126,7 @@ def write_kernel_spec(
         **kwargs:
             Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
-            For example `..., **{'shell.timeout'=0.1})`.
+            For example `..., **{'timeout'=0.1})`.
     """
 
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name)
