@@ -117,7 +117,7 @@ uv run mkdocs build -s
     uv run async-kernel -a async-docs --timeout=1
     ```
 
-    Defines a new kernel spec with the name "async-docs" that sets the `timeout` to 100ms.
+    Defines a new kernel spec with the name "async-docs" that sets the `timeout` to 1s.
 
     The "async-docs" named kernel spec is used by [mkdocs-jupyter](#notebooks) to convert the notebooks
     for inclusion in the usage section of the documentation.

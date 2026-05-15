@@ -27,7 +27,7 @@ async-kernel feels like a standard kernel that offers advanced features that imp
 - [Caller: A backend agnostic executor](../notebooks/caller.ipynb)
 - [Concurrent message handling](../notebooks/concurrency.ipynb)
 
-Notebooks[^1] in this documentation show the result of each cell after executing for a short duration (~100ms).
+Notebooks[^1] in this documentation show the result of each cell after executing for a short duration (~1s).
 Notebooks are designed run with a Jupyter frontend.
 
 You can download the notebook with the button at the top right of the page for the notebook.
