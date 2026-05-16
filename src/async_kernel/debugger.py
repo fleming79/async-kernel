@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import logging
 import os
 import re
 import sys
 import threading
-from logging import Logger, LoggerAdapter
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Self
 
@@ -13,11 +11,13 @@ import anyio.abc
 from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import traitlets
+from traitlets.config import LoggingConfigurable
 
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compat.json import pack_json_bytes, unpack_json
+from async_kernel.interface import HasParentInterface
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
@@ -106,7 +106,7 @@ class VariableExplorer(traitlets.HasTraits):
         return [x.get_var_data() for x in variables.get_children_variables()]
 
 
-class DebugpyClient(traitlets.HasTraits):
+class DebugpyClient(HasParentInterface, LoggingConfigurable):
     """A client for debugpy. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     HEADER = b"Content-Length: "
@@ -115,15 +115,9 @@ class DebugpyClient(traitlets.HasTraits):
     tcp_buffer = b""
     _result_responses: traitlets.Dict[int, Pending] = traitlets.Dict()
     capabilities = traitlets.Dict()
-    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
     _socketstream: anyio.abc.SocketStream | None = None
     _send_lock = traitlets.Instance(Lock, ())
-
-    def __init__(self, log, event_callback) -> None:
-        """Initialize the client."""
-        super().__init__()
-        self.log = log
-        self.event_callback = event_callback
 
     @property
     def connected(self) -> bool:
@@ -153,7 +147,7 @@ class DebugpyClient(traitlets.HasTraits):
                 msg: DebugMessage = unpack_json(raw_msg[:size])
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
-                    self.event_callback(msg)
+                    self.kernel.debugger.handle_event(msg)
                 elif result := self._result_responses.pop(msg["request_seq"], None):
                     result.set_result(msg)
             self.tcp_buffer = b""
@@ -181,7 +175,7 @@ class DebugpyClient(traitlets.HasTraits):
             self._socketstream = None
 
 
-class Debugger(traitlets.HasTraits):
+class Debugger(HasParentInterface, LoggingConfigurable):
     """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     NO_DEBUG: ClassVar = ["IPythonHistorySavingThread"]
@@ -193,18 +187,13 @@ class Debugger(traitlets.HasTraits):
     just_my_code = traitlets.Bool(True)
     variable_explorer = traitlets.Instance(VariableExplorer, ())
     debugpy_client = traitlets.Instance(DebugpyClient)
-    log = traitlets.Instance(logging.LoggerAdapter)
-    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
     init_event = traitlets.Instance(Event, ())
 
-    @traitlets.default("log")
-    def _default_log(self) -> LoggerAdapter[Logger]:
-        return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
-
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         """Initialize the debugger."""
-        super().__init__()
-        self.debugpy_client = DebugpyClient(log=self.log, event_callback=self._handle_event)
+        super().__init__(**kwargs)
+        self.debugpy_client = DebugpyClient()
         self.started_debug_handlers = {
             "setBreakpoints": self.do_set_breakpoints,
             "stackTrace": self.do_stack_trace,
@@ -234,7 +223,7 @@ class Debugger(traitlets.HasTraits):
         self._seq = self._seq - 1
         return self._seq
 
-    def _handle_event(self, event) -> None:
+    def handle_event(self, event) -> None:
         if event["event"] == "stopped":
 
             async def _handle_stopped_event() -> None:
@@ -288,7 +277,7 @@ class Debugger(traitlets.HasTraits):
         if handler := self.static_debug_handlers.get(command):
             return await handler(msg)
         if not self.debugpy_client.connected:
-            msg_ = "Debugy client not connected."
+            msg_ = "Debugpy client not connected."
             raise RuntimeError(msg_)
         if handler := self.started_debug_handlers.get(command):
             return await handler(msg)

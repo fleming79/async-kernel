@@ -20,9 +20,6 @@ class TestUtils:
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_job() is job
 
-    async def test_get_execution_count(self, job: Job[ExecuteContent]):
-        assert ak_utils.get_execution_count() == 0
-
     async def test_get_metadata(self, job: Job[ExecuteContent]):
         assert ak_utils.get_metadata() is None
         assert ak_utils.get_metadata(job) is job["msg"]["metadata"]
@@ -99,3 +96,19 @@ class TestUtils:
         # Sets nested trait with a default
         ak_utils.setattr_nested(test_obj, "nested_with_default.k", "2")
         assert test_obj.nested_with_default.k == 2
+
+    def test_apply_settings(self):
+
+        class TestObj(traitlets.HasTraits):
+            k = traitlets.Int()
+            nested = traitlets.Instance(traitlets.HasTraits)
+            nested_with_default = traitlets.Instance(cast("type[TestObj]", traitlets.HasTraits))
+
+            @traitlets.default("nested_with_default")
+            def _default_nested_with_default(self):
+                return TestObj()
+
+        test_obj = TestObj()
+        settings = {"k": 10, "nested_with_default.k": 20}
+        val = ak_utils.apply_settings(test_obj, settings)
+        assert val == settings

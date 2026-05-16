@@ -419,8 +419,8 @@ class CallerCreateOptions(RunSettings):
     name: NotRequired[str]
     "The name for the new caller instance."
 
-    log: NotRequired[logging.LoggerAdapter]
-    "A logging adapter to use for the caller."
+    log: NotRequired[logging.Logger | logging.LoggerAdapter]
+    "A logger or logging adapter."
 
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]

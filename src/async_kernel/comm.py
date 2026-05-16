@@ -9,8 +9,8 @@ from aiologic.meta import import_module
 from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from typing_extensions import override
 
-from async_kernel import utils
 from async_kernel.common import Fixed
+from async_kernel.interface import HasParentInterface
 
 if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["Comm"]
 
 
-class Comm(BaseComm):
+class Comm(HasParentInterface, BaseComm):
     """
     An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).
 
@@ -28,7 +28,7 @@ class Comm(BaseComm):
         - publish_msg is no-op when kernel is unset.
     """
 
-    kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
 
     @override
     def publish_msg(
@@ -41,7 +41,7 @@ class Comm(BaseComm):
     ) -> None:
         """Helper for sending a comm message on IOPub."""
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
-        self.kernel.interface.iopub_send(
+        self.parent.iopub_send(
             msg_or_type=msg_type,
             content=content,
             metadata=metadata,
@@ -57,7 +57,7 @@ class Comm(BaseComm):
             self._msg_callback(msg)
 
 
-class CommManager(comm.base_comm.CommManager):
+class CommManager(HasParentInterface, comm.base_comm.CommManager):
     """
     The comm manager for all Comm instances.
 
@@ -65,7 +65,8 @@ class CommManager(comm.base_comm.CommManager):
     """
 
     _instance = None
-    kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
+
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
 
     comms: Fixed[Self, dict[str, BaseComm]] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
     targets: Fixed[Self, dict[str, comm.base_comm.CommTargetCallback]] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]

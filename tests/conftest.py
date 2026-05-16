@@ -69,23 +69,23 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     # Set a blank connection_file
     connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
-    kernel = Kernel()
-    kernel.connection_file = connection_file
-    os.environ["MPLBACKEND"] = utils.MATPLOTLIB_INLINE_BACKEND  # Set this implicitly
-    assert isinstance(kernel.interface, ZMQKernelInterface)
-    kernel.interface.transport = transport
-    kernel.print_kernel_messages = False
+    interface = ZMQKernelInterface()
+    interface.connection_file = connection_file
+    interface.transport = transport
 
     if request.param == "MainThread":
-        async with kernel.interface:
+        async with interface as kernel:
             await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
+            assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
             yield kernel
     else:
         if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
-            kernel.interface.backend_options = {}
-        thread = threading.Thread(target=kernel.interface.start, name="ShellThread")
+            interface.backend_options = {}
+        thread = threading.Thread(target=interface.start, name="ShellThread")
         thread.start()
+        kernel = interface.kernel
         kernel.event_started.wait()
+        assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
         await kernel.caller.call_soon(check_anyio_backend, anyio_backend)
         try:
             yield kernel
@@ -100,7 +100,7 @@ async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
     if kernel.interface.backend is Backend.trio:
         pytest.skip("AsyncKernelClient needs asyncio")
     client = AsyncKernelClient()
-    client.load_connection_info(kernel.get_connection_info())
+    client.load_connection_info(kernel.interface.get_connection_info())
     client.start_channels()
     try:
         yield client
@@ -121,11 +121,10 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name, trans
     Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it.
     """
     assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
-    connection_file = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
+    connection_file = tmp_path_factory.mktemp("async_kernel") / f"kernel-{os.getpid()}.json"
     backend = Backend.trio if "trio" in name else Backend.asyncio
-    kwgs = {"interface.transport": transport, "interface.backend": backend}
-    command = make_argv(connection_file=connection_file, name=name, **kwgs)  # pyright: ignore[reportArgumentType]
-    process = await anyio.open_process([*command, "--no-print_kernel_messages"])
+    command = make_argv(connection_file=connection_file, name=name, transport=transport, backend=backend)
+    process = await anyio.open_process([*command])
     async with process:
         while not connection_file.exists() or not connection_file.stat().st_size:
             await anyio.sleep(0.1)

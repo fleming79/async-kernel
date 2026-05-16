@@ -20,18 +20,20 @@ __all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
 globals()["trio"] = lazy_import("trio")
+globals()["BaseKernelInterface"] = lazy_import("async_kernel.interface.base", "BaseKernelInterface")
 
 
 def import_item(dottedname: str) -> Any:
-    """Import an item from a module, given its dotted name.
+    """
+    Import an item from a module, given its dotted name.
 
     Example:
         ```python
         import_item("os.path.join")
         ```
     """
-    module, name0 = dottedname.rsplit(".", maxsplit=1)
-    return aiologic.meta.import_from(module, name0)
+    module, name = dottedname.rsplit(".", maxsplit=1)
+    return aiologic.meta.import_from(module, name)
 
 
 @coroutine
@@ -150,7 +152,7 @@ class Fixed(Generic[S, T]):
 
     def __set__(self, obj: S, value: Self) -> Never:
         # Note: above we use `Self` for the `value` type hint to give a useful typing error
-        msg = f"Setting `Fixed` parameter {obj.__class__.__name__}.{self.name} is forbidden!"
+        msg = f"Setting `Fixed` parameter {obj.__class__.__module__}.{obj.__class__.__name__}.{self.name} is forbidden!"
         raise AttributeError(msg)
 
 

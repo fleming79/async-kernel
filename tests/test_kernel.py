@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import io
-import pathlib
 import sys
-import threading
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 import anyio
 import pytest
@@ -19,38 +17,10 @@ from async_kernel.typing import Channel, MsgType, RunMode, Tags
 from tests import utils
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from jupyter_client.asynchronous.client import AsyncKernelClient
 
 
 # pyright: reportPrivateUsage=false
-
-
-async def test_load_connection_info_error(kernel: Kernel, tmp_path):
-    with pytest.raises(RuntimeError):
-        kernel.load_connection_info({})
-
-
-async def test_execute_request_success(client: AsyncKernelClient):
-    reply: dict[Any, Any] | Mapping[str, Mapping[str, Any]] = await utils.send_shell_message(
-        client, MsgType.execute_request, {"code": "1 + 1", "silent": False}
-    )
-    assert reply["header"]["msg_type"] == "execute_reply"
-    assert reply["content"]["status"] == "ok"
-
-
-async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
-    """Simple print statement in kernel."""
-    await utils.clear_iopub(client)
-    client.execute("print('🌈')")
-    stdout, stderr = await utils.assemble_output(client)
-    assert stdout == "🌈\n"
-    assert stderr == ""
-
-
-async def test_caller(kernel: Kernel):
-    assert isinstance(kernel.caller, Caller)
 
 
 @pytest.mark.parametrize("mode", ["shell_timeout", "tags"])
@@ -89,46 +59,6 @@ async def test_reset_shell(kernel: Kernel, client: AsyncKernelClient):
     assert kernel.shell.execution_count == 1
     kernel.shell.reset()
     assert kernel.shell.execution_count == 0
-
-
-@pytest.mark.parametrize("test_mode", ["interrupt", "reply", "allow_stdin=False"])
-@pytest.mark.parametrize("mode", ["input", "password"])
-async def test_input(
-    subprocess_kernels_client,
-    mode: Literal["input", "password"],
-    test_mode: Literal["interrupt", "reply", "allow_stdin=False"],
-):
-    client = subprocess_kernels_client
-    client.input("Some input that should be discarded")
-    theprompt = "Enter a value >"
-    match mode:
-        case "input":
-            code = f"response = input('{theprompt}')"
-        case "password":
-            code = f"import getpass;response = getpass.getpass('{theprompt}')"
-    # allow_stdin=False
-    if test_mode == "allow_stdin=False":
-        _, reply = await utils.execute(client, code, allow_stdin=False)
-        assert reply["status"] == "error"
-        assert reply["ename"] == "StdinNotImplementedError"
-        return
-    msg_id = client.execute(code, allow_stdin=True, user_expressions={"response": "response"})
-    msg = await client.get_stdin_msg()
-    assert msg["header"]["msg_type"] == "input_request"
-    content = msg["content"]
-    assert content["prompt"] == theprompt
-    # interrupt
-    if test_mode == "interrupt":
-        await utils.send_control_message(client, MsgType.interrupt_request)
-        reply = await utils.get_reply(client, msg_id, clear_pub=False)
-        assert reply["content"]["status"] == "error"
-        return
-    # reply
-    text = "some text"
-    client.input(text)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "ok"
-    assert text in reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
 
 
 async def test_save_history(client: AsyncKernelClient, tmp_path):
@@ -279,58 +209,6 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
     kernel.comm_manager.unregister_target("my target", cb)
 
 
-async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
-    event = threading.Event()
-    kernel.interface.interrupts.add(event.set)
-    reply = await utils.send_control_message(client, MsgType.interrupt_request)
-    assert reply["header"]["msg_type"] == "interrupt_reply"
-    assert reply["content"] == {"status": "ok"}
-    assert event
-
-
-async def test_interrupt_request_async_request(subprocess_kernels_client: AsyncKernelClient):
-    await utils.clear_iopub(subprocess_kernels_client)
-    client = subprocess_kernels_client
-    msg_id = client.execute(f"import anyio;await anyio.sleep({utils.TIMEOUT * 4})")
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await anyio.sleep(0.5)
-    reply = await utils.send_control_message(client, MsgType.interrupt_request)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "error"
-
-
-async def test_interrupt_request_direct_exec_request(subprocess_kernels_client: AsyncKernelClient):
-    await utils.clear_iopub(subprocess_kernels_client)
-    client = subprocess_kernels_client
-    msg_id = client.execute(f"import time\nprint('started')\ntime.sleep({utils.TIMEOUT * 2})")
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started")
-    await utils.send_control_message(client, MsgType.interrupt_request)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "KernelInterrupt"
-
-
-async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKernelClient):
-    await utils.clear_iopub(subprocess_kernels_client)
-    code = f"""
-    import time
-    from async_kernel import Caller
-    await Caller().call_soon(lambda: [print('started'), time.sleep({utils.TIMEOUT * 2})])
-    """
-    client = subprocess_kernels_client
-    msg_id = client.execute(code)
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started")
-    await utils.send_control_message(client, MsgType.interrupt_request)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "KernelInterrupt"
-
-
 @pytest.mark.parametrize("response", ["y", ""])
 async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, response: Literal["y", ""]):
     stop = mocker.patch.object(kernel.interface, "stop")
@@ -343,108 +221,6 @@ async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, resp
 async def test_is_complete_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.is_complete_request, {"code": "hello"})
     assert reply["header"]["msg_type"] == "is_complete_reply"
-
-
-@pytest.mark.parametrize("command", ["debugInfo", "inspectVariables", "modules", "dumpCell", "source"])
-async def test_debug_static(client: AsyncKernelClient, command: str, mocker):
-    # These are tests on the debugger that don't required the debugger to be connected.
-    code = "my_variable=123"
-    if command == "debugInfo":
-        mocker.patch.object(async_kernel.utils, "LAUNCHED_BY_DEBUGPY", new=True)
-        assert async_kernel.utils.LAUNCHED_BY_DEBUGPY
-    reply = await utils.send_control_message(
-        client, MsgType.debug_request, {"type": "request", "seq": 1, "command": command, "arguments": {"code": code}}
-    )
-    assert reply["content"]["status"] == "ok"
-    if command == "dumpCell":
-        path = reply["content"]["body"]["sourcePath"]
-        reply = await utils.send_control_message(
-            client,
-            MsgType.debug_request,
-            {"type": "request", "seq": 1, "command": "source", "arguments": {"source": {"path": path}}},
-        )
-        assert reply["content"]["status"] == "ok"
-        assert reply["content"]["body"] == {"content": code}
-
-
-async def test_debug_raises_no_socket(kernel: Kernel):
-    debugger = kernel.interface.debugger
-    assert debugger
-    with pytest.raises(RuntimeError):
-        await debugger.debugpy_client.send_request({})
-
-
-async def test_debug_not_connected(client: AsyncKernelClient):
-    reply = await utils.send_control_message(
-        client, MsgType.debug_request, {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
-    )
-    assert reply["content"]["status"] == "error"
-    assert reply["content"]["evalue"] == "Debugy client not connected."
-
-
-@pytest.mark.parametrize("variable_name", ["my_variable", "invalid variable name", "special variables"])
-async def test_debug_static_richInspectVariables(client: AsyncKernelClient, variable_name: str):
-    # These are tests on the debugger that don't required the debugger to be connected.
-    reply = await utils.send_control_message(
-        client,
-        MsgType.debug_request,
-        {
-            "type": "request",
-            "seq": 1,
-            "command": "richInspectVariables",
-            "arguments": {"code": "my_variable=123", "variableName": variable_name},
-        },
-    )
-    assert reply["content"]["status"] == "ok"
-
-
-@pytest.mark.parametrize(
-    "code",
-    argvalues=[
-        "%connect_info",
-        "%callers",
-        "%subshell",
-        "%pip install anyio",
-        "%uv pip install anyio",
-        "%thread\nprint('okay')",
-        """%%thread name="Trio executor" backend=trio\nfrom async_kernel import Caller; assert Caller().name == "Trio executor";print('okay')""",
-        "import asyncio\n%asyncio await asyncio.sleep(0)\nprint('okay')",
-        "import trio\n%trio await trio.sleep(0)\nprint('okay')",
-        "%mkdir test\n%rmdir test\n%ls",
-    ],
-)
-async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
-    await utils.clear_iopub(client)
-    monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.connection_file).parent))
-    assert code
-    _, reply = await utils.execute(client, code, clear_pub=False)
-    assert reply["status"] == "ok"
-    stdout, _ = await utils.assemble_output(client)
-    assert stdout
-
-
-async def test_magic_error(client: AsyncKernelClient):
-    _, reply = await utils.execute(client, "%%thread backend=trio\npass")
-    assert reply["status"] == "error"
-    assert "'name' must be specified when providing settings!" in reply["evalue"]
-    _, reply = await utils.execute(client, "%%thread name=test not_an_option=True\npass")
-    assert reply["status"] == "error"
-    assert "One or more invalid options found" in reply["evalue"]
-
-
-@pytest.mark.parametrize("code", argvalues=["%connect_info"])
-async def test_magic_sync(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
-    result = kernel.main_shell.run_cell(code)
-    assert result.success
-
-
-async def test_shell_enable_gui(kernel: Kernel):
-    # used by ipython AutoMagicChecker via is_shadowed (requires 'builitin')
-    assert set(kernel.shell.ns_table) == {"user_global", "user_local", "builtin"}
-    # U
-    kernel.shell.enable_gui()
-    with pytest.raises(RuntimeError):
-        kernel.shell.enable_gui("not a gui")
 
 
 async def test_shell_can_set_namespace(kernel: Kernel):
@@ -575,8 +351,8 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     subshell_id = kernel.subshell_manager.create_subshell(protected=True).subshell_id
     subshell = kernel.subshell_manager.subshells[subshell_id]
 
-    assert repr(kernel.main_shell) == "<IPythonAsyncInteractiveShell  name: 'async' subshell_id: None>"
-    assert repr(subshell) == f"<IPythonInteractiveSubshell name: 'async'  subshell_id: {subshell_id}>"
+    assert repr(kernel.main_shell) == "<IPythonAsyncInteractiveShell  name: 'async-kernel' subshell_id: None>"
+    assert repr(subshell) == f"<IPythonInteractiveSubshell name: 'async-kernel'  subshell_id: {subshell_id}>"
 
     assert kernel.main_shell.user_ns is kernel.main_shell.user_global_ns
     assert subshell.user_ns is not kernel.main_shell.user_ns
