@@ -263,6 +263,7 @@ class AsyncInteractiveShell(HasInterface, InteractiveShell):
         builtin_mod.__dict__["__IPYTHON__"] = True
         builtin_mod.__dict__["display"] = display
         builtin_mod.__dict__["display"] = get_ipython
+        builtin_mod.__dict__["Caller"] = Caller
 
         self.builtin_trap = NoopBuiltinTrap()
 
