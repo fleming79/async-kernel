@@ -356,7 +356,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin):
                 if restore_io:
                     restore_io()
                 BaseInterface._instance = None
-                gc.collect()
 
     async def _do_shutdown(self):
 
@@ -424,7 +423,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin):
         finally:
             if stopped:
                 stopped()
-            gc.collect()
 
     def stop(self) -> None:
         """

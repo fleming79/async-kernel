@@ -1,4 +1,5 @@
 import asyncio
+import gc
 import importlib.util
 import os
 import sys
@@ -72,25 +73,30 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     interface = ZMQInterface()
     interface.connection_file = connection_file
     interface.transport = transport
+    try:
+        if request.param == "MainThread":
+            async with interface:
+                await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
+                assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
+                yield interface.kernel
 
-    if request.param == "MainThread":
-        async with interface:
-            await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
+        else:
+            if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
+                interface.backend_options = {}
+            thread = threading.Thread(target=interface.start, name="ShellThread")
+            thread.start()
+            interface.event_started.wait()
             assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
-            yield interface.kernel
-    else:
-        if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
-            interface.backend_options = {}
-        thread = threading.Thread(target=interface.start, name="ShellThread")
-        thread.start()
-        interface.event_started.wait()
-        assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
-        await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
-        try:
-            yield interface.kernel
-        finally:
-            interface.stop()
-            thread.join()
+            await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
+            try:
+                yield interface.kernel
+            finally:
+                interface.stop()
+                thread.join()
+    finally:
+        del interface
+        for _ in range(3):
+            gc.collect()
 
 
 @pytest.fixture(scope="module")
