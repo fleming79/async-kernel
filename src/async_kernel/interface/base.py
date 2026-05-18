@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
     from async_kernel.typing import CallerCreateOptions, Content, HandlerType, Job
 
-__all__ = ["BaseInterface", "HasParentInterface"]
+__all__ = ["BaseInterface", "HasInterface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -702,7 +702,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin):
         raise NotImplementedError
 
 
-class HasParentInterface:
+class HasInterface:
     """
     A mixin class providing a reference to the global [kernel interface][async_kernel.interface.base.BaseInterface].
 
@@ -739,11 +739,11 @@ class HasParentInterface:
 
     def __init_subclass__(cls, **kwargs) -> None:
 
-        if cls.parent is not HasParentInterface.parent or cls.config is not HasParentInterface.config:
-            replaced = [k for k in ["parent", "config"] if getattr(cls, k) is not getattr(HasParentInterface, k)]
+        if cls.parent is not HasInterface.parent or cls.config is not HasInterface.config:
+            replaced = [k for k in ["parent", "config"] if getattr(cls, k) is not getattr(HasInterface, k)]
             msg = f"Parameter override detected for class `{cls.__name__}`!"
             if len(replaced) == 2:
-                msg = f"{msg}\nTip: Make `HasParentInterface` the first inherited class (left-most)."
+                msg = f"{msg}\nTip: Make `HasInterface` the first inherited class (left-most)."
             else:
                 msg = f"{msg}\nThe parameter named {replaced[0]!r} must not be overloaded."
             raise TypeError(msg)

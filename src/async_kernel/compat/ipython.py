@@ -17,7 +17,7 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.interface import HasParentInterface
+from async_kernel.interface import HasInterface
 from async_kernel.typing import Channel, Message
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from async_kernel.asyncshell import AsyncInteractiveShell
 
 
-class AsyncDisplayHook(HasParentInterface, DisplayHook):
+class AsyncDisplayHook(HasInterface, DisplayHook):
     """
     A displayhook subclass that publishes data using [iopub_send][async_kernel.interface.base.BaseInterface.iopub_send].
 
@@ -90,7 +90,7 @@ class AsyncDisplayHook(HasParentInterface, DisplayHook):
         self._content.pop(id(utils.get_job()))
 
 
-class AsyncDisplayPublisher(HasParentInterface, DisplayPublisher):
+class AsyncDisplayPublisher(HasInterface, DisplayPublisher):
     """A display publisher that publishes data using [iopub_send][async_kernel.interface.base.BaseInterface.iopub_send]."""
 
     _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
@@ -160,7 +160,7 @@ class AsyncDisplayPublisher(HasParentInterface, DisplayPublisher):
             self._hooks.remove(hook)
 
 
-class AsyncHistoryManager(HasParentInterface, HistoryManager):
+class AsyncHistoryManager(HasInterface, HistoryManager):
     @override
     def __init__(self, *, shell: AsyncInteractiveShell) -> None:
         """Create a new history manager associated with a shell instance."""
@@ -221,7 +221,7 @@ class NoopBuiltinTrap(BuiltinTrap):
         return False
 
 
-class AsyncDisplayTrap(HasParentInterface, DisplayTrap):
+class AsyncDisplayTrap(HasInterface, DisplayTrap):
     def __init__(self) -> None:
         self.display = self.parent.shell.displayhook
         super().__init__(hook=self.display)
@@ -233,5 +233,5 @@ class AsyncDisplayTrap(HasParentInterface, DisplayTrap):
         return False
 
 
-class AsyncDisplayFormatter(HasParentInterface, DisplayFormatter):
+class AsyncDisplayFormatter(HasInterface, DisplayFormatter):
     pass

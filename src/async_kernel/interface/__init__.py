@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from async_kernel.interface.base import BaseInterface, HasParentInterface
+from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.typing import NoValue
 
 if TYPE_CHECKING:
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "BaseInterface",
-    "HasParentInterface",
+    "HasInterface",
     "launch_zmq_kernel",
     "start_kernel_callable_interface",
     "start_kernel_zmq_interface",

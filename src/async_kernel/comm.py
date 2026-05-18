@@ -10,7 +10,7 @@ from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from typing_extensions import override
 
 from async_kernel.common import Fixed
-from async_kernel.interface import HasParentInterface
+from async_kernel.interface import HasInterface
 
 if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["Comm"]
 
 
-class Comm(HasParentInterface, BaseComm):
+class Comm(HasInterface, BaseComm):
     """
     An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).
 
@@ -57,7 +57,7 @@ class Comm(HasParentInterface, BaseComm):
             self._msg_callback(msg)
 
 
-class CommManager(HasParentInterface, comm.base_comm.CommManager):
+class CommManager(HasInterface, comm.base_comm.CommManager):
     """
     The comm manager for all Comm instances.
 

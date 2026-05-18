@@ -9,7 +9,7 @@ from async_kernel import utils
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
-from async_kernel.interface import HasParentInterface
+from async_kernel.interface import HasInterface
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 __all__ = ["Kernel", "KernelInterrupt"]
 
 
-class Kernel(HasParentInterface):
+class Kernel(HasInterface):
     """
     A Jupyter kernel.
 

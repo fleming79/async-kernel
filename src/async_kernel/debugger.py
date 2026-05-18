@@ -17,7 +17,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compat.json import pack_json_bytes, unpack_json
-from async_kernel.interface import HasParentInterface
+from async_kernel.interface import HasInterface
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
@@ -106,7 +106,7 @@ class VariableExplorer(traitlets.HasTraits):
         return [x.get_var_data() for x in variables.get_children_variables()]
 
 
-class DebugpyClient(HasParentInterface, LoggingConfigurable):
+class DebugpyClient(HasInterface, LoggingConfigurable):
     """A client for debugpy. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     HEADER = b"Content-Length: "
@@ -175,7 +175,7 @@ class DebugpyClient(HasParentInterface, LoggingConfigurable):
             self._socketstream = None
 
 
-class Debugger(HasParentInterface, LoggingConfigurable):
+class Debugger(HasInterface, LoggingConfigurable):
     """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     NO_DEBUG: ClassVar = ["IPythonHistorySavingThread"]

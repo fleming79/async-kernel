@@ -41,7 +41,7 @@ from async_kernel.compat.ipython import (
 )
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
-from async_kernel.interface import HasParentInterface
+from async_kernel.interface import HasInterface
 from async_kernel.interface.base import ShellPendingManager
 from async_kernel.typing import Content, RunMode, Tags
 
@@ -67,7 +67,7 @@ def _noop(*args, **kwargs) -> None:
     return None
 
 
-class AsyncInteractiveShell(HasParentInterface, InteractiveShell):
+class AsyncInteractiveShell(HasInterface, InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
@@ -656,7 +656,7 @@ class AsyncInteractiveShell(HasParentInterface, InteractiveShell):
 
 
 @magics_class
-class KernelMagics(HasParentInterface, Magics):
+class KernelMagics(HasInterface, Magics):
     """Extra magics for async-kernel."""
 
     @line_magic

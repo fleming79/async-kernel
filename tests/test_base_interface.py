@@ -9,7 +9,7 @@ import pytest
 from aiologic import Event
 from traitlets.config.configurable import Configurable
 
-from async_kernel.interface import BaseInterface, HasParentInterface
+from async_kernel.interface import BaseInterface, HasInterface
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
@@ -41,19 +41,19 @@ class TestBaseInterface:
             await anyio.sleep(0)
 
 
-class TestHasParentInterface:
+class TestHasInterface:
     def test_no_global_interface(self):
         with pytest.raises(RuntimeError):
-            HasParentInterface()
+            HasInterface()
 
     def test_invalidMRO(self):
 
-        with pytest.raises(TypeError, match="Tip: Make `HasParentInterface` the first inherited class"):
+        with pytest.raises(TypeError, match="Tip: Make `HasInterface` the first inherited class"):
 
-            class InvalidMRO(Configurable, HasParentInterface):  # pyright: ignore[reportUnusedClass]
+            class InvalidMRO(Configurable, HasInterface):  # pyright: ignore[reportUnusedClass]
                 pass
 
         with pytest.raises(TypeError, match="parameter named 'config' must not be overloaded"):
 
-            class OverwritesProperty(HasParentInterface):  # pyright: ignore[reportUnusedClass]
+            class OverwritesProperty(HasInterface):  # pyright: ignore[reportUnusedClass]
                 config = {}  # pyright: ignore[reportIncompatibleMethodOverride, reportAssignmentType]  # noqa: RUF012
