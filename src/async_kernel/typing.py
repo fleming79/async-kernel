@@ -211,7 +211,7 @@ class MsgType(enum.StrEnum):
     "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
 
     create_subshell_request = "create_subshell_request"
-    "[async_kernel.kernel.kernel.parent.create_subshell_request][] (control channel only)"
+    "[async_kernel.kernel.Kernel.create_subshell_request][] (control channel only)"
 
     delete_subshell_request = "delete_subshell_request"
     "[async_kernel.kernel.Kernel.delete_subshell_request][] (control channel only)"

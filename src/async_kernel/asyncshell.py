@@ -71,12 +71,6 @@ class AsyncInteractiveShell(HasInterface, InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
-    Info:
-        - There is only one interactive shell instance.
-        - When subclassing:
-            - The last defined subclass is used when creating the shell.
-            - A matching subclass of [AsyncInteractiveSubshell][] should also be defined.
-
     Notable differences:
         - Supports a soft timeout specified via tags `timeout=<value in seconds>`[^1].
         - `user_ns` and `user_global_ns` are same dictionary which is a fixed [dict][].

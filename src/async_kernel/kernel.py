@@ -21,12 +21,7 @@ __all__ = ["Kernel", "KernelInterrupt"]
 
 class Kernel(HasInterface):
     """
-    A Jupyter kernel.
-
-    Warning:
-        Starting the kernel outside the main thread has the following implicatations:
-            - Execute requests are run in the thread where the kernel is started.
-            - The signal based kernel interrupt is not possible.
+    The class containing the handler methods to implement a Jupyter Kernel.
     """
 
     __slots__ = []

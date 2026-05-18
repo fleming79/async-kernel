@@ -461,7 +461,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin):
         """
         Create a subshell.
 
-        Use [`subshell.stop(force=True)`][async_kernel.asyncshell.AsyncInteractiveSubshell.stop] to stop a
+        Use [`shell.stop(force=True)`][async_kernel.asyncshell.AsyncInteractiveShell.stop] to stop a
         protected subshell when it is no longer required.
 
         Args:
