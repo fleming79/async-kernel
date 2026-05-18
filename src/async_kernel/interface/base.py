@@ -321,8 +321,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self.backend = Backend(current_async_library())
-        kernel = self.kernel
-        kernel.comm_manager.patch_comm()
+        self.kernel.comm_manager.patch_comm()
         sig = restore_io = None
         caller = Caller(
             "manual",
@@ -357,7 +356,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin):
                     restore_io()
                 BaseInterface._instance = None
 
-    async def _do_shutdown(self):
+    async def _do_shutdown(self) -> None:
 
         assert self.event_stopped
         self.log.info("Kernel shutdown started")
@@ -384,7 +383,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin):
     def _patch_io(self) -> Callable[[], None]:
         original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass
 
-        def restore():
+        def restore() -> None:
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = original_io
 
         builtins.input = self.raw_input
@@ -745,7 +744,10 @@ class HasInterface:
             else:
                 msg = f"{msg}\nThe parameter named {replaced[0]!r} must not be overloaded."
             raise TypeError(msg)
+
         super().__init_subclass__(**kwargs)
+
+        # Register class for configuration
         if issubclass(cls, Configurable):
             BaseInterface.classes.insert(0, cls)
 
