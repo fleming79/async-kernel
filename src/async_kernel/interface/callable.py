@@ -63,7 +63,7 @@ class CallableKernelInterface(BaseKernelInterface):
 
     _send: Callable[[str, list | None, bool], None | str]
 
-    async def start(
+    async def start_async(
         self,
         *,
         send: Callable[[str, list | None, bool], None | str],
@@ -83,10 +83,11 @@ class CallableKernelInterface(BaseKernelInterface):
 
         Returns: A pending that when resolved returns the message handler callback.
         """
+        self.initialize()
         self._send = send
         self._task = asyncio.create_task(coro=self.run(stopped=stopped))
-        await self.kernel.event_started
-        return Handlers(handle_msg=self._handle_msg, stop=self.kernel.interface.stop)
+        await self.event_started
+        return Handlers(handle_msg=self._handle_msg, stop=self.stop)
 
     def _send_to_frontend(
         self,
@@ -117,7 +118,7 @@ class CallableKernelInterface(BaseKernelInterface):
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
         msg["channel"] = Channel(msg["channel"])
         job = Job(received_time=time.monotonic(), msg=msg, ident=b"")
-        self.message_handler(job, self._send_reply)
+        self.message_handler(job, self._send_reply, self.iopub_send)
 
     @override
     def iopub_send(
@@ -131,7 +132,7 @@ class CallableKernelInterface(BaseKernelInterface):
         buffers: list[bytes] | None = None,
     ) -> None:
         if parent is NoValue:
-            parent = async_kernel.utils.get_parent()
+            parent = async_kernel.utils.get_parent_message()
         if not isinstance(msg_or_type, dict):
             msg_or_type = self.msg(msg_type=msg_or_type, content=content, parent=parent, metadata=metadata)  # pyright: ignore[reportArgumentType]
         self._send_to_frontend(msg_or_type, channel="iopub", buffers=buffers)  # pyright: ignore[reportArgumentType]

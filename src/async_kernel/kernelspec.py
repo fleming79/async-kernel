@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import re
 import shutil
 import sys
@@ -14,12 +15,13 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    InterfaceStartType = Callable[[None | dict[str, Any]], Any]
+    InterfaceStartType = Callable[[dict[str, Any]], Any]
 
 __all__ = [
-    "DEFAULT_EXECUTABLE",
+    "DEFAULT_COMMAND",
     "DEFAULT_START_INTERFACE",
     "PROTOCOL_VERSION",
+    "expand_path",
     "get_kernel_dir",
     "import_start_interface",
     "make_argv",
@@ -34,10 +36,10 @@ CUSTOM_START_INTERFACE_SYMBOL: str = "↤"
 PROTOCOL_VERSION: str = "5.5"
 "The protocol that is supported by the kernel."
 
-DEFAULT_START_INTERFACE: str = "async_kernel.interface.start_kernel_zmq_interface"
+DEFAULT_START_INTERFACE: str = "launch_zmq_kernel"
 "An importable path to the default interface to start the kernel."
 
-DEFAULT_EXECUTABLE: tuple[str, ...] = ("python", "-m", "async_kernel")
+DEFAULT_COMMAND: tuple[str, ...] = (sys.executable, "-m", "async_kernel", "start")
 ""
 
 
@@ -46,8 +48,8 @@ def make_argv(
     connection_file: str = "{connection_file}",
     name: str = "async",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
-    executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
-    **kwargs: dict[str, Any],
+    command: tuple[str, ...] = DEFAULT_COMMAND,
+    **kwargs: Any,
 ) -> list[str]:
     """Returns an argument vector (argv) that can be used to start a `Kernel`.
 
@@ -56,19 +58,28 @@ def make_argv(
 
     Args:
         connection_file: The path to the connection file.
-        start_interface: Either the kernel factory object itself, or the string import path to a
-            callable that returns a non-started kernel.
+        start_interface:
+            A self-contained function that accepts a dict of settings. The function
+            is stored as a python file in the kernelspec folder.
+            Or as string import path to a callable.
+            be saved as a python file in the kernelspec folder.
+            Or can be one of the names of the methods in the interface folder:
+                - "launch_zmq_kernel"
+                - "start_kernel_zmq_interface"
         name: The name to use for the kernel.
-        executable: The command line executable to call.
+        command: The command line command to call.
         **kwargs: Additional settings to pass when creating the kernel passed to `start_interface`.
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
-    argv = [*executable, "-f", connection_file]
+    argv = [
+        *command,
+        f"--connection_file={connection_file}",
+    ]
     for k, v in ({"start_interface": start_interface, "name": name} | kwargs).items():
         argv.append(f"--{k}={v}")
-    return argv
+    return list(map(str, argv))
 
 
 def write_kernel_spec(
@@ -76,7 +87,7 @@ def write_kernel_spec(
     *,
     name: str = "async",
     display_name: str = "",
-    executable: tuple[str, ...] = DEFAULT_EXECUTABLE,
+    command: tuple[str, ...] = DEFAULT_COMMAND,
     prefix: str = "",
     folder: str = "",
     start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
@@ -85,7 +96,7 @@ def write_kernel_spec(
     metadata: dict | None = None,
     language="python",
     resources: Path | None = RESOURCES,
-    **kwargs: dict[str, Any],
+    **kwargs: Any,
 ) -> Path:
     """
     Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).
@@ -97,8 +108,8 @@ def write_kernel_spec(
             The name of the kernel to use.
         display_name:
             The display name for Jupyter to use for the kernel. The default is `"Python ({name})"`.
-        executable:
-            The first part of 'argv' to use.
+        command:
+            The command to execute, passing .
         prefix:
             When provided the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
@@ -118,27 +129,34 @@ def write_kernel_spec(
         **kwargs:
             Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
-            For example `..., **{'shell.timeout'=0.1})`.
+            For example `..., **{'timeout'=0.1})`.
     """
 
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name)
     path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / name)
+
+    if callable(start_interface) and len(inspect.signature(start_interface).parameters) != 1:
+        msg = "Invalid signature! `start_interface` must accept exactly one argument (a dict of settings)."
+        raise ValueError(msg)
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
+
+        # start_interface
         if callable(start_interface):
-            path.joinpath("start_interface.py").write_text(textwrap.dedent(inspect.getsource(start_interface)))
-            start_interface = f"{path}{CUSTOM_START_INTERFACE_SYMBOL}{start_interface.__name__}"
+            f = path.joinpath("start_interface.py")
+            f.write_text(textwrap.dedent(inspect.getsource(start_interface)))
+            start_interface = f"{f}{CUSTOM_START_INTERFACE_SYMBOL}{start_interface.__name__}"
         # validate
         if start_interface != DEFAULT_START_INTERFACE:
-            import_start_interface(start_interface)
+            assert len(inspect.signature(import_start_interface(start_interface)).parameters) == 1
         if resources:
             shutil.copytree(src=resources, dst=path, dirs_exist_ok=True)
         argv = make_argv(
             start_interface=start_interface,
             connection_file=connection_file,
             name=name,
-            executable=executable,
+            command=command,
             **kwargs,
         )
         spec: dict[str, list[Any] | Any | dict[Any, Any] | str | dict[str, bool]] = {
@@ -176,12 +194,38 @@ def get_kernel_dir(*, folder: str = "", prefix: str = "") -> Path:
     Args:
         folder: The path to 'kernels' (must end with 'kernels').
         prefix: Defaults to sys.prefix (installable for a particular environment).
+
+    Search locations: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs
     """
     if folder:
-        pth = Path(folder).expanduser()
-        assert pth.name.lower() == "kernels"
+        path = expand_path(folder)
+        assert path.name.lower() == "kernels"
+        return path
+    return expand_path(prefix or sys.prefix).joinpath("share", "jupyter", "kernels")
+
+
+def expand_path(path: str | Path) -> Path:
+    """
+    Make the path absolute returning a new path object.
+
+    Args:
+        path: The path to process.
+
+    Substitutions:
+        - Windows environment variables are accepted such as `%APPDATA%` and `%PROGRAMDATA%`.
+        -`~` is also substituted with  [pathlib.Path.expanduser][].
+    """
+    if sys.platform == "win32" and str(path).startswith("%"):
+        key, base = str(path).split("%")[1:3]
+        key = key.strip("%").upper()
+        pth_ = Path(os.environ[key])
+        assert pth_.exists()
+        pth = pth_.joinpath(base.strip("\\/"))
+        assert pth.parts[0] == pth_.parts[0]
         return pth
-    return Path(prefix or sys.prefix).expanduser() / "share/jupyter/kernels"
+    if isinstance(path, str):
+        path = Path(path)
+    return path.expanduser().absolute()
 
 
 def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
@@ -194,18 +238,15 @@ def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
     Returns:
         The kernel factory.
     """
-
+    start_interface = start_interface or DEFAULT_START_INTERFACE
     if CUSTOM_START_INTERFACE_SYMBOL in start_interface:
-        path, factory_name = start_interface.split(CUSTOM_START_INTERFACE_SYMBOL)
-        try:
-            sys.path.insert(0, path)
-            import start_interface as kf  # noqa: PLC0415
-
-            factory = getattr(kf, factory_name)
-            assert len(inspect.signature(factory).parameters) == 1
-            return factory
-        finally:
-            sys.path.remove(path)
+        name, factory_name = start_interface.split(CUSTOM_START_INTERFACE_SYMBOL)
+        glbls = {}
+        exec(Path(name).read_bytes(), glbls)
+        return glbls[factory_name]
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    return import_item(start_interface or DEFAULT_START_INTERFACE)
+    if start_interface in ["launch_zmq_kernel", "start_kernel_zmq_interface"]:
+        return import_item(f"async_kernel.interface.{start_interface}")
+
+    return import_item(start_interface)

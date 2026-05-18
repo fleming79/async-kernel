@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import inspect
 import weakref
 from collections import deque
 from types import coroutine
-from typing import TYPE_CHECKING, Any, Generic, Never, Self
+from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import aiologic.meta
 from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
@@ -20,18 +21,20 @@ __all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
 globals()["trio"] = lazy_import("trio")
+globals()["BaseKernelInterface"] = lazy_import("async_kernel.interface.base", "BaseKernelInterface")
 
 
 def import_item(dottedname: str) -> Any:
-    """Import an item from a module, given its dotted name.
+    """
+    Import an item from a module, given its dotted name.
 
     Example:
         ```python
         import_item("os.path.join")
         ```
     """
-    module, name0 = dottedname.rsplit(".", maxsplit=1)
-    return aiologic.meta.import_from(module, name0)
+    module, name = dottedname.rsplit(".", maxsplit=1)
+    return aiologic.meta.import_from(module, name)
 
 
 @coroutine
@@ -66,6 +69,12 @@ class Fixed(Generic[S, T]):
             - class | callable: Called with zero or one positional argument [FixedCreate][].
 
         created: A per-instance optional callback that gets called on first-access to the property.
+        use_weakref: Use a [weakref.WeakValueDictionary][] to store instances. This can be
+            used to avoid circular-references.
+        set_mode: How to handle when __set__ is called.
+            - `'raise'`: Raise an error.
+            - 'ignore': Ignore.
+            - `'log.<...>'`: Make a log entry ignoring the input.
 
     Type Hints:
         - ``S``: Type of the owner class.
@@ -85,20 +94,23 @@ class Fixed(Generic[S, T]):
         You can use [import_item][] inside a callable to lazy import.
     """
 
-    __slots__ = ["create", "created", "instances", "instances_locks", "name"]
+    __slots__ = ["create", "created", "instances", "instances_locks", "name", "set_mode"]
 
     def __init__(
         self,
-        obj: type[T] | Callable[[FixedCreate[S]], T] | str,
+        obj: type[T] | Callable[[], T] | Callable[[FixedCreate[S]], T] | str,
         /,
         *,
         created: Callable[[FixedCreated[S, T]]] | None = None,
+        use_weakref: bool = False,
+        set_mode: Literal["raise", "ignore"] = "raise",
     ) -> None:
         if callable(obj) or isinstance(obj, str):  # pyright: ignore[reportUnnecessaryIsInstance]
             self.create = obj
             self.created = created
-            self.instances = {}
+            self.instances = weakref.WeakValueDictionary() if use_weakref else {}
             self.instances_locks = {}
+            self.set_mode: Literal["raise", "ignore"] = set_mode
         else:
             msg = f"{obj=} is invalid! Use a lambda instead eg: lambda _: {obj}"  # pyright: ignore[reportUnreachable]
             raise TypeError(msg)
@@ -133,11 +145,18 @@ class Fixed(Generic[S, T]):
             self.create = create = import_item(create)
         try:
             instance = create()  # pyright: ignore[reportCallIssue, reportAssignmentType]
-        except TypeError:
-            instance: T = create(FixedCreate(name=self.name, owner=obj))  # pyright: ignore[reportAssignmentType, reportCallIssue]
+        except TypeError as e1:
+            try:
+                instance: T = create(FixedCreate(name=self.name, owner=obj))  # pyright: ignore[reportAssignmentType, reportCallIssue]
+            except Exception as e2:
+                if len(inspect.signature(create).parameters) == 0:
+                    raise e1 from None
+                raise e2 from None
+
         self.instances[key] = instance
         self.instances_locks[key] = THREAD_DUMMY_LOCK
-        weakref.finalize(obj, self.instances.pop, key)
+        if not isinstance(self.instances, weakref.WeakValueDictionary):
+            weakref.finalize(obj, self.instances.pop, key)
         weakref.finalize(obj, self.instances_locks.pop, key)
         if self.created:
             try:
@@ -148,10 +167,15 @@ class Fixed(Generic[S, T]):
                     log.exception(msg, extra={"obj": self.created})
         return instance
 
-    def __set__(self, obj: S, value: Self) -> Never:
-        # Note: above we use `Self` for the `value` type hint to give a useful typing error
-        msg = f"Setting `Fixed` parameter {obj.__class__.__name__}.{self.name} is forbidden!"
-        raise AttributeError(msg)
+    def __set__(self, obj: S, value: Self) -> Never:  # pyright: ignore[reportReturnType]
+        # Note: We use `Self` as the type hint for the `value` above  to give a useful typing error.
+
+        match self.set_mode:
+            case "raise":
+                msg = f"Setting `Fixed` parameter {obj.__class__.__module__}.{obj.__class__.__name__}.{self.name} is forbidden!"
+                raise AttributeError(msg)
+            case _:
+                pass
 
 
 class SingleAsyncQueue(Generic[T]):

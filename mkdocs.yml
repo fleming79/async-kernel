@@ -95,6 +95,7 @@ plugins:
           inventories:
             - https://docs.python.org/3/objects.inv
             - https://ipython.readthedocs.io/en/stable/objects.inv
+            - https://traitlets.readthedocs.io/en/stable/objects.inv
             - https://ipykernel.readthedocs.io/en/stable/objects.inv
             - https://ipywidgets.readthedocs.io/en/stable/objects.inv
             - https://jupyter-client.readthedocs.io/en/stable/objects.inv

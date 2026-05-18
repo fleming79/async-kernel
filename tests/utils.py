@@ -100,7 +100,7 @@ async def execute(
     return msg_id, reply["content"]
 
 
-async def assemble_output(client: AsyncKernelClient, timeout=TIMEOUT, exit_at_idle=True):
+async def assemble_output(client: AsyncKernelClient, timeout: float | None = TIMEOUT, exit_at_idle=True):
     """Assemble stdout/err from an execution.
 
     Tip:
@@ -147,7 +147,9 @@ async def wait_for_idle(client: AsyncKernelClient, *, wait=1.0):
 
 async def clear_iopub(client, *, timeout=0.02):
     "Ensure there are no further iopub messages waiting."
-    await assemble_output(client, timeout=timeout, exit_at_idle=False)
+    with anyio.move_on_after(timeout):
+        while True:
+            await assemble_output(client, timeout=None, exit_at_idle=False)
 
 
 async def send_shell_message(

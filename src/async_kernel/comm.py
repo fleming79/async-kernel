@@ -9,8 +9,8 @@ from aiologic.meta import import_module
 from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from typing_extensions import override
 
-from async_kernel import utils
 from async_kernel.common import Fixed
+from async_kernel.interface import HasParentInterface
 
 if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["Comm"]
 
 
-class Comm(BaseComm):
+class Comm(HasParentInterface, BaseComm):
     """
     An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).
 
@@ -28,7 +28,7 @@ class Comm(BaseComm):
         - publish_msg is no-op when kernel is unset.
     """
 
-    kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel, use_weakref=True)
 
     @override
     def publish_msg(
@@ -41,7 +41,7 @@ class Comm(BaseComm):
     ) -> None:
         """Helper for sending a comm message on IOPub."""
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
-        self.kernel.interface.iopub_send(
+        self.parent.iopub_send(
             msg_or_type=msg_type,
             content=content,
             metadata=metadata,
@@ -57,30 +57,19 @@ class Comm(BaseComm):
             self._msg_callback(msg)
 
 
-class CommManager(comm.base_comm.CommManager):
+class CommManager(HasParentInterface, comm.base_comm.CommManager):
     """
     The comm manager for all Comm instances.
 
     There is only one instance, whose lifetime is linked to the Kernel.
     """
 
-    _instance = None
-    kernel: Fixed[Self, Kernel] = Fixed(lambda _: utils.get_kernel())
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel, use_weakref=True)
 
-    comms: Fixed[Self, dict[str, BaseComm]] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
-    targets: Fixed[Self, dict[str, comm.base_comm.CommTargetCallback]] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
+    comms: dict[str, BaseComm]
+    targets: dict[str, comm.base_comm.CommTargetCallback]
 
-    def __new__(cls) -> Self:
-        if cls._instance:
-            return cls._instance
-        cls._instance = super().__new__(cls)
-        return cls._instance
-
-    def __init__(self) -> None:  # pyright: ignore[reportMissingSuperCall]
-        pass
-
-    @staticmethod
-    def patch_comm() -> None:
+    def patch_comm(self) -> None:
         """
         Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
 
@@ -90,7 +79,7 @@ class CommManager(comm.base_comm.CommManager):
         Also patches ipykernel.comm if ipykernel is installed.
         """
         comm.create_comm = Comm
-        comm.get_comm_manager = CommManager
+        comm.get_comm_manager = lambda: self
 
         if sys.platform != "emscripten":
             # Monkey patch ipykernel in case other libraries use its comm module directly. Eg: pyviz_comms:https://github.com/holoviz/pyviz_comms/blob/4cd44d902364590ba8892c8e7f48d7888d0a1c0c/pyviz_comms/__init__.py#L403C14-L403C28

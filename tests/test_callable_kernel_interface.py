@@ -37,8 +37,8 @@ async def interface(anyio_backend):
         return None
 
     callbacks = await start_kernel_callable_interface(send=send, stopped=stopped.set)
-    interface = async_kernel.Kernel().interface
-    assert isinstance(interface, CallableKernelInterface)
+
+    interface = CallableKernelInterface.instance()
     try:
         yield interface
     finally:
@@ -48,7 +48,7 @@ async def interface(anyio_backend):
 
 class TestCallableInterface:
     async def test_start(self, interface: CallableKernelInterface):
-        assert interface.kernel.event_started
+        assert interface.event_started
 
     async def test_msg(self, interface: CallableKernelInterface, mocker):
         sender = mocker.patch.object(interface, "_send")
@@ -86,9 +86,10 @@ class TestCallableInterface:
             async_kernel.utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     async def test_prevent_multiple_instances(self, interface):
-        with pytest.raises(RuntimeError):
+
+        with pytest.raises(RuntimeError, match="An interface already exists!"):
             CallableKernelInterface()
 
-    async def test_keyboard_interrupt(self, interface):
+    async def test_keyboard_interrupt(self, interface) -> None:
         with pytest.raises(KernelInterrupt):
             signal.raise_signal(signal.SIGINT)

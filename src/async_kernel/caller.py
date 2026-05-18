@@ -218,7 +218,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
-    log: logging.LoggerAdapter[Any]
+    log: logging.Logger | logging.LoggerAdapter
     ""
     iopub_sockets: ClassVar[dict[int, zmq.Socket]] = {}
     ""
@@ -523,7 +523,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if not (caller := self._children.pop()).stopped:
                         with anyio.CancelScope(shield=True):
                             await caller.stopped
-                except IndexError:
+                except KeyError:
                     pass
             if socket:
                 self.iopub_sockets.pop(self._caller_id, None)

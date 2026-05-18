@@ -75,6 +75,23 @@ class TestFixed:
             await anyio.sleep(0)
         assert len(MyClass.fixed_dict.instances) == 0  # pyright: ignore[reportAttributeAccessIssue]
 
+    async def test_use_weakref(self):
+        collected = Event()
+
+        class MyClass:
+            fixed_dict = Fixed(dict)
+            myself = Fixed(lambda c: c["owner"], use_weakref=True)
+
+        m = MyClass()
+        assert isinstance(m.fixed_dict, dict)
+        assert m.myself is m
+        weakref.finalize(m, collected.set)
+        del m
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
+        assert len(MyClass.fixed_dict.instances) == 0  # pyright: ignore[reportAttributeAccessIssue]
+
     def test_with_class(self):
         class MyClass:
             fixed_dict = Fixed(dict)

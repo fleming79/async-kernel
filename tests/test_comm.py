@@ -36,8 +36,6 @@ async def test_comm_manager(kernel: Kernel, mocker) -> None:
     manager = kernel.comm_manager
     msgs = []
 
-    assert CommManager() is manager
-
     def foo(comm, msg):
         msgs.append(msg)
 

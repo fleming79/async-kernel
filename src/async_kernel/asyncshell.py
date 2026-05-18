@@ -3,25 +3,25 @@ from __future__ import annotations
 import builtins
 import contextlib
 import json
-import os
 import pathlib
 import shlex
 import sys
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Never, Self, TextIO, final
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, TextIO
 
 import anyio
 import IPython.core.release
 from aiologic.lowlevel import async_checkpoint
 from anyio.streams.text import TextReceiveStream
+from IPython.core.builtin_trap import builtin_mod  # pyright: ignore[reportPrivateImportUsage]
 from IPython.core.completer import provisionalcompleter, rectify_completions
-from IPython.core.displayhook import DisplayHook
-from IPython.core.displaypub import DisplayPublisher
-from IPython.core.history import HistoryManager
+from IPython.core.getipython import get_ipython
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class, no_var_expand
+from IPython.display import display
 from IPython.utils.tokenutil import token_at_cursor
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
@@ -31,10 +31,19 @@ import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.compat.ipython import (
+    AsyncDisplayFormatter,
+    AsyncDisplayHook,
+    AsyncDisplayPublisher,
+    AsyncDisplayTrap,
+    AsyncHistoryManager,
+    NoopBuiltinTrap,
+)
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
-from async_kernel.pending import Pending, PendingManager
-from async_kernel.typing import Channel, Content, Message, NoValue, RunMode, Tags
+from async_kernel.interface import HasParentInterface
+from async_kernel.interface.base import ShellPendingManager
+from async_kernel.typing import Content, RunMode, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -42,132 +51,23 @@ if TYPE_CHECKING:
     from anyio.abc import ByteReceiveStream
 
     from async_kernel import Kernel
+    from async_kernel.pending import Pending
 
 
 __all__ = ["AsyncInteractiveShell"]
 
 
-class AsyncDisplayHook(DisplayHook):
-    """
-    A displayhook subclass that publishes data using [iopub_send][async_kernel.interface.base.BaseKernelInterface.iopub_send].
-    """
-
-    shell: AsyncInteractiveShell
-    _content: Fixed[Self, dict[int, dict[str, Any]]] = Fixed(dict)
-
-    @property
-    @override
-    def prompt_count(self) -> int:
-        return self.shell.execution_count
-
-    @override
-    def start_displayhook(self) -> None:
-        """Start the display hook."""
-        self._content[id(utils.get_job())] = {}
-
-    @property
-    def content(self) -> dict[str, Any]:
-        return self._content[id(utils.get_job())]
-
-    @override
-    def write_output_prompt(self) -> None:
-        """Write the output prompt."""
-        self.content["execution_count"] = self.prompt_count
-
-    @override
-    def write_format_data(self, format_dict, md_dict=None) -> None:
-        """Write format data to the message."""
-        self.content["data"] = format_dict
-        self.content["metadata"] = md_dict
-
-    @override
-    def finish_displayhook(self) -> None:
-        """Finish up all displayhook activities."""
-        if content := self.content:
-            self.shell.kernel.interface.iopub_send("execute_result", content=content)
-        self._content.pop(id(utils.get_job()))
+# _____________________________ IMPORTANT _____________________________________
+# Patch Ipython's InteractiveShell, which may get called by external modules.
+InteractiveShell.initialized = lambda: True
+InteractiveShell.instance = lambda: utils.get_kernel().shell
 
 
-class AsyncDisplayPublisher(DisplayPublisher):
-    """A display publisher that publishes data using [iopub_send][async_kernel.interface.base.BaseKernelInterface.iopub_send]."""
-
-    shell: AsyncInteractiveShell
-    _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
-
-    @override
-    def publish(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self,
-        data: dict[str, Any],
-        metadata: dict | None = None,
-        *,
-        transient: dict | None = None,
-        update: bool = False,
-        **kwargs,
-    ) -> None:
-        """
-        Publish a display-data message.
-
-        Args:
-            data: A mime-bundle dict, keyed by mime-type.
-            metadata: Metadata associated with the data.
-            transient: Transient data that may only be relevant during a live display, such as display_id.
-                Transient data should not be persisted to documents.
-            update: If True, send an update_display_data message instead of display_data.
-
-        [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)
-        """
-        content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
-        msg_type = "update_display_data" if update else "display_data"
-        msg = self.shell.kernel.interface.msg(msg_type, content=content, parent=utils.get_parent())
-        for hook in self._hooks:
-            try:
-                msg = hook(msg)
-            except Exception:
-                pass
-            if msg is None:
-                return
-        if "application/vnd.jupyter.widget-view+json" in data and os.environ.get("VSCODE_CWD"):  # pragma: no cover
-            # ref: https://github.com/microsoft/vscode-jupyter/wiki/Component:-IPyWidgets#two-widget-managers
-            # On occasion we get `Error 'widget model not found'`
-            # As a work-around inject a delay so the widget can be registered first.
-            self.shell.kernel.interface.callers[Channel.control].call_later(
-                0.2, self.shell.kernel.interface.iopub_send, msg
-            )
-        else:
-            self.shell.kernel.interface.iopub_send(msg)
-
-    @override
-    def clear_output(self, wait: bool = False) -> None:
-        """
-        Clear output associated with the current execution (cell).
-
-        Args:
-            wait: If True, the output will not be cleared immediately,
-                instead waiting for the next display before clearing.
-                This reduces bounce during repeated clear & display loops.
-        """
-        self.shell.kernel.interface.iopub_send(
-            msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data"
-        )
-
-    def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
-        """Register a hook for when publish is called.
-
-        The hook should return the message or None.
-        Only return `None` when the message should *not* be sent.
-        """
-        self._hooks.append(hook)
-
-    def unregister_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
-        while hook in self._hooks:
-            self._hooks.remove(hook)
+def _noop(*args, **kwargs) -> None:
+    return None
 
 
-class ShellPendingManager(PendingManager):
-    "A pending manager to track the active shell/subshell."
-
-
-class AsyncInteractiveShell(InteractiveShell):
+class AsyncInteractiveShell(HasParentInterface, InteractiveShell):
     """
     An IPython InteractiveShell adapted to work with [async-kernel][async_kernel.kernel.Kernel].
 
@@ -187,56 +87,136 @@ class AsyncInteractiveShell(InteractiveShell):
 
     DEFAULT_MATPLOTLIB_BACKENDS: ClassVar = ["inline", "ipympl"]
 
-    _execution_count = 0
-    _resetting = False
-    displayhook_class = traitlets.Type(AsyncDisplayHook)
-    display_pub_class = traitlets.Type(AsyncDisplayPublisher)
-    displayhook: traitlets.Instance[AsyncDisplayHook]
-    display_pub: traitlets.Instance[AsyncDisplayPublisher]
-    history_manager: HistoryManager
-    compiler_class = traitlets.Type(XCachingCompiler)
-    compile: traitlets.Instance[XCachingCompiler]
-    kernel: traitlets.Instance[Kernel] = traitlets.Instance("async_kernel.Kernel", (), read_only=True)
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
+
+    display_trap = Fixed(AsyncDisplayTrap)
+    ""
+    display_pub = Fixed(AsyncDisplayPublisher)
+    ""
+    display_formatter = Fixed(AsyncDisplayFormatter)
+    ""
+
+    history_manager: Fixed[Self, AsyncHistoryManager] = Fixed(
+        lambda c: AsyncHistoryManager(shell=c["owner"]), set_mode="ignore"
+    )
+    ""
+
+    compiler_class = traitlets.Type(XCachingCompiler).tag(config=True)
+    ""
 
     pending_manager = Fixed(ShellPendingManager)
-    subshell_id = Fixed(lambda _: None)
+    ""
 
-    user_ns_hidden: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._get_default_ns())
-    user_global_ns: Fixed[Self, dict] = Fixed(lambda c: c["owner"]._user_ns)  # pyright: ignore[reportIncompatibleMethodOverride]
+    user_ns_hidden: Fixed[Self, dict] = Fixed(dict)
+    ""
 
-    _user_ns: Fixed[Self, dict] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
-    _main_mod_cache = Fixed(dict)
-    _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
-    _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
-
-    timeout = traitlets.CFloat(0.0)
+    timeout = traitlets.CFloat(0.0).tag(config=True)
     "A timeout in seconds to complete execute requests."
 
     stop_on_error_time_offset = traitlets.Float(0.0)
     "An offset to add to the cancellation time to catch late arriving execute requests."
 
+    protected = traitlets.Bool(read_only=True)
+    ""
+    is_mainshell = traitlets.Bool(False, read_only=True)
+    ""
+
+    subshell_id: Fixed[Self, str | None] = Fixed(
+        lambda c: None if c["owner"].is_mainshell else c["owner"].pending_manager.id
+    )
+    configurables = Fixed(list)
+    compile: traitlets.Instance[XCachingCompiler]
+
+    _execution_count = 0
+    _resetting = False
+    _user_ns: Fixed[Self, dict] = Fixed(dict)  # pyright: ignore[reportIncompatibleVariableOverride]
+    _main_mod_cache = Fixed(dict)
+    _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
+    _stop_on_error_info: Fixed[Self, dict[Literal["time", "execution_count"], Any]] = Fixed(dict)
+    _subshells: Fixed[Self, dict[str, Self]] = Fixed(dict)
+
+    # Overridden attributes
+    displayhook_class = None
+    display_pub_class = None
     loop_runner_map = None
     loop_runner = None
     autoindent = False
+    call_pdb = Fixed(lambda _: None, set_mode="ignore")
+    trio_runner = None
+
+    # Overridden methods
+    init_create_namespaces: Callable[..., None] = _noop
+    save_sys_module_state = _noop
+    init_sys_modules = _noop
+    init_displayhook = _noop
+    init_display_pub = _noop
+    init_history = _noop
+    init_encoding = _noop
+    init_user_ns = _noop
+    init_data_pub = _noop
+    init_environment = _noop
+
+    @property
+    @override
+    def user_global_ns(self) -> dict:
+        if self.is_mainshell:
+            return self.user_ns
+        return self.parent.shell.user_global_ns.copy() if self._resetting else self.parent.shell.user_global_ns
+
+    @property
+    @override
+    def displayhook(self) -> AsyncDisplayHook:
+        return self.parent.displayhook
 
     @override
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}  name: {self.kernel.name!r} subshell_id: {self.subshell_id}>"
+        protected = " 🔐" if self.protected else ""
+        if self.is_mainshell:
+            return f"<{self.__class__.__name__}{protected}: Main Shell>"
+        return f"<{self.__class__.__name__}{protected}: Subshell ({self.subshell_id})>"
 
-    def __new__(cls) -> Self:
-        if issubclass(cls, AsyncInteractiveSubshell):
-            return super().__new__(cls)
-        if not InteractiveShell._instance:
-            if cls is AsyncInteractiveShell._cls:
-                return super().__new__(cls)
-            InteractiveShell._instance = AsyncInteractiveShell._cls()  # pyright: ignore[reportAttributeAccessIssue]
-            InteractiveShell.instance = SubshellManager.get_shell
-        return InteractiveShell._instance  # pyright: ignore[reportReturnType]
+    def __init__(self, *, protected: bool = False, **kwargs: Any) -> None:
+        if "__mainshell__" in kwargs:
+            self.set_trait("is_mainshell", True)
+            return  # __init__ gets called again by the interface ('self.parent').
+        if protected:
+            self.set_trait("protected", True)
+        if self.subshell_id:
+            self.parent._subshell_created(self)  # pyright: ignore[reportPrivateUsage]
 
-    @override
-    def __init__(self, parent=None) -> None:  # pyright: ignore[reportInconsistentConstructor]
-        if not hasattr(self, "configurables"):
-            super().__init__(parent=parent)
+        # This is where traits with a config_key argument are updated
+        # from the values on config.
+        super(InteractiveShell, self).__init__(**kwargs)
+
+        # These are relatively independent and stateless
+        self.init_ipython_dir(kwargs.get("ipython_dir"))
+        self.init_profile_dir(kwargs.get("profile_dir"))
+        self.init_instance_attrs()
+        self.init_prefilter()
+
+        self.init_syntax_highlighting()
+        self.init_hooks()
+        self.init_events()
+        self.init_pushd_popd_magic()
+        self.init_logger()
+
+        self.init_builtins()
+
+        # The following was in post_config_initialization
+        self.init_completer()
+
+        self.init_traceback_handlers(kwargs.get("custom_exceptions", ((), None)))
+        self.init_prompts()
+        # self.init_display_formatter()
+
+        self.init_magics()
+        self.init_alias()
+        self.init_logstart()
+
+        self.init_extension_manager()
+        self.init_payload()
+        self.user_ns_hidden.update(self.user_ns)
+        self.events.trigger("shell_initialized", self)
 
     def _get_default_ns(self) -> dict[str, Any]:
         # Copied from `InteractiveShell.init_user_ns`
@@ -251,52 +231,40 @@ class AsyncInteractiveShell(InteractiveShell):
             "exit": self.exiter,
             "quit": self.exiter,
             "open": _modified_open_,
+            "_": "",
+            "__": "",
+            "___": "",
         }
-
-    def __init_subclass__(cls) -> None:
-        if AsyncInteractiveShell._instance:
-            msg = "It is too late to define a subclass of AsyncInteractiveShell!"
-            raise RuntimeError(msg)
-        try:
-            if not issubclass(cls, AsyncInteractiveSubshell):
-                AsyncInteractiveShell._cls = cls
-        except NameError:
-            pass
-        super().__init_subclass__()
 
     @traitlets.default("banner1")
     def _default_banner1(self) -> str:
-        return (
-            f"Python {sys.version}\n"
-            f"async-kernel v{async_kernel.__version__}, {self.kernel.settings}) \n"
-            f"IPython shell {IPython.core.release.version}\n"
+        kernel_info = (
+            f"async-kernel v{async_kernel.__version__} name:{self.parent.name!r} backend:{str(self.parent.backend)!r}"
         )
+
+        return f"Python {sys.version}\n{kernel_info}) \nIPython shell {IPython.core.release.version}\n"
 
     @traitlets.observe("exit_now")
     def _update_exit_now(self, _) -> None:
         """Stop eventloop when `exit_now` fires."""
         if self.exit_now:
-            self.kernel.interface.stop()
+            self.parent.stop()
 
     def ask_exit(self) -> None:
-        if self.kernel.interface.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
+        if self.parent.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
             self.exit_now = True
 
     @override
-    def init_create_namespaces(self, user_module=None, user_ns=None) -> None:
-        return
+    def init_builtins(self):
+        # A single, static flag that we set to True.  Its presence indicates
+        # that an IPython shell has been created, and we make no attempts at
+        # removing on exit or representing the existence of more than one
+        # IPython at a time.
+        builtin_mod.__dict__["__IPYTHON__"] = True
+        builtin_mod.__dict__["display"] = display
+        builtin_mod.__dict__["display"] = get_ipython
 
-    @override
-    def save_sys_module_state(self) -> None:
-        return
-
-    @override
-    def init_sys_modules(self) -> None:
-        return
-
-    @override
-    def init_user_ns(self) -> None:
-        return
+        self.builtin_trap = NoopBuiltinTrap()
 
     @override
     def init_hooks(self) -> None:
@@ -306,17 +274,11 @@ class AsyncInteractiveShell(InteractiveShell):
         def _show_in_pager(self, data: str | dict, start=0, screen_lines=0, pager_cmd=None) -> None:
             "Handle IPython page calls"
             if isinstance(data, dict):
-                self.kernel.interface.iopub_send("display_data", content=data)
+                self.parent.iopub_send("display_data", content=data)
             else:
-                self.kernel.interface.iopub_send("stream", content={"name": "stdout", "text": data})
+                self.parent.iopub_send("stream", content={"name": "stdout", "text": data})
 
         self.set_hook("show_in_pager", _show_in_pager, 99)
-
-    @override
-    def init_history(self) -> None:
-        self.history_manager = HistoryManager(shell=self, parent=self)
-        self.configurables.append(self.history_manager)  # pyright: ignore[reportArgumentType]
-        utils.mark_thread_pydev_do_not_trace(self.history_manager.save_thread)
 
     @property
     @override
@@ -326,6 +288,11 @@ class AsyncInteractiveShell(InteractiveShell):
     @execution_count.setter
     def execution_count(self, value) -> None:
         return
+
+    @contextmanager
+    @override
+    def _tee(self, channel: Literal["stdout", "stderr"]):
+        yield
 
     @property
     @override
@@ -406,6 +373,11 @@ class AsyncInteractiveShell(InteractiveShell):
             .replace("get_ipython().system(", "await get_ipython().system(")
         )
 
+    @override
+    def get_ipython(self) -> AsyncInteractiveShell:
+        """Return the shell for the current context."""
+        return self.kernel.shell
+
     async def execute_request(
         self,
         code: str = "",
@@ -439,7 +411,7 @@ class AsyncInteractiveShell(InteractiveShell):
                 execution_count: int = self.execution_count
             else:
                 execution_count = self._execution_count = self._execution_count + 1
-                self.kernel.interface.iopub_send(
+                self.parent.iopub_send(
                     msg_or_type="execute_input",
                     content={"code": code, "execution_count": execution_count},
                     ident=b"kernel.execute_input",
@@ -454,7 +426,7 @@ class AsyncInteractiveShell(InteractiveShell):
 
                 result = None
                 try:
-                    self.kernel.interface.interrupts.add(cancel)
+                    self.parent.interrupts.add(cancel)
                     if stop_on_error:
                         self._stop_on_error_pool.add(cancel)
                     with anyio.fail_after(delay=timeout or None):
@@ -468,7 +440,7 @@ class AsyncInteractiveShell(InteractiveShell):
                         )
                 except (Exception, anyio.get_cancelled_exc_class()) as e:
                     # A safeguard to catch exceptions not caught by the shell.
-                    err = KernelInterrupt() if self.kernel.interface.last_interrupt_frame else e
+                    err = KernelInterrupt() if self.parent.last_interrupt_frame else e
                 else:
                     err = result.error_before_exec or result.error_in_exec if result else KernelInterrupt()
                     if not err and Tags.raises_exception in tags:
@@ -476,7 +448,7 @@ class AsyncInteractiveShell(InteractiveShell):
                         err = RuntimeError(msg)
                 finally:
                     self._stop_on_error_pool.discard(cancel)
-                    self.kernel.interface.interrupts.discard(cancel)
+                    self.parent.interrupts.discard(cancel)
                     self.events.trigger("post_execute")
                     if not silent:
                         self.events.trigger("post_run_cell", result)
@@ -583,7 +555,7 @@ class AsyncInteractiveShell(InteractiveShell):
     def _showtraceback(self, etype, evalue, stb) -> None:
         if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
-        self.kernel.interface.iopub_send(
+        self.parent.iopub_send(
             msg_or_type="error",
             content={"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)},
         )
@@ -607,8 +579,7 @@ class AsyncInteractiveShell(InteractiveShell):
         """Initialize magics."""
         super().init_magics()
         self.register_magics(KernelMagics)
-        self.magics_manager.register_alias("python", "thread")
-        self.magics_manager.register_alias("python3", "thread")
+        # Line magics
         self.magics_manager.register_alias("!", "system")
 
     @override
@@ -669,198 +640,46 @@ class AsyncInteractiveShell(InteractiveShell):
 
     def stop(self, *, force=False) -> None:
         "Stop the shell - do not call directly."
-        if force:
-            self.reset(new_session=False)
-            try:
-                self.history_manager.end_session()
-                self.history_manager.save_thread.stop()  # pyright: ignore[reportOptionalMemberAccess]
-                self.history_manager.save_thread.join()  # pyright: ignore[reportOptionalMemberAccess]
-            except AttributeError:
-                pass
-            SubshellManager.stop_all_subshells(force=True)
-            InteractiveShell._instance = None
 
+        if self.protected and not force:
+            return
+        self.parent._subshell_stopped(self)  # pyright: ignore[reportPrivateUsage]
 
-class AsyncInteractiveSubshell(AsyncInteractiveShell):
-    """
-    An asynchronous interactive subshell for managing isolated execution contexts within an async-kernel.
+        self.configurables.clear()
 
-    Each subshell has a unique `user_ns`, but shares its `user_global_ns` with the main shell
-    (which is also the `user_ns` of the main shell).
-
-    Call [`subshell.stop(force=True)`][async_kernel.asyncshell.AsyncInteractiveSubshell.stop] to stop a
-    protected subshell when it is no longer required.
-
-    Attributes:
-        stopped: Indicates whether the subshell has been stopped.
-        protected: If True, prevents the subshell from being stopped unless forced.
-        pending_manager: Tracks pending started in the context of the subshell.
-        subshell_id: Unique identifier for the subshell.
-
-    Methods:
-        stop: Stops the subshell, deactivating pending operations and removing it from the manager.
-
-    Info:
-        - The last defined subclass is used for all new subshells automatically.
-
-    See also:
-        - [async_kernel.utils.get_subshell_id][]
-        - [async_kernel.utils.subshell_context][]
-    """
-
-    stopped = traitlets.Bool(read_only=True)
-    protected = traitlets.Bool(read_only=True)
-    subshell_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].pending_manager.id)
-
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-        AsyncInteractiveSubshell._cls = cls
-
-    @override
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} name: {self.kernel.name!r}  subshell_id: {self.subshell_id}{'  stopped' if self.stopped else ''}>"
-
-    @property
-    @override
-    def user_global_ns(self) -> dict:  # pyright: ignore[reportIncompatibleVariableOverride]
-        return (
-            self.kernel.main_shell.user_global_ns.copy() if self._resetting else self.kernel.main_shell.user_global_ns
-        )
-
-    def __new__(cls, *, protected: bool = True) -> Self:  # noqa: ARG004
-        if cls is AsyncInteractiveSubshell:
-            return cls._cls()
-        return super().__new__(cls)
-
-    @override
-    def __init__(self, *, protected: bool = True) -> None:
-        super().__init__(parent=AsyncInteractiveShell())
-        self.set_trait("protected", protected)
-        self.stop_on_error_time_offset = self.kernel.main_shell.stop_on_error_time_offset
-        SubshellManager.subshells[self.subshell_id] = self
-
-    @override
-    def init_history(self) -> None:
-        self.history_manager = HistoryManager(shell=self, parent=self, hist_file=":memory:")
-        self.history_manager.output_hist.update(self.kernel.main_shell.history_manager.output_hist)
-
-    @override
-    def stop(self, *, force=False) -> None:
-        "Stop this subshell."
-        if force or not self.protected:
-            for pen in self.pending_manager.pending:
-                pen.cancel(f"Subshell {self.subshell_id} is stopping.")
-            self.reset(new_session=False)
-            self.kernel.interface._subshell_stopped(self.subshell_id)  # pyright: ignore[reportPrivateUsage]
-            SubshellManager.subshells.pop(self.subshell_id, None)
-            self.set_trait("stopped", True)
-
-
-class IPythonAsyncInteractiveShell(AsyncInteractiveShell):
-    "The default AsyncInteractiveShell"
-
-
-class IPythonInteractiveSubshell(AsyncInteractiveSubshell):
-    "The default AsyncInteractiveSubshell"
-
-
-@final
-class SubshellManager:
-    """
-    Manages all instances of [subshells][async_kernel.asyncshell.AsyncInteractiveSubshell].
-
-    Note:
-
-        - All methods are [classmethod][].
-    """
-
-    subshells: ClassVar[dict[str, AsyncInteractiveSubshell]] = {}
-
-    def __new__(cls) -> Never:
-        msg = "Instantiation is not required, use classmethods directly."
-        raise RuntimeError(msg)
-
-    @classmethod
-    def create_subshell(cls, *, protected: bool = True) -> AsyncInteractiveSubshell:
-        """
-        Create a new instance of the default subshell class.
-
-        Call [`subshell.stop(force=True)`][async_kernel.asyncshell.AsyncInteractiveSubshell.stop] to stop a
-        protected subshell when it is no longer required.
-
-        Args:
-            protected: Protect the subshell from accidental deletion.
-        """
-        return AsyncInteractiveSubshell(protected=protected)
-
-    @classmethod
-    def list_subshells(cls) -> list[str]:
-        return list(cls.subshells)
-
-    @classmethod
-    def get_shell(
-        cls,
-        subshell_id: str | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-    ) -> AsyncInteractiveShell | AsyncInteractiveSubshell:
-        """
-        Get a subshell or the main shell.
-
-        Args:
-            subshell_id: The id of an existing subshell.
-        """
-        mainshell = AsyncInteractiveShell()
-        if subshell_id is NoValue:
-            subshell_id = ShellPendingManager.active_id()
-        if subshell_id is None or subshell_id == mainshell.pending_manager.id:
-            return mainshell
-        return cls.subshells[subshell_id]
-
-    @classmethod
-    def delete_subshell(cls, subshell_id: str) -> None:
-        """
-        Stop a subshell unless it is protected.
-
-        Args:
-            subshell_id: The id of an existing subshell to stop.
-        """
-        if subshell := cls.subshells.get(subshell_id):
-            subshell.stop()
-
-    @classmethod
-    def stop_all_subshells(cls, *, force: bool = False) -> None:
-        """Stop all current subshells.
-
-        Args:
-            force: Passed to [async_kernel.asyncshell.AsyncInteractiveSubshell.stop][].
-        """
-        for subshell in set(cls.subshells.values()):
-            subshell.stop(force=force)
+        self.user_ns.clear()
+        self.history_manager.stop()
+        try:
+            self.atexit_operations()
+        except AttributeError:
+            pass
 
 
 @magics_class
-class KernelMagics(Magics):
+class KernelMagics(HasParentInterface, Magics):
     """Extra magics for async-kernel."""
-
-    shell: AsyncInteractiveShell  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @line_magic
     def connect_info(self, _) -> None:
         """Print information for connecting other clients to this kernel."""
-        connection_file = pathlib.Path(self.shell.kernel.connection_file)
-        # if it's in the default dir, truncate to basename
-        if jupyter_runtime_dir() == str(connection_file.parent):
-            connection_file = connection_file.name
-        info = self.shell.kernel.get_connection_info()
-        print(
-            json.dumps(info, indent=2),
-            "Paste the above JSON into a file, and connect with:\n"
-            + "    $> jupyter <app> --existing <file>\n"
-            + "or, if you are local, you can connect with just:\n"
-            + f"    $> jupyter <app> --existing {connection_file}\n"
-            + "or even just:\n"
-            + "    $> jupyter <app> --existing\n"
-            + "if this is the most recent Jupyter kernel you have started.",
-        )
+        if isinstance(f := getattr(self.parent, "connection_file", None), pathlib.Path) and f.exists():
+            connection_file = f
+            # if it's in the default dir, truncate to basename
+            if jupyter_runtime_dir() == str(connection_file.parent):
+                connection_file = connection_file.name
+            info = json.loads(f.read_bytes()) if f.exists() else ""
+            print(
+                json.dumps(info, indent=2),
+                "Paste the above JSON into a file, and connect with:\n"
+                + "    $> jupyter <app> --existing <file>\n"
+                + "or, if you are local, you can connect with just:\n"
+                + f"    $> jupyter <app> --existing {connection_file}\n"
+                + "or even just:\n"
+                + "    $> jupyter <app> --existing\n"
+                + "if this is the most recent Jupyter kernel you have started.",
+            )
+        else:
+            print("No connection info")  # pragma: no cover
 
     @line_magic
     def callers(self, _) -> None:
@@ -889,7 +708,7 @@ class KernelMagics(Magics):
         """
         Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
         """
-        subshells = SubshellManager.list_subshells()
+        subshells = list(self.parent.subshells)
         subshell_list = (
             f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
         )
@@ -921,7 +740,7 @@ class KernelMagics(Magics):
                 case _ as name:
                     print("Unsupported command:", name)
         else:
-            await SubshellManager.get_shell().system([sys.executable, "-m", "pip", *line.split()])
+            await self.parent.get_shell().system([sys.executable, "-m", "pip", *line.split()])
         return None
 
     @no_var_expand
@@ -932,7 +751,10 @@ class KernelMagics(Magics):
         Usage:
           %uv pip install [pkgs]
         """
-        return SubshellManager.get_shell().system(["uv", *shlex.split(line)], stderr_to_stdout=True)
+        cmd = ["uv", *shlex.split(line or "-h")]
+        if "--color" not in line:
+            cmd.extend(["--color", "always"])
+        return self.parent.get_shell().system(cmd, stderr_to_stdout=True)
 
     @no_var_expand
     @line_cell_magic
@@ -947,7 +769,7 @@ class KernelMagics(Magics):
         Example:
             %%thread name="Trio executor" backend=trio
         """
-        shell: AsyncInteractiveShell | AsyncInteractiveSubshell = SubshellManager.get_shell()
+        shell = self.parent.get_shell()
         if cell is None:
             cell = line
             options: Any = None
@@ -958,19 +780,19 @@ class KernelMagics(Magics):
             shell.run_cell_async,
             raw_cell=cell,
             store_history=False,
-            silent=True,
+            silent=False,
             cell_id=None,
             transformed_cell=shell.transform_cell_async(cell),
         )
 
     async def _call_using_backend(self, backend: Literal["asyncio", "trio"], code: str) -> None:
-        shell: AsyncInteractiveShell | AsyncInteractiveSubshell = SubshellManager.get_shell()
+        shell = self.parent.get_shell()
         await Caller().call_using_backend(
             backend,
             shell.run_cell_async,
             raw_cell=code,
             store_history=False,
-            silent=True,
+            silent=False,
             cell_id=None,
             transformed_cell=shell.transform_cell_async(code),
         )

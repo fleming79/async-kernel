@@ -14,14 +14,15 @@ if TYPE_CHECKING:
 
 @pytest.mark.anyio
 class TestUtils:
+    def test_get_kernel_raises(self):
+        with pytest.raises(RuntimeError, match="A kernel interface is not started"):
+            ak_utils.get_kernel()
+
     async def test_get_job(self, job: Job[ExecuteContent]) -> None:
         with pytest.raises(LookupError):
             ak_utils.get_job()
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_job() is job
-
-    async def test_get_execution_count(self, job: Job[ExecuteContent]):
-        assert ak_utils.get_execution_count() == 0
 
     async def test_get_metadata(self, job: Job[ExecuteContent]):
         assert ak_utils.get_metadata() is None
@@ -30,10 +31,10 @@ class TestUtils:
         assert ak_utils.get_metadata() is job["msg"]["metadata"]
 
     async def test_get_parent(self, job: Job[ExecuteContent]):
-        assert ak_utils.get_parent() is None
-        assert ak_utils.get_parent(job) is job["msg"]
+        assert ak_utils.get_parent_message() is None
+        assert ak_utils.get_parent_message(job) is job["msg"]
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        assert ak_utils.get_parent(job) is job["msg"]
+        assert ak_utils.get_parent_message(job) is job["msg"]
 
     async def test_get_tags(self, job: Job[ExecuteContent]):
         job["msg"]["metadata"]["tags"] = tags = []
@@ -99,3 +100,19 @@ class TestUtils:
         # Sets nested trait with a default
         ak_utils.setattr_nested(test_obj, "nested_with_default.k", "2")
         assert test_obj.nested_with_default.k == 2
+
+    def test_apply_settings(self):
+
+        class TestObj(traitlets.HasTraits):
+            k = traitlets.Int()
+            nested = traitlets.Instance(traitlets.HasTraits)
+            nested_with_default = traitlets.Instance(cast("type[TestObj]", traitlets.HasTraits))
+
+            @traitlets.default("nested_with_default")
+            def _default_nested_with_default(self):
+                return TestObj()
+
+        test_obj = TestObj()
+        settings = {"k": 10, "nested_with_default.k": 20}
+        val = ak_utils.apply_settings(test_obj, settings)
+        assert val == settings
