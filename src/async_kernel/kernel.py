@@ -4,16 +4,13 @@ import sys
 import time
 from typing import TYPE_CHECKING, Any, Self
 
-from traitlets import traitlets
-from traitlets.config import LoggingConfigurable
-
 import async_kernel
 from async_kernel import utils
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
 from async_kernel.interface import HasParentInterface
-from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType
+from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message
 
 if TYPE_CHECKING:
     from async_kernel.asyncshell import AsyncInteractiveShell
@@ -22,7 +19,7 @@ if TYPE_CHECKING:
 __all__ = ["Kernel", "KernelInterrupt"]
 
 
-class Kernel(HasParentInterface, LoggingConfigurable):
+class Kernel(HasParentInterface):
     """
     A Jupyter kernel.
 
@@ -32,8 +29,7 @@ class Kernel(HasParentInterface, LoggingConfigurable):
             - The signal based kernel interrupt is not possible.
     """
 
-    name: Fixed[Self, str] = Fixed(lambda c: c["owner"].name)
-    "The kernel name."
+    __slots__ = []
 
     callers: Fixed[Self, dict] = Fixed(lambda c: c["owner"].parent.callers)
     "A shortcut to the callers dict on the parent."
@@ -47,56 +43,8 @@ class Kernel(HasParentInterface, LoggingConfigurable):
     debugger = Fixed(Debugger)
     "The debugger for handling debug requests."
 
-    supported_features = traitlets.List(traitlets.Unicode())
-    "A list of features supported by the kernel."
-
-    help_links = traitlets.List(trait=traitlets.Dict()).tag(config=True)
-    "A list of links provided kernel info request."
-
     comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
-
-    _restart = False
-
-    @traitlets.default("help_links")
-    def _default_help_links(self) -> tuple[dict[str, str], ...]:
-        return (
-            {
-                "text": "Async Kernel Reference ",
-                "url": "https://fleming79.github.io/async-kernel/",
-            },
-            {
-                "text": "IPython Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/",
-            },
-            {
-                "text": "IPython magic Reference",
-                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
-            },
-            {
-                "text": "Matplotlib ipympl Reference",
-                "url": "https://matplotlib.org/ipympl/",
-            },
-            {
-                "text": "Matplotlib Reference",
-                "url": "https://matplotlib.org/contents.html",
-            },
-        )
-
-    @traitlets.default("supported_features")
-    def _default_supported_features(self) -> list[str]:
-        features = ["kernel subshells"]
-        if self.debugger:
-            features.append("debugger")
-        return features
-
-    @traitlets.default("handle_in_thread")
-    def _default_handle_in_thread(self) -> dict[MsgType, str]:
-        return {
-            MsgType.inspect_request: "language_server",
-            MsgType.complete_request: "language_server",
-            MsgType.is_complete_request: "language_server",
-        }
 
     @property
     def kernel_info(self) -> dict[str, Any]:
@@ -111,9 +59,9 @@ class Kernel(HasParentInterface, LoggingConfigurable):
             "implementation_version": async_kernel.__version__,
             "language_info": async_kernel.kernel_protocol_version_info,
             "banner": self.shell.banner,
-            "help_links": self.help_links,
+            "help_links": self.parent.help_links,
             "debugger": bool((not utils.LAUNCHED_BY_DEBUGPY) and sys.platform != "emscripten"),
-            "supported_features": self.supported_features,
+            "supported_features": self.parent.supported_features,
         }
 
     @property

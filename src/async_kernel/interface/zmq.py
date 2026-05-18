@@ -36,7 +36,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
-from async_kernel.interface.base import BaseKernelInterface, DictValueLiteralEval
+from async_kernel.interface.base import BaseInterface, DictValueLiteralEval
 from async_kernel.kernelspec import expand_path
 from async_kernel.typing import Backend, Channel, Content, Hosts, Job, Message, MsgHeader, NoValue, RunSettings
 
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from types import FrameType
 
 
-__all__ = ["ZMQKernelInterface"]
+__all__ = ["ZMQInterface"]
 
 
 def bind_socket(
@@ -119,10 +119,10 @@ class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
         return expand_path(s)
 
 
-BaseKernelInterface.classes.extend((ProfileDir, Session))
+BaseInterface.classes.extend((ProfileDir, Session))
 
 
-class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonApplication):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class ZMQInterface(BaseInterface, ConnectionFileMixin, BaseIPythonApplication):  # pyright: ignore[reportUnsafeMultipleInheritance]
     description = traitlets.Unicode(
         "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",
     ).tag(config=True)
@@ -130,26 +130,26 @@ class ZMQKernelInterface(BaseKernelInterface, ConnectionFileMixin, BaseIPythonAp
 
     aliases = (
         BaseIPythonApplication.aliases
-        | BaseKernelInterface.aliases
+        | BaseInterface.aliases
         | {
             "timeout": "AsyncInteractiveShell.timeout",
-            "f": "ZMQKernelInterface.connection_file",
-            "connection_file": "ZMQKernelInterface.connection_file",
-            "ip": "ZMQKernelInterface.ip",
-            "hb": "ZMQKernelInterface.hb_port",
-            "shell": "ZMQKernelInterface.shell_port",
-            "iopub": "ZMQKernelInterface.iopub_port",
-            "stdin": "ZMQKernelInterface.stdin_port",
-            "control": "ZMQKernelInterface.control_port",
-            "transport": "ZMQKernelInterface.transport",
-            "backend": "ZMQKernelInterface.backend",
-            "host": "ZMQKernelInterface.host",
-            "backend_options": "ZMQKernelInterface.backend_options",
-            "host_options": "ZMQKernelInterface.host_options",
+            "f": "ZMQInterface.connection_file",
+            "connection_file": "ZMQInterface.connection_file",
+            "ip": "ZMQInterface.ip",
+            "hb": "ZMQInterface.hb_port",
+            "shell": "ZMQInterface.shell_port",
+            "iopub": "ZMQInterface.iopub_port",
+            "stdin": "ZMQInterface.stdin_port",
+            "control": "ZMQInterface.control_port",
+            "transport": "ZMQInterface.transport",
+            "backend": "ZMQInterface.backend",
+            "host": "ZMQInterface.host",
+            "backend_options": "ZMQInterface.backend_options",
+            "host_options": "ZMQInterface.host_options",
         }
     )
     ""
-    flags = BaseIPythonApplication.flags | BaseKernelInterface.flags
+    flags = BaseIPythonApplication.flags | BaseInterface.flags
     ""
 
     connection_file = PathTrait().tag(config=True)

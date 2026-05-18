@@ -11,18 +11,18 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.interface.base import BaseKernelInterface
+from async_kernel.interface.base import BaseInterface
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-__all__ = ["CallableKernelInterface", "Handlers"]
+__all__ = ["CallableInterface", "Handlers"]
 
 
 class Handlers(TypedDict):
-    "Handlers returned by [async_kernel.interface.callable.CallableKernelInterface][] when it is started."
+    "Handlers returned by [async_kernel.interface.callable.CallableInterface][] when it is started."
 
     handle_msg: Callable[[str, list[bytes] | list[bytearray] | None]]
     """
@@ -39,17 +39,17 @@ class Handlers(TypedDict):
     "Stop the kernel."
 
 
-class CallableKernelInterface(BaseKernelInterface):
+class CallableInterface(BaseInterface):
     """
     A callback based interface to interact with the kernel using serialized messages.
 
     Usage:
 
         ```python
-        from async_kernel.interface.callable import CallableKernelInterface
+        from async_kernel.interface.callable import CallableInterface
 
         # Start the kernel providing the necessary callbacks.
-        kernel_interface = await CallableKernelInterface(options).start(send=..., stopped=...)
+        kernel_interface = await CallableInterface(options).start(send=..., stopped=...)
 
         # Pass messages to the kernel.
         kernel_interface["handle_msg"](msg, buffer)
@@ -58,7 +58,7 @@ class CallableKernelInterface(BaseKernelInterface):
         kernel_interface["stop"](msg, buffer)
         ```
     See also:
-        - [async_kernel.typing.CallableKernelInterfaceReturnArgs]
+        - [async_kernel.typing.CallableInterfaceReturnArgs]
     """
 
     _send: Callable[[str, list | None, bool], None | str]

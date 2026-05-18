@@ -66,8 +66,8 @@ The kernel spec can be updated by adding a kernel spec with the same name ('asyn
 There are two supported backends 'asyncio' and 'trio'.
 
 In CPython the [backend][async_kernel.typing.Backend] is started using [anyio.run][].
-The type of backend can be specified at the attribute [interface.backend][async_kernel.interface.BaseKernelInterface.backend].
-The backend_options can be specified at the attribute [interface.backend_options][async_kernel.interface.zmq.ZMQKernelInterface.backend_options].
+The type of backend can be specified at the attribute [interface.backend][async_kernel.interface.BaseInterface.backend].
+The backend_options can be specified at the attribute [interface.backend_options][async_kernel.interface.zmq.ZMQInterface.backend_options].
 Options can be written as a literal python string.
 
 ```console

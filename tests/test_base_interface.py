@@ -1,30 +1,44 @@
 from __future__ import annotations
 
+import gc
+import weakref
 from typing import TYPE_CHECKING
 
+import anyio
 import pytest
+from aiologic import Event
 from traitlets.config.configurable import Configurable
 
-from async_kernel.interface import BaseKernelInterface, HasParentInterface
+from async_kernel.interface import BaseInterface, HasParentInterface
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
 
 
-class TestBaseKernelInterface:
+class TestBaseInterface:
     async def test_instance_does_not_exist(self, anyio_backend: Backend):
 
         with pytest.raises(RuntimeError, match="An instance does not exist"):
-            BaseKernelInterface.instance()
+            BaseInterface.instance()
 
     async def test_instance_not_a_subclass(self, anyio_backend: Backend):
 
-        class BaseKernelInterfaceSub(BaseKernelInterface):
+        class BaseInterfaceSub(BaseInterface):
             pass
 
-        async with BaseKernelInterface():
+        async with BaseInterface():
             with pytest.raises(TypeError, match="An instance exists but it is not an instance of"):
-                BaseKernelInterfaceSub.instance()
+                BaseInterfaceSub.instance()
+
+    async def test_gc(self, anyio_backend: Backend):
+        collected = Event()
+        async with BaseInterface() as interface:
+            weakref.finalize(interface, collected.set)
+            del interface
+
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
 
 
 class TestHasParentInterface:

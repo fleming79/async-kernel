@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 class AsyncDisplayHook(HasParentInterface, DisplayHook):
     """
-    A displayhook subclass that publishes data using [iopub_send][async_kernel.interface.base.BaseKernelInterface.iopub_send].
+    A displayhook subclass that publishes data using [iopub_send][async_kernel.interface.base.BaseInterface.iopub_send].
 
     This lives on the interface rather than a shell.
 
@@ -91,7 +91,7 @@ class AsyncDisplayHook(HasParentInterface, DisplayHook):
 
 
 class AsyncDisplayPublisher(HasParentInterface, DisplayPublisher):
-    """A display publisher that publishes data using [iopub_send][async_kernel.interface.base.BaseKernelInterface.iopub_send]."""
+    """A display publisher that publishes data using [iopub_send][async_kernel.interface.base.BaseInterface.iopub_send]."""
 
     _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
 

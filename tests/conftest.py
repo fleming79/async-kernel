@@ -13,7 +13,7 @@ from sniffio import current_async_library
 
 import async_kernel.utils
 from async_kernel import Caller
-from async_kernel.interface.zmq import ZMQKernelInterface
+from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
@@ -69,7 +69,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     # Set a blank connection_file
     connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
-    interface = ZMQKernelInterface()
+    interface = ZMQInterface()
     interface.connection_file = connection_file
     interface.transport = transport
 
@@ -95,7 +95,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
 
 @pytest.fixture(scope="module")
 async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
-    assert isinstance(kernel.parent, ZMQKernelInterface)
+    assert isinstance(kernel.parent, ZMQInterface)
     if kernel.parent.backend is Backend.trio:
         pytest.skip("AsyncKernelClient needs asyncio")
     client = AsyncKernelClient()

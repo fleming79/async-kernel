@@ -13,7 +13,7 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel.command import args_to_dict, command_line
-from async_kernel.interface.zmq import ZMQKernelInterface
+from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
 from tests import utils
@@ -169,7 +169,7 @@ def test_command_start_zmq_app(monkeypatch):
         def set(self):
             kernel = async_kernel.utils.get_kernel()
             try:
-                assert isinstance(kernel.parent, ZMQKernelInterface)
+                assert isinstance(kernel.parent, ZMQInterface)
                 assert kernel.parent.backend_options == {"use_uv": False}
                 assert kernel.shell.timeout == 0.123
                 assert kernel.shell.automagic is False
@@ -183,8 +183,8 @@ def test_command_start_zmq_app(monkeypatch):
     event.set()
     event_started = EventSet()
 
-    monkeypatch.setattr(ZMQKernelInterface, "event_stopped", event)
-    monkeypatch.setattr(ZMQKernelInterface, "event_started", event_started)
+    monkeypatch.setattr(ZMQInterface, "event_stopped", event)
+    monkeypatch.setattr(ZMQInterface, "event_started", event_started)
     monkeypatch.setattr(
         sys,
         "argv",
@@ -211,7 +211,7 @@ def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathli
         def set(self):
             kernel = async_kernel.utils.get_kernel()
             try:
-                assert isinstance(kernel.parent, ZMQKernelInterface)
+                assert isinstance(kernel.parent, ZMQInterface)
                 assert kernel.parent.backend_options == {"use_uv": False}
                 assert kernel.main_shell.timeout == 2.0
                 assert kernel.parent.quiet is False
@@ -225,8 +225,8 @@ def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathli
     event.set()
     event_started = EventSet()
 
-    monkeypatch.setattr(ZMQKernelInterface, "event_stopped", event)
-    monkeypatch.setattr(ZMQKernelInterface, "event_started", event_started)
+    monkeypatch.setattr(ZMQInterface, "event_stopped", event)
+    monkeypatch.setattr(ZMQInterface, "event_started", event_started)
 
     connection_file = fake_kernel_dir.joinpath("test_start_kernel_zmq_interface.json")
     monkeypatch.setattr(
@@ -275,8 +275,8 @@ def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, ho
     )
     event = Event()
     event.set()
-    monkeypatch.setattr(ZMQKernelInterface, "event_stopped", event)
-    patched_event = mocker.patch.object(ZMQKernelInterface, "event_started")
+    monkeypatch.setattr(ZMQInterface, "event_stopped", event)
+    patched_event = mocker.patch.object(ZMQInterface, "event_started")
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0

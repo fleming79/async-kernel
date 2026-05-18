@@ -12,7 +12,7 @@ import async_kernel
 from async_kernel.common import KernelInterrupt
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import start_kernel_callable_interface
-from async_kernel.interface.callable import CallableKernelInterface
+from async_kernel.interface.callable import CallableInterface
 
 if TYPE_CHECKING:
     from async_kernel.typing import Message
@@ -38,7 +38,7 @@ async def interface(anyio_backend):
 
     callbacks = await start_kernel_callable_interface(send=send, stopped=stopped.set)
 
-    interface = CallableKernelInterface.instance()
+    interface = CallableInterface.instance()
     try:
         yield interface
     finally:
@@ -47,10 +47,10 @@ async def interface(anyio_backend):
 
 
 class TestCallableInterface:
-    async def test_start(self, interface: CallableKernelInterface):
+    async def test_start(self, interface: CallableInterface):
         assert interface.event_started
 
-    async def test_msg(self, interface: CallableKernelInterface, mocker):
+    async def test_msg(self, interface: CallableInterface, mocker):
         sender = mocker.patch.object(interface, "_send")
         code = "import async_kernel\nassert async_kernel.utils.get_job()['msg']['buffers'] == [b'123']"
         msg = interface.msg("execute_request", content={"code": code})
@@ -64,7 +64,7 @@ class TestCallableInterface:
         assert reply["header"]["msg_type"] == "execute_reply"
         assert reply["content"]["status"] == "ok"
 
-    async def test_kernel_info(self, interface: CallableKernelInterface, mocker):
+    async def test_kernel_info(self, interface: CallableInterface, mocker):
         sender = mocker.patch.object(interface, "_send")
         msg = interface.msg("kernel_info_request")
         msg["header"]["session"] = "test session"
@@ -75,7 +75,7 @@ class TestCallableInterface:
         assert reply["header"]["msg_type"] == "kernel_info_reply"
         assert reply["content"]["status"] == "ok"
 
-    async def test_input(self, interface: CallableKernelInterface, job):
+    async def test_input(self, interface: CallableInterface, job):
         token = async_kernel.utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
             with pytest.raises(StdinNotImplementedError):
@@ -88,7 +88,7 @@ class TestCallableInterface:
     async def test_prevent_multiple_instances(self, interface):
 
         with pytest.raises(RuntimeError, match="An interface already exists!"):
-            CallableKernelInterface()
+            CallableInterface()
 
     async def test_keyboard_interrupt(self, interface) -> None:
         with pytest.raises(KernelInterrupt):

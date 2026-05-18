@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
     from async_kernel.typing import CallerCreateOptions, Content, HandlerType, Job
 
-__all__ = ["BaseKernelInterface", "HasParentInterface"]
+__all__ = ["BaseInterface", "HasParentInterface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -80,7 +80,7 @@ class ShellPendingManager(PendingManager):
     "A pending manager to track the active shell/subshell."
 
 
-class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
+class BaseInterface(Application, anyio.AsyncContextManagerMixin):
     """
     The base class for a singleton kernel interface.
 
@@ -106,13 +106,13 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
     "The classes registered with the interface."
 
     aliases = Application.aliases | {
-        "name": "BaseKernelInterface.name",
-        "start_interface": "BaseKernelInterface.start_interface",
-        "kernel_class": "BaseKernelInterface.kernel_class",
-        "shell_class": "BaseKernelInterface.shell_class",
+        "name": "BaseInterface.name",
+        "start_interface": "BaseInterface.start_interface",
+        "kernel_class": "BaseInterface.kernel_class",
+        "shell_class": "BaseInterface.shell_class",
     }
     flags = Application.flags | {
-        "quiet": ({"BaseKernelInterface": {"quiet": True}}, "Only send stdout/stderr to output stream."),
+        "quiet": ({"BaseInterface": {"quiet": True}}, "Only send stdout/stderr to output stream."),
         "automagic": (
             {"InteractiveShell": {"automagic": True}},
             "Turn on the auto calling of magic commands. Type %%magic at the IPython  prompt  for  more information.",
@@ -192,6 +192,54 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
     event_stopped = Fixed(Event)
     "An event that occurs when the kernel is stopped."
 
+    supported_features = traitlets.List(traitlets.Unicode()).tag(config=True)
+    "A list of features supported by the kernel."
+
+    help_links = traitlets.List(trait=traitlets.Dict()).tag(config=True)
+    "A list of links provided kernel info request."
+
+    _restart = False
+
+    @traitlets.default("help_links")
+    def _default_help_links(self) -> tuple[dict[str, str], ...]:
+        return (
+            {
+                "text": "Async Kernel Reference ",
+                "url": "https://fleming79.github.io/async-kernel/",
+            },
+            {
+                "text": "IPython Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/",
+            },
+            {
+                "text": "IPython magic Reference",
+                "url": "https://ipython.readthedocs.io/en/stable/interactive/magics.html",
+            },
+            {
+                "text": "Matplotlib ipympl Reference",
+                "url": "https://matplotlib.org/ipympl/",
+            },
+            {
+                "text": "Matplotlib Reference",
+                "url": "https://matplotlib.org/contents.html",
+            },
+        )
+
+    @traitlets.default("supported_features")
+    def _default_supported_features(self) -> list[str]:
+        features = ["kernel subshells"]
+        if self.kernel.debugger:
+            features.append("debugger")
+        return features
+
+    @traitlets.default("handle_in_thread")
+    def _default_handle_in_thread(self) -> dict[MsgType, str]:
+        return {
+            MsgType.inspect_request: "language_server",
+            MsgType.complete_request: "language_server",
+            MsgType.is_complete_request: "language_server",
+        }
+
     @classmethod
     @override
     def initialized(cls) -> bool:
@@ -224,7 +272,7 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
         **kwargs: Any,
     ) -> None:
         app = None
-        if BaseKernelInterface._instance:
+        if BaseInterface._instance:
             msg = "An interface already exists!"
             raise RuntimeError(msg)
         try:
@@ -233,16 +281,16 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
             app.exit()
         except BaseException:
             del app
-            BaseKernelInterface._instance = None
+            BaseInterface._instance = None
             gc.collect()
             raise
 
     def __new__(cls, argv: list | None | NoValue = NoValue, settings=None, /, **kwargs) -> Self:  # noqa: ARG004  # pyright: ignore[reportInvalidTypeForm]
-        if BaseKernelInterface._instance:
+        if BaseInterface._instance:
             msg = "An interface already exists!"
             raise RuntimeError(msg)
-        BaseKernelInterface._instance = super().__new__(cls, **kwargs)
-        return BaseKernelInterface._instance
+        BaseInterface._instance = super().__new__(cls, **kwargs)
+        return BaseInterface._instance
 
     def __init__(self, argv: list | None | NoValue = NoValue, settings=None, /, **kwargs) -> None:  # pyright: ignore[reportInvalidTypeForm]
         super().__init__(**kwargs)
@@ -288,7 +336,7 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
         self.callers[Channel.control] = caller.get(name="Control", log=self.log, protected=True)
 
         async with caller:
-            assert BaseKernelInterface._instance is self
+            assert BaseInterface._instance is self
             restore_io = None
             try:
                 with contextlib.suppress(ValueError, AttributeError):
@@ -307,7 +355,7 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
                     signal.signal(signal.SIGINT, sig)
                 if restore_io:
                     restore_io()
-                BaseKernelInterface._instance = None
+                BaseInterface._instance = None
                 gc.collect()
 
     async def _do_shutdown(self):
@@ -335,7 +383,7 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
         raise KernelInterrupt
 
     def _patch_io(self) -> Callable[[], None]:
-        original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
+        original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass
 
         def restore():
             sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = original_io
@@ -656,22 +704,22 @@ class BaseKernelInterface(Application, anyio.AsyncContextManagerMixin):
 
 class HasParentInterface:
     """
-    A mixin class providing a reference to the global [kernel interface][async_kernel.interface.base.BaseKernelInterface].
+    A mixin class providing a reference to the global [kernel interface][async_kernel.interface.base.BaseInterface].
 
     This class is designed to be compatible with [Configurable][] objects enabling the sharing
     of configuration and log. The global _kernel interface_ must exist before creating subclass
     instances using this mixin.
     """
 
-    parent: Fixed[Any, BaseKernelInterface] = final(
+    parent: Fixed[Any, BaseInterface] = final(
         Fixed(
-            lambda _: BaseKernelInterface.instance(),
+            lambda _: BaseInterface.instance(),
             use_weakref=True,
             set_mode="ignore",
         )
     )
     """
-    The global instance of the [interface][async_kernel.interface.base.BaseKernelInterface].
+    The global instance of the [interface][async_kernel.interface.base.BaseInterface].
 
     Setting `parent` is ignored.
     """
@@ -701,12 +749,12 @@ class HasParentInterface:
             raise TypeError(msg)
         super().__init_subclass__(**kwargs)
         if issubclass(cls, Configurable):
-            BaseKernelInterface.classes.insert(0, cls)
+            BaseInterface.classes.insert(0, cls)
 
     def __new__(cls, *args, **kwargs) -> Self:
 
-        if not BaseKernelInterface.initialized():
-            msg = "A global BaseKernelInterface has not been created yet!"
+        if not BaseInterface.initialized():
+            msg = "A global BaseInterface has not been created yet!"
             raise RuntimeError(msg)
         if (new := super().__new__) is object.__new__:
             inst = new(cls)

@@ -60,10 +60,10 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
 def get_kernel() -> Kernel:
     "Get the current kernel."
 
-    if not async_kernel.interface.BaseKernelInterface.initialized():
+    if not async_kernel.interface.BaseInterface.initialized():
         msg = "A kernel interface is not started!"
         raise RuntimeError(msg)
-    return async_kernel.interface.BaseKernelInterface.instance().kernel
+    return async_kernel.interface.BaseInterface.instance().kernel
 
 
 def get_job() -> Job[Any]:
@@ -96,7 +96,7 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
     Args:
         subshell_id: An existing subshell or the main shell if subshell_id is None.
     """
-    with async_kernel.interface.BaseKernelInterface.instance().get_shell(subshell_id).context():
+    with async_kernel.interface.BaseInterface.instance().get_shell(subshell_id).context():
         yield
 
 

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import anyio
 import pytest
 
-from async_kernel.interface.zmq import ZMQKernelInterface
+from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.typing import MsgType
 from tests import utils
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 
 async def test_load_connection_info_error(kernel: Kernel):
-    assert isinstance(kernel.parent, ZMQKernelInterface)
+    assert isinstance(kernel.parent, ZMQInterface)
     with pytest.raises(RuntimeError):
         kernel.parent.load_connection_info({})
 
@@ -154,7 +154,7 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
 )
 async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
     await utils.clear_iopub(client)
-    assert isinstance(kernel.parent, ZMQKernelInterface)
+    assert isinstance(kernel.parent, ZMQInterface)
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.parent.connection_file).parent))
     assert code
     _, reply = await utils.execute(client, code, clear_pub=False)
@@ -188,13 +188,13 @@ async def test_shell_enable_gui(kernel: Kernel):
 
 
 async def test_load_connection_file_too_late(kernel: Kernel):
-    assert isinstance(kernel.parent, ZMQKernelInterface)
+    assert isinstance(kernel.parent, ZMQInterface)
     with pytest.raises(RuntimeError, match="It is too late to set the connection file"):
         kernel.parent.connection_file = "too_late.json"
 
 
 async def test_already_initialized(kernel: Kernel):
-    assert isinstance(kernel.parent, ZMQKernelInterface)
+    assert isinstance(kernel.parent, ZMQInterface)
     assert kernel.config == kernel.parent.config
     config = kernel.config.copy()
     kernel.parent.initialize(["prog", "--quiet=False"])
@@ -203,10 +203,10 @@ async def test_already_initialized(kernel: Kernel):
 
 async def test_launch_too_late(kernel: Kernel):
     with pytest.raises(RuntimeError, match="An interface already exists!"):
-        ZMQKernelInterface.launch_instance()
+        ZMQInterface.launch_instance()
 
 
 async def test_already_entered(kernel: Kernel):
-    with pytest.raises(RuntimeError, match="this ZMQKernelInterface has already been entered"):
+    with pytest.raises(RuntimeError, match="this ZMQInterface has already been entered"):
         async with kernel.parent:
             pass
