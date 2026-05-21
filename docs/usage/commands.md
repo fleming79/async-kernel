@@ -1,12 +1,15 @@
 # Command line
 
-The command `async-kernel` and alias `async_kernel` are provided at the command line.
+The command `async-kernel` is provided at the command line.
 
 The primary options available are:
 
-- [Add kernel spec](#kernel-spec): `-a <name> <options>`
-- [Remove a kernel spec](#remove-a-kernel-spec) `-r <name>`
-- [Start a kernel](#start-a-kernel): `-f <path to config file>`
+- "start": [Start a kernel](#start-a-kernel)
+- "--add": [Add kernel spec](#kernel-spec)
+- "--remove": [Remove a kernel spec](#remove-a-kernel-spec)
+- "-h": Display short help
+- "--help-all": Display all config options available when the kernel
+  is started the launcher [launch_zmq_kernel][async_kernel.interface.launch_zmq_kernel]( default).
 
 ## Kernel spec
 
@@ -26,9 +29,9 @@ The kernel spec looks like this:
         "python",
         "-m",
         "async_kernel",
-        "-f",
-        "{connection_file}",
-        "--start_interface=async_kernel.interface.start_kernel_zmq_interface",
+        "start",
+        "--connection_file={connection_file}",
+        "--start_interface=launch_zmq_kernel",
         "--name=async",
         "--backend=trio",
         "--host=tk"
@@ -63,12 +66,12 @@ The kernel spec can be updated by adding a kernel spec with the same name ('asyn
 There are two supported backends 'asyncio' and 'trio'.
 
 In CPython the [backend][async_kernel.typing.Backend] is started using [anyio.run][].
-The type of backend can be specified at the attribute [interface.backend][async_kernel.interface.BaseKernelInterface.backend].
-The backend_options can be specified at the attribute [interface.backend_options][async_kernel.interface.zmq.ZMQKernelInterface.backend_options].
+The type of backend can be specified at the attribute [interface.backend][async_kernel.interface.BaseInterface.backend].
+The backend_options can be specified at the attribute [interface.backend_options][async_kernel.interface.base.BaseInterface.backend_options].
 Options can be written as a literal python string.
 
 ```console
-async-kernel -a async-trio --interface.backend=trio
+async-kernel -a async-trio --backend=trio
 ```
 
 ## Kernel spec location
@@ -104,29 +107,9 @@ as a guest alongside the host event loop by means of callbacks. The author of
 aiologic has provided an (experimental) asyncio equivalent ([gist](https://gist.github.com/x42005e1f/857dcc8b6865a11f1ffc7767bb602779)).
 
 async-kernel supports configuration of one host and one backend for the kernel.
-Below are some example kernel specs for host and backend kernel specs.
-
-### tk
 
 ```console
-# tk host asyncio backend
-async-kernel -a async-tk --interface.host=tk
-
-# tk host trio backend
-async-kernel -a async-tk --interface.host=tk --backend=trio
-```
-
-### qt
-
-```console
-# qt host asyncio backend
-async-kernel -a async-qt --interface.host=qt
-
-# qt host trio backend
-async-kernel -a async-qt-trio --interface.host=qt --interface.backend=trio
-
-# PySide6 is default.  You can specify a different module via `host_options`
-async-kernel -a async-qt --interface.host=qt --interface.host_options={'module':'PySide2'}
+async-kernel -a async-with-host --host=<hostname>
 ```
 
 ## Host options
@@ -137,6 +120,12 @@ at present.
 - `host_class' `[type[Host| str]]` : A customised subclass of a [Host][async_kernel.event_loop.run.Host]
   or a dotted import path to the customised Host.
 - `'module': The module name on which to base the event loop. (Only applies to [qt][async_kernel.event_loop.qt_host.QtHost]).
+
+````console
+
+# PySide6 is default.  You can specify a different module via `host_options`
+async-kernel -a async-qt --host=qt --host_options module=PySide2
+
 
 ## Backend options
 
@@ -155,36 +144,8 @@ Options can be provided for how the backend is started.
 
 ```console
 # If uvloop is installed it will be used by default. You can do this to disable it.
-async-kernel -a async "--interface.host_options={'use_uvloop':False}"
-```
-
-### Custom arguments
-
-Additional arguments can be included when defining the kernel spec, these include:
-
-- Arguments for [async_kernel.kernelspec.write_kernel_spec][]
-    - `--start_interface`
-    - `--fullpath=False`
-    - `--display_name`
-    - `--prefix`
-- Nested attributes can be set on the kernel via `kernel.[nested.attribute.name']'.
-  Each parameter should be specified as if it were a 'flag' as follows.
-
-Prefix each setting with "--" and join using the delimiter "=".
-
-```console
---<PARAMETER or DOTTED.ATTRIBUTE.NAME>=<VALUE>
-```
-
-or, with compact notation to set a Boolean value as a Boolean flag.
-
-```console
-# True
---<PARAMETER or DOTTED.ATTRIBUTE.NAME>
-
-# False
---no-<PARAMETER or DOTTED.ATTRIBUTE.NAME>
-```
+async-kernel -a async --backend_options use_uvloop=False
+````
 
 #### Examples
 
@@ -192,16 +153,10 @@ or, with compact notation to set a Boolean value as a Boolean flag.
 
     **start_interface**
 
-    To specify an alternate kernel factory.
+    To specify an alternate start_interface.
 
     ```console
-    --start_interface=my_module.my_interface_factory
-    ```
-
-    **fullpath (True)**
-
-    ```console
-    --fullpath
+    async-kernel -a my-async-kernel --start_interface=my_module.start_interface
     ```
 
     **display name**
@@ -209,29 +164,7 @@ or, with compact notation to set a Boolean value as a Boolean flag.
     To set the kernel display name to `True`.
 
     ```console
-    "--display_name=My kernel display name"
-    ```
-
-=== "Kernel attribute"
-
-    Set the execute request timeout trait on the kernel shell.
-
-    ```console
-    --shell.timeout=0.1
-    ```
-
-=== "Kernel Boolean attribute as a flag"
-
-    Set `kernel.quiet=True`:
-
-    ```console
-    --quiet
-    ```
-
-    Set `kernel.quiet=False`:
-
-    ```console
-    --no=quiet
+    async-kernel -a my-async-kernel --display_name "My kernel display name"
     ```
 
 ## Remove a kernel spec

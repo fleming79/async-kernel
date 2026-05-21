@@ -1,23 +1,24 @@
 from __future__ import annotations
 
-import logging
 import os
 import re
 import sys
 import threading
-from logging import Logger, LoggerAdapter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import anyio.abc
 from aiologic import Event, Lock
 from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import traitlets
+from traitlets.config import LoggingConfigurable
 
+import async_kernel.shell
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compat.json import pack_json_bytes, unpack_json
+from async_kernel.interface import HasInterface
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
@@ -60,14 +61,12 @@ class _DummyPyDB:
         self.variable_presentation = PyDevdAPI.VariablePresentation()
 
 
-class VariableExplorer(traitlets.HasTraits):
+class VariableExplorer(HasInterface, traitlets.HasTraits):
     """
     A variable explorer.
 
     Origin: [IPyKernel][ipykernel.debugger.VariableExplorer]
     """
-
-    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
 
     def __init__(self) -> None:
         """Initialize the explorer."""
@@ -85,7 +84,8 @@ class VariableExplorer(traitlets.HasTraits):
         """Start tracking."""
         from _pydevd_bundle import pydevd_frame_utils  # type: ignore[attr-defined]  # noqa: PLC0415
 
-        shell = self.kernel.shell
+        shell = self.parent.kernel.main_shell
+        assert isinstance(shell, async_kernel.shell.IPShell)
         var = shell.user_ns
         self.frame = _FakeFrame(_FakeCode("<module>", shell.compile.get_file_name("sys._getframe()")), var, var)
         self.tracker.track("thread1", pydevd_frame_utils.create_frames_list_from_frame(self.frame))
@@ -106,7 +106,7 @@ class VariableExplorer(traitlets.HasTraits):
         return [x.get_var_data() for x in variables.get_children_variables()]
 
 
-class DebugpyClient(traitlets.HasTraits):
+class DebugpyClient(HasInterface, LoggingConfigurable):
     """A client for debugpy. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
     HEADER = b"Content-Length: "
@@ -115,15 +115,9 @@ class DebugpyClient(traitlets.HasTraits):
     tcp_buffer = b""
     _result_responses: traitlets.Dict[int, Pending] = traitlets.Dict()
     capabilities = traitlets.Dict()
-    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
     _socketstream: anyio.abc.SocketStream | None = None
     _send_lock = traitlets.Instance(Lock, ())
-
-    def __init__(self, log, event_callback) -> None:
-        """Initialize the client."""
-        super().__init__()
-        self.log = log
-        self.event_callback = event_callback
 
     @property
     def connected(self) -> bool:
@@ -153,7 +147,7 @@ class DebugpyClient(traitlets.HasTraits):
                 msg: DebugMessage = unpack_json(raw_msg[:size])
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
-                    self.event_callback(msg)
+                    self.kernel.debugger.handle_event(msg)
                 elif result := self._result_responses.pop(msg["request_seq"], None):
                     result.set_result(msg)
             self.tcp_buffer = b""
@@ -181,30 +175,35 @@ class DebugpyClient(traitlets.HasTraits):
             self._socketstream = None
 
 
-class Debugger(traitlets.HasTraits):
+class Debugger(HasInterface, LoggingConfigurable):
     """The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""
 
-    NO_DEBUG: ClassVar = ["IPythonHistorySavingThread"]
-    _seq = 0
+    no_debug = traitlets.List(["IPythonHistorySavingThread"]).tag(config=True)
+    """A list of thread names to excluded when using debugy (on startup)."""
+
     breakpoint_list = traitlets.Dict()
     capabilities = traitlets.Dict()
     stopped_threads = traitlets.Set()
-    _removed_cleanup = traitlets.Dict()
     just_my_code = traitlets.Bool(True)
-    variable_explorer = traitlets.Instance(VariableExplorer, ())
-    debugpy_client = traitlets.Instance(DebugpyClient)
-    log = traitlets.Instance(logging.LoggerAdapter)
-    kernel: Fixed[Self, Kernel] = Fixed("async_kernel.kernel.Kernel")
     init_event = traitlets.Instance(Event, ())
+    variable_explorer = traitlets.Instance(VariableExplorer, ())
+    debugpy_client = Fixed(DebugpyClient)
+    kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
 
-    @traitlets.default("log")
-    def _default_log(self) -> LoggerAdapter[Logger]:
-        return logging.LoggerAdapter(logging.getLogger(self.__class__.__name__))
+    _removed_cleanup = traitlets.Dict()
+    _seq = 0
 
-    def __init__(self) -> None:
+    @property
+    def enabled(self) -> bool:
+        return bool(
+            not utils.LAUNCHED_BY_DEBUGPY
+            and sys.platform != "emscripten"
+            and isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)
+        )
+
+    def __init__(self, **kwargs) -> None:
         """Initialize the debugger."""
-        super().__init__()
-        self.debugpy_client = DebugpyClient(log=self.log, event_callback=self._handle_event)
+        super().__init__(**kwargs)
         self.started_debug_handlers = {
             "setBreakpoints": self.do_set_breakpoints,
             "stackTrace": self.do_stack_trace,
@@ -223,7 +222,7 @@ class Debugger(traitlets.HasTraits):
             "richInspectVariables": self.do_rich_inspect_variables,
             "modules": self.do_modules,
         }
-        self._forbidden_names = tuple(self.kernel.shell.user_ns_hidden)
+        self._forbidden_names = tuple(self.parent.kernel.main_shell.user_ns_hidden)
 
     async def send_dap_request(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Sends a DAP request to the debug server, waits for and returns the corresponding response."""
@@ -234,7 +233,7 @@ class Debugger(traitlets.HasTraits):
         self._seq = self._seq - 1
         return self._seq
 
-    def _handle_event(self, event) -> None:
+    def handle_event(self, event) -> None:
         if event["event"] == "stopped":
 
             async def _handle_stopped_event() -> None:
@@ -256,7 +255,7 @@ class Debugger(traitlets.HasTraits):
         self._publish_event(event)
 
     def _publish_event(self, event: dict) -> None:
-        self.kernel.interface.iopub_send(
+        self.kernel.parent.iopub_send(
             msg_or_type="debug_event",
             content=event,
             ident=b"kernel.debug_event",
@@ -288,7 +287,7 @@ class Debugger(traitlets.HasTraits):
         if handler := self.static_debug_handlers.get(command):
             return await handler(msg)
         if not self.debugpy_client.connected:
-            msg_ = "Debugy client not connected."
+            msg_ = "Debugpy client not connected."
             raise RuntimeError(msg_)
         if handler := self.started_debug_handlers.get(command):
             return await handler(msg)
@@ -301,17 +300,18 @@ class Debugger(traitlets.HasTraits):
         "Initialize debugpy server starting as required."
         utils.mark_thread_pydev_do_not_trace()
         for thread in threading.enumerate():
-            if thread.name in self.NO_DEBUG:
+            if thread.name in self.no_debug:
                 utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
             ready = Event()
             Caller().call_soon(self.debugpy_client.connect_tcp_socket, ready)
             await ready
             # Don't remove leading empty lines when debugging so the breakpoints are correctly positioned
-            cleanup_transforms = self.kernel.shell.input_transformer_manager.cleanup_transforms
-            if leading_empty_lines in cleanup_transforms:
-                index = cleanup_transforms.index(leading_empty_lines)
-                self._removed_cleanup[index] = cleanup_transforms.pop(index)
+            if isinstance((shell := self.parent.kernel.main_shell), async_kernel.shell.IPShell):
+                cleanup_transforms = shell.input_transformer_manager.cleanup_transforms
+                if leading_empty_lines in cleanup_transforms:
+                    index = cleanup_transforms.index(leading_empty_lines)
+                    self._removed_cleanup[index] = cleanup_transforms.pop(index)
         reply = await self.send_dap_request(msg)
         if capabilities := reply.get("body"):
             self.capabilities = capabilities
@@ -322,7 +322,8 @@ class Debugger(traitlets.HasTraits):
         breakpoint_list = []
         for key, value in self.breakpoint_list.items():
             breakpoint_list.append({"source": key, "breakpoints": value})
-        compiler = self.kernel.shell.compile
+        assert isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)
+        compiler = self.parent.kernel.main_shell.compile
         return {
             "type": "response",
             "request_seq": msg["seq"],
@@ -372,10 +373,11 @@ class Debugger(traitlets.HasTraits):
         if not self.stopped_threads:
             # The code did not hit a breakpoint, we use the interpreter
             # to get the rich representation of the variable
-            result = self.kernel.shell.user_expressions({"var": variable_name})["var"]
-            if result.get("status", "error") == "ok":
-                repr_data = result.get("data", {})
-                repr_metadata = result.get("metadata", {})
+            if isinstance((shell := self.parent.kernel.main_shell), async_kernel.shell.IPShell):
+                result = shell.user_expressions({"var": variable_name})["var"]
+                if result.get("status", "error") == "ok":
+                    repr_data = result.get("data", {})
+                    repr_metadata = result.get("metadata", {})
         else:
             # The code has stopped on a breakpoint, we use the evaluate
             # request to get the rich representation of the variable
@@ -414,7 +416,8 @@ class Debugger(traitlets.HasTraits):
     async def do_dump_cell(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle a dump cell message."""
         code = msg["arguments"]["code"]
-        path = self.kernel.shell.compile.get_file_name(code)
+        assert isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)
+        path = self.parent.kernel.main_shell.compile.get_file_name(code)
         path.parent.mkdir(exist_ok=True)
         with path.open("w") as f:
             f.write(code)
@@ -549,7 +552,8 @@ class Debugger(traitlets.HasTraits):
     async def do_disconnect(self, msg: DebugMessage, /) -> dict[str, Any]:
         response = await self.send_dap_request(msg)
         # Restore the leading whitespace remove transform.
-        cleanup_transforms = self.kernel.shell.input_transformer_manager.cleanup_transforms
+        assert isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)
+        cleanup_transforms = self.parent.kernel.main_shell.input_transformer_manager.cleanup_transforms
         for index in sorted(self._removed_cleanup):
             func = self._removed_cleanup.pop(index)
             cleanup_transforms.insert(index, func)

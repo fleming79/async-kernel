@@ -75,6 +75,23 @@ class TestFixed:
             await anyio.sleep(0)
         assert len(MyClass.fixed_dict.instances) == 0  # pyright: ignore[reportAttributeAccessIssue]
 
+    async def test_use_weakref(self):
+        collected = Event()
+
+        class MyClass:
+            fixed_dict = Fixed(dict)
+            myself = Fixed(lambda c: c["owner"], use_weakref=True)
+
+        m = MyClass()
+        assert isinstance(m.fixed_dict, dict)
+        assert m.myself is m
+        weakref.finalize(m, collected.set)
+        del m
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
+        assert len(MyClass.fixed_dict.instances) == 0  # pyright: ignore[reportAttributeAccessIssue]
+
     def test_with_class(self):
         class MyClass:
             fixed_dict = Fixed(dict)
@@ -167,7 +184,7 @@ class TestFixed:
             def __init__(self):
                 self.log = log
 
-            fixed = Fixed(dict, created=created)
+            fixed = Fixed(dict, created=created, mode="log")
 
         obj = MyClass()
         _ = obj.fixed
@@ -180,6 +197,34 @@ class TestFixed:
     def test_get_at_import(self):
         fixed = Fixed(str)
         assert fixed.__get__(None, None) is fixed
+
+    def test_del(self, mocker):
+
+        class MyClass:
+            log = mocker.Mock()
+            fixed = Fixed(lambda _: time.monotonic(), mode="log")
+
+        mc = MyClass()
+        before = mc.fixed
+        del mc.fixed
+        assert mc.fixed == before
+        mc.log.warning.assert_called()
+
+    def test_set(self, mocker):
+        class MyClass:
+            log = mocker.Mock()
+            ignore = Fixed(lambda _: time.monotonic(), mode="ignore")
+            set_log = Fixed(lambda _: time.monotonic(), mode="log")
+
+        mc = MyClass()
+        ignore_before = mc.ignore
+        mc.ignore = 0  # pyright: ignore[reportAttributeAccessIssue]
+        assert mc.ignore == ignore_before
+
+        set_log_before = mc.set_log
+        mc.set_log = 0  # pyright: ignore[reportAttributeAccessIssue]
+        assert mc.set_log == set_log_before
+        mc.log.warning.assert_called()
 
 
 class TestSingleAsyncQueue:

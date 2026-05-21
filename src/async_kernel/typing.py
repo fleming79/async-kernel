@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict
 
-from typing_extensions import Sentinel, get_annotations, override
+from typing_extensions import Sentinel, TypeVar, get_annotations, override
 
 if TYPE_CHECKING:
     import datetime
     import logging
 
     import zmq
+
+    from async_kernel.interface import BaseInterface
+    from async_kernel.shell import BaseShell
 
 
 __all__ = [
@@ -43,6 +46,9 @@ S = TypeVar("S")
 T = TypeVar("T")
 D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
+
+T_shell_co = TypeVar("T_shell_co", covariant=True, bound="BaseShell", default="BaseShell")
+T_interface_co = TypeVar("T_interface_co", covariant=True, bound="BaseInterface", default="BaseInterface")
 
 
 class Backend(enum.StrEnum):
@@ -222,7 +228,7 @@ class MsgType(enum.StrEnum):
 
 class Tags(enum.StrEnum):
     """
-    Tags recognised by the [shell][async_kernel.asyncshell.AsyncInteractiveShell].
+    Cell tags used in async-kernel.
 
     Info:
         Tags are can be added per cell.
@@ -419,8 +425,8 @@ class CallerCreateOptions(RunSettings):
     name: NotRequired[str]
     "The name for the new caller instance."
 
-    log: NotRequired[logging.LoggerAdapter]
-    "A logging adapter to use for the caller."
+    log: NotRequired[logging.Logger | logging.LoggerAdapter]
+    "A logger or logging adapter."
 
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]

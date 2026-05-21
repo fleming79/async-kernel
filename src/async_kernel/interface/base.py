@@ -2,51 +2,56 @@
 
 from __future__ import annotations
 
+import ast
 import builtins
 import contextlib
-import functools
 import gc
 import getpass
-import logging
+import importlib.util
+import os
 import signal
 import sys
+import weakref
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
+from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic.lowlevel import current_async_library, enable_signal_safety
+from aiologic import Event
+from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
 from traitlets import traitlets
+from traitlets.config import Config, Configurable
+from traitlets.config.application import Application, ClassesType
+from typing_extensions import override
 
 import async_kernel
+import async_kernel.event_loop
 from async_kernel import utils
-from async_kernel.asyncshell import ShellPendingManager
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt, import_item
+from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.compat.attr_docs import get_attr_docs
 from async_kernel.iostream import OutStream
 from async_kernel.typing import (
     Backend,
-    CallerCreateOptions,
     Channel,
-    Content,
-    HandlerType,
-    Job,
+    Hosts,
     Message,
     MsgHeader,
-    MsgType,
     NoValue,
-    RunMode,
+    RunSettings,
+    T_interface_co,
+    T_shell_co,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
-    from types import CoroutineType, FrameType
+    from collections.abc import AsyncGenerator, Callable, Mapping
+    from types import FrameType
 
     from async_kernel.kernel import Kernel
+    from async_kernel.typing import Content
 
-
-__all__ = ["BaseKernelInterface"]
+__all__ = ["BaseInterface", "HasInterface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -67,115 +72,295 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
     return h
 
 
-class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
-    """
-    The base class for interfacing with the kernel.
+class DictValueLiteralEval(traitlets.Dict):
+    "An instance of a Python dict which converts string values to Python literals."
 
-    Must be overloaded to be useful.
+    @override
+    def item_from_string(self, s: str) -> dict:
+        d = super().item_from_string(s)
+        for k, v in d.items():
+            try:
+                d[k] = ast.literal_eval(v)
+            except ValueError:
+                pass
+        return d
+
+
+class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]):
+    """
+    The base class for a singleton kernel interface.
+
+    This singleton provides configuration and convenient references to other objects.
+    This is where kerenels should be launched f
+
+    Usage:
+        launch:
+            ```python
+            Interface.launch_instance()
+            ```
+        async context:
+            ```python
+            async with Interface() as interface:
+                ...
+            ```
     """
 
-    log = traitlets.Instance(logging.LoggerAdapter)
-    "The logging adapter."
+    classes: ClassesType = final([])
+    "The classes registered with the interface."
+
+    aliases: dict[str, str] = {  # noqa: RUF012
+        "f": "ZMQInterface.connection_file",
+        "connection_file": "ZMQInterface.connection_file",
+        "host": "ZMQInterface.host",
+        "host_options": "ZMQInterface.host_options",
+        "backend_options": "ZMQInterface.backend_options",
+        "backend": "ZMQInterface.backend",
+        "timeout": "BaseShell.timeout",
+        "name": "BaseInterface.name",
+        "start_interface": "BaseInterface.start_interface",
+        "kernel_class": "BaseInterface.kernel_class",
+        "shell_class": "BaseInterface.shell_class",
+        "help_links": "Kernel.help_links",
+        "supported_features": "Kernel.supported_features",
+        "log-level": "Application.log_level",
+    }
+    ""
+    flags = {  # noqa: RUF012
+        "quiet": ({"BaseInterface": {"quiet": True}}, "Only send stdout/stderr to output stream."),
+        "no-quiet": ({"BaseInterface": {"quiet": False}}, "Only send stdout/stderr to output stream."),
+        "automagic": (
+            {"InteractiveShell": {"automagic": True}},
+            "Turn on the auto calling of magic commands. Type %%magic at the IPython  prompt  for  more information.",
+        ),
+        "no-automagic": ({"InteractiveShell": {"automagic": False}}, "Turn off the auto calling of magic commands."),
+    }
+    ""
+
+    name = traitlets.Unicode("async").tag(config=True)
+    "The name of the kernel used in the kernelspec."
+
+    host: traitlets.TraitType[Hosts | None, Hosts | None] = traitlets.UseEnum(
+        Hosts, default_value=None, allow_none=True
+    ).tag(config=True)
+    "The name of a (gui) event loop (if one is used)."
+
+    host_options = DictValueLiteralEval(allow_none=True).tag(config=True)
+    "Options for starting the loop."
+
+    backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend).tag(config=True)
+    "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
+
+    backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
+    "Options for starting the backend."
+
+    # the kernel class, as an importstring
+    kernel_class: traitlets.Type[type[Kernel[Self, T_shell_co]], type[Kernel[Self, T_shell_co]] | str] = traitlets.Type(
+        "async_kernel.Kernel"
+    ).tag(  # pyright: ignore[reportAssignmentType]
+        config=True
+    )
+    "The Kernel subclass to be used."
+
+    shell_class: traitlets.Type[type[T_shell_co], type[T_shell_co] | str] = traitlets.Type(
+        "async_kernel.shell.ipshell.IPShell", "async_kernel.shell.BaseShell"
+    ).tag(  # pyright: ignore[reportAssignmentType]
+        config=True
+    )
+    "The class to use for shells and subshells."
+
+    quiet = traitlets.Bool(True).tag(config=True)
+    "Only send stdout/stderr to output stream."
+
+    start_interface = traitlets.Unicode("").tag(config=True)
+    "The value used to import the interface using [async_kernel.kernelspec.import_start_interface][]."
+
+    kernel: Fixed[Self, Kernel[Self, T_shell_co]] = Fixed(
+        lambda c: c["owner"].kernel_class(c["owner"], c["owner"].shell_class)
+    )
+    "The kernel."
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
 
-    kernel: Fixed[Self, Kernel] = Fixed(lambda _: async_kernel.Kernel())
-    "The kernel."
-
     interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
     "A set for callbacks to register for calling when `interrupt` is called."
 
-    last_interrupt_frame = None
-    "This frame is set when an interrupt is intercepted and cleared once the interrupt has been handled."
+    event_started = Fixed(Event)
+    "An event that occurs when the kernel is started."
 
-    backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend)
-    "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
+    event_stopped = Fixed(Event)
+    "An event that occurs when the kernel is stopped."
 
-    host = None
-
-    handle_in_shell_thread = traitlets.List(
-        traitlets.UseEnum(MsgType), [MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close]
-    )
-    """
-    A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_).
-    """
-
-    handle_in_thread = traitlets.Dict(key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Unicode())
-    """
-    A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler.
-    """
-
+    _instance: Self | None = None
     _zmq_context = None
-    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
+    last_interrupt_frame = None
 
-    debugger = Fixed(
-        lambda _: (
-            import_item("async_kernel.debugger.Debugger")()
-            if (not utils.LAUNCHED_BY_DEBUGPY) & (sys.platform != "emscripten")
-            else None
-        )
-    )
-    "A debugger adapter."
+    @traitlets.default("backend")
+    def _default_backend(self) -> Backend:
+        try:
+            return Backend(current_async_library())
+        except AsyncLibraryNotFoundError:
+            if (
+                not self.host
+                and not self.trait_has_value("backend_options")
+                and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
+            ):
+                self.backend_options["use_uvloop"] = True
+            return Backend.asyncio
 
-    def load_connection_info(self, info: dict[str, Any]) -> None:
+    @property
+    def summary(self) -> str:
+        return f"name={self.name!r} backend={str(self.backend)!r}"
+
+    @classmethod
+    @override
+    def initialized(cls) -> bool:
+        """Has an instance been created?"""
+        return cls._instance is not None
+
+    @classmethod
+    @override
+    def instance(cls) -> Self:
+        "Get the singleton instance that was created using `launch_instance`."
+        if not cls._instance:
+            msg = "An instance does not exist!"
+            raise RuntimeError(msg)
+        if not isinstance(cls._instance, cls):
+            msg = f"An instance exists but it is not an instance of {cls}!"
+            raise TypeError(msg)
+        return cls._instance
+
+    @classmethod
+    @override
+    def clear_instance(cls) -> None:
         raise NotImplementedError
 
-    @traitlets.default("handle_in_thread")
-    def _default_handle_in_thread(self) -> dict[MsgType, str]:
-        return {
-            MsgType.inspect_request: "language_server",
-            MsgType.complete_request: "language_server",
-            MsgType.is_complete_request: "language_server",
-        }
-
-    def __init__(self, kernel_settings: dict[str, Any] | None = None, /) -> None:
-        if self.kernel.trait_has_value("interface"):
-            msg = "The kernel already has an interface!"
+    @classmethod
+    @override
+    def launch_instance(
+        cls,
+        argv: list[str] | None | NoValue = None,  # pyright: ignore[reportInvalidTypeForm]
+        kernel_class: type[Kernel[Self, T_shell_co]] | None = None,
+        shell_class: type[T_shell_co] | None = None,
+        settings: dict | None = None,
+        **kwargs: Any,
+    ) -> None:
+        app = None
+        if BaseInterface._instance:
+            msg = "An interface already exists!"
             raise RuntimeError(msg)
-        self.kernel.interface = self
-        self.log = self.kernel.log
-        super().__init__()
-        if kernel_settings:
-            self.kernel.load_settings(kernel_settings)
+        try:
+            app = cls(argv, kernel_class=kernel_class, shell_class=shell_class, **kwargs)
+            if settings:
+                app.load_settings(settings)
+            app.start()
+            app.exit()
+        except BaseException:
+            del app
+            BaseInterface._instance = None
+            gc.collect()
+            raise
+
+    def __new__(cls, argv: list | None | NoValue = NoValue, /, **kwargs) -> Self:  # noqa: ARG004  # pyright: ignore[reportInvalidTypeForm]
+        if BaseInterface._instance:
+            msg = "An interface already exists!"
+            raise RuntimeError(msg)
+        BaseInterface._instance = super().__new__(cls, **kwargs)
+        return BaseInterface._instance
+
+    def __init__(
+        self,
+        argv: list | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        /,
+        *,
+        kernel_class: type[Kernel[Self, T_shell_co]] | str | None = None,
+        shell_class: type[T_shell_co] | str | None = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        for name, value in [("kernel_class", kernel_class), ("shell_class", shell_class)]:
+            if value:
+                self.set_trait(name, value)
+        self.initialize(argv)
+
+    @override
+    def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
+        """
+        Initialize the interface **DO NOT CALL DIRECTLY**.
+        """
+        assert self._instance is self
+
+        def initialized(argv: Any = NoValue) -> None:
+            msg = "Already initialized!"
+            raise RuntimeError(msg)
+
+        self.initialize = initialized
+
+        # Environment variables
+        if not os.environ.get("MPLBACKEND"):
+            os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
+        if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
+            os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
+        self.parse_command_line([] if argv is NoValue else argv)
+
+    @override
+    def start(self) -> None:
+        """
+        Start the kernel blocking until the kernel stops.
+
+        Warning:
+            - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
+            - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
+            - Some libraries may assume the call is occurring in the 'MainThread'.
+            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread`;
+                start the kernel asynchronously instead (`async with kernel: ...`).
+        """
+        settings = RunSettings(
+            backend=self.backend,
+            backend_options=self.backend_options,
+            host=self.host,
+            host_options=self.host_options,
+        )
+        async_kernel.event_loop.run(self.run, (), settings)
+        super().start()
 
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Kernel]:
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self.backend = Backend(current_async_library())
-        sig = restore_io = None
-        kernel = self.kernel
-        kernel.comm_manager.patch_comm()
         caller = Caller(
             "manual",
             name="Shell",
             protected=True,
-            log=self.kernel.log,
+            log=self.log,
             zmq_context=self._zmq_context,
             host=self.host,
         )
         self.callers[Channel.shell] = caller
-        self.callers[Channel.control] = caller.get(name="Control", log=kernel.log, protected=True)
+        self.callers[Channel.control] = caller.get(name="Control", log=self.log, protected=True)
 
         async with caller:
+            if BaseInterface._instance is not self or self.event_started or self.event_stopped:
+                msg = "Stopped early"
+                raise RuntimeError(msg)
+            remove_patches = self._apply_patches()
             try:
-                restore_io = self._patch_io()
-                with contextlib.suppress(ValueError, AttributeError):
-                    sig = signal.signal(signal.SIGINT, self._signal_handler)
                 with anyio.CancelScope() as scope:
                     self._scope = scope
-                    kernel.event_started.set()
-                    self.log.info("Kernel started: %s", self)
-                    yield kernel
+                    assert self.kernel.parent is self
+                    self.log.info("Kernel started: %s", self.summary)
+                    self.event_started.set()
+                    yield self
             finally:
-                self.stop()
-                with anyio.CancelScope(shield=True):
-                    await kernel.do_shutdown(kernel._restart)  # pyright: ignore[reportPrivateUsage]
-                if sig:
-                    signal.signal(signal.SIGINT, sig)
-                if restore_io:
-                    restore_io()
-                self._handler_cache.clear()
-                gc.collect()
+                self.log.info("Kernel shutdown initiated")
+                self.event_stopped.set()
+                with anyio.CancelScope():
+                    await self.kernel.do_shutdown(self.kernel._restart)  # pyright: ignore[reportPrivateUsage]
+                remove_patches()
+                del remove_patches
+                if BaseInterface._instance is self:
+                    BaseInterface._instance = None
+                self.log.info("Kernel stopped")
 
     @enable_signal_safety
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
@@ -184,16 +369,18 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         self.last_interrupt_frame = None
         raise KernelInterrupt
 
-    def _subshell_stopped(self, subshell_id: str) -> None:
-        for key in list(self._handler_cache):
-            if key[0] == subshell_id:
-                self._handler_cache.pop(key, None)
+    def _apply_patches(self) -> Callable[[], None]:
+        sig = None
+        with contextlib.suppress(ValueError, AttributeError):
+            sig = signal.signal(signal.SIGINT, self._signal_handler)
+        original = sys.stdout, sys.stderr, builtins.input, getpass.getpass
+        remove_comm_patch = self.kernel.comm_manager.patch_comm()
 
-    def _patch_io(self) -> Callable[[], None]:
-        original_io = sys.stdout, sys.stderr, sys.displayhook, builtins.input, self.getpass
-
-        def restore():
-            sys.stdout, sys.stderr, sys.displayhook, builtins.input, getpass.getpass = original_io
+        def restore() -> None:
+            if sig:
+                signal.signal(signal.SIGINT, sig)
+            sys.stdout, sys.stderr, builtins.input, getpass.getpass = original
+            remove_comm_patch()
 
         builtins.input = self.raw_input
         getpass.getpass = self.getpass
@@ -206,123 +393,14 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
                     content={"name": name, "text": string},
                     ident=f"stream.{name}".encode(),
                 )
-                if not self.kernel.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
+                if not self.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
                     echo.write(string)  # pragma: no cover
                     echo.flush()  # pragma: no cover
 
             context = utils._stdout_context if name == "stdout" else utils._stderr_context  # pyright: ignore[reportPrivateUsage]
             wrapper = OutStream(send=flusher, context=context)
             setattr(sys, name, wrapper)
-
         return restore
-
-    def _get_handler(self, job: Job, send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]]) -> HandlerType:
-        try:
-            subshell_id = job["msg"]["content"]["subshell_id"]
-        except KeyError:
-            try:
-                subshell_id = job["msg"]["header"]["subshell_id"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
-            except KeyError:
-                subshell_id = None
-        msg_type = MsgType(job["msg"]["header"]["msg_type"])
-
-        if msg_type is MsgType.execute_request:
-            key = (subshell_id, msg_type, send_reply)
-        else:
-            key = (None, msg_type, send_reply)
-        try:
-            return self._handler_cache[key]
-        except KeyError:
-            handler: HandlerType = getattr(self.kernel, msg_type)
-
-            @functools.wraps(handler)
-            async def run_handler(job: Job) -> None:
-                job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-                subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
-
-                try:
-                    self.iopub_send(
-                        msg_or_type="status",
-                        parent=job["msg"],
-                        content={"execution_state": "busy"},
-                        ident=b"kernel.status",
-                    )
-                    if (content := await handler(job)) is not None:
-                        await send_reply(job, content)
-                except Exception as e:
-                    await send_reply(job, utils.error_to_content(e))
-                    self.log.exception("Exception in message handler:", exc_info=e)
-                finally:
-                    utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
-                    ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
-                    self.iopub_send(
-                        msg_or_type="status",
-                        parent=job["msg"],
-                        content={"execution_state": "idle"},
-                        ident=b"kernel.status",
-                    )
-                    del job
-
-            self._handler_cache[key] = run_handler
-            return run_handler
-
-    def message_handler(self, job: Job, send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]], /) -> None:
-        """
-        Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
-
-        Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
-        Typically, jobs are queued for execution by either the 'shell' or 'control' caller using
-        [queue_call][async_kernel.caller.Caller.queue_call].
-
-        'execute_request' messages can also specify alternate run modes:
-            - task: Run the execute request as a task.
-            - thread: Run the execute request in a worker thread.
-
-            The alternate run mode can be specified in a few ways:
-            - as a comment on the first line of the code block `# task` or `# thread`.
-            - As a tag `thread` or `task`
-
-        Args:
-            job: A dict with the msg and supporting details.
-            send_reply: The function for the handler to use to send the reply to the message.
-        """
-
-        handler = self._get_handler(job, send_reply)
-
-        run_mode: RunMode | CallerCreateOptions | None = None
-        msg_type = MsgType(job["msg"]["header"]["msg_type"])
-
-        if msg_type is MsgType.execute_request:
-            caller = self.callers[job["msg"]["channel"]]  # pyright: ignore[reportArgumentType]
-            try:
-                run_mode = next(mode for tag in utils.get_tags(job) if (mode := RunMode.to_runmode(tag)))
-            except StopIteration:
-                if content := job["msg"].get("content", {}):
-                    if (code := content.get("code")) and (
-                        mode := RunMode.to_runmode(code.strip().split("\n", maxsplit=1)[0])
-                    ):
-                        run_mode = mode
-                    if content.get("silent"):
-                        run_mode = RunMode.task
-
-        elif msg_type in self.handle_in_shell_thread:
-            caller = self.callers[Channel.shell]
-        else:
-            caller = self.callers[Channel.control]
-            if thread_name := self.handle_in_thread.get(msg_type):
-                caller = caller.get(name=thread_name, no_debug=True)
-
-        match run_mode:
-            case RunMode.queue | None:
-                caller.queue_call(handler, job)
-            case RunMode.task:
-                caller.call_soon(handler, job)
-            case RunMode.thread:
-                caller.to_thread(handler, job)
-            case _ as options:
-                caller.get(**options).call_soon(handler, job)
-
-        self.log.debug("%s %s %s %s", msg_type, run_mode, handler, job)
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """
@@ -334,8 +412,8 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         This method requires that a [Caller][async_kernel.caller.Caller] instance does not already exist in the current thread.
         """
         try:
-            async with self as kernel:
-                await kernel.event_stopped
+            async with self:
+                await self.event_stopped
         finally:
             if stopped:
                 stopped()
@@ -346,9 +424,26 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         """
         if scope := getattr(self, "_scope", None):
             del self._scope
-            self.kernel.log.info("Stopping kernel: %s", self.kernel)
+            self.log.info("Stopping kernel")
             self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
-            self.kernel.event_stopped.set()
+        if not self.event_started:
+            self.event_started.set()
+            self.event_stopped.set()
+            if BaseInterface._instance is self:
+                BaseInterface._instance = None
+
+    def load_settings(self, settings: Mapping[str, Any]) -> dict[str, Any]:
+        """
+        Load settings via dotted path relative to the interface.
+
+        Args:
+            settings: A mapping of dotted name to value. If the literal value cannot be set,
+                it will be evaluated and set, where possible. Unset values are quietly ignored.
+
+        Returns:
+            dict: The values that were successfully set.
+        """
+        return async_kernel.utils.apply_settings(self, settings)
 
     def input_request(self, prompt: str, *, password: bool = False) -> str:
         """
@@ -389,7 +484,7 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
 
     def interrupt(self) -> None:
         """
-        Interrupt execution, possible raising a [async_kernel.asyncshell.KernelInterrupt][].
+        Interrupt execution, possible raising a [async_kernel.common.KernelInterrupt][].
         """
         while self.interrupts:
             try:
@@ -407,13 +502,14 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
         metadata: dict[str, Any] | None = None,
         channel: Channel = Channel.shell,
     ) -> Message[dict[str, Any]]:
-        """Return the nested message dict.
+        """
+        Create a new message.
 
         This format is different from what is sent over the wire. The
         serialize/deserialize methods converts this nested message dict to the wire
         format, which is a list of message parts.
         """
-        parent = parent or utils.get_parent()
+        parent = parent or utils.get_parent_message()
         if header is None:
             session = ""
             if parent and (header := parent.get("header")):
@@ -446,3 +542,75 @@ class BaseKernelInterface(traitlets.HasTraits, anyio.AsyncContextManagerMixin):
     ) -> None:
         """Send an iopub message."""
         raise NotImplementedError
+
+    @override
+    def print_help(self, classes: bool = False) -> None:
+        # Copy trailing docstrings into trait.help.
+        for cls in self.classes:
+            try:
+                for name, value in get_attr_docs(cls).items():
+                    if value and isinstance(trait := getattr(cls, name), traitlets.TraitType) and not trait.help:
+                        trait.help = value
+            except OSError:
+                continue  # Coverage can cause issues with some files.
+        super().print_help(classes)
+
+
+class HasInterface(Generic[T_interface_co]):
+    """
+    A mixin class providing a reference to the global [kernel interface][async_kernel.interface.base.BaseInterface].
+
+    This class is designed to be compatible with [Configurable][] objects enabling the sharing
+    of configuration and log. The global _kernel interface_ must exist before creating subclass
+    instances using this mixin.
+    """
+
+    _interface: weakref.ref
+
+    @property
+    def parent(self) -> T_interface_co:
+        "The interface at the time of creation."
+        return self._interface()  # pyright: ignore[reportReturnType]
+
+    @parent.setter
+    def parent(self, value: Any):
+        pass
+
+    @property
+    def config(self) -> Config:
+        """
+        A reference to the `parent.config`.
+
+        Setting the config will update `parent.config`instead of replacing it.
+        """
+        return self.parent.config
+
+    @config.setter
+    def config(self, value: Config) -> None:
+        pass
+
+    def __init_subclass__(cls, **kwargs) -> None:
+
+        if cls.parent is not HasInterface.parent or cls.config is not HasInterface.config:
+            replaced = [k for k in ["parent", "config"] if getattr(cls, k) is not getattr(HasInterface, k)]
+            msg = f"Parameter override detected for class `{cls.__name__}`!"
+            if len(replaced) == 2:
+                msg = f"{msg}\nTip: Make `HasInterface` the first inherited class (left-most)."
+            else:
+                msg = f"{msg}\nThe parameter named {replaced[0]!r} must not be overloaded."
+            raise TypeError(msg)
+
+        super().__init_subclass__(**kwargs)
+
+        # Register class for configuration
+        if issubclass(cls, Configurable):
+            BaseInterface.classes.insert(0, cls)
+
+    def __new__(cls, *args, **kwargs) -> Self:
+
+        if not (interface := BaseInterface._instance):  # pyright: ignore[reportPrivateUsage]
+            msg = "A global BaseInterface has not been created yet!"
+            raise RuntimeError(msg)
+        inst = new_(cls) if (new_ := super().__new__) is object.__new__ else new_(cls, *args, **kwargs)
+        inst._interface = weakref.ref(interface)
+        return inst
