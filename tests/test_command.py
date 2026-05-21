@@ -50,7 +50,7 @@ def test_args_to_dict():
         "option_A=False",
         "--dict_value",
         "Some other value='142'",
-        "--start_interface=start_kernel_zmq_interface",
+        "--launcher=start_kernel_zmq_interface",
         "--shell.timeout=0.01",
         "--shell.timeout",
         "2",
@@ -62,7 +62,7 @@ def test_args_to_dict():
     assert settings == {
         "display_name": "my kernel",
         "dict_value": {"option_A": False, "Some other value": "142"},
-        "start_interface": "start_kernel_zmq_interface",
+        "launcher": "start_kernel_zmq_interface",
         "shell.timeout": 2,
         "quiet": True,
         "automagic": False,
@@ -119,7 +119,7 @@ def test_add_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, ca
             "async_kernel",
             "start",
             "--connection_file={connection_file}",
-            "--start_interface=launch_zmq_kernel",
+            "--launcher=launch_zmq_kernel",
             "--name=async-trio",
             "--BaseShell.timeout=0.01",
         ],
@@ -189,7 +189,7 @@ def test_command_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path):
         "use_uv=False",
         "--BaseShell.timeout=0.123",
         "--no-automagic",
-        "--start_interface=launch_zmq_kernel",
+        "--launcher=launch_zmq_kernel",
     ]
     event_started = EventSet()
     monkeypatch.setattr(ZMQInterface, "event_started", event_started)
@@ -219,7 +219,7 @@ def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathli
         "--display_name='my kernel'",
         "--backend_options",
         "use_uv=False",
-        "--start_interface=start_kernel_zmq_interface",
+        "--launcher=start_kernel_zmq_interface",
         "--kernel.main_shell.timeout",
         "2",
         "-no-quiet",

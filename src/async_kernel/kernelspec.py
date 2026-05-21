@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 
 __all__ = [
     "DEFAULT_COMMAND",
-    "DEFAULT_START_INTERFACE",
+    "DEFAULT_LAUNCHER",
     "PROTOCOL_VERSION",
     "expand_path",
     "get_kernel_dir",
-    "import_start_interface",
+    "import_launcher",
     "make_argv",
     "write_kernel_spec",
 ]
@@ -31,12 +31,12 @@ __all__ = [
 # path to kernelspec resources
 RESOURCES: Path = Path(__file__).parent.joinpath("resources")
 
-CUSTOM_START_INTERFACE_SYMBOL: str = "↤"
+CUSTOM_LAUNCHER_SEPARATOR: str = "↤"
 
 PROTOCOL_VERSION: str = "5.5"
 "The protocol that is supported by the kernel."
 
-DEFAULT_START_INTERFACE: str = "launch_zmq_kernel"
+DEFAULT_LAUNCHER: str = "launch_zmq_kernel"
 "An importable path to the default interface to start the kernel."
 
 DEFAULT_COMMAND: tuple[str, ...] = (sys.executable, "-m", "async_kernel", "start")
@@ -47,7 +47,7 @@ def make_argv(
     *,
     connection_file: str = "{connection_file}",
     name: str = "async",
-    start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
+    launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
     command: tuple[str, ...] = DEFAULT_COMMAND,
     **kwargs: Any,
 ) -> list[str]:
@@ -58,7 +58,7 @@ def make_argv(
 
     Args:
         connection_file: The path to the connection file.
-        start_interface:
+        launcher:
             A self-contained function that accepts a dict of settings. The function
             is stored as a python file in the kernelspec folder.
             Or as string import path to a callable.
@@ -68,7 +68,7 @@ def make_argv(
                 - "start_kernel_zmq_interface"
         name: The name to use for the kernel.
         command: The command line command to call.
-        **kwargs: Additional settings to pass when creating the kernel passed to `start_interface`.
+        **kwargs: Additional settings to pass when creating the kernel passed to `launcher`.
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
@@ -77,7 +77,7 @@ def make_argv(
         *command,
         f"--connection_file={connection_file}",
     ]
-    for k, v in ({"start_interface": start_interface, "name": name} | kwargs).items():
+    for k, v in ({"launcher": launcher, "name": name} | kwargs).items():
         argv.append(f"--{k}={v}")
     return list(map(str, argv))
 
@@ -90,7 +90,7 @@ def write_kernel_spec(
     command: tuple[str, ...] = DEFAULT_COMMAND,
     prefix: str = "",
     folder: str = "",
-    start_interface: str | InterfaceStartType = DEFAULT_START_INTERFACE,
+    launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
     connection_file: str = "{connection_file}",
     env: dict | None = None,
     metadata: dict | None = None,
@@ -115,7 +115,7 @@ def write_kernel_spec(
             This can be sys.prefix for installation inside virtual or conda envs.
         folder:
             A direct path the the kernel spec folder (must end with a folder named 'kernels').
-        start_interface:
+        launcher:
             The string import path to a callable that creates the Kernel or, a *self-contained*
             function that returns an instance of a `Kernel`.
         connection_file:
@@ -135,25 +135,25 @@ def write_kernel_spec(
     assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name)
     path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / name)
 
-    if callable(start_interface) and len(inspect.signature(start_interface).parameters) != 1:
-        msg = "Invalid signature! `start_interface` must accept exactly one argument (a dict of settings)."
+    if callable(launcher) and len(inspect.signature(launcher).parameters) != 1:
+        msg = "Invalid signature! `launcher` must accept exactly one argument (a dict of settings)."
         raise ValueError(msg)
     # stage resources
     try:
         path.mkdir(parents=True, exist_ok=True)
 
-        # start_interface
-        if callable(start_interface):
-            f = path.joinpath("start_interface.py")
-            f.write_text(textwrap.dedent(inspect.getsource(start_interface)))
-            start_interface = f"{f}{CUSTOM_START_INTERFACE_SYMBOL}{start_interface.__name__}"
+        # launcher
+        if callable(launcher):
+            f = path.joinpath("launcher.py")
+            f.write_text(textwrap.dedent(inspect.getsource(launcher)))
+            launcher = f"{f}{CUSTOM_LAUNCHER_SEPARATOR}{launcher.__name__}"
         # validate
-        if start_interface != DEFAULT_START_INTERFACE:
-            assert len(inspect.signature(import_start_interface(start_interface)).parameters) == 1
+        if launcher != DEFAULT_LAUNCHER:
+            assert len(inspect.signature(import_launcher(launcher)).parameters) == 1
         if resources:
             shutil.copytree(src=resources, dst=path, dirs_exist_ok=True)
         argv = make_argv(
-            start_interface=start_interface,
+            launcher=launcher,
             connection_file=connection_file,
             name=name,
             command=command,
@@ -228,25 +228,25 @@ def expand_path(path: str | Path) -> Path:
     return path.expanduser().absolute()
 
 
-def import_start_interface(start_interface: str = "", /) -> InterfaceStartType:
+def import_launcher(launcher: str = "", /) -> InterfaceStartType:
     """
     Import the kernel interface starter as defined in a kernel spec.
 
     Args:
-        start_interface: The name of the interface factory.
+        launcher: The name of the interface factory.
 
     Returns:
         The kernel factory.
     """
-    start_interface = start_interface or DEFAULT_START_INTERFACE
-    if CUSTOM_START_INTERFACE_SYMBOL in start_interface:
-        name, factory_name = start_interface.split(CUSTOM_START_INTERFACE_SYMBOL)
+    launcher = launcher or DEFAULT_LAUNCHER
+    if CUSTOM_LAUNCHER_SEPARATOR in launcher:
+        name, factory_name = launcher.split(CUSTOM_LAUNCHER_SEPARATOR)
         glbls = {}
         exec(Path(name).read_bytes(), glbls)
         return glbls[factory_name]
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    if start_interface in ["launch_zmq_kernel", "start_kernel_zmq_interface"]:
-        return import_item(f"async_kernel.interface.{start_interface}")
+    if launcher in ["launch_zmq_kernel", "start_kernel_zmq_interface"]:
+        return import_item(f"async_kernel.interface.{launcher}")
 
-    return import_item(start_interface)
+    return import_item(launcher)

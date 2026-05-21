@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
 import async_kernel
-from async_kernel.kernelspec import get_kernel_dir, import_start_interface, remove_kernel_spec, write_kernel_spec
+from async_kernel.kernelspec import get_kernel_dir, import_launcher, remove_kernel_spec, write_kernel_spec
 
 if TYPE_CHECKING:
     from async_kernel.kernelspec import InterfaceStartType
@@ -168,9 +168,9 @@ Tips:
         case Mode.version:
             print("async-kernel", async_kernel.__version__)
         case Mode.start | Mode.help_all:
-            start_interface: InterfaceStartType = import_start_interface(settings.get("start_interface", ""))
+            launcher: InterfaceStartType = import_launcher(settings.get("launcher", ""))
             try:
-                start_interface(settings)
+                launcher(settings)
             except KeyboardInterrupt:
                 sys.exit(0)
         case _:

@@ -31,7 +31,7 @@ The kernel spec looks like this:
         "async_kernel",
         "start",
         "--connection_file={connection_file}",
-        "--start_interface=launch_zmq_kernel",
+        "--launcher=launch_zmq_kernel",
         "--name=async",
         "--backend=trio",
         "--host=tk"
@@ -151,12 +151,12 @@ async-kernel -a async --backend_options use_uvloop=False
 
 === "write_kernel_spec argument"
 
-    **start_interface**
+    **launcher**
 
-    To specify an alternate start_interface.
+    To specify an alternate launcher.
 
     ```console
-    async-kernel -a my-async-kernel --start_interface=my_module.start_interface
+    async-kernel -a my-async-kernel --launcher=my_module.launcher
     ```
 
     **display name**

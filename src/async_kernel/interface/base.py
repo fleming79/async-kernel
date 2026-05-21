@@ -117,7 +117,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         "backend": "ZMQInterface.backend",
         "timeout": "BaseShell.timeout",
         "name": "BaseInterface.name",
-        "start_interface": "BaseInterface.start_interface",
+        "launcher": "BaseInterface.launcher",
         "kernel_class": "BaseInterface.kernel_class",
         "shell_class": "BaseInterface.shell_class",
         "help_links": "Kernel.help_links",
@@ -171,8 +171,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     quiet = traitlets.Bool(True).tag(config=True)
     "Only send stdout/stderr to output stream."
 
-    start_interface = traitlets.Unicode("").tag(config=True)
-    "The value used to import the interface using [async_kernel.kernelspec.import_start_interface][]."
+    launcher = traitlets.Unicode("").tag(config=True)
+    "The value used to import the interface using [async_kernel.kernelspec.import_launcher][]."
 
     kernel: Fixed[Self, Kernel[Self, T_shell_co]] = Fixed(
         lambda c: c["owner"].kernel_class(c["owner"], c["owner"].shell_class)
