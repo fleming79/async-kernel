@@ -167,10 +167,7 @@ def write_kernel_spec(
     if path:
         path = expand_path(path)
     else:
-        if not name:
-            msg = "name was not provided"
-            raise ValueError(msg)
-        if not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
+        if not name or not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
             msg = f"Invalid {name=}!"
             raise ValueError(msg)
         path = get_kernel_dir(folder=folder, prefix=prefix, user=user).joinpath(name)
