@@ -129,7 +129,7 @@ class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
 BaseInterface.classes.extend((ProfileDir, Session))
 
 
-class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonApplication, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonApplication, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
     description = traitlets.Unicode(
         "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",
     ).tag(config=True)

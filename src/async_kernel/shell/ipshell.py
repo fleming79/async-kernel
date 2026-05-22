@@ -16,7 +16,6 @@ from aiologic.lowlevel import async_checkpoint
 from anyio.streams.text import TextReceiveStream
 from IPython.core.builtin_trap import builtin_mod  # pyright: ignore[reportPrivateImportUsage]
 from IPython.core.completer import provisionalcompleter, rectify_completions
-from IPython.core.getipython import get_ipython
 from IPython.core.interactiveshell import ExecutionResult, InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class, no_var_expand
@@ -61,7 +60,7 @@ __all__ = ["IPShell"]
 
 class MethodNotSupported(Exception):
     """
-    This exception is used inside overriden methods to indicate that it
+    This exception is used inside overridden methods to indicate that it
     should not be used.
     """
 
@@ -265,7 +264,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         kernel_info = (
             f"async-kernel v{async_kernel.__version__} name:{self.parent.name!r} backend:{str(self.parent.backend)!r}"
         )
-        return f"Python {sys.version}\n{kernel_info}) \nIPython shell {IPython.core.release.version}\n"
+        return f"Python {sys.version}\n{kernel_info}\nIPython shell {IPython.core.release.version}\n"
 
     @traitlets.observe("exit_now")
     def _update_exit_now(self, _) -> None:
@@ -279,10 +278,11 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
     @override
     def init_builtins(self) -> None:
-        builtin_mod.__dict__["__IPYTHON__"] = True
-        builtin_mod.__dict__["display"] = display
-        builtin_mod.__dict__["display"] = get_ipython
-        builtin_mod.__dict__["Caller"] = Caller
+        if self.is_mainshell:
+            builtin_mod.__dict__["__IPYTHON__"] = True
+            builtin_mod.__dict__["display"] = display
+            builtin_mod.__dict__["get_ipython"] = self.get_ipython
+            builtin_mod.__dict__["Caller"] = Caller
 
     @override
     def init_hooks(self) -> None:
@@ -582,6 +582,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     def _showtraceback(self, etype, evalue, stb) -> None:
         if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
+        if isinstance(evalue, KernelInterrupt):
+            stb = []
         self.parent.iopub_send(
             msg_or_type="error",
             content={"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)},

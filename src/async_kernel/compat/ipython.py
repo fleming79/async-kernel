@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import threading
-import weakref
 from collections.abc import Callable
 from sqlite3 import OperationalError
 from typing import TYPE_CHECKING, Any, Literal, Self

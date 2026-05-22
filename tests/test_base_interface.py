@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import gc
-from re import sub
 import weakref
 from typing import TYPE_CHECKING
 
@@ -79,6 +78,7 @@ class TestBaseInterface:
         with pytest.raises(RuntimeError, match="Stopped early"):
             async with app:
                 pass
+
 
 class TestHasInterface:
     def test_no_global_interface(self):

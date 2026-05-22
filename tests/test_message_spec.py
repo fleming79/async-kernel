@@ -268,12 +268,13 @@ async def test_stream(client: AsyncKernelClient):
 
 
 @pytest.mark.parametrize("clear", [True, False])
-async def test_display_data(kernel: Kernel, client: AsyncKernelClient, clear: bool):
+async def test_displayhook(kernel: Kernel, client: AsyncKernelClient, clear: bool):
+
+    #  Test the displayhook is set builtin_mod.__dict__["display"] = display
+
     await utils.clear_iopub(client)
-    # kernel.display_formatter
-    msg_id, _ = await utils.execute(
-        client, f"from IPython.display import display; display(1, clear={clear})", clear_pub=False
-    )
+
+    msg_id, _ = await utils.execute(client, f"display(1, clear={clear})", clear_pub=False)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
     if clear:

@@ -95,6 +95,7 @@ async def test_is_complete(client: AsyncKernelClient, code: str, status: str):
     reply = await client.get_shell_msg()
     assert reply["content"]["status"] == status
 
+
 async def test_noop(kernel: Kernel[ZMQInterface, IPShell]):
     with pytest.raises(MethodNotSupported):
         kernel.shell.init_prefilter()

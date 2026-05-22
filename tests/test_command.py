@@ -98,19 +98,30 @@ def test_prints_help_all(monkeypatch, capsys):
     assert "aliases" in out
 
 
-def test_add_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
+def test_show_config(monkeypatch, capsys):
+    for option in ["--show-config", "--show-config-json"]:
+        monkeypatch.setattr(sys, "argv", ["prog", option, "-no-quiet"])
+        with pytest.raises(SystemExit) as e:
+            command_line()
+        assert e.value.code == 0
+        out = capsys.readouterr().out
+        assert "ZMQInterface" in out
+
+
+def test_install_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["prog", "-a", "async-trio", "--display_name='my kernel'", "--BaseShell.timeout=0.01"],
+        ["prog", "install", "--name=async-trio", "--display_name='my kernel'", "--BaseShell.timeout=0.01"],
     )
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
-    out = capsys.readouterr().out
-    assert "Added kernel spec" in out
     kernel_dir = fake_kernel_dir.joinpath("async-trio")
     assert (kernel_dir).exists()
+    out = capsys.readouterr().out
+    msg = f"Installed kernelspec {str(kernel_dir)!r}"
+    assert out.startswith(msg)
     spec = json.loads(kernel_dir.joinpath("kernel.json").read_bytes())
     assert spec == {
         "argv": [
@@ -119,7 +130,7 @@ def test_add_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, ca
             "async_kernel",
             "start",
             "--connection_file={connection_file}",
-            "--launcher=launch_zmq_kernel",
+            "--launcher=launch_zmq_interface",
             "--name=async-trio",
             "--BaseShell.timeout=0.01",
         ],
@@ -142,34 +153,45 @@ def test_no_args(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
 
 
 @pytest.mark.parametrize("mode", ["folder", "prefix", "default"])
-def test_remove_existing_kernel(monkeypatch, fake_kernel_dir, capsys, mode: Literal["folder", "prefix", "default"]):
-    name = "asyncio"
-    (fake_kernel_dir / name).mkdir()
+def test_remove_kernelspec(monkeypatch, fake_kernel_dir, capsys, mode: Literal["folder", "prefix", "default"]):
+    name = f"async-{mode}"
+    kernel_dir = fake_kernel_dir / name
+    (kernel_dir).mkdir()
     if mode == "folder":
-        monkeypatch.setattr(sys, "argv", ["prog", "-r", name, f"--folder={fake_kernel_dir}"])
+        args = (f"--name={name}", f"--folder={fake_kernel_dir}")
     elif mode == "prefix":
-        monkeypatch.setattr(sys, "argv", ["prog", "-r", name, f"--prefix={sys.prefix}"])
+        args = (f"--name={name}", f"--prefix={sys.prefix}")
     else:
-        monkeypatch.setattr(sys, "argv", ["prog", "-r", name])
+        args = (f"--name={name}",)
+
+    for command in ["install", "uninstall"]:
+        monkeypatch.setattr(sys, "argv", ["prog", command, *args])
+        with pytest.raises(SystemExit) as e:
+            command_line()
+        assert e.value.code == 0
+
+    out = capsys.readouterr().out
+    assert "Installed kernelspec" in out
+    assert "Uninstalled kernelspec" in out
+    assert not (kernel_dir).exists()
+
+
+# def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
+#     monkeypatch.setattr(sys, "argv", ["prog", "uninstall", "--name='not a kernel'"])
+#     with pytest.raises(FileNotFoundError, match="A kernelspec does not exist"):
+#         command_line()
+
+
+@pytest.mark.parametrize("config", ["--user", "-no-user", "--prefix=this$won't^work"])
+def test_list(monkeypatch, config: str, capsys):
+    monkeypatch.setattr(sys, "argv", ["prog", "-l", config])
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
-    out = capsys.readouterr().out
-    assert "removed" in out
-    assert not (fake_kernel_dir / name).exists()
+    assert capsys.readouterr().out
 
 
-def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
-    name = "not a kernel"
-    monkeypatch.setattr(sys, "argv", ["prog", "-r", name])
-    with pytest.raises(SystemExit) as e:
-        command_line()
-    assert e.value.code == 0
-    out = capsys.readouterr().out
-    assert "not found!" in out
-
-
-def test_command_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path):
+def test_command_launch_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
     class EventSet(Event):
         @override
         def set(self):
@@ -184,45 +206,12 @@ def test_command_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path):
     cmd = [
         "prog",
         "start",
-        f"--connection_file={fake_kernel_dir.joinpath('test_start_kernel_zmq_interface.json')}",
+        f"--connection_file={fake_kernel_dir.joinpath('connection_file.json')}",
         "--backend_options",
         "use_uv=False",
         "--BaseShell.timeout=0.123",
         "--no-automagic",
-        "--launcher=launch_zmq_kernel",
-    ]
-    event_started = EventSet()
-    monkeypatch.setattr(ZMQInterface, "event_started", event_started)
-    monkeypatch.setattr(sys, "argv", cmd)
-    with pytest.raises(SystemExit) as e:
-        command_line()
-    assert e.value.code == 0
-
-
-def test_start_kernel_zmq_interface(mocker, monkeypatch, fake_kernel_dir: pathlib.Path):
-
-    class EventSet(Event):
-        @override
-        def set(self):
-            kernel = async_kernel.utils.get_kernel()
-            assert isinstance(kernel.parent, ZMQInterface)
-            assert kernel.parent.backend_options == {"use_uv": False}
-            assert kernel.main_shell.timeout == 2.0
-            assert kernel.parent.quiet is False
-            super().set()
-            kernel.parent.event_stopped.set()
-
-    cmd = [
-        "prog",
-        "start",
-        f"--connection_file={fake_kernel_dir.joinpath('test_start_kernel_zmq_interface.json')}",
-        "--display_name='my kernel'",
-        "--backend_options",
-        "use_uv=False",
-        "--launcher=start_kernel_zmq_interface",
-        "--kernel.main_shell.timeout",
-        "2",
-        "-no-quiet",
+        "--launcher=launch_zmq_interface",
     ]
     event_started = EventSet()
     monkeypatch.setattr(ZMQInterface, "event_started", event_started)

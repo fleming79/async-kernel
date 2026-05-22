@@ -6,7 +6,6 @@ import inspect
 import json
 import os
 import re
-import shutil
 import sys
 import textwrap
 from pathlib import Path
@@ -23,6 +22,7 @@ __all__ = [
     "PROTOCOL_VERSION",
     "expand_path",
     "get_kernel_dir",
+    "get_kernel_info",
     "import_launcher",
     "make_argv",
     "write_kernel_spec",
@@ -36,7 +36,7 @@ CUSTOM_LAUNCHER_SEPARATOR: str = "↤"
 PROTOCOL_VERSION: str = "5.5"
 "The protocol that is supported by the kernel."
 
-DEFAULT_LAUNCHER: str = "launch_zmq_kernel"
+DEFAULT_LAUNCHER: str = "launch_zmq_interface"
 "An importable path to the default interface to start the kernel."
 
 DEFAULT_COMMAND: tuple[str, ...] = (sys.executable, "-m", "async_kernel", "start")
@@ -64,7 +64,7 @@ def make_argv(
             Or as string import path to a callable.
             be saved as a python file in the kernelspec folder.
             Or can be one of the names of the methods in the interface folder:
-                - "launch_zmq_kernel"
+                - "launch_zmq_interface"
                 - "start_kernel_zmq_interface"
         name: The name to use for the kernel.
         command: The command line command to call.
@@ -82,15 +82,44 @@ def make_argv(
     return list(map(str, argv))
 
 
+def get_kernel_dir(*, folder: str = "", prefix: str = "", user: bool = False) -> Path:
+    """
+    The path to where kernel specs are stored for Jupyter.
+
+    If folder is passed, it is assumed to be the full path ending in 'kernels', prefix is ignored.
+
+    Args:
+        folder: The path to 'kernels' (must end with 'kernels').
+        prefix: Defaults to sys.prefix (installable for a particular environment).
+        user: Install for the user.
+
+    Search locations: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs
+    """
+
+    if len([p for p in [folder, prefix, user] if p]) > 1:
+        msg = "Providing more than one of [folder, prefix, user] is ambiguous"
+        raise ValueError(msg)
+    if user:
+        from jupyter_core.paths import jupyter_data_dir  # noqa: PLC0415
+
+        return Path(jupyter_data_dir()).joinpath("kernels")
+    if folder:
+        path = expand_path(folder)
+        assert path.name.lower() == "kernels"
+        return path
+    return expand_path(prefix or sys.prefix).joinpath("share", "jupyter", "kernels")
+
+
 def write_kernel_spec(
-    path: Path | str | None = None,
     *,
-    name: str = "async",
+    path: Path | str | None = None,
+    name: str = "",
     display_name: str = "",
-    command: tuple[str, ...] = DEFAULT_COMMAND,
+    user: bool = False,
     prefix: str = "",
     folder: str = "",
     launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
+    command: tuple[str, ...] = DEFAULT_COMMAND,
     connection_file: str = "{connection_file}",
     env: dict | None = None,
     metadata: dict | None = None,
@@ -108,8 +137,8 @@ def write_kernel_spec(
             The name of the kernel to use.
         display_name:
             The display name for Jupyter to use for the kernel. The default is `"Python ({name})"`.
-        command:
-            The command to execute, passing .
+        user:
+            To work with the user profile directory.
         prefix:
             When provided the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.
             This can be sys.prefix for installation inside virtual or conda envs.
@@ -118,6 +147,8 @@ def write_kernel_spec(
         launcher:
             The string import path to a callable that creates the Kernel or, a *self-contained*
             function that returns an instance of a `Kernel`.
+        command:
+            The command to execute to invoke the launcher.
         connection_file:
             The path to the connection file.
         env:
@@ -131,9 +162,18 @@ def write_kernel_spec(
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
             For example `..., **{'timeout'=0.1})`.
     """
+    import shutil  # noqa: PLC0415
 
-    assert re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name)
-    path = Path(path).expanduser() if path else (get_kernel_dir(folder=folder, prefix=prefix) / name)
+    if path:
+        if name:
+            msg = "`name` cannot be specified when path is provided!"
+            raise ValueError(msg)
+        path = expand_path(path)
+    else:
+        if not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
+            msg = f"Invalid {name=}!"
+            raise ValueError(msg)
+        path = get_kernel_dir(folder=folder, prefix=prefix, user=user).joinpath(name)
 
     if callable(launcher) and len(inspect.signature(launcher).parameters) != 1:
         msg = "Invalid signature! `launcher` must accept exactly one argument (a dict of settings)."
@@ -162,7 +202,7 @@ def write_kernel_spec(
         spec: dict[str, list[Any] | Any | dict[Any, Any] | str | dict[str, bool]] = {
             "argv": argv,
             "env": env or {},
-            "display_name": display_name or f"Python {sys.version_info.major}.{sys.version_info.minor} ({name})",
+            "display_name": display_name or f"Python {sys.version.split()[0]} ({name})",
             "language": language,
             "interrupt_mode": "message",
             "metadata": metadata if metadata is not None else {"debugger": True, "concurrent": True},
@@ -177,31 +217,28 @@ def write_kernel_spec(
         return path
 
 
-def remove_kernel_spec(name: str, *, folder: str = "", prefix: str = "") -> bool:
-    "Remove a kernelspec returning True if it was removed."
-    if (path := get_kernel_dir(folder=folder, prefix=prefix).joinpath(name)).exists():
-        shutil.rmtree(path, ignore_errors=True)
-        return True
-    return False
+def remove_kernelspec(kernel_dir: Path, name: str) -> None:
+    "Remove a kernelspect."
+    import shutil  # noqa: PLC0415
+
+    kernels = get_kernel_info(kernel_dir)
+    if name in kernels:
+        shutil.rmtree(kernel_dir.joinpath(name))
+        return
+    msg = f"A kernelspec does not exist for {name=} in {str(kernel_dir)!r}"
+    if kernels:
+        msg = f"{msg}\nAvaliable names: {list(kernels)}"
+    raise FileNotFoundError(msg)
 
 
-def get_kernel_dir(*, folder: str = "", prefix: str = "") -> Path:
-    """
-    The path to where kernel specs are stored for Jupyter.
-
-    If folder is passed, it is assumed to be the full path ending in 'kernels', prefix is ignored.
-
-    Args:
-        folder: The path to 'kernels' (must end with 'kernels').
-        prefix: Defaults to sys.prefix (installable for a particular environment).
-
-    Search locations: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs
-    """
-    if folder:
-        path = expand_path(folder)
-        assert path.name.lower() == "kernels"
-        return path
-    return expand_path(prefix or sys.prefix).joinpath("share", "jupyter", "kernels")
+def get_kernel_info(kernel_dir: Path) -> dict[str, dict[str, Any]]:
+    """Get a dic of kernels installed in kernel_dir."""
+    kernels = {}
+    if kernel_dir.is_dir():
+        for path in kernel_dir.iterdir():
+            if path.is_dir() and (info_file := path.joinpath("kernel.json")).exists():
+                kernels[path.name] = json.loads(info_file.read_bytes()) | {"json_path": path}
+    return kernels
 
 
 def expand_path(path: str | Path) -> Path:
@@ -213,7 +250,7 @@ def expand_path(path: str | Path) -> Path:
 
     Substitutions:
         - Windows environment variables are accepted such as `%APPDATA%` and `%PROGRAMDATA%`.
-        -`~` is also substituted with  [pathlib.Path.expanduser][].
+        -`~` is also substituted with [pathlib.Path.expanduser][].
     """
     if sys.platform == "win32" and str(path).startswith("%"):
         key, base = str(path).split("%")[1:3]
@@ -230,13 +267,13 @@ def expand_path(path: str | Path) -> Path:
 
 def import_launcher(launcher: str = "", /) -> InterfaceStartType:
     """
-    Import the kernel interface starter as defined in a kernel spec.
+    Import the launcher as defined in a kernel spec.
 
     Args:
         launcher: The name of the interface factory.
 
     Returns:
-        The kernel factory.
+        callable: The imported function responsible for launching the interface.
     """
     launcher = launcher or DEFAULT_LAUNCHER
     if CUSTOM_LAUNCHER_SEPARATOR in launcher:
@@ -246,7 +283,7 @@ def import_launcher(launcher: str = "", /) -> InterfaceStartType:
         return glbls[factory_name]
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    if launcher in ["launch_zmq_kernel", "start_kernel_zmq_interface"]:
+    if launcher in ["launch_zmq_interface", "start_kernel_zmq_interface"]:
         return import_item(f"async_kernel.interface.{launcher}")
 
     return import_item(launcher)

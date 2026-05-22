@@ -30,7 +30,6 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
-from async_kernel.compat.attr_docs import get_attr_docs
 from async_kernel.iostream import OutStream
 from async_kernel.typing import (
     Backend,
@@ -45,7 +44,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable, Mapping
+    from collections.abc import AsyncGenerator, Callable
     from types import FrameType
 
     from async_kernel.kernel import Kernel
@@ -108,24 +107,22 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     classes: ClassesType = final([])
     "The classes registered with the interface."
 
-    aliases: dict[str, str] = {  # noqa: RUF012
-        "f": "ZMQInterface.connection_file",
-        "connection_file": "ZMQInterface.connection_file",
+    aliases: dict[str | tuple[str, ...], str] = {  # pyright: ignore[reportIncompatibleVariableOverride]
+        ("name", "n"): "BaseInterface.name",
+        ("f", "connection_file"): "ZMQInterface.connection_file",
+        "launcher": "BaseInterface.launcher",
         "host": "ZMQInterface.host",
         "host_options": "ZMQInterface.host_options",
         "backend_options": "ZMQInterface.backend_options",
         "backend": "ZMQInterface.backend",
         "timeout": "BaseShell.timeout",
-        "name": "BaseInterface.name",
-        "launcher": "BaseInterface.launcher",
         "kernel_class": "BaseInterface.kernel_class",
         "shell_class": "BaseInterface.shell_class",
         "help_links": "Kernel.help_links",
         "supported_features": "Kernel.supported_features",
-        "log-level": "Application.log_level",
-    }
+    } | Application.aliases
     ""
-    flags = {  # noqa: RUF012
+    flags = {
         "quiet": ({"BaseInterface": {"quiet": True}}, "Only send stdout/stderr to output stream."),
         "no-quiet": ({"BaseInterface": {"quiet": False}}, "Only send stdout/stderr to output stream."),
         "automagic": (
@@ -133,7 +130,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             "Turn on the auto calling of magic commands. Type %%magic at the IPython  prompt  for  more information.",
         ),
         "no-automagic": ({"InteractiveShell": {"automagic": False}}, "Turn off the auto calling of magic commands."),
-    }
+    } | Application.flags
     ""
 
     name = traitlets.Unicode("async").tag(config=True)
@@ -242,7 +239,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         argv: list[str] | None | NoValue = None,  # pyright: ignore[reportInvalidTypeForm]
         kernel_class: type[Kernel[Self, T_shell_co]] | None = None,
         shell_class: type[T_shell_co] | None = None,
-        settings: dict | None = None,
         **kwargs: Any,
     ) -> None:
         app = None
@@ -251,8 +247,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             raise RuntimeError(msg)
         try:
             app = cls(argv, kernel_class=kernel_class, shell_class=shell_class, **kwargs)
-            if settings:
-                app.load_settings(settings)
             app.start()
             app.exit()
         except BaseException:
@@ -432,19 +426,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
 
-    def load_settings(self, settings: Mapping[str, Any]) -> dict[str, Any]:
-        """
-        Load settings via dotted path relative to the interface.
-
-        Args:
-            settings: A mapping of dotted name to value. If the literal value cannot be set,
-                it will be evaluated and set, where possible. Unset values are quietly ignored.
-
-        Returns:
-            dict: The values that were successfully set.
-        """
-        return async_kernel.utils.apply_settings(self, settings)
-
     def input_request(self, prompt: str, *, password: bool = False) -> str:
         """
         Forward an input request to the frontend.
@@ -545,6 +526,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     @override
     def print_help(self, classes: bool = False) -> None:
+        from async_kernel.compat.attr_docs import get_attr_docs  # noqa: PLC0415
+
         # Copy trailing docstrings into trait.help.
         for cls in self.classes:
             try:

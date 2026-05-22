@@ -104,56 +104,20 @@ await event
 pip install async-kernel
 ```
 
-## Kernel specs
+## Kernelspecs
 
-A kernel spec with the name 'async' is added when async-kernel is installed.
+A kernelspec with the name 'async' is added when async-kernel is installed.
 
-Kernel specs can be added/removed via the command line.
-
-### Backends
-
-The backend set on the interface is the asynchronous library the kernel uses for message handling.
-It is also the asynchronous library directly available when executing code in cells or via a console[^3].
-
-[^3]:
-    Irrespective of the configured backend, functions/coroutines can be executed using a specific backend
-    with the method [`call_using_backend`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller.call_using_backend).
-
-#### Example - overwrite the 'async' kernel spec to use a trio backend
+Kernel specs can be installed/uninstalled via the command line.
 
 ```bash
-pip install trio
-async-kernel -a async --backend=trio
+async-kernel install
+
+# To install for a user
+async-kernel install --user
 ```
 
-### Gui event loop
-
-The kernel can be started with a gui event loop as the _host_ and the _backend_ running as a guest.
-
-#### asyncio backend
-
-```bash
-# tk
-async-kernel -a async-tk --host=tk
-
-# qt
-pip install PySide6-Essentials
-async-kernel -a async-qt --host=qt
-```
-
-#### trio backend
-
-```bash
-pip install trio
-# tk
-async-kernel -a async-tk --host=tk --backend=trio
-
-# qt
-pip install PySide6-Essentials
-async-kernel -a async-qt --host=qt --backend=trio
-```
-
-For further detail about kernel spec customisation see [command line and kernel configuration](https://fleming79.github.io/async-kernel/latest/usage/commands/).
+For further detail about kernel spec customisation see [command line and kernel configuration](https://fleming79.github.io/async-kernel/latest/usage/commands/) and [custom kernel.ipynb](https://fleming79.github.io/async-kernel/latest/notebooks/custom_kernel/).
 
 ## Faster data serialization
 

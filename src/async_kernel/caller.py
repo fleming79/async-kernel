@@ -552,7 +552,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             token_ident = self._caller_token.set(self._caller_id)
             e = None
             try:
-                if inspect.iscoroutine(result := md["func"](*md["args"], **md["kwargs"])):
+                result = md["func"](*md["args"], **md["kwargs"])
+                if inspect.iscoroutine(result):
                     if backend is Backend.asyncio:
                         task = asyncio.current_task()
                         assert task

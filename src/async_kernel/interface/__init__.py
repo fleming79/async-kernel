@@ -3,20 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.typing import NoValue
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from async_kernel.interface.callable import Handlers
 
-__all__ = [
-    "BaseInterface",
-    "HasInterface",
-    "launch_zmq_kernel",
-    "start_kernel_callable_interface",
-    "start_kernel_zmq_interface",
-]
+__all__ = ["BaseInterface", "HasInterface", "launch_zmq_interface", "start_kernel_callable_interface"]
 
 
 async def start_kernel_callable_interface(
@@ -33,27 +26,9 @@ async def start_kernel_callable_interface(
     return await CallableInterface(**settings or {}).start_async(send=send, stopped=stopped)
 
 
-def start_kernel_zmq_interface(settings: dict) -> None:
+def launch_zmq_interface(settings: dict | None = None) -> None:
     """
-    Start the kernel with the zmq socket based kernel interface [ZMQInterface][async_kernel.interface.zmq.ZMQInterface][] loading settings prior to starting.
-
-
-    Args:
-        settings: The settings to apply.
-
-    Notes:
-        - Available in CPython.
-        - settings loaded by the interface.
-        - [sys.argv][] is not used.
-    """
-    from async_kernel.interface.zmq import ZMQInterface  # noqa: PLC0415
-
-    ZMQInterface.launch_instance(argv=NoValue, settings=settings)
-
-
-def launch_zmq_kernel(settings: dict) -> None:
-    """
-    Start the kernel with the zmq socket based kernel interface [ZMQInterface][async_kernel.interface.zmq.ZMQInterface] using the traitlets style configuration.
+    Launch the global instance of the ZMQInterface [ZMQInterface][async_kernel.interface.zmq.ZMQInterface].
 
     Notes:
         - Available in CPython.
