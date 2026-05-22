@@ -38,13 +38,11 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
     A displayhook subclass that publishes data using [iopub_send][async_kernel.interface.base.BaseInterface.iopub_send].
 
     This lives on the interface rather than a shell.
-
     """
 
     cache_size = traitlets.Int(1000, min=3).tag(config=True)
     do_full_cache = traitlets.Int(0).tag(config=True)
 
-    _content: Fixed[Self, dict[int, dict[str, Any]]] = Fixed[Self, dict[int, dict[str, Any]]](dict)
     _ = __ = ___ = ""
 
     def __init__(self, **kwargs) -> None:
@@ -105,7 +103,6 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
                     quiet = self.quiet()
         except LookupError:
             quiet = True
-        # self.check_for_underscore()
         if result is not None and not quiet:
             content = {}
             format_dict, md_dict = self.compute_format_data(result)
@@ -155,13 +152,7 @@ class AsyncDisplayPublisher(HasInterface, DisplayPublisher):
                 pass
             if msg is None:
                 return
-        if "application/vnd.jupyter.widget-view+json" in data and os.environ.get("VSCODE_CWD"):  # pragma: no cover
-            # ref: https://github.com/microsoft/vscode-jupyter/wiki/Component:-IPyWidgets#two-widget-managers
-            # On occasion we get `Error 'widget model not found'`
-            # As a work-around inject a delay so the widget can be registered first.
-            self.parent.callers[Channel.control].call_later(0.2, self.parent.iopub_send, msg)
-        else:
-            self.parent.iopub_send(msg)
+        self.parent.iopub_send(msg)
 
     @override
     def clear_output(self, wait: bool = False) -> None:
