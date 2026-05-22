@@ -113,7 +113,7 @@ def get_kernel_dir(*, folder: str = "", prefix: str = "", user: bool = False) ->
 def write_kernel_spec(
     *,
     path: Path | str | None = None,
-    name: str = "",
+    name: str = "async",
     display_name: str = "",
     user: bool = False,
     prefix: str = "",
@@ -165,11 +165,11 @@ def write_kernel_spec(
     import shutil  # noqa: PLC0415
 
     if path:
-        if name:
-            msg = "`name` cannot be specified when path is provided!"
-            raise ValueError(msg)
         path = expand_path(path)
     else:
+        if not name:
+            msg = "name was not provided"
+            raise ValueError(msg)
         if not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
             msg = f"Invalid {name=}!"
             raise ValueError(msg)
@@ -237,7 +237,7 @@ def get_kernel_info(kernel_dir: Path) -> dict[str, dict[str, Any]]:
     if kernel_dir.is_dir():
         for path in kernel_dir.iterdir():
             if path.is_dir() and (info_file := path.joinpath("kernel.json")).exists():
-                kernels[path.name] = json.loads(info_file.read_bytes()) | {"json_path": path}
+                kernels[path.name] = json.loads(info_file.read_bytes())
     return kernels
 
 

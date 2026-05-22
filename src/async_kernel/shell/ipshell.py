@@ -496,6 +496,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                         if stop_on_error:
                             for c in frozenset(self._stop_on_error_pool):
                                 c()
+                                await async_checkpoint(force=True)
             return content
         finally:
             utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]

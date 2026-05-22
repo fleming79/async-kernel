@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import json
 import sys
 from typing import TYPE_CHECKING
 
 import pytest
-from jupyter_client.kernelspec import KernelSpec
 
 from async_kernel.kernelspec import (
     get_kernel_dir,
@@ -21,28 +19,35 @@ if TYPE_CHECKING:
 
 def test_install_kernel_spec(tmp_path: Path, monkeypatch):
 
-    def my_launcher(settings: dict) -> None:
-        # note: debug break points won't work here.
-        msg = "passed"
-        raise RuntimeError(msg)
+    name = "my-kernel"
+    kernel_path = tmp_path.joinpath("kernels", name)
 
-    kernel_path = tmp_path.joinpath("kernels", "my-kernel")
-
-    with pytest.raises(ValueError, match="`name` cannot be specified when path is provided!"):
-        write_kernel_spec(path=kernel_path, name="some name")
-
-    assert write_kernel_spec(path=kernel_path, launcher=my_launcher) == kernel_path
+    command = ("python", "-m", "async_kernel", "start")
+    assert write_kernel_spec(path=kernel_path, command=command, name=name) == kernel_path
     kernel_json = kernel_path.joinpath("kernel.json")
     assert kernel_json.exists()
-    data = json.loads(kernel_json.read_bytes())
-    spec = KernelSpec(**data)
-    start_interface_string = next(v.removeprefix("--launcher=") for v in spec.argv if v.startswith("--launcher="))
-    launcher = import_launcher(start_interface_string)
 
-    with pytest.raises(RuntimeError, match="passed"):
-        launcher({})
+    info = get_kernel_info(kernel_path.parent)
+    assert info == {
+        "my-kernel": {
+            "argv": [
+                "python",
+                "-m",
+                "async_kernel",
+                "start",
+                "--connection_file={connection_file}",
+                "--launcher=launch_zmq_interface",
+                f"--name={name}",
+            ],
+            "env": {},
+            "display_name": f"Python {sys.version.split()[0]} ({name})",
+            "language": "python",
+            "interrupt_mode": "message",
+            "metadata": {"debugger": True, "concurrent": True},
+            "kernel_protocol_version": "5.5",
+        }
+    }
 
-    assert "my-kernel" in get_kernel_info(kernel_path.parent)
     with pytest.raises(FileNotFoundError, match="not a kernel"):
         remove_kernelspec(kernel_path.parent, name="not a kernel")
     remove_kernelspec(kernel_path.parent, name=kernel_path.name)
@@ -63,14 +68,28 @@ def test_get_kernel_dir():
     if sys.platform == "win32":
         folder = "%APPDATA%\\jupyter\\kernels"
     elif sys.platform == "darwin":
-        folder = "~/library/jupyter/kernels"
+        folder = "~/Library/Jupyter/kernels"
     else:
         folder = "~/.local/share/jupyter/kernels"
     path = get_kernel_dir(folder=folder)
     assert path.is_absolute()
     assert path.as_posix().lower().endswith("/jupyter/kernels")
 
-    assert path == get_kernel_dir(user=True)
+    assert get_kernel_dir(user=True).as_posix().lower().endswith("/jupyter/kernels")
 
     with pytest.raises(ValueError, match="ambiguous"):
         get_kernel_dir(user=True, folder="some folder")
+
+
+def test_import_launcher(
+    tmp_path: Path,
+):
+    def my_launcher(settings: dict):
+        return settings
+
+    write_kernel_spec(path=tmp_path, launcher=my_launcher)
+    assert tmp_path.joinpath("launcher.py").exists()
+    argv: list[str] = get_kernel_info(tmp_path.parent)[tmp_path.name]["argv"]
+    launcher = next(v.removeprefix("--launcher=") for v in argv if v.startswith("--launcher="))
+    launcher = import_launcher(launcher)
+    assert launcher({"okay": True}) == {"okay": True}

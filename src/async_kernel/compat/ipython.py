@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import threading
 from collections.abc import Callable
+from contextvars import ContextVar
 from sqlite3 import OperationalError
 from typing import TYPE_CHECKING, Any, Literal, Self
 
@@ -27,7 +28,9 @@ if TYPE_CHECKING:
 
     from IPython.core.interactiveshell import ExecutionResult
 
-    from async_kernel.shell import BaseShell, IPShell
+    from async_kernel.shell import IPShell
+
+_source_var: ContextVar[str] = ContextVar("async-kernel source", default="")
 
 
 class AsyncDisplayHook(HasInterface, DisplayHook):
@@ -82,8 +85,8 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
         pass  # pragma: no cover
 
     @override
-    def quiet(self):
-        pass  # pragma: no cover
+    def quiet(self) -> bool:
+        return self.semicolon_at_end_of_expression(_source_var.get())  # pyright: ignore[reportReturnType]
 
     @override
     def __call__(self, result=None) -> None:
@@ -99,7 +102,7 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
             if job["msg"]["header"]["msg_type"] == MsgType.execute_request:
                 msg_type = "execute_result"
                 if not (quiet := job["msg"]["content"].get("silent", True)):
-                    quiet = self.semicolon_at_end_of_expression(job["msg"]["content"]["code"])
+                    quiet = self.quiet()
         except LookupError:
             quiet = True
         # self.check_for_underscore()
@@ -186,8 +189,10 @@ class AsyncDisplayPublisher(HasInterface, DisplayPublisher):
 
 
 class AsyncHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
+    shell: IPShell
+
     @override
-    def __init__(self, *, shell: BaseShell) -> None:
+    def __init__(self, *, shell: IPShell) -> None:
         """Create a new history manager associated with a shell instance."""
         if shell.subshell_id:
             self.hist_file = ":memory:"
@@ -232,6 +237,14 @@ class AsyncHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager
             thread.join()
             self.save_thread = None
         self._instances.discard(self)
+
+    @override
+    def store_inputs(self, line_num: int, source: str, source_raw: str | None = None) -> None:
+        try:
+            _source_var.set(source)
+        except LookupError:
+            pass
+        return super().store_inputs(line_num, source, source_raw)
 
 
 class AsyncBuiltinTrap(BuiltinTrap):
