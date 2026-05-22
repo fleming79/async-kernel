@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import threading
 from collections.abc import Callable
 from contextvars import ContextVar
@@ -21,7 +20,7 @@ from typing_extensions import override
 from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.interface import BaseInterface, HasInterface
-from async_kernel.typing import Channel, Message, MsgType
+from async_kernel.typing import Message, MsgType
 
 if TYPE_CHECKING:
     from collections.abc import Callable
