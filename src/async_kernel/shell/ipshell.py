@@ -463,7 +463,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                     # A safeguard to catch exceptions not caught by the shell.
                     if utils.LAUNCHED_BY_DEBUGPY_PYTEST:
                         raise
-                    err = KernelInterrupt() if self.parent.last_interrupt_frame else e  # pyright: ignore[reportPrivateUsage]
+                    err = KernelInterrupt() if self.parent.last_interrupt_frame else e
                 else:
                     err = result.error_before_exec or result.error_in_exec if result else KernelInterrupt()
                     if not err and Tags.raises_exception in tags:

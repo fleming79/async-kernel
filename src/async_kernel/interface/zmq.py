@@ -34,18 +34,9 @@ from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
-from async_kernel.interface.base import BaseInterface
+from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.kernelspec import expand_path
-from async_kernel.typing import (
-    Backend,
-    Channel,
-    Content,
-    Job,
-    Message,
-    MsgHeader,
-    NoValue,
-    T_shell_co,
-)
+from async_kernel.typing import Backend, Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -126,7 +117,11 @@ class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
         return expand_path(s)
 
 
-BaseInterface.classes.extend((ProfileDir, Session))
+class AsyncSession(HasInterface, Session):
+    check_pid = traitlets.Bool(False).tag(config=True)
+
+
+BaseInterface.classes.append(ProfileDir)
 
 
 class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonApplication, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
@@ -153,7 +148,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonAp
     connection_file = PathTrait().tag(config=True)
     """JSON file in which to store connection info."""
 
-    session = traitlets.Instance(Session)
+    session = traitlets.Instance(AsyncSession, ())
     ""
 
     transport: traitlets.CaselessStrEnum[str] = traitlets.CaselessStrEnum(
@@ -199,13 +194,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonAp
     @traitlets.default("ip")
     def _default_ip(self) -> str:
         return str(self.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
-
-    @traitlets.default("session")
-    def _default_session(self) -> Session:
-        session = Session(config=self.config)
-        if not session.trait_has_value(" check_pid"):
-            session.check_pid = False
-        return session
 
     @property
     @override
