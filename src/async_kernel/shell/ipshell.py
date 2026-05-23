@@ -31,13 +31,12 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.compat.ipython import (
-    AsyncDisplayFormatter,
     AsyncDisplayHook,
-    AsyncDisplayPublisher,
-    AsyncDisplayTrap,
-    AsyncExtensionManager,
-    AsyncHistoryManager,
-    AsyncPrefilterManager,
+    IPDisplayFormatter,
+    IPDisplayPublisher,
+    IPExtensionManager,
+    IPHistoryManager,
+    IPPrefilterManager,
 )
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
@@ -65,6 +64,8 @@ class MethodNotSupported(Exception):
 
 
 class NullContext:
+    __slots__ = ["weakref"]
+
     def __enter__(self) -> None:
         return
 
@@ -87,13 +88,13 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     ""
     compiler_class = traitlets.Type(XCachingCompiler).tag(config=True)
     ""
-    prefilter_manager_class = traitlets.Type(AsyncPrefilterManager).tag(config=True)
+    prefilter_manager_class = traitlets.Type(IPPrefilterManager).tag(config=True)
     ""
     displayhook_class = traitlets.Type(AsyncDisplayHook).tag(config=True)
     ""
-    display_pub_class = traitlets.Type(AsyncDisplayPublisher).tag(config=True)
+    display_pub_class = traitlets.Type(IPDisplayPublisher).tag(config=True)
     ""
-    display_formatter_class = traitlets.Type(AsyncDisplayFormatter).tag(config=True)
+    display_formatter_class = traitlets.Type(IPDisplayFormatter).tag(config=True)
     ""
 
     configurables = Fixed(list)
@@ -102,12 +103,15 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     compile: Fixed[Self, XCachingCompiler] = Fixed(lambda c: c["owner"].compiler_class())
     "The compiler: provides a filename for a selection of code (cell)."
 
-    prefilter_manager: Fixed[Self, AsyncPrefilterManager] = Fixed(
+    prefilter_manager: Fixed[Self, IPPrefilterManager] = Fixed(
         lambda c: c["owner"].prefilter_manager_class(shell=c["owner"])
     )
     ""
-    extension_manager: Fixed[Self, AsyncExtensionManager] = Fixed(lambda c: AsyncExtensionManager(shell=c["owner"]))
+    extension_manager: Fixed[Self, IPExtensionManager] = Fixed(lambda c: IPExtensionManager(shell=c["owner"]))
     "A manager for loading extensions."
+
+    builtin_trap = Fixed(NullContext)
+    "A nullcontext. We leave the builtins constant once set."
 
     displayhook: Fixed[Self, AsyncDisplayHook] = Fixed(
         lambda c: (
@@ -119,17 +123,17 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     The mainshell provides the displayhook which is shared with subshells.
     """
 
-    display_trap = Fixed(AsyncDisplayTrap)
+    display_trap = Fixed(NullContext)
     """
     A context used in [IPython.core.interactiveshell.InteractiveShell.run_cell_async][] intended to capture output.
     
     In async-kernel this is a null context because displayhook does this instead.
     """
 
-    display_pub: Fixed[Self, AsyncDisplayPublisher] = Fixed(lambda c: c["owner"].display_pub_class())
+    display_pub: Fixed[Self, IPDisplayPublisher] = Fixed(lambda c: c["owner"].display_pub_class())
     "Used in [IPython.display.publish_display_data][]."
 
-    display_formatter: Fixed[Self, AsyncDisplayFormatter] = Fixed(lambda c: c["owner"].display_formatter_class())
+    display_formatter: Fixed[Self, IPDisplayFormatter] = Fixed(lambda c: c["owner"].display_formatter_class())
     """
     An object capable of transforming python objects to MIME content.
     
@@ -138,12 +142,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         - [Ipython docs](https://ipython.readthedocs.io/en/stable/config/shell_mimerenderer.html).
     """
 
-    history_manager: Fixed[Self, AsyncHistoryManager] = Fixed(
-        lambda c: AsyncHistoryManager(shell=c["owner"]), mode="ignore"
-    )
+    history_manager: Fixed[Self, IPHistoryManager] = Fixed(lambda c: IPHistoryManager(shell=c["owner"]), mode="ignore")
     ""
-    builtin_trap = Fixed(NullContext)
-    "A nullcontext. We leave the builtins constant once set."
 
     meta = Fixed(Struct)
     tempfiles = Fixed(list, mode="ignore")

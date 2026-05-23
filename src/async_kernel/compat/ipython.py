@@ -4,10 +4,8 @@ import threading
 from collections.abc import Callable
 from contextvars import ContextVar
 from sqlite3 import OperationalError
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Self
 
-from IPython.core.builtin_trap import BuiltinTrap
-from IPython.core.display_trap import DisplayTrap
 from IPython.core.displayhook import DisplayHook
 from IPython.core.displaypub import DisplayPublisher
 from IPython.core.extensions import ExtensionManager
@@ -114,7 +112,7 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
                 self.parent.iopub_send(msg_type, content=content)
 
 
-class AsyncDisplayPublisher(HasInterface, DisplayPublisher):
+class IPDisplayPublisher(HasInterface, DisplayPublisher):
     """A display publisher that publishes data using [iopub_send][async_kernel.interface.base.BaseInterface.iopub_send]."""
 
     _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
@@ -178,7 +176,7 @@ class AsyncDisplayPublisher(HasInterface, DisplayPublisher):
             self._hooks.remove(hook)
 
 
-class AsyncHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
+class IPHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
     shell: IPShell
 
     @override
@@ -237,40 +235,15 @@ class AsyncHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager
         return super().store_inputs(line_num, source, source_raw)
 
 
-class AsyncBuiltinTrap(BuiltinTrap):
-    def __init__(self, shell=None):  # pyright: ignore[reportMissingSuperCall]
-        pass
-
-    @override
-    def __enter__(self):  # pyright: ignore[reportMissingSuperCall]
-        return self
-
-    @override
-    def __exit__(self, type, value, traceback):  # pyright: ignore[reportMissingSuperCall]
-        return False
-
-
-class AsyncDisplayTrap(HasInterface[BaseInterface["IPShell"]], DisplayTrap):
-    def __init__(self) -> None:
-        self.display = self.parent.kernel.main_shell.displayhook
-        super().__init__(hook=self.display)
-
-    def __enter__(self) -> None:  # pyright: ignore[reportMissingSuperCall, reportIncompatibleMethodOverride, reportImplicitOverride]
-        return
-
-    def __exit__(self, type, value, traceback) -> Literal[False]:  # pyright: ignore[reportMissingSuperCall, reportImplicitOverride]
-        return False
-
-
-class AsyncDisplayFormatter(HasInterface, DisplayFormatter):
+class IPDisplayFormatter(HasInterface, DisplayFormatter):
     pass
 
 
-class AsyncPrefilterManager(HasInterface, PrefilterManager):
+class IPPrefilterManager(HasInterface, PrefilterManager):
     pass
 
 
-class AsyncExtensionManager(HasInterface, ExtensionManager):
+class IPExtensionManager(HasInterface, ExtensionManager):
     shell: IPShell
 
     def __init__(self, *, shell: IPShell) -> None:
