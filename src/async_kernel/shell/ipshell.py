@@ -31,7 +31,6 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.compat.ipython import (
-    AsyncBuiltinTrap,
     AsyncDisplayFormatter,
     AsyncDisplayHook,
     AsyncDisplayPublisher,
@@ -65,6 +64,14 @@ class MethodNotSupported(Exception):
     """
 
 
+class NullContext:
+    def __enter__(self) -> None:
+        return
+
+    def __exit__(self, type, value, traceback) -> Literal[False]:
+        return False
+
+
 class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
     """
     An IPython InteractiveShell implementation.
@@ -88,7 +95,6 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     ""
     display_formatter_class = traitlets.Type(AsyncDisplayFormatter).tag(config=True)
     ""
-    builtin_trap_class = traitlets.Type(AsyncBuiltinTrap).tag(config=True)
 
     configurables = Fixed(list)
     "Not used. Provided for compatibility."
@@ -136,8 +142,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         lambda c: AsyncHistoryManager(shell=c["owner"]), mode="ignore"
     )
     ""
-    builtin_trap: Fixed[Self, AsyncBuiltinTrap] = Fixed(lambda c: c["owner"].builtin_trap_class(), mode="log")
-    ""
+    builtin_trap = Fixed(NullContext)
+    "A nullcontext. We leave the builtins constant once set."
 
     meta = Fixed(Struct)
     tempfiles = Fixed(list, mode="ignore")
