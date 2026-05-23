@@ -105,7 +105,7 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
             format_dict, md_dict = self.compute_format_data(result)
             self.update_user_ns(result)
             if format_dict:
-                content["execution_count"] = self.prompt_count
+                content["execution_count"] = self.shell.execution_count
                 content["data"] = format_dict
                 content["metadata"] = md_dict
                 self.log_output(format_dict)
