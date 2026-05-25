@@ -9,6 +9,7 @@ import pytest
 from aiologic import Event
 from traitlets.config.configurable import Configurable
 
+import async_kernel
 from async_kernel.interface import BaseInterface, HasInterface
 from async_kernel.shell import BaseShell
 
@@ -69,6 +70,17 @@ class TestBaseInterface:
             assert subshell.subshell_id in interface.kernel.subshells
             subshell.stop(force=True)
             assert subshell.subshell_id not in interface.kernel.subshells
+            assert isinstance(subshell.get_ipython(), BaseShell)
+
+    async def test_base_shell_displayhook(self, anyio_backend: Backend, mocker):
+
+        async with BaseInterface(shell_class=BaseShell) as interface:
+            iopub_send = mocker.patch.object(interface, "iopub_send")
+            with async_kernel.utils.show_result(True):
+                interface.kernel.shell.displayhook(123)
+            assert iopub_send.called
+            expected = "call('execute_result', content={'execution_count': 0, 'data': '123', 'metadata': {}})"
+            assert str(iopub_send.call_args) == expected
 
     async def test_stop_early(self, anyio_backend: Backend):
         app = BaseInterface(shell_class=BaseShell)

@@ -221,7 +221,7 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
 @pytest.mark.parametrize("response", ["y", ""])
 async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, response: Literal["y", ""]):
     stop = mocker.patch.object(kernel.parent, "stop")
-    raw_input = mocker.patch.object(kernel.parent, "raw_input", return_value=response)
+    raw_input = mocker.patch.object(kernel, "raw_input", return_value=response)
     await utils.execute(client, "quit()")
     assert raw_input.call_count == 1
     assert stop.call_count == (1 if response == "y" else 0)

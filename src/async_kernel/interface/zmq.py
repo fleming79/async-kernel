@@ -8,7 +8,6 @@ import errno
 import json
 import os
 import pathlib
-import signal
 import sys
 import threading
 import time
@@ -19,7 +18,6 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
 import zmq
 from aiologic import BinarySemaphore
-from aiologic.lowlevel import current_async_library, enable_signal_safety
 from IPython.core.application import BaseIPythonApplication
 from IPython.core.error import StdinNotImplementedError
 from IPython.core.profiledir import ProfileDir
@@ -36,11 +34,10 @@ from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.kernelspec import expand_path
-from async_kernel.typing import Backend, Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
+from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
-    from types import FrameType
 
 
 __all__ = ["ZMQInterface"]
@@ -158,7 +155,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonAp
 
     _initialized = False
     _zmq_context = Fixed(zmq.Context)
-    _interrupt_requested: bool | Literal["FORCE"] = False
     _iopub_url = "inproc://iopub-capture"
     _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
 
@@ -203,7 +199,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonAp
     @override
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        self.backend = Backend(current_async_library())
         start = Event()
         try:
             self._start_hb_iopub_shell_control_threads(start)
@@ -452,62 +447,3 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonAp
                 except Exception as e:
                     log.debug("Bad message on %s: %s", channel, e)
                     continue
-
-    @enable_signal_safety
-    @override
-    def _signal_handler(self, signum, frame: FrameType | None) -> None:
-        "Handle interrupt signals."
-
-        match self._interrupt_requested:
-            case "FORCE":
-                self._interrupt_requested = False
-                raise KernelInterrupt
-            case True:
-                if frame and frame.f_locals is self.kernel.shell.user_ns:
-                    self._interrupt_requested = False
-                    raise KernelInterrupt
-                self.last_interrupt_frame = frame
-
-                def clearlast_interrupt_frame():
-                    if self.last_interrupt_frame is frame:
-                        self.last_interrupt_frame = None
-
-                def re_raise():
-                    if self.last_interrupt_frame is frame:
-                        self._interrupt_now(force=True)
-
-                # Race to check if the main thread should be interrupted.
-                self.callers[Channel.shell].call_direct(clearlast_interrupt_frame)
-                self.callers[Channel.control].call_later(1, re_raise)
-            case False:
-                signal.default_int_handler(signum, frame)
-
-    def _interrupt_now(self, *, force=False) -> None:
-        """
-        Request an interrupt of the currently running shell thread.
-
-        If called from the main thread, sets the interrupt request flag and sends a SIGINT signal
-        to the current process. On Windows, uses `signal.raise_signal`; on other platforms, uses `os.kill`.
-        If `force` is True, sets the interrupt request flag to "FORCE".
-
-        Args:
-            force: If True, requests a forced interrupt. Defaults to False.
-        """
-        # Restricted this to when the shell is running in the main thread.
-        if self.callers[Channel.shell].id == Caller.CALLER_MAIN_THREAD_ID:
-            self._interrupt_requested = "FORCE" if force else True
-            if sys.platform == "win32":
-                signal.raise_signal(signal.SIGINT)
-                time.sleep(0)
-            else:
-                os.kill(os.getpid(), signal.SIGINT)
-
-    @override
-    def interrupt(self) -> None:
-        """
-        Perform a keyboard interrupt.
-        """
-
-        if not getattr(self.kernel.debugger, "stopped_threads", None):
-            self._interrupt_now()
-        super().interrupt()

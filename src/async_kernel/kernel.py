@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+import builtins
 import functools
+import getpass
 import sys
 import time
 from collections.abc import Callable
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Self
+from io import TextIOBase
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
 import traitlets
 from traitlets.config import LoggingConfigurable
+from typing_extensions import override
 
 import async_kernel
 from async_kernel import utils
@@ -32,12 +36,84 @@ from async_kernel.typing import (
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
+    from contextvars import ContextVar
     from types import CoroutineType
 
     from async_kernel.caller import Caller
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
+
+
+class OutStream(HasInterface, TextIOBase):
+    """
+    A file like object that sends or redirects text as it is written.
+
+    Only intended for internal use.
+    """
+
+    def __init__(self, name: Literal["stdout", "stderr"]) -> None:
+        """
+        Args:
+            send: A callback to send text as it is written.
+            context: A context variable to an potential alternate target for the text.
+        """
+        super().__init__()
+        self.name = name
+        self._context: ContextVar = getattr(async_kernel.utils, f"_{name}_context")
+        self.ident = f"stream.{self.name}".encode()
+        self._origin = None
+
+    def patch(self) -> Callable[[], None]:
+        self._origin = origin = getattr(sys, self.name)
+        setattr(sys, self.name, self)
+
+        def restore() -> None:
+            setattr(sys, self.name, origin)
+
+        return restore
+
+    @override
+    def isatty(self) -> Literal[True]:
+        return True
+
+    @override
+    def readable(self) -> Literal[False]:
+        return False
+
+    @override
+    def seekable(self) -> Literal[False]:
+        return False
+
+    @override
+    def writable(self) -> Literal[True]:
+        return True
+
+    @override
+    def flush(self) -> None:
+        if c_out := self._context.get():
+            c_out.flush()
+
+    @override
+    def write(self, string: str) -> int:
+        if not isinstance(string, str):  # pyright: ignore[reportUnnecessaryIsInstance]
+            msg = f"Not a string: {string!r}"  # pyright: ignore[reportUnreachable]
+            raise TypeError(msg)
+        if out := self._context.get():
+            out.write(string)
+        else:
+            interface = self.parent
+            interface.iopub_send(msg_or_type="stream", content={"name": self.name, "text": string}, ident=self.ident)
+            if self._origin and not self.parent.quiet:
+                self._origin.write(string)  # pragma: no cover
+                self._origin.flush()  # pragma: no cover
+
+        return len(string)
+
+    @override
+    def writelines(self, sequence) -> None:
+        self.write("".join(sequence))
+        self.flush()
 
 
 class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interface_co, T_shell_co]):
@@ -190,12 +266,16 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     def apply_patches(self) -> Callable[[], None]:
         """Apply patches returning a callable to reverse the patches."""
 
-        previous_displayhook = sys.displayhook
-        sys.displayhook = self.displayhook
+        original = sys.displayhook, builtins.input, getpass.getpass
+        builtins.input, sys.displayhook, getpass.getpass = self.raw_input, self.displayhook, self.getpass
         restore_comm = self.comm_manager.patch_comm()
+        restore_stdout = OutStream("stdout").patch()
+        restore_stderr = OutStream("stderr").patch()
 
-        def restore():
-            sys.displayhook = previous_displayhook
+        def restore() -> None:
+            sys.displayhook, builtins.input, getpass.getpass = original
+            restore_stdout()
+            restore_stderr()
             restore_comm()
 
         return restore
@@ -417,7 +497,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def interrupt_request(self, job: Job[Content], /) -> Content:
         """Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt)."""
-        self.parent.interrupt()
+        self.shell.interrupt()
         return {}
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
@@ -526,8 +606,8 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     def getpass(self, prompt="", stream=None) -> str:
         "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
-        return self.parent.getpass(prompt)
+        return self.parent.input_request(str(prompt), password=True)
 
     def raw_input(self, prompt="") -> str:
         "Matches signature of [ipykernel.kernelbase.Kernel.raw_input][]."
-        return self.parent.raw_input(prompt)
+        return self.parent.input_request(str(prompt), password=False)

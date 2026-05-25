@@ -3,13 +3,9 @@
 from __future__ import annotations
 
 import ast
-import builtins
-import contextlib
 import gc
-import getpass
 import importlib.util
 import os
-import signal
 import sys
 import weakref
 from contextlib import asynccontextmanager
@@ -19,7 +15,7 @@ from uuid import uuid4
 
 import anyio
 from aiologic import Event
-from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library, enable_signal_safety
+from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
 from traitlets.config.application import Application, ClassesType
@@ -29,8 +25,7 @@ import async_kernel
 import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
-from async_kernel.iostream import OutStream
+from async_kernel.common import Fixed
 from async_kernel.typing import (
     Backend,
     Channel,
@@ -46,7 +41,6 @@ from async_kernel.typing import (
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
-    from types import FrameType
 
     from async_kernel.kernel import Kernel
     from async_kernel.typing import Content
@@ -179,9 +173,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
-
-    interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
-    "A set for callbacks to register for calling when `interrupt` is called."
 
     event_started = Fixed(Event)
     "An event that occurs when the interface is started."
@@ -336,7 +327,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.log, protected=True)
         self.backend = Backend(current_async_library())
-        remove_patches = self._apply_patches()
         try:
             async with caller:
                 with anyio.CancelScope() as scope:
@@ -346,53 +336,11 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
                         self.event_started.set()
                         yield self
         finally:
-            remove_patches()
             self.stop()
-            del remove_patches
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
             self.log.info("Interface stopped")
             self.event_stopped.set()
-
-    @enable_signal_safety
-    def _signal_handler(self, signum, frame: FrameType | None) -> None:
-        self.last_interrupt_frame = frame
-        self.interrupt()
-        self.last_interrupt_frame = None
-        raise KernelInterrupt
-
-    def _apply_patches(self) -> Callable[[], None]:
-
-        sig = None
-        with contextlib.suppress(ValueError, AttributeError):
-            sig = signal.signal(signal.SIGINT, self._signal_handler)
-        original = sys.stdout, sys.stderr, builtins.input, getpass.getpass
-
-        def restore() -> None:
-            if sig:
-                signal.signal(signal.SIGINT, sig)
-            sys.stdout, sys.stderr, builtins.input, getpass.getpass = original
-
-        builtins.input = self.raw_input
-        getpass.getpass = self.getpass
-        for name in ["stdout", "stderr"]:
-
-            def flusher(string: str, name=name) -> None:
-                "Publish stdio or stderr when flush is called"
-                interface = BaseInterface.instance()
-                interface.iopub_send(
-                    msg_or_type="stream",
-                    content={"name": name, "text": string},
-                    ident=f"stream.{name}".encode(),
-                )
-                if not interface.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
-                    echo.write(string)  # pragma: no cover
-                    echo.flush()  # pragma: no cover
-
-            context = utils._stdout_context if name == "stdout" else utils._stderr_context  # pyright: ignore[reportPrivateUsage]
-            wrapper = OutStream(send=flusher, context=context)
-            setattr(sys, name, wrapper)
-        return restore
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """
@@ -433,34 +381,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             password: If the prompt should be considered as a password.
         """
         raise NotImplementedError
-
-    def raw_input(self, prompt: str = "") -> str:
-        """
-        Forward a raw_input request to the client.
-
-        Args:
-            prompt: The user prompt.
-        """
-        return self.input_request(str(prompt), password=False)
-
-    def getpass(self, prompt: str = "") -> str:
-        """
-        Forward getpass to the client.
-
-        Args:
-            prompt: The user prompt.
-        """
-        return self.input_request(prompt, password=True)
-
-    def interrupt(self) -> None:
-        """
-        Interrupt execution, possible raising a [async_kernel.common.KernelInterrupt][].
-        """
-        while self.interrupts:
-            try:
-                self.interrupts.pop()()
-            except Exception:
-                pass
 
     def msg(
         self,
@@ -530,10 +450,10 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
 class HasInterface(Generic[T_interface_co]):
     """
-    A mixin class providing a reference to the global [kernel interface][async_kernel.interface.base.BaseInterface].
+    A mixin class providing a reference to the global [interface][async_kernel.interface.base.BaseInterface].
 
     This class is designed to be compatible with [Configurable][] objects enabling the sharing
-    of configuration and log. The global _kernel interface_ must exist before creating subclass
+    of configuration and log objects. The global _interface_ must exist before creating subclass
     instances using this mixin.
     """
 

@@ -9,7 +9,6 @@ from aiologic import Event
 from IPython.core.error import StdinNotImplementedError
 
 import async_kernel
-from async_kernel.common import KernelInterrupt
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import start_kernel_callable_interface
 from async_kernel.interface.callable import CallableInterface
@@ -91,5 +90,5 @@ class TestCallableInterface:
             CallableInterface()
 
     async def test_keyboard_interrupt(self, interface) -> None:
-        with pytest.raises(KernelInterrupt):
+        with pytest.raises(KeyboardInterrupt):
             signal.raise_signal(signal.SIGINT)

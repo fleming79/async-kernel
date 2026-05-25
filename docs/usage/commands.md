@@ -5,9 +5,9 @@ Once async-kernel is installed, you can use the command `async-kernel` at the co
 ## Sub-commands
 
 - [`install`](#install): install a kernelspec.
-- [`uninstall`](#uninstall): uninstall a kernelspec
-- [`start`](#start-a-kernel): start a kernel
-- `-l` `--list`: list installed kernelspecs
+- [`uninstall`](#uninstall): uninstall a kernelspec.
+- [`start`](#start-a-kernel): start a kernel.
+- `-l` `--list`: list installed kernelspecs.
 - `--help-all`: Display all config options available when the kernel.
 - `--show-config`: Print all customized options.
 - `--show-config-json`: Print all customized options in json format.
@@ -25,7 +25,7 @@ Many configuration options are available, use the command `'--help-all'` to see 
 - [`host`](#host-options) `[None, "tk", "qt"]`: The name of a gui event loop to use (`default=None`).
 - [`backend`](#backend-interface-backend) `["asyncio", "trio"]`: The backend to use (`default="asyncio"`).
 
-## [Kernelspec](#https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs)
+## [Kernelspec](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs)
 
 ### Install
 
@@ -49,21 +49,6 @@ async-kernel install --name=async-trio --backend=trio
 async-kernel install --name=async-tk --host=<host name>
 ```
 
-### Uninstall
-
-Uninstall is essentially the reverse of install but without configuration options.
-
-```bash
-# default
-async-kernel install
-
-# Install the user environment
-async-kernel install -user
-
-# The main options are
-async-kernel install --name=<kernel name> --host=<host name> --backend=<backend name>
-```
-
 #### Backend (`interface-backend`)
 
 There are two supported backends 'asyncio' and 'trio'.
@@ -77,7 +62,7 @@ Options can be written as a literal python string.
 async-kernel install --name=async-trio --backend=trio
 ```
 
-### Kernel spec location
+#### Kernel spec location
 
 See [here](https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs) for a list of locations where Jupyter/IPython
 searches for the kernel specs.
@@ -90,14 +75,14 @@ The path where the kernel spec is installed/deleted can also be specified by eit
 - 'prefix' (optional): the prefix to use with `PREFIX/share/jupyter/kernels` (defaults is [sys.prefix][]).
 - 'folder' (optional) the full path to the `kernels` folder.
 
-### Examples
+#### Examples
 
 ```bash
 # Install for a user
 async-kernel install --name=async --user
 ```
 
-### Host loop (gui event loops - tk, qt)
+#### Host loop (gui event loops - tk, qt)
 
 Typically event loops don't like to share the thread with any other event loop.
 Trio provides the function [trio.lowlevel.start_guest_run][] which allows it to run
@@ -110,7 +95,7 @@ async-kernel supports configuration of one host and one backend for the kernel.
 async-kernel install --name=async-with-host --host=<hostname>
 ```
 
-### Host options
+##### Host options
 
 Options can be provided to configure how a host loads. There are only a few options available
 at present.
@@ -144,3 +129,24 @@ Options can be provided for how the backend is started.
 # If uvloop is installed it will be used by default. You can do this to disable it.
 async-kernel install --name=async --backend_options use_uvloop=False
 ````
+
+### Uninstall
+
+Uninstall is essentially the reverse of install but without configuration options.
+
+```bash
+# default
+async-kernel install
+
+# Install the user environment
+async-kernel install -user
+
+# The main options are
+async-kernel install --name=<kernel name> --host=<host name> --backend=<backend name>
+```
+
+### Start a kernel
+
+Use the command `async-kernel start <options ...>`. All configuration options accepted when starting a kernel.
+
+Note: Kernel spec files are not used when starting a kernel.
