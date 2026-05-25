@@ -69,8 +69,6 @@ class Fixed(Generic[S, T]):
             - class | callable: Called with zero or one positional argument [FixedCreate][].
 
         created: A per-instance optional callback that gets called on first-access to the property.
-        use_weakref: Use a [weakref.WeakValueDictionary][] to store instances. This can be
-            used to avoid circular-references.
         mode: How to handle invalid data.
             - `'raise'`: Raise an error.
             - `'log'`: Log a warning or exception.
@@ -102,13 +100,12 @@ class Fixed(Generic[S, T]):
         /,
         *,
         created: Callable[[FixedCreated[S, T]]] | None = None,
-        use_weakref: bool = False,
         mode: Literal["raise", "ignore", "log"] = "raise",
     ) -> None:
         if callable(obj) or isinstance(obj, str):  # pyright: ignore[reportUnnecessaryIsInstance]
             self.create = obj
             self.created = created
-            self.instances = weakref.WeakValueDictionary() if use_weakref else {}
+            self.instances = {}
             self.instances_locks = {}
             self.mode: Literal["raise", "ignore", "log"] = mode
         else:

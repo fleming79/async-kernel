@@ -214,12 +214,6 @@ class IPHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
             self.save_thread = None
         self._instances.discard(self)
 
-    # @override
-    # def store_inputs(self, line_num: int, source: str, source_raw: str | None = None) -> None:
-    #     if DisplayHook.semicolon_at_end_of_expression(source):
-    #         utils._suppress_output.set(True)  # pyright: ignore[reportPrivateUsage]
-    #     return super().store_inputs(line_num, source, source_raw)
-
 
 class IPDisplayFormatter(HasInterface, DisplayFormatter):
     pass
