@@ -39,6 +39,7 @@ from async_kernel.typing import (
     MsgHeader,
     NoValue,
     RunSettings,
+    T,
     T_interface_co,
     T_shell_co,
 )
@@ -183,10 +184,10 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     "A set for callbacks to register for calling when `interrupt` is called."
 
     event_started = Fixed(Event)
-    "An event that occurs when the kernel is started."
+    "An event that occurs when the interface is started."
 
     event_stopped = Fixed(Event)
-    "An event that occurs when the kernel is stopped."
+    "An event that occurs when the interface is stopped."
 
     _instance: Self | None = None
     _zmq_context = None
@@ -321,7 +322,9 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        self.backend = Backend(current_async_library())
+        if BaseInterface._instance is not self or self.event_started or self.event_stopped:
+            msg = "Stopped early"
+            raise RuntimeError(msg)
         caller = Caller(
             "manual",
             name="Shell",
@@ -332,29 +335,24 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         )
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.log, protected=True)
-
-        async with caller:
-            if BaseInterface._instance is not self or self.event_started or self.event_stopped:
-                msg = "Stopped early"
-                raise RuntimeError(msg)
-            remove_patches = self._apply_patches()
-            try:
+        self.backend = Backend(current_async_library())
+        remove_patches = self._apply_patches()
+        try:
+            async with caller:
                 with anyio.CancelScope() as scope:
                     self._scope = scope
-                    assert self.kernel.parent is self
-                    self.log.info("Kernel started: %s", self.summary)
-                    self.event_started.set()
-                    yield self
-            finally:
-                self.log.info("Kernel shutdown initiated")
-                self.event_stopped.set()
-                with anyio.CancelScope():
-                    await self.kernel.do_shutdown(self.kernel._restart)  # pyright: ignore[reportPrivateUsage]
-                remove_patches()
-                del remove_patches
-                if BaseInterface._instance is self:
-                    BaseInterface._instance = None
-                self.log.info("Kernel stopped")
+                    self.log.info("Interface started: %s", self.summary)
+                    async with self.kernel.running():
+                        self.event_started.set()
+                        yield self
+        finally:
+            remove_patches()
+            self.stop()
+            del remove_patches
+            if BaseInterface._instance is self:
+                BaseInterface._instance = None
+            self.log.info("Interface stopped")
+            self.event_stopped.set()
 
     @enable_signal_safety
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
@@ -364,17 +362,16 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         raise KernelInterrupt
 
     def _apply_patches(self) -> Callable[[], None]:
+
         sig = None
         with contextlib.suppress(ValueError, AttributeError):
             sig = signal.signal(signal.SIGINT, self._signal_handler)
         original = sys.stdout, sys.stderr, builtins.input, getpass.getpass
-        remove_comm_patch = self.kernel.comm_manager.patch_comm()
 
         def restore() -> None:
             if sig:
                 signal.signal(signal.SIGINT, sig)
             sys.stdout, sys.stderr, builtins.input, getpass.getpass = original
-            remove_comm_patch()
 
         builtins.input = self.raw_input
         getpass.getpass = self.getpass
@@ -382,12 +379,13 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
             def flusher(string: str, name=name) -> None:
                 "Publish stdio or stderr when flush is called"
-                self.iopub_send(
+                interface = BaseInterface.instance()
+                interface.iopub_send(
                     msg_or_type="stream",
                     content={"name": name, "text": string},
                     ident=f"stream.{name}".encode(),
                 )
-                if not self.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
+                if not interface.quiet and (echo := (sys.__stdout__ if name == "stdout" else sys.__stderr__)):
                     echo.write(string)  # pragma: no cover
                     echo.flush()  # pragma: no cover
 
@@ -433,9 +431,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         Args:
             prompt: The user prompt.
             password: If the prompt should be considered as a password.
-
-        Raises:
-           IPython.core.error.StdinNotImplementedError: if active frontend doesn't support stdi
         """
         raise NotImplementedError
 
@@ -445,9 +440,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
         Args:
             prompt: The user prompt.
-
-        Raises:
-           IPython.core.error.StdinNotImplementedError: if active frontend doesn't support stdin.
         """
         return self.input_request(str(prompt), password=False)
 
@@ -457,9 +449,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
         Args:
             prompt: The user prompt.
-
-        Raises:
-           IPython.core.error.StdinNotImplementedError: if active frontend doesn't support stdin.
         """
         return self.input_request(prompt, password=True)
 
@@ -477,12 +466,12 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         self,
         msg_type: str,
         *,
-        content: dict | None = None,
+        content: T | None = None,
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
         channel: Channel = Channel.shell,
-    ) -> Message[dict[str, Any]]:
+    ) -> Message[T]:
         """
         Create a new message.
 

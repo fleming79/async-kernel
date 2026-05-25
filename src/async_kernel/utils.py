@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from contextlib import _SupportsRedirect, _SupportsRedirectT  # pyright: ignore[reportPrivateUsage]
 
     from async_kernel.kernel import Kernel
+    from async_kernel.shell import BaseShell
     from async_kernel.typing import Content, Job, Message
 
 __all__ = [
@@ -38,6 +39,7 @@ __all__ = [
     "redirect_stderr",
     "redirect_stdout",
     "setattr_nested",
+    "show_result",
     "subshell_context",
 ]
 
@@ -49,7 +51,8 @@ LAUNCHED_BY_DEBUGPY_PYTEST = LAUNCHED_BY_DEBUGPY and "pytest" in sys.modules
 _job_var: ContextVar[Job[Any]] = ContextVar("async-kernel job")
 _cell_id_var: ContextVar[str | None] = ContextVar("async-kernel cell_id", default=None)
 _stdout_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel std_out", default=None)
-_stderr_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel std_err", default=None)
+_stderr_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel stderr", default=None)
+_show_result_context: ContextVar[bool] = ContextVar("async-kernel show_result", default=False)
 
 
 def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:
@@ -66,6 +69,11 @@ def get_kernel() -> Kernel:
         msg = "A kernel interface is not started!"
         raise RuntimeError(msg)
     return async_kernel.interface.BaseInterface.instance().kernel
+
+
+def get_ipython() -> BaseShell:
+    "Get the shell in the current context."
+    return get_kernel().get_shell()
 
 
 def get_job() -> Job[Any]:
@@ -118,9 +126,9 @@ def get_tags(job: Job | None = None, /) -> list[str]:
         return []
 
 
-def get_cell_id() -> str | None:
+def get_cell_id(job: Job | None = None, /) -> str | None:
     "The `cell_id` for the current context."
-    return _cell_id_var.get() or (metadata.get("cellId") if (metadata := get_metadata()) else None)
+    return _cell_id_var.get() or (metadata.get("cellId") if (metadata := get_metadata(job)) else None)
 
 
 _TagType = TypeVar("_TagType", str, float, int, bool)
@@ -249,3 +257,19 @@ def redirect_stderr(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirec
         yield stream
     finally:
         _stderr_context.reset(token)
+
+
+@contextmanager
+def show_result(show: bool = True, /) -> Generator[None, Any, None]:
+    "A context where `show_result` is enabled/disabled."
+    token = _show_result_context.set(show)
+    try:
+        yield
+    finally:
+        if token:
+            _show_result_context.reset(token)
+
+
+def show_result_enabled() -> bool:
+    "Is the output suppressed in the current context?"
+    return _show_result_context.get()

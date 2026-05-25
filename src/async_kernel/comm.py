@@ -73,9 +73,8 @@ class CommManager(HasInterface, comm.base_comm.CommManager):
         def get_comm_manager() -> Self:
             return self
 
-        def remove_patch():
-            if comm.get_comm_manager is get_comm_manager:
-                comm.get_comm_manager = lambda: None
+        comm_create_comm, comm_get_comm_manager = comm.create_comm, comm.get_comm_manager
+        ipykernel_original = {}
 
         comm.create_comm = Comm
         comm.get_comm_manager = get_comm_manager
@@ -86,5 +85,12 @@ class CommManager(HasInterface, comm.base_comm.CommManager):
                 ipykernel_comm = import_module("ipykernel.comm")
 
                 for k, v in {"Comm": Comm, "CommManager": CommManager}.items():
+                    ipykernel_original[k] = getattr(ipykernel_comm, k)
                     setattr(ipykernel_comm, k, v)
+
+        def remove_patch():
+            comm.create_comm, comm.get_comm_manager = comm_create_comm, comm_get_comm_manager
+            for k, v in ipykernel_original.items():
+                setattr(ipykernel_comm, k, v)  # pyright: ignore[reportPossiblyUnboundVariable]
+
         return remove_patch

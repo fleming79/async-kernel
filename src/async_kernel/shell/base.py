@@ -4,17 +4,18 @@ import contextlib
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
 from traitlets import traitlets
-from traitlets.config import Configurable
+from traitlets.config.configurable import LoggingConfigurable
 from typing_extensions import override
 
 import async_kernel
+from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.interface import HasInterface
 from async_kernel.pending import PendingManager
-from async_kernel.typing import T_interface_co
+from async_kernel.typing import ExecuteContent, Job, T_interface_co
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Callable, Generator
 
     from async_kernel import Kernel
     from async_kernel.typing import Content
@@ -27,7 +28,7 @@ class ShellPendingManager(PendingManager):
     "A pending manager to track the active shell/subshell."
 
 
-class BaseShell(HasInterface[T_interface_co], Configurable, Generic[T_interface_co]):
+class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interface_co]):
     """
     The base shell implementation.
 
@@ -112,19 +113,39 @@ class BaseShell(HasInterface[T_interface_co], Configurable, Generic[T_interface_
             return f"<{self.__class__.__name__}{protected}: Main Shell>"
         return f"<{self.__class__.__name__}{protected}: Subshell ({self.subshell_id})>"
 
-    def __init__(self, *, protected: bool = False, is_mainshell=False, **kwargs) -> None:
-        self._baseshell_init(protected=protected, is_mainshell=is_mainshell)
-        if is_mainshell:
-            return
-        super().__init__(**kwargs)
+    def __init__(self, *, protected: bool = False, **kwargs) -> None:
 
-    def _baseshell_init(self, *, protected: bool, is_mainshell: bool):
-        if is_mainshell:
+        if kwargs.pop("is_mainshell", False):
             self.set_trait("is_mainshell", True)
-            self.set_trait("protected", protected)
-        elif not self.is_mainshell:
-            self.set_trait("protected", protected)
-            self.kernel._subshell_created(self)  # pyright: ignore[reportPrivateUsage]
+        super(LoggingConfigurable, self).__init__(**kwargs)
+        self.set_trait("protected", protected)
+        self.kernel._shell_created(self)  # pyright: ignore[reportPrivateUsage]
+        if self.subshell_id:
+            self.initialize()
+
+    @contextlib.asynccontextmanager
+    async def mainshell_running(self):
+        # Used in the context of `Kernel._run`
+        assert self.is_mainshell
+        restore = self.apply_patches()
+        try:
+            self.initialize()
+            self.log.info("Main shell started")
+            yield
+        finally:
+            self.stop(force=True)
+            self.log.info("Main shell stopped")
+            restore()
+
+    def apply_patches(self) -> Callable[[], None]:
+        return lambda: None
+
+    def initialize(self) -> None:
+        self.initialize = lambda: None  # Replace with a dummy patch.
+        self.init_builtins()
+
+    def init_builtins(self) -> None:
+        pass
 
     def stop(self, *, force: bool = False) -> None:
         """
@@ -136,7 +157,8 @@ class BaseShell(HasInterface[T_interface_co], Configurable, Generic[T_interface_
 
         if self.protected and not force:
             return
-        self.kernel._subshell_stopped(self)  # pyright: ignore[reportPrivateUsage]
+        if not self.is_mainshell:
+            self.kernel._subshell_stopped(self)  # pyright: ignore[reportPrivateUsage]
 
     def reset(self, new_session=True, aggressive=False) -> None:
         "Reset the shell, cancelling all associated pending."
@@ -151,9 +173,9 @@ class BaseShell(HasInterface[T_interface_co], Configurable, Generic[T_interface_
             finally:
                 self._resetting = False
 
-    def get_ipython(self) -> Self:
+    def get_ipython(self) -> BaseShell:
         """Return the shell for the current context."""
-        return self.kernel.get_shell()
+        return async_kernel.utils.get_ipython()
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
@@ -161,19 +183,21 @@ class BaseShell(HasInterface[T_interface_co], Configurable, Generic[T_interface_
         with self.pending_manager.context():
             yield
 
-    async def execute_request(
-        self,
-        code: str = "",
-        *,
-        silent: bool = False,
-        store_history: bool = True,
-        user_expressions: dict[str, str] | None = None,
-        allow_stdin: bool = True,
-        stop_on_error: bool = True,
-        cell_id: str | None = None,
-        received_time: float = 0,
-        **_ignored,
-    ) -> Content:
+    def displayhook(self, result: Any) -> None:
+        """
+        Publish execution results.
+
+        This is invoked every time the interpreter needs to print, and is
+        activated by setting the variable sys.displayhook to it.
+        """
+        if result is not None and not utils.show_result_enabled():
+            content = {}
+            content["execution_count"] = self.execution_count
+            content["data"] = repr(result)
+            content["metadata"] = {}
+            self.parent.iopub_send("execute_result", content=content)
+
+    async def execute_request(self, job: Job[ExecuteContent]) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
         raise NotImplementedError
 

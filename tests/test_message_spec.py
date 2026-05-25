@@ -22,7 +22,20 @@ async def test_execute(client: AsyncKernelClient, kernel: Kernel):
     assert kernel.shell.user_ns["x"] == 1
 
 
-async def test_execute_control(client: AsyncKernelClient, kernel: Kernel):
+async def test_execute_suppress(client: AsyncKernelClient, kernel: Kernel):
+    for mode in ["normal", "suppress"]:
+        msg_id = client.execute(code="123" if mode == "normal" else "123;")
+        reply = await utils.get_reply(client, msg_id, clear_pub=False)
+        utils.validate_message(reply, "execute_reply", msg_id)
+
+        await utils.check_pub_message(client, msg_id, execution_state="busy")
+        await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+        if mode == "normal":
+            await utils.check_pub_message(client, msg_id, msg_type="execute_result", data={"text/plain": "123"})
+        await utils.check_pub_message(client, msg_id, execution_state="idle")
+
+
+async def test_execute_control(client: AsyncKernelClient, kernel: Kernel) -> None:
     await utils.clear_iopub(client)
     reply = await utils.send_control_message(
         client, MsgType.execute_request, {"code": "y=10", "silent": True}, clear_pub=False

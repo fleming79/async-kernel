@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import functools
+import sys
 import time
+from collections.abc import Callable
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Self
 
 import traitlets
@@ -28,7 +31,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
 
     from async_kernel.caller import Caller
@@ -73,18 +76,9 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
-    main_shell: Fixed[Self, T_shell_co] = Fixed(
-        # A work-around to avoid infinite recursion during initialization of the main shell.
-        lambda c: c["owner"]._shell_class(protected=True, is_mainshell=True),
-        created=lambda c: c["obj"].__init__(protected=True),
-    )
-    "The mainshell."
-
-    subshells: Fixed[Self, dict[str, T_shell_co]] = Fixed(dict)
-    "A dict of subshells"
-
-    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
     _restart = False
+    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
+    _subshells: dict[str, T_shell_co]
 
     @traitlets.default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:
@@ -141,6 +135,14 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         }
 
     @property
+    def main_shell(self) -> T_shell_co:
+        try:
+            return self._main_shell
+        except AttributeError:
+            msg = "The main_shell is only available once the kernel is started."
+            raise RuntimeError(msg) from None
+
+    @property
     def shell(self) -> T_shell_co:
         """
         The shell given the current context.
@@ -150,20 +152,67 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         """
         return self.get_shell()
 
-    def __init__(self, parent: T_interface_co, shell_class: type[T_shell_co], **kwargs):
-        assert self.parent is parent
-        self._shell_class = shell_class
-        super().__init__(**kwargs)
+    @property
+    def subshells(self) -> dict[str, T_shell_co]:
+        return self._subshells.copy()
 
-    def _subshell_created(self, shell: T_shell_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
+    def __init__(self, parent: T_interface_co, shell_class: type[T_shell_co]) -> None:
+        self._subshells = {}
+        assert self.parent is parent
+        super().__init__()
+        self._shell_class = shell_class
+
+    @asynccontextmanager
+    async def running(self) -> AsyncGenerator[None]:
+        """
+        The kernel runs in this context.
+
+        Notes:
+            - Entered by the interface (parent).
+            - Overload as required.
+        """
+        remove_patch = self.apply_patches()
+        try:
+            self._main_shell = self._shell_class(protected=True, is_mainshell=True)
+            async with self._main_shell.mainshell_running():
+                self.log.info("Kernel started")
+                yield
+        finally:
+            self.log.info("Kernel stopped")
+            for subshell in tuple(self._subshells.values()):
+                subshell.stop(force=True)
+            for comm in tuple(self.comm_manager.comms.values()):
+                comm.close(deleting=True)
+            remove_patch()
+            del self._main_shell
+            self._handler_cache.clear()
+
+    def apply_patches(self) -> Callable[[], None]:
+        """Apply patches returning a callable to reverse the patches."""
+
+        previous_displayhook = sys.displayhook
+        sys.displayhook = self.displayhook
+        restore_comm = self.comm_manager.patch_comm()
+
+        def restore():
+            sys.displayhook = previous_displayhook
+            restore_comm()
+
+        return restore
+
+    def displayhook(self, result: Any):
+        "The global patch for [sys.displayhook][] responsible for python display callbacks."
+        self.get_shell().displayhook(result)
+
+    def _shell_created(self, shell: T_shell_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
         "Called by `BaseShell.__init__`"
         if shell.subshell_id:
-            self.subshells[shell.subshell_id] = shell
+            self._subshells[shell.subshell_id] = shell
 
     def _subshell_stopped(self, shell: T_shell_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
         "Called by `BaseShell.stop`"
         if subshell_id := shell.subshell_id:
-            self.subshells.pop(subshell_id, None)
+            self._subshells.pop(subshell_id, None)
         for key in list(self._handler_cache):
             if key[0] == subshell_id:
                 self._handler_cache.pop(key, None)
@@ -286,15 +335,6 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
         self.log.debug("%s %s %s %s", msg_type, run_mode, handler, job)
 
-    async def do_shutdown(self, restart: bool) -> None:
-        assert self.parent.event_stopped
-        for subshell in set(self.subshells.values()):
-            subshell.stop(force=True)
-        self.shell.stop(force=True)
-        for comm in tuple(self.comm_manager.comms.values()):
-            comm.close(deleting=True)
-        self._handler_cache.clear()
-
     def get_shell(self, subshell_id: str | None | NoValue = NoValue) -> T_shell_co:  # pyright: ignore[reportInvalidTypeForm]
         """
         Get a shell by `subshell_id`.
@@ -304,7 +344,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         """
         if (subshell_id := subshell_id if subshell_id is not NoValue else ShellPendingManager.active_id()) is None:
             return self.main_shell
-        return self.subshells.get(subshell_id) or self.main_shell
+        return self._subshells.get(subshell_id) or self.main_shell
 
     def create_subshell(self, *, protected: bool = False) -> T_shell_co:
         """
@@ -338,11 +378,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        return await self.shell.execute_request(
-            cell_id=job["msg"]["metadata"].get("cellId"),
-            received_time=job["received_time"],
-            **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
-        )
+        return await self.shell.execute_request(job)
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
@@ -402,13 +438,13 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def delete_subshell_request(self, job: Job[Content], /) -> Content:
         """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell)."""
-        if (subshell_id := job["msg"]["content"]["subshell_id"]) and (subshell := self.subshells.get(subshell_id)):
+        if (subshell_id := job["msg"]["content"]["subshell_id"]) and (subshell := self._subshells.get(subshell_id)):
             subshell.stop()
         return {}
 
     async def list_subshell_request(self, job: Job[Content], /) -> Content:
         """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells)."""
-        return {"subshell_id": list(self.subshells)}
+        return {"subshell_id": list(self._subshells)}
 
     def get_parent(self) -> Message[dict[str, Any]] | None:
         """
@@ -456,36 +492,35 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     async def do_execute(
         self,
         code: str,
-        silent: bool = False,
+        silent: bool,
         store_history: bool = True,
-        user_expressions: dict | None = None,
-        allow_stdin=False,
+        user_expressions: dict[str, str] | None = None,
+        allow_stdin: bool = False,
         *,
+        cell_meta: dict[str, Any] | None = None,
         cell_id: str | None = None,
-        **_ignored,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."
-        content = ExecuteContent(
-            code=code,
-            silent=silent,
-            store_history=store_history,
-            user_expressions=user_expressions or {},
-            allow_stdin=allow_stdin,
-            stop_on_error=False,
-        )
-        msg = self.parent.msg("execute_request", content=content)  # pyright: ignore[reportArgumentType]
-        job = Job(msg=msg, ident=[], received_time=time.monotonic())
-        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        try:
-            return await self.shell.execute_request(
+        if cell_meta is None:
+            cell_meta = {}
+        if cell_id is not None:
+            cell_meta["cellId"] = cell_id
+        msg = self.parent.msg(
+            "execute_request",
+            content=ExecuteContent(
                 code=code,
                 silent=silent,
                 store_history=store_history,
-                user_expressions=user_expressions,
+                user_expressions=user_expressions or {},
                 allow_stdin=allow_stdin,
-                cell_id=cell_id,
-                received_time=job["received_time"],
-            )
+                stop_on_error=False,
+            ),
+            metadata=cell_meta,
+        )
+        job: Job[ExecuteContent] = Job(msg=msg, ident=[], received_time=time.monotonic())
+        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        try:
+            return await self.shell.execute_request(job)
         finally:
             utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 

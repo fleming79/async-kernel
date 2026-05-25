@@ -235,7 +235,7 @@ async def test_is_complete_request(client: AsyncKernelClient):
 async def test_shell_can_set_namespace(kernel: Kernel):
     kernel.shell.user_ns["extra"] = "Something extra"
     kernel.shell.user_ns = {}
-    expected = {"_oh", "quit", "In", "_dh", "Out", "open", "_", "__", "___", "get_ipython", "_ih", "exit"}
+    expected = {"_oh", "quit", "In", "_dh", "Out", "open", "_", "__", "___", "_ih", "exit"}
     assert set(kernel.shell.user_ns) == expected
 
 

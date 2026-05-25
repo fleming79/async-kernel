@@ -8,14 +8,14 @@ import sys
 import time
 from collections.abc import Callable
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
+from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO, cast
 
 import anyio
 import IPython.core.release
 from aiologic.lowlevel import async_checkpoint
 from anyio.streams.text import TextReceiveStream
-from IPython.core.builtin_trap import builtin_mod  # pyright: ignore[reportPrivateImportUsage]
 from IPython.core.completer import provisionalcompleter, rectify_completions
+from IPython.core.displayhook import DisplayHook
 from IPython.core.interactiveshell import ExecutionResult, InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class, no_var_expand
@@ -31,8 +31,8 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.compat.ipython import (
-    AsyncDisplayHook,
     IPDisplayFormatter,
+    IPDisplayHook,
     IPDisplayPublisher,
     IPExtensionManager,
     IPHistoryManager,
@@ -40,9 +40,9 @@ from async_kernel.compat.ipython import (
 )
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
-from async_kernel.interface import BaseInterface, HasInterface
-from async_kernel.shell import BaseShell
-from async_kernel.typing import Content, RunMode, Tags
+from async_kernel.interface.base import BaseInterface, HasInterface
+from async_kernel.shell.base import BaseShell
+from async_kernel.typing import Content, ExecuteContent, Job, RunMode, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -73,7 +73,7 @@ class NullContext:
         return False
 
 
-class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
+class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]
     """
     An IPython InteractiveShell implementation.
     """
@@ -90,7 +90,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     ""
     prefilter_manager_class = traitlets.Type(IPPrefilterManager).tag(config=True)
     ""
-    displayhook_class = traitlets.Type(AsyncDisplayHook).tag(config=True)
+    displayhook_class = traitlets.Type(IPDisplayHook).tag(config=True)
     ""
     display_pub_class = traitlets.Type(IPDisplayPublisher).tag(config=True)
     ""
@@ -113,21 +113,10 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     builtin_trap = Fixed(NullContext)
     "A nullcontext. We leave the builtins constant once set."
 
-    displayhook: Fixed[Self, AsyncDisplayHook] = Fixed(
-        lambda c: (
-            c["owner"].displayhook_class() if c["owner"].is_mainshell else c["owner"].kernel.main_shell.displayhook
-        )
-    )
+    displayhook: Fixed[Self, IPDisplayHook] = Fixed(lambda c: c["owner"].displayhook_class(c["owner"]))  # pyright: ignore[reportIncompatibleMethodOverride]
     """An implementation of [sys.displayhook][]. 
     
-    The mainshell provides the displayhook which is shared with subshells.
-    """
-
-    display_trap = Fixed(NullContext)
-    """
-    A context used in [IPython.core.interactiveshell.InteractiveShell.run_cell_async][] intended to capture output.
-    
-    In async-kernel this is a null context because displayhook does this instead.
+    The interface provides the displayhook.
     """
 
     display_pub: Fixed[Self, IPDisplayPublisher] = Fixed(lambda c: c["owner"].display_pub_class())
@@ -196,13 +185,10 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     def init_payload(self) -> Never:
         raise MethodNotSupported  # pragma: no cover
 
-    def __init__(self, *, protected: bool = False, is_mainshell=False, **kwargs) -> None:
-        self._baseshell_init(protected=protected, is_mainshell=is_mainshell)
-        if is_mainshell:
-            self._apply_patches()
-            return
-        # Bypass `BaseShell.__init__` and `InteractiveShell.__init__`
-        super(InteractiveShell, self).__init__(**kwargs)
+    @override
+    def initialize(self):
+        # Expects the kernel to be started.
+        super().initialize()
 
         self.init_ipython_dir(None)
         self.init_profile_dir(None)
@@ -212,8 +198,6 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         self.init_events()
         self.init_pushd_popd_magic()
         self.init_logger()
-
-        self.init_builtins()
 
         self.init_completer()
 
@@ -227,19 +211,20 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         self.user_ns_hidden.update(self.user_ns)
         self.events.trigger("shell_initialized", self)
 
-    def _apply_patches(self):
+    @override
+    def apply_patches(self) -> Callable[[], None]:
+        """Apply patches returning a callable to reverse the patches."""
+        original = InteractiveShell.initialized, InteractiveShell.instance
         InteractiveShell.initialized = lambda: True
-        InteractiveShell.instance = lambda: utils.get_kernel() and self
-        original = InteractiveShell.initialized, InteractiveShell.instance, sys.displayhook
-        sys.displayhook = self.displayhook
+        InteractiveShell.instance = utils.get_ipython  # pyright: ignore[reportAttributeAccessIssue]
+
+        restore_ = super().apply_patches()
 
         def restore():
-            InteractiveShell.initialized, InteractiveShell.instance, sys.displayhook = original
+            InteractiveShell.initialized, InteractiveShell.instance = original
+            restore_()
 
-        self.reverse_patch = restore
-
-    def reverse_patch(self):
-        pass
+        return restore
 
     @override
     def _get_default_ns(self) -> dict[str, Any]:
@@ -251,7 +236,6 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             "_dh": getattr(history, "dir_hist", "."),
             "In": getattr(history, "input_hist_parsed", False),
             "Out": getattr(history, "output_hist", False),
-            "get_ipython": self.get_ipython,
             "exit": self.exiter,
             "quit": self.exiter,
             "open": _modified_open_,
@@ -284,11 +268,12 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
     @override
     def init_builtins(self) -> None:
+        super().init_builtins()
         if self.is_mainshell:
-            builtin_mod.__dict__["__IPYTHON__"] = True
-            builtin_mod.__dict__["display"] = display
-            builtin_mod.__dict__["get_ipython"] = self.get_ipython
-            builtin_mod.__dict__["Caller"] = Caller
+            builtins.__dict__["__IPYTHON__"] = True
+            builtins.__dict__["display"] = display
+            builtins.__dict__["get_ipython"] = utils.get_ipython
+            builtins.__dict__["Caller"] = Caller
 
     @override
     def init_hooks(self) -> None:
@@ -308,6 +293,17 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     @override
     def _tee(self, channel: Literal["stdout", "stderr"]):
         yield
+
+    @property
+    @override
+    def display_trap(self):
+        show = True
+        if msg := utils.get_parent_message():
+            if "silent" in msg["content"]:
+                show = not msg["content"]["silent"]
+            if show and (code := msg["content"].get("code")) and DisplayHook.semicolon_at_end_of_expression(code):
+                show = False
+        return utils.show_result(show)
 
     @property
     @override
@@ -405,21 +401,16 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         )
 
     @override
-    async def execute_request(
-        self,
-        code: str = "",
-        *,
-        silent: bool = False,
-        store_history: bool = True,
-        user_expressions: dict[str, str] | None = None,
-        allow_stdin: bool = True,
-        stop_on_error: bool = True,
-        cell_id: str | None = None,
-        received_time: float = 0,
-        **_ignored,
-    ) -> Content:
+    async def execute_request(self, job: Job[ExecuteContent]) -> Content:
         """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        if (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
+
+        content = cast("ExecuteContent", job["msg"]["content"])
+        code = content["code"]
+        silent = content.get("silent", False)
+        cell_id = job["msg"]["metadata"].get("cellId")
+        stop_on_error = content.get("stop_on_error", False)
+
+        if (job["received_time"] < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
@@ -459,7 +450,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                     with anyio.fail_after(delay=timeout or None):
                         result = await self.run_cell_async(
                             raw_cell=code,
-                            store_history=store_history,
+                            store_history=content.get("store_history", False),
                             silent=silent,
                             transformed_cell=self.transform_cell_async(code),
                             shell_futures=True,
@@ -489,7 +480,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             content = {
                 "status": "error" if err else "ok",
                 "execution_count": execution_count,
-                "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
+                "user_expressions": self.user_expressions(content.get("user_expressions", {})),
             }
             if err:
                 content |= utils.error_to_content(err)
@@ -661,12 +652,9 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         if self.protected and not force:
             return
         self.parent.kernel._subshell_stopped(self)  # pyright: ignore[reportPrivateUsage]
-
         self.configurables.clear()
-
         self.user_ns.clear()
         self.history_manager.stop()
-        self.reverse_patch()
         try:
             self.atexit_operations()
         except AttributeError:

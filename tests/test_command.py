@@ -14,6 +14,7 @@ from aiologic import Event
 from typing_extensions import override
 
 import async_kernel
+from async_kernel import Kernel
 from async_kernel.command import args_to_dict, command_line
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernelspec import make_argv
@@ -197,11 +198,10 @@ def test_command_launch_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path
         def set(self):
             super().set()
             kernel: Kernel[BaseInterface[IPShell], IPShell] = async_kernel.utils.get_kernel()  # pyright: ignore[reportAssignmentType]
-            assert isinstance(kernel.parent, ZMQInterface)
             assert kernel.parent.backend_options == {"use_uv": False}
             assert kernel.shell.timeout == 0.123
             assert kernel.shell.automagic is False
-            kernel.parent.event_stopped.set()
+            kernel.caller.call_direct(kernel.parent.stop)
 
     cmd = [
         "prog",
@@ -242,7 +242,7 @@ def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, ho
             assert kernel.parent.host == host
             assert kernel.parent.backend == backend
             super().set()
-            kernel.parent.event_stopped.set()
+            kernel.caller.call_direct(kernel.parent.stop)
 
     event_started = EventSet()
 

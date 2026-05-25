@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import threading
+import weakref
 from collections.abc import Callable
-from contextvars import ContextVar
 from sqlite3 import OperationalError
 from typing import TYPE_CHECKING, Any, Self
 
@@ -17,8 +17,7 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.common import Fixed
-from async_kernel.interface import BaseInterface, HasInterface
-from async_kernel.typing import Message, MsgType
+from async_kernel.interface.base import BaseInterface, HasInterface
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -26,24 +25,19 @@ if TYPE_CHECKING:
     from IPython.core.interactiveshell import ExecutionResult
 
     from async_kernel.shell import IPShell
+    from async_kernel.typing import Message
 
-_source_var: ContextVar[str] = ContextVar("async-kernel source", default="")
 
-
-class AsyncDisplayHook(HasInterface, DisplayHook):
-    """
-    A displayhook subclass that publishes data using [iopub_send][async_kernel.interface.base.BaseInterface.iopub_send].
-
-    This lives on the interface rather than a shell.
-    """
+class IPDisplayHook(HasInterface, DisplayHook):
+    """Set as sys.displayhook and called whenever the interpreter needs to display output."""
 
     cache_size = traitlets.Int(1000, min=3).tag(config=True)
     do_full_cache = traitlets.Int(0).tag(config=True)
 
     _ = __ = ___ = ""
 
-    def __init__(self, **kwargs) -> None:
-        self._get_shell = self.parent.kernel.get_shell
+    def __init__(self, shell: IPShell) -> None:
+        self._shell_ref = weakref.ref(shell)
         super(DisplayHook, self).__init__()
 
     @property
@@ -55,8 +49,9 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
         pass  # pragma: no cover
 
     @property
-    def shell(self):  # pyright: ignore[reportImplicitOverride]
-        return self._get_shell()
+    @override
+    def shell(self) -> IPShell:
+        return self._shell_ref()  # pyright: ignore[reportReturnType]
 
     @property
     @override
@@ -65,7 +60,7 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
 
     @override
     def start_displayhook(self) -> None:
-        pass  # pragma: no cover
+        pass
 
     @override
     def write_output_prompt(self) -> None:
@@ -81,7 +76,7 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
 
     @override
     def quiet(self) -> bool:
-        return self.semicolon_at_end_of_expression(_source_var.get())  # pyright: ignore[reportReturnType]
+        return not utils.show_result_enabled()
 
     @override
     def __call__(self, result=None) -> None:
@@ -91,25 +86,16 @@ class AsyncDisplayHook(HasInterface, DisplayHook):
         This is invoked every time the interpreter needs to print, and is
         activated by setting the variable sys.displayhook to it.
         """
-        msg_type, quiet = "display_data", False
-        try:
-            job = utils.get_job()
-            if job["msg"]["header"]["msg_type"] == MsgType.execute_request:
-                msg_type = "execute_result"
-                if not (quiet := job["msg"]["content"].get("silent", True)):
-                    quiet = self.quiet()
-        except LookupError:
-            quiet = True
-        if result is not None and not quiet:
-            content = {}
-            format_dict, md_dict = self.compute_format_data(result)
+        if result is not None and not self.quiet():
+            format_dict, md_dict = self.shell.display_formatter.format(result)
             self.update_user_ns(result)
             if format_dict:
+                content = {}
                 content["execution_count"] = self.shell.execution_count
                 content["data"] = format_dict
                 content["metadata"] = md_dict
                 self.log_output(format_dict)
-                self.parent.iopub_send(msg_type, content=content)
+                self.parent.iopub_send("execute_result", content=content)
 
 
 class IPDisplayPublisher(HasInterface, DisplayPublisher):
@@ -177,14 +163,16 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
 
 
 class IPHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
-    shell: IPShell
+    @property
+    @override
+    def shell(self) -> IPShell:
+        return self._shell_ref()  # pyright: ignore[reportReturnType]
 
     @override
     def __init__(self, *, shell: IPShell) -> None:
         """Create a new history manager associated with a shell instance."""
-        if shell.subshell_id:
-            self.hist_file = ":memory:"
-        super(HistoryManager, self).__init__(shell=shell)
+        self._shell_ref = weakref.ref(shell)
+        super(HistoryManager, self).__init__(hist_file="" if shell.is_mainshell else ":memory:")
 
         self.db_input_cache_lock = threading.Lock()
         self.db_output_cache_lock = threading.Lock()
@@ -213,8 +201,8 @@ class IPHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
                 self.using_thread = True
         else:
             self.save_thread = None
-            if shell is not self.parent.kernel.main_shell:
-                self.output_hist.update(self.parent.kernel.main_shell.history_manager.output_hist)
+            if shell is not shell.kernel.main_shell:
+                self.output_hist.update(shell.kernel.main_shell.history_manager.output_hist)
 
         self._instances.add(self)
 
@@ -226,13 +214,11 @@ class IPHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
             self.save_thread = None
         self._instances.discard(self)
 
-    @override
-    def store_inputs(self, line_num: int, source: str, source_raw: str | None = None) -> None:
-        try:
-            _source_var.set(source)
-        except LookupError:
-            pass
-        return super().store_inputs(line_num, source, source_raw)
+    # @override
+    # def store_inputs(self, line_num: int, source: str, source_raw: str | None = None) -> None:
+    #     if DisplayHook.semicolon_at_end_of_expression(source):
+    #         utils._suppress_output.set(True)  # pyright: ignore[reportPrivateUsage]
+    #     return super().store_inputs(line_num, source, source_raw)
 
 
 class IPDisplayFormatter(HasInterface, DisplayFormatter):
