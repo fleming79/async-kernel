@@ -508,7 +508,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         if msg := utils.get_parent_message():
             if "silent" in msg["content"]:
                 show = not msg["content"]["silent"]
-            if show and (code := msg["content"].get("code")) and IPDisplayHook.semicolon_at_end_of_expression(code):
+            if show and (code := msg["content"].get("code")) and str(code).strip().endswith(";"):
                 show = False
         return utils.show_result(show)
 
