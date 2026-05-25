@@ -513,7 +513,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         """
         Create a subshell.
 
-        Use [`shell.stop(force=True)`][async_kernel.shell.BaseShell.stop] to stop a
+        Use [`shell.stop(force=True)`][async_kernel.shell.base.BaseShell.stop] to stop a
         protected subshell when it is no longer required.
 
         Args:
@@ -525,11 +525,11 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         return self._shell_class(protected=protected)
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
-        """Handle a [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
+        """Handle an [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
         return self.kernel_info
 
     async def comm_info_request(self, job: Job[Content], /) -> Content:
-        """Handle a [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info)."""
+        """Handle an [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info)."""
         c = job["msg"]["content"]
         target_name = c.get("target_name", None)
         comms = {
@@ -540,21 +540,21 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         return {"comms": comms}
 
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
-        """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
+        """Handle an [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
         return await self.shell.execute_request(job)
 
     async def complete_request(self, job: Job[Content], /) -> Content:
-        """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+        """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
         return await self.shell.do_complete_request(
             code=job["msg"]["content"].get("code", ""), cursor_pos=job["msg"]["content"].get("cursor_pos", 0)
         )
 
     async def is_complete_request(self, job: Job[Content], /) -> Content:
-        """Handle a [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+        """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
         return await self.shell.is_complete_request(job["msg"]["content"].get("code", ""))
 
     async def inspect_request(self, job: Job[Content], /) -> Content:
-        """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+        """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         c = job["msg"]["content"]
         return await self.shell.inspect_request(
             code=c.get("code", ""),
@@ -563,19 +563,19 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         )
 
     async def history_request(self, job: Job[Content], /) -> Content:
-        """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
         return await self.shell.history_request(**job["msg"]["content"])
 
     async def comm_open(self, job: Job[Content], /) -> None:
-        """Handle a [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
+        """Handle an [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
         self.comm_manager.comm_open(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
     async def comm_msg(self, job: Job[Content], /) -> None:
-        """Handle a [comm msg request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages)."""
+        """Handle an [comm msg request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages)."""
         self.comm_manager.comm_msg(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
     async def comm_close(self, job: Job[Content], /) -> None:
-        """Handle a [comm close request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms)."""
+        """Handle an [comm close request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms)."""
         self.comm_manager.comm_close(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
     async def interrupt_request(self, job: Job[Content], /) -> Content:
@@ -584,29 +584,29 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         return {}
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
-        """Handle a [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
+        """Handle an [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
         self._restart = job["msg"]["content"].get("restart", False)
         self.parent.stop()
         return {"restart": self._restart}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
-        """Handle a [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""
+        """Handle an [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""
         return await self.debugger.process_request(job["msg"]["content"])
 
     async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
-        """Handle a [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell)."""
+        """Handle an [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell)."""
         async with self.caller.create_pending_group():
             shell = self.create_subshell(protected=False)
             return {"subshell_id": shell.subshell_id}
 
     async def delete_subshell_request(self, job: Job[Content], /) -> Content:
-        """Handle a [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell)."""
+        """Handle an [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell)."""
         if (subshell_id := job["msg"]["content"]["subshell_id"]) and (subshell := self._subshells.get(subshell_id)):
             subshell.stop()
         return {}
 
     async def list_subshell_request(self, job: Job[Content], /) -> Content:
-        """Handle a [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells)."""
+        """Handle an [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells)."""
         return {"subshell_id": list(self._subshells)}
 
     def get_parent(self) -> Message[dict[str, Any]] | None:

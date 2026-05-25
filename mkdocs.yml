@@ -182,6 +182,7 @@ nav:
       - "kernel": reference/kernel.md
       - "kernelspec": reference/kernelspec.md
       - "shell": reference/shell.md
+      - "ipshell": reference/ipshell.md
       - "pending": reference/pending.md
       - "event_loop": reference/event_loop.md
       - "typing": reference/typing.md

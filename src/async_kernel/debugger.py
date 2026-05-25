@@ -318,7 +318,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return reply
 
     async def do_debug_info(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a debug info message."""
+        """Handle an debug info message."""
         breakpoint_list = []
         for key, value in self.breakpoint_list.items():
             breakpoint_list.append({"source": key, "breakpoints": value})
@@ -355,7 +355,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return self._build_variables_response(msg, variables)
 
     async def do_rich_inspect_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a rich inspect variables message."""
+        """Handle an rich inspect variables message."""
         reply = {
             "type": "response",
             "sequence_seq": msg["seq"],
@@ -401,7 +401,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return reply
 
     async def do_modules(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a modules message."""
+        """Handle an modules message."""
         modules = list(sys.modules.values())
         startModule = msg.get("startModule", 0)
         moduleCount = msg.get("moduleCount", len(modules))
@@ -414,7 +414,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return {"body": {"modules": mods, "totalModules": len(modules)}}
 
     async def do_dump_cell(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a dump cell message."""
+        """Handle an dump cell message."""
         code = msg["arguments"]["code"]
         assert isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)
         path = self.parent.kernel.main_shell.compile.get_file_name(code)
@@ -460,7 +460,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         )
 
     async def do_set_breakpoints(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a set breakpoints message."""
+        """Handle an set breakpoints message."""
         source = msg["arguments"]["source"]["path"]
         self.breakpoint_list[source] = msg["arguments"]["breakpoints"]
         message_response = await self.send_dap_request(msg)
@@ -473,7 +473,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return message_response
 
     async def do_source(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a source message."""
+        """Handle an source message."""
         reply = {"type": "response", "request_seq": msg["seq"], "command": msg["command"]}
         if (path := Path(msg["arguments"].get("source", {}).get("path", "missing"))).is_file():
             with path.open("r", encoding="utf-8") as f:
@@ -487,7 +487,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return reply
 
     async def do_stack_trace(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a stack trace message."""
+        """Handle an stack trace message."""
         reply = await self.send_dap_request(msg)
         # The stackFrames array can have the following content:
         # { frames from the notebook}
@@ -509,7 +509,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return reply
 
     async def do_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a variables message."""
+        """Handle an variables message."""
         reply = {}
         if not self.stopped_threads:
             variables = self.variable_explorer.get_children_variables(msg["arguments"]["variablesReference"])
@@ -538,7 +538,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return await reply
 
     async def do_configuration_done(self, msg: DebugMessage, /) -> dict[str, Any]:
-        """Handle a configuration done message."""
+        """Handle an configuration done message."""
         # This is only supposed to be called during initialize but can come at anytime. Ref: https://microsoft.github.io/debug-adapter-protocol/specification#Events_Initialized
         # see : https://github.com/jupyterlab/jupyterlab/issues/17673
         return {

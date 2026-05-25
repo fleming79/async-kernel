@@ -45,7 +45,7 @@ class Comm(HasInterface, BaseComm):
 
     @override
     def handle_msg(self, msg: comm.base_comm.MessageType) -> None:
-        """Handle a comm_msg message"""
+        """Handle an comm_msg message"""
         if self._msg_callback:
             self._msg_callback(msg)
 

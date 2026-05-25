@@ -1,3 +1,7 @@
+"""
+Defines the shell base class.
+"""
+
 from __future__ import annotations
 
 import contextlib
@@ -39,7 +43,10 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
     ""
 
     pending_manager = Fixed(ShellPendingManager)
-    ""
+    """
+    Provides the `subshell_id` for the shell which add all consenting pending created in
+    the context of the shell.
+    """
 
     user_ns_hidden: Fixed[Self, dict] = Fixed(dict)
     ""
@@ -51,13 +58,15 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
     "An offset to add to the cancellation time to catch late arriving execute requests."
 
     protected = traitlets.Bool(read_only=True)
-    ""
+    "Protect from accidental deletion."
+
     is_mainshell = traitlets.Bool(False, read_only=True)
-    ""
+    "Set by the mainshell to indicate it is the main shell."
 
     subshell_id: Fixed[Self, str | None] = Fixed(
         lambda c: None if c["owner"].is_mainshell else c["owner"].pending_manager.id
     )
+    "Used to identify the subshell."
 
     _execution_count = 0
     _resetting = False
@@ -159,6 +168,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
             return
         if not self.is_mainshell:
             self.kernel._subshell_stopped(self)  # pyright: ignore[reportPrivateUsage]
+        self.reset(new_session=False)
 
     def reset(self, new_session=True, aggressive=False) -> None:
         "Reset the shell, cancelling all associated pending."
@@ -198,11 +208,11 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
             self.parent.iopub_send("execute_result", content=content)
 
     async def execute_request(self, job: Job[ExecuteContent]) -> Content:
-        """Handle a [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
+        """Handle an [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
         raise NotImplementedError
 
     async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
-        """Handle a [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+        """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
         raise NotImplementedError
 
     async def is_complete_request(self, code: str) -> Content:
@@ -210,7 +220,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         raise NotImplementedError
 
     async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
-        """Handle a [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+        """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         raise NotImplementedError
 
     async def history_request(
@@ -227,5 +237,5 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         unique: bool = False,
         **_ignored,
     ) -> Content:
-        """Handle a [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
         raise NotImplementedError
