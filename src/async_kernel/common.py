@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 __all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
 
 
-trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
+trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")
 globals()["trio"] = lazy_import("trio")
 globals()["BaseInterface"] = lazy_import("async_kernel.interface.base", "BaseInterface")
 

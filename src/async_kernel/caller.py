@@ -14,7 +14,7 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, cast, final
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
 
 import anyio
 from aiologic import BinarySemaphore, Event
@@ -1019,7 +1019,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     msg = "Waiting for the pending in which it is running would result in deadlock!"
                     raise RuntimeError(msg)
                 if not isinstance(pen, Pending):
-                    pen = cast("Pending[T]", self.call_soon(await_for, pen))
+                    pen = self.call_soon(await_for, pen)
                 if not pen.done():
                     unfinished.add(pen)
                     pen.add_done_callback(done.append)
