@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import inspect
 import weakref
 from collections import deque
 from types import coroutine
-from typing import TYPE_CHECKING, Any, Generic, Never, Self
+from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import aiologic.meta
 from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
@@ -20,18 +21,20 @@ __all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")  # pyright: ignore[reportAssignmentType]
 globals()["trio"] = lazy_import("trio")
+globals()["BaseInterface"] = lazy_import("async_kernel.interface.base", "BaseInterface")
 
 
 def import_item(dottedname: str) -> Any:
-    """Import an item from a module, given its dotted name.
+    """
+    Import an item from a module, given its dotted name.
 
     Example:
         ```python
         import_item("os.path.join")
         ```
     """
-    module, name0 = dottedname.rsplit(".", maxsplit=1)
-    return aiologic.meta.import_from(module, name0)
+    module, name = dottedname.rsplit(".", maxsplit=1)
+    return aiologic.meta.import_from(module, name)
 
 
 @coroutine
@@ -66,6 +69,10 @@ class Fixed(Generic[S, T]):
             - class | callable: Called with zero or one positional argument [FixedCreate][].
 
         created: A per-instance optional callback that gets called on first-access to the property.
+        mode: How to handle invalid data.
+            - `'raise'`: Raise an error.
+            - `'log'`: Log a warning or exception.
+            - 'ignore': Ignore (value is not set).
 
     Type Hints:
         - ``S``: Type of the owner class.
@@ -85,20 +92,22 @@ class Fixed(Generic[S, T]):
         You can use [import_item][] inside a callable to lazy import.
     """
 
-    __slots__ = ["create", "created", "instances", "instances_locks", "name"]
+    __slots__ = ["create", "created", "instances", "instances_locks", "mode", "name"]
 
     def __init__(
         self,
-        obj: type[T] | Callable[[FixedCreate[S]], T] | str,
+        obj: type[T] | Callable[[], T] | Callable[[FixedCreate[S]], T] | str,
         /,
         *,
         created: Callable[[FixedCreated[S, T]]] | None = None,
+        mode: Literal["raise", "ignore", "log"] = "raise",
     ) -> None:
         if callable(obj) or isinstance(obj, str):  # pyright: ignore[reportUnnecessaryIsInstance]
             self.create = obj
             self.created = created
             self.instances = {}
             self.instances_locks = {}
+            self.mode: Literal["raise", "ignore", "log"] = mode
         else:
             msg = f"{obj=} is invalid! Use a lambda instead eg: lambda _: {obj}"  # pyright: ignore[reportUnreachable]
             raise TypeError(msg)
@@ -124,34 +133,59 @@ class Fixed(Generic[S, T]):
                 if lock._count > 1:
                     msg = f"Self-referencing creation detected for {obj.__class__.__name__}.{self.name}!"
                     raise RuntimeError(msg) from None
-                return self.create_instance(obj, key)
+                return self._create_instance(obj, key)
             finally:
                 lock.release()
 
-    def create_instance(self, obj: S, key: int) -> T:
+    def __delete__(self, obj: S, /) -> None:
+        self._handle_invalid(
+            obj, f"Deletion of `Fixed` parameter `{self._rep_with_obj(obj)}` is not allowed. ({obj=!r})"
+        )
+
+    def __set__(self, obj: S, value: Self) -> Never:  # pyright: ignore[reportReturnType]
+        # Note: We use `Self` as the type hint for the `value` above  to give a useful typing error.
+        self._handle_invalid(obj, f"Setting `Fixed` parameter `{self._rep_with_obj(obj)}` is forbidden! ({obj=!r})")
+
+    def _rep_with_obj(self, obj: S) -> str:
+        return f"{obj.__class__.__name__}.{self.name}"
+
+    def _handle_invalid(self, obj: S, msg: str, *, error: Exception | None = None) -> None:
+        match self.mode:
+            case "raise":
+                raise AttributeError(msg)
+            case "log":
+                if log := getattr(obj, "log", None):
+                    if error:
+                        log.exception(msg, exc_info=error)
+                    else:
+                        log.warning(msg, obj)
+            case "ignore":
+                pass
+
+    def _create_instance(self, obj: S, key: int) -> T:
+        ""
         if isinstance(create := self.create, str):
             self.create = create = import_item(create)
         try:
             instance = create()  # pyright: ignore[reportCallIssue, reportAssignmentType]
         except TypeError:
-            instance: T = create(FixedCreate(name=self.name, owner=obj))  # pyright: ignore[reportAssignmentType, reportCallIssue]
+            if create.__name__ == "<lambda>" or len(inspect.signature(create).parameters) == 1:
+                instance: T = create(FixedCreate(name=self.name, owner=obj))  # pyright: ignore[reportAssignmentType, reportCallIssue]
+            else:
+                raise
         self.instances[key] = instance
         self.instances_locks[key] = THREAD_DUMMY_LOCK
-        weakref.finalize(obj, self.instances.pop, key)
+        if not isinstance(self.instances, weakref.WeakValueDictionary):
+            weakref.finalize(obj, self.instances.pop, key)
         weakref.finalize(obj, self.instances_locks.pop, key)
         if self.created:
             try:
                 self.created({"owner": obj, "obj": instance, "name": self.name})
-            except Exception:
-                if log := getattr(obj, "log", None):
-                    msg = f"Callback `created` failed for {obj.__class__}.{self.name}"
-                    log.exception(msg, extra={"obj": self.created})
+            except Exception as e:
+                self._handle_invalid(
+                    obj, f"Callback `created` failed for `{self._rep_with_obj(obj)}` ({obj=!r})", error=e
+                )
         return instance
-
-    def __set__(self, obj: S, value: Self) -> Never:
-        # Note: above we use `Self` for the `value` type hint to give a useful typing error
-        msg = f"Setting `Fixed` parameter {obj.__class__.__name__}.{self.name} is forbidden!"
-        raise AttributeError(msg)
 
 
 class SingleAsyncQueue(Generic[T]):

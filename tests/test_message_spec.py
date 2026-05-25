@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.asyncshell import AsyncInteractiveSubshell
 from async_kernel.typing import Channel, MsgType
 from tests import utils
 
@@ -23,7 +22,20 @@ async def test_execute(client: AsyncKernelClient, kernel: Kernel):
     assert kernel.shell.user_ns["x"] == 1
 
 
-async def test_execute_control(client: AsyncKernelClient, kernel: Kernel):
+async def test_execute_suppress(client: AsyncKernelClient, kernel: Kernel):
+    for mode in ["normal", "suppress"]:
+        msg_id = client.execute(code="123" if mode == "normal" else "123;")
+        reply = await utils.get_reply(client, msg_id, clear_pub=False)
+        utils.validate_message(reply, "execute_reply", msg_id)
+
+        await utils.check_pub_message(client, msg_id, execution_state="busy")
+        await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+        if mode == "normal":
+            await utils.check_pub_message(client, msg_id, msg_type="execute_result", data={"text/plain": "123"})
+        await utils.check_pub_message(client, msg_id, execution_state="idle")
+
+
+async def test_execute_control(client: AsyncKernelClient, kernel: Kernel) -> None:
     await utils.clear_iopub(client)
     reply = await utils.send_control_message(
         client, MsgType.execute_request, {"code": "y=10", "silent": True}, clear_pub=False
@@ -217,7 +229,6 @@ async def test_kernel_info_request(client: AsyncKernelClient):
         "banner",
         "help_links",
         "debugger",
-        "name",
         "supported_features",
         "status",
     ]
@@ -270,12 +281,13 @@ async def test_stream(client: AsyncKernelClient):
 
 
 @pytest.mark.parametrize("clear", [True, False])
-async def test_display_data(kernel: Kernel, client: AsyncKernelClient, clear: bool):
+async def test_displayhook(kernel: Kernel, client: AsyncKernelClient, clear: bool):
+
+    #  Test the displayhook is set builtin_mod.__dict__["display"] = display
+
     await utils.clear_iopub(client)
-    # kernel.display_formatter
-    msg_id, _ = await utils.execute(
-        client, f"from IPython.display import display; display(1, clear={clear})", clear_pub=False
-    )
+
+    msg_id, _ = await utils.execute(client, f"display(1, clear={clear})", clear_pub=False)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
     if clear:
@@ -302,9 +314,8 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     utils.validate_message(reply, "create_subshell_reply", msg_id)
     assert reply["content"]["status"] == "ok"
     subshell_id = reply["content"]["subshell_id"]
-    assert subshell_id in kernel.subshell_manager.subshells
-    subshell = kernel.subshell_manager.get_shell(subshell_id)
-    assert isinstance(subshell, AsyncInteractiveSubshell)
+    assert subshell_id in kernel.subshells
+    subshell = kernel.get_shell(subshell_id)
     assert not subshell.protected
 
     # List
@@ -323,4 +334,4 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     reply = await utils.get_reply(client, msg_id, channel=Channel.control)
     utils.validate_message(reply, "delete_subshell_reply", msg_id)
     assert reply["content"]["status"] == "ok"
-    assert subshell_id not in kernel.subshell_manager.subshells
+    assert subshell_id not in kernel.subshells

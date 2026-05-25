@@ -20,5 +20,6 @@ class CustomHook(BuildHookInterface):
             if TYPE_CHECKING:
                 from async_kernel.kernelspec import write_kernel_spec  # noqa: PLC0415, TC004
 
-            spec_folder = here.joinpath("data_kernelspec", "async")
-            write_kernel_spec(spec_folder)
+            name = "async"
+            spec_folder = here.joinpath("data_kernelspec", name)
+            write_kernel_spec(path=spec_folder, name=name, command=("python", "-m", "async_kernel", "start"))

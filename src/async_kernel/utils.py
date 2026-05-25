@@ -12,24 +12,25 @@ from typing import TYPE_CHECKING, Any
 from traitlets import traitlets
 from typing_extensions import TypeVar
 
-import async_kernel
+import async_kernel.interface
 from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Generator, Mapping
     from contextlib import _SupportsRedirect, _SupportsRedirectT  # pyright: ignore[reportPrivateUsage]
 
     from async_kernel.kernel import Kernel
+    from async_kernel.shell import BaseShell
     from async_kernel.typing import Content, Job, Message
 
 __all__ = [
+    "apply_settings",
     "error_to_content",
     "error_to_content",
-    "get_execution_count",
     "get_job",
     "get_kernel",
     "get_metadata",
-    "get_parent",
+    "get_parent_message",
     "get_subshell_id",
     "get_tag_value",
     "get_tags",
@@ -38,16 +39,20 @@ __all__ = [
     "redirect_stderr",
     "redirect_stdout",
     "setattr_nested",
+    "show_result",
     "subshell_context",
 ]
 
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
+LAUNCHED_BY_DEBUGPY_PYTEST = LAUNCHED_BY_DEBUGPY and "pytest" in sys.modules
+"Useful to allow exceptiosn to be raised with the debugger launched with pytest and debugger."
 
 
 _job_var: ContextVar[Job[Any]] = ContextVar("async-kernel job")
 _cell_id_var: ContextVar[str | None] = ContextVar("async-kernel cell_id", default=None)
 _stdout_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel std_out", default=None)
-_stderr_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel std_err", default=None)
+_stderr_context: ContextVar[_SupportsRedirect | None] = ContextVar("async-kernel stderr", default=None)
+_show_result_context: ContextVar[bool] = ContextVar("async-kernel show_result", default=False)
 
 
 def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, remove=False) -> None:
@@ -59,7 +64,16 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
 
 def get_kernel() -> Kernel:
     "Get the current kernel."
-    return async_kernel.Kernel()
+
+    if not async_kernel.interface.BaseInterface.initialized():
+        msg = "A kernel interface is not started!"
+        raise RuntimeError(msg)
+    return async_kernel.interface.BaseInterface.instance().kernel
+
+
+def get_ipython() -> BaseShell:
+    "Get the shell in the current context."
+    return get_kernel().get_shell()
 
 
 def get_job() -> Job[Any]:
@@ -72,7 +86,7 @@ def get_job() -> Job[Any]:
     return _job_var.get()
 
 
-def get_parent(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
+def get_parent_message(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
     "Get the parent message for the current context."
     try:
         return (job or get_job()).get("msg")
@@ -92,7 +106,7 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
     Args:
         subshell_id: An existing subshell or the main shell if subshell_id is None.
     """
-    with get_kernel().subshell_manager.get_shell(subshell_id).context():
+    with get_kernel().get_shell(subshell_id).context():
         yield
 
 
@@ -112,9 +126,9 @@ def get_tags(job: Job | None = None, /) -> list[str]:
         return []
 
 
-def get_cell_id() -> str | None:
+def get_cell_id(job: Job | None = None, /) -> str | None:
     "The `cell_id` for the current context."
-    return _cell_id_var.get() or (metadata.get("cellId") if (metadata := get_metadata()) else None)
+    return _cell_id_var.get() or (metadata.get("cellId") if (metadata := get_metadata(job)) else None)
 
 
 _TagType = TypeVar("_TagType", str, float, int, bool)
@@ -151,13 +165,7 @@ def get_timeout(*, tags: list[str] | None = None) -> float:
     return max(timeout, 0.0)
 
 
-def get_execution_count() -> int:
-    "Gets the execution count for the current context, defaults to the current kernel count."
-
-    return get_kernel().shell.execution_count
-
-
-def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
+def setattr_nested(obj: object, name: str, value: str | Any, *, _return_value=False) -> dict[str, Any]:
     """
     Replace an existing nested attribute/trait of an object.
 
@@ -173,20 +181,37 @@ def setattr_nested(obj: object, name: str, value: str | Any) -> dict[str, Any]:
         The mapping of the name to the set value if the value has been set.
         An empty dict indicates the value was not set.
     """
-
-    if len(bits := name.split(".")) > 1:
-        try:
-            obj = getattr(obj, bits[0])
-        except Exception:
-            return {}
-        setattr_nested(obj, ".".join(bits[1:]), value)
-    if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
-        try:
-            setattr(obj, name, value)
-        except Exception:
-            setattr(obj, name, eval(value))
-        return {name: getattr(obj, name)}
+    try:
+        if len(bits := name.split(".")) > 1:
+            try:
+                obj = getattr(obj, bits[0])
+            except Exception:
+                return {}
+            value = setattr_nested(obj, ".".join(bits[1:]), value, _return_value=True)
+            return value if _return_value else {name: value}
+        if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
+            try:
+                setattr(obj, name, value)
+            except Exception:
+                setattr(obj, name, eval(value))
+            return value if _return_value else {name: value}  # pyright: ignore[reportReturnType]
+    except Exception:
+        if not _return_value:
+            raise
     return {}
+
+
+def apply_settings(obj: object, settings: Mapping[str, Any]) -> dict[str, Any]:
+    """
+    Apply the settings onto the object.
+
+    Returns:
+        dict: A copy of the settings that were applied.
+    """
+    values = {}
+    for k, v in settings.items():
+        values.update(setattr_nested(obj, k, v))
+    return values
 
 
 def error_to_content(error: BaseException, /) -> Content:
@@ -211,7 +236,6 @@ def redirect_stdout(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirec
     See also:
         - [contextlib.redirect_stdout][]
     """
-    assert get_kernel().event_started
     token = _stdout_context.set(stream)
     try:
         yield stream
@@ -228,9 +252,24 @@ def redirect_stderr(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirec
         - [contextlib.redirect_stderr][]
     """
 
-    assert get_kernel().event_started
     token = _stderr_context.set(stream)
     try:
         yield stream
     finally:
         _stderr_context.reset(token)
+
+
+@contextmanager
+def show_result(show: bool = True, /) -> Generator[None, Any, None]:
+    "A context where `show_result` is enabled/disabled."
+    token = _show_result_context.set(show)
+    try:
+        yield
+    finally:
+        if token:
+            _show_result_context.reset(token)
+
+
+def show_result_enabled() -> bool:
+    "Is the output suppressed in the current context?"
+    return _show_result_context.get()

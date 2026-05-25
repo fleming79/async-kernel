@@ -48,7 +48,7 @@ dependencies = [
     "jupyter-core>=5.9.1",
     "sniffio>=1.3.0; sys_platform != 'emscripten'",
     "outcome; sys_platform != 'emscripten'",
-    "pyzmq>=27.0; sys_platform != 'emscripten'", # pyzmq sockets (and threading) are not supported on pyodide (emscripten), `CallableKernelInterface` is used for kernel messaging.  
+    "pyzmq>=27.0; sys_platform != 'emscripten'", # pyzmq sockets (and threading) are not supported on pyodide (emscripten), `CallableInterface` is used for kernel messaging.  
     "jupyter_client>=8.8; sys_platform != 'emscripten'",
 ]
 
@@ -147,7 +147,7 @@ patch = ['subprocess']
 parallel = true
 relative_files = true
 source = ["async_kernel"]
-omit = ["tests/*", "hatch_build.py", '_version.py', "tk_host.py", "qt_host.py", "asyncio_guest.py"]
+omit = ["tests/*", "hatch_build.py", '_version.py', "tk_host.py", "qt_host.py", "asyncio_guest.py", "attr_docs.py"]
 
 [tool.ruff]
 required-version = ">=0.12.8"
