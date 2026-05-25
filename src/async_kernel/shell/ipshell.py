@@ -643,15 +643,15 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 )
             caller = Caller()
             err = None
+            result = None
             with anyio.CancelScope() as scope:
 
                 def cancel():
                     if not silent:
                         caller.call_direct(scope.cancel, "Interrupted")
 
-                result = None
                 try:
-                    self._interrupts.add(cancel)
+                    self.kernel.interrupts.add(cancel)
                     if stop_on_error:
                         self._stop_on_error_pool.add(cancel)
                     with anyio.fail_after(delay=timeout or None):
@@ -675,7 +675,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                         err = RuntimeError(msg)
                 finally:
                     self._stop_on_error_pool.discard(cancel)
-                    self._interrupts.discard(cancel)
+                    self.kernel.interrupts.discard(cancel)
                     self.events.trigger("post_execute")
                     if not silent:
                         self.events.trigger("post_run_cell", result)

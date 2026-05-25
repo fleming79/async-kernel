@@ -88,7 +88,7 @@ async def test_input(
 
 async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
     event = threading.Event()
-    kernel.shell._interrupts.add(event.set)
+    kernel.interrupts.add(event.set)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}

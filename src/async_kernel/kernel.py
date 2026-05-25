@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import builtins
+import contextlib
 import functools
 import getpass
+import os
+import signal
 import sys
 import time
 from collections.abc import Callable
@@ -11,11 +14,13 @@ from io import TextIOBase
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
 import traitlets
+from aiologic.lowlevel import enable_signal_safety
 from traitlets.config import LoggingConfigurable
 from typing_extensions import override
 
 import async_kernel
 from async_kernel import utils
+from async_kernel.caller import Caller
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
@@ -37,9 +42,8 @@ from async_kernel.typing import (
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from contextvars import ContextVar
-    from types import CoroutineType
+    from types import CoroutineType, FrameType
 
-    from async_kernel.caller import Caller
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
@@ -152,9 +156,13 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
+    interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
+    "A set for callbacks to register for calling when `interrupt` is called."
+
     _restart = False
     _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
     _subshells: dict[str, T_shell_co]
+    _interrupt_requested: bool | Literal["FORCE"] = False
 
     @traitlets.default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:
@@ -263,6 +271,79 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
             del self._main_shell
             self._handler_cache.clear()
 
+    @enable_signal_safety
+    def _signal_handler(self, signum, frame: FrameType | None) -> None:
+        "Handle interrupt signals."
+
+        match self._interrupt_requested:
+            case "FORCE":
+                self._interrupt_requested = False
+                raise KernelInterrupt
+            case True:
+                if frame and frame.f_globals is self.main_shell.user_ns:
+                    self._interrupt_requested = False
+                    raise KernelInterrupt
+                self.last_interrupt_frame = frame
+
+                def clearlast_interrupt_frame():
+                    if self.last_interrupt_frame is frame:
+                        self.last_interrupt_frame = None
+
+                def re_raise():
+                    if self.last_interrupt_frame is frame:
+                        self._interrupt_now(force=True)
+
+                # Race to check if the main thread should be interrupted.
+                self.callers[Channel.shell].call_direct(clearlast_interrupt_frame)
+                self.callers[Channel.control].call_later(1, re_raise)
+            case False:
+                signal.default_int_handler(signum, frame)
+
+    def _interrupt_now(self, *, force=False) -> None:
+        """
+        Request an interrupt of the currently running shell thread.
+
+        If called from the main thread, sets the interrupt request flag and sends a SIGINT signal
+        to the current process. On Windows, uses `signal.raise_signal`; on other platforms, uses `os.kill`.
+        If `force` is True, sets the interrupt request flag to "FORCE".
+
+        Args:
+            force: If True, requests a forced interrupt. Defaults to False.
+        """
+        # Restricted this to when the shell is running in the main thread.
+        if self.parent.callers[Channel.shell].id == Caller.CALLER_MAIN_THREAD_ID:
+            self._interrupt_requested = "FORCE" if force else True
+            if sys.platform == "win32":
+                signal.raise_signal(signal.SIGINT)
+                time.sleep(0)
+            else:
+                os.kill(os.getpid(), signal.SIGINT)
+
+    def interrupt(self) -> None:
+        """
+        Perform a keyboard interrupt.
+        """
+        if (sys.platform != "emscripten") and (not self.debugger.enabled or not self.debugger.stopped_threads):
+            self._interrupt_now()
+        while self.interrupts:
+            try:
+                self.interrupts.pop()()
+            except Exception:
+                pass
+
+    def _patch_signal(self) -> Callable[[], None]:
+
+        with contextlib.suppress(ValueError, AttributeError):
+            import signal  # noqa: PLC0415
+
+            sig = signal.signal(signal.SIGINT, self._signal_handler)
+
+            def restore() -> None:
+                signal.signal(signal.SIGINT, sig)
+
+            return restore
+        return lambda: None
+
     def apply_patches(self) -> Callable[[], None]:
         """Apply patches returning a callable to reverse the patches."""
 
@@ -271,12 +352,14 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         restore_comm = self.comm_manager.patch_comm()
         restore_stdout = OutStream("stdout").patch()
         restore_stderr = OutStream("stderr").patch()
+        restore_signal = self._patch_signal()
 
         def restore() -> None:
             sys.displayhook, builtins.input, getpass.getpass = original
             restore_stdout()
             restore_stderr()
             restore_comm()
+            restore_signal()
 
         return restore
 
@@ -497,7 +580,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def interrupt_request(self, job: Job[Content], /) -> Content:
         """Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt)."""
-        self.shell.interrupt()
+        self.interrupt()
         return {}
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
