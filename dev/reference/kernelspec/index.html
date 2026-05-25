@@ -16,7 +16,7 @@
         <link rel="prev" href="../kernel/">
       
       
-        <link rel="next" href="../asyncshell/">
+        <link rel="next" href="../shell/">
       
       
         
@@ -616,7 +616,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Define custom kernels (notebook)
+    Kernel customisation (notebook)
   
 
     
@@ -650,6 +650,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -1014,10 +1016,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.DEFAULT_LAUNCHER" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_START_INTERFACE
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_LAUNCHER
       
     </span>
   </a>
@@ -1025,10 +1027,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.DEFAULT_COMMAND" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_EXECUTABLE
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_COMMAND
       
     </span>
   </a>
@@ -1059,10 +1061,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.make_argv(start_interface)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.make_argv(launcher)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;launcher
       
     </span>
   </a>
@@ -1081,10 +1083,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.make_argv(executable)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.make_argv(command)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;executable
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;command
       
     </span>
   </a>
@@ -1096,6 +1098,56 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;**kwargs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel_dir
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" get_kernel_dir">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir(folder)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;folder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir(prefix)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir(user)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;user
       
     </span>
   </a>
@@ -1153,10 +1205,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(executable)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(user)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;executable
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;user
       
     </span>
   </a>
@@ -1186,10 +1238,21 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(start_interface)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(launcher)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;launcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(command)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;command
       
     </span>
   </a>
@@ -1257,33 +1320,33 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.get_kernel_dir" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.get_kernel_info" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel_dir
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" get_kernel_dir">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.get_kernel_dir(folder)" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;folder
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel_info
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.get_kernel_dir(prefix)" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.expand_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;expand_path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" expand_path">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.expand_path(path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;path
       
     </span>
   </a>
@@ -1296,22 +1359,22 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.import_start_interface" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.import_launcher" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;import_start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;import_launcher
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" import_start_interface">
+    <nav class="md-nav" aria-label=" import_launcher">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.import_start_interface(start_interface)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.import_launcher(launcher)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;launcher
       
     </span>
   </a>
@@ -1339,14 +1402,42 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../asyncshell/" class="md-nav__link">
+      <a href="../shell/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    asyncshell
+    shell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ipshell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ipshell
   
 
     
@@ -1715,10 +1806,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.DEFAULT_LAUNCHER" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_START_INTERFACE
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_LAUNCHER
       
     </span>
   </a>
@@ -1726,10 +1817,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.DEFAULT_COMMAND" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_EXECUTABLE
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;DEFAULT_COMMAND
       
     </span>
   </a>
@@ -1760,10 +1851,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.make_argv(start_interface)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.make_argv(launcher)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;launcher
       
     </span>
   </a>
@@ -1782,10 +1873,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.make_argv(executable)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.make_argv(command)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;executable
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;command
       
     </span>
   </a>
@@ -1797,6 +1888,56 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;**kwargs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel_dir
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" get_kernel_dir">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir(folder)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;folder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir(prefix)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.get_kernel_dir(user)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;user
       
     </span>
   </a>
@@ -1854,10 +1995,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(executable)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(user)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;executable
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;user
       
     </span>
   </a>
@@ -1887,10 +2028,21 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.write_kernel_spec(start_interface)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(launcher)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;launcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.write_kernel_spec(command)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;command
       
     </span>
   </a>
@@ -1958,33 +2110,33 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.get_kernel_dir" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.get_kernel_info" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel_dir
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" get_kernel_dir">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.get_kernel_dir(folder)" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;folder
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_kernel_info
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.get_kernel_dir(prefix)" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.expand_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;prefix
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;expand_path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" expand_path">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.kernelspec.expand_path(path)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;path
       
     </span>
   </a>
@@ -1997,22 +2149,22 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.import_start_interface" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.import_launcher" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;import_start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;import_launcher
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" import_start_interface">
+    <nav class="md-nav" aria-label=" import_launcher">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#async_kernel.kernelspec.import_start_interface(start_interface)" class="md-nav__link">
+  <a href="#async_kernel.kernelspec.import_launcher(launcher)" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;start_interface
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;launcher
       
     </span>
   </a>
@@ -2125,13 +2277,6 @@ viewing the latest version.
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            write_kernel_spec (async_kernel.kernelspec.write_kernel_spec)" href="#async_kernel.kernelspec.write_kernel_spec">write_kernel_spec</a></code></b>
-            –
-            <div class="doc-md-description">
-              <p>Write a kernel spec for launching a kernel <a href="https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs">ref</a>.</p>
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            get_kernel_dir (async_kernel.kernelspec.get_kernel_dir)" href="#async_kernel.kernelspec.get_kernel_dir">get_kernel_dir</a></code></b>
             –
             <div class="doc-md-description">
@@ -2139,10 +2284,31 @@ viewing the latest version.
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            import_start_interface (async_kernel.kernelspec.import_start_interface)" href="#async_kernel.kernelspec.import_start_interface">import_start_interface</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            write_kernel_spec (async_kernel.kernelspec.write_kernel_spec)" href="#async_kernel.kernelspec.write_kernel_spec">write_kernel_spec</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Import the kernel interface starter as defined in a kernel spec.</p>
+              <p>Write a kernel spec for launching a kernel <a href="https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs">ref</a>.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            get_kernel_info (async_kernel.kernelspec.get_kernel_info)" href="#async_kernel.kernelspec.get_kernel_info">get_kernel_info</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Get a dic of kernels installed in kernel_dir.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            expand_path (async_kernel.kernelspec.expand_path)" href="#async_kernel.kernelspec.expand_path">expand_path</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Make the path absolute returning a new path object.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            import_launcher (async_kernel.kernelspec.import_launcher)" href="#async_kernel.kernelspec.import_launcher">import_launcher</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Import the launcher as defined in a kernel spec.</p>
             </div>
           </li>
     </ul>
@@ -2166,12 +2332,12 @@ viewing the latest version.
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            DEFAULT_START_INTERFACE
+          <b><code><a class="autorefs autorefs-internal" title="            DEFAULT_LAUNCHER
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_START_INTERFACE)" href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE">DEFAULT_START_INTERFACE</a></code></b>
+   (async_kernel.kernelspec.DEFAULT_LAUNCHER)" href="#async_kernel.kernelspec.DEFAULT_LAUNCHER">DEFAULT_LAUNCHER</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
           –
           <div class="doc-md-description">
@@ -2179,12 +2345,12 @@ viewing the latest version.
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            DEFAULT_EXECUTABLE
+          <b><code><a class="autorefs autorefs-internal" title="            DEFAULT_COMMAND
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_EXECUTABLE)" href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE">DEFAULT_EXECUTABLE</a></code></b>
+   (async_kernel.kernelspec.DEFAULT_COMMAND)" href="#async_kernel.kernelspec.DEFAULT_COMMAND">DEFAULT_COMMAND</a></code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...]</code>)
           –
           <div class="doc-md-description">
@@ -2232,16 +2398,16 @@ viewing the latest version.
 
 
 
-<h2 id="async_kernel.kernelspec.DEFAULT_START_INTERFACE" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">DEFAULT_START_INTERFACE</span>
+<h2 id="async_kernel.kernelspec.DEFAULT_LAUNCHER" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">DEFAULT_LAUNCHER</span>
 
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
 
-<a href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">DEFAULT_START_INTERFACE</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;async_kernel.interface.start_kernel_zmq_interface&#39;</span>
+<a href="#async_kernel.kernelspec.DEFAULT_LAUNCHER" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">DEFAULT_LAUNCHER</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;launch_zmq_interface&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2291,16 +2457,16 @@ viewing the latest version.
 
 
 
-<h2 id="async_kernel.kernelspec.DEFAULT_EXECUTABLE" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">DEFAULT_EXECUTABLE</span>
+<h2 id="async_kernel.kernelspec.DEFAULT_COMMAND" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">DEFAULT_COMMAND</span>
 
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
 
-<a href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">DEFAULT_EXECUTABLE</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;async_kernel&#39;</span><span class="p">)</span>
+<a href="#async_kernel.kernelspec.DEFAULT_COMMAND" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">DEFAULT_COMMAND</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="sys.executable" href="https://docs.python.org/3/library/sys.html#sys.executable">executable</a></span><span class="p">,</span> <span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;async_kernel&#39;</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2359,19 +2525,19 @@ viewing the latest version.
     <span class="o">*</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="connection_file (async_kernel.kernelspec.make_argv(connection_file))" href="#async_kernel.kernelspec.make_argv(connection_file)">connection_file</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="name (async_kernel.kernelspec.make_argv(name))" href="#async_kernel.kernelspec.make_argv(name)">name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="start_interface (async_kernel.kernelspec.make_argv(start_interface))" href="#async_kernel.kernelspec.make_argv(start_interface)">start_interface</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_START_INTERFACE
+    <span class="n"><a class="autorefs autorefs-internal" title="launcher (async_kernel.kernelspec.make_argv(launcher))" href="#async_kernel.kernelspec.make_argv(launcher)">launcher</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_LAUNCHER
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_START_INTERFACE)" href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE">DEFAULT_START_INTERFACE</a></span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="executable (async_kernel.kernelspec.make_argv(executable))" href="#async_kernel.kernelspec.make_argv(executable)">executable</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_EXECUTABLE
+   (async_kernel.kernelspec.DEFAULT_LAUNCHER)" href="#async_kernel.kernelspec.DEFAULT_LAUNCHER">DEFAULT_LAUNCHER</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="command (async_kernel.kernelspec.make_argv(command))" href="#async_kernel.kernelspec.make_argv(command)">command</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_COMMAND
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_EXECUTABLE)" href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE">DEFAULT_EXECUTABLE</a></span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.kernelspec.make_argv(**kwargs))" href="#async_kernel.kernelspec.make_argv(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span>
+   (async_kernel.kernelspec.DEFAULT_COMMAND)" href="#async_kernel.kernelspec.DEFAULT_COMMAND">DEFAULT_COMMAND</a></span><span class="p">,</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.kernelspec.make_argv(**kwargs))" href="#async_kernel.kernelspec.make_argv(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2395,19 +2561,24 @@ It will always call <a class="autorefs autorefs-internal" title="            com
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.make_argv(start_interface)" class="doc doc-heading doc-heading-parameter">              <b><code>start_interface</code></b>
-<a href="#async_kernel.kernelspec.make_argv(start_interface)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></code>, default:
-                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_START_INTERFACE
+<h3 id="async_kernel.kernelspec.make_argv(launcher)" class="doc doc-heading doc-heading-parameter">              <b><code>launcher</code></b>
+<a href="#async_kernel.kernelspec.make_argv(launcher)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_LAUNCHER
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_START_INTERFACE)" href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE">DEFAULT_START_INTERFACE</a></code>
+   (async_kernel.kernelspec.DEFAULT_LAUNCHER)" href="#async_kernel.kernelspec.DEFAULT_LAUNCHER">DEFAULT_LAUNCHER</a></code>
 )
           –
           <div class="doc-md-description">
-            <p>Either the kernel factory object itself, or the string import path to a
-callable that returns a non-started kernel.</p>
+            <p>A self-contained function that accepts a dict of settings. The function
+is stored as a python file in the kernelspec folder.
+Or as string import path to a callable.
+be saved as a python file in the kernelspec folder.
+Or can be one of the names of the methods in the interface folder:
+    - "launch_zmq_interface"
+    - "start_kernel_zmq_interface"</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2421,28 +2592,28 @@ callable that returns a non-started kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.make_argv(executable)" class="doc doc-heading doc-heading-parameter">              <b><code>executable</code></b>
-<a href="#async_kernel.kernelspec.make_argv(executable)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...]</code>, default:
-                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_EXECUTABLE
+<h3 id="async_kernel.kernelspec.make_argv(command)" class="doc doc-heading doc-heading-parameter">              <b><code>command</code></b>
+<a href="#async_kernel.kernelspec.make_argv(command)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...]</code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_COMMAND
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_EXECUTABLE)" href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE">DEFAULT_EXECUTABLE</a></code>
+   (async_kernel.kernelspec.DEFAULT_COMMAND)" href="#async_kernel.kernelspec.DEFAULT_COMMAND">DEFAULT_COMMAND</a></code>
 )
           –
           <div class="doc-md-description">
-            <p>The command line executable to call.</p>
+            <p>The command line command to call.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
 <h3 id="async_kernel.kernelspec.make_argv(**kwargs)" class="doc doc-heading doc-heading-parameter">              <b><code>**kwargs</code></b>
-<a href="#async_kernel.kernelspec.make_argv(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>, default:
+<a href="#async_kernel.kernelspec.make_argv(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>, default:
                   <code>{}</code>
 )
           –
           <div class="doc-md-description">
-            <p>Additional settings to pass when creating the kernel passed to <code>start_interface</code>.</p>
+            <p>Additional settings to pass when creating the kernel passed to <code>launcher</code>.</p>
           </div>
         </li>
     </ul>
@@ -2463,9 +2634,7 @@ callable that returns a non-started kernel.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
@@ -2490,13 +2659,24 @@ callable that returns a non-started kernel.</p>
 <span class="normal">68</span>
 <span class="normal">69</span>
 <span class="normal">70</span>
-<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_argv</span><span class="p">(</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_argv</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">connection_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
-    <span class="n">start_interface</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">DEFAULT_START_INTERFACE</span><span class="p">,</span>
-    <span class="n">executable</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_EXECUTABLE</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">launcher</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">DEFAULT_LAUNCHER</span><span class="p">,</span>
+    <span class="n">command</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_COMMAND</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an argument vector (argv) that can be used to start a `Kernel`.</span>
 
@@ -2505,19 +2685,141 @@ callable that returns a non-started kernel.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        connection_file: The path to the connection file.</span>
-<span class="sd">        start_interface: Either the kernel factory object itself, or the string import path to a</span>
-<span class="sd">            callable that returns a non-started kernel.</span>
+<span class="sd">        launcher:</span>
+<span class="sd">            A self-contained function that accepts a dict of settings. The function</span>
+<span class="sd">            is stored as a python file in the kernelspec folder.</span>
+<span class="sd">            Or as string import path to a callable.</span>
+<span class="sd">            be saved as a python file in the kernelspec folder.</span>
+<span class="sd">            Or can be one of the names of the methods in the interface folder:</span>
+<span class="sd">                - &quot;launch_zmq_interface&quot;</span>
+<span class="sd">                - &quot;start_kernel_zmq_interface&quot;</span>
 <span class="sd">        name: The name to use for the kernel.</span>
-<span class="sd">        executable: The command line executable to call.</span>
-<span class="sd">        **kwargs: Additional settings to pass when creating the kernel passed to `start_interface`.</span>
+<span class="sd">        command: The command line command to call.</span>
+<span class="sd">        **kwargs: Additional settings to pass when creating the kernel passed to `launcher`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        list: A list of command-line arguments to launch the kernel module.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">executable</span><span class="p">,</span> <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="n">connection_file</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">({</span><span class="s2">&quot;start_interface&quot;</span><span class="p">:</span> <span class="n">start_interface</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span> <span class="o">|</span> <span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="o">*</span><span class="n">command</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;--connection_file=</span><span class="si">{</span><span class="n">connection_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">({</span><span class="s2">&quot;launcher&quot;</span><span class="p">:</span> <span class="n">launcher</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span> <span class="o">|</span> <span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">argv</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">argv</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="async_kernel.kernelspec.get_kernel_dir" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_kernel_dir</span>
+
+
+<a href="#async_kernel.kernelspec.get_kernel_dir" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="folder (async_kernel.kernelspec.get_kernel_dir(folder))" href="#async_kernel.kernelspec.get_kernel_dir(folder)">folder</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="prefix (async_kernel.kernelspec.get_kernel_dir(prefix))" href="#async_kernel.kernelspec.get_kernel_dir(prefix)">prefix</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="user (async_kernel.kernelspec.get_kernel_dir(user))" href="#async_kernel.kernelspec.get_kernel_dir(user)">user</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The path to where kernel specs are stored for Jupyter.</p>
+<p>If folder is passed, it is assumed to be the full path ending in 'kernels', prefix is ignored.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.get_kernel_dir(folder)" class="doc doc-heading doc-heading-parameter">              <b><code>folder</code></b>
+<a href="#async_kernel.kernelspec.get_kernel_dir(folder)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The path to 'kernels' (must end with 'kernels').</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.get_kernel_dir(prefix)" class="doc doc-heading doc-heading-parameter">              <b><code>prefix</code></b>
+<a href="#async_kernel.kernelspec.get_kernel_dir(prefix)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Defaults to sys.prefix (installable for a particular environment).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.get_kernel_dir(user)" class="doc doc-heading doc-heading-parameter">              <b><code>user</code></b>
+<a href="#async_kernel.kernelspec.get_kernel_dir(user)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Install for the user.</p>
+          </div>
+        </li>
+    </ul>
+        <p>Search locations: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs</p>
+
+          
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The path to where kernel specs are stored for Jupyter.</span>
+
+<span class="sd">    If folder is passed, it is assumed to be the full path ending in &#39;kernels&#39;, prefix is ignored.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        folder: The path to &#39;kernels&#39; (must end with &#39;kernels&#39;).</span>
+<span class="sd">        prefix: Defaults to sys.prefix (installable for a particular environment).</span>
+<span class="sd">        user: Install for the user.</span>
+
+<span class="sd">    Search locations: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">([</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="n">folder</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">user</span><span class="p">]</span> <span class="k">if</span> <span class="n">p</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Providing more than one of [folder, prefix, user] is ambiguous&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">jupyter_core.paths</span><span class="w"> </span><span class="kn">import</span> <span class="n">jupyter_data_dir</span>  <span class="c1"># noqa: PLC0415</span>
+
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">jupyter_data_dir</span><span class="p">())</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;kernels&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">folder</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;kernels&quot;</span>
+        <span class="k">return</span> <span class="n">path</span>
+    <span class="k">return</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">prefix</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;share&quot;</span><span class="p">,</span> <span class="s2">&quot;jupyter&quot;</span><span class="p">,</span> <span class="s2">&quot;kernels&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2533,30 +2835,31 @@ callable that returns a non-started kernel.</p>
 
 <a href="#async_kernel.kernelspec.write_kernel_spec" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_kernel_spec</span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="path (async_kernel.kernelspec.write_kernel_spec(path))" href="#async_kernel.kernelspec.write_kernel_spec(path)">path</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="path (async_kernel.kernelspec.write_kernel_spec(path))" href="#async_kernel.kernelspec.write_kernel_spec(path)">path</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="name (async_kernel.kernelspec.write_kernel_spec(name))" href="#async_kernel.kernelspec.write_kernel_spec(name)">name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="display_name (async_kernel.kernelspec.write_kernel_spec(display_name))" href="#async_kernel.kernelspec.write_kernel_spec(display_name)">display_name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="executable (async_kernel.kernelspec.write_kernel_spec(executable))" href="#async_kernel.kernelspec.write_kernel_spec(executable)">executable</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_EXECUTABLE
-
-
-  
-      module-attribute
-   (async_kernel.kernelspec.DEFAULT_EXECUTABLE)" href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE">DEFAULT_EXECUTABLE</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="user (async_kernel.kernelspec.write_kernel_spec(user))" href="#async_kernel.kernelspec.write_kernel_spec(user)">user</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="prefix (async_kernel.kernelspec.write_kernel_spec(prefix))" href="#async_kernel.kernelspec.write_kernel_spec(prefix)">prefix</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="folder (async_kernel.kernelspec.write_kernel_spec(folder))" href="#async_kernel.kernelspec.write_kernel_spec(folder)">folder</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="start_interface (async_kernel.kernelspec.write_kernel_spec(start_interface))" href="#async_kernel.kernelspec.write_kernel_spec(start_interface)">start_interface</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_START_INTERFACE
+    <span class="n"><a class="autorefs autorefs-internal" title="launcher (async_kernel.kernelspec.write_kernel_spec(launcher))" href="#async_kernel.kernelspec.write_kernel_spec(launcher)">launcher</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_LAUNCHER
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_START_INTERFACE)" href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE">DEFAULT_START_INTERFACE</a></span><span class="p">,</span>
+   (async_kernel.kernelspec.DEFAULT_LAUNCHER)" href="#async_kernel.kernelspec.DEFAULT_LAUNCHER">DEFAULT_LAUNCHER</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="command (async_kernel.kernelspec.write_kernel_spec(command))" href="#async_kernel.kernelspec.write_kernel_spec(command)">command</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            DEFAULT_COMMAND
+
+
+  
+      module-attribute
+   (async_kernel.kernelspec.DEFAULT_COMMAND)" href="#async_kernel.kernelspec.DEFAULT_COMMAND">DEFAULT_COMMAND</a></span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="connection_file (async_kernel.kernelspec.write_kernel_spec(connection_file))" href="#async_kernel.kernelspec.write_kernel_spec(connection_file)">connection_file</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="env (async_kernel.kernelspec.write_kernel_spec(env))" href="#async_kernel.kernelspec.write_kernel_spec(env)">env</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="metadata (async_kernel.kernelspec.write_kernel_spec(metadata))" href="#async_kernel.kernelspec.write_kernel_spec(metadata)">metadata</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.kernelspec.write_kernel_spec(language)">language</span></span><span class="o">=</span><span class="s2">&quot;python&quot;</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="resources (async_kernel.kernelspec.write_kernel_spec(resources))" href="#async_kernel.kernelspec.write_kernel_spec(resources)">resources</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n"><span title="async_kernel.kernelspec.RESOURCES">RESOURCES</span></span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.kernelspec.write_kernel_spec(**kwargs))" href="#async_kernel.kernelspec.write_kernel_spec(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.kernelspec.write_kernel_spec(**kwargs))" href="#async_kernel.kernelspec.write_kernel_spec(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span>
 </code></pre></div>
 
@@ -2598,18 +2901,13 @@ callable that returns a non-started kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.write_kernel_spec(executable)" class="doc doc-heading doc-heading-parameter">              <b><code>executable</code></b>
-<a href="#async_kernel.kernelspec.write_kernel_spec(executable)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...]</code>, default:
-                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_EXECUTABLE
-
-
-  
-      module-attribute
-   (async_kernel.kernelspec.DEFAULT_EXECUTABLE)" href="#async_kernel.kernelspec.DEFAULT_EXECUTABLE">DEFAULT_EXECUTABLE</a></code>
+<h3 id="async_kernel.kernelspec.write_kernel_spec(user)" class="doc doc-heading doc-heading-parameter">              <b><code>user</code></b>
+<a href="#async_kernel.kernelspec.write_kernel_spec(user)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
 )
           –
           <div class="doc-md-description">
-            <p>The first part of 'argv' to use.</p>
+            <p>To work with the user profile directory.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2634,19 +2932,34 @@ This can be sys.prefix for installation inside virtual or conda envs.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.write_kernel_spec(start_interface)" class="doc doc-heading doc-heading-parameter">              <b><code>start_interface</code></b>
-<a href="#async_kernel.kernelspec.write_kernel_spec(start_interface)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></code>, default:
-                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_START_INTERFACE
+<h3 id="async_kernel.kernelspec.write_kernel_spec(launcher)" class="doc doc-heading doc-heading-parameter">              <b><code>launcher</code></b>
+<a href="#async_kernel.kernelspec.write_kernel_spec(launcher)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_LAUNCHER
 
 
   
       module-attribute
-   (async_kernel.kernelspec.DEFAULT_START_INTERFACE)" href="#async_kernel.kernelspec.DEFAULT_START_INTERFACE">DEFAULT_START_INTERFACE</a></code>
+   (async_kernel.kernelspec.DEFAULT_LAUNCHER)" href="#async_kernel.kernelspec.DEFAULT_LAUNCHER">DEFAULT_LAUNCHER</a></code>
 )
           –
           <div class="doc-md-description">
             <p>The string import path to a callable that creates the Kernel or, a <em>self-contained</em>
 function that returns an instance of a <code>Kernel</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.write_kernel_spec(command)" class="doc doc-heading doc-heading-parameter">              <b><code>command</code></b>
+<a href="#async_kernel.kernelspec.write_kernel_spec(command)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...]</code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            DEFAULT_COMMAND
+
+
+  
+      module-attribute
+   (async_kernel.kernelspec.DEFAULT_COMMAND)" href="#async_kernel.kernelspec.DEFAULT_COMMAND">DEFAULT_COMMAND</a></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The command to execute to invoke the launcher.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2691,89 +3004,23 @@ function that returns an instance of a <code>Kernel</code>.</p>
         </li>
         <li class="doc-section-item field-body">
 <h3 id="async_kernel.kernelspec.write_kernel_spec(**kwargs)" class="doc doc-heading doc-heading-parameter">              <b><code>**kwargs</code></b>
-<a href="#async_kernel.kernelspec.write_kernel_spec(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>, default:
+<a href="#async_kernel.kernelspec.write_kernel_spec(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>, default:
                   <code>{}</code>
 )
           –
           <div class="doc-md-description">
             <p>Pass additional settings to set on the instance of the <code>Kernel</code> when it is instantiated.
 Each setting should correspond to the dotted path to the attribute relative to the kernel.
-For example <code>..., **{'shell.timeout'=0.1})</code>.</p>
+For example <code>..., **{'timeout'=0.1})</code>.</p>
           </div>
         </li>
     </ul>
 
           
 
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Usage</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../../usage/commands/#command-line">Command line</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../../usage/commands/#backend-options">Backend options</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../../usage/commands/#custom-arguments">Custom arguments</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
-
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
@@ -2819,144 +3066,18 @@ For example <code>..., **{'shell.timeout'=0.1})</code>.</p>
 <span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
-<span class="normal">159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
-    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
-    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">executable</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_EXECUTABLE</span><span class="p">,</span>
-    <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">start_interface</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">DEFAULT_START_INTERFACE</span><span class="p">,</span>
-    <span class="n">connection_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="n">env</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">language</span><span class="o">=</span><span class="s2">&quot;python&quot;</span><span class="p">,</span>
-    <span class="n">resources</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">RESOURCES</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        path:</span>
-<span class="sd">            The path where to write the spec.</span>
-<span class="sd">        name:</span>
-<span class="sd">            The name of the kernel to use.</span>
-<span class="sd">        display_name:</span>
-<span class="sd">            The display name for Jupyter to use for the kernel. The default is `&quot;Python ({name})&quot;`.</span>
-<span class="sd">        executable:</span>
-<span class="sd">            The first part of &#39;argv&#39; to use.</span>
-<span class="sd">        prefix:</span>
-<span class="sd">            When provided the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.</span>
-<span class="sd">            This can be sys.prefix for installation inside virtual or conda envs.</span>
-<span class="sd">        folder:</span>
-<span class="sd">            A direct path the the kernel spec folder (must end with a folder named &#39;kernels&#39;).</span>
-<span class="sd">        start_interface:</span>
-<span class="sd">            The string import path to a callable that creates the Kernel or, a *self-contained*</span>
-<span class="sd">            function that returns an instance of a `Kernel`.</span>
-<span class="sd">        connection_file:</span>
-<span class="sd">            The path to the connection file.</span>
-<span class="sd">        env:</span>
-<span class="sd">            A mapping environment variables for the kernel to set prior to starting.</span>
-<span class="sd">        metadata:</span>
-<span class="sd">            A mapping of additional attributes to aid the client in kernel selection.</span>
-<span class="sd">        resources:</span>
-<span class="sd">            The path to the resources folder to include with the kernel spec.</span>
-<span class="sd">        **kwargs:</span>
-<span class="sd">            Pass additional settings to set on the instance of the `Kernel` when it is instantiated.</span>
-<span class="sd">            Each setting should correspond to the dotted path to the attribute relative to the kernel.</span>
-<span class="sd">            For example `..., **{&#39;shell.timeout&#39;=0.1})`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">assert</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-z0-9._\-]+$&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="p">(</span><span class="n">get_kernel_dir</span><span class="p">(</span><span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span>
-    <span class="c1"># stage resources</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">start_interface</span><span class="p">):</span>
-            <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;start_interface.py&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">start_interface</span><span class="p">)))</span>
-            <span class="n">start_interface</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}{</span><span class="n">CUSTOM_START_INTERFACE_SYMBOL</span><span class="si">}{</span><span class="n">start_interface</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="c1"># validate</span>
-        <span class="k">if</span> <span class="n">start_interface</span> <span class="o">!=</span> <span class="n">DEFAULT_START_INTERFACE</span><span class="p">:</span>
-            <span class="n">import_start_interface</span><span class="p">(</span><span class="n">start_interface</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">resources</span><span class="p">:</span>
-            <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">resources</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">dirs_exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">argv</span> <span class="o">=</span> <span class="n">make_argv</span><span class="p">(</span>
-            <span class="n">start_interface</span><span class="o">=</span><span class="n">start_interface</span><span class="p">,</span>
-            <span class="n">connection_file</span><span class="o">=</span><span class="n">connection_file</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">executable</span><span class="o">=</span><span class="n">executable</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;argv&quot;</span><span class="p">:</span> <span class="n">argv</span><span class="p">,</span>
-            <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="n">env</span> <span class="ow">or</span> <span class="p">{},</span>
-            <span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="n">display_name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;Python </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">minor</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="n">language</span><span class="p">,</span>
-            <span class="s2">&quot;interrupt_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">metadata</span> <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{</span><span class="s2">&quot;debugger&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;concurrent&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-            <span class="s2">&quot;kernel_protocol_version&quot;</span><span class="p">:</span> <span class="n">PROTOCOL_VERSION</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="c1"># write kernel.json</span>
-        <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;kernel.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">raise</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">path</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="async_kernel.kernelspec.get_kernel_dir" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_kernel_dir</span>
-
-
-<a href="#async_kernel.kernelspec.get_kernel_dir" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="folder (async_kernel.kernelspec.get_kernel_dir(folder))" href="#async_kernel.kernelspec.get_kernel_dir(folder)">folder</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="prefix (async_kernel.kernelspec.get_kernel_dir(prefix))" href="#async_kernel.kernelspec.get_kernel_dir(prefix)">prefix</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>The path to where kernel specs are stored for Jupyter.</p>
-<p>If folder is passed, it is assumed to be the full path ending in 'kernels', prefix is ignored.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.get_kernel_dir(folder)" class="doc doc-heading doc-heading-parameter">              <b><code>folder</code></b>
-<a href="#async_kernel.kernelspec.get_kernel_dir(folder)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
-                  <code>&#39;&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The path to 'kernels' (must end with 'kernels').</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.get_kernel_dir(prefix)" class="doc doc-heading doc-heading-parameter">              <b><code>prefix</code></b>
-<a href="#async_kernel.kernelspec.get_kernel_dir(prefix)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
-                  <code>&#39;&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Defaults to sys.prefix (installable for a particular environment).</p>
-          </div>
-        </li>
-    </ul>
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">170</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
@@ -2970,74 +3091,10 @@ For example <code>..., **{'shell.timeout'=0.1})</code>.</p>
 <span class="normal">181</span>
 <span class="normal">182</span>
 <span class="normal">183</span>
-<span class="normal">184</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_dir</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The path to where kernel specs are stored for Jupyter.</span>
-
-<span class="sd">    If folder is passed, it is assumed to be the full path ending in &#39;kernels&#39;, prefix is ignored.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        folder: The path to &#39;kernels&#39; (must end with &#39;kernels&#39;).</span>
-<span class="sd">        prefix: Defaults to sys.prefix (installable for a particular environment).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">folder</span><span class="p">:</span>
-        <span class="n">pth</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">pth</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;kernels&quot;</span>
-        <span class="k">return</span> <span class="n">pth</span>
-    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">prefix</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;share/jupyter/kernels&quot;</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="async_kernel.kernelspec.import_start_interface" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">import_start_interface</span>
-
-
-<a href="#async_kernel.kernelspec.import_start_interface" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">import_start_interface</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="start_interface (async_kernel.kernelspec.import_start_interface(start_interface))" href="#async_kernel.kernelspec.import_start_interface(start_interface)">start_interface</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Import the kernel interface starter as defined in a kernel spec.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<h3 id="async_kernel.kernelspec.import_start_interface(start_interface)" class="doc doc-heading doc-heading-parameter">              <b><code>start_interface</code></b>
-<a href="#async_kernel.kernelspec.import_start_interface(start_interface)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
-                  <code>&#39;&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The name of the interface factory.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></code>
-          –
-          <div class="doc-md-description">
-            <p>The kernel factory.</p>
-          </div>
-        </li>
-    </ul>
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
 <span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
@@ -3061,31 +3118,373 @@ For example <code>..., **{'shell.timeout'=0.1})</code>.</p>
 <span class="normal">208</span>
 <span class="normal">209</span>
 <span class="normal">210</span>
-<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_start_interface</span><span class="p">(</span><span class="n">start_interface</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InterfaceStartType</span><span class="p">:</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_kernel_spec</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;async&quot;</span><span class="p">,</span>
+    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">launcher</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">DEFAULT_LAUNCHER</span><span class="p">,</span>
+    <span class="n">command</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_COMMAND</span><span class="p">,</span>
+    <span class="n">connection_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{connection_file}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">env</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">language</span><span class="o">=</span><span class="s2">&quot;python&quot;</span><span class="p">,</span>
+    <span class="n">resources</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">RESOURCES</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Import the kernel interface starter as defined in a kernel spec.</span>
+<span class="sd">    Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        start_interface: The name of the interface factory.</span>
+<span class="sd">        path:</span>
+<span class="sd">            The path where to write the spec.</span>
+<span class="sd">        name:</span>
+<span class="sd">            The name of the kernel to use.</span>
+<span class="sd">        display_name:</span>
+<span class="sd">            The display name for Jupyter to use for the kernel. The default is `&quot;Python ({name})&quot;`.</span>
+<span class="sd">        user:</span>
+<span class="sd">            To work with the user profile directory.</span>
+<span class="sd">        prefix:</span>
+<span class="sd">            When provided the kernelspec will be installed to PREFIX/share/jupyter/kernels/KERNEL_NAME.</span>
+<span class="sd">            This can be sys.prefix for installation inside virtual or conda envs.</span>
+<span class="sd">        folder:</span>
+<span class="sd">            A direct path the the kernel spec folder (must end with a folder named &#39;kernels&#39;).</span>
+<span class="sd">        launcher:</span>
+<span class="sd">            The string import path to a callable that creates the Kernel or, a *self-contained*</span>
+<span class="sd">            function that returns an instance of a `Kernel`.</span>
+<span class="sd">        command:</span>
+<span class="sd">            The command to execute to invoke the launcher.</span>
+<span class="sd">        connection_file:</span>
+<span class="sd">            The path to the connection file.</span>
+<span class="sd">        env:</span>
+<span class="sd">            A mapping environment variables for the kernel to set prior to starting.</span>
+<span class="sd">        metadata:</span>
+<span class="sd">            A mapping of additional attributes to aid the client in kernel selection.</span>
+<span class="sd">        resources:</span>
+<span class="sd">            The path to the resources folder to include with the kernel spec.</span>
+<span class="sd">        **kwargs:</span>
+<span class="sd">            Pass additional settings to set on the instance of the `Kernel` when it is instantiated.</span>
+<span class="sd">            Each setting should correspond to the dotted path to the attribute relative to the kernel.</span>
+<span class="sd">            For example `..., **{&#39;timeout&#39;=0.1})`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>  <span class="c1"># noqa: PLC0415</span>
+
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-z0-9._\-]+$&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">),</span> <span class="n">name</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid </span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2">!&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">get_kernel_dir</span><span class="p">(</span><span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">launcher</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">launcher</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Invalid signature! `launcher` must accept exactly one argument (a dict of settings).&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="c1"># stage resources</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># launcher</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">launcher</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;launcher.py&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">launcher</span><span class="p">)))</span>
+            <span class="n">launcher</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">f</span><span class="si">}{</span><span class="n">CUSTOM_LAUNCHER_SEPARATOR</span><span class="si">}{</span><span class="n">launcher</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="c1"># validate</span>
+        <span class="k">if</span> <span class="n">launcher</span> <span class="o">!=</span> <span class="n">DEFAULT_LAUNCHER</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">import_launcher</span><span class="p">(</span><span class="n">launcher</span><span class="p">))</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">resources</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">dirs_exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="n">make_argv</span><span class="p">(</span>
+            <span class="n">launcher</span><span class="o">=</span><span class="n">launcher</span><span class="p">,</span>
+            <span class="n">connection_file</span><span class="o">=</span><span class="n">connection_file</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;argv&quot;</span><span class="p">:</span> <span class="n">argv</span><span class="p">,</span>
+            <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="n">env</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="n">display_name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;Python </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="n">language</span><span class="p">,</span>
+            <span class="s2">&quot;interrupt_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">metadata</span> <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{</span><span class="s2">&quot;debugger&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;concurrent&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="s2">&quot;kernel_protocol_version&quot;</span><span class="p">:</span> <span class="n">PROTOCOL_VERSION</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1"># write kernel.json</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;kernel.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">raise</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">path</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="async_kernel.kernelspec.get_kernel_info" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_kernel_info</span>
+
+
+<a href="#async_kernel.kernelspec.get_kernel_info" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_kernel_info</span><span class="p">(</span><span class="n"><span title="async_kernel.kernelspec.get_kernel_info(kernel_dir)">kernel_dir</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get a dic of kernels installed in kernel_dir.</p>
+
+          
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_info</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a dic of kernels installed in kernel_dir.&quot;&quot;&quot;</span>
+    <span class="n">kernels</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">kernel_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">kernel_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">info_file</span> <span class="o">:=</span> <span class="n">path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;kernel.json&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">kernels</span><span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">info_file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">kernels</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="async_kernel.kernelspec.expand_path" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">expand_path</span>
+
+
+<a href="#async_kernel.kernelspec.expand_path" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">expand_path</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="path (async_kernel.kernelspec.expand_path(path))" href="#async_kernel.kernelspec.expand_path(path)">path</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Make the path absolute returning a new path object.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.expand_path(path)" class="doc doc-heading doc-heading-parameter">              <b><code>path</code></b>
+<a href="#async_kernel.kernelspec.expand_path(path)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The path to process.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="substitutions" open>
+  <summary>Substitutions</summary>
+  <ul>
+<li>Windows environment variables are accepted such as <code>%APPDATA%</code> and <code>%PROGRAMDATA%</code>.
+-<code>~</code> is also substituted with <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path.expanduser">pathlib.Path.expanduser</a>.</li>
+</ul>
+</details>
+          
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">expand_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make the path absolute returning a new path object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: The path to process.</span>
+
+<span class="sd">    Substitutions:</span>
+<span class="sd">        - Windows environment variables are accepted such as `%APPDATA%` and `%PROGRAMDATA%`.</span>
+<span class="sd">        -`~` is also substituted with [pathlib.Path.expanduser][].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">):</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">base</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="n">pth_</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">pth_</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="n">pth</span> <span class="o">=</span> <span class="n">pth_</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">/&quot;</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="n">pth</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">pth_</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pth</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="async_kernel.kernelspec.import_launcher" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">import_launcher</span>
+
+
+<a href="#async_kernel.kernelspec.import_launcher" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">import_launcher</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="launcher (async_kernel.kernelspec.import_launcher(launcher))" href="#async_kernel.kernelspec.import_launcher(launcher)">launcher</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Import the launcher as defined in a kernel spec.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.kernelspec.import_launcher(launcher)" class="doc doc-heading doc-heading-parameter">              <b><code>launcher</code></b>
+<a href="#async_kernel.kernelspec.import_launcher(launcher)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The name of the interface factory.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>callable</code></b> (              <code><span title="async_kernel.kernelspec.InterfaceStartType">InterfaceStartType</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>The imported function responsible for launching the interface.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+
+  <div class="doc doc-backlinks">
+        <b class="doc doc-backlink-type">Referenced by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#">interface</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.BaseInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseInterface</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../interface/#async_kernel.interface.base.BaseInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseInterface</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../interface/#async_kernel.interface.base.BaseInterface.launcher"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;launcher</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+  </ul>
+
+  </div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/kernelspec.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_launcher</span><span class="p">(</span><span class="n">launcher</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InterfaceStartType</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Import the launcher as defined in a kernel spec.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        launcher: The name of the interface factory.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The kernel factory.</span>
+<span class="sd">        callable: The imported function responsible for launching the interface.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="n">CUSTOM_START_INTERFACE_SYMBOL</span> <span class="ow">in</span> <span class="n">start_interface</span><span class="p">:</span>
-        <span class="n">path</span><span class="p">,</span> <span class="n">factory_name</span> <span class="o">=</span> <span class="n">start_interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">CUSTOM_START_INTERFACE_SYMBOL</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">start_interface</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">kf</span>  <span class="c1"># noqa: PLC0415</span>
-
-            <span class="n">factory</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">kf</span><span class="p">,</span> <span class="n">factory_name</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">factory</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-            <span class="k">return</span> <span class="n">factory</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">launcher</span> <span class="o">=</span> <span class="n">launcher</span> <span class="ow">or</span> <span class="n">DEFAULT_LAUNCHER</span>
+    <span class="k">if</span> <span class="n">CUSTOM_LAUNCHER_SEPARATOR</span> <span class="ow">in</span> <span class="n">launcher</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">factory_name</span> <span class="o">=</span> <span class="n">launcher</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">CUSTOM_LAUNCHER_SEPARATOR</span><span class="p">)</span>
+        <span class="n">glbls</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">exec</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(),</span> <span class="n">glbls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">glbls</span><span class="p">[</span><span class="n">factory_name</span><span class="p">]</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_item</span>  <span class="c1"># noqa: PLC0415</span>
 
-    <span class="k">return</span> <span class="n">import_item</span><span class="p">(</span><span class="n">start_interface</span> <span class="ow">or</span> <span class="n">DEFAULT_START_INTERFACE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">launcher</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;launch_zmq_interface&quot;</span><span class="p">,</span> <span class="s2">&quot;start_kernel_zmq_interface&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">import_item</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;async_kernel.interface.</span><span class="si">{</span><span class="n">launcher</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">import_item</span><span class="p">(</span><span class="n">launcher</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3183,13 +3582,13 @@ For example <code>..., **{'shell.timeout'=0.1})</code>.</p>
         
         
           
-          <a href="../asyncshell/" class="md-footer__link md-footer__link--next" aria-label="Next: asyncshell">
+          <a href="../shell/" class="md-footer__link md-footer__link--next" aria-label="Next: shell">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                asyncshell
+                shell
               </div>
             </div>
             <div class="md-footer__button md-icon">

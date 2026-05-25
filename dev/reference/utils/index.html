@@ -616,7 +616,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Define custom kernels (notebook)
+    Kernel customisation (notebook)
   
 
     
@@ -650,6 +650,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -964,14 +966,42 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../asyncshell/" class="md-nav__link">
+      <a href="../shell/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    asyncshell
+    shell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ipshell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ipshell
   
 
     
@@ -1176,10 +1206,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.utils.get_parent" class="md-nav__link">
+  <a href="#async_kernel.utils.get_parent_message" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_parent
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_parent_message
       
     </span>
   </a>
@@ -1309,17 +1339,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.utils.get_execution_count" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_execution_count
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#async_kernel.utils.setattr_nested" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1370,6 +1389,17 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#async_kernel.utils.apply_settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;apply_settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#async_kernel.utils.error_to_content" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1396,6 +1426,17 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;redirect_stderr
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.utils.show_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;show_result
       
     </span>
   </a>
@@ -1676,10 +1717,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.utils.get_parent" class="md-nav__link">
+  <a href="#async_kernel.utils.get_parent_message" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_parent
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_parent_message
       
     </span>
   </a>
@@ -1809,17 +1850,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.utils.get_execution_count" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_execution_count
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#async_kernel.utils.setattr_nested" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1870,6 +1900,17 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#async_kernel.utils.apply_settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;apply_settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#async_kernel.utils.error_to_content" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1896,6 +1937,17 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;redirect_stderr
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.utils.show_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;show_result
       
     </span>
   </a>
@@ -2015,7 +2067,7 @@ viewing the latest version.
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            get_parent (async_kernel.utils.get_parent)" href="#async_kernel.utils.get_parent">get_parent</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            get_parent_message (async_kernel.utils.get_parent_message)" href="#async_kernel.utils.get_parent_message">get_parent_message</a></code></b>
             –
             <div class="doc-md-description">
               <p>Get the parent message for the current context.</p>
@@ -2064,17 +2116,17 @@ viewing the latest version.
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            get_execution_count (async_kernel.utils.get_execution_count)" href="#async_kernel.utils.get_execution_count">get_execution_count</a></code></b>
-            –
-            <div class="doc-md-description">
-              <p>Gets the execution count for the current context, defaults to the current kernel count.</p>
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            setattr_nested (async_kernel.utils.setattr_nested)" href="#async_kernel.utils.setattr_nested">setattr_nested</a></code></b>
             –
             <div class="doc-md-description">
               <p>Replace an existing nested attribute/trait of an object.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            apply_settings (async_kernel.utils.apply_settings)" href="#async_kernel.utils.apply_settings">apply_settings</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>Apply the settings onto the object.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -2096,6 +2148,13 @@ viewing the latest version.
             –
             <div class="doc-md-description">
               <p>Re-direct <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/sys.html#sys.stderr">sys.stderr</a> generated in the current context.</p>
+            </div>
+          </li>
+          <li class="doc-section-item field-body">
+            <b><code><a class="autorefs autorefs-internal" title="            show_result (async_kernel.utils.show_result)" href="#async_kernel.utils.show_result">show_result</a></code></b>
+            –
+            <div class="doc-md-description">
+              <p>A context where <code>show_result</code> is enabled/disabled.</p>
             </div>
           </li>
     </ul>
@@ -2134,11 +2193,11 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifies the given thread&#39;s attributes to hide or unhide it from the debugger (e.g., debugpy).&quot;&quot;&quot;</span>
     <span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span> <span class="ow">or</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
     <span class="n">thread</span><span class="o">.</span><span class="n">pydev_do_not_trace</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">remove</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
@@ -2168,11 +2227,19 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Kernel</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Kernel</span><span class="p">:</span>
     <span class="s2">&quot;Get the current kernel.&quot;</span>
-    <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">Kernel</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">BaseInterface</span><span class="o">.</span><span class="n">initialized</span><span class="p">():</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;A kernel interface is not started!&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">BaseInterface</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">kernel</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2210,14 +2277,14 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Job</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Job</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the job for the current context.</span>
 
@@ -2234,12 +2301,12 @@ viewing the latest version.
 <div class="doc doc-object doc-function">
 
 
-<h2 id="async_kernel.utils.get_parent" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_parent</span>
+<h2 id="async_kernel.utils.get_parent_message" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_parent_message</span>
 
 
-<a href="#async_kernel.utils.get_parent" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_parent</span><span class="p">(</span><span class="n"><span title="async_kernel.utils.get_parent(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span>
+<a href="#async_kernel.utils.get_parent_message" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_parent_message</span><span class="p">(</span><span class="n"><span title="async_kernel.utils.get_parent_message(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2250,12 +2317,12 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent_message</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Get the parent message for the current context.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">get_job</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;msg&quot;</span><span class="p">)</span>
@@ -2284,34 +2351,11 @@ viewing the latest version.
 
           
 
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#">asyncshell</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveSubshell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveSubshell</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
-
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">83</span>
-<span class="normal">84</span>
-<span class="normal">85</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_subshell_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">97</span>
+<span class="normal">98</span>
+<span class="normal">99</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_subshell_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Get the `subshell_id` for the current context.&quot;</span>
     <span class="k">return</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">subshell_id</span>
 </code></pre></div></td></tr></table></div>
@@ -2350,47 +2394,24 @@ viewing the latest version.
 
           
 
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#">asyncshell</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveSubshell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveSubshell</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
-
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span>
-<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">subshell_context</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A context manager to work in the context of a shell or subshell.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        subshell_id: An existing subshell or the main shell if subshell_id is None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">with</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">subshell_manager</span><span class="o">.</span><span class="n">get_shell</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">)</span><span class="o">.</span><span class="n">context</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">get_shell</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">)</span><span class="o">.</span><span class="n">context</span><span class="p">():</span>
         <span class="k">yield</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2417,12 +2438,12 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Gets the metadata for the current context.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">_job_var</span><span class="o">.</span><span class="n">get</span><span class="p">())[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
@@ -2476,12 +2497,12 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="s2">&quot;Gets the tags for the current context.&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">)[</span><span class="s2">&quot;tags&quot;</span><span class="p">]</span>  <span class="c1"># pyright: ignore[reportOptionalSubscript]</span>
@@ -2547,28 +2568,28 @@ the type of the default.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
 <span class="normal">143</span>
-<span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tag_value</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">_TagType</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TagType</span><span class="p">:</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tag_value</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">_TagType</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TagType</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the value for the tag from a collection of tags.</span>
 
@@ -2615,47 +2636,15 @@ the type of the default.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_timeout</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_timeout</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="s2">&quot;Gets the timeout from tags or using the current context.&quot;</span>
     <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">timeout</span> <span class="o">:=</span> <span class="n">get_tag_value</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">timeout</span>
     <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="async_kernel.utils.get_execution_count" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_execution_count</span>
-
-
-<a href="#async_kernel.utils.get_execution_count" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_execution_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Gets the execution count for the current context, defaults to the current kernel count.</p>
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_execution_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="s2">&quot;Gets the execution count for the current context, defaults to the current kernel count.&quot;</span>
-
-    <span class="k">return</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">execution_count</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2670,7 +2659,9 @@ the type of the default.</p>
 
 
 <a href="#async_kernel.utils.setattr_nested" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">setattr_nested</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="obj (async_kernel.utils.setattr_nested(obj))" href="#async_kernel.utils.setattr_nested(obj)">obj</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#object">object</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="name (async_kernel.utils.setattr_nested(name))" href="#async_kernel.utils.setattr_nested(name)">name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="value (async_kernel.utils.setattr_nested(value))" href="#async_kernel.utils.setattr_nested(value)">value</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">setattr_nested</span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="obj (async_kernel.utils.setattr_nested(obj))" href="#async_kernel.utils.setattr_nested(obj)">obj</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#object">object</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="name (async_kernel.utils.setattr_nested(name))" href="#async_kernel.utils.setattr_nested(name)">name</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="value (async_kernel.utils.setattr_nested(value))" href="#async_kernel.utils.setattr_nested(value)">value</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.utils.setattr_nested(_return_value)">_return_value</span></span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2731,15 +2722,7 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">168</span>
 <span class="normal">169</span>
 <span class="normal">170</span>
 <span class="normal">171</span>
@@ -2760,7 +2743,19 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
-<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">_return_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Replace an existing nested attribute/trait of an object.</span>
 
@@ -2776,20 +2771,82 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="sd">        The mapping of the name to the set value if the value has been set.</span>
 <span class="sd">        An empty dict indicates the value was not set.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span> <span class="o">:=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-        <span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">value</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">has_trait</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">)}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span> <span class="o">:=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">value</span><span class="p">,</span> <span class="n">_return_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="n">_return_value</span> <span class="k">else</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">has_trait</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="n">_return_value</span> <span class="k">else</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>  <span class="c1"># pyright: ignore[reportReturnType]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_return_value</span><span class="p">:</span>
+            <span class="k">raise</span>
     <span class="k">return</span> <span class="p">{}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="async_kernel.utils.apply_settings" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">apply_settings</span>
+
+
+<a href="#async_kernel.utils.apply_settings" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">apply_settings</span><span class="p">(</span><span class="n"><span title="async_kernel.utils.apply_settings(obj)">obj</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#object">object</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.utils.apply_settings(settings)">settings</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Mapping" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping">Mapping</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Apply the settings onto the object.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>dict</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A copy of the settings that were applied.</p>
+          </div>
+        </li>
+    </ul>
+
+          
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">apply_settings</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply the settings onto the object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A copy of the settings that were applied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">values</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2821,18 +2878,18 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">error_to_content</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">error_to_content</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert the error to a dict.</span>
 
@@ -2884,15 +2941,15 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#">asyncshell</a>
+      <a href="../ipshell/#">ipshell</a>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IPShell</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.system"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;system</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.system"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;system</a>
   </span>
 
       </li>
@@ -2903,20 +2960,19 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stdout</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Re-direct [sys.stdout][] generated in the current context.</span>
@@ -2924,7 +2980,6 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="sd">    See also:</span>
 <span class="sd">        - [contextlib.redirect_stdout][]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">event_started</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stdout_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">stream</span>
@@ -2970,15 +3025,15 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#">asyncshell</a>
+      <a href="../ipshell/#">ipshell</a>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AsyncInteractiveShell</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IPShell</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
-      <a href="../asyncshell/#async_kernel.asyncshell.AsyncInteractiveShell.system"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;system</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.system"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;system</a>
   </span>
 
       </li>
@@ -2989,21 +3044,20 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stderr</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Re-direct [sys.stderr][] generated in the current context.</span>
@@ -3012,12 +3066,53 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="sd">        - [contextlib.redirect_stderr][]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">assert</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">event_started</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stderr_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">stream</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">_stderr_context</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="async_kernel.utils.show_result" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">show_result</span>
+
+
+<a href="#async_kernel.utils.show_result" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">show_result</span><span class="p">(</span><span class="n"><span title="async_kernel.utils.show_result(show)">show</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Generator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator">Generator</a></span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A context where <code>show_result</code> is enabled/disabled.</p>
+
+          
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">show_result</span><span class="p">(</span><span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="s2">&quot;A context where `show_result` is enabled/disabled.&quot;</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">_show_result_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">show</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">token</span><span class="p">:</span>
+            <span class="n">_show_result_context</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

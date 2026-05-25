@@ -616,7 +616,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Define custom kernels (notebook)
+    Kernel customisation (notebook)
   
 
     
@@ -650,6 +650,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -1057,14 +1059,42 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../asyncshell/" class="md-nav__link">
+      <a href="../shell/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    asyncshell
+    shell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ipshell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ipshell
   
 
     
@@ -1587,21 +1617,12 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="comm.base_comm.BaseComm">BaseComm</span></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a></code>, <code><span title="comm.base_comm.BaseComm">BaseComm</span></code></p>
 
 
 
         <p>An implementation of <code>comm.BaseComms</code> for async-kernel  (<a href="https://pypi.org/project/comm/">on pypi</a>).</p>
 
-
-<details class="notes" open>
-  <summary>Notes</summary>
-  <ul>
-<li><code>kernel</code> is added/removed by the CommManager.</li>
-<li><code>kernel</code> is added to the CommManager by the kernel once the sockets have been opened.</li>
-<li>publish_msg is no-op when kernel is unset.</li>
-</ul>
-</details>
           
 
 
@@ -1654,7 +1675,7 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title="            handle_msg (async_kernel.comm.Comm.handle_msg)" href="#async_kernel.comm.Comm.handle_msg">handle_msg</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Handle a comm_msg message</p>
+              <p>Handle an comm_msg message</p>
             </div>
           </li>
     </ul>
@@ -1692,24 +1713,10 @@ viewing the latest version.
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Comm</span><span class="p">(</span><span class="n">BaseComm</span><span class="p">):</span>
+<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Comm</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">BaseComm</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).</span>
-
-<span class="sd">    Notes:</span>
-<span class="sd">        - `kernel` is added/removed by the CommManager.</span>
-<span class="sd">        - `kernel` is added to the CommManager by the kernel once the sockets have been opened.</span>
-<span class="sd">        - publish_msg is no-op when kernel is unset.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">kernel</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Kernel</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_kernel</span><span class="p">())</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>
@@ -1722,7 +1729,7 @@ viewing the latest version.
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper for sending a comm message on IOPub.&quot;&quot;&quot;</span>
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;comm_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
             <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_type</span><span class="p">,</span>
             <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
@@ -1733,7 +1740,7 @@ viewing the latest version.
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">comm</span><span class="o">.</span><span class="n">base_comm</span><span class="o">.</span><span class="n">MessageType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle a comm_msg message&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle an comm_msg message&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg_callback</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_msg_callback</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -1777,7 +1784,14 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
 <span class="normal">34</span>
 <span class="normal">35</span>
 <span class="normal">36</span>
@@ -1788,14 +1802,7 @@ viewing the latest version.
 <span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1806,7 +1813,7 @@ viewing the latest version.
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for sending a comm message on IOPub.&quot;&quot;&quot;</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;comm_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
         <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_type</span><span class="p">,</span>
         <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
         <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
@@ -1833,19 +1840,19 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Handle a comm_msg message</p>
+        <p>Handle an comm_msg message</p>
 
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">comm</span><span class="o">.</span><span class="n">base_comm</span><span class="o">.</span><span class="n">MessageType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle a comm_msg message&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle an comm_msg message&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg_callback</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msg_callback</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>

@@ -616,7 +616,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Define custom kernels (notebook)
+    Kernel customisation (notebook)
   
 
     
@@ -650,6 +650,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -935,6 +937,17 @@ viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#async_kernel.common.Fixed(mode)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;mode
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1151,14 +1164,42 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../asyncshell/" class="md-nav__link">
+      <a href="../shell/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    asyncshell
+    shell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ipshell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ipshell
   
 
     
@@ -1560,6 +1601,17 @@ viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#async_kernel.common.Fixed(mode)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;mode
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1810,44 +1862,6 @@ viewing the latest version.
           
 
 
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#">interface</a>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupt"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;interrupt</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
-  </ul>
-
-  </div>
-
-
-
 
 
 
@@ -1860,8 +1874,8 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
-<span class="normal">47</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterrupt</span><span class="p">(</span><span class="ne">InterruptedError</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
+<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterrupt</span><span class="p">(</span><span class="ne">InterruptedError</span><span class="p">):</span>
     <span class="s2">&quot;Raised to interrupt the kernel.&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -1897,7 +1911,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
     <ul>
         <li class="doc-section-item field-body">
 <h3 id="async_kernel.common.Fixed(obj)" class="doc doc-heading doc-heading-parameter">              <b><code>obj</code></b>
-<a href="#async_kernel.common.Fixed(obj)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<span title="async_kernel.typing.T">T</span>] | <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="            FixedCreate (async_kernel.typing.FixedCreate)" href="../typing/#async_kernel.typing.FixedCreate">FixedCreate</a>[<span title="async_kernel.typing.S">S</span>]], <span title="async_kernel.typing.T">T</span>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
+<a href="#async_kernel.common.Fixed(obj)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a>[<span title="async_kernel.typing.T">T</span>] | <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], <span title="async_kernel.typing.T">T</span>] | <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="            FixedCreate (async_kernel.typing.FixedCreate)" href="../typing/#async_kernel.typing.FixedCreate">FixedCreate</a>[<span title="async_kernel.typing.S">S</span>]], <span title="async_kernel.typing.T">T</span>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
           –
           <div class="doc-md-description">
             <p>A class, callable or dotted path.</p>
@@ -1916,6 +1930,19 @@ and returned. Subsequent access to the property returns the cached result.</p>
           –
           <div class="doc-md-description">
             <p>A per-instance optional callback that gets called on first-access to the property.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.common.Fixed(mode)" class="doc doc-heading doc-heading-parameter">              <b><code>mode</code></b>
+<a href="#async_kernel.common.Fixed(mode)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;raise&#39;, &#39;ignore&#39;, &#39;log&#39;]</code>, default:
+                  <code>&#39;raise&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>How to handle invalid data.
+- <code>'raise'</code>: Raise an error.
+- <code>'log'</code>: Log a warning or exception.
+- 'ignore': Ignore (value is not set).</p>
           </div>
         </li>
     </ul>
@@ -1964,25 +1991,19 @@ and returned. Subsequent access to the property returns the cached result.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseInterface</a>
   </span>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupts"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupts</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
   </span>
 
       </li>
@@ -1991,26 +2012,23 @@ and returned. Subsequent access to the property returns the cached result.</p>
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseInterface</a>
   </span>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupts"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupts</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
   </span>
 
       </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
-  </span>
+  </ul>
 
       </li>
   </ul>
@@ -2018,23 +2036,54 @@ and returned. Subsequent access to the property returns the cached result.</p>
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.zmq.ZMQKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQKernelInterface</a>
+      <a href="../ipshell/#">ipshell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IPShell</a>
   </span>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.zmq.ZMQKernelInterface.ports"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ports</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.compile"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;compile</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.zmq.ZMQKernelInterface.sockets"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;sockets</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.display_formatter"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;display_formatter</a>
   </span>
 
       </li>
-  </ul>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.display_pub"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;display_pub</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.displayhook"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;displayhook</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.extension_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;extension_manager</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.history_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_manager</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.prefilter_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;prefilter_manager</a>
+  </span>
 
       </li>
   </ul>
@@ -2049,9 +2098,26 @@ and returned. Subsequent access to the property returns the cached result.</p>
       <a href="../kernel/#async_kernel.kernel.Kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Kernel</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../kernel/#async_kernel.kernel.Kernel.main_shell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;main_shell</a>
+      <a href="../kernel/#async_kernel.kernel.Kernel.caller"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;caller</a>
   </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.interrupts"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupts</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -2077,6 +2143,37 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
             <span class="doc doc-backlink-crumb last">
       <a href="../pending/#async_kernel.pending.PendingTracker.id"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;id</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../shell/#">shell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../shell/#async_kernel.shell.base.BaseShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseShell</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../shell/#async_kernel.shell.base.BaseShell.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../shell/#async_kernel.shell.base.BaseShell.subshell_id"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;subshell_id</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../shell/#async_kernel.shell.base.BaseShell.user_ns_hidden"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;user_ns_hidden</a>
   </span>
 
       </li>
@@ -2118,31 +2215,31 @@ and returned. Subsequent access to the property returns the cached result.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseInterface</a>
   </span>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.debugger"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debugger</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface.event_started"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;event_started</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.interrupts"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupts</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface.event_stopped"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;event_stopped</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
+      <a href="../interface/#async_kernel.interface.BaseInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
   </span>
 
       </li>
@@ -2151,32 +2248,35 @@ and returned. Subsequent access to the property returns the cached result.</p>
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseInterface</a>
   </span>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.debugger"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debugger</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface.event_started"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;event_started</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.interrupts"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupts</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface.event_stopped"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;event_stopped</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
+      <a href="../interface/#async_kernel.interface.base.BaseInterface.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
   </span>
+
+      </li>
+  </ul>
 
       </li>
   </ul>
@@ -2184,29 +2284,66 @@ and returned. Subsequent access to the property returns the cached result.</p>
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.zmq.ZMQKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQKernelInterface</a>
+      <a href="../ipshell/#">ipshell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IPShell</a>
   </span>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.zmq.ZMQKernelInterface.ports"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ports</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.builtin_trap"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;builtin_trap</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.zmq.ZMQKernelInterface.session"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;session</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.compile"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;compile</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.zmq.ZMQKernelInterface.sockets"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;sockets</a>
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.configurables"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;configurables</a>
   </span>
 
       </li>
-  </ul>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.display_formatter"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;display_formatter</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.display_pub"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;display_pub</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.displayhook"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;displayhook</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.extension_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;extension_manager</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.history_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;history_manager</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../ipshell/#async_kernel.shell.ipshell.IPShell.prefilter_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;prefilter_manager</a>
+  </span>
 
       </li>
   </ul>
@@ -2224,25 +2361,31 @@ and returned. Subsequent access to the property returns the cached result.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.caller"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;caller</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../kernel/#async_kernel.kernel.Kernel.callers"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;callers</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
       <a href="../kernel/#async_kernel.kernel.Kernel.comm_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;comm_manager</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../kernel/#async_kernel.kernel.Kernel.event_started"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;event_started</a>
+      <a href="../kernel/#async_kernel.kernel.Kernel.debugger"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debugger</a>
   </span>
 
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="../kernel/#async_kernel.kernel.Kernel.event_stopped"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;event_stopped</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../kernel/#async_kernel.kernel.Kernel.main_shell"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;main_shell</a>
+      <a href="../kernel/#async_kernel.kernel.Kernel.interrupts"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;interrupts</a>
   </span>
 
       </li>
@@ -2278,6 +2421,43 @@ and returned. Subsequent access to the property returns the cached result.</p>
   </ul>
 
       </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../shell/#">shell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../shell/#async_kernel.shell.base.BaseShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseShell</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../shell/#async_kernel.shell.base.BaseShell.kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kernel</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../shell/#async_kernel.shell.base.BaseShell.pending_manager"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;pending_manager</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../shell/#async_kernel.shell.base.BaseShell.subshell_id"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;subshell_id</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../shell/#async_kernel.shell.base.BaseShell.user_ns_hidden"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;user_ns_hidden</a>
+  </span>
+
+      </li>
+  </ul>
+
+      </li>
   </ul>
 
       </li>
@@ -2299,10 +2479,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 53</span>
 <span class="normal"> 54</span>
 <span class="normal"> 55</span>
 <span class="normal"> 56</span>
@@ -2403,7 +2580,41 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
-<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A property-like descriptor factory that always returns the same object.</span>
 
@@ -2422,6 +2633,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="sd">            - class | callable: Called with zero or one positional argument [FixedCreate][].</span>
 
 <span class="sd">        created: A per-instance optional callback that gets called on first-access to the property.</span>
+<span class="sd">        mode: How to handle invalid data.</span>
+<span class="sd">            - `&#39;raise&#39;`: Raise an error.</span>
+<span class="sd">            - `&#39;log&#39;`: Log a warning or exception.</span>
+<span class="sd">            - &#39;ignore&#39;: Ignore (value is not set).</span>
 
 <span class="sd">    Type Hints:</span>
 <span class="sd">        - ``S``: Type of the owner class.</span>
@@ -2441,20 +2656,22 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="sd">        You can use [import_item][] inside a callable to lazy import.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;create&quot;</span><span class="p">,</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">,</span> <span class="s2">&quot;instances_locks&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;create&quot;</span><span class="p">,</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">,</span> <span class="s2">&quot;instances_locks&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">obj</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FixedCreate</span><span class="p">[</span><span class="n">S</span><span class="p">]],</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">obj</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FixedCreate</span><span class="p">[</span><span class="n">S</span><span class="p">]],</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">/</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">created</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FixedCreated</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># pyright: ignore[reportUnnecessaryIsInstance]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="n">obj</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">created</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">instances_locks</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj</span><span class="si">=}</span><span class="s2"> is invalid! Use a lambda instead eg: lambda _: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -2480,34 +2697,59 @@ and returned. Subsequent access to the property returns the cached result.</p>
                 <span class="k">if</span> <span class="n">lock</span><span class="o">.</span><span class="n">_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Self-referencing creation detected for </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!&quot;</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_instance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_instance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_invalid</span><span class="p">(</span>
+            <span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Deletion of `Fixed` parameter `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` is not allowed. (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Never</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportReturnType]</span>
+        <span class="c1"># Note: We use `Self` as the type hint for the `value` above  to give a useful typing error.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_invalid</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Setting `Fixed` parameter `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` is forbidden! (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rep_with_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">&quot;raise&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">log</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+                        <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;ignore&quot;</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="s2">&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">create</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="n">create</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">create</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">instance</span> <span class="o">=</span> <span class="n">create</span><span class="p">()</span>  <span class="c1"># pyright: ignore[reportCallIssue, reportAssignmentType]</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="n">instance</span><span class="p">:</span> <span class="n">T</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="n">FixedCreate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="n">obj</span><span class="p">))</span>  <span class="c1"># pyright: ignore[reportAssignmentType, reportCallIssue]</span>
+            <span class="k">if</span> <span class="n">create</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;&lt;lambda&gt;&quot;</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">create</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">instance</span><span class="p">:</span> <span class="n">T</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="n">FixedCreate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="n">obj</span><span class="p">))</span>  <span class="c1"># pyright: ignore[reportAssignmentType, reportCallIssue]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instances_locks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">THREAD_DUMMY_LOCK</span>
-        <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">pop</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">,</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakValueDictionary</span><span class="p">):</span>
+            <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">pop</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances_locks</span><span class="o">.</span><span class="n">pop</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">({</span><span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">log</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Callback `created` failed for </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">})</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_handle_invalid</span><span class="p">(</span>
+                    <span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Callback `created` failed for `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">e</span>
+                <span class="p">)</span>
         <span class="k">return</span> <span class="n">instance</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Never</span><span class="p">:</span>
-        <span class="c1"># Note: above we use `Self` for the `value` type hint to give a useful typing error</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Setting `Fixed` parameter </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is forbidden!&quot;</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2648,41 +2890,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
@@ -2771,7 +2979,41 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">277</span>
 <span class="normal">278</span>
 <span class="normal">279</span>
-<span class="normal">280</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SingleAsyncQueue</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SingleAsyncQueue</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A single-use asynchronous iterator with a queue.</span>
 
@@ -2978,20 +3220,20 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop the queue rejecting any items currently in the queue.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3031,18 +3273,18 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Append `item` to the queue.</span>
 
@@ -3080,18 +3322,18 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">appendleft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">appendleft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Append `item` to the left side of the queue.</span>
 
@@ -3129,19 +3371,19 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Append all items in `iterable` to the queue.</span>
 
@@ -3212,67 +3454,32 @@ and returned. Subsequent access to the property returns the cached result.</p>
       </li>
   </ul>
 
-        <b class="doc doc-backlink-type">Used by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#">interface</a>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.BaseKernelInterface.debugger"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debugger</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseKernelInterface</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../interface/#async_kernel.interface.base.BaseKernelInterface.debugger"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;debugger</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
-  </ul>
-
   </div>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/common.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_item</span><span class="p">(</span><span class="n">dottedname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import an item from a module, given its dotted name.</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_item</span><span class="p">(</span><span class="n">dottedname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Import an item from a module, given its dotted name.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        ```python</span>
 <span class="sd">        import_item(&quot;os.path.join&quot;)</span>
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">module</span><span class="p">,</span> <span class="n">name0</span> <span class="o">=</span> <span class="n">dottedname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">aiologic</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name0</span><span class="p">)</span>
+    <span class="n">module</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">dottedname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">aiologic</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
