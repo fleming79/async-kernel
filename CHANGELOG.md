@@ -5,11 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] - 2026-05-26
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Add support for traitlets configuration with major refactoring. [#469](https://github.com/fleming79/async-kernel/pull/469)
+
+- Rename kernel_name to name [#459](https://github.com/fleming79/async-kernel/pull/459)
+
+### <!-- 1 --> 🚀 Features
+
+- Add timeout to PendingGroup and shield to Caller.wait. [#471](https://github.com/fleming79/async-kernel/pull/471)
+
+- Improve Kernel subclassing [#460](https://github.com/fleming79/async-kernel/pull/460)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump uv and basedpyright [#470](https://github.com/fleming79/async-kernel/pull/470)
+
+- Add message to task.cancel in task_factory [#461](https://github.com/fleming79/async-kernel/pull/461)
+
+- Linting [#458](https://github.com/fleming79/async-kernel/pull/458)
+
 ## [0.18.3] - 2026-05-06
 
 ### <!-- 1 --> 🚀 Features
 
 - Include default argument in pack_json_bytes  and pack_json_str. [#456](https://github.com/fleming79/async-kernel/pull/456)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.18.3 [#457](https://github.com/fleming79/async-kernel/pull/457)
 
 ## [0.18.2] - 2026-05-03
 
@@ -1283,6 +1309,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.19.0]: https://github.com/fleming79/async-kernel/compare/v0.18.3..v0.19.0
 [0.18.3]: https://github.com/fleming79/async-kernel/compare/v0.18.2..v0.18.3
 [0.18.2]: https://github.com/fleming79/async-kernel/compare/v0.18.1..v0.18.2
 [0.18.1]: https://github.com/fleming79/async-kernel/compare/v0.18.0..v0.18.1
