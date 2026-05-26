@@ -59,7 +59,7 @@ def test_args_to_dict():
         "--debug",
     ]
     flags, settings = to_flags_and_settings(unknown_args)
-    assert flags == ["--quiet", "--automagic", "--debug"]
+    assert flags == ["quiet", "automagic", "debug"]
     assert settings == {
         "display_name": "my kernel",
         "dict_value": {"option_A": False, "Some other value": "142"},
