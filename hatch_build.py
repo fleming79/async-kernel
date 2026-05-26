@@ -22,4 +22,9 @@ class CustomHook(BuildHookInterface):
 
             name = "async"
             spec_folder = here.joinpath("data_kernelspec", name)
-            write_kernel_spec(path=spec_folder, name=name, command=("python", "-m", "async_kernel", "start"))
+            write_kernel_spec(
+                path=spec_folder,
+                name=name,
+                command=("python", "-m", "async_kernel", "start"),
+                display_name=f"Python 3 ({name})",
+            )
