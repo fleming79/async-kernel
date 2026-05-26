@@ -2,17 +2,21 @@ from __future__ import annotations
 
 import contextlib
 import sys
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import comm
 from aiologic.meta import import_module
 from comm.base_comm import BaseComm, BuffersType, MaybeDict
 from typing_extensions import override
 
+import async_kernel
+from async_kernel.common import Fixed
 from async_kernel.interface import HasInterface
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from async_kernel.kernel import Kernel
 
 
 __all__ = ["Comm"]
@@ -22,6 +26,8 @@ class Comm(HasInterface, BaseComm):
     """
     An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).
     """
+
+    kernel: Fixed[Any, Kernel] = Fixed(async_kernel.utils.get_kernel)
 
     @override
     def publish_msg(
@@ -56,6 +62,8 @@ class CommManager(HasInterface, comm.base_comm.CommManager):
 
     Not to be called directly; use `get_comm_manager` to obtain the comm manager.
     """
+
+    kernel: Fixed[Any, Kernel] = Fixed(async_kernel.utils.get_kernel)
 
     comms: dict[str, BaseComm]
     targets: dict[str, comm.base_comm.CommTargetCallback]

@@ -58,6 +58,9 @@ async def test_comm_manager(kernel: Kernel, mocker) -> None:
     manager.register_comm(c)
     assert publish_msg.call_count == 1
 
+    # IPyWidgets expects comm to have a kernel.
+    assert c.kernel is manager.kernel
+
     assert manager.get_comm(c.comm_id) == c
     assert manager.get_comm("foo") is None
 
