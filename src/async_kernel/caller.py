@@ -5,6 +5,7 @@ import contextlib
 import contextvars
 import inspect
 import logging
+import math
 import reprlib
 import sys
 import threading
@@ -988,7 +989,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         cancel_unfinished: bool = True,
     ) -> AsyncGenerator[Pending[T], Any]:
         """
-        An async iterator to yield a pending for each awaitable in items as they complete.
+        An async iterator to yield a pending for each awaitable in items as they complete (are done).
+
+        How the pending was marked as done does not affect the iterator.
 
         Args:
             items: A container or a generator that yields awaitables.
@@ -1056,6 +1059,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         self,
         items: Iterable[Awaitable[T]],
         *,
+        shield: bool = False,
         timeout: float | None = None,
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
     ) -> tuple[set[Pending[T]], set[Pending[T]]]:
@@ -1066,6 +1070,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         Args:
             items: An iterable of results to wait for.
+            shield: Shield from external cancellation.
             timeout: The maximum time before returning.
             return_when: The same options as available for [asyncio.wait][].
 
@@ -1093,7 +1098,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                     if pen.cancelled() or pen.exception():
                         return done, pending
         if pending:
-            with anyio.move_on_after(timeout):
+            deadline = anyio.current_time() + timeout if timeout is not None else math.inf
+            with anyio.CancelScope(deadline=deadline, shield=shield):
                 async for pen in self.as_completed(pending.copy(), cancel_unfinished=False):
                     pending.discard(pen)
                     done.add(pen)
@@ -1103,7 +1109,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                         break
         return done, pending
 
-    def create_pending_group(self, *, shield: bool = False, mode: Literal[0, 1, 2, 3] = 0) -> PendingGroup:
+    def create_pending_group(
+        self,
+        *,
+        shield: bool = False,
+        mode: Literal[0, 1, 2, 3] = 0,
+        timeout: float | None = None,
+    ) -> PendingGroup:
         """
         Create a new [PendingGroup][async_kernel.pending.PendingGroup].
 
@@ -1128,4 +1140,4 @@ class Caller(anyio.AsyncContextManagerMixin):
                 pg.caller.to_thread(my_func)
             ```
         """
-        return PendingGroup(shield=shield, mode=mode)
+        return PendingGroup(shield=shield, mode=mode, timeout=timeout)
