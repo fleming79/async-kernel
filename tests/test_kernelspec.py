@@ -23,7 +23,9 @@ def test_install_kernel_spec(tmp_path: Path, monkeypatch):
     kernel_path = tmp_path.joinpath("kernels", name)
 
     command = ("python", "-m", "async_kernel", "start")
-    assert write_kernel_spec(path=kernel_path, command=command, name=name) == kernel_path
+    assert (
+        write_kernel_spec(path=kernel_path, command=command, name=name, flags=("--debug", "--no-quiet")) == kernel_path
+    )
     kernel_json = kernel_path.joinpath("kernel.json")
     assert kernel_json.exists()
 
@@ -36,6 +38,8 @@ def test_install_kernel_spec(tmp_path: Path, monkeypatch):
                 "async_kernel",
                 "start",
                 "--connection_file={connection_file}",
+                "--debug",
+                "--no-quiet",
                 "--launcher=launch_zmq_interface",
                 f"--name={name}",
             ],

@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
     InterfaceStartType = Callable[[dict[str, Any]], Any]
 
@@ -49,6 +49,7 @@ def make_argv(
     name: str = "async",
     launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
     command: tuple[str, ...] = DEFAULT_COMMAND,
+    flags: Iterable[str] = (),
     **kwargs: Any,
 ) -> list[str]:
     """Returns an argument vector (argv) that can be used to start a `Kernel`.
@@ -68,15 +69,13 @@ def make_argv(
                 - "start_kernel_zmq_interface"
         name: The name to use for the kernel.
         command: The command line command to call.
+        flags: Any number of flags to insert in argv. Flags will be prefixed with '--'.
         **kwargs: Additional settings to pass when creating the kernel passed to `launcher`.
 
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
-    argv = [
-        *command,
-        f"--connection_file={connection_file}",
-    ]
+    argv = [*command, f"--connection_file={connection_file}", *(f"--{f.strip('-')}" for f in flags)]
     for k, v in ({"launcher": launcher, "name": name} | kwargs).items():
         argv.append(f"--{k}={v}")
     return list(map(str, argv))
@@ -125,6 +124,7 @@ def write_kernel_spec(
     metadata: dict | None = None,
     language="python",
     resources: Path | None = RESOURCES,
+    flags: Iterable[str] = (),
     **kwargs: Any,
 ) -> Path:
     """
@@ -157,6 +157,8 @@ def write_kernel_spec(
             A mapping of additional attributes to aid the client in kernel selection.
         resources:
             The path to the resources folder to include with the kernel spec.
+        flags:
+            Flags to insert directly into the argv string.
         **kwargs:
             Pass additional settings to set on the instance of the `Kernel` when it is instantiated.
             Each setting should correspond to the dotted path to the attribute relative to the kernel.
@@ -194,6 +196,7 @@ def write_kernel_spec(
             connection_file=connection_file,
             name=name,
             command=command,
+            flags=flags,
             **kwargs,
         )
         spec: dict[str, list[Any] | Any | dict[Any, Any] | str | dict[str, bool]] = {

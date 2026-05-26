@@ -15,7 +15,7 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel import Kernel
-from async_kernel.command import args_to_dict, command_line
+from async_kernel.command import command_line, to_flags_and_settings
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
@@ -46,30 +46,28 @@ def fake_kernel_dir(tmp_path, monkeypatch):
 
 def test_args_to_dict():
     unknown_args = [
+        "--quiet",
         "--display_name='my kernel'",
         "--dict_value",
         "option_A=False",
         "--dict_value",
         "Some other value='142'",
         "--launcher=start_kernel_zmq_interface",
-        "--shell.timeout=0.01",
-        "--shell.timeout",
+        "--timeout",
         "2",
-        "-quiet",
         "--automagic",
-        "--no-automagic",  # not a flag
+        "--debug",
     ]
-    settings = args_to_dict(unknown_args)
+    flags, settings = to_flags_and_settings(unknown_args)
+    assert flags == ["--quiet", "--automagic", "--debug"]
     assert settings == {
         "display_name": "my kernel",
         "dict_value": {"option_A": False, "Some other value": "142"},
         "launcher": "start_kernel_zmq_interface",
-        "shell.timeout": 2,
-        "quiet": True,
-        "automagic": False,
+        "timeout": 2,
     }
     with pytest.raises(ValueError, match="Invalid arg detected"):
-        args_to_dict(["no-prefix"])
+        to_flags_and_settings(["no-prefix"])
 
 
 def test_prints_help_when_no_args(monkeypatch, capsys):
@@ -175,12 +173,6 @@ def test_remove_kernelspec(monkeypatch, fake_kernel_dir, capsys, mode: Literal["
     assert "Installed kernelspec" in out
     assert "Uninstalled kernelspec" in out
     assert not (kernel_dir).exists()
-
-
-# def test_remove_nonexistent_kernel(monkeypatch, fake_kernel_dir, capsys):
-#     monkeypatch.setattr(sys, "argv", ["prog", "uninstall", "--name='not a kernel'"])
-#     with pytest.raises(FileNotFoundError, match="A kernelspec does not exist"):
-#         command_line()
 
 
 @pytest.mark.parametrize("config", ["--user", "-no-user", "--prefix=this$won't^work"])
