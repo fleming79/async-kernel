@@ -107,12 +107,14 @@ class TestUtils:
             k = traitlets.Int()
             nested = traitlets.Instance(traitlets.HasTraits)
             nested_with_default = traitlets.Instance(cast("type[TestObj]", traitlets.HasTraits))
+            b1 = traitlets.Bool(False)
+            b2 = traitlets.Bool(True)
 
             @traitlets.default("nested_with_default")
             def _default_nested_with_default(self):
                 return TestObj()
 
         test_obj = TestObj()
-        settings = {"k": 10, "nested_with_default.k": 20}
+        settings = {"k": 10, "nested_with_default.k": 20, "--flags": ["b1", "no-b2"]}
         val = ak_utils.apply_settings(test_obj, settings)
-        assert val == settings
+        assert val == {"k": 10, "nested_with_default.k": 20, "b1": True, "b2": False}

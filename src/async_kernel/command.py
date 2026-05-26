@@ -21,17 +21,16 @@ if TYPE_CHECKING:
     __all__ = ["command_line"]
 
 
-def args_to_dict(args: list[str]) -> dict[str, Any]:
+def to_flags_and_settings(args: list[str]) -> tuple[list[str], dict[str, Any]]:
     """
-    Convert `argvs` to a dict.
+    Convert `argvs` to flags and settings.
 
     Args:
         args: A list of arguments, the first of which must start with '-' or '--'.
 
     Notes:
         - There is no distinction made between '-' and '--'.
-        - Flags prefixed with 'no-' are assumed to be binary `False`.
-
+        - Flags are returned without '--' prefix.
     """
 
     def safe_eval(val: str) -> Any:
@@ -43,7 +42,7 @@ def args_to_dict(args: list[str]) -> dict[str, Any]:
     def add(k: str, v: Any) -> None:
         settings[k.strip()] = safe_eval(v)
 
-    settings = {}
+    flags, settings = [], {}
     args = list(args)
     while args:
         k = args.pop(0)
@@ -61,11 +60,10 @@ def args_to_dict(args: list[str]) -> dict[str, Any]:
                 v = settings.get(k, {}) | {a: safe_eval(v)}
                 add(k, v)
             else:
-                add(k, v)
+                add(k, safe_eval(v))
         else:
-            # https://docs.python.org/3/library/argparse.html#argparse.BooleanOptionalAction
-            add(k.removeprefix("no-"), not k.startswith("no-"))
-    return settings
+            flags.append(k)
+    return flags, settings
 
 
 def command_line() -> None:
@@ -189,11 +187,11 @@ Tips:
                 mode = mode_
                 break
 
-    settings = args_to_dict(unknownargs)
+    flags, settings = to_flags_and_settings(unknownargs)
 
     match mode:
         case Mode.install:
-            path = write_kernel_spec(user=args.user, name=args.name, **settings)
+            path = write_kernel_spec(user=args.user, name=args.name, flags=flags, **settings)
             print(f"Installed kernelspec {str(path)!r}")
 
         case Mode.uninstall:
@@ -224,6 +222,7 @@ Tips:
             print("async-kernel", async_kernel.__version__)
         case Mode.start | Mode.help_all | Mode.show_config | Mode.show_config_json:
             launcher: InterfaceStartType = import_launcher(settings.get("launcher", ""))
+            settings["--flags"] = flags
             try:
                 launcher(settings)
             except KeyboardInterrupt:
