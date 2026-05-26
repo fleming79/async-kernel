@@ -1059,7 +1059,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         self,
         items: Iterable[Awaitable[T]],
         *,
-        shield=False,
+        shield: bool = False,
         timeout: float | None = None,
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
     ) -> tuple[set[Pending[T]], set[Pending[T]]]:
