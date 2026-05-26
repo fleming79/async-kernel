@@ -303,7 +303,7 @@ class TestPendingManagerTest:
     async def test_pool_ignores_pending_errors(self, pm: PendingManagerTest, caller: Caller) -> None:
         token = pm.activate()
         proceed = Event()
-        pen1 = caller.call_soon(await_for, proceed)  # pyright: ignore[reportArgumentType]
+        pen1 = caller.call_soon(await_for, proceed)
         pen2 = caller.call_soon(lambda: 1 / 0)
         await pen2.wait(result=False)
         proceed.set()

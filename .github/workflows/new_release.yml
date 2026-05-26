@@ -33,8 +33,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          enable-cache: true
-          version: "0.9.26"
+          version-file: "pyproject.toml"
 
       - name: Create a new branch, generate the changelog and release notes.
         run: |

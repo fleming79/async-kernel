@@ -25,7 +25,7 @@ jobs:
       - name: Type checking with basedpyright
         run: |
           uv sync
-          uvx basedpyright@1.39.3
+          uvx basedpyright@1.39.6
 
   test:
     needs: type-checking
@@ -47,8 +47,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          enable-cache: true
-          version: "0.9.26"
+          version-file: "pyproject.toml"
           python-version: ${{ matrix.python-version }}
 
       - name: Install the project
@@ -73,8 +72,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          enable-cache: true
-          version: "0.9.26"
+          version-file: "pyproject.toml"
           python-version: "3.13"
 
       - name: Run tests with coverage
@@ -103,8 +101,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          enable-cache: true
-          version: "0.9.26"
+          version-file: "pyproject.toml"
 
       - name: Docs build strict
         timeout-minutes: 5
