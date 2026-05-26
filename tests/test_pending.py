@@ -40,8 +40,7 @@ async def pm(anyio_backend: Backend):
     for pen in pm.pending:
         pen.cancel()
     if pm.pending:
-        with anyio.CancelScope(shield=True):
-            await Caller().wait(pm.pending)
+        await Caller().wait(pm.pending, shield=True)
 
 
 @pytest.mark.anyio
@@ -481,7 +480,13 @@ class TestPendingGroup:
                         assert await caller.call_soon(lambda: 1) == 1
                         ok = True
                     assert not pg.cancelled()
+                    raise
         assert ok
+
+    async def test_timeout(self, caller: Caller):
+        async with caller.create_pending_group(timeout=0.01) as pg:
+            await anyio.sleep_forever()
+        assert pg.cancelled()
 
     async def test_nested(self, caller: Caller):
         with anyio.move_on_after(0.1):

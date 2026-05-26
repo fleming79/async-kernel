@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import contextvars
+import math
 import reprlib
 import uuid
 import weakref
@@ -206,7 +207,13 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     caller: Fixed[Self, Caller] = Fixed(lambda _: async_kernel.Caller())
     "The caller where the pending group was instantiated."
 
-    def __init__(self, *, shield: bool = False, mode: Literal[0, 1, 2, 3] = 0) -> None:
+    def __init__(
+        self,
+        *,
+        mode: Literal[0, 1, 2, 3] = 0,
+        shield: bool = False,
+        timeout: float | None = None,
+    ) -> None:
         """
         An async context to capture all pending (that opt in) created in the context.
 
@@ -215,16 +222,18 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         Pending can be added to and removed from the group manually.
 
         Args:
-            shield: Passed to the cancel scope.
             mode: The mode.
                 - 0: Ignore cancellation of pending, if any pending is cancelled - exit quietly.
                 - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
                 - 2: Cancel if any pending is cancelled - exit quietly.
                 - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.
+            shield: Passed to the cancel scope.
+            timeout: The timeout for the pending group once it has been entered.
         """
         assert mode in [0, 1, 2, 3]
         self._mode = mode
         self._shield = shield
+        self._timeout = timeout
         self.caller  # noqa: B018
         super().__init__()
 
@@ -243,7 +252,8 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         if self._leaving_context:
             msg = f"Re-entry of {self.__class__} is not supported!"
             raise RuntimeError(msg)
-        self._cancel_scope = anyio.CancelScope(shield=self._shield)
+        deadline = math.inf if self._timeout is None else anyio.current_time() + self._timeout
+        self._cancel_scope = anyio.CancelScope(shield=self._shield, deadline=deadline)
         self._all_done = create_async_event()
         token = self._activate()
         try:
