@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import sys
 import threading
 import traceback
@@ -13,15 +12,14 @@ from traitlets import traitlets
 from typing_extensions import TypeVar
 
 import async_kernel.interface
-from async_kernel.typing import Tags
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Mapping
+    from collections.abc import Generator, Iterable, Mapping
     from contextlib import _SupportsRedirect, _SupportsRedirectT  # pyright: ignore[reportPrivateUsage]
 
     from async_kernel.kernel import Kernel
     from async_kernel.shell import BaseShell
-    from async_kernel.typing import Content, Job, Message
+    from async_kernel.typing import Content, Job, Message, Tags
 
 __all__ = [
     "apply_settings",
@@ -34,7 +32,6 @@ __all__ = [
     "get_subshell_id",
     "get_tag_value",
     "get_tags",
-    "get_timeout",
     "mark_thread_pydev_do_not_trace",
     "redirect_stderr",
     "redirect_stdout",
@@ -134,7 +131,7 @@ def get_cell_id(job: Job | None = None, /) -> str | None:
 _TagType = TypeVar("_TagType", str, float, int, bool)
 
 
-def get_tag_value(tag: Tags, default: _TagType, /, *, tags: list[str] | None = None) -> _TagType:
+def get_tag_value(tag: Tags, default: _TagType, /, *, tags: Iterable[str] | None = None) -> _TagType:
     """
     Get the value for the tag from a collection of tags.
 
@@ -156,13 +153,6 @@ def get_tag_value(tag: Tags, default: _TagType, /, *, tags: list[str] | None = N
                 return tag.get_string(t, default)
             return int(tag.get_float(t, default))
     return default
-
-
-def get_timeout(*, tags: list[str] | None = None) -> float:
-    "Gets the timeout from tags or using the current context."
-    if math.isnan(timeout := get_tag_value(Tags.timeout, math.nan, tags=tags)):
-        return get_kernel().shell.timeout
-    return max(timeout, 0.0)
 
 
 def setattr_nested(obj: object, name: str, value: str | Any, *, _return_value=False) -> dict[str, Any]:

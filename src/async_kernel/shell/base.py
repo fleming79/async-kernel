@@ -19,7 +19,7 @@ from async_kernel.pending import PendingManager
 from async_kernel.typing import T_interface_co
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable, Generator, Iterable
 
     from async_kernel import Kernel
     from async_kernel.typing import Content
@@ -218,6 +218,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         stop_on_error: bool = False,
         cell_id: str | None = None,
         received_time: float = 0,
+        tags: Iterable[str] = (),
         **_ignored,
     ) -> Content:
         """

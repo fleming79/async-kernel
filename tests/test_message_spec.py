@@ -141,7 +141,7 @@ async def test_execute_stop_on_error_task(client: AsyncKernelClient):
     assert content.get("status") == "error"
     assert "ValueError" in "".join(content["traceback"])
     content = await utils.get_shell_message(client, msg_id_1, "execute_reply")
-    assert "await anyio.sleep_forever()" in "".join(content["traceback"])
+    assert "Stop on error cancellation" in "".join(content["traceback"])
 
 
 async def test_user_expressions(client: AsyncKernelClient):

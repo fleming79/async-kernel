@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import builtins
 import json
+import math
 import pathlib
 import shlex
 import sys
@@ -19,7 +20,6 @@ from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
 
 import anyio
 import IPython.core.release
-from aiologic.lowlevel import async_checkpoint
 from anyio.streams.text import TextReceiveStream
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
@@ -49,7 +49,7 @@ from async_kernel.shell.base import BaseShell
 from async_kernel.typing import Content, RunMode, Tags
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
     from types import CodeType
 
     from anyio.abc import ByteReceiveStream
@@ -379,7 +379,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     tempdirs = Fixed(list, mode="ignore")
 
     _main_mod_cache = Fixed(dict)
-    _stop_on_error_pool: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
+    _stop_on_error_pool: Fixed[Self, set[Pending[Any]]] = Fixed(set)
 
     # Disabled attributes
     loop_runner_map = None
@@ -641,6 +641,37 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         )
 
     @override
+    async def run_cell_async(
+        self,
+        raw_cell: str,
+        store_history=False,
+        silent=False,
+        shell_futures=True,
+        *,
+        transformed_cell: str | None = None,
+        preprocessing_exc_tuple: Any = None,
+        cell_id=None,
+    ) -> ExecutionResult:
+        token = utils._cell_id_var.set(cell_id)  # pyright: ignore[reportPrivateUsage]
+        result = None
+        try:
+            result = await super().run_cell_async(
+                raw_cell=raw_cell,
+                store_history=store_history,
+                silent=silent,
+                shell_futures=shell_futures,
+                transformed_cell=transformed_cell,
+                preprocessing_exc_tuple=preprocessing_exc_tuple,
+                cell_id=cell_id,
+            )
+            return result  # noqa: RET504
+        finally:
+            self.events.trigger("post_execute")
+            if not silent:
+                self.events.trigger("post_run_cell", result)
+            utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
+
+    @override
     async def do_execute(
         self,
         code: str = "",
@@ -652,6 +683,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         stop_on_error: bool = False,
         cell_id: str | None = None,
         received_time: float = 0,
+        tags: Iterable[str] = (),
         **_ignored,
     ) -> Content:
         """
@@ -661,89 +693,64 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
-        token = utils._cell_id_var.set(cell_id)  # pyright: ignore[reportPrivateUsage]
+        if math.isnan(timeout := utils.get_tag_value(Tags.timeout, math.nan, tags=tags)):
+            timeout = self.timeout
+
+        if Tags.stop_on_error in tags:
+            stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error, tags=tags)
+        elif Tags.raises_exception in tags or timeout:
+            stop_on_error = False
+
+        if silent:
+            execution_count: int = self.execution_count
+        else:
+            execution_count = self._execution_count = self._execution_count + 1
+            self.parent.iopub_send(
+                msg_or_type="execute_input",
+                content={"code": code, "execution_count": execution_count},
+                ident=b"kernel.execute_input",
+            )
+
+        pen = Caller().call_soon(
+            self.run_cell_async,
+            raw_cell=code,
+            store_history=store_history,
+            silent=silent,
+            transformed_cell=self.transform_cell_async(code),
+            shell_futures=True,
+            cell_id=cell_id,
+        )
+        err = result = None
         try:
-            tags: list[str] = utils.get_tags()
-            timeout: float = utils.get_timeout(tags=tags)
-            raises_exception: bool = Tags.raises_exception in tags
-            stop_on_error_override: bool = Tags.stop_on_error in tags
-            if stop_on_error_override:
-                stop_on_error = utils.get_tag_value(Tags.stop_on_error, stop_on_error)
-            elif raises_exception:
-                stop_on_error = False
+            self.kernel.active_execute_requests.add(pen)
+            pen.add_done_callback(self.kernel.active_execute_requests.discard)
+            if stop_on_error:
+                self._stop_on_error_pool.add(pen)
+                pen.add_done_callback(self._stop_on_error_pool.discard)
+            result = await pen.wait(timeout=timeout or None)
+        except Exception as e:
+            err = KernelInterrupt() if str(e) == self.kernel._interrupt_message else e  # pyright: ignore[reportPrivateUsage]
+        else:
+            err = result.error_before_exec or result.error_in_exec if result else KernelInterrupt()
+            if not err and Tags.raises_exception in tags:
+                msg = "An expected exception was not raised!"
+                err = RuntimeError(msg)
 
-            if silent:
-                execution_count: int = self.execution_count
-            else:
-                execution_count = self._execution_count = self._execution_count + 1
-                self.parent.iopub_send(
-                    msg_or_type="execute_input",
-                    content={"code": code, "execution_count": execution_count},
-                    ident=b"kernel.execute_input",
-                )
-            caller = Caller()
-            err = None
-            result = None
-            with anyio.CancelScope() as scope:
-
-                def cancel():
-                    if not silent:
-                        caller.call_direct(scope.cancel, "Interrupted")
-
-                try:
-                    self.kernel.interrupts.add(cancel)
-                    if stop_on_error:
-                        self._stop_on_error_pool.add(cancel)
-                    with anyio.fail_after(delay=timeout or None):
-                        result = await self.run_cell_async(
-                            raw_cell=code,
-                            store_history=store_history,
-                            silent=silent,
-                            transformed_cell=self.transform_cell_async(code),
-                            shell_futures=True,
-                            cell_id=cell_id,
-                        )
-                except (Exception, anyio.get_cancelled_exc_class()) as e:
-                    # A safeguard to catch exceptions not caught by the shell.
-                    if utils.LAUNCHED_BY_DEBUGPY_PYTEST:
-                        raise
-                    err = KernelInterrupt() if self.parent.last_interrupt_frame else e
-                else:
-                    err = result.error_before_exec or result.error_in_exec if result else KernelInterrupt()
-                    if not err and Tags.raises_exception in tags:
-                        msg = "An expected exception was not raised!"
-                        err = RuntimeError(msg)
-                finally:
-                    self._stop_on_error_pool.discard(cancel)
-                    self.kernel.interrupts.discard(cancel)
-                    self.events.trigger("post_execute")
-                    if not silent:
-                        self.events.trigger("post_run_cell", result)
-            if (err) and (isinstance(err, anyio.get_cancelled_exc_class()) and (timeout != 0)):
-                # Suppress the error due to either:
-                # 1. tag
-                # 2. timeout
-                err = None
-            content = {
-                "status": "error" if err else "ok",
-                "execution_count": execution_count,
-                "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
-            }
-            if err:
-                content |= utils.error_to_content(err)
-                if (not silent) and stop_on_error:
-                    with anyio.CancelScope(shield=True):
-                        await async_checkpoint(force=True)
-                        self._stop_on_error_info["time"] = time.monotonic() + float(self.stop_on_error_time_offset)
-                        self._stop_on_error_info["execution_count"] = execution_count
-                        self.log.info("An error occurred in a non-silent execution request")
-                        if stop_on_error:
-                            for c in frozenset(self._stop_on_error_pool):
-                                c()
-                                await async_checkpoint(force=True)
-            return content
-        finally:
-            utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
+        content = {
+            "status": "error" if err else "ok",
+            "execution_count": execution_count,
+            "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
+        }
+        if err:
+            content |= utils.error_to_content(err)
+            if (not silent) and stop_on_error:
+                self._stop_on_error_info["time"] = time.monotonic() + float(self.stop_on_error_time_offset)
+                self._stop_on_error_info["execution_count"] = execution_count
+                self.log.info("An error occurred in %s %s", self, pen)
+                if stop_on_error:
+                    for pen in tuple(self._stop_on_error_pool):
+                        pen.cancel("Stop on error cancellation")
+        return content
 
     @override
     async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
@@ -825,7 +832,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
     @override
     def _showtraceback(self, etype, evalue, stb) -> None:
-        if utils.get_timeout() != 0.0 and etype is anyio.get_cancelled_exc_class():
+        if self.timeout != 0.0 and etype is anyio.get_cancelled_exc_class():
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
         if isinstance(evalue, KernelInterrupt):
             stb = []

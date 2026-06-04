@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from contextvars import ContextVar
     from types import CoroutineType, FrameType
 
+    from async_kernel.pending import Pending
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
@@ -156,8 +157,10 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
-    interrupts: Fixed[Self, set[Callable[[], object]]] = Fixed(set)
-    "A set for callbacks to register for calling when `interrupt` is called."
+    active_execute_requests: Fixed[Self, set[Pending[Any]]] = Fixed(set)
+    "A set of active execute requests that gets updated by the shell."
+
+    _interrupt_message = "Kernel interrupted"
 
     _restart = False
     _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
@@ -319,17 +322,15 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
             else:
                 os.kill(os.getpid(), signal.SIGINT)
 
-    def interrupt(self) -> None:
+    def do_interrupt(self) -> None:
         """
-        Perform a keyboard interrupt.
+        Interrupt/cancel non-silent active execute requests.
         """
         if (sys.platform != "emscripten") and (not self.debugger.enabled or not self.debugger.stopped_threads):
             self._interrupt_now()
-        while self.interrupts:
-            try:
-                self.interrupts.pop()()
-            except Exception:
-                pass
+        for pen in tuple(self.active_execute_requests):
+            if not pen.metadata.get("kwargs", {}).get("silent", False):
+                pen.cancel(self._interrupt_message)
 
     def _patch_signal(self) -> Callable[[], None]:
 
@@ -544,6 +545,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         return await self.shell.do_execute(
             cell_id=job["msg"]["metadata"].get("cellId"),
             received_time=job["received_time"],
+            tags=job["msg"]["metadata"].get("tags", ()),
             **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
         )
 
@@ -584,7 +586,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def interrupt_request(self, job: Job[Content], /) -> Content:
         """Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt)."""
-        self.interrupt()
+        self.do_interrupt()
         return {}
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
@@ -661,7 +663,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     async def do_execute(
         self,
         code: str,
-        silent: bool,
+        silent: bool = True,
         store_history: bool = True,
         user_expressions: dict[str, str] | None = None,
         allow_stdin: bool = False,

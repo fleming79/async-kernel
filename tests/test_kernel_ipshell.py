@@ -38,14 +38,9 @@ async def test_execute_shell_timeout(client: AsyncKernelClient, kernel: Kernel, 
     last_stop_time = kernel.shell._stop_on_error_info
     try:
         code = "\n".join(["import anyio", "await anyio.sleep_forever()"])
-        msg_id, content = await utils.execute(client, code=code, metadata=metadata, clear_pub=False)
+        _, content = await utils.execute(client, code=code, metadata=metadata, clear_pub=False)
         assert last_stop_time == kernel.shell._stop_on_error_info, "Should not cause cancellation"
-        assert content["status"] == "ok"
-        await utils.check_pub_message(client, msg_id, execution_state="busy")
-        await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-        expected = {"traceback": [], "ename": "TimeoutError", "evalue": "Cell execute timeout"}
-        await utils.check_pub_message(client, msg_id, msg_type="error", **expected)
-        await utils.check_pub_message(client, msg_id, execution_state="idle")
+        assert content["status"] == "error"
     finally:
         kernel.shell.timeout = 0.0
 

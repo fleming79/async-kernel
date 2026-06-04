@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import pathlib
-import threading
 from typing import TYPE_CHECKING, Any, Literal
 
 import anyio
 import pytest
 
+from async_kernel import Pending
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.typing import MsgType
 from tests import utils
@@ -87,12 +87,12 @@ async def test_input(
 
 
 async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
-    event = threading.Event()
-    kernel.interrupts.add(event.set)
+    pen: Any = Pending()
+    kernel.active_execute_requests.add(pen)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}
-    assert event
+    assert pen.cancelled()
 
 
 async def test_interrupt_request_async_request(subprocess_kernels_client: AsyncKernelClient):
