@@ -88,7 +88,7 @@ async def test_save_history(client: AsyncKernelClient, tmp_path):
         ("%%timeit\na\n\n", "complete"),
     ],
 )
-async def test_is_complete(client: AsyncKernelClient, code: str, status: str):
+async def test_is_complete_2(client: AsyncKernelClient, code: str, status: str):
     # There are more test cases for this in core - here we just check
     # that the kernel exposes the interface correctly.
     client.is_complete(code)

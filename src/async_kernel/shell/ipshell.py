@@ -15,7 +15,7 @@ import weakref
 from collections.abc import Callable
 from contextlib import contextmanager
 from sqlite3 import OperationalError
-from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO, cast
+from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
 
 import anyio
 import IPython.core.release
@@ -46,7 +46,7 @@ from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.shell.base import BaseShell
-from async_kernel.typing import Content, ExecuteContent, Job, RunMode, Tags
+from async_kernel.typing import Content, RunMode, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -641,16 +641,23 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         )
 
     @override
-    async def execute_request(self, job: Job[ExecuteContent]) -> Content:
-        """Handle an [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-
-        content = cast("ExecuteContent", job["msg"]["content"])
-        code = content["code"]
-        silent = content.get("silent", False)
-        cell_id = job["msg"]["metadata"].get("cellId")
-        stop_on_error = content.get("stop_on_error", False)
-
-        if (job["received_time"] < self._stop_on_error_info.get("time", 0)) and not silent:
+    async def do_execute(
+        self,
+        code: str = "",
+        *,
+        silent: bool = False,
+        store_history: bool = False,
+        user_expressions: dict[str, str] | None = None,
+        allow_stdin: bool = False,
+        stop_on_error: bool = False,
+        cell_id: str | None = None,
+        received_time: float = 0,
+        **_ignored,
+    ) -> Content:
+        """
+        Execute code in the shell's user_ns and global_ns.
+        """
+        if received_time > 0 and (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
@@ -690,7 +697,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                     with anyio.fail_after(delay=timeout or None):
                         result = await self.run_cell_async(
                             raw_cell=code,
-                            store_history=content.get("store_history", False),
+                            store_history=store_history,
                             silent=silent,
                             transformed_cell=self.transform_cell_async(code),
                             shell_futures=True,
@@ -720,7 +727,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             content = {
                 "status": "error" if err else "ok",
                 "execution_count": execution_count,
-                "user_expressions": self.user_expressions(content.get("user_expressions", {})),
+                "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
             }
             if err:
                 content |= utils.error_to_content(err)
@@ -739,8 +746,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     @override
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
-        """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+    async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
+        ""
 
         cursor_pos = cursor_pos or len(code)
         with provisionalcompleter():
@@ -767,8 +774,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         }
 
     @override
-    async def is_complete_request(self, code: str) -> Content:
-        """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+    async def is_complete(self, code: str) -> Content:
+        ""
         status, indent_spaces = self.input_transformer_manager.check_complete(code)
         content = {"status": status}
         if status == "incomplete":
@@ -776,8 +783,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         return content
 
     @override
-    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
-        """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+    async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+        ""
         content = {"data": {}, "metadata": {}, "found": True}
         try:
             oname = token_at_cursor(code, cursor_pos)
@@ -788,7 +795,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         return content
 
     @override
-    async def history_request(
+    async def do_history(
         self,
         *,
         output: bool = False,
@@ -802,7 +809,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         unique: bool = False,
         **_ignored,
     ) -> Content:
-        """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        ""
         history_manager = self.history_manager
         assert history_manager
         match hist_access_type:

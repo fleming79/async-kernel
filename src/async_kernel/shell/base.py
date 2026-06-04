@@ -16,7 +16,7 @@ from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.interface import HasInterface
 from async_kernel.pending import PendingManager
-from async_kernel.typing import ExecuteContent, Job, T_interface_co
+from async_kernel.typing import T_interface_co
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -207,23 +207,37 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
             content["metadata"] = {}
             self.parent.iopub_send("execute_result", content=content)
 
-    async def execute_request(self, job: Job[ExecuteContent]) -> Content:
-        """Handle an [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
+    async def do_execute(
+        self,
+        code: str = "",
+        *,
+        silent: bool = False,
+        store_history: bool = False,
+        user_expressions: dict[str, str] | None = None,
+        allow_stdin: bool = False,
+        stop_on_error: bool = False,
+        cell_id: str | None = None,
+        received_time: float = 0,
+        **_ignored,
+    ) -> Content:
+        """
+        Execute code in the shell.
+        """
         raise NotImplementedError
 
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
-        """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+    async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
+        ""
         raise NotImplementedError
 
-    async def is_complete_request(self, code: str) -> Content:
-        """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+    async def is_complete(self, code: str) -> Content:
+        ""
         raise NotImplementedError
 
-    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
-        """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+    async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+        ""
         raise NotImplementedError
 
-    async def history_request(
+    async def do_history(
         self,
         *,
         output: bool = False,
@@ -237,5 +251,5 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         unique: bool = False,
         **_ignored,
     ) -> Content:
-        """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        ""
         raise NotImplementedError
