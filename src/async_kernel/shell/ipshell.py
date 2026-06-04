@@ -20,7 +20,6 @@ from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
 
 import anyio
 import IPython.core.release
-from aiologic.lowlevel import async_checkpoint
 from anyio.streams.text import TextReceiveStream
 from IPython.core.completer import provisionalcompleter, rectify_completions
 from IPython.core.displayhook import DisplayHook
@@ -654,8 +653,9 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         cell_id=None,
     ) -> ExecutionResult:
         token = utils._cell_id_var.set(cell_id)  # pyright: ignore[reportPrivateUsage]
+        result = None
         try:
-            return await super().run_cell_async(
+            result = await super().run_cell_async(
                 raw_cell=raw_cell,
                 store_history=store_history,
                 silent=silent,
@@ -664,7 +664,11 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 preprocessing_exc_tuple=preprocessing_exc_tuple,
                 cell_id=cell_id,
             )
+            return result  # noqa: RET504
         finally:
+            self.events.trigger("post_execute")
+            if not silent:
+                self.events.trigger("post_run_cell", result)
             utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     @override
@@ -731,10 +735,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             if not err and Tags.raises_exception in tags:
                 msg = "An expected exception was not raised!"
                 err = RuntimeError(msg)
-        finally:
-            self.events.trigger("post_execute")
-            if not silent:
-                self.events.trigger("post_run_cell", result)
+
         content = {
             "status": "error" if err else "ok",
             "execution_count": execution_count,
@@ -743,15 +744,12 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         if err:
             content |= utils.error_to_content(err)
             if (not silent) and stop_on_error:
-                with anyio.CancelScope(shield=True):
-                    await async_checkpoint(force=True)
-                    self._stop_on_error_info["time"] = time.monotonic() + float(self.stop_on_error_time_offset)
-                    self._stop_on_error_info["execution_count"] = execution_count
-                    self.log.info("An error occurred in %s %s", self, pen)
-                    if stop_on_error:
-                        for pen in tuple(self._stop_on_error_pool):
-                            pen.cancel("Stop on error cancellation")
-                            await async_checkpoint(force=True)
+                self._stop_on_error_info["time"] = time.monotonic() + float(self.stop_on_error_time_offset)
+                self._stop_on_error_info["execution_count"] = execution_count
+                self.log.info("An error occurred in %s %s", self, pen)
+                if stop_on_error:
+                    for pen in tuple(self._stop_on_error_pool):
+                        pen.cancel("Stop on error cancellation")
         return content
 
     @override
