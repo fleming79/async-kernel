@@ -746,8 +746,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             utils._cell_id_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     @override
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
-        """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+    async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
+        ""
 
         cursor_pos = cursor_pos or len(code)
         with provisionalcompleter():
@@ -774,8 +774,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         }
 
     @override
-    async def is_complete_request(self, code: str) -> Content:
-        """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+    async def is_complete(self, code: str) -> Content:
+        ""
         status, indent_spaces = self.input_transformer_manager.check_complete(code)
         content = {"status": status}
         if status == "incomplete":
@@ -783,8 +783,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         return content
 
     @override
-    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
-        """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+    async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+        ""
         content = {"data": {}, "metadata": {}, "found": True}
         try:
             oname = token_at_cursor(code, cursor_pos)
@@ -795,7 +795,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         return content
 
     @override
-    async def history_request(
+    async def do_history(
         self,
         *,
         output: bool = False,
@@ -809,7 +809,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         unique: bool = False,
         **_ignored,
     ) -> Content:
-        """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        ""
         history_manager = self.history_manager
         assert history_manager
         match hist_access_type:

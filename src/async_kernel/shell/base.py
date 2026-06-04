@@ -225,19 +225,19 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         """
         raise NotImplementedError
 
-    async def do_complete_request(self, code: str, cursor_pos: int | None = None) -> Content:
-        """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
+    async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
+        ""
         raise NotImplementedError
 
-    async def is_complete_request(self, code: str) -> Content:
-        """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
+    async def is_complete(self, code: str) -> Content:
+        ""
         raise NotImplementedError
 
-    async def inspect_request(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
-        """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
+    async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+        ""
         raise NotImplementedError
 
-    async def history_request(
+    async def do_history(
         self,
         *,
         output: bool = False,
@@ -251,5 +251,5 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         unique: bool = False,
         **_ignored,
     ) -> Content:
-        """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
+        ""
         raise NotImplementedError

@@ -549,18 +549,18 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
-        return await self.shell.do_complete_request(
+        return await self.shell.do_complete(
             code=job["msg"]["content"].get("code", ""), cursor_pos=job["msg"]["content"].get("cursor_pos", 0)
         )
 
     async def is_complete_request(self, job: Job[Content], /) -> Content:
         """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
-        return await self.shell.is_complete_request(job["msg"]["content"].get("code", ""))
+        return await self.shell.is_complete(job["msg"]["content"].get("code", ""))
 
     async def inspect_request(self, job: Job[Content], /) -> Content:
         """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         c = job["msg"]["content"]
-        return await self.shell.inspect_request(
+        return await self.shell.do_inspect(
             code=c.get("code", ""),
             cursor_pos=c.get("cursor_pos", 0),
             detail_level=c.get("detail_level", 0),
@@ -568,7 +568,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def history_request(self, job: Job[Content], /) -> Content:
         """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
-        return await self.shell.history_request(**job["msg"]["content"])
+        return await self.shell.do_history(**job["msg"]["content"])
 
     async def comm_open(self, job: Job[Content], /) -> None:
         """Handle an [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
@@ -628,11 +628,13 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_complete][]."
-        return await self.shell.do_complete_request(code=code, cursor_pos=cursor_pos)
+        return await self.shell.do_complete(code=code, cursor_pos=cursor_pos)
 
-    async def do_inspect(self, code: str, cursor_pos: int | None, detail_level=0, omit_sections=()) -> Content:
+    async def do_inspect(
+        self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0, omit_sections=()
+    ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_inspect][]."
-        return await self.shell.inspect_request(code=code, cursor_pos=cursor_pos)  # pyright: ignore[reportArgumentType]
+        return await self.shell.do_inspect(code=code, cursor_pos=cursor_pos, detail_level=detail_level)
 
     async def do_history(
         self,
@@ -647,7 +649,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         unique=False,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
-        return await self.shell.history_request(
+        return await self.shell.do_history(
             output=output,
             raw=raw,
             hist_access_type=hist_access_type,
