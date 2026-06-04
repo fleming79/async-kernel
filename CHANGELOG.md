@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.19.1] - 2026-05-26
+## [0.19.2] - 2026-06-04
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Rename methods on the shell to more resemble those on the kerenel. [#477](https://github.com/fleming79/async-kernel/pull/477)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Run do_execute in tasks [#478](https://github.com/fleming79/async-kernel/pull/478)
+
+## [0.19.1] - 2026-05-27
 
 ### <!-- 2 --> 🐛 Fixes
 
@@ -14,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove python verson from default kernelspec. [#474](https://github.com/fleming79/async-kernel/pull/474)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.19.1 [#476](https://github.com/fleming79/async-kernel/pull/476)
 
 - Bump setup-uv from v7 to v8.1.0. [#473](https://github.com/fleming79/async-kernel/pull/473)
 
@@ -1323,6 +1335,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.19.2]: https://github.com/fleming79/async-kernel/compare/v0.19.1..v0.19.2
 [0.19.1]: https://github.com/fleming79/async-kernel/compare/v0.19.0..v0.19.1
 [0.19.0]: https://github.com/fleming79/async-kernel/compare/v0.18.3..v0.19.0
 [0.18.3]: https://github.com/fleming79/async-kernel/compare/v0.18.2..v0.18.3
