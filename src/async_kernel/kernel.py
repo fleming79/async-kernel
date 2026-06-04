@@ -324,7 +324,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     def do_interrupt(self) -> None:
         """
-        Perform a keyboard interrupt.
+        Interrupt/cancel non-silent active execute requests.
         """
         if (sys.platform != "emscripten") and (not self.debugger.enabled or not self.debugger.stopped_threads):
             self._interrupt_now()
