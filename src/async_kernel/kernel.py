@@ -671,29 +671,14 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         **_ignored,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."
-        content = ExecuteContent(
+        return await self.shell.do_execute(
             code=code,
             silent=silent,
             store_history=store_history,
-            user_expressions=user_expressions or {},
+            user_expressions=user_expressions,
             allow_stdin=allow_stdin,
-            stop_on_error=False,
+            cell_id=cell_id,
         )
-        msg = self.parent.msg("execute_request", content=content)
-        job = Job(msg=msg, ident=[], received_time=time.monotonic())
-        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        try:
-            return await self.shell.do_execute(
-                code=code,
-                silent=silent,
-                store_history=store_history,
-                user_expressions=user_expressions,
-                allow_stdin=allow_stdin,
-                cell_id=cell_id,
-                received_time=job["received_time"],
-            )
-        finally:
-            utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
     def getpass(self, prompt="", stream=None) -> str:
         "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
