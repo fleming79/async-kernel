@@ -15,7 +15,7 @@ import weakref
 from collections.abc import Callable
 from contextlib import contextmanager
 from sqlite3 import OperationalError
-from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO, cast
+from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
 
 import anyio
 import IPython.core.release
@@ -46,7 +46,7 @@ from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.shell.base import BaseShell
-from async_kernel.typing import Content, ExecuteContent, Job, RunMode, Tags
+from async_kernel.typing import Content, RunMode, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -641,16 +641,23 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         )
 
     @override
-    async def execute_request(self, job: Job[ExecuteContent]) -> Content:
-        """Handle an [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-
-        content = cast("ExecuteContent", job["msg"]["content"])
-        code = content["code"]
-        silent = content.get("silent", False)
-        cell_id = job["msg"]["metadata"].get("cellId")
-        stop_on_error = content.get("stop_on_error", False)
-
-        if (job["received_time"] < self._stop_on_error_info.get("time", 0)) and not silent:
+    async def do_execute(
+        self,
+        code: str = "",
+        *,
+        silent: bool = False,
+        store_history: bool = False,
+        user_expressions: dict[str, str] | None = None,
+        allow_stdin: bool = False,
+        stop_on_error: bool = False,
+        cell_id: str | None = None,
+        received_time: float = 0,
+        **_ignored,
+    ) -> Content:
+        """
+        Execute code in the shell's user_ns and global_ns.
+        """
+        if received_time > 0 and (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
             }
@@ -690,7 +697,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                     with anyio.fail_after(delay=timeout or None):
                         result = await self.run_cell_async(
                             raw_cell=code,
-                            store_history=content.get("store_history", False),
+                            store_history=store_history,
                             silent=silent,
                             transformed_cell=self.transform_cell_async(code),
                             shell_futures=True,
@@ -720,7 +727,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             content = {
                 "status": "error" if err else "ok",
                 "execution_count": execution_count,
-                "user_expressions": self.user_expressions(content.get("user_expressions", {})),
+                "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
             }
             if err:
                 content |= utils.error_to_content(err)

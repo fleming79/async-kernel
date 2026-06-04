@@ -541,7 +541,11 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
         """Handle an [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-        return await self.shell.execute_request(job)
+        return await self.shell.do_execute(
+            cell_id=job["msg"]["metadata"].get("cellId"),
+            received_time=job["received_time"],
+            **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
+        )
 
     async def complete_request(self, job: Job[Content], /) -> Content:
         """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
@@ -662,28 +666,30 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         *,
         cell_meta: dict[str, Any] | None = None,
         cell_id: str | None = None,
+        **_ignored,
     ) -> Content:
         "Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."
-        if cell_meta is None:
-            cell_meta = {}
-        if cell_id is not None:
-            cell_meta["cellId"] = cell_id
-        msg = self.parent.msg(
-            "execute_request",
-            content=ExecuteContent(
+        content = ExecuteContent(
+            code=code,
+            silent=silent,
+            store_history=store_history,
+            user_expressions=user_expressions or {},
+            allow_stdin=allow_stdin,
+            stop_on_error=False,
+        )
+        msg = self.parent.msg("execute_request", content=content)
+        job = Job(msg=msg, ident=[], received_time=time.monotonic())
+        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
+        try:
+            return await self.shell.do_execute(
                 code=code,
                 silent=silent,
                 store_history=store_history,
-                user_expressions=user_expressions or {},
+                user_expressions=user_expressions,
                 allow_stdin=allow_stdin,
-                stop_on_error=False,
-            ),
-            metadata=cell_meta,
-        )
-        job: Job[ExecuteContent] = Job(msg=msg, ident=[], received_time=time.monotonic())
-        token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        try:
-            return await self.shell.execute_request(job)
+                cell_id=cell_id,
+                received_time=job["received_time"],
+            )
         finally:
             utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
 
