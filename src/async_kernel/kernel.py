@@ -158,7 +158,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
     active_execute_requests: Fixed[Self, set[Pending[Any]]] = Fixed(set)
-    "A set of active execute requests that is added to by the shell."
+    "A set of active execute requests that gets updated by the shell."
 
     _interrupt_message = "Kernel interrupted"
 
@@ -545,6 +545,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         return await self.shell.do_execute(
             cell_id=job["msg"]["metadata"].get("cellId"),
             received_time=job["received_time"],
+            tags=job["msg"]["metadata"].get("tags", ()),
             **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
         )
 
