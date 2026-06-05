@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import TYPE_CHECKING, Any, TypedDict
+from typing import TYPE_CHECKING, Any, Generic, TypedDict
 
 from IPython.core.error import StdinNotImplementedError
 from traitlets.traitlets import TraitType
@@ -13,7 +13,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import BaseInterface
-from async_kernel.typing import Channel, Content, Hosts, Job, Message, MsgHeader, NoValue
+from async_kernel.typing import Channel, Content, Hosts, Job, Message, MsgHeader, NoValue, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -40,7 +40,7 @@ class Handlers(TypedDict):
     "Stop the kernel."
 
 
-class CallableInterface(BaseInterface):
+class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
     """
     A callback based interface to interact with the kernel using serialized messages.
 

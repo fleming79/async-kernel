@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
     from async_kernel.interface import BaseInterface
     from async_kernel.shell import BaseShell
+    from async_kernel.shell.ipshell import IPShell
 
 
 __all__ = [
@@ -48,6 +49,7 @@ D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
 
 T_shell_co = TypeVar("T_shell_co", covariant=True, bound="BaseShell", default="BaseShell")
+T_ipshell_co = TypeVar("T_ipshell_co", covariant=True, bound="IPShell", default="IPShell")
 T_interface_co = TypeVar("T_interface_co", covariant=True, bound="BaseInterface", default="BaseInterface")
 
 
