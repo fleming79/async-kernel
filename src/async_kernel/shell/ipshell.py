@@ -16,7 +16,7 @@ import weakref
 from collections.abc import Callable
 from contextlib import contextmanager
 from sqlite3 import OperationalError
-from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
+from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO, override
 
 import anyio
 import IPython.core.release
@@ -299,10 +299,16 @@ class IPPrefilterManager(HasInterface, PrefilterManager):
 
 
 class IPExtensionManager(HasInterface, ExtensionManager):
-    shell: IPShell
+    loaded = Fixed(set)
+
+    @property
+    @override
+    def shell(self) -> IPShell:
+        return self._ref()  # pyright: ignore[reportReturnType]
 
     def __init__(self, *, shell: IPShell) -> None:
-        super().__init__(shell=shell)
+        self._ref = weakref.ref(shell)
+        super(ExtensionManager, self).__init__()
 
 
 class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]
@@ -423,6 +429,10 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
     @override
     def init_payload(self) -> Never:
+        raise MethodNotSupported  # pragma: no cover
+
+    @override
+    def enable_pylab(self, gui=None, import_all=True) -> Never:
         raise MethodNotSupported  # pragma: no cover
 
     @override
