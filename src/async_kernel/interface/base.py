@@ -146,20 +146,19 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
     "Options for starting the backend."
 
-    # the kernel class, as an importstring
     interface_class: traitlets.Type[type[Self], type[Self] | str] = traitlets.Type(
         "async_kernel.interface.base.BaseInterface"
     ).tag(  # pyright: ignore[reportAssignmentType]
         config=True
     )
-    "The Kernel subclass to be used."
-    # the kernel class, as an importstring
+    "The interface class to use when launching."
+
     kernel_class: traitlets.Type[type[Kernel[Self, T_shell_co]], type[Kernel[Self, T_shell_co]] | str] = traitlets.Type(
         "async_kernel.Kernel"
     ).tag(  # pyright: ignore[reportAssignmentType]
         config=True
     )
-    "The Kernel subclass to be used."
+    "The Kernel class to use when creating the kernel."
 
     shell_class: traitlets.Type[type[T_shell_co], type[T_shell_co] | str] = traitlets.Type(
         "async_kernel.shell.ipshell.IPShell", "async_kernel.shell.BaseShell"

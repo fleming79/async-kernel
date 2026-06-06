@@ -11,7 +11,6 @@ from IPython.core.shellapp import InteractiveShellApp, shell_aliases, shell_flag
 from traitlets import traitlets
 from typing_extensions import override
 
-from async_kernel.interface.base import BaseInterface
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.typing import Hosts, NoValue, T_ipshell_co
 
@@ -22,7 +21,7 @@ if TYPE_CHECKING:
 __all__ = ["IPApp"]
 
 
-BaseInterface.classes.append(ProfileDir)
+ZMQInterface.classes.append(ProfileDir)
 
 
 class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
