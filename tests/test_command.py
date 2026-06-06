@@ -137,7 +137,6 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
             "async_kernel",
             "start",
             "--connection_file={connection_file}",
-            "--launcher=launch_interface",
             "--name=async-trio",
             "--BaseShell.timeout=0.01",
             "--interface_class=async_kernel.interface.zmq.ZMQInterface",
@@ -212,7 +211,6 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
         "use_uv=False",
         "--BaseShell.timeout=0.123",
         "--no-automagic",
-        "--launcher=launch_interface",
     ]
     event_started = EventSet()
     monkeypatch.setattr(ZMQInterface, "event_started", event_started)

@@ -47,7 +47,7 @@ def make_argv(
     *,
     connection_file: str = "{connection_file}",
     name: str = "async",
-    launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
+    launcher: str | InterfaceStartType = "",
     command: tuple[str, ...] = DEFAULT_COMMAND,
     flags: Iterable[str] = (),
     **kwargs: Any,
@@ -76,9 +76,12 @@ def make_argv(
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
-    argv = [*command, f"--connection_file={connection_file}", *(f"--{f.strip('-')}" for f in flags)]
-    for k, v in ({"launcher": launcher, "name": name} | kwargs).items():
+    argv = [*command, f"--connection_file={connection_file}", f"--name={name}"]
+    if launcher:
+        argv.append(f"--launcher={launcher}")
+    for k, v in kwargs.items():
         argv.append(f"--{k}={v}")
+    argv.extend(f"--{f.strip('-')}" for f in flags)
     return list(map(str, argv))
 
 
@@ -118,7 +121,7 @@ def write_kernel_spec(
     user: bool = False,
     prefix: str = "",
     folder: str = "",
-    launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
+    launcher: str | InterfaceStartType = "",
     command: tuple[str, ...] = DEFAULT_COMMAND,
     connection_file: str = "{connection_file}",
     env: dict | None = None,
@@ -188,7 +191,7 @@ def write_kernel_spec(
             f.write_text(textwrap.dedent(inspect.getsource(launcher)))
             launcher = f"{f}{CUSTOM_LAUNCHER_SEPARATOR}{launcher.__name__}"
         # validate
-        if launcher != DEFAULT_LAUNCHER:
+        if launcher and launcher != DEFAULT_LAUNCHER:
             assert len(inspect.signature(import_launcher(launcher)).parameters) == 1
         if resources:
             shutil.copytree(src=resources, dst=path, dirs_exist_ok=True)
