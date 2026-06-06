@@ -18,6 +18,7 @@ from async_kernel.kernelspec import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+
 @pytest.mark.parametrize("name", ["", "invalid name"])
 def test_validate_name(name: str):
     with pytest.raises(ValueError, match="Invalid name="):
@@ -27,6 +28,7 @@ def test_validate_name(name: str):
 def test_make_argv():
     argv = make_argv(command=("my command",), abc=10, flags=["my_flag"])
     assert argv == ["my command", "--connection_file={connection_file}", "--name=async", "--abc=10", "--my_flag"]
+
 
 def test_install_kernel_spec(tmp_path: Path, monkeypatch):
 
