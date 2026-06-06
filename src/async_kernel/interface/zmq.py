@@ -124,7 +124,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         "stdin": "ZMQInterface.stdin_port",
         "control": "ZMQInterface.control_port",
         "transport": "ZMQInterface.transport",
-        "profile-dir": "ProfileDir.location",
     }
     ""
 

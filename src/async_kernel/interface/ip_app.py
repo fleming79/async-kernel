@@ -39,6 +39,7 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
     aliases = (
         ZMQInterface.aliases
         | {
+            "profile-dir": "ProfileDir.location",
             "profile": "BaseIPythonApplication.profile",
             "ipython-dir": "BaseIPythonApplication.ipython_dir",
             "config": "BaseIPythonApplication.extra_config_file",
