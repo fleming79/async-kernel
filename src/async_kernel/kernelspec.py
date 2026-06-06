@@ -25,6 +25,7 @@ __all__ = [
     "get_kernel_info",
     "import_launcher",
     "make_argv",
+    "validate_name",
     "write_kernel_spec",
 ]
 
@@ -60,14 +61,8 @@ def make_argv(
     Args:
         connection_file: The path to the connection file.
         launcher:
-            A self-contained function that accepts a dict of settings. The function
-            is stored as a python file in the kernelspec folder.
-            Or as string import path to a callable.
-            be saved as a python file in the kernelspec folder.
-            Or can be one of the names of the methods in the interface folder:
-                - "launch_interface"
-                - "launch_interface"
-                - "start_kernel_zmq_interface"
+            A self-contained function that accepts a dict of settings.
+            Or as string import path to a callable responsible for launching the interface.
         name: The name to use for the kernel.
         command: The command line command to call.
         flags: Any number of flags to insert in argv. Flags will be prefixed with '--'.
@@ -76,6 +71,7 @@ def make_argv(
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
+    validate_name(name)
     argv = [*command, f"--connection_file={connection_file}", f"--name={name}"]
     if launcher:
         argv.append(f"--launcher={launcher}")
@@ -173,9 +169,7 @@ def write_kernel_spec(
     if path:
         path = expand_path(path)
     else:
-        if not name or not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
-            msg = f"Invalid {name=}!"
-            raise ValueError(msg)
+        validate_name(name)
         path = get_kernel_dir(folder=folder, prefix=prefix, user=user).joinpath(name)
 
     if callable(launcher) and len(inspect.signature(launcher).parameters) != 1:
@@ -219,6 +213,18 @@ def write_kernel_spec(
         raise
     else:
         return path
+
+
+def validate_name(name: str, /) -> None:
+    """
+    Check the name is a valid kernel name.
+
+    Raises:
+        ValueError: If the name is not valid.
+    """
+    if not name or not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
+        msg = f"Invalid {name=}!"
+        raise ValueError(msg)
 
 
 def remove_kernelspec(kernel_dir: Path, name: str) -> None:

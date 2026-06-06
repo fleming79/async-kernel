@@ -9,13 +9,24 @@ from async_kernel.kernelspec import (
     get_kernel_dir,
     get_kernel_info,
     import_launcher,
+    make_argv,
     remove_kernelspec,
+    validate_name,
     write_kernel_spec,
 )
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+@pytest.mark.parametrize("name", ["", "invalid name"])
+def test_validate_name(name: str):
+    with pytest.raises(ValueError, match="Invalid name="):
+        validate_name(name)
+
+
+def test_make_argv():
+    argv = make_argv(command=("my command",), abc=10, flags=["my_flag"])
+    assert argv == ["my command", "--connection_file={connection_file}", "--name=async", "--abc=10", "--my_flag"]
 
 def test_install_kernel_spec(tmp_path: Path, monkeypatch):
 
@@ -96,3 +107,4 @@ def test_import_launcher(
     launcher = next(v.removeprefix("--launcher=") for v in argv if v.startswith("--launcher="))
     launcher = import_launcher(launcher)
     assert launcher({"okay": True}) == {"okay": True}
+    import_launcher("")
