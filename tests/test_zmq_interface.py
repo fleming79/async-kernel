@@ -65,7 +65,7 @@ async def test_input(
     if test_mode == "allow_stdin=False":
         _, reply = await utils.execute(client, code, allow_stdin=False)
         assert reply["status"] == "error"
-        assert reply["ename"] == "StdinNotImplementedError"
+        assert reply["ename"] == "RuntimeError"
         return
     msg_id = client.execute(code, allow_stdin=True, user_expressions={"response": "response"})
     msg = await client.get_stdin_msg()
@@ -200,6 +200,6 @@ async def test_launch_too_late(kernel: Kernel):
 
 
 async def test_already_entered(kernel: Kernel):
-    with pytest.raises(RuntimeError, match="this ZMQInterface has already been entered"):
+    with pytest.raises(RuntimeError, match="has already been entered"):
         async with kernel.parent:
             pass

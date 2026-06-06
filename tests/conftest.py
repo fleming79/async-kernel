@@ -25,6 +25,10 @@ if TYPE_CHECKING:
 
     pytest_plugins = ["anyio.pytest_plugin"]
 
+assert "IPython" not in sys.modules
+
+from async_kernel.interface.zmq_ip import ZMQInterfaceIP  # noqa: E402
+
 
 @pytest.hookimpl
 def pytest_configure(config):
@@ -70,9 +74,11 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     # Set a blank connection_file
     connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
-    interface = ZMQInterface()
-    interface.connection_file = connection_file
-    interface.transport = transport
+
+    # We test both `ZMQInterfaceIP` and `ZMQInterface` but doesn't warrant separate tests
+    interface_class = ZMQInterfaceIP if anyio_backend[0] == "asyncio" else ZMQInterface
+    interface = (interface_class)(connection_file=connection_file, transport=transport)
+
     try:
         if request.param == "MainThread":
             async with interface:

@@ -222,7 +222,8 @@ Tips:
             print("async-kernel", async_kernel.__version__)
         case Mode.start | Mode.help_all | Mode.show_config | Mode.show_config_json:
             launcher: InterfaceStartType = import_launcher(settings.get("launcher", ""))
-            settings["--flags"] = flags
+            settings["flags"] = flags
+            settings["--argv"] = sys.argv
             try:
                 launcher(settings)
             except KeyboardInterrupt:

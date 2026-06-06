@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import anyio
 import pytest
 from aiologic import Event
-from IPython.core.error import StdinNotImplementedError
 
 import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
@@ -78,7 +77,7 @@ class TestCallableInterface:
     async def test_input(self, interface: CallableInterface, job):
         token = async_kernel.utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         try:
-            with pytest.raises(StdinNotImplementedError):
+            with pytest.raises(RuntimeError):
                 interface.input_request("test")
             job["msg"]["content"]["allow_stdin"] = True
             assert interface.input_request("test") == "reply"

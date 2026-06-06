@@ -16,7 +16,7 @@ import weakref
 from collections.abc import Callable
 from contextlib import contextmanager
 from sqlite3 import OperationalError
-from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO, override
+from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
 
 import anyio
 import IPython.core.release
@@ -27,6 +27,7 @@ from IPython.core.displaypub import DisplayPublisher
 from IPython.core.extensions import ExtensionManager
 from IPython.core.formatters import DisplayFormatter
 from IPython.core.history import HistoryManager, HistorySavingThread
+from IPython.core.inputtransformer2 import TransformerManager, leading_empty_lines
 from IPython.core.interactiveshell import ExecutionResult, InteractiveShell
 from IPython.core.interactiveshell import _modified_open as _modified_open_  # pyright: ignore[reportPrivateUsage]
 from IPython.core.magic import Magics, line_cell_magic, line_magic, magics_class, no_var_expand
@@ -431,14 +432,16 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     def init_payload(self) -> Never:
         raise MethodNotSupported  # pragma: no cover
 
-    @override
-    def enable_pylab(self, gui=None, import_all=True) -> Never:
-        raise MethodNotSupported  # pragma: no cover
+    input_transformer_manager: traitlets.Instance[TransformerManager]
 
     @override
     def initialize(self):
         # Expects the kernel to be started.
         super().initialize()
+
+        if leading_empty_lines in self.input_transformer_manager.cleanup_transforms:
+            # leading_empty_lines can cause a line mismatch when debugging.
+            self.input_transformer_manager.cleanup_transforms.remove(leading_empty_lines)
 
         self.init_ipython_dir(None)
         self.init_profile_dir(None)
@@ -468,7 +471,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         InteractiveShell.initialized = lambda: True
         InteractiveShell.instance = utils.get_ipython  # pyright: ignore[reportAttributeAccessIssue]
 
-        restore_ = super().apply_patches()
+        restore_: Callable[[], None] = super().apply_patches()
 
         def restore():
             InteractiveShell.initialized, InteractiveShell.instance = original
@@ -795,7 +798,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         ""
         status, indent_spaces = self.input_transformer_manager.check_complete(code)
         content = {"status": status}
-        if status == "incomplete":
+        if isinstance(indent_spaces, int):
             content["indent"] = " " * indent_spaces
         return content
 

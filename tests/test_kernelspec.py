@@ -40,7 +40,7 @@ def test_install_kernel_spec(tmp_path: Path, monkeypatch):
                 "--connection_file={connection_file}",
                 "--debug",
                 "--no-quiet",
-                "--launcher=launch_zmq_interface",
+                "--launcher=launch_interface",
                 f"--name={name}",
             ],
             "env": {},

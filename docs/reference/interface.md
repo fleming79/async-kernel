@@ -2,3 +2,4 @@
 :::async_kernel.interface.base
 :::async_kernel.interface.callable
 :::async_kernel.interface.zmq
+:::async_kernel.interface.zmq_ip

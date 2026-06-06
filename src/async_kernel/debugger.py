@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Self
 
 import anyio.abc
 from aiologic import Event, Lock
-from IPython.core.inputtransformer2 import leading_empty_lines
 from traitlets import traitlets
 from traitlets.config import LoggingConfigurable
 
@@ -189,8 +188,6 @@ class Debugger(HasInterface, LoggingConfigurable):
     variable_explorer = traitlets.Instance(VariableExplorer, ())
     debugpy_client = Fixed(DebugpyClient)
     kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
-
-    _removed_cleanup = traitlets.Dict()
     _seq = 0
 
     @property
@@ -298,6 +295,7 @@ class Debugger(HasInterface, LoggingConfigurable):
 
     async def do_initialize(self, msg: DebugMessage, /) -> dict[str, Any]:
         "Initialize debugpy server starting as required."
+
         utils.mark_thread_pydev_do_not_trace()
         for thread in threading.enumerate():
             if thread.name in self.no_debug:
@@ -306,12 +304,6 @@ class Debugger(HasInterface, LoggingConfigurable):
             ready = Event()
             Caller().call_soon(self.debugpy_client.connect_tcp_socket, ready)
             await ready
-            # Don't remove leading empty lines when debugging so the breakpoints are correctly positioned
-            if isinstance((shell := self.parent.kernel.main_shell), async_kernel.shell.IPShell):
-                cleanup_transforms = shell.input_transformer_manager.cleanup_transforms
-                if leading_empty_lines in cleanup_transforms:
-                    index = cleanup_transforms.index(leading_empty_lines)
-                    self._removed_cleanup[index] = cleanup_transforms.pop(index)
         reply = await self.send_dap_request(msg)
         if capabilities := reply.get("body"):
             self.capabilities = capabilities
@@ -553,10 +545,6 @@ class Debugger(HasInterface, LoggingConfigurable):
         response = await self.send_dap_request(msg)
         # Restore the leading whitespace remove transform.
         assert isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)
-        cleanup_transforms = self.parent.kernel.main_shell.input_transformer_manager.cleanup_transforms
-        for index in sorted(self._removed_cleanup):
-            func = self._removed_cleanup.pop(index)
-            cleanup_transforms.insert(index, func)
         self.init_event = Event()
         self.breakpoint_list = {}
         return response

@@ -64,7 +64,7 @@ class Backend(enum.StrEnum):
 
 
 class Hosts(enum.StrEnum):
-    "An enum of event loop names that available to start using [detail][async_kernel.event_loop.run.run]."
+    "An enum of host names that available to start using [detail][async_kernel.event_loop.run.run]."
 
     tk = "tk"
     "An eventloop for [tkinter][]."
@@ -74,6 +74,13 @@ class Hosts(enum.StrEnum):
 
     custom = "custom"
     "A custom host."
+
+    @classmethod
+    def from_gui(cls, gui: str | None, /) -> Self | None:
+        """Transform a matplotlib gui type to a host name if possible."""
+        if str(gui) in ["tk", "qt"]:
+            return cls(gui)
+        return None
 
 
 class Channel(enum.StrEnum):
