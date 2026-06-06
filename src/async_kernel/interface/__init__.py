@@ -37,7 +37,7 @@ def launch_interface(settings: dict) -> None:
     """
 
     val = settings.get("interface_class") or settings.get("BaseInterface.interface_class")
-    val = val or "async_kernel.interface.zmq_ip.ZMQInterfaceIP"
+    val = val or "async_kernel.interface.ip_app.IPApp"
     cls = import_item(val) if isinstance(val, str) else val
     assert issubclass(cls, BaseInterface)
     cls.launch_instance()

@@ -1,4 +1,4 @@
-"""A zmq interface that is an IPython shell app."""
+"""An IPython application with a zmq interface."""
 
 from __future__ import annotations
 
@@ -19,17 +19,17 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
 
-__all__ = ["ZMQInterfaceIP"]
+__all__ = ["IPApp"]
 
 
 BaseInterface.classes.append(ProfileDir)
 
 
-class ZMQInterfaceIP(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
+class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
     ZMQInterface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]
 ):
     """
-    A kernel zmq interface that is an IPython [shellapp][IPython.core.shellapp.InteractiveShellApp].
+    An IPython application with a zmq interface.
     """
 
     description = traitlets.Unicode(

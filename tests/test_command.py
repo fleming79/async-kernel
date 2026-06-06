@@ -16,8 +16,8 @@ from typing_extensions import override
 import async_kernel
 from async_kernel import Kernel
 from async_kernel.command import command_line, to_flags_and_settings
+from async_kernel.interface.ip_app import IPApp
 from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.interface.zmq_ip import ZMQInterfaceIP
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
 from tests import utils
@@ -105,7 +105,7 @@ def test_show_config(monkeypatch, capsys):
             command_line()
         assert e.value.code == 0
         out = capsys.readouterr().out
-        assert "ZMQInterfaceIP" in out
+        assert "IPApp" in out
 
 
 def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
@@ -315,7 +315,7 @@ async def test_ZMQInterface_gc(anyio_backend: Backend):
 
 async def test_IPShellApp_gc(anyio_backend: Backend):
     collected = Event()
-    async with ZMQInterfaceIP() as interface:
+    async with IPApp() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
         del interface

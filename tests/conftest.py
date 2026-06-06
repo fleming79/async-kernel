@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 assert "IPython" not in sys.modules
 
-from async_kernel.interface.zmq_ip import ZMQInterfaceIP  # noqa: E402
+from async_kernel.interface.ip_app import IPApp  # noqa: E402
 
 
 @pytest.hookimpl
@@ -75,8 +75,8 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
 
-    # We test both `ZMQInterfaceIP` and `ZMQInterface` but doesn't warrant separate tests
-    interface_class = ZMQInterfaceIP if anyio_backend[0] == "asyncio" else ZMQInterface
+    # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
+    interface_class = IPApp if anyio_backend[0] == "asyncio" else ZMQInterface
     interface = (interface_class)(connection_file=connection_file, transport=transport)
 
     try:
