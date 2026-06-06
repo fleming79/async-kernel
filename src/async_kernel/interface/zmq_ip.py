@@ -63,6 +63,7 @@ class ZMQInterfaceIP(  # pyright: ignore[reportUnsafeMultipleInheritance, report
             for k in ["pylab", "gui", "matplotlib"]:
                 if host := Hosts.from_gui(getattr(self, k, None)):
                     self.host = host
+                    break
 
     @override
     @asynccontextmanager

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict, final
 
 from typing_extensions import Sentinel, TypeVar, get_annotations, override
 
@@ -63,6 +63,7 @@ class Backend(enum.StrEnum):
     "A trio style event loop."
 
 
+@final
 class Hosts(enum.StrEnum):
     "An enum of host names that available to start using [detail][async_kernel.event_loop.run.run]."
 
@@ -76,10 +77,13 @@ class Hosts(enum.StrEnum):
     "A custom host."
 
     @classmethod
-    def from_gui(cls, gui: str | None, /) -> Self | None:
+    def from_gui(cls, gui: str | None, /) -> Hosts | None:
         """Transform a matplotlib gui type to a host name if possible."""
-        if str(gui) in ["tk", "qt"]:
-            return cls(gui)
+        if gui:
+            if gui == "tk":
+                return Hosts.tk
+            if gui == "qt":
+                return Hosts.qt
         return None
 
 

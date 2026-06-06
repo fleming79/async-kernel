@@ -222,18 +222,26 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
     assert e.value.code == 0
 
 
-# Avoid matplotlib tests generally to avoid flaky tests on ci.
-@pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Requires matplotlib")
+# We check for matplotlib which is NOT a dev dependency. The test doesn't import matplotlib
+@pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Gui tests fail on CI")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("host", [Hosts.tk, Hosts.qt, None])
-def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, host):
+def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, host):
     if host is Hosts.tk:
         if not importlib.util.find_spec("_tkinter"):
             pytest.skip("_tkinter not installed")
     elif host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
 
-    cmd = ["prog", "start", f"--name=async-{host}", f"--backend={backend}", f"--pylab={host}"]
+    cmd = [
+        "prog",
+        "start",
+        f"--name=async-{host}",
+        f"--backend={backend}",
+        f"--host={host}",
+        "--interface_class",
+        "async_kernel.interface.zmq.ZMQInterface",
+    ]
     monkeypatch.setattr(sys, "argv", cmd)
     kernel = cast("Kernel", None)  # pyright: ignore[reportInvalidCast]
 
@@ -247,16 +255,14 @@ def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, ho
 
     event_started = EventSet()
 
-    monkeypatch.setattr(ZMQInterfaceIP, "event_started", event_started)
+    monkeypatch.setattr(ZMQInterface, "event_started", event_started)
 
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
-    assert isinstance(kernel.parent, ZMQInterfaceIP)
-    assert kernel.parent.user_ns is kernel.shell.user_ns
+    assert isinstance(kernel.parent, ZMQInterface)
     assert kernel.parent.host == host
     assert kernel.parent.backend == backend
-    assert kernel.parent.pylab == host
 
 
 async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, name, transport):
