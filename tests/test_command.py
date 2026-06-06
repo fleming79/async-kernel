@@ -220,15 +220,13 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
     assert e.value.code == 0
 
 
-# We check for matplotlib which is NOT a dev dependency. The test doesn't import matplotlib
-@pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Gui tests fail on CI")
+# We check for Jupyterlab which is a docs dependency and NOT a dev dependency.
+# This way can skip testing on CI except when `uv sync --locked --dev --group gui` is used.
+@pytest.mark.skipif(not importlib.util.find_spec("jupyterlab"), reason="Gui tests fail on CI")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("host", [Hosts.tk, Hosts.qt, None])
 def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, host):
-    if host is Hosts.tk:
-        if not importlib.util.find_spec("_tkinter"):
-            pytest.skip("_tkinter not installed")
-    elif host is Hosts.qt and not importlib.util.find_spec("PySide6"):
+    if host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
 
     cmd = [
