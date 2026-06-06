@@ -135,7 +135,7 @@ dependencies = [
 dev = [
     { name = "debugpy" },
     { name = "ipykernel", marker = "implementation_name == 'cpython'" },
-    { name = "matplotlib" },
+    { name = "matplotlib", marker = "python_full_version < '3.15'" },
     { name = "pip", marker = "implementation_name == 'cpython'" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -206,7 +206,7 @@ requires-dist = [
 dev = [
     { name = "debugpy" },
     { name = "ipykernel", marker = "implementation_name == 'cpython'" },
-    { name = "matplotlib", specifier = ">=3.10.9" },
+    { name = "matplotlib", marker = "python_full_version < '3.15'", specifier = ">=3.10.9" },
     { name = "pip", marker = "implementation_name == 'cpython'" },
     { name = "pytest", specifier = ">=8.4,<9" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
