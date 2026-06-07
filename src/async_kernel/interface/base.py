@@ -199,6 +199,13 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
                 self.backend_options["use_uvloop"] = True
             return Backend.asyncio
 
+    @traitlets.default("shell_class")
+    def _default_shell_class(self):
+        # We use a method to delay IPython import until it is needed
+        from async_kernel.shell.ipshell import IPShell  # noqa: PLC0415
+
+        return IPShell
+
     @property
     def summary(self) -> str:
         return f"name={self.name!r} backend={str(self.backend)!r}"
