@@ -275,9 +275,9 @@ def expand_path(path: str | Path) -> Path:
     return path.expanduser().absolute()
 
 
-def import_launcher(launcher: str = DEFAULT_LAUNCHER, /) -> InterfaceStartType:
+def import_launcher(launcher: str = "", /) -> InterfaceStartType:
     """
-    Import the launcher as defined in a kernel spec.
+    Import a custom launcher or the default launcher.
 
     Args:
         launcher: The name of the interface factory.
@@ -292,7 +292,7 @@ def import_launcher(launcher: str = DEFAULT_LAUNCHER, /) -> InterfaceStartType:
         return glbls[factory_name]
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    if not launcher or launcher == "launch_interface":
+    if not launcher or launcher == DEFAULT_LAUNCHER:
         launcher = "async_kernel.interface.launch_interface"
 
     return import_item(launcher)
