@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+import importlib.util
 from typing import TYPE_CHECKING, Any, Literal
 
 import anyio
+import pytest
 from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel.utils
-from async_kernel.typing import Channel, ExecuteContent, MsgType
+from async_kernel.typing import Channel, ExecuteContent, MsgType, T
 from tests.references import RMessage, references
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Callable, Mapping
 
 
 TIMEOUT = 10 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
@@ -193,3 +195,11 @@ async def get_shell_message(client: AsyncKernelClient, msg_id: str, msg_type: st
     msg = await client.get_shell_msg()
     validate_message(msg, msg_type, msg_id)
     return msg["content"]
+
+
+def skip_if_missing(name: str, reason="") -> Callable[[T], Callable[[T], Any]]:
+    "Skip the test if the module is not installed."
+    # Inspiration: https://github.com/pytest-dev/pytest/discussions/13140#discussioncomment-11869648
+    if not importlib.util.find_spec(name):
+        return pytest.mark.skip(reason or f"{name} missing")
+    return lambda func: func  # pyright: ignore[reportReturnType]

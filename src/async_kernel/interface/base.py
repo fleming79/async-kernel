@@ -121,11 +121,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     flags = {
         "quiet": ({"BaseInterface": {"quiet": True}}, "Only send stdout/stderr to output stream."),
         "no-quiet": ({"BaseInterface": {"quiet": False}}, "Only send stdout/stderr to output stream."),
-        "automagic": (
-            {"InteractiveShell": {"automagic": True}},
-            "Turn on the auto calling of magic commands. Type %%magic at the IPython  prompt  for  more information.",
-        ),
-        "no-automagic": ({"InteractiveShell": {"automagic": False}}, "Turn off the auto calling of magic commands."),
     } | Application.flags
     ""
 
@@ -203,6 +198,13 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             ):
                 self.backend_options["use_uvloop"] = True
             return Backend.asyncio
+
+    @traitlets.default("shell_class")
+    def _default_shell_class(self):
+        # We use a method to delay IPython import until it is needed
+        from async_kernel.shell.ipshell import IPShell  # noqa: PLC0415
+
+        return IPShell
 
     @property
     def summary(self) -> str:
