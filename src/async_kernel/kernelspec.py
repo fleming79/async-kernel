@@ -203,7 +203,9 @@ def write_kernel_spec(
             "display_name": display_name or f"Python {sys.version.split()[0]} ({name})",
             "language": language,
             "interrupt_mode": "message",
-            "metadata": metadata if metadata is not None else {"debugger": True, "concurrent": True},
+            "metadata": metadata
+            if metadata is not None
+            else {"debugger": True, "concurrent": True, "supported_encryption": "curve"},
             "kernel_protocol_version": PROTOCOL_VERSION,
         }
         # write kernel.json

@@ -35,7 +35,8 @@
         "--notebook-dir=docs/notebooks",
         "--no-browser",
         "--IdentityProvider.token=''",
-        "--port=9991"
+        "--port=9991",
+        "--KernelManager.transport_encryption=auto"
       ],
       "cwd": "${workspaceFolder}",
       "justMyCode": false,

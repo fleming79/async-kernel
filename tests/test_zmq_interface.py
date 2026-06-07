@@ -5,22 +5,61 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import anyio
 import pytest
+import zmq
+from jupyter_client import connect
+from jupyter_client.asynchronous.client import AsyncKernelClient
 
 from async_kernel import Pending
 from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.typing import MsgType
+from async_kernel.typing import Channel, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
-
-    from jupyter_client.asynchronous.client import AsyncKernelClient
 
     from async_kernel import Kernel
     from async_kernel.shell import IPShell
 
 
 # pyright: reportPrivateUsage=false
+
+
+@pytest.fixture(scope="module")
+async def curve_encrypted_kernel(anyio_backend, tmp_path_factory):
+    connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
+    curve_publickey, curve_secretkey = zmq.curve_keypair()
+    connect.write_connection_file(
+        str(connection_file),
+        curve_publickey=curve_publickey,
+        curve_secretkey=curve_secretkey,
+    )
+    interface = ZMQInterface(connection_file=connection_file)
+    async with interface:
+        yield interface.kernel
+
+
+@pytest.fixture(scope="module")
+async def curve_encrypted_client(curve_encrypted_kernel: Kernel):
+
+    assert isinstance(curve_encrypted_kernel.parent, ZMQInterface)
+    client = AsyncKernelClient()
+    client.load_connection_info(curve_encrypted_kernel.parent.get_connection_info())
+    client.start_channels()
+    try:
+        yield client
+    finally:
+        await utils.clear_iopub(client, timeout=0.1)
+        client.stop_channels()
+        await anyio.sleep(0)
+
+
+async def test_curve_encryption(
+    curve_encrypted_kernel: Kernel[ZMQInterface], curve_encrypted_client: AsyncKernelClient
+):
+    assert curve_encrypted_kernel.parent._sockets[Channel.shell].curve_server == 1
+
+    _, reply = await utils.execute(curve_encrypted_client, "1+1", allow_stdin=False)
+    assert reply["status"] == "ok"
 
 
 async def test_load_connection_info_error(kernel: Kernel):
