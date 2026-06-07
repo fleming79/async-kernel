@@ -48,7 +48,20 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
     )
     ""
 
-    flags = ZMQInterface.flags | shell_flags
+    flags = (
+        ZMQInterface.flags
+        | {
+            "automagic": (
+                {"InteractiveShell": {"automagic": True}},
+                "Turn on the auto calling of magic commands. Type %%magic at the IPython  prompt  for  more information.",
+            ),
+            "no-automagic": (
+                {"InteractiveShell": {"automagic": False}},
+                "Turn off the auto calling of magic commands.",
+            ),
+        }
+        | shell_flags
+    )
     ""
 
     @property

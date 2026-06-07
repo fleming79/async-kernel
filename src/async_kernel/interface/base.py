@@ -121,11 +121,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     flags = {
         "quiet": ({"BaseInterface": {"quiet": True}}, "Only send stdout/stderr to output stream."),
         "no-quiet": ({"BaseInterface": {"quiet": False}}, "Only send stdout/stderr to output stream."),
-        "automagic": (
-            {"InteractiveShell": {"automagic": True}},
-            "Turn on the auto calling of magic commands. Type %%magic at the IPython  prompt  for  more information.",
-        ),
-        "no-automagic": ({"InteractiveShell": {"automagic": False}}, "Turn off the auto calling of magic commands."),
     } | Application.flags
     ""
 
