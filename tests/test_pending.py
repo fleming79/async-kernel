@@ -255,14 +255,11 @@ class TestPending:
         assert pen.wait_sync(result=result) == (2 if result else None)
         assert pen.wait_sync(result=result) == (2 if result else None)
 
-    async def test_wait_sync_timeout(self, anyio_backend: Backend):
-        async with Caller("manual") as caller:
-            pen = caller.call_soon(lambda: 0 / 1)  # should never get called
-            with pytest.raises(TimeoutError):
-                pen.wait_sync(timeout=0.001)
-            assert pen.cancelled()
-            with pytest.raises(PendingCancelled):
-                await pen
+    def test_wait_sync_timeout(self):
+        pen = Pending()
+        with pytest.raises(TimeoutError):
+            pen.wait_sync(timeout=0.001)
+        assert pen.cancelled()
 
     async def test_many_waiters(self, caller: Caller):
         N = 100

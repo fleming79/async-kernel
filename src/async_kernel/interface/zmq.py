@@ -36,6 +36,8 @@ from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoVal
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
 
+    from jupyter_client import KernelConnectionInfo
+
 
 __all__ = ["ZMQInterface"]
 
@@ -162,7 +164,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             self.load_connection_info(json.loads(path.read_bytes()))
 
     @override
-    def load_connection_info(self, info: dict[str, Any]) -> None:
+    def load_connection_info(self, info: KernelConnectionInfo) -> None:
         if self._sockets:
             msg = "It is too late to configure!"
             raise RuntimeError(msg)
@@ -285,6 +287,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 socket_type = zmq.XPUB
         socket: zmq.Socket = self._zmq_context.socket(socket_type)
         socket.linger = 50
+        if self.curve_secretkey is not None and self.curve_publickey is not None:
+            socket.curve_secretkey = self.curve_secretkey
+            socket.curve_publickey = self.curve_publickey
+            socket.curve_server = True
         name = f"{channel}_port"
         port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=getattr(self, name))  # pyright: ignore[reportArgumentType]
         self.set_trait(name, port)
@@ -315,6 +321,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 key=self.session.key,
                 signature_scheme=self.session.signature_scheme,
                 kernel_name=self.name,
+                curve_publickey=self.curve_publickey,
+                curve_secretkey=self.curve_secretkey,
                 **{f"{channel}_port": getattr(self, f"{channel}_port") for channel in Channel},
             )
             ip_files: list[pathlib.Path] = []
