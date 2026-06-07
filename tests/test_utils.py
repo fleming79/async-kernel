@@ -115,6 +115,6 @@ class TestUtils:
                 return TestObj()
 
         test_obj = TestObj()
-        settings = {"k": 10, "nested_with_default.k": 20, "--flags": ["b1", "no-b2"]}
+        settings = {"k": 10, "nested_with_default.k": 20, "flags": ["b1", "no-b2"]}
         val = ak_utils.apply_settings(test_obj, settings)
         assert val == {"k": 10, "nested_with_default.k": 20, "b1": True, "b2": False}

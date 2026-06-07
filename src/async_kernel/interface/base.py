@@ -115,6 +115,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         "shell_class": "BaseInterface.shell_class",
         "help_links": "Kernel.help_links",
         "supported_features": "Kernel.supported_features",
+        "interface_class": "BaseInterface.interface_class",
     } | Application.aliases
     ""
     flags = {
@@ -145,13 +146,19 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
     "Options for starting the backend."
 
-    # the kernel class, as an importstring
+    interface_class: traitlets.Type[type[Self], type[Self] | str] = traitlets.Type(
+        "async_kernel.interface.base.BaseInterface"
+    ).tag(  # pyright: ignore[reportAssignmentType]
+        config=True
+    )
+    "The interface class to use when launching."
+
     kernel_class: traitlets.Type[type[Kernel[Self, T_shell_co]], type[Kernel[Self, T_shell_co]] | str] = traitlets.Type(
         "async_kernel.Kernel"
     ).tag(  # pyright: ignore[reportAssignmentType]
         config=True
     )
-    "The Kernel subclass to be used."
+    "The Kernel class to use when creating the kernel."
 
     shell_class: traitlets.Type[type[T_shell_co], type[T_shell_co] | str] = traitlets.Type(
         "async_kernel.shell.ipshell.IPShell", "async_kernel.shell.BaseShell"
@@ -228,7 +235,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     @override
     def launch_instance(
         cls,
-        argv: list[str] | None | NoValue = None,  # pyright: ignore[reportInvalidTypeForm]
+        argv: list[str] | None = None,
         kernel_class: type[Kernel[Self, T_shell_co]] | None = None,
         shell_class: type[T_shell_co] | None = None,
         **kwargs: Any,
@@ -289,18 +296,19 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
             os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
         self.parse_command_line([] if argv is NoValue else argv)
+        self.interface_class = self.__class__
 
     @override
     def start(self) -> None:
         """
-        Start the kernel blocking until the kernel stops.
+        Start the interface blocking until it stops.
 
         Warning:
-            - Running the kernel in a thread other than the 'MainThread' is permitted, but discouraged.
+            - Running in a thread other than the 'MainThread' is permitted, but discouraged.
             - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
             - Some libraries may assume the call is occurring in the 'MainThread'.
-            - If there is an `asyncio` or `trio` event loop already running in the 'MainThread`;
-                start the kernel asynchronously instead (`async with kernel: ...`).
+            - If there is an `asyncio` or `trio` event loop already running in the desired thread;
+                start asynchronously instead (`async with interface: ...`).
         """
         settings = RunSettings(
             backend=self.backend,

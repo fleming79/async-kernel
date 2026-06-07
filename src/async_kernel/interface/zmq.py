@@ -18,9 +18,6 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
 import zmq
 from aiologic import BinarySemaphore
-from IPython.core.application import BaseIPythonApplication
-from IPython.core.error import StdinNotImplementedError
-from IPython.core.profiledir import ProfileDir
 from jupyter_client.connect import ConnectionFileMixin, write_connection_file
 from jupyter_client.localinterfaces import localhost
 from jupyter_client.session import Session
@@ -118,15 +115,7 @@ class AsyncSession(HasInterface, Session):
     check_pid = traitlets.Bool(False).tag(config=True)
 
 
-BaseInterface.classes.append(ProfileDir)
-
-
-class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonApplication, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
-    description = traitlets.Unicode(
-        "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",
-    ).tag(config=True)
-    "A description to use for the command line interface."
-
+class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     aliases = BaseInterface.aliases | {
         "ip": "ZMQInterface.ip",
         "hb": "ZMQInterface.hb_port",
@@ -135,10 +124,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonAp
         "stdin": "ZMQInterface.stdin_port",
         "control": "ZMQInterface.control_port",
         "transport": "ZMQInterface.transport",
-        "profile-dir": "ProfileDir.location",
-        "profile": "BaseIPythonApplication.profile",
-        "ipython-dir": "BaseIPythonApplication.ipython_dir",
-        "config": "BaseIPythonApplication.extra_config_file",
     }
     ""
 
@@ -351,7 +336,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, BaseIPythonAp
         job = utils.get_job()
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
-            raise StdinNotImplementedError(msg)
+            raise RuntimeError(msg)
         socket = self._sockets[Channel.stdin]
         # Clear messages on the stdin socket
         while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]

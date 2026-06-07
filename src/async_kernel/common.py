@@ -24,7 +24,7 @@ globals()["trio"] = lazy_import("trio")
 globals()["BaseInterface"] = lazy_import("async_kernel.interface.base", "BaseInterface")
 
 
-def import_item(dottedname: str) -> Any:
+def import_item(dottedname: str, /) -> Any:
     """
     Import an item from a module, given its dotted name.
 

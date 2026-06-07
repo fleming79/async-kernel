@@ -199,13 +199,13 @@ def apply_settings(obj: object, settings: Mapping[str, Any]) -> dict[str, Any]:
         dict: A copy of the settings that were applied.
 
     Notes:
-        - If flags are included using the pattern `'--flags': iterable(str)`, the flags
+        - If flags are included using the pattern `'flags': iterable(str)`, the flags
             are interpreted as boolean values. Generally, it is preferred to specify
             the value in the settings explicitly.
     """
     values = {}
     for k, v in settings.items():
-        if k == "--flags" and v:
+        if k == "flags":
             for flag in (f.strip("-") for f in v):
                 values.update(setattr_nested(obj, flag.strip("no-"), not flag.startswith("no-")))
         else:

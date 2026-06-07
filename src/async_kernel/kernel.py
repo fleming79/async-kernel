@@ -271,7 +271,6 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
             for comm in tuple(self.comm_manager.comms.values()):
                 comm.close(deleting=True)
             remove_patch()
-            del self._main_shell
             self._handler_cache.clear()
 
     @enable_signal_safety

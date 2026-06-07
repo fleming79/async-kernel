@@ -6,7 +6,7 @@ import json
 import signal
 import sys
 import weakref
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 import anyio
 import pytest
@@ -16,6 +16,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel import Kernel
 from async_kernel.command import command_line, to_flags_and_settings
+from async_kernel.interface.ip_app import IPApp
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
@@ -104,14 +105,21 @@ def test_show_config(monkeypatch, capsys):
             command_line()
         assert e.value.code == 0
         out = capsys.readouterr().out
-        assert "ZMQInterface" in out
+        assert "IPApp" in out
 
 
-def test_install_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
+def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["prog", "install", "--name=async-trio", "--display_name='my kernel'", "--BaseShell.timeout=0.01"],
+        [
+            "prog",
+            "install",
+            "--name=async-trio",
+            "--display_name='my kernel'",
+            "--BaseShell.timeout=0.01",
+            "--interface_class=async_kernel.interface.zmq.ZMQInterface",
+        ],
     )
     with pytest.raises(SystemExit) as e:
         command_line()
@@ -129,9 +137,9 @@ def test_install_kernel_start_zmq_app(monkeypatch, fake_kernel_dir: pathlib.Path
             "async_kernel",
             "start",
             "--connection_file={connection_file}",
-            "--launcher=launch_zmq_interface",
             "--name=async-trio",
             "--BaseShell.timeout=0.01",
+            "--interface_class=async_kernel.interface.zmq.ZMQInterface",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -184,7 +192,7 @@ def test_list(monkeypatch, config: str, capsys):
     assert capsys.readouterr().out
 
 
-def test_command_launch_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
+def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
     class EventSet(Event):
         @override
         def set(self):
@@ -203,7 +211,6 @@ def test_command_launch_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path
         "use_uv=False",
         "--BaseShell.timeout=0.123",
         "--no-automagic",
-        "--launcher=launch_zmq_interface",
     ]
     event_started = EventSet()
     monkeypatch.setattr(ZMQInterface, "event_started", event_started)
@@ -213,26 +220,32 @@ def test_command_launch_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path
     assert e.value.code == 0
 
 
-# Avoid matplotlib tests generally to avoid flaky tests on ci.
-@pytest.mark.skipif(not importlib.util.find_spec("matplotlib"), reason="Requires matplotlib")
+# We check for Jupyterlab which is a docs dependency and NOT a dev dependency.
+# This way can skip testing on CI except when `uv sync --locked --dev --group gui` is used.
+@pytest.mark.skipif(not importlib.util.find_spec("jupyterlab"), reason="Gui tests fail on CI")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("host", [Hosts.tk, Hosts.qt, None])
-def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, host):
-    if host is Hosts.tk:
-        if not importlib.util.find_spec("_tkinter"):
-            pytest.skip("_tkinter not installed")
-    elif host is Hosts.qt and not importlib.util.find_spec("PySide6"):
+def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, host):
+    if host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
 
-    cmd = ["prog", "start", f"--name=async-{host}", f"--host={host}", f"--backend={backend}"]
+    cmd = [
+        "prog",
+        "start",
+        f"--name=async-{host}",
+        f"--backend={backend}",
+        f"--host={host}",
+        "--interface_class",
+        "async_kernel.interface.zmq.ZMQInterface",
+    ]
     monkeypatch.setattr(sys, "argv", cmd)
+    kernel = cast("Kernel", None)  # pyright: ignore[reportInvalidCast]
 
     class EventSet(Event):
         @override
         def set(self):
+            nonlocal kernel
             kernel = async_kernel.utils.get_kernel()
-            assert kernel.parent.host == host
-            assert kernel.parent.backend == backend
             super().set()
             kernel.caller.call_direct(kernel.parent.stop)
 
@@ -243,6 +256,9 @@ def test_command_start_kernel_enable_matplotlib(mocker, monkeypatch, backend, ho
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
+    assert isinstance(kernel.parent, ZMQInterface)
+    assert kernel.parent.host == host
+    assert kernel.parent.backend == backend
 
 
 async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, name, transport):
@@ -280,6 +296,22 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path, anyio_backend):
 async def test_ZMQInterface_gc(anyio_backend: Backend):
     collected = Event()
     async with ZMQInterface() as interface:
+        weakref.finalize(interface, collected.set)
+        ref = weakref.ref(interface)
+        del interface
+
+    with anyio.move_on_after(2):
+        while not collected:
+            gc.collect()
+            await anyio.sleep(0)
+    if obj := ref():
+        referrers = gc.get_referrers(obj)
+        assert not referrers
+
+
+async def test_IPShellApp_gc(anyio_backend: Backend):
+    collected = Event()
+    async with IPApp() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
         del interface

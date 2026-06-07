@@ -25,6 +25,7 @@ __all__ = [
     "get_kernel_info",
     "import_launcher",
     "make_argv",
+    "validate_name",
     "write_kernel_spec",
 ]
 
@@ -36,7 +37,7 @@ CUSTOM_LAUNCHER_SEPARATOR: str = "↤"
 PROTOCOL_VERSION: str = "5.5"
 "The protocol that is supported by the kernel."
 
-DEFAULT_LAUNCHER: str = "launch_zmq_interface"
+DEFAULT_LAUNCHER: str = "launch_interface"
 "An importable path to the default interface to start the kernel."
 
 DEFAULT_COMMAND: tuple[str, ...] = (sys.executable, "-m", "async_kernel", "start")
@@ -47,7 +48,7 @@ def make_argv(
     *,
     connection_file: str = "{connection_file}",
     name: str = "async",
-    launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
+    launcher: str | InterfaceStartType = "",
     command: tuple[str, ...] = DEFAULT_COMMAND,
     flags: Iterable[str] = (),
     **kwargs: Any,
@@ -60,13 +61,8 @@ def make_argv(
     Args:
         connection_file: The path to the connection file.
         launcher:
-            A self-contained function that accepts a dict of settings. The function
-            is stored as a python file in the kernelspec folder.
-            Or as string import path to a callable.
-            be saved as a python file in the kernelspec folder.
-            Or can be one of the names of the methods in the interface folder:
-                - "launch_zmq_interface"
-                - "start_kernel_zmq_interface"
+            A self-contained function that accepts a dict of settings.
+            Or as string import path to a callable responsible for launching the interface.
         name: The name to use for the kernel.
         command: The command line command to call.
         flags: Any number of flags to insert in argv. Flags will be prefixed with '--'.
@@ -75,9 +71,13 @@ def make_argv(
     Returns:
         list: A list of command-line arguments to launch the kernel module.
     """
-    argv = [*command, f"--connection_file={connection_file}", *(f"--{f.strip('-')}" for f in flags)]
-    for k, v in ({"launcher": launcher, "name": name} | kwargs).items():
+    validate_name(name)
+    argv = [*command, f"--connection_file={connection_file}", f"--name={name}"]
+    if launcher:
+        argv.append(f"--launcher={launcher}")
+    for k, v in kwargs.items():
         argv.append(f"--{k}={v}")
+    argv.extend(f"--{f.strip('-')}" for f in flags)
     return list(map(str, argv))
 
 
@@ -117,7 +117,7 @@ def write_kernel_spec(
     user: bool = False,
     prefix: str = "",
     folder: str = "",
-    launcher: str | InterfaceStartType = DEFAULT_LAUNCHER,
+    launcher: str | InterfaceStartType = "",
     command: tuple[str, ...] = DEFAULT_COMMAND,
     connection_file: str = "{connection_file}",
     env: dict | None = None,
@@ -169,9 +169,7 @@ def write_kernel_spec(
     if path:
         path = expand_path(path)
     else:
-        if not name or not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
-            msg = f"Invalid {name=}!"
-            raise ValueError(msg)
+        validate_name(name)
         path = get_kernel_dir(folder=folder, prefix=prefix, user=user).joinpath(name)
 
     if callable(launcher) and len(inspect.signature(launcher).parameters) != 1:
@@ -187,7 +185,7 @@ def write_kernel_spec(
             f.write_text(textwrap.dedent(inspect.getsource(launcher)))
             launcher = f"{f}{CUSTOM_LAUNCHER_SEPARATOR}{launcher.__name__}"
         # validate
-        if launcher != DEFAULT_LAUNCHER:
+        if launcher and launcher != DEFAULT_LAUNCHER:
             assert len(inspect.signature(import_launcher(launcher)).parameters) == 1
         if resources:
             shutil.copytree(src=resources, dst=path, dirs_exist_ok=True)
@@ -215,6 +213,18 @@ def write_kernel_spec(
         raise
     else:
         return path
+
+
+def validate_name(name: str, /) -> None:
+    """
+    Check the name is a valid kernel name.
+
+    Raises:
+        ValueError: If the name is not valid.
+    """
+    if not name or not re.match(re.compile(r"^[a-z0-9._\-]+$", re.IGNORECASE), name):
+        msg = f"Invalid {name=}!"
+        raise ValueError(msg)
 
 
 def remove_kernelspec(kernel_dir: Path, name: str) -> None:
@@ -267,7 +277,7 @@ def expand_path(path: str | Path) -> Path:
 
 def import_launcher(launcher: str = "", /) -> InterfaceStartType:
     """
-    Import the launcher as defined in a kernel spec.
+    Import a custom launcher or the default launcher.
 
     Args:
         launcher: The name of the interface factory.
@@ -275,7 +285,6 @@ def import_launcher(launcher: str = "", /) -> InterfaceStartType:
     Returns:
         callable: The imported function responsible for launching the interface.
     """
-    launcher = launcher or DEFAULT_LAUNCHER
     if CUSTOM_LAUNCHER_SEPARATOR in launcher:
         name, factory_name = launcher.split(CUSTOM_LAUNCHER_SEPARATOR)
         glbls = {}
@@ -283,7 +292,7 @@ def import_launcher(launcher: str = "", /) -> InterfaceStartType:
         return glbls[factory_name]
     from async_kernel.common import import_item  # noqa: PLC0415
 
-    if launcher in ["launch_zmq_interface", "start_kernel_zmq_interface"]:
-        return import_item(f"async_kernel.interface.{launcher}")
+    if not launcher or launcher == DEFAULT_LAUNCHER:
+        launcher = "async_kernel.interface.launch_interface"
 
     return import_item(launcher)

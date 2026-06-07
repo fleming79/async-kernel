@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict, final
 
 from typing_extensions import Sentinel, TypeVar, get_annotations, override
 
@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
     from async_kernel.interface import BaseInterface
     from async_kernel.shell import BaseShell
+    from async_kernel.shell.ipshell import IPShell
 
 
 __all__ = [
@@ -48,6 +49,7 @@ D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
 
 T_shell_co = TypeVar("T_shell_co", covariant=True, bound="BaseShell", default="BaseShell")
+T_ipshell_co = TypeVar("T_ipshell_co", covariant=True, bound="IPShell", default="IPShell")
 T_interface_co = TypeVar("T_interface_co", covariant=True, bound="BaseInterface", default="BaseInterface")
 
 
@@ -61,8 +63,9 @@ class Backend(enum.StrEnum):
     "A trio style event loop."
 
 
+@final
 class Hosts(enum.StrEnum):
-    "An enum of event loop names that available to start using [detail][async_kernel.event_loop.run.run]."
+    "An enum of host names that available to start using [detail][async_kernel.event_loop.run.run]."
 
     tk = "tk"
     "An eventloop for [tkinter][]."
@@ -72,6 +75,16 @@ class Hosts(enum.StrEnum):
 
     custom = "custom"
     "A custom host."
+
+    @classmethod
+    def from_gui(cls, gui: str | None, /) -> Hosts | None:
+        """Transform a matplotlib gui type to a host name if possible."""
+        if gui:
+            if gui == "tk":
+                return Hosts.tk
+            if gui == "qt":
+                return Hosts.qt
+        return None
 
 
 class Channel(enum.StrEnum):
