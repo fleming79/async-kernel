@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import contextlib
-import errno
 import os
 import sys
 import threading
@@ -18,7 +17,7 @@ from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.session import Session
 from traitlets import traitlets
 from typing_extensions import override
-from zmq import Flag, PollEvent, Socket, SocketOption, ZMQError
+from zmq import Flag, PollEvent, Socket, SocketOption
 
 from async_kernel import utils
 from async_kernel.caller import Caller
