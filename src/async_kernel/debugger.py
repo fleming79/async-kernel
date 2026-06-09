@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Self
 
 import anyio.abc
 from aiologic import Event, Lock
+from aiologic.lowlevel import create_async_event
 from traitlets import traitlets
 from traitlets.config import LoggingConfigurable
 
@@ -21,6 +22,8 @@ from async_kernel.interface import HasInterface
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from async_kernel.kernel import Kernel
     from async_kernel.typing import DebugMessage
 
@@ -151,7 +154,7 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
                     result.set_result(msg)
             self.tcp_buffer = b""
 
-    async def connect_tcp_socket(self, ready: Event) -> None:
+    async def _connect_tcp_socket(self, ready: Callable[[], Any]) -> None:
         """Connect to the tcp socket."""
         global _host_port  # noqa: PLW0603
         if not _host_port:
@@ -163,13 +166,22 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
             async with await anyio.connect_tcp(*_host_port) as socketstream:
                 self._socketstream = socketstream
                 self.log.debug("++ debugpy socketstream connected ++")
-                ready.set()
+                ready()
                 while True:
                     data = await socketstream.receive()
                     self.put_tcp_frame(data)
         except anyio.EndOfStream:
             self.log.debug("++ debugpy socketstream disconnected ++")
             return
+        except anyio.get_cancelled_exc_class():
+            msg = {
+                "type": "request",
+                "seq": self.kernel.debugger.next_seq(),
+                "command": "configurationDone",
+            }
+            with anyio.CancelScope(shield=True):
+                await self.kernel.debugger.do_disconnect(msg)
+            raise
         finally:
             self._socketstream = None
 
@@ -301,13 +313,27 @@ class Debugger(HasInterface, LoggingConfigurable):
             if thread.name in self.no_debug:
                 utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
-            ready = Event()
-            Caller().call_soon(self.debugpy_client.connect_tcp_socket, ready)
+            ready = create_async_event()
+            Caller().call_soon(self._debupy_socket_connection, ready.set)
             await ready
+
         reply = await self.send_dap_request(msg)
         if capabilities := reply.get("body"):
             self.capabilities = capabilities
         return reply
+
+    async def _debupy_socket_connection(self, ready: Callable[[], Any]) -> None:
+        "Maintain a connection to the debugger"
+        msg = {
+            "type": "request",
+            "seq": self.next_seq(),
+            "command": "configurationDone",
+        }
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(self.debugpy_client._connect_tcp_socket, ready)  # pyright: ignore[reportPrivateUsage]
+            await self.parent.stopping
+            await self.do_disconnect(msg)
+            tg.cancel_scope.cancel()
 
     async def do_debug_info(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle an debug info message."""
