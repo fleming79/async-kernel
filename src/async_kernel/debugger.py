@@ -231,7 +231,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             "richInspectVariables": self.do_rich_inspect_variables,
             "modules": self.do_modules,
         }
-        self._forbidden_names = tuple(self.parent.kernel.main_shell.user_ns_hidden)
+        self._forbidden_names = tuple(self.parent.kernel.main_shell.user_ns_hidden.copy())
 
     async def send_dap_request(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Sends a DAP request to the debug server, waits for and returns the corresponding response."""

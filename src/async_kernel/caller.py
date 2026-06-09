@@ -472,7 +472,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 parent._worker_pool.remove(self)
             except ValueError:
                 pass
-        for func in tuple(self._queue_map):
+        for func in self._queue_map.copy():
             self.queue_close(func)
         if state is CallerState.initial and not self._children:
             self._stop_finalize()
