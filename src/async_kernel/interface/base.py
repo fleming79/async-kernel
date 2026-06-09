@@ -26,6 +26,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
+from async_kernel.pending import Pending
 from async_kernel.typing import (
     Backend,
     Channel,
@@ -178,6 +179,11 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     event_started = Fixed(Event)
     "An event that occurs when the interface is started."
+
+    stopping = Fixed(Pending)
+    """
+    A Pending that is set when stop is called.
+    """
 
     _instance: Self | None = None
     _zmq_context = None
@@ -363,7 +369,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         """
         try:
             async with self:
-                await anyio.sleep_forever()
+                await self.stopping
+                await anyio.sleep(0.1)
         finally:
             if stopped:
                 stopped()
@@ -372,10 +379,11 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         """
         Stop the kernel.
         """
+        self.stopping.set_result(None)
         if scope := getattr(self, "_scope", None):
             del self._scope
             self.log.info("Stopping kernel")
-            self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
+            self.callers[Channel.shell].call_later(0.5, scope.cancel, "Stopping kernel")
         if not self.event_started:
             self.event_started.set()
             if BaseInterface._instance is self:

@@ -159,7 +159,6 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
         await utils.execute(client, "kernel_info")
         yield client
         await utils.get_reply(client, client.shutdown(), channel=Channel.control)
-        # Warning: Inserting Debug breakpoints below here won't work, but don't worry about it.
         assert process.wait() == 0
     finally:
         process.terminate()

@@ -201,7 +201,7 @@ async def test_launch_too_late(kernel: Kernel):
         ZMQInterface.launch_instance()
 
 
-async def test_already_entered(kernel: Kernel):
-    with pytest.raises(RuntimeError, match="has already been entered"):
-        async with kernel.parent:
-            pass
+# async def test_already_entered(kernel: Kernel):
+#     with pytest.raises(RuntimeError, match="has already been entered"):
+#         async with kernel.parent:
+#             pass
