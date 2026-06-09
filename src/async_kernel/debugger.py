@@ -162,16 +162,16 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
 
             _host_port = debugpy.listen(0)
         try:
-            self.log.debug("++ debugpy socketstream connecting ++")
+            self.log.debug("debugpy socketstream connecting")
             async with await anyio.connect_tcp(*_host_port) as socketstream:
                 self._socketstream = socketstream
-                self.log.debug("++ debugpy socketstream connected ++")
+                self.log.debug("debugpy socketstream connected")
                 ready()
                 while True:
                     data = await socketstream.receive()
                     self.put_tcp_frame(data)
         except anyio.EndOfStream:
-            self.log.debug("++ debugpy socketstream disconnected ++")
+            self.log.debug("debugpy socketstream disconnected")
             return
         except anyio.get_cancelled_exc_class():
             msg = {
