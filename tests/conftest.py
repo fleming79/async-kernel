@@ -156,7 +156,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
     command = make_argv(connection_file=client.connection_file, name=name, backend=backend)
     process = subprocess.Popen(command)
     try:
-        await client.wait_for_ready()
+        await utils.execute(client, "kernel_info")
         yield client
         await utils.get_reply(client, client.shutdown(), channel=Channel.control)
         # Warning: Inserting Debug breakpoints below here won't work, but don't worry about it.
