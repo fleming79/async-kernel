@@ -58,8 +58,8 @@ jobs:
         run: uv sync --locked --dev --group gui
 
       - name: Run tests
-        timeout-minutes: 5
-        run: uv run pytest -vvl --maxfail=1 --reruns 1
+        timeout-minutes: 3
+        run: uv run pytest -vvl
 
   coverage:
     needs: type-checking

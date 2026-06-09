@@ -80,8 +80,7 @@ docs = [
 test = [
     "pytest-cov>=7.0.0",
     "pytest-timeout",
-    "pytest-mock",
-    "pytest-rerunfailures",
+    "pytest-mock", 
     "pytest>=9,<10",
     "trio>=0.31.0",
     ]
