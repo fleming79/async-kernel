@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Self
 
 import anyio.abc
 from aiologic import Event, Lock
-from aiologic.lowlevel import create_async_event
+from aiologic.lowlevel import create_async_waiter
 from traitlets import traitlets
 from traitlets.config import LoggingConfigurable
 
@@ -313,8 +313,8 @@ class Debugger(HasInterface, LoggingConfigurable):
             if thread.name in self.no_debug:
                 utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
-            ready = create_async_event()
-            Caller().call_soon(self._debupy_socket_connection, ready.set)
+            ready = create_async_waiter()
+            Caller().call_soon(self._debupy_socket_connection, ready.wake)
             await ready
 
         reply = await self.send_dap_request(msg)
