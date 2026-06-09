@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import atexit
 import contextlib
 import errno
-import json
 import os
-import pathlib
 import sys
 import threading
 import time
@@ -18,10 +15,8 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
 import zmq
 from aiologic import BinarySemaphore
-from jupyter_client.connect import ConnectionFileMixin, write_connection_file
-from jupyter_client.localinterfaces import localhost
+from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.session import Session
-from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
 from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
@@ -30,7 +25,6 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.kernelspec import expand_path
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
 
 if TYPE_CHECKING:
@@ -98,21 +92,6 @@ def bind_socket(
     raise RuntimeError(msg)
 
 
-class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
-    "A trait for a [pathlib.Path][] that casts strings to paths."
-
-    def validate(self, obj: traitlets.HasTraits, value: pathlib.Path | str) -> Path:
-        if not isinstance(value, pathlib.Path):
-            value = expand_path(value)
-        if self.name and obj.trait_has_value(self.name) and getattr(obj, self.name) == value:
-            return getattr(obj, self.name)
-        return value
-
-    @override
-    def from_string(self, s: str) -> pathlib.Path:
-        return expand_path(s)
-
-
 class AsyncSession(HasInterface, Session):
     check_pid = traitlets.Bool(False).tag(config=True)
 
@@ -128,9 +107,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         "transport": "ZMQInterface.transport",
     }
     ""
-
-    connection_file = PathTrait().tag(config=True)
-    """JSON file in which to store connection info."""
 
     session = traitlets.Instance(AsyncSession, ())
     ""
@@ -153,30 +129,12 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             raise RuntimeError(msg)
         return proposal["value"]
 
-    @traitlets.default("connection_file")
-    def _default_connection_file(self) -> Path:
-        return Path(jupyter_runtime_dir()).joinpath(f"kernel-{os.getpid()}.json")
-
-    @traitlets.observe("connection_file")
-    def _observe_connection_file(self, change) -> None:
-        if (path := change["new"]).exists() and path != change["old"] and not self._sockets:
-            self.log.debug("Loading connection file %s", path)
-            self.load_connection_info(json.loads(path.read_bytes()))
-
     @override
     def load_connection_info(self, info: KernelConnectionInfo) -> None:
         if self._sockets:
             msg = "It is too late to configure!"
             raise RuntimeError(msg)
         super().load_connection_info(info)
-
-    @traitlets.validate("ip")
-    def _validate_ip(self, proposal) -> str:
-        return "0.0.0.0" if (val := proposal["value"]) == "*" else val
-
-    @traitlets.default("ip")
-    def _default_ip(self) -> str:
-        return str(self.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
 
     @property
     @override
@@ -187,11 +145,13 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
         start = Event()
+        if os.path.exists(self.connection_file):  # noqa: PTH110
+            self.load_connection_file()
+        self.write_connection_file()
         try:
             self._start_hb_iopub_shell_control_threads(start)
             with self._bind_socket(Channel.stdin):
                 assert len(self._sockets) == len(Channel)
-                self._write_connection_file()
                 async with super().__asynccontextmanager__(set_started=False):
                     start.set()
                     if set_started:
@@ -282,6 +242,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         Bind a zmq.Socket storing a reference to the socket and the port
         details and closing the socket on leaving the context.
         """
+        port = int(getattr(self, f"{channel}_port"))
+        assert port
+        assert channel not in self._sockets
+
         match channel:
             case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
                 socket_type = zmq.ROUTER
@@ -293,9 +257,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             socket.curve_secretkey = self.curve_secretkey
             socket.curve_publickey = self.curve_publickey
             socket.curve_server = True
-        name = f"{channel}_port"
-        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=getattr(self, name))  # pyright: ignore[reportArgumentType]
-        self.set_trait(name, port)
+        bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=port)  # pyright: ignore[reportArgumentType]
         self.log.debug("%s socket on port: %i", channel, port)
         self._sockets[channel] = socket
         try:
@@ -303,43 +265,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         finally:
             socket.close(linger=50)
             self._sockets.pop(channel)
-
-    @override
-    def write_connection_file(self, **kwargs: Any) -> None:
-        raise NotImplementedError
-
-    def _write_connection_file(
-        self,
-    ) -> None:
-        """
-        Write connection info to JSON dict in kernel.connection_file.
-        """
-        if not (path := self.connection_file).exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            write_connection_file(
-                str(path),
-                transport=self.transport,
-                ip=str(self.ip),
-                key=self.session.key,
-                signature_scheme=self.session.signature_scheme,
-                kernel_name=self.name,
-                curve_publickey=self.curve_publickey,
-                curve_secretkey=self.curve_secretkey,
-                **{f"{channel}_port": getattr(self, f"{channel}_port") for channel in Channel},
-            )
-            ip_files: list[pathlib.Path] = []
-            if self.transport == "ipc":
-                for s in self._sockets.values():
-                    f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
-                    assert f.exists()
-                    ip_files.append(f)
-
-            def cleanup_file_files() -> None:
-                path.unlink(missing_ok=True)
-                for f in ip_files:
-                    f.unlink(missing_ok=True)
-
-            atexit.register(cleanup_file_files)
 
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:
