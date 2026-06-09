@@ -46,6 +46,19 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
     assert stderr == ""
 
 
+async def test_curve_encryption(subprocess_kernels_client: AsyncKernelClient, transport):
+    client = subprocess_kernels_client
+    if transport == "tcp":
+        assert client.curve_publickey
+        assert client.curve_secretkey
+    msg_id, reply = await utils.execute(client, "1+1", clear_pub=False)
+    assert reply["status"] == "ok"
+    await utils.check_pub_message(client, msg_id, execution_state="busy")
+    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+    await utils.check_pub_message(client, msg_id, msg_type="execute_result")
+    await utils.check_pub_message(client, msg_id, execution_state="idle")
+
+
 @pytest.mark.parametrize("test_mode", ["interrupt", "reply", "allow_stdin=False"])
 @pytest.mark.parametrize("mode", ["input", "password"])
 async def test_input(
