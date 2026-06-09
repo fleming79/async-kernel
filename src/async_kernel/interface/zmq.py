@@ -136,6 +136,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(Channel.heartbeat) as socket:
                 ready.set()
+                start.wait()
                 try:
                     zmq.proxy(socket, socket)
                 except zmq.ContextTerminated:
