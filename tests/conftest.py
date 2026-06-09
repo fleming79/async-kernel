@@ -14,7 +14,6 @@ import zmq
 from aiologic.lowlevel import current_async_library
 from jupyter_client.asynchronous.client import AsyncKernelClient
 
-import async_kernel.utils
 from async_kernel import Caller
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernel import Kernel
@@ -31,10 +30,9 @@ assert "IPython" not in sys.modules
 
 from async_kernel.interface.ip_app import IPApp  # noqa: E402
 
-
-@pytest.hookimpl
-def pytest_configure(config):
-    os.environ["PYTEST_TIMEOUT"] = str(1e6) if async_kernel.utils.LAUNCHED_BY_DEBUGPY else str(utils.TIMEOUT)
+# @pytest.hookimpl
+# def pytest_configure(config):
+#     os.environ["PYTEST_TIMEOUT"] = str(1e6) if async_kernel.utils.LAUNCHED_BY_DEBUGPY else str(utils.TIMEOUT)
 
 
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
