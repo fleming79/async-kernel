@@ -79,10 +79,8 @@ docs = [
 ]
 test = [
     "pytest-cov>=7.0.0",
-    "pytest-timeout",
-    "pytest-mock",
-    "pytest-rerunfailures",
-    "pytest>=8.4,<9",
+    "pytest-mock", 
+    "pytest>=9,<10",
     "trio>=0.31.0",
     ]
 uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and implementation_name == 'cpython'",
@@ -116,15 +114,17 @@ version-file = "_version.py"
 [tool.hatch.version.raw-options]
 local_scheme = "no-local-version"
 
-[tool.pytest.ini_options]
-minversion = "6.0"
+[tool.pytest]
+minversion = "9.0"
 xfail_strict = true
 log_cli_level =  "INFO"
 log_level = "INFO" 
 addopts = [
-  "-raXs", "--durations=10", "--color=yes", "--doctest-modules",
-   "--showlocals", "--strict-markers", "--strict-config",
-  "-s",
+  "-raX", 
+  "--color=yes", 
+  "--strict-markers", 
+  "--strict-config",
+   "--capture=no",
 ]
 testpaths = ["tests"]
 
