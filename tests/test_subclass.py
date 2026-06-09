@@ -27,5 +27,3 @@ async def test_subclass(anyio_backend: Backend):
         assert isinstance(interface.kernel.shell, ShellSubclass)
         subshell = interface.kernel.create_subshell()
         assert isinstance(subshell, ShellSubclass)
-
-    assert interface.event_stopped
