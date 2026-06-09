@@ -42,7 +42,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import BaseInterface, HasInterface
@@ -71,13 +71,6 @@ __all__ = [
     "IPShell",
     "NullContext",
 ]
-
-
-class MethodNotSupported(Exception):
-    """
-    This exception is used inside overridden methods to indicate that it
-    should not be used.
-    """
 
 
 class NullContext:

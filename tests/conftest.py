@@ -79,7 +79,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
 
     # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
     interface_class = IPApp if anyio_backend[0] == "asyncio" else ZMQInterface
-    interface = (interface_class)(connection_file=connection_file, transport=transport)
+    interface = (interface_class)(connection_file=connection_file.as_posix(), transport=transport)
 
     try:
         if request.param == "MainThread":
