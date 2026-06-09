@@ -80,14 +80,13 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
 
     @override
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        try:
-            async with super().__asynccontextmanager__():
-                self.shell = self.kernel.main_shell
-                self.init_path()
-                self.init_gui_pylab()
-                self.init_code()
-                self.init_extensions()
-                yield self
-        finally:
-            self._zmq_context.term()
+    async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
+        async with super().__asynccontextmanager__(set_started=False):
+            self.shell = self.kernel.main_shell
+            self.init_path()
+            self.init_gui_pylab()
+            self.init_code()
+            self.init_extensions()
+            if set_started:
+                self._started()
+            yield self

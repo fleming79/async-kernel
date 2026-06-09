@@ -185,15 +185,17 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
     @override
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+    async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
         start = Event()
         try:
             self._start_hb_iopub_shell_control_threads(start)
             with self._bind_socket(Channel.stdin):
                 assert len(self._sockets) == len(Channel)
                 self._write_connection_file()
-                async with super().__asynccontextmanager__():
+                async with super().__asynccontextmanager__(set_started=False):
                     start.set()
+                    if set_started:
+                        self._started()
                     yield self
         finally:
             start.set()

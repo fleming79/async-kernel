@@ -179,9 +179,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     event_started = Fixed(Event)
     "An event that occurs when the interface is started."
 
-    event_stopped = Fixed(Event)
-    "An event that occurs when the interface is stopped."
-
     _instance: Self | None = None
     _zmq_context = None
     last_interrupt_frame = None
@@ -322,8 +319,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         super().start()
 
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        if BaseInterface._instance is not self or self.event_started or self.event_stopped:
+    async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
+        if BaseInterface._instance is not self or self.event_started:
             msg = "Stopped early"
             raise RuntimeError(msg)
         caller = Caller(
@@ -341,16 +338,19 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             async with caller:
                 with anyio.CancelScope() as scope:
                     self._scope = scope
-                    self.log.info("Interface started: %s", self.summary)
                     async with self.kernel.running():
-                        self.event_started.set()
+                        if set_started:
+                            self._started()
                         yield self
         finally:
             self.stop()
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
             self.log.info("Interface stopped")
-            self.event_stopped.set()
+
+    def _started(self):
+        self.log.info("Interface started: %s", self.summary)
+        self.event_started.set()
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """
@@ -363,7 +363,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         """
         try:
             async with self:
-                await self.event_stopped
+                await anyio.sleep_forever()
         finally:
             if stopped:
                 stopped()
@@ -378,7 +378,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
         if not self.event_started:
             self.event_started.set()
-            self.event_stopped.set()
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
 
