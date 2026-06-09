@@ -24,16 +24,10 @@ from tests import utils
 if TYPE_CHECKING:
     import pathlib
 
-    pytest_plugins = ["anyio.pytest_plugin"]
 
 assert "IPython" not in sys.modules
 
 from async_kernel.interface.ip_app import IPApp  # noqa: E402
-
-# @pytest.hookimpl
-# def pytest_configure(config):
-#     os.environ["PYTEST_TIMEOUT"] = str(1e6) if async_kernel.utils.LAUNCHED_BY_DEBUGPY else str(utils.TIMEOUT)
-
 
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
     params = [pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop")]
