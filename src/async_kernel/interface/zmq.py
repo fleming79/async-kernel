@@ -229,15 +229,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             socket.curve_server = True
         # bind the socket
         addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
-        for _ in range(4):
-            try:
-                socket.bind(addr)
-            except ZMQError as e:
-                if e.errno not in {errno.EADDRINUSE, 98, 10048, 135}:
-                    raise
-                time.sleep(0.1)
-            else:
-                break
+        socket.bind(addr)
         self.log.debug("%s socket on port: %i", channel, port)
         self._sockets[channel] = socket
         try:
