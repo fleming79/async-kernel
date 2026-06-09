@@ -162,6 +162,8 @@ async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monke
     assert reply["status"] == "ok"
     stdout, _ = await utils.assemble_output(client)
     assert stdout
+    if code == "%connect_info":
+        assert "Paste the above JSON into a file" in stdout
 
 
 async def test_magic_error(client: AsyncKernelClient):

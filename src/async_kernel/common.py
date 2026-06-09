@@ -16,7 +16,7 @@ from async_kernel.typing import Backend, FixedCreate, FixedCreated, S, T
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 
-__all__ = ["Fixed", "KernelInterrupt", "SingleAsyncQueue", "import_item"]
+__all__ = ["Fixed", "KernelInterrupt", "MethodNotSupported", "SingleAsyncQueue", "import_item"]
 
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")
@@ -48,6 +48,13 @@ def noop() -> None:
 
 class KernelInterrupt(InterruptedError):
     "Raised to interrupt the kernel."
+
+
+class MethodNotSupported(Exception):
+    """
+    This exception is used inside overridden methods to indicate that it
+    should not be used.
+    """
 
 
 class Fixed(Generic[S, T]):

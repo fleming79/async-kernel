@@ -12,7 +12,7 @@ import async_kernel.utils
 from async_kernel import Kernel, Pending
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
-from async_kernel.shell.ipshell import MethodNotSupported
+from async_kernel.common import MethodNotSupported
 from async_kernel.typing import Channel, MsgType, RunMode, Tags
 from tests import utils
 

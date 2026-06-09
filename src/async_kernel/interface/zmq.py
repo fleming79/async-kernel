@@ -1,36 +1,28 @@
-"A collection of objects defining the kernel interface using zmq sockets."
+"Defines a base kernel interface using zmq sockets."
 
 from __future__ import annotations
 
-import atexit
 import contextlib
-import errno
-import json
 import os
-import pathlib
 import sys
 import threading
 import time
 from contextlib import asynccontextmanager
-from pathlib import Path
 from threading import Event
-from typing import TYPE_CHECKING, Any, Generic, Literal, Self
+from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import zmq
 from aiologic import BinarySemaphore
-from jupyter_client.connect import ConnectionFileMixin, write_connection_file
-from jupyter_client.localinterfaces import localhost
+from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.session import Session
-from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
 from typing_extensions import override
-from zmq import Flag, PollEvent, Socket, SocketOption, SocketType, ZMQError
+from zmq import Flag, PollEvent, Socket, SocketOption
 
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.kernelspec import expand_path
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
 
 if TYPE_CHECKING:
@@ -42,82 +34,13 @@ if TYPE_CHECKING:
 __all__ = ["ZMQInterface"]
 
 
-def bind_socket(
-    socket: Socket[SocketType],
-    transport: Literal["tcp", "ipc"],
-    ip: str,
-    port: int = 0,
-    max_attempts: int | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-) -> int:
-    """
-    Bind the socket to a port using the settings.
-
-    'url = <transport>://<ip>:<port>'
-
-    Args:
-        socket: The socket to bind.
-        transport: The type of transport.
-        ip: Inserted in the url.
-        port: The port to bind. If `0` will bind to a random port.
-        max_attempts: The maximum number of attempts to bind the socket. If un-specified,
-            defaults to 100 if port missing, else 2 attempts.
-
-    Returns: The port that was bound.
-    """
-    if socket.TYPE == SocketType.ROUTER:
-        # ref: https://github.com/ipython/ipykernel/issues/270
-        socket.router_handover = 1
-    if transport == "ipc":
-        ip = Path(ip).as_posix()
-    if max_attempts is NoValue:
-        max_attempts = 2 if port else 100
-    for attempt in range(max_attempts):
-        try:
-            if transport == "tcp":
-                if not port:
-                    port = socket.bind_to_random_port(f"tcp://{ip}")
-                else:
-                    socket.bind(f"tcp://{ip}:{port}")
-            elif transport == "ipc":
-                if not port:
-                    port = 1
-                    while Path(f"{ip}-{port}").exists():
-                        port += 1
-                socket.bind(f"ipc://{ip}-{port}")
-            else:
-                msg = f"Invalid transport: {transport}"  # pyright: ignore[reportUnreachable]
-                raise ValueError(msg)
-        except ZMQError as e:
-            if e.errno not in {errno.EADDRINUSE, 98, 10048, 135}:
-                raise
-            if port and attempt < max_attempts - 1:
-                time.sleep(0.1)
-        else:
-            return port
-    msg = f"Failed to bind {socket} for {transport=} after {max_attempts} attempts."
-    raise RuntimeError(msg)
-
-
-class PathTrait(traitlets.TraitType[pathlib.Path, pathlib.Path | str]):
-    "A trait for a [pathlib.Path][] that casts strings to paths."
-
-    def validate(self, obj: traitlets.HasTraits, value: pathlib.Path | str) -> Path:
-        if not isinstance(value, pathlib.Path):
-            value = expand_path(value)
-        if self.name and obj.trait_has_value(self.name) and getattr(obj, self.name) == value:
-            return getattr(obj, self.name)
-        return value
-
-    @override
-    def from_string(self, s: str) -> pathlib.Path:
-        return expand_path(s)
-
-
 class AsyncSession(HasInterface, Session):
     check_pid = traitlets.Bool(False).tag(config=True)
 
 
 class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+    "The base kernel interface using ZMQ sockets."
+
     aliases = BaseInterface.aliases | {
         "ip": "ZMQInterface.ip",
         "hb": "ZMQInterface.hb_port",
@@ -128,9 +51,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         "transport": "ZMQInterface.transport",
     }
     ""
-
-    connection_file = PathTrait().tag(config=True)
-    """JSON file in which to store connection info."""
 
     session = traitlets.Instance(AsyncSession, ())
     ""
@@ -146,22 +66,17 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
 
     @traitlets.validate("connection_file")
-    def _validate_connection_file(self, proposal: dict) -> Path:
+    def _validate_connection_file(self, proposal: dict) -> str:
 
         if self._sockets and self.trait_has_value("connection_file") and proposal["value"] != self.connection_file:
             msg = "It is too late to set the connection file!"
             raise RuntimeError(msg)
         return proposal["value"]
 
-    @traitlets.default("connection_file")
-    def _default_connection_file(self) -> Path:
-        return Path(jupyter_runtime_dir()).joinpath(f"kernel-{os.getpid()}.json")
-
-    @traitlets.observe("connection_file")
-    def _observe_connection_file(self, change) -> None:
-        if (path := change["new"]).exists() and path != change["old"] and not self._sockets:
-            self.log.debug("Loading connection file %s", path)
-            self.load_connection_info(json.loads(path.read_bytes()))
+    @property
+    @override
+    def summary(self) -> str:
+        return f"{super().summary} connection_file={str(self.connection_file)!r}"
 
     @override
     def load_connection_info(self, info: KernelConnectionInfo) -> None:
@@ -170,30 +85,45 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             raise RuntimeError(msg)
         super().load_connection_info(info)
 
-    @traitlets.validate("ip")
-    def _validate_ip(self, proposal) -> str:
-        return "0.0.0.0" if (val := proposal["value"]) == "*" else val
-
-    @traitlets.default("ip")
-    def _default_ip(self) -> str:
-        return str(self.connection_file) + "-ipc" if self.transport == "ipc" else localhost()
-
-    @property
     @override
-    def summary(self) -> str:
-        return f"{super().summary} connection_file={str(self.connection_file)!r}"
+    def blocking_client(self) -> Never:
+        raise MethodNotSupported  # pragma: no cover
+
+    @override
+    def connect_control(self, identity: bytes | None = None) -> Never:
+        raise MethodNotSupported  # pragma: no cover
+
+    @override
+    def connect_hb(self, identity: bytes | None = None) -> Never:
+        raise MethodNotSupported  # pragma: no cover
+
+    @override
+    def connect_iopub(self, identity: bytes | None = None) -> Never:
+        raise MethodNotSupported  # pragma: no cover
+
+    @override
+    def connect_shell(self, identity: bytes | None = None) -> Never:
+        raise MethodNotSupported  # pragma: no cover
+
+    @override
+    def connect_stdin(self, identity: bytes | None = None) -> Never:
+        raise MethodNotSupported  # pragma: no cover
 
     @override
     @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+    async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
         start = Event()
+        if os.path.exists(self.connection_file):  # noqa: PTH110
+            self.load_connection_file()
+        self.write_connection_file()
         try:
             self._start_hb_iopub_shell_control_threads(start)
             with self._bind_socket(Channel.stdin):
                 assert len(self._sockets) == len(Channel)
-                self._write_connection_file()
-                async with super().__asynccontextmanager__():
+                async with super().__asynccontextmanager__(set_started=False):
                     start.set()
+                    if set_started:
+                        self._started()
                     yield self
         finally:
             start.set()
@@ -205,6 +135,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(Channel.heartbeat) as socket:
                 ready.set()
+                start.wait()
                 try:
                     zmq.proxy(socket, socket)
                 except zmq.ContextTerminated:
@@ -280,20 +211,24 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         Bind a zmq.Socket storing a reference to the socket and the port
         details and closing the socket on leaving the context.
         """
+        port = int(getattr(self, f"{channel}_port"))
+        assert port
+        assert channel not in self._sockets
+
         match channel:
             case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
                 socket_type = zmq.ROUTER
             case Channel.iopub:
                 socket_type = zmq.XPUB
         socket: zmq.Socket = self._zmq_context.socket(socket_type)
-        socket.linger = 50
+        socket.linger = 1000
         if self.curve_secretkey is not None and self.curve_publickey is not None:
             socket.curve_secretkey = self.curve_secretkey
             socket.curve_publickey = self.curve_publickey
             socket.curve_server = True
-        name = f"{channel}_port"
-        port = bind_socket(socket=socket, transport=self.transport, ip=self.ip, port=getattr(self, name))  # pyright: ignore[reportArgumentType]
-        self.set_trait(name, port)
+        # bind the socket
+        addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
+        socket.bind(addr)
         self.log.debug("%s socket on port: %i", channel, port)
         self._sockets[channel] = socket
         try:
@@ -301,43 +236,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         finally:
             socket.close(linger=50)
             self._sockets.pop(channel)
-
-    @override
-    def write_connection_file(self, **kwargs: Any) -> None:
-        raise NotImplementedError
-
-    def _write_connection_file(
-        self,
-    ) -> None:
-        """
-        Write connection info to JSON dict in kernel.connection_file.
-        """
-        if not (path := self.connection_file).exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            write_connection_file(
-                str(path),
-                transport=self.transport,
-                ip=str(self.ip),
-                key=self.session.key,
-                signature_scheme=self.session.signature_scheme,
-                kernel_name=self.name,
-                curve_publickey=self.curve_publickey,
-                curve_secretkey=self.curve_secretkey,
-                **{f"{channel}_port": getattr(self, f"{channel}_port") for channel in Channel},
-            )
-            ip_files: list[pathlib.Path] = []
-            if self.transport == "ipc":
-                for s in self._sockets.values():
-                    f = pathlib.Path(s.get_string(zmq.LAST_ENDPOINT).removeprefix("ipc://"))
-                    assert f.exists()
-                    ip_files.append(f)
-
-            def cleanup_file_files() -> None:
-                path.unlink(missing_ok=True)
-                for f in ip_files:
-                    f.unlink(missing_ok=True)
-
-            atexit.register(cleanup_file_files)
 
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:

@@ -35,14 +35,13 @@ from IPython.core.prefilter import PrefilterManager
 from IPython.display import display
 from IPython.utils.ipstruct import Struct
 from IPython.utils.tokenutil import token_at_cursor
-from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import traitlets
 from typing_extensions import override
 
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.common import Fixed, KernelInterrupt
+from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import BaseInterface, HasInterface
@@ -71,13 +70,6 @@ __all__ = [
     "IPShell",
     "NullContext",
 ]
-
-
-class MethodNotSupported(Exception):
-    """
-    This exception is used inside overridden methods to indicate that it
-    should not be used.
-    """
 
 
 class NullContext:
@@ -933,18 +925,14 @@ class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
     @line_magic
     def connect_info(self, _) -> None:
         """Print information for connecting other clients to this kernel."""
-        if isinstance(f := getattr(self.parent, "connection_file", None), pathlib.Path) and f.exists():
-            connection_file = f
-            # if it's in the default dir, truncate to basename
-            if jupyter_runtime_dir() == str(connection_file.parent):
-                connection_file = connection_file.name
-            info = json.loads(f.read_bytes()) if f.exists() else ""
+        if (f := getattr(self.parent, "connection_file", None)) and (p := pathlib.Path(f)).exists():
+            info = json.loads(p.read_bytes())
             print(
                 json.dumps(info, indent=2),
                 "Paste the above JSON into a file, and connect with:\n"
                 + "    $> jupyter <app> --existing <file>\n"
                 + "or, if you are local, you can connect with just:\n"
-                + f"    $> jupyter <app> --existing {connection_file}\n"
+                + f"    $> jupyter <app> --existing {f}\n"
                 + "or even just:\n"
                 + "    $> jupyter <app> --existing\n"
                 + "if this is the most recent Jupyter kernel you have started.",
