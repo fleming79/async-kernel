@@ -369,7 +369,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         """
         try:
             async with self:
-                await anyio.sleep_forever()
+                await self.stopping
+                await anyio.sleep(0.1)
         finally:
             if stopped:
                 stopped()
@@ -382,7 +383,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         if scope := getattr(self, "_scope", None):
             del self._scope
             self.log.info("Stopping kernel")
-            self.callers[Channel.shell].call_direct(scope.cancel, "Stopping kernel")
+            self.callers[Channel.shell].call_later(0.5, scope.cancel, "Stopping kernel")
         if not self.event_started:
             self.event_started.set()
             if BaseInterface._instance is self:
