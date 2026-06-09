@@ -129,7 +129,12 @@ def name(request):
 
 
 @pytest.fixture(scope="module")
-async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, transport: str):
+def encryption(request):
+    return ""
+
+
+@pytest.fixture(scope="module")
+async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, transport: str, encryption: str):
     """
     Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it.
     """
@@ -139,7 +144,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
     os.chdir(tmpdir)
 
     backend = Backend.trio if "trio" in name else Backend.asyncio
-    curve_publickey, curve_secretkey = zmq.curve_keypair() if False else (None, None)
+    curve_publickey, curve_secretkey = zmq.curve_keypair() if encryption == "curve" else (None, None)
 
     # Start the client
     client = AsyncKernelClient(
@@ -149,7 +154,10 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
         transport=transport,
         kernel_name=name,
     )
-    client.write_connection_file()
+    client.write_connection_file(
+        curve_publickey=curve_publickey,
+        curve_secretkey=curve_secretkey,
+    )
     client.start_channels()
 
     # Start the interface
