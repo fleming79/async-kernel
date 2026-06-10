@@ -112,30 +112,27 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     @override
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
-        start = Event()
         if os.path.exists(self.connection_file):  # noqa: PTH110
             self.load_connection_file()
         self.write_connection_file()
         try:
-            self._start_hb_iopub_shell_control_threads(start)
+            self._start_hb_iopub_shell_control_threads()
             with self._bind_socket(Channel.stdin):
                 assert len(self._sockets) == len(Channel)
                 async with super().__asynccontextmanager__(set_started=False):
-                    start.set()
                     if set_started:
                         self._started()
                     yield self
         finally:
-            start.set()
             self._zmq_context.term()
 
-    def _start_hb_iopub_shell_control_threads(self, start: Event) -> None:
+    def _start_hb_iopub_shell_control_threads(self) -> None:
         def heartbeat(ready: Event) -> None:
             # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
             utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(Channel.heartbeat) as socket:
                 ready.set()
-                start.wait()
+                self.event_started.wait()
                 try:
                     zmq.proxy(socket, socket)
                 except zmq.ContextTerminated:
@@ -154,7 +151,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             # Capture broadcast messages received on both frontend and backend
             capture = self._zmq_context.socket(zmq.PUB)
             capture.bind(self._iopub_url)
-            threading.Thread(target=self._pub_capture).start()
+            threading.Thread(target=self._pub_capture, args=[ready]).start()
 
             with self._bind_socket(Channel.iopub) as iopub_socket:
                 ready.set()
@@ -174,10 +171,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         for channel in [Channel.shell, Channel.control]:
             ready = Event()
             name = f"{channel}-receive_msg_loop"
-            threading.Thread(target=self.receive_msg_loop, name=name, args=(channel, ready, start)).start()
+            threading.Thread(target=self.receive_msg_loop, name=name, args=(channel, ready)).start()
             ready.wait()
 
-    def _pub_capture(self) -> None:
+    def _pub_capture(self, ready: Event) -> None:
         """
         Capture connection messages on iopub.
 
@@ -193,6 +190,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         # Only subscribe to the 'pub subscribe' topic byte `1` (byte `0` is 'pub unsubscribe').
         socket.subscribe(b"\x01")
         with socket:
+            ready.wait()
             while True:
                 try:
                     if frames := socket.recv_multipart():
@@ -299,7 +297,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 buffers=buffers,
             )
 
-    def receive_msg_loop(self, channel: Literal[Channel.control, Channel.shell], ready: Event, start: Event) -> None:
+    def receive_msg_loop(self, channel: Literal[Channel.control, Channel.shell], ready: Event) -> None:
         """
         Opens a zmq socket for the channel, receives messages and calls the message handler.
         """
@@ -322,11 +320,11 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                     buffers=content.pop("buffers", None),
                 )
                 if msg:
-                    log.debug("*** send_reply %s*** %s", channel, msg)
+                    log.debug("***send_reply %s*** %s", channel, msg)
 
         with self._bind_socket(channel) as socket:
             ready.set()
-            start.wait()
+            self.event_started.wait()
             while True:
                 try:
                     ident, msg = session.recv(socket, mode=zmq.BLOCKY, copy=False)
