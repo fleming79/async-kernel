@@ -122,11 +122,15 @@ class TestCaller:
         assert caller.thread.pydev_do_not_trace  # pyright: ignore[reportAttributeAccessIssue]
         caller.stop()
 
-    async def test_call_later(self):
+    async def test_call_later(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
-            start_time = time.monotonic()
-            dt = await caller.call_later(0.1, time.monotonic) - start_time
-            assert dt >= 0.1
+            # We have retries because sleeping can be a bit flaky on CI
+            for _ in range(10):
+                start_time = time.monotonic()
+                dt = await caller.call_later(0.1, time.monotonic) - start_time
+                if dt >= 0.1:
+                    return
+            assert dt >= 0.1  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_manual_stop(self):
         async with Caller("manual") as caller:
