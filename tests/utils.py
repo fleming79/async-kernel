@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from typing import TYPE_CHECKING, Any, Literal
 
 import anyio
@@ -17,6 +18,9 @@ if TYPE_CHECKING:
 
 TIMEOUT = 10 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
 MATPLOTLIB_INLINE_BACKEND = "module://matplotlib_inline.backend_inline"
+
+CI = bool(os.environ.get("CI", "False"))
+CI_DEBUG = os.environ.get("ACTIONS_RUNNER_DEBUG") or os.environ.get("ACTIONS_STEP_DEBUG")
 
 
 async def get_reply(
