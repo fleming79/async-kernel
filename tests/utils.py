@@ -25,7 +25,7 @@ async def get_reply(
     *,
     channel: Literal[Channel.shell, Channel.control] = Channel.shell,
     timeout=TIMEOUT,
-    clear_pub=True,
+    clear_pub: float = 0.02,
 ) -> Mapping[str, Mapping[str, Any]]:
     "Gets the first revieved reply correspond to the msg_id."
     with anyio.fail_after(timeout):
@@ -37,7 +37,7 @@ async def get_reply(
                     reply = await client.get_control_msg(timeout=timeout)
             if reply["parent_header"]["msg_id"] == msg_id:
                 if clear_pub:
-                    await clear_iopub(client)
+                    await clear_iopub(client, timeout=clear_pub)
                 return reply
 
 
@@ -68,7 +68,7 @@ async def execute(
     client: AsyncKernelClient,
     /,
     code="",
-    clear_pub=True,
+    clear_pub=0.05,
     metadata: dict | None = None,
     header_extras: dict | None = None,
     **kwargs,
@@ -165,7 +165,7 @@ async def send_shell_message(
 
 
 async def send_control_message(
-    client: AsyncKernelClient, msg_type: MsgType, content: Mapping[str, Any] | None = None, clear_pub=True, reply=True
+    client: AsyncKernelClient, msg_type: MsgType, content: Mapping[str, Any] | None = None, clear_pub=0.05, reply=True
 ):
     msg = client.session.msg(msg_type, content=dict(content) if content is not None else None)
     client.control_channel.send(msg)

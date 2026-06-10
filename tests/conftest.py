@@ -107,6 +107,10 @@ async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
     client = AsyncKernelClient()
     client.load_connection_info(kernel.parent.get_connection_info())
     client.start_channels()
+
+    # Wait for socket
+    await client.get_iopub_msg()
+    await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
     try:
         yield client
     finally:
@@ -153,7 +157,10 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
     command = make_argv(connection_file=client.connection_file, name=name, backend=backend)
     process = subprocess.Popen(command)
     try:
-        await utils.execute(client, "kernel_info")
+        # The first message indicates it is connected (could be an iopub welcome, or something else)
+        await client.get_iopub_msg()
+        await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
+
         yield client
         await utils.get_reply(client, client.shutdown(), channel=Channel.control)
         assert process.wait() == 0
