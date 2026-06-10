@@ -5216,7 +5216,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">pen</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">copy</span><span class="p">():</span>
                         <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stop on error cancellation&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">content</span>
 
@@ -6514,7 +6514,7 @@ the shell whose context the execution result occurred.</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="p">[</span><span class="s2">&quot;execution_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">execution_count</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;An error occurred in </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">pen</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">stop_on_error</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">pen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_pool</span><span class="o">.</span><span class="n">copy</span><span class="p">():</span>
                     <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stop on error cancellation&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">content</span>
 </code></pre></div></td></tr></table></div>
