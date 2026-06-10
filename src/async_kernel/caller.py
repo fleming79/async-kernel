@@ -441,16 +441,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                 backend_options=self.backend_options,
                 host_options=self.host_options,
             )
+            args = (run_caller_in_context, (), settings)
+            name = self.name or "async_kernel_caller"
 
-            def run() -> None:
-                try:
-                    async_kernel.event_loop.run(run_caller_in_context, (), settings)
-                except Exception as e:
-                    self.log.exception("A start_sync exception occurred.", exc_info=e)
-                    if not self.stopped:
-                        raise
-
-            self._thread = threading.Thread(target=run, name=self.name or "async_kernel_caller", daemon=False)
+            self._thread = threading.Thread(target=async_kernel.event_loop.run, name=name, args=args, daemon=False)
             self._caller_id = id(self._thread)
             self._thread.start()
 
@@ -472,7 +466,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 parent._worker_pool.remove(self)
             except ValueError:
                 pass
-        for func in tuple(self._queue_map):
+        for func in self._queue_map.copy():
             self.queue_close(func)
         if state is CallerState.initial and not self._children:
             self._stop_finalize()
@@ -787,7 +781,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         """
 
         async def _call_later(*args: P.args, **kwargs: P.kwargs) -> T:
-            if (delay_ := start_time - time.monotonic() + delay) > 0:
+            if (delay_ := start_time - time.monotonic() + delay) >= 0:
                 await anyio.sleep(delay_)
             if inspect.iscoroutine(result := func(*args, **kwargs)):
                 result = await result

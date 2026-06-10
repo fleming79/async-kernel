@@ -146,10 +146,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
         transport=transport,
         kernel_name=name,
     )
-    client.write_connection_file(
-        curve_publickey=curve_publickey,
-        curve_secretkey=curve_secretkey,
-    )
+    client.write_connection_file()
     client.start_channels()
 
     # Start the interface

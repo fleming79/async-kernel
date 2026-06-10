@@ -753,7 +753,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 self._stop_on_error_info["execution_count"] = execution_count
                 self.log.info("An error occurred in %s %s", self, pen)
                 if stop_on_error:
-                    for pen in tuple(self._stop_on_error_pool):
+                    for pen in self._stop_on_error_pool.copy():
                         pen.cancel("Stop on error cancellation")
         return content
 

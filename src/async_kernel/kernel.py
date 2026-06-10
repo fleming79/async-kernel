@@ -266,9 +266,9 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
                 yield
         finally:
             self.log.info("Kernel stopped")
-            for subshell in tuple(self._subshells.values()):
+            for subshell in self._subshells.copy().values():
                 subshell.stop(force=True)
-            for comm in tuple(self.comm_manager.comms.values()):
+            for comm in self.comm_manager.comms.copy().values():
                 comm.close(deleting=True)
             remove_patch()
             self._handler_cache.clear()
@@ -327,7 +327,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         """
         if (sys.platform != "emscripten") and (not self.debugger.enabled or not self.debugger.stopped_threads):
             self._interrupt_now()
-        for pen in tuple(self.active_execute_requests):
+        for pen in self.active_execute_requests.copy():
             if not pen.metadata.get("kwargs", {}).get("silent", False):
                 pen.cancel(self._interrupt_message)
 
@@ -534,7 +534,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         target_name = c.get("target_name", None)
         comms = {
             k: {"target_name": v.target_name}
-            for (k, v) in tuple(self.comm_manager.comms.items())
+            for (k, v) in self.comm_manager.comms.copy().items()
             if v.target_name == target_name or target_name is None
         }
         return {"comms": comms}
