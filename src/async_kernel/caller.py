@@ -24,7 +24,6 @@ from aiologic.meta import await_for
 from typing_extensions import override
 from wrapt import lazy_import
 
-import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, SingleAsyncQueue, noop
 from async_kernel.event_loop.run import Host, get_start_guest_run
@@ -172,7 +171,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     Set to 0 to disable (default when running tests).
     """
 
-    CALLER_MAIN_THREAD_ID: int = id(threading.main_thread())
+    CALLER_MAIN_THREAD_ID: int = int(threading.main_thread().ident)  # pyright: ignore[reportArgumentType]
 
     _caller_token = contextvars.ContextVar("caller_tokens", default=CALLER_MAIN_THREAD_ID)
     _instances: ClassVar[dict[int, Self]] = {}
@@ -416,8 +415,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             except Exception as e:
                 self.log.exception("Caller did not exit context nicely!", exc_info=e)
 
-        if getattr(self, "_caller_id", None) is not None:
-            # An event loop for the current thread.
+        if hasattr(self, "_thread"):
+            assert self._thread is threading.current_thread()
 
             if self.backend == Backend.asyncio:
                 self._tasks.add(asyncio.create_task(run_caller_in_context()))
@@ -435,18 +434,30 @@ class Caller(anyio.AsyncContextManagerMixin):
 
                 threading.Thread(target=to_thread, daemon=False).start()
         else:
-            settings = RunSettings(
-                backend=self.backend,
-                host=self.host,
-                backend_options=self.backend_options,
-                host_options=self.host_options,
-            )
-            args = (run_caller_in_context, (), settings)
-            name = self.name or "async_kernel_caller"
 
-            self._thread = threading.Thread(target=async_kernel.event_loop.run, name=name, args=args, daemon=False)
-            self._caller_id = id(self._thread)
-            self._thread.start()
+            def async_kernel_caller() -> None:
+                self._thread, self._caller_id = threading.current_thread(), threading.get_ident()
+                try:
+                    if self.host:
+                        # A gui with the backend running as a guest.
+                        settings = RunSettings(
+                            backend=self.backend,
+                            host=self.host,
+                            backend_options=self.backend_options,
+                            host_options=self.host_options,
+                        )
+                        Host.run(run_caller_in_context, (), settings)
+                    else:
+                        # No gui
+                        anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
+                except Exception:
+                    if not self._stopping.done():
+                        self.stop()
+
+            thread = threading.Thread(target=async_kernel_caller, name=self.name or None)
+            thread.start()
+            assert thread.ident
+            self._thread, self._caller_id = thread, thread.ident
 
     def stop(self, *, force: bool = False) -> CallerState:
         """
@@ -494,8 +505,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             raise RuntimeError(msg)
         socket = None
         try:
-            if not self._name:
-                self._name = threading.current_thread().name
             if self._zmq_context:
                 socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
                 socket.connect(self.iopub_url)
@@ -630,10 +639,9 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @classmethod
     def id_current(cls) -> int:
-        "The id that is used for a caller for the current thread in CPython or context in Pyodide."
-        if sys.platform == "emscripten":
-            return cls._caller_token.get()
-        return id(threading.current_thread())
+        "The immutable id of a caller for the current thread in CPython or context in Pyodide."
+
+        return cls._caller_token.get() if sys.platform == "emscripten" else threading.get_ident()
 
     @classmethod
     def get_existing(cls, caller_id: int | None = None, /) -> Self | None:
