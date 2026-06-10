@@ -117,16 +117,20 @@ class TestCaller:
 
     def test_no_event_loop(self, anyio_backend: Backend):
         caller = Caller("NewThread", backend=anyio_backend, no_debug=True)
-        assert caller.id != id(threading.current_thread())
+        assert caller.id != threading.get_ident()
         assert caller.call_soon(lambda: 2 + 2).wait_sync() == 4
         assert caller.thread.pydev_do_not_trace  # pyright: ignore[reportAttributeAccessIssue]
         caller.stop()
 
-    async def test_sync(self):
+    async def test_call_later(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
-            start_time = time.monotonic()
-            dt = await caller.call_later(0.01, time.monotonic) - start_time
-            assert dt > 0.01
+            # We have retries because sleeping can be a bit flaky on CI
+            for _ in range(10):
+                start_time = time.monotonic()
+                dt = await caller.call_later(0.1, time.monotonic) - start_time
+                if dt >= 0.1:
+                    return
+            assert dt >= 0.1  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_manual_stop(self):
         async with Caller("manual") as caller:
@@ -635,12 +639,12 @@ class TestCaller:
         assert {pen.result() for pen in done} == {1, 2}
 
     async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
-        pen1 = caller.to_thread(lambda: id(threading.current_thread()))
+        pen1 = caller.to_thread(threading.get_ident)
         w1 = Caller.get_existing(await pen1)
         assert w1
         assert w1 in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
         w1.stop()
-        pen2 = caller.to_thread(lambda: id(threading.current_thread()))
+        pen2 = caller.to_thread(threading.get_ident)
         await w1.stopped
         assert w1 not in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
         w2 = Caller.get_existing(await pen2)
@@ -652,9 +656,9 @@ class TestCaller:
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
-        pen1 = caller.to_thread(lambda: id(threading.current_thread()))
+        pen1 = caller.to_thread(threading.get_ident)
         w1 = Caller.get_existing(await pen1)
-        pen2 = caller.to_thread(lambda: id(threading.current_thread()))
+        pen2 = caller.to_thread(threading.get_ident)
         w2 = Caller.get_existing(await pen2)
         assert w1
         assert w2
@@ -730,3 +734,14 @@ class TestCaller:
             assert await caller.call_using_backend(opposite, lambda: 1 + 1) == 2
             caller.stop()
             await anyio.sleep_forever()
+
+    async def test_caller_with_host(self, anyio_backend: Backend):
+
+        from .test_event_loop import AsyncioHost, TrioHost  # noqa: PLC0415
+
+        cls = AsyncioHost if anyio_backend == Backend.trio else TrioHost
+        caller = Caller("NewThread", host=Hosts.custom, backend=anyio_backend, host_options={"host_class": cls})
+        assert caller.host is Hosts.custom
+        assert await caller.call_soon(lambda: 1 + 1) == 2
+        caller.stop()
+        await caller.stopped

@@ -17,6 +17,67 @@ from async_kernel.pending import Pending
 from async_kernel.typing import Backend, Hosts, RunSettings
 
 
+class AsyncioHost(Host):
+    HOST = Hosts.custom
+    done_event = Fixed(aiologic.Event)
+    host_uses_signal_set_wakeup_fd = True
+
+    def __init__(self, **backend_options) -> None:
+        self.backend_options = backend_options
+
+    async def _start(self) -> None:
+        loop = asyncio.get_running_loop()
+        self.run_sync_soon_not_threadsafe = loop.call_soon  # pyright: ignore[reportAttributeAccessIssue]
+        self.run_sync_soon_threadsafe = loop.call_soon_threadsafe  # pyright: ignore[reportAttributeAccessIssue]
+        self.start_guest()
+        await self.done_event
+
+    @override
+    def done_callback(self, outcome: outcome.Outcome) -> None:
+        super().done_callback(outcome)
+        self.done_event.set()
+
+    @override
+    def mainloop(self):
+        anyio.run(self._start, backend="asyncio", backend_options=self.backend_options)
+        return super().mainloop()
+
+
+class TrioHost(Host):
+    HOST = Hosts.custom
+    host_uses_signal_set_wakeup_fd = True
+    _done = False
+
+    def __init__(self, **backend_options) -> None:
+        self.backend_options = backend_options
+
+    async def _start(self):
+        from aiologic import Queue  # noqa: PLC0415
+
+        queue = Queue()
+
+        self.run_sync_soon_not_threadsafe = lambda fn: queue.green_put(fn, blocking=False)
+        self.run_sync_soon_threadsafe = lambda fn: queue.green_put(fn, blocking=False)
+        self.done = lambda: queue.green_put(lambda: None, blocking=False)
+        self.start_guest()
+        while not self._outcome:
+            fn = await queue.async_get()
+            try:
+                fn()
+            except Exception:
+                continue
+
+    @override
+    def done_callback(self, outcome) -> None:
+        super().done_callback(outcome)
+        self.done()
+
+    @override
+    def mainloop(self):
+        anyio.run(self._start, backend="trio", backend_options=self.backend_options)
+        return super().mainloop()
+
+
 class TestHost:
     def test_host(self):
         host = Host()
@@ -80,31 +141,6 @@ class TestHost:
 
     def test_asyncio_host(self):
 
-        class AsyncioHost(Host):
-            HOST = Hosts.custom
-            done_event = Fixed(aiologic.Event)
-            host_uses_signal_set_wakeup_fd = True
-
-            def __init__(self, **backend_options) -> None:
-                self.backend_options = backend_options
-
-            async def _start(self) -> None:
-                loop = asyncio.get_running_loop()
-                self.run_sync_soon_not_threadsafe = loop.call_soon  # pyright: ignore[reportAttributeAccessIssue]
-                self.run_sync_soon_threadsafe = loop.call_soon_threadsafe  # pyright: ignore[reportAttributeAccessIssue]
-                self.start_guest()
-                await self.done_event
-
-            @override
-            def done_callback(self, outcome: outcome.Outcome) -> None:
-                super().done_callback(outcome)
-                self.done_event.set()
-
-            @override
-            def mainloop(self):
-                anyio.run(self._start, backend="asyncio", backend_options=self.backend_options)
-                return super().mainloop()
-
         async def test_func(val):
             loop = asyncio.get_running_loop()
             if importlib.util.find_spec("uvloop"):
@@ -123,40 +159,6 @@ class TestHost:
         assert result == "abc"
 
     def test_trio_host(self):
-
-        class TrioHost(Host):
-            HOST = Hosts.custom
-            host_uses_signal_set_wakeup_fd = True
-            _done = False
-
-            def __init__(self, **backend_options) -> None:
-                self.backend_options = backend_options
-
-            async def _start(self):
-                from aiologic import Queue  # noqa: PLC0415
-
-                queue = Queue()
-
-                self.run_sync_soon_not_threadsafe = lambda fn: queue.green_put(fn, blocking=False)
-                self.run_sync_soon_threadsafe = lambda fn: queue.green_put(fn, blocking=False)
-                self.done = lambda: queue.green_put(lambda: None, blocking=False)
-                self.start_guest()
-                while not self._outcome:
-                    fn = await queue.async_get()
-                    try:
-                        fn()
-                    except Exception:
-                        continue
-
-            @override
-            def done_callback(self, outcome) -> None:
-                super().done_callback(outcome)
-                self.done()
-
-            @override
-            def mainloop(self):
-                anyio.run(self._start, backend="trio", backend_options=self.backend_options)
-                return super().mainloop()
 
         async def test_func(val):
             asyncio.get_running_loop()
