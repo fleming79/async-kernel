@@ -438,7 +438,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             def async_kernel_caller() -> None:
                 self._thread, self._caller_id = threading.current_thread(), threading.get_ident()
                 try:
-                    if self.host:
+                    if not self.host:
+                        # No gui (default)
+                        anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
+                    else:
                         # A gui with the backend running as a guest.
                         settings = RunSettings(
                             backend=self.backend,
@@ -447,12 +450,11 @@ class Caller(anyio.AsyncContextManagerMixin):
                             host_options=self.host_options,
                         )
                         Host.run(run_caller_in_context, (), settings)
-                    else:
-                        # No gui
-                        anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
-                except Exception:
+                except Exception as e:
                     if not self._stopping.done():
                         self.stop()
+                        self.log.exception("%s exited early", self, exc_info=e)
+                        raise
 
             thread = threading.Thread(target=async_kernel_caller, name=self.name or None)
             thread.start()

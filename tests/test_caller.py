@@ -730,3 +730,14 @@ class TestCaller:
             assert await caller.call_using_backend(opposite, lambda: 1 + 1) == 2
             caller.stop()
             await anyio.sleep_forever()
+
+    async def test_caller_with_host(self, anyio_backend: Backend):
+
+        from .test_event_loop import AsyncioHost, TrioHost  # noqa: PLC0415
+
+        cls = AsyncioHost if anyio_backend == Backend.trio else TrioHost
+        caller = Caller("NewThread", host=Hosts.custom, backend=anyio_backend, host_options={"host_class": cls})
+        assert caller.host is Hosts.custom
+        assert await caller.call_soon(lambda: 1 + 1) == 2
+        caller.stop()
+        await caller.stopped
