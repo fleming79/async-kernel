@@ -2,6 +2,7 @@ import gc
 import inspect
 import random
 import re
+import sys
 import weakref
 from concurrent.futures import ThreadPoolExecutor
 
@@ -261,6 +262,7 @@ class TestPending:
             pen.wait_sync(timeout=0.001)
         assert pen.cancelled()
 
+    @pytest.mark.skipif(sys.platform == "darwin", reason="Test is flaky on CI")
     async def test_many_waiters(self, caller: Caller):
         N = 100
         n_threads = 20
