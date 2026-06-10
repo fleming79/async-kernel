@@ -122,11 +122,11 @@ class TestCaller:
         assert caller.thread.pydev_do_not_trace  # pyright: ignore[reportAttributeAccessIssue]
         caller.stop()
 
-    async def test_sync(self):
+    async def test_call_later(self):
         async with Caller("manual") as caller:
             start_time = time.monotonic()
-            dt = await caller.call_later(0.01, time.monotonic) - start_time
-            assert dt > 0.01
+            dt = await caller.call_later(0.1, time.monotonic) - start_time
+            assert dt >= 0.1
 
     async def test_manual_stop(self):
         async with Caller("manual") as caller:
