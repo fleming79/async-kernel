@@ -20,7 +20,7 @@ TIMEOUT = 10 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
 MATPLOTLIB_INLINE_BACKEND = "module://matplotlib_inline.backend_inline"
 
 CI = bool(os.environ.get("CI", "False"))
-CI_DEBUG = os.environ.get("ACTIONS_RUNNER_DEBUG") or os.environ.get("ACTIONS_STEP_DEBUG")
+CI_DEBUGGING = bool(os.environ.get("CI_DEBUGGING"))
 
 
 async def get_reply(

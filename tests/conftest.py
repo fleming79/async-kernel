@@ -37,7 +37,7 @@ else:
     params = [pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio")]
 
 
-if utils.CI_DEBUG or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
     logging.basicConfig(level=10)
 
 
@@ -78,7 +78,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
     interface_class = IPApp if anyio_backend[0] == "asyncio" else ZMQInterface
     interface = (interface_class)(connection_file=connection_file.as_posix(), transport=transport)
-    if utils.CI_DEBUG or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
         interface.log_level = 10
     try:
         if request.param == "MainThread":
@@ -162,7 +162,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
 
     # Start the interface
     command = make_argv(connection_file=client.connection_file, name=name, backend=backend)
-    if utils.CI_DEBUG or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
         command.append("--debug")
     process = subprocess.Popen(command)
     try:
