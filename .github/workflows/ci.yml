@@ -57,15 +57,24 @@ jobs:
         # Pyside does not have free-threaded binary
         run: uv sync --locked --dev --group gui
 
-      - name: Run tests if CI debugging
-        if: runner.debug == '1'
-        timeout-minutes: 3
+      - name: CI debugging env windows
+        if: ${{runner.debug == '1' && startsWith(matrix.os, 'windows')}}
+        run: |
+          $Env:CI_DEBUGGING="1"
+
+      - name: CI debugging env non-windows
+        if: ${{runner.debug == '1' && !startsWith(matrix.os, 'windows')}}
         run: |
           export CI_DEBUGGING=1
+
+      - name: Run tests debug mode
+        if: ${{runner.debug == '1'}}
+        timeout-minutes: 3
+        run: |
           uv run pytest -vvl --override-ini=log_cli_level=DEBUG --override-ini=log_cli=true
 
       - name: Run tests
-        if: runner.debug != '1'
+        if: ${{runner.debug != '1'}}
         timeout-minutes: 3
         run: uv run pytest -vvl
 
