@@ -58,14 +58,14 @@ jobs:
         run: uv sync --locked --dev --group gui
 
       - name: Run tests if CI debugging
-        if:  runner.debug == '1'
+        if: runner.debug == '1'
         timeout-minutes: 3
-        run: | 
+        run: |
           export CI_DEBUGGING=1
           uv run pytest -vvl --override-ini=log_cli_level=DEBUG --override-ini=log_cli=true
 
       - name: Run tests
-        if:  runner.debug != '1'
+        if: runner.debug != '1'
         timeout-minutes: 3
         run: uv run pytest -vvl
 
