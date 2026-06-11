@@ -496,7 +496,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
             case _ as options:
                 caller.get(**options).call_soon(handler, job)
 
-        self.log.debug("%s %s %s %s", msg_type, run_mode, handler, job)
+        self.log.debug("***handle message %s*** %s %s %s", msg_type, run_mode, handler, job)
 
     def get_shell(self, subshell_id: str | None | NoValue = NoValue) -> T_shell_co:  # pyright: ignore[reportInvalidTypeForm]
         """

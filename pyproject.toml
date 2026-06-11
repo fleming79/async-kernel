@@ -75,7 +75,8 @@ docs = [
     "mkdocs-git-revision-date-localized-plugin",
     "jupyterlab",
     "ipywidgets",
-    "pandas", 
+    "pandas",
+    "ruff>=0.15.16",
 ]
 test = [
     "pytest-cov>=7.0.0",
