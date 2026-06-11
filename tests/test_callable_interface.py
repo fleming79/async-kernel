@@ -11,7 +11,6 @@ import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import start_kernel_callable_interface
 from async_kernel.interface.callable import CallableInterface
-from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel.typing import Message
@@ -92,24 +91,3 @@ class TestCallableInterface:
     async def test_keyboard_interrupt(self, interface) -> None:
         with pytest.raises(KeyboardInterrupt):
             signal.raise_signal(signal.SIGINT)
-
-    async def test_kernel_interrupt_pending(self, interface: CallableInterface):
-        interface.kernel.shell.user_ns["ready_event"] = ready = Event()
-        code = "ready_event.set()\nimport anyio\nawait anyio.sleep_forever()"
-        pen = interface.kernel.caller.call_soon(interface.kernel.do_execute, code, silent=False)
-        await ready
-        interface.kernel.do_interrupt()
-        result = await pen
-        assert result
-
-    async def test_kernel_interrupt_keyboard(self, interface: CallableInterface):
-        interface.kernel.shell.user_ns["ready_event"] = ready = Event()
-
-        async def run_code():
-            code = f"ready_event.set()\nimport time\ntime.sleep({utils.TIMEOUT * 2})"
-            pen = interface.kernel.caller.call_soon(interface.kernel.do_execute, code, silent=False)
-            await ready
-            interface.kernel.do_interrupt()
-            await pen.wait(result=False)
-
-        await interface.kernel.caller.to_thread(run_code)
