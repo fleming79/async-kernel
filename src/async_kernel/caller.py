@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
 
 import anyio
 from aiologic import BinarySemaphore, Event
-from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 from aiologic.meta import await_for
 from typing_extensions import override
 from wrapt import lazy_import
@@ -74,7 +74,7 @@ async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None,
         coro = asyncio.sleep(0)
         tasks: set[asyncio.Task] = set()
         eager = False
-        all_done = create_async_waiter(shield=True)
+        all_done = create_async_event(shield=True)
         active = True
         try:
             await loop.create_task(coro, eager_start=True)  # pyright: ignore[reportCallIssue]
@@ -85,7 +85,7 @@ async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None,
         def done_callback(task: asyncio.Task) -> None:
             tasks.discard(task)
             if not active and not tasks:
-                all_done.wake()
+                all_done.set()
 
         def create_task(context: contextvars.Context | None, func: Callable, *args) -> None:
             if eager:
