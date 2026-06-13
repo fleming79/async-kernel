@@ -46,7 +46,7 @@ async def interface(anyio_backend):
 
 class TestCallableInterface:
     async def test_start(self, interface: CallableInterface):
-        assert interface.event_started
+        assert interface.started
 
     async def test_msg(self, interface: CallableInterface, mocker):
         sender = mocker.patch.object(interface, "_send")

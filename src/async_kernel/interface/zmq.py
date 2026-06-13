@@ -112,14 +112,15 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     @override
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
+
         if os.path.exists(self.connection_file):  # noqa: PTH110
             self.load_connection_file()
         self.write_connection_file()
         try:
-            self._start_hb_iopub_shell_control_threads()
-            with self._bind_socket(Channel.stdin):
-                assert len(self._sockets) == len(Channel)
-                async with super().__asynccontextmanager__(set_started=False):
+            async with super().__asynccontextmanager__(set_started=False):
+                self._start_hb_iopub_shell_control_threads()
+                with self._bind_socket(Channel.stdin):
+                    assert len(self._sockets) == len(Channel)
                     if set_started:
                         self._started()
                     yield self
@@ -132,7 +133,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             utils.mark_thread_pydev_do_not_trace()
             with self._bind_socket(Channel.heartbeat) as socket:
                 ready.set()
-                self.event_started.wait()
+                self.started.wait_sync()
                 try:
                     zmq.proxy(socket, socket)
                 except zmq.ContextTerminated:
@@ -191,6 +192,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         socket.subscribe(b"\x01")
         with socket:
             ready.wait()
+            self.started.wait_sync()
             while True:
                 try:
                     if frames := socket.recv_multipart():
@@ -304,7 +306,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         if not utils.LAUNCHED_BY_DEBUGPY:
             utils.mark_thread_pydev_do_not_trace()
 
-        session, log, message_handler, iopub_send = self.session, self.log, self.kernel.message_handler, self.iopub_send
+        session, log, message_handler = self.session, self.log, self.kernel.message_handler
         lock = BinarySemaphore()
 
         async def send_reply(job: Job, content: dict, /) -> None:
@@ -324,13 +326,14 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
         with self._bind_socket(channel) as socket:
             ready.set()
-            self.event_started.wait()
+            self.started.wait_sync()
+
             while True:
                 try:
                     ident, msg = session.recv(socket, mode=zmq.BLOCKY, copy=False)
                     msg["channel"] = channel  # pyright: ignore[reportOptionalSubscript]
                     job = Job(received_time=time.monotonic(), msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(job, send_reply, iopub_send)
+                    message_handler(job, send_reply, self.iopub_send)
                 except zmq.ContextTerminated:
                     break
                 except Exception as e:

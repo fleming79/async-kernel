@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic import Event
 from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
@@ -177,8 +176,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The caller associated with the kernel once it has started."
 
-    event_started = Fixed(Event)
-    "An event that occurs when the interface is started."
+    started = Fixed(Pending)
+    "A Pending that is set when the interface has started."
 
     stopping = Fixed(Pending)
     """
@@ -321,14 +320,26 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             host=self.host,
             host_options=self.host_options,
         )
-        async_kernel.event_loop.run(self.run, (), settings)
-        super().start()
+        try:
+            async_kernel.event_loop.run(self.run, (), settings)
+        finally:
+            if BaseInterface._instance is self:
+                BaseInterface._instance = None
 
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
-        if BaseInterface._instance is not self or self.event_started:
+        def cache_iopub_send(*args, **kwargs) -> None:
+            # Cache iopub messages, send when started or discard if stopped early.
+            self.started.add_done_callback(lambda _: not self.stopping.done() and send(*args, **kwargs))
+
+        if self.stopping.done() or self.started.done():
             msg = "Stopped early"
             raise RuntimeError(msg)
+
+        send = self.iopub_send
+        self.iopub_send = cache_iopub_send
+        self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
+
         caller = Caller(
             "manual",
             name="Shell",
@@ -356,7 +367,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     def _started(self):
         self.log.info("Interface started: %s", self.summary)
-        self.event_started.set()
+        self.started.set_result(None)
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """
@@ -384,8 +395,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             del self._scope
             self.log.info("Stopping kernel")
             self.callers[Channel.shell].call_later(0.5, scope.cancel, "Stopping kernel")
-        if not self.event_started:
-            self.event_started.set()
+        if not self.started.done():
+            self.started.cancel("Stopped early")
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
 
