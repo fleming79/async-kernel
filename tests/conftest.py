@@ -115,15 +115,12 @@ async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
     client.load_connection_info(kernel.parent.get_connection_info())
     client.start_channels()
 
-    # Wait for socket
-    await client.get_iopub_msg()
-    await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
     try:
+        with anyio.fail_after(utils.TIMEOUT):
+            await client.wait_for_ready()
         yield client
     finally:
-        await utils.clear_iopub(client, timeout=0.1)
         client.stop_channels()
-        await anyio.sleep(0)
 
 
 @pytest.fixture(scope="module", params=["async", "async-trio"])
@@ -166,9 +163,8 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
         command.append("--debug")
     process = subprocess.Popen(command)
     try:
-        # The first message indicates it is connected (could be an iopub welcome, or something else)
-        await client.get_iopub_msg()
-        await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
+        with anyio.fail_after(utils.TIMEOUT):
+            await client.wait_for_ready()
 
         yield client
         await utils.get_reply(client, client.shutdown(), channel=Channel.control)
