@@ -314,6 +314,10 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             - If there is an `asyncio` or `trio` event loop already running in the desired thread;
                 start asynchronously instead (`async with interface: ...`).
         """
+        if BaseInterface._instance is not self:
+            msg = "This interface is not the global instance!"
+            raise RuntimeError(msg)
+
         settings = RunSettings(
             backend=self.backend,
             backend_options=self.backend_options,
@@ -328,7 +332,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
-        def cache_iopub_send(*args, **kwargs) -> None:
+        def cache_iopub_send(*args, **kwargs) -> None:  # pragma: no cover
             # Cache iopub messages, send when started or discard if stopped early.
             self.started.add_done_callback(lambda _: not self.stopping.done() and send(*args, **kwargs))
 

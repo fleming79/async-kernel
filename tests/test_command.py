@@ -15,6 +15,7 @@ from aiologic import Event
 import async_kernel
 from async_kernel import Kernel, Pending
 from async_kernel.command import command_line, to_flags_and_settings
+from async_kernel.interface.base import BaseInterface
 from async_kernel.interface.ip_app import IPApp
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernelspec import make_argv
@@ -26,9 +27,10 @@ if TYPE_CHECKING:
 
     from jupyter_client.asynchronous.client import AsyncKernelClient
 
-    from async_kernel.interface.base import BaseInterface
     from async_kernel.kernel import Kernel
     from async_kernel.shell import IPShell
+
+# pyright: reportPrivateUsage=false
 
 
 @pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
@@ -77,6 +79,7 @@ def test_prints_help_when_no_args(monkeypatch, capsys):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert "usage:" in out
+    assert BaseInterface._instance is None
 
 
 def test_prints_version_info(monkeypatch, capsys):
@@ -86,6 +89,7 @@ def test_prints_version_info(monkeypatch, capsys):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert f"async-kernel {async_kernel.__version__}" in out
+    assert BaseInterface._instance is None
 
 
 def test_prints_help_all(monkeypatch, capsys):
@@ -95,6 +99,7 @@ def test_prints_help_all(monkeypatch, capsys):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert "aliases" in out
+    assert BaseInterface._instance is None
 
 
 def test_show_config(monkeypatch, capsys):
@@ -105,6 +110,7 @@ def test_show_config(monkeypatch, capsys):
         assert e.value.code == 0
         out = capsys.readouterr().out
         assert "IPApp" in out
+        assert BaseInterface._instance is None
 
 
 def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
@@ -122,6 +128,7 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
     )
     with pytest.raises(SystemExit) as e:
         command_line()
+    assert BaseInterface._instance is None
     assert e.value.code == 0
     kernel_dir = fake_kernel_dir.joinpath("async-trio")
     assert (kernel_dir).exists()
