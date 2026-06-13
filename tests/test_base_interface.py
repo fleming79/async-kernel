@@ -16,6 +16,8 @@ from async_kernel.shell import BaseShell
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
 
+# pyright: reportPrivateUsage=false
+
 
 class TestBaseInterface:
     async def test_instance_does_not_exist(self, anyio_backend: Backend):
@@ -85,11 +87,21 @@ class TestBaseInterface:
     async def test_stop_early(self, anyio_backend: Backend):
         app = BaseInterface(shell_class=BaseShell)
         app.stop()
+        with pytest.raises(RuntimeError, match="This interface is not the global instance!"):
+            app.start()
         with pytest.raises(RuntimeError, match="An instance does not exist"):
             BaseInterface.instance()
         with pytest.raises(RuntimeError, match="Stopped early"):
             async with app:
                 pass
+
+    def test_start_bad_settings(self):
+
+        app = BaseInterface(shell_class=BaseShell, backend_options={"loop_factory": "not a factory"})
+        assert BaseInterface._instance is app
+        with pytest.raises(TypeError, match="object is not callable"):
+            app.start()
+        assert BaseInterface._instance is None
 
 
 class TestHasInterface:

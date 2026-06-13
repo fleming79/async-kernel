@@ -92,7 +92,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
                 interface.backend_options = {}
             thread = threading.Thread(target=interface.start, name="ShellThread")
             thread.start()
-            interface.event_started.wait()
+            await interface.started
             assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
             await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
             try:

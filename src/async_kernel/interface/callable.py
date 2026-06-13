@@ -88,7 +88,7 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         """
         self._send = send
         self._task = asyncio.create_task(coro=self.run(stopped=stopped))
-        await self.event_started
+        await self.started
         return Handlers(handle_msg=self._handle_msg, stop=self.stop)
 
     def _send_to_frontend(
