@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
 import anyio
 from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import create_async_event, current_async_library
-from aiologic.meta import await_for
+from aiologic.meta import await_for, iscoroutinelike
 from typing_extensions import override
 from wrapt import lazy_import
 
@@ -559,7 +559,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             e = None
             try:
                 result = md["func"](*md["args"], **md["kwargs"])
-                if inspect.iscoroutine(result):
+                if iscoroutinelike(result):
                     if backend is Backend.asyncio:
                         task = asyncio.current_task()
                         assert task
@@ -602,7 +602,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                     else:
                         try:
                             result = item[0](*item[1], **item[2])
-                            if inspect.iscoroutine(result):
+                            if iscoroutinelike(result):
                                 await result
                             del result
                         except Exception as e:
@@ -793,7 +793,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         async def _call_later(*args: P.args, **kwargs: P.kwargs) -> T:
             if (delay_ := start_time - time.monotonic() + delay) >= 0:
                 await anyio.sleep(delay_)
-            if inspect.iscoroutine(result := func(*args, **kwargs)):
+            if iscoroutinelike(result := func(*args, **kwargs)):
                 result = await result
             return result  # pyright: ignore[reportReturnType]
 
