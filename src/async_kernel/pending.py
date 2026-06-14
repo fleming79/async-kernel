@@ -498,20 +498,20 @@ class Pending(Awaitable[T]):
         Tip:
             To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
+        e = None
         try:
             if not self._done:
                 waiter = create_async_event(shield=shield)
                 self.add_done_callback(lambda _: waiter.set())
-                if timeout is None:
-                    await waiter
-                else:
-                    with anyio.fail_after(timeout):
-                        await waiter
-            return self.result() if result else None
-        except (anyio.get_cancelled_exc_class(), TimeoutError) as e:
+                if not await waiter.with_(timeout):
+                    e = TimeoutError
+        except anyio.get_cancelled_exc_class() as exc:
+            e = exc
+        if e:
             if not protect:
                 self.cancel(f"Cancelled due to cancellation or timeout: {e}.")
-            raise
+            raise e
+        return self.result() if result else None
 
     if TYPE_CHECKING:
 
