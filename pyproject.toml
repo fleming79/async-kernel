@@ -248,3 +248,6 @@ reportUnknownLambdaType = false
 
 [tool.uv]
 required-version = "==0.11.16"
+
+[tool.uv.sources]
+aiologic = { git = "https://github.com/x42005e1f/aiologic.git" }

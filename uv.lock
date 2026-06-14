@@ -12,16 +12,12 @@ resolution-markers = [
 
 [[package]]
 name = "aiologic"
-version = "0.16.0"
-source = { registry = "https://pypi.org/simple" }
+version = "0.16.1.dev80+g029f239ae"
+source = { git = "https://github.com/x42005e1f/aiologic.git#029f239ae7dccf20d079eda8f7aa14d5ad9e3b7b" }
 dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
     { name = "wrapt" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a8/13/50b91a3ea6b030d280d2654be97c48b6ed81753a50286ee43c646ba36d3c/aiologic-0.16.0.tar.gz", hash = "sha256:c267ccbd3ff417ec93e78d28d4d577ccca115d5797cdbd16785a551d9658858f", size = 225952, upload-time = "2025-11-27T23:48:41.195Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f6/27/206615942005471499f6fbc36621582e24d0686f33c74b2d018fcfd4fe67/aiologic-0.16.0-py3-none-any.whl", hash = "sha256:e00ce5f68c5607c864d26aec99c0a33a83bdf8237aa7312ffbb96805af67d8b6", size = 135193, upload-time = "2025-11-27T23:48:40.099Z" },
 ]
 
 [[package]]
@@ -184,7 +180,7 @@ uvloop = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiologic", specifier = ">=0.16.0" },
+    { name = "aiologic", git = "https://github.com/x42005e1f/aiologic.git" },
     { name = "anyio", specifier = ">=4.12" },
     { name = "comm", specifier = ">=0.2" },
     { name = "ipython", specifier = ">=9.0" },
