@@ -12,8 +12,8 @@ resolution-markers = [
 
 [[package]]
 name = "aiologic"
-version = "0.16.1.dev80+g029f239ae"
-source = { git = "https://github.com/x42005e1f/aiologic.git#029f239ae7dccf20d079eda8f7aa14d5ad9e3b7b" }
+version = "0.16.1.dev83+g0eb18a22b"
+source = { git = "https://github.com/x42005e1f/aiologic.git#0eb18a22b76ca37eb0abeff2b34000344eee28d9" }
 dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
