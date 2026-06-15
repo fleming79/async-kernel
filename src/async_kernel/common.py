@@ -248,8 +248,8 @@ class SingleAsyncQueue(Generic[T]):
                     await checkpoint()
                 else:
                     event = create_async_waiter()
-                    if not queue and self._active:
-                        self._resume = event.wake
+                    self._resume = event.wake
+                    if self._active and not queue:
                         await event
                     self._resume = noop
         except IndexError:
