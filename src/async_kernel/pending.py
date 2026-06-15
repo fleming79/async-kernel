@@ -502,11 +502,12 @@ class Pending(Awaitable[T]):
         try:
             if not self._done:
                 waiter = create_async_waiter(shield=shield)
-                if not self._done:
-                    self.add_done_callback(lambda _: waiter.wake())
-                    await waiter.with_(timeout)
+                self._done_callbacks.append(lambda _: waiter.wake())
+                await waiter.with_(timeout)
                 if not self._done:
                     e = TimeoutError
+        except AttributeError:
+            assert self._done
         except anyio.get_cancelled_exc_class() as exc:
             e = exc
         if e:
