@@ -7,7 +7,7 @@ from types import coroutine
 from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import aiologic.meta
-from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
+from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_waiter, create_thread_oncelock
 from sniffio import current_async_library
 from wrapt import lazy_import
 
@@ -224,7 +224,7 @@ class SingleAsyncQueue(Generic[T]):
         ```
     """
 
-    __slots__ = ["__weakref__", "_active", "_reject", "_resume"]
+    __slots__ = ["__weakref__", "_active", "_event", "_reject", "_resume"]
 
     _active: bool | None
     queue: Fixed[Self, deque[T]] = Fixed(deque)
@@ -247,9 +247,9 @@ class SingleAsyncQueue(Generic[T]):
                     yield queue.popleft()
                     await checkpoint()
                 else:
-                    event = create_async_event()
-                    self._resume = event.set
+                    event = create_async_waiter()
                     if not queue and self._active:
+                        self._resume = event.wake
                         await event
                     self._resume = noop
         except IndexError:

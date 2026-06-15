@@ -10,7 +10,7 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
-from aiologic.lowlevel import create_async_event, create_green_event
+from aiologic.lowlevel import create_async_event, create_async_waiter, create_green_event
 from typing_extensions import override
 
 import async_kernel
@@ -501,9 +501,11 @@ class Pending(Awaitable[T]):
         e = None
         try:
             if not self._done:
-                waiter = create_async_event(shield=shield)
-                self.add_done_callback(lambda _: waiter.set())
-                if not await waiter.with_(timeout):
+                waiter = create_async_waiter(shield=shield)
+                if not self._done:
+                    self.add_done_callback(lambda _: waiter.wake())
+                    await waiter.with_(timeout)
+                if not self._done:
                     e = TimeoutError
         except anyio.get_cancelled_exc_class() as exc:
             e = exc
