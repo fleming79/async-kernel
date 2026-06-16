@@ -1043,7 +1043,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         resume = noop
                 else:
                     done.append(pen)
-            if not done._queue and not unfinished:
+            if len(done) == 0 and not unfinished:
                 done.stop()
 
         pen_ = self.call_soon(scheduler)
@@ -1051,7 +1051,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             async for pen in done:
                 unfinished.discard(pen)
                 yield pen
-                if pen_.done() and not unfinished and not done._queue:
+                if pen_.done() and not unfinished and len(done) == 0:
                     break
                 elif max_concurrent_ and len(unfinished) < max_concurrent_:
                     resume()

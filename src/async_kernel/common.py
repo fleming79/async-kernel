@@ -202,6 +202,8 @@ class SingleAsyncQueue(Generic[T]):
             - Any items in the queue are immediately rejected.
             - The async iterator is stopped.
         - Items added after stop is called will be rejected immediately.
+        - boolean: `True` when not stopped.
+        - len: `The current length of the queue.
 
     Usage:
         ```python
@@ -227,6 +229,15 @@ class SingleAsyncQueue(Generic[T]):
         self._queue = deque()
         # _token prevents more than one async iterator.
         self._token = True
+
+    def __bool__(self) -> bool:
+        return not self.stopped
+
+    def __len__(self) -> int:
+        try:
+            return len(self._queue)
+        except AttributeError:
+            return 0
 
     async def __aiter__(self) -> AsyncGenerator[T]:
 
