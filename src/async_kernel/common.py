@@ -224,7 +224,7 @@ class SingleAsyncQueue(Generic[T]):
         ```
     """
 
-    __slots__ = ["__weakref__", "_active", "_event", "_reject", "_resume"]
+    __slots__ = ["__weakref__", "_active", "_reject", "_resume"]
 
     _active: bool | None
     queue: Fixed[Self, deque[T]] = Fixed(deque)
