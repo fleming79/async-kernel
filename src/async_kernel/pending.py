@@ -10,7 +10,7 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
 
 import anyio
-from aiologic.lowlevel import create_async_event, create_green_event
+from aiologic.lowlevel import create_async_event, create_async_waiter, create_green_event
 from typing_extensions import override
 
 import async_kernel
@@ -498,20 +498,23 @@ class Pending(Awaitable[T]):
         Tip:
             To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
+        e = None
         try:
             if not self._done:
-                waiter = create_async_event(shield=shield)
-                self.add_done_callback(lambda _: waiter.set())
-                if timeout is None:
-                    await waiter
-                else:
-                    with anyio.fail_after(timeout):
-                        await waiter
-            return self.result() if result else None
-        except (anyio.get_cancelled_exc_class(), TimeoutError) as e:
+                waiter = create_async_waiter(shield=shield)
+                self._done_callbacks.append(lambda _: waiter.wake())
+                await waiter.with_(timeout)
+                if not self._done:
+                    e = TimeoutError
+        except AttributeError:
+            assert self._done
+        except anyio.get_cancelled_exc_class() as exc:
+            e = exc
+        if e:
             if not protect:
                 self.cancel(f"Cancelled due to cancellation or timeout: {e}.")
-            raise
+            raise e
+        return self.result() if result else None
 
     if TYPE_CHECKING:
 

@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import zmq
 from aiologic import BinarySemaphore
+from aiologic.lowlevel import enable_signal_safety
 from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.session import Session
 from traitlets import traitlets
@@ -258,7 +259,9 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         )
         # Poll for a reply.
         while not (socket.poll(100) & PollEvent.POLLIN):
-            if self.last_interrupt_frame:  # pragma: no cover
+            if pen := self.kernel._interrupt_requested:  # pyright: ignore[reportPrivateUsage]
+                with enable_signal_safety():
+                    pen.set_result(None)
                 raise KernelInterrupt
         return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 

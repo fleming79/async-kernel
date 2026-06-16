@@ -272,16 +272,17 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
             remove_patch()
             self._handler_cache.clear()
 
-    @enable_signal_safety
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
         "Handle interrupt signals."
 
         if pen := self._interrupt_requested:
             self._interrupt_requested = None
             if not pen.done():
-                pen.set_result(None)
+                with enable_signal_safety():
+                    pen.set_result(None)
                 raise KernelInterrupt
-        signal.default_int_handler(signum, frame)
+        else:
+            signal.default_int_handler(signum, frame)
 
     async def do_interrupt(self) -> None:
         """

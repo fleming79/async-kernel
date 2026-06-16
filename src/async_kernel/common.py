@@ -7,7 +7,7 @@ from types import coroutine
 from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import aiologic.meta
-from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_event, create_thread_oncelock
+from aiologic.lowlevel import THREAD_DUMMY_LOCK, create_async_waiter, create_thread_oncelock
 from sniffio import current_async_library
 from wrapt import lazy_import
 
@@ -247,9 +247,9 @@ class SingleAsyncQueue(Generic[T]):
                     yield queue.popleft()
                     await checkpoint()
                 else:
-                    event = create_async_event()
-                    self._resume = event.set
-                    if not queue and self._active:
+                    event = create_async_waiter()
+                    self._resume = event.wake
+                    if self._active and not queue:
                         await event
                     self._resume = noop
         except IndexError:
