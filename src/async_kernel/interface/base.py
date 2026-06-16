@@ -359,12 +359,14 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             async with caller:
                 with anyio.CancelScope() as scope:
                     self._scope = scope
-                    async with self.kernel.running():
-                        if set_started:
-                            self._started()
-                        yield self
+                    try:
+                        async with self.kernel.running():
+                            if set_started:
+                                self._started()
+                            yield self
+                    finally:
+                        self.stop()
         finally:
-            self.stop()
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
             self.log.info("Interface stopped")

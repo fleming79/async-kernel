@@ -739,6 +739,9 @@ class Caller(anyio.AsyncContextManagerMixin):
             Pending: A pending that can be awaited to obtain the result of func.
         """
         pen = Pending(context, trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
+        if self._state in [CallerState.stopping, CallerState.stopped]:
+            pen.cancel(f"The caller has been stopped: {self}")
+            return pen
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
             queue = self._queue
         elif not (queue := self._guest_queues.get(backend)):
