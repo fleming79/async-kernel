@@ -13,9 +13,15 @@ import pytest
 from aiologic import Event
 
 from async_kernel.common import Fixed, SingleAsyncQueue, import_item
+from async_kernel.typing import Backend
 
 if TYPE_CHECKING:
-    from async_kernel.typing import Backend, FixedCreate, FixedCreated
+    from async_kernel.typing import FixedCreate, FixedCreated
+
+
+@pytest.fixture(params=Backend, scope="module")
+def anyio_backend(request):
+    return request.param
 
 
 class TestImportItem:
