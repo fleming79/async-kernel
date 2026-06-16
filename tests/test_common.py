@@ -13,9 +13,15 @@ import pytest
 from aiologic import Event
 
 from async_kernel.common import Fixed, SingleAsyncQueue, import_item
+from async_kernel.typing import Backend
 
 if TYPE_CHECKING:
-    from async_kernel.typing import Backend, FixedCreate, FixedCreated
+    from async_kernel.typing import FixedCreate, FixedCreated
+
+
+@pytest.fixture(params=Backend, scope="module")
+def anyio_backend(request):
+    return request.param
 
 
 class TestImportItem:
@@ -228,7 +234,6 @@ class TestSingleAsyncQueue:
         assert not queue.stopped, "Async exiting context is scheduled."
         await anyio.sleep(0.01)
         assert queue.stopped
-        assert not queue.queue
         assert rejected == {3}
         async for _ in queue:
             pass
@@ -274,19 +279,16 @@ class TestSingleAsyncQueue:
         queue.extend(range(3))
         async for _ in queue:
             queue.stop()
-        assert not queue.queue
 
     async def test_stop_early(self, anyio_backend: Backend) -> None:
         queue = SingleAsyncQueue[Any]()
         queue.stop()
         queue.extend(range(3))
-        assert not queue.queue
 
     async def test_stop_waiting(self, anyio_backend: Backend) -> None:
         queue = SingleAsyncQueue[Any]()
         queue.stop()
         queue.extend(range(3))
-        assert not queue.queue
 
     def test_extend_reject(self) -> None:
         rejected = set()

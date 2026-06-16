@@ -25,7 +25,7 @@ from typing_extensions import override
 from wrapt import lazy_import
 
 from async_kernel import utils
-from async_kernel.common import Fixed, KernelInterrupt, SingleAsyncQueue, noop
+from async_kernel.common import Fixed, KernelInterrupt, SingleAsyncQueue
 from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, RunSettings, T
@@ -1008,6 +1008,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             - Pass a container with all results when the limiter is not relevant.
             -  `Caller.MAX_IDLE_POOL_INSTANCES`
         """
+
+        def noop() -> None:
+            pass
+
         resume = noop
         done: SingleAsyncQueue[Pending[T]] = SingleAsyncQueue()
         unfinished: set[Pending[T]] = set()
@@ -1039,7 +1043,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         resume = noop
                 else:
                     done.append(pen)
-            if not done.queue and not unfinished:
+            if len(done) == 0 and not unfinished:
                 done.stop()
 
         pen_ = self.call_soon(scheduler)
@@ -1047,7 +1051,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             async for pen in done:
                 unfinished.discard(pen)
                 yield pen
-                if pen_.done() and not unfinished and not done.queue:
+                if pen_.done() and not unfinished and len(done) == 0:
                     break
                 elif max_concurrent_ and len(unfinished) < max_concurrent_:
                     resume()

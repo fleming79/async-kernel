@@ -42,10 +42,6 @@ def asyncio_checkpoint():
     yield
 
 
-def noop() -> None:
-    pass
-
-
 class KernelInterrupt(InterruptedError):
     "Raised to interrupt the kernel."
 
@@ -206,6 +202,8 @@ class SingleAsyncQueue(Generic[T]):
             - Any items in the queue are immediately rejected.
             - The async iterator is stopped.
         - Items added after stop is called will be rejected immediately.
+        - boolean: `True` when not stopped.
+        - len: `The current length of the queue.
 
     Usage:
         ```python
@@ -213,7 +211,7 @@ class SingleAsyncQueue(Generic[T]):
 
         # In a task
         async for item in q:
-            q
+            item  # use the item
 
         # Other threads/tasks
         q.append(item)
@@ -224,54 +222,70 @@ class SingleAsyncQueue(Generic[T]):
         ```
     """
 
-    __slots__ = ["__weakref__", "_active", "_reject", "_resume"]
-
-    _active: bool | None
-    queue: Fixed[Self, deque[T]] = Fixed(deque)
+    __slots__ = ["__weakref__", "_queue", "_reject", "_token", "_waiter"]
 
     def __init__(self, *, reject: Callable[[T], Any] | None = None) -> None:
-        self._resume = noop
-        self._active = None
         self._reject = reject
+        self._queue = deque()
+        # _token prevents more than one async iterator.
+        self._token = True
+
+    def __bool__(self) -> bool:
+        return not self.stopped
+
+    def __len__(self) -> int:
+        try:
+            return len(self._queue)
+        except AttributeError:
+            return 0
 
     async def __aiter__(self) -> AsyncGenerator[T]:
-        if self._active is not None:
-            return
-        backend = Backend(current_async_library())
-        checkpoint = asyncio_checkpoint if backend is Backend.asyncio else trio_checkpoint
-        self._active = True
-        queue = self.queue
+
         try:
-            while self._active:
-                if queue:
-                    yield queue.popleft()
+            del self._token
+            backend = Backend(current_async_library())
+            checkpoint = asyncio_checkpoint if backend is Backend.asyncio else trio_checkpoint
+            while True:
+                if self._queue:
+                    yield self._queue.popleft()
                     await checkpoint()
                 else:
-                    event = create_async_waiter()
-                    self._resume = event.wake
-                    if self._active and not queue:
-                        await event
-                    self._resume = noop
-        except IndexError:
+                    self._waiter = create_async_waiter()
+                    try:
+                        if not self._queue:
+                            await self._waiter
+                        del self._waiter
+                    except AttributeError:
+                        pass
+        except AttributeError:
             pass
-        finally:
-            self._resume = noop
+        except BaseException:
             self.stop()
+            raise
+
+    def _resume(self) -> None:
+        try:
+            waiter = self._waiter
+            del self._waiter
+            waiter.wake()
+            del waiter
+        except AttributeError:
+            pass
 
     def stop(self) -> None:
         """
         Stop the queue rejecting any items currently in the queue.
         """
-        self._active = False
-        if self._reject:
-            while True:
-                try:
-                    self._reject(self.queue.popleft())
-                except IndexError:
-                    break
-        else:
-            self.queue.clear()
-        self._resume()
+        try:
+            queue = self._queue
+            del self._queue
+            self._resume()
+            while queue:
+                item = queue.popleft()
+                if self._reject:
+                    self._reject(item)
+        except (AttributeError, IndexError):
+            pass
 
     def append(self, item: T, /) -> None:
         """
@@ -279,12 +293,12 @@ class SingleAsyncQueue(Generic[T]):
 
         If the queue has been stopped `item` will be rejected immediately.
         """
-        if self._active is False:
+        try:
+            self._queue.append(item)
+            self._resume()
+        except AttributeError:
             if self._reject:
                 self._reject(item)
-        else:
-            self.queue.append(item)
-            self._resume()
 
     def appendleft(self, item: T, /) -> None:
         """
@@ -292,12 +306,12 @@ class SingleAsyncQueue(Generic[T]):
 
         If the queue has been stopped `item` will be rejected immediately.
         """
-        if self._active is False:
+        try:
+            self._queue.appendleft(item)
+            self._resume()
+        except AttributeError:
             if self._reject:
                 self._reject(item)
-        else:
-            self.queue.appendleft(item)
-            self._resume()
 
     def extend(self, iterable: Iterable[T], /) -> None:
         """
@@ -305,17 +319,17 @@ class SingleAsyncQueue(Generic[T]):
 
         If the queue has been stopped all items in `iterable` will be rejected immediately.
         """
-        if self._active is False:
+        try:
+            self._queue.extend(iterable)
+            self._resume()
+        except AttributeError:
             if self._reject:
                 for item in iterable:
                     self._reject(item)
-        else:
-            self.queue.extend(iterable)
-            self._resume()
 
     @property
     def stopped(self) -> bool:
         """
         Will return `True` once stop has been called meaning there are no items left in the queue.
         """
-        return self._active is False
+        return not hasattr(self, "_queue")
