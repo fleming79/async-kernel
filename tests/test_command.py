@@ -151,7 +151,7 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
         "display_name": "my kernel",
         "language": "python",
         "interrupt_mode": "message",
-        "metadata": {"debugger": True, "concurrent": True, "supported_encryption": "curve"},
+        "metadata": {"debugger": True, "concurrent": True, "supported_encryption": ["curve"]},
         "kernel_protocol_version": "5.5",
     }
 

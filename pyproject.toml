@@ -80,10 +80,10 @@ docs = [
 ]
 test = [
     "pytest-cov>=7.0.0",
-    "pytest-mock", 
+    "pytest-mock",
     "pytest>=9,<10",
     "trio>=0.31.0",
-    ]
+]
 uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and implementation_name == 'cpython'",
 "winloop; sys_platform == 'win32' and implementation_name == 'cpython'"
 ]    
@@ -92,6 +92,7 @@ dev = [
   "debugpy",
   "ipykernel; implementation_name == 'cpython'",
   "pip; implementation_name == 'cpython'",
+  "jupyter-client",
   {include-group = "uvloop"},
   {include-group = "test"},
 ]
@@ -248,3 +249,6 @@ reportUnknownLambdaType = false
 
 [tool.uv]
 required-version = "==0.11.16"
+
+[tool.uv.sources]
+jupyter-client = { git = "https://github.com/jupyter/jupyter_client.git" }

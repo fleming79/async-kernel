@@ -205,7 +205,7 @@ def write_kernel_spec(
             "interrupt_mode": "message",
             "metadata": metadata
             if metadata is not None
-            else {"debugger": True, "concurrent": True, "supported_encryption": "curve"},
+            else {"debugger": True, "concurrent": True, "supported_encryption": ["curve"]},
             "kernel_protocol_version": PROTOCOL_VERSION,
         }
         # write kernel.json

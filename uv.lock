@@ -135,6 +135,7 @@ dependencies = [
 dev = [
     { name = "debugpy" },
     { name = "ipykernel", marker = "implementation_name == 'cpython'" },
+    { name = "jupyter-client" },
     { name = "matplotlib", marker = "python_full_version < '3.15'" },
     { name = "pip", marker = "implementation_name == 'cpython'" },
     { name = "pytest" },
@@ -188,7 +189,7 @@ requires-dist = [
     { name = "anyio", specifier = ">=4.12" },
     { name = "comm", specifier = ">=0.2" },
     { name = "ipython", specifier = ">=9.0" },
-    { name = "jupyter-client", marker = "sys_platform != 'emscripten'", specifier = ">=8.9.1" },
+    { name = "jupyter-client", marker = "sys_platform != 'emscripten'", git = "https://github.com/jupyter/jupyter_client.git" },
     { name = "jupyter-core", specifier = ">=5.9.1" },
     { name = "matplotlib-inline", specifier = ">0.1" },
     { name = "orjson", marker = "sys_platform == 'emscripten'", specifier = ">=3.10.16" },
@@ -204,6 +205,7 @@ requires-dist = [
 dev = [
     { name = "debugpy" },
     { name = "ipykernel", marker = "implementation_name == 'cpython'" },
+    { name = "jupyter-client", git = "https://github.com/jupyter/jupyter_client.git" },
     { name = "matplotlib", marker = "python_full_version < '3.15'", specifier = ">=3.10.9" },
     { name = "pip", marker = "implementation_name == 'cpython'" },
     { name = "pytest", specifier = ">=9,<10" },
@@ -1105,7 +1107,7 @@ wheels = [
 [[package]]
 name = "jupyter-client"
 version = "8.9.1"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/jupyter/jupyter_client.git#8d760b1efeff2ac7aa2b4b75c44023e59c6945f8" }
 dependencies = [
     { name = "jupyter-core" },
     { name = "python-dateutil" },
@@ -1113,10 +1115,6 @@ dependencies = [
     { name = "tornado" },
     { name = "traitlets" },
     { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/7d/dc/5512503b088997c2250b8bf18258fba9d9ce5ead641183700960d3c9d342/jupyter_client-8.9.1.tar.gz", hash = "sha256:a58f730dd9e728ba16ba1d62ebccf7ffe1ebbdbce4e95cfae941b7321ae1f4fa", size = 359256, upload-time = "2026-06-09T13:15:01.033Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/3f/6f/56d39bf385c5c27988aebaf0c18a2a17e960575740100973511018bd904e/jupyter_client-8.9.1-py3-none-any.whl", hash = "sha256:0b7a295bc46e8751e9adae84781f726c851c1d911bd793edc4a3bde942e3da81", size = 109828, upload-time = "2026-06-09T13:14:58.835Z" },
 ]
 
 [[package]]

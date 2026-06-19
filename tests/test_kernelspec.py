@@ -59,7 +59,7 @@ def test_install_kernel_spec(tmp_path: Path, monkeypatch):
             "display_name": f"Python {sys.version.split()[0]} ({name})",
             "language": "python",
             "interrupt_mode": "message",
-            "metadata": {"debugger": True, "concurrent": True, "supported_encryption": "curve"},
+            "metadata": {"debugger": True, "concurrent": True, "supported_encryption": ["curve"]},
             "kernel_protocol_version": "5.5",
         }
     }
