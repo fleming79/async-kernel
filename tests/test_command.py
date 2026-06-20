@@ -93,8 +93,9 @@ def test_prints_version_info(monkeypatch, capsys):
     assert BaseInterface._instance is None
 
 
-def test_prints_help_all(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["prog", "--help-all"])
+@pytest.mark.parametrize("extra", [(), ("--interface_class=async_kernel.interface.callable.CallableInterface",)])
+def test_prints_help_all(monkeypatch, capsys, extra: tuple):
+    monkeypatch.setattr(sys, "argv", ["prog", "--help-all", *extra])
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0

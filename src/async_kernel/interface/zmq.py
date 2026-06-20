@@ -43,6 +43,11 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     "The base kernel interface using ZMQ sockets."
 
     aliases = BaseInterface.aliases | {
+        ("f", "connection_file"): "ZMQInterface.connection_file",
+        "host": "ZMQInterface.host",
+        "host_options": "ZMQInterface.host_options",
+        "backend_options": "ZMQInterface.backend_options",
+        "backend": "ZMQInterface.backend",
         "ip": "ZMQInterface.ip",
         "hb": "ZMQInterface.hb_port",
         "shell": "ZMQInterface.shell_port",
