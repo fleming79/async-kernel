@@ -34,9 +34,12 @@ async def interface(anyio_backend):
             return pack_json_str(msg)
         return None
 
-    callbacks = await start_kernel_callable_interface(send=send, stopped=stopped.set)
+    callbacks = await start_kernel_callable_interface(
+        send=send, stopped=stopped.set, settings={"name": "async-callable"}
+    )
 
     interface = CallableInterface.instance()
+    assert interface.name == "async-callable"
     try:
         yield interface
     finally:

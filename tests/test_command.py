@@ -3,6 +3,7 @@ from __future__ import annotations
 import gc
 import importlib.util
 import json
+import platform
 import signal
 import sys
 import weakref
@@ -92,8 +93,9 @@ def test_prints_version_info(monkeypatch, capsys):
     assert BaseInterface._instance is None
 
 
-def test_prints_help_all(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["prog", "--help-all"])
+@pytest.mark.parametrize("extra", [(), ("--interface_class=async_kernel.interface.callable.CallableInterface",)])
+def test_prints_help_all(monkeypatch, capsys, extra: tuple):
+    monkeypatch.setattr(sys, "argv", ["prog", "--help-all", *extra])
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
@@ -233,6 +235,11 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
 def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, host):
     if host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
+    if host is Hosts.tk and not importlib.util.find_spec("_tkinter"):
+        pytest.skip("Tk not available")
+
+    if host and sys.platform == "linux" and "WSL2" in platform.release():
+        pytest.skip("Probably won't work on WSL")
 
     cmd = [
         "prog",

@@ -104,12 +104,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     aliases: dict[str | tuple[str, ...], str] = {  # pyright: ignore[reportIncompatibleVariableOverride]
         ("name", "n"): "BaseInterface.name",
-        ("f", "connection_file"): "ZMQInterface.connection_file",
         "launcher": "BaseInterface.launcher",
-        "host": "ZMQInterface.host",
-        "host_options": "ZMQInterface.host_options",
-        "backend_options": "ZMQInterface.backend_options",
-        "backend": "ZMQInterface.backend",
         "timeout": "BaseShell.timeout",
         "kernel_class": "BaseInterface.kernel_class",
         "shell_class": "BaseInterface.shell_class",
