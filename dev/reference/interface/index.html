@@ -1299,6 +1299,45 @@ viewing the latest version.
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" start_kernel_callable_interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.start_kernel_callable_interface(send)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;send
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.start_kernel_callable_interface(stopped)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;stopped
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.start_kernel_callable_interface(settings)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2712,6 +2751,45 @@ viewing the latest version.
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label=" start_kernel_callable_interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.start_kernel_callable_interface(send)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;send
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.start_kernel_callable_interface(stopped)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;stopped
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.interface.start_kernel_callable_interface(settings)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -4357,12 +4435,7 @@ async context:
 <span class="normal">474</span>
 <span class="normal">475</span>
 <span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
+<span class="normal">477</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class for a singleton kernel interface.</span>
 
@@ -4386,12 +4459,7 @@ async context:
 
     <span class="n">aliases</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># pyright: ignore[reportIncompatibleVariableOverride]</span>
         <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">):</span> <span class="s2">&quot;BaseInterface.name&quot;</span><span class="p">,</span>
-        <span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">):</span> <span class="s2">&quot;ZMQInterface.connection_file&quot;</span><span class="p">,</span>
         <span class="s2">&quot;launcher&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.launcher&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;host_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;backend_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend&quot;</span><span class="p">,</span>
         <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseShell.timeout&quot;</span><span class="p">,</span>
         <span class="s2">&quot;kernel_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.kernel_class&quot;</span><span class="p">,</span>
         <span class="s2">&quot;shell_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.shell_class&quot;</span><span class="p">,</span>
@@ -4817,12 +4885,7 @@ async context:
 <a href="#async_kernel.interface.BaseInterface.aliases" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">aliases</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">):</span> <span class="s2">&quot;BaseInterface.name&quot;</span><span class="p">,</span>
-    <span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">):</span> <span class="s2">&quot;ZMQInterface.connection_file&quot;</span><span class="p">,</span>
     <span class="s2">&quot;launcher&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.launcher&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;host_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host_options&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;backend_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend_options&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend&quot;</span><span class="p">,</span>
     <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseShell.timeout&quot;</span><span class="p">,</span>
     <span class="s2">&quot;kernel_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.kernel_class&quot;</span><span class="p">,</span>
     <span class="s2">&quot;shell_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.shell_class&quot;</span><span class="p">,</span>
@@ -5305,11 +5368,11 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialized</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Has an instance been created?&quot;&quot;&quot;</span>
@@ -5343,17 +5406,17 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">221</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">instance</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
     <span class="s2">&quot;Get the singleton instance that was created using `launch_instance`.&quot;</span>
@@ -5399,7 +5462,12 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
@@ -5413,12 +5481,7 @@ async context:
 <span class="normal">295</span>
 <span class="normal">296</span>
 <span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">298</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the interface **DO NOT CALL DIRECTLY**.</span>
@@ -5474,7 +5537,12 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
@@ -5495,12 +5563,7 @@ async context:
 <span class="normal">323</span>
 <span class="normal">324</span>
 <span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the interface blocking until it stops.</span>
@@ -5572,7 +5635,12 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
@@ -5582,12 +5650,7 @@ async context:
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">388</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the kernel.</span>
 
@@ -5628,19 +5691,19 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">395</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
 <span class="normal">398</span>
 <span class="normal">399</span>
 <span class="normal">400</span>
 <span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">402</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop the kernel.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -5701,15 +5764,15 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">409</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -5760,7 +5823,12 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
@@ -5791,12 +5859,7 @@ format, which is a list of message parts.</p>
 <span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5881,18 +5944,18 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">457</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
 <span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -6090,7 +6153,12 @@ instances using this mixin.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">485</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
@@ -6142,12 +6210,7 @@ instances using this mixin.</p>
 <span class="normal">534</span>
 <span class="normal">535</span>
 <span class="normal">536</span>
-<span class="normal">537</span>
-<span class="normal">538</span>
-<span class="normal">539</span>
-<span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">537</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A mixin class providing a reference to the global [interface][async_kernel.interface.base.BaseInterface].</span>
 
@@ -6296,7 +6359,10 @@ instances using this mixin.</p>
 
 <a href="#async_kernel.interface.start_kernel_callable_interface" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">start_kernel_callable_interface</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span> <span class="n"><span title="async_kernel.interface.start_kernel_callable_interface(send)">send</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span><span class="p">],</span> <span class="kc">None</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">],</span> <span class="n"><span title="async_kernel.interface.start_kernel_callable_interface(stopped)">stopped</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="send (async_kernel.interface.start_kernel_callable_interface(send))" href="#async_kernel.interface.start_kernel_callable_interface(send)">send</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span><span class="p">],</span> <span class="kc">None</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="stopped (async_kernel.interface.start_kernel_callable_interface(stopped))" href="#async_kernel.interface.start_kernel_callable_interface(stopped)">stopped</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="settings (async_kernel.interface.start_kernel_callable_interface(settings))" href="#async_kernel.interface.start_kernel_callable_interface(settings)">settings</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Handlers (async_kernel.interface.callable.Handlers)" href="#async_kernel.interface.callable.Handlers">Handlers</a></span>
 </code></pre></div>
 
@@ -6304,27 +6370,107 @@ instances using this mixin.</p>
 
         <p>Start the global interface as an instance of <a class="autorefs autorefs-internal" title="            CallableInterface" href="#async_kernel.interface.callable.CallableInterface">CallableInterface</a>.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.interface.start_kernel_callable_interface(send)" class="doc doc-heading doc-heading-parameter">              <b><code>send</code></b>
+<a href="#async_kernel.interface.start_kernel_callable_interface(send)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a> | None, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a>], None | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>A callback responsible for sending messages from the kernel on all channels.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.interface.start_kernel_callable_interface(stopped)" class="doc doc-heading doc-heading-parameter">              <b><code>stopped</code></b>
+<a href="#async_kernel.interface.start_kernel_callable_interface(stopped)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], None]</code>)
+          –
+          <div class="doc-md-description">
+            <p>A callback that is called once the kernel has stopped.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h3 id="async_kernel.interface.start_kernel_callable_interface(settings)" class="doc doc-heading doc-heading-parameter">              <b><code>settings</code></b>
+<a href="#async_kernel.interface.start_kernel_callable_interface(settings)" class="headerlink" title="Permanent link">&para;</a></h3>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Additional settings to configure the interface/kernel/shell etc using traitlets config conventions.
+The settings are converted to argv using <a class="autorefs autorefs-internal" title="            make_argv" href="../kernelspec/#async_kernel.kernelspec.make_argv">async_kernel.kernelspec.make_argv</a>. All settings,
+including aliases and flags are accepted. <em>flags</em> should be passed as <code>'flags': [&lt;flag1&gt;, &lt;flag2&gt;, ...]</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="tip" open>
+  <summary>Tip</summary>
+  <ul>
+<li>To list all config options available for a <code>CallableInterface</code> use the command:
+    <div class="highlight"><pre><span></span><code>async-kernel<span class="w"> </span>--help-all<span class="w"> </span>--interface_class<span class="o">=</span>async_kernel.interface.callable.CallableInterface
+</code></pre></div></li>
+</ul>
+</details>
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/__init__.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">16</span>
-<span class="normal">17</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
 <span class="normal">23</span>
-<span class="normal">24</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_kernel_callable_interface</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span> <span class="n">send</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_kernel_callable_interface</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n">send</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">],</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Handlers</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the global interface as an instance of [CallableInterface][async_kernel.interface.callable.CallableInterface].</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.interface.callable</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableInterface</span>  <span class="c1"># noqa: PLC0415</span>
 
-    <span class="k">return</span> <span class="k">await</span> <span class="n">CallableInterface</span><span class="p">()</span><span class="o">.</span><span class="n">start_async</span><span class="p">(</span><span class="n">send</span><span class="o">=</span><span class="n">send</span><span class="p">,</span> <span class="n">stopped</span><span class="o">=</span><span class="n">stopped</span><span class="p">)</span>
+<span class="sd">    Args:</span>
+<span class="sd">        send: A callback responsible for sending messages from the kernel on all channels.</span>
+<span class="sd">        stopped: A callback that is called once the kernel has stopped.</span>
+<span class="sd">        settings: Additional settings to configure the interface/kernel/shell etc using traitlets config conventions.</span>
+<span class="sd">            The settings are converted to argv using [async_kernel.kernelspec.make_argv][]. All settings,</span>
+<span class="sd">            including aliases and flags are accepted. _flags_ should be passed as `&#39;flags&#39;: [&lt;flag1&gt;, &lt;flag2&gt;, ...]`.</span>
+
+<span class="sd">    Tip:</span>
+<span class="sd">        - To list all config options available for a `CallableInterface` use the command:</span>
+<span class="sd">            ```shell</span>
+<span class="sd">            async-kernel --help-all --interface_class=async_kernel.interface.callable.CallableInterface</span>
+<span class="sd">            ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">interface_class</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;interface_class&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;async_kernel.interface.callable.CallableInterface&quot;</span>
+    <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">CallableInterface</span><span class="p">]</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">interface_class</span><span class="p">)</span>
+
+    <span class="n">argv</span> <span class="o">=</span> <span class="n">make_argv</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="p">(),</span> <span class="n">connection_file</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">BaseInterface</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">app</span><span class="o">.</span><span class="n">start_async</span><span class="p">(</span><span class="n">send</span><span class="o">=</span><span class="n">send</span><span class="p">,</span> <span class="n">stopped</span><span class="o">=</span><span class="n">stopped</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6362,24 +6508,24 @@ instances using this mixin.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/__init__.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">launch_interface</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">launch_interface</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Launch a kernel interface blocking until it has stopped.</span>
 
@@ -7331,12 +7477,7 @@ async context:
 <span class="normal">474</span>
 <span class="normal">475</span>
 <span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
+<span class="normal">477</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class for a singleton kernel interface.</span>
 
@@ -7360,12 +7501,7 @@ async context:
 
     <span class="n">aliases</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># pyright: ignore[reportIncompatibleVariableOverride]</span>
         <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">):</span> <span class="s2">&quot;BaseInterface.name&quot;</span><span class="p">,</span>
-        <span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">):</span> <span class="s2">&quot;ZMQInterface.connection_file&quot;</span><span class="p">,</span>
         <span class="s2">&quot;launcher&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.launcher&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;host_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;backend_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend&quot;</span><span class="p">,</span>
         <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseShell.timeout&quot;</span><span class="p">,</span>
         <span class="s2">&quot;kernel_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.kernel_class&quot;</span><span class="p">,</span>
         <span class="s2">&quot;shell_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.shell_class&quot;</span><span class="p">,</span>
@@ -7791,12 +7927,7 @@ async context:
 <a href="#async_kernel.interface.base.BaseInterface.aliases" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">aliases</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">):</span> <span class="s2">&quot;BaseInterface.name&quot;</span><span class="p">,</span>
-    <span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">):</span> <span class="s2">&quot;ZMQInterface.connection_file&quot;</span><span class="p">,</span>
     <span class="s2">&quot;launcher&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.launcher&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;host_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host_options&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;backend_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend_options&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend&quot;</span><span class="p">,</span>
     <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseShell.timeout&quot;</span><span class="p">,</span>
     <span class="s2">&quot;kernel_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.kernel_class&quot;</span><span class="p">,</span>
     <span class="s2">&quot;shell_class&quot;</span><span class="p">:</span> <span class="s2">&quot;BaseInterface.shell_class&quot;</span><span class="p">,</span>
@@ -8279,11 +8410,11 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialized</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Has an instance been created?&quot;&quot;&quot;</span>
@@ -8317,17 +8448,17 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">221</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">instance</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
     <span class="s2">&quot;Get the singleton instance that was created using `launch_instance`.&quot;</span>
@@ -8373,7 +8504,12 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
@@ -8387,12 +8523,7 @@ async context:
 <span class="normal">295</span>
 <span class="normal">296</span>
 <span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">298</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the interface **DO NOT CALL DIRECTLY**.</span>
@@ -8448,7 +8579,12 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
@@ -8469,12 +8605,7 @@ async context:
 <span class="normal">323</span>
 <span class="normal">324</span>
 <span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the interface blocking until it stops.</span>
@@ -8546,7 +8677,12 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
@@ -8556,12 +8692,7 @@ async context:
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">388</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the kernel.</span>
 
@@ -8602,19 +8733,19 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">395</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
 <span class="normal">398</span>
 <span class="normal">399</span>
 <span class="normal">400</span>
 <span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">402</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop the kernel.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -8675,15 +8806,15 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">409</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -8734,7 +8865,12 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
@@ -8765,12 +8901,7 @@ format, which is a list of message parts.</p>
 <span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -8855,18 +8986,18 @@ format, which is a list of message parts.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">457</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
 <span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -9064,7 +9195,12 @@ instances using this mixin.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">485</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
@@ -9116,12 +9252,7 @@ instances using this mixin.</p>
 <span class="normal">534</span>
 <span class="normal">535</span>
 <span class="normal">536</span>
-<span class="normal">537</span>
-<span class="normal">538</span>
-<span class="normal">539</span>
-<span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">537</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A mixin class providing a reference to the global [interface][async_kernel.interface.base.BaseInterface].</span>
 
@@ -10516,10 +10647,20 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
-<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQInterface</span><span class="p">(</span><span class="n">BaseInterface</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">],</span> <span class="n">ConnectionFileMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance]</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQInterface</span><span class="p">(</span><span class="n">BaseInterface</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">],</span> <span class="n">ConnectionFileMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance]</span>
     <span class="s2">&quot;The base kernel interface using ZMQ sockets.&quot;</span>
 
     <span class="n">aliases</span> <span class="o">=</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">aliases</span> <span class="o">|</span> <span class="p">{</span>
+        <span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">):</span> <span class="s2">&quot;ZMQInterface.connection_file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;host_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host_options&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;backend_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend_options&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.ip&quot;</span><span class="p">,</span>
         <span class="s2">&quot;hb&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.hb_port&quot;</span><span class="p">,</span>
         <span class="s2">&quot;shell&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.shell_port&quot;</span><span class="p">,</span>
@@ -10853,6 +10994,11 @@ kernel_interface["stop"](msg, buffer)
       class-attribute
       instance-attribute
    (async_kernel.interface.base.BaseInterface.aliases)" href="#async_kernel.interface.base.BaseInterface.aliases">aliases</a></span> <span class="o">|</span> <span class="p">{</span>
+    <span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;connection_file&quot;</span><span class="p">):</span> <span class="s2">&quot;ZMQInterface.connection_file&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;host_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.host_options&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;backend_options&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend_options&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.backend&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.ip&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hb&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.hb_port&quot;</span><span class="p">,</span>
     <span class="s2">&quot;shell&quot;</span><span class="p">:</span> <span class="s2">&quot;ZMQInterface.shell_port&quot;</span><span class="p">,</span>
@@ -10992,12 +11138,7 @@ kernel_interface["stop"](msg, buffer)
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
@@ -11027,7 +11168,12 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
-<span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
@@ -11100,12 +11246,7 @@ kernel_interface["stop"](msg, buffer)
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">310</span>
 <span class="normal">311</span>
 <span class="normal">312</span>
 <span class="normal">313</span>
@@ -11139,7 +11280,12 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
-<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">receive_msg_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Opens a zmq socket for the channel, receives messages and calls the message handler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
