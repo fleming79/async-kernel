@@ -167,18 +167,18 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             frontend.close(linger=50)
             capture.close(linger=50)
 
-        ready = CountdownEvent(4)
+        ready = CountdownEvent(5)
 
         threading.Thread(target=heartbeat, name="heartbeat", args=[ready.down]).start()
         threading.Thread(target=pub_proxy, name="iopub proxy", args=[ready.down]).start()
-        threading.Thread(target=self._pub_capture).start()
+        threading.Thread(target=self._pub_capture, args=[ready.down]).start()
         # message loops
         for channel in [Channel.shell, Channel.control]:
             name = f"{channel}-receive_msg_loop"
             threading.Thread(target=self.receive_msg_loop, name=name, args=(channel, ready.down)).start()
         ready.wait()
 
-    def _pub_capture(self) -> None:
+    def _pub_capture(self, ready: Callable[[], None]) -> None:
         """
         Capture connection messages on iopub.
 
@@ -194,6 +194,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         # Only subscribe to the 'pub subscribe' topic byte `1` (byte `0` is 'pub unsubscribe').
         socket.subscribe(b"\x01")
         with socket:
+            ready()
             self.started.wait_sync()
             while True:
                 try:
