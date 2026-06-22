@@ -381,7 +381,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         """
         try:
             async with self:
-                await anyio.sleep_forever()
+                while not self.stopping.done():
+                    await anyio.sleep(1e6)
         finally:
             if stopped:
                 stopped()
