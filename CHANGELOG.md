@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.1] - 2026-06-22
+
+### <!-- 2 --> 🐛 Fixes
+
+- Use a long sleep in a loop instead of anyio.sleep_forever which returns immediately on pyodide. [#504](https://github.com/fleming79/async-kernel/pull/504)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump actions/checkout from 6 to 7 in the actions group [#503](https://github.com/fleming79/async-kernel/pull/503)
+
 ## [0.20.0] - 2026-06-22
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -24,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support zmq curve encryption [#482](https://github.com/fleming79/async-kernel/pull/482)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.20.0 [#502](https://github.com/fleming79/async-kernel/pull/502)
 
 - Use cancellation for interface shutdown. [#501](https://github.com/fleming79/async-kernel/pull/501)
 
@@ -1387,6 +1399,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.20.1]: https://github.com/fleming79/async-kernel/compare/v0.20.0..v0.20.1
 [0.20.0]: https://github.com/fleming79/async-kernel/compare/v0.19.2..v0.20.0
 [0.19.2]: https://github.com/fleming79/async-kernel/compare/v0.19.1..v0.19.2
 [0.19.1]: https://github.com/fleming79/async-kernel/compare/v0.19.0..v0.19.1
