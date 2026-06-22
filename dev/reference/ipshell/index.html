@@ -2654,6 +2654,28 @@ viewing the latest version.
       </li>
   </ul>
 
+        <b class="doc doc-backlink-type">Used by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#">ipshell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.shell.ipshell.IPShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IPShell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.shell.ipshell.IPShell.displayhook_class"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;displayhook_class</a>
+  </span>
+
+      </li>
+  </ul>
+
   </div>
 
 
@@ -2951,6 +2973,28 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.shell.ipshell.IPShell.display_pub"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;display_pub</a>
+  </span>
+
+      </li>
+  </ul>
+
+        <b class="doc doc-backlink-type">Used by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#">ipshell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.shell.ipshell.IPShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;IPShell</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.shell.ipshell.IPShell.display_pub_class"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;display_pub_class</a>
   </span>
 
       </li>
@@ -5413,7 +5457,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.timeout" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><span title="traitlets.traitlets.CFloat">CFloat</span></span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5439,7 +5483,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.stop_on_error_time_offset" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stop_on_error_time_offset</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stop_on_error_time_offset</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Float" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Float">Float</a></span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5465,7 +5509,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.default_matplotlib_backends" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">default_matplotlib_backends</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">default_matplotlib_backends</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.List" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.List">List</a></span><span class="p">([</span><span class="s1">&#39;inline&#39;</span><span class="p">,</span> <span class="s1">&#39;ipympl&#39;</span><span class="p">])</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5489,7 +5533,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.compiler_class" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">compiler_class</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">compiler_class</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Type" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Type">Type</a></span><span class="p">(</span><span class="n"><span title="async_kernel.compiler.XCachingCompiler">XCachingCompiler</span></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5513,7 +5557,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.prefilter_manager_class" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">prefilter_manager_class</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">prefilter_manager_class</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Type" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Type">Type</a></span><span class="p">(</span><span class="n"><span title="async_kernel.shell.ipshell.IPPrefilterManager">IPPrefilterManager</span></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5537,7 +5581,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.displayhook_class" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">displayhook_class</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">displayhook_class</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Type" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Type">Type</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            IPDisplayHook (async_kernel.shell.ipshell.IPDisplayHook)" href="#async_kernel.shell.ipshell.IPDisplayHook">IPDisplayHook</a></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5561,7 +5605,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.display_pub_class" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">display_pub_class</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">display_pub_class</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Type" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Type">Type</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            IPDisplayPublisher (async_kernel.shell.ipshell.IPDisplayPublisher)" href="#async_kernel.shell.ipshell.IPDisplayPublisher">IPDisplayPublisher</a></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5585,7 +5629,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.display_formatter_class" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">display_formatter_class</span> <span class="o">=</span> <span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">display_formatter_class</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Type" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Type">Type</a></span><span class="p">(</span><span class="n"><span title="async_kernel.shell.ipshell.IPDisplayFormatter">IPDisplayFormatter</span></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5635,7 +5679,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.compile" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nb">compile</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.compiler.XCachingCompiler">XCachingCompiler</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="compiler_class">compiler_class</span></span><span class="p">())</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nb">compile</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.compiler.XCachingCompiler">XCachingCompiler</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s1">&#39;owner&#39;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="compiler_class">compiler_class</span></span><span class="p">())</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5662,7 +5706,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
 <a href="#async_kernel.shell.ipshell.IPShell.prefilter_manager" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">prefilter_manager</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.ipshell.IPPrefilterManager">IPPrefilterManager</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="prefilter_manager_class">prefilter_manager_class</span></span><span class="p">(</span><span class="n"><span title="prefilter_manager_class(shell)">shell</span></span><span class="o">=</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">])</span>
+    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="prefilter_manager_class">prefilter_manager_class</span></span><span class="p">(</span><span class="n"><span title="prefilter_manager_class(shell)">shell</span></span><span class="o">=</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">])</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -5742,7 +5786,9 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.displayhook" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">displayhook</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            IPDisplayHook (async_kernel.shell.ipshell.IPDisplayHook)" href="#async_kernel.shell.ipshell.IPDisplayHook">IPDisplayHook</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="displayhook_class">displayhook_class</span></span><span class="p">(</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s1">&#39;owner&#39;</span><span class="p">]))</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">displayhook</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            IPDisplayHook (async_kernel.shell.ipshell.IPDisplayHook)" href="#async_kernel.shell.ipshell.IPDisplayHook">IPDisplayHook</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="displayhook_class">displayhook_class</span></span><span class="p">(</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">])</span>
+<span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5770,7 +5816,9 @@ the shell whose context the execution result occurred.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.display_pub" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">display_pub</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            IPDisplayPublisher (async_kernel.shell.ipshell.IPDisplayPublisher)" href="#async_kernel.shell.ipshell.IPDisplayPublisher">IPDisplayPublisher</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="display_pub_class">display_pub_class</span></span><span class="p">())</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">display_pub</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            IPDisplayPublisher (async_kernel.shell.ipshell.IPDisplayPublisher)" href="#async_kernel.shell.ipshell.IPDisplayPublisher">IPDisplayPublisher</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="display_pub_class">display_pub_class</span></span><span class="p">()</span>
+<span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5797,7 +5845,7 @@ the shell whose context the execution result occurred.</p>
 
 <a href="#async_kernel.shell.ipshell.IPShell.display_formatter" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">display_formatter</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.ipshell.IPDisplayFormatter">IPDisplayFormatter</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="display_formatter_class">display_formatter_class</span></span><span class="p">()</span>
+    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="display_formatter_class">display_formatter_class</span></span><span class="p">()</span>
 <span class="p">)</span>
 </code></pre></div>
 

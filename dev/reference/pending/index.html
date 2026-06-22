@@ -2906,7 +2906,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.pending.PendingTracker.id" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nb">id</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" title="uuid.uuid4" href="https://docs.python.org/3/library/uuid.html#uuid.uuid4">uuid4</a></span><span class="p">()))</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nb">id</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/uuid.html#module-uuid">uuid</a></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="uuid.uuid4" href="https://docs.python.org/3/library/uuid.html#uuid.uuid4">uuid4</a></span><span class="p">()))</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3610,8 +3610,12 @@ finally:
       <a href="../caller/#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../caller/#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
   </span>
 
       </li>
@@ -4050,7 +4054,7 @@ finally:
   </span>
 
 <a href="#async_kernel.pending.PendingGroup.caller" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">())</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">caller</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n"><span title="async_kernel">async_kernel</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-internal" title="            Caller (async_kernel.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a></span><span class="p">())</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4388,8 +4392,12 @@ finally:
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.pending.PendingManager"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingManager</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.pending.PendingManager.activate"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;activate</a>
   </span>
 
       </li>
