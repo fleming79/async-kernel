@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0] - 2026-06-22
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Interface startup refactoring [#491](https://github.com/fleming79/async-kernel/pull/491)
+
+- Add IPApp [#480](https://github.com/fleming79/async-kernel/pull/480)
+
+### <!-- 1 --> 🚀 Features
+
+- Startup and test client tweaks [#488](https://github.com/fleming79/async-kernel/pull/488)
+
+- Caller id refactoring [#489](https://github.com/fleming79/async-kernel/pull/489)
+
+- ZMQInterface simplification [#484](https://github.com/fleming79/async-kernel/pull/484)
+
+- Support zmq curve encryption [#482](https://github.com/fleming79/async-kernel/pull/482)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Use cancellation for interface shutdown. [#501](https://github.com/fleming79/async-kernel/pull/501)
+
+- Use a Countdown event in _start_hb_iopub_shell_control_threads. [#500](https://github.com/fleming79/async-kernel/pull/500)
+
+- Maintenance - update uv.lock and pre-commit [#499](https://github.com/fleming79/async-kernel/pull/499)
+
+- Restore settings to start_kernel_callable_interface [#498](https://github.com/fleming79/async-kernel/pull/498)
+
+- Change metadata 'supported_encryption' to a list and test against latest jupyter_client. [#497](https://github.com/fleming79/async-kernel/pull/497)
+
+- BaseInterface and Caller shutdown tweaks [#496](https://github.com/fleming79/async-kernel/pull/496)
+
+- Update uv.lock and pre-commit. [#495](https://github.com/fleming79/async-kernel/pull/495)
+
+- Refactor SingleAsyncQueue and remove public 'queue' attribute [#494](https://github.com/fleming79/async-kernel/pull/494)
+
+- Maintenance [#493](https://github.com/fleming79/async-kernel/pull/493)
+
+- Revise kernel interrupts. [#490](https://github.com/fleming79/async-kernel/pull/490)
+
+- Reliability fixes [#487](https://github.com/fleming79/async-kernel/pull/487)
+
+- Add a  stopping Pending on the Interface and add debugger shutdown. [#486](https://github.com/fleming79/async-kernel/pull/486)
+
+- Maintenance [#485](https://github.com/fleming79/async-kernel/pull/485)
+
+- Bump the actions group with 2 updates [#483](https://github.com/fleming79/async-kernel/pull/483)
+
+- Maintenance [#481](https://github.com/fleming79/async-kernel/pull/481)
+
 ## [0.19.2] - 2026-06-04
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -12,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename methods on the shell to more resemble those on the kerenel. [#477](https://github.com/fleming79/async-kernel/pull/477)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.19.2 [#479](https://github.com/fleming79/async-kernel/pull/479)
 
 - Run do_execute in tasks [#478](https://github.com/fleming79/async-kernel/pull/478)
 
@@ -1335,6 +1387,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.20.0]: https://github.com/fleming79/async-kernel/compare/v0.19.2..v0.20.0
 [0.19.2]: https://github.com/fleming79/async-kernel/compare/v0.19.1..v0.19.2
 [0.19.1]: https://github.com/fleming79/async-kernel/compare/v0.19.0..v0.19.1
 [0.19.0]: https://github.com/fleming79/async-kernel/compare/v0.18.3..v0.19.0
