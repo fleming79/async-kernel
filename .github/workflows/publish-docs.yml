@@ -20,7 +20,7 @@ jobs:
     name: Deploy dev or latest version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
@@ -32,7 +32,7 @@ jobs:
           version-file: "pyproject.toml"
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
