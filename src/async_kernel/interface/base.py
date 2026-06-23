@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_waiter, current_async_library
+from aiologic.lowlevel import AsyncLibraryNotFoundError, async_sleep_forever, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
 from traitlets.config.application import Application, ClassesType
@@ -387,7 +387,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         try:
             async with self:
                 # Wait forever. This will exit when stop is called.
-                await create_async_waiter()
+                await async_sleep_forever()
         finally:
             if stopped:
                 stopped()
