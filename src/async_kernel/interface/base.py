@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
+from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_waiter, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
 from traitlets.config.application import Application, ClassesType
@@ -353,7 +353,12 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         try:
             async with caller:
                 with anyio.CancelScope() as scope:
-                    self._scope = scope
+
+                    def stop(_):
+                        self.log.info("Stopping kernel")
+                        caller.call_later(0.5, scope.cancel, "Stopping kernel")
+
+                    self.stopping.add_done_callback(stop)
                     try:
                         async with self.kernel.running():
                             if set_started:
@@ -381,8 +386,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         """
         try:
             async with self:
-                while not self.stopping.done():
-                    await anyio.sleep(1e6)
+                # Wait forever. This will exit when stop is called.
+                await create_async_waiter()
         finally:
             if stopped:
                 stopped()
@@ -392,10 +397,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         Stop the kernel.
         """
         self.stopping.set_result(None)
-        if scope := getattr(self, "_scope", None):
-            del self._scope
-            self.log.info("Stopping kernel")
-            self.callers[Channel.shell].call_later(0.5, scope.cancel, "Stopping kernel")
         if not self.started.done():
             self.started.cancel("Stopped early")
             if BaseInterface._instance is self:
