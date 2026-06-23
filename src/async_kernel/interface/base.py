@@ -32,6 +32,7 @@ from async_kernel.typing import (
     Hosts,
     Message,
     MsgHeader,
+    MsgType,
     NoValue,
     RunSettings,
     T,
@@ -82,10 +83,12 @@ class DictValueLiteralEval(traitlets.Dict):
 
 class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]):
     """
-    The base class for a singleton kernel interface.
+    The base class for kernel interface (singleton).
 
-    This singleton provides configuration and convenient references to other objects.
-    This is where kerenels should be launched f
+    The interface creates the kernel and provides external communication. It is also
+    the parent object for all objects that subclass from `HasInterface`. Configurable
+    objects that subclass from `HasInterface` inherit their configuration from the
+    interface (Application).
 
     Usage:
         launch:
@@ -95,6 +98,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         async context:
             ```python
             async with Interface() as interface:
+                interface.kernel
                 ...
             ```
     """
@@ -304,7 +308,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
         Warning:
             - Running in a thread other than the 'MainThread' is permitted, but discouraged.
-            - Blocking calls can only be interrupted in the 'MainThread' because [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
+            - Blocking calls can only be interrupted in the 'MainThread' because
+                [*'threads cannot be destroyed, stopped, suspended, resumed, or interrupted'*](https://docs.python.org/3/library/threading.html#module-threading).
             - Some libraries may assume the call is occurring in the 'MainThread'.
             - If there is an `asyncio` or `trio` event loop already running in the desired thread;
                 start asynchronously instead (`async with interface: ...`).
@@ -394,7 +399,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     def stop(self) -> None:
         """
-        Stop the kernel.
+        Stop the kernel and this interface.
         """
         self.stopping.set_result(None)
         if not self.started.done():
@@ -414,7 +419,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     def msg(
         self,
-        msg_type: str,
+        msg_type: str | MsgType,
         *,
         content: T | None = None,
         parent: Message | dict[str, Any] | None = None,
@@ -424,10 +429,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     ) -> Message[T]:
         """
         Create a new message.
-
-        This format is different from what is sent over the wire. The
-        serialize/deserialize methods converts this nested message dict to the wire
-        format, which is a list of message parts.
         """
         parent = parent or utils.get_parent_message()
         if header is None:
