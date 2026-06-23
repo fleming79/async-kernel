@@ -4765,7 +4765,7 @@ async context:
         <span class="k">try</span><span class="p">:</span>
             <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="c1"># Wait forever. This will exit when stop is called.</span>
-                <span class="k">await</span> <span class="n">create_async_waiter</span><span class="p">()</span>
+                <span class="k">await</span> <span class="n">async_sleep_forever</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">stopped</span><span class="p">:</span>
                 <span class="n">stopped</span><span class="p">()</span>
@@ -5692,7 +5692,7 @@ async context:
     <span class="k">try</span><span class="p">:</span>
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="p">:</span>
             <span class="c1"># Wait forever. This will exit when stop is called.</span>
-            <span class="k">await</span> <span class="n">create_async_waiter</span><span class="p">()</span>
+            <span class="k">await</span> <span class="n">async_sleep_forever</span><span class="p">()</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">stopped</span><span class="p">:</span>
             <span class="n">stopped</span><span class="p">()</span>
@@ -7829,7 +7829,7 @@ async context:
         <span class="k">try</span><span class="p">:</span>
             <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="c1"># Wait forever. This will exit when stop is called.</span>
-                <span class="k">await</span> <span class="n">create_async_waiter</span><span class="p">()</span>
+                <span class="k">await</span> <span class="n">async_sleep_forever</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">stopped</span><span class="p">:</span>
                 <span class="n">stopped</span><span class="p">()</span>
@@ -8756,7 +8756,7 @@ async context:
     <span class="k">try</span><span class="p">:</span>
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="p">:</span>
             <span class="c1"># Wait forever. This will exit when stop is called.</span>
-            <span class="k">await</span> <span class="n">create_async_waiter</span><span class="p">()</span>
+            <span class="k">await</span> <span class="n">async_sleep_forever</span><span class="p">()</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">stopped</span><span class="p">:</span>
             <span class="n">stopped</span><span class="p">()</span>
