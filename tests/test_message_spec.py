@@ -23,6 +23,7 @@ async def test_execute(client: AsyncKernelClient, kernel: Kernel):
 
 
 async def test_execute_suppress(client: AsyncKernelClient, kernel: Kernel):
+    await utils.clear_iopub(client)
     for mode in ["normal", "suppress"]:
         msg_id = client.execute(code="123" if mode == "normal" else "123;")
         reply = await utils.get_reply(client, msg_id, clear_pub=False)
