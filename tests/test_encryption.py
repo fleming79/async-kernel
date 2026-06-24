@@ -17,6 +17,7 @@ def encryption(request):
 
 async def test_curve_encryption(subprocess_kernels_client: AsyncKernelClient, encryption: str):
     client = subprocess_kernels_client
+    await utils.clear_iopub(client)
     if encryption == "curve":
         assert client.curve_publickey
         assert client.curve_secretkey
