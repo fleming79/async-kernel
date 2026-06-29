@@ -34,14 +34,15 @@ class Comm(HasInterface, BaseComm):
     ) -> None:
         """Helper for sending a comm message on IOPub."""
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
-        self.parent.iopub_send(
-            msg_or_type=msg_type,
-            content=content,
-            metadata=metadata,
-            parent=None,
-            ident=self.topic,
-            buffers=buffers,
-        )
+        if parent := self.parent:
+            parent.iopub_send(
+                msg_or_type=msg_type,
+                content=content,
+                metadata=metadata,
+                parent=None,
+                ident=self.topic,
+                buffers=buffers,
+            )
 
     @override
     def handle_msg(self, msg: comm.base_comm.MessageType) -> None:
