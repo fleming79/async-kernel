@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import pathlib
 import sys
 import threading
 import time
@@ -73,7 +74,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
 
-        if self._sockets and self.trait_has_value("connection_file") and proposal["value"] != self.connection_file:
+        if self._sockets and self.connection_file and proposal["value"] != self.connection_file:
             msg = "It is too late to set the connection file!"
             raise RuntimeError(msg)
         return proposal["value"]
@@ -120,12 +121,12 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
         if os.path.exists(self.connection_file):  # noqa: PTH110
             self.load_connection_file()
-        self.write_connection_file()
         try:
             async with super().__asynccontextmanager__(set_started=False):
                 self._start_hb_iopub_shell_control_threads()
                 with self._bind_socket(Channel.stdin):
                     assert len(self._sockets) == len(Channel)
+                    self.write_connection_file()
                     if set_started:
                         self._started()
                     yield self
@@ -214,8 +215,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         Bind a zmq.Socket storing a reference to the socket and the port
         details and closing the socket on leaving the context.
         """
-        port = int(getattr(self, f"{channel}_port"))
-        assert port
         assert channel not in self._sockets
 
         match channel:
@@ -229,15 +228,34 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             socket.curve_secretkey = self.curve_secretkey
             socket.curve_publickey = self.curve_publickey
             socket.curve_server = True
-        # bind the socket
-        addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
-        socket.bind(addr)
+        # Bind the socket
+        if port := int(getattr(self, f"{channel}_port")):
+            addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
+            socket.bind(addr)
+        else:
+            # Bind to a new port
+            if self.transport == "tcp":
+                port = socket.bind_to_random_port(f"tcp://{self.ip}")
+            else:
+                n, offset = 0, list(Channel).index(channel)
+                while True:
+                    n = n + 10
+                    port = n + offset
+                    if not pathlib.Path(f"{self.ip}-{port}").exists():
+                        try:
+                            socket.bind(f"ipc://{self.ip}-{port}")
+                            break
+                        except zmq.ZMQError:
+                            pass
+            assert port
+            setattr(self, f"{channel}_port", port)
+
         self.log.debug("%s socket on port: %i", channel, port)
         self._sockets[channel] = socket
         try:
             yield socket
         finally:
-            socket.close(linger=50)
+            socket.close()
             self._sockets.pop(channel)
 
     @override
