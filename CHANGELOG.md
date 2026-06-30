@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.2] - 2026-06-29
+
+### <!-- 5 --> 📝 Documentation
+
+- Update docstrings for BaseInterface. [#508](https://github.com/fleming79/async-kernel/pull/508)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Avoid attribute error in Comm.publish_msg in case the parent is gc before the object. [#511](https://github.com/fleming79/async-kernel/pull/511)
+
+- Update uv.lock and pre-commit-config.yaml [#510](https://github.com/fleming79/async-kernel/pull/510)
+
+- Add more clear_iopub to tests that use utils.check_pub_message. [#509](https://github.com/fleming79/async-kernel/pull/509)
+
+- Swap async_sleep_forever for create_async_waiter in [#507](https://github.com/fleming79/async-kernel/pull/507)
+
+- Refactor BaseInterface context and stop. [#506](https://github.com/fleming79/async-kernel/pull/506)
+
 ## [0.20.1] - 2026-06-22
 
 ### <!-- 2 --> 🐛 Fixes
@@ -12,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use a long sleep in a loop instead of anyio.sleep_forever which returns immediately on pyodide. [#504](https://github.com/fleming79/async-kernel/pull/504)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.20.1 [#505](https://github.com/fleming79/async-kernel/pull/505)
 
 - Bump actions/checkout from 6 to 7 in the actions group [#503](https://github.com/fleming79/async-kernel/pull/503)
 
@@ -1399,6 +1419,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.20.2]: https://github.com/fleming79/async-kernel/compare/v0.20.1..v0.20.2
 [0.20.1]: https://github.com/fleming79/async-kernel/compare/v0.20.0..v0.20.1
 [0.20.0]: https://github.com/fleming79/async-kernel/compare/v0.19.2..v0.20.0
 [0.19.2]: https://github.com/fleming79/async-kernel/compare/v0.19.1..v0.19.2
