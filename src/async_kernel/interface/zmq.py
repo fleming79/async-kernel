@@ -234,11 +234,12 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             socket.bind(addr)
         else:
             # Bind to a new port
-            if self.transport == "tcp":
-                port = socket.bind_to_random_port(f"tcp://{self.ip}")
-            else:
-                n, offset = 0, list(Channel).index(channel)
-                while True:
+            while True:
+                if self.transport == "tcp":
+                    port = socket.bind_to_random_port(f"tcp://{self.ip}")
+                    break
+                else:
+                    n, offset = 0, list(Channel).index(channel)
                     n = n + 10
                     port = n + offset
                     if not pathlib.Path(f"{self.ip}-{port}").exists():
@@ -255,7 +256,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         try:
             yield socket
         finally:
-            socket.close()
+            socket.close(linger=50)
             self._sockets.pop(channel)
 
     @override
