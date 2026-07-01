@@ -96,10 +96,12 @@ class TestBaseInterface:
                 pass
 
     def test_start_bad_settings(self):
+        def bad_loop_factory():
+            raise RuntimeError
 
-        app = BaseInterface(shell_class=BaseShell, backend_options={"loop_factory": "not a factory"})
+        app = BaseInterface(shell_class=BaseShell, backend_options={"loop_factory": bad_loop_factory})
         assert BaseInterface._instance is app
-        with pytest.raises(TypeError, match="object is not callable"):
+        with pytest.raises(RuntimeError):
             app.start()
         assert BaseInterface._instance is None
 

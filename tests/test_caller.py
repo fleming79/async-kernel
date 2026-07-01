@@ -745,3 +745,9 @@ class TestCaller:
         assert await caller.call_soon(lambda: 1 + 1) == 2
         caller.stop()
         await caller.stopped
+
+    async def test_loop_factory(self, anyio_backend: Backend):
+        caller = Caller("NewThread", backend="asyncio", backend_options={"loop_factory": "asyncio.new_event_loop"})
+        assert await caller.call_soon(lambda: 1 + 1) == 2
+        caller.stop()
+        await caller.stopped

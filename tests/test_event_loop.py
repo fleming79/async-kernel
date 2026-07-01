@@ -218,3 +218,10 @@ class TestHost:
             summary
             == "asyncio-guest1=asyncio task=0 end | asyncio-guest1=asyncio task=0 start | asyncio-guest1=asyncio task=1 end | asyncio-guest1=asyncio task=1 start | asyncio-guest2=asyncio task=0 end | asyncio-guest2=asyncio task=0 start | asyncio-guest2=asyncio task=1 end | asyncio-guest2=asyncio task=1 start | asyncio-host=asyncio task=0 end | asyncio-host=asyncio task=0 start | asyncio-host=asyncio task=1 end | asyncio-host=asyncio task=1 start"
         )
+
+    @pytest.mark.parametrize("loop_factory", [asyncio.new_event_loop, "asyncio.new_event_loop"])
+    def test_loop_factory(self, loop_factory):
+
+        async_kernel.event_loop.run(
+            anyio.sleep, (0,), {"backend": "asyncio", "backend_options": {"loop_factory": loop_factory}}
+        )

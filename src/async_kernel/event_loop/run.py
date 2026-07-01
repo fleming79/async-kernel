@@ -56,17 +56,21 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
     Custom host:
         A custom host can be started by subclassing [Host][] and passed as the 'host_class' as the
         class or a dotted path if it is importable.
+
+    loop_factory:
+        When there is no host and the backend is 'asyncio', the loop factory can be specified
+        in backend_options as a function or an importatable dotted path such as `'asyncio.new_event_loop'`.
     """
     if settings.get("host"):
         # A gui with the backend running as a guest.
         return Host.run(func, args, settings)
     # backend only.
-    return anyio.run(
-        func,
-        *args,
-        backend=Backend(settings.get("backend", "asyncio")),
-        backend_options=settings.get("backend_options"),
-    )
+    if (backend_options := settings.get("backend_options")) and isinstance(
+        (loop_factory := backend_options.get("loop_factory")), str
+    ):
+        # Import the loop factory
+        backend_options["loop_factory"] = import_item(loop_factory)
+    return anyio.run(func, *args, backend=Backend(settings.get("backend", "asyncio")), backend_options=backend_options)
 
 
 def get_runtime_matplotlib_guis(thread: threading.Thread | None = None) -> tuple[str, ...]:
