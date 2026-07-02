@@ -31,7 +31,7 @@ globals()["start_guest_run_trio"] = lazy_import("trio.lowlevel", "start_guest_ru
 
 def get_start_guest_run(backend: Backend):
     """
-    Get the `start_guest_run` function corresponding to the `backend`.
+    Get the `start_guest_run` function to run a function inside `backend` running as a guest.
     """
     return start_guest_run_asyncio if Backend(backend) is Backend.asyncio else start_guest_run_trio
 
