@@ -65,7 +65,7 @@ class Backend(enum.StrEnum):
 
 @final
 class Hosts(enum.StrEnum):
-    "An enum of host names that available to start using [detail][async_kernel.event_loop.run.run]."
+    "An enum of host names that are available in [async_kernel.event_loop.run.run][]."
 
     tk = "tk"
     "An eventloop for [tkinter][]."
@@ -423,7 +423,13 @@ class RunSettings(TypedDict):
     "The backend to use for the caller."
 
     backend_options: NotRequired[dict | None]
-    "The backend options to specify for [anyio.run][] (or `start_guest_run` when a loop is specified)."
+    """
+    The backend options to specify for [anyio.run][] (or `start_guest_run` when a host is specified).
+    
+    Tip:
+        When there is no host and the backend is asyncio. 'loop_factory' can be specified as a function
+        or importable path like `'asyncio.new_event_loop'`.
+    """
 
     host: NotRequired[Hosts | None | Literal["tk", "qt"]]
     "The type of host where the backend will run."

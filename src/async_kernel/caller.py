@@ -24,6 +24,7 @@ from aiologic.meta import await_for, iscoroutinelike
 from typing_extensions import override
 from wrapt import lazy_import
 
+import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, SingleAsyncQueue
 from async_kernel.event_loop.run import Host, get_start_guest_run
@@ -437,19 +438,14 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             def async_kernel_caller() -> None:
                 self._thread, self._caller_id = threading.current_thread(), threading.get_ident()
+                settings = RunSettings(
+                    backend=self.backend,
+                    host=self.host,
+                    backend_options=self.backend_options,
+                    host_options=self.host_options,
+                )
                 try:
-                    if not self.host:
-                        # No gui (default)
-                        anyio.run(run_caller_in_context, backend=self.backend, backend_options=self.backend_options)
-                    else:
-                        # A gui with the backend running as a guest.
-                        settings = RunSettings(
-                            backend=self.backend,
-                            host=self.host,
-                            backend_options=self.backend_options,
-                            host_options=self.host_options,
-                        )
-                        Host.run(run_caller_in_context, (), settings)
+                    async_kernel.event_loop.run(run_caller_in_context, (), settings)
                 except Exception as e:
                     if not self._stopping.done():
                         self.stop()
