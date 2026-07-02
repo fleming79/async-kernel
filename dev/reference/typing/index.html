@@ -3638,7 +3638,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="#async_kernel.typing.Hosts">Hosts</a></code></b>
           –
           <div class="doc-md-description">
-            <p>An enum of host names that available to start using <a class="autorefs autorefs-internal" title="            run" href="../event_loop/#async_kernel.event_loop.run.run">detail</a>.</p>
+            <p>An enum of host names that are available in <a class="autorefs autorefs-internal" title="            run" href="../event_loop/#async_kernel.event_loop.run.run">async_kernel.event_loop.run.run</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -4919,7 +4919,7 @@ viewing the latest version.
 
 
 
-        <p>An enum of host names that available to start using <a class="autorefs autorefs-internal" title="            run" href="../event_loop/#async_kernel.event_loop.run.run">detail</a>.</p>
+        <p>An enum of host names that are available in <a class="autorefs autorefs-internal" title="            run" href="../event_loop/#async_kernel.event_loop.run.run">async_kernel.event_loop.run.run</a>.</p>
 
           
 
@@ -5190,7 +5190,7 @@ viewing the latest version.
 <span class="normal">86</span>
 <span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Hosts</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
-    <span class="s2">&quot;An enum of host names that available to start using [detail][async_kernel.event_loop.run.run].&quot;</span>
+    <span class="s2">&quot;An enum of host names that are available in [async_kernel.event_loop.run.run][].&quot;</span>
 
     <span class="n">tk</span> <span class="o">=</span> <span class="s2">&quot;tk&quot;</span>
     <span class="s2">&quot;An eventloop for [tkinter][].&quot;</span>
@@ -10243,7 +10243,7 @@ viewing the latest version.
               (<code><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a> | None]</code>)
           –
           <div class="doc-md-description">
-            <p>The backend options to specify for <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a> (or <code>start_guest_run</code> when a loop is specified).</p>
+            <p>The backend options to specify for <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a> (or <code>start_guest_run</code> when a host is specified).</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -10276,14 +10276,26 @@ viewing the latest version.
 <span class="normal">429</span>
 <span class="normal">430</span>
 <span class="normal">431</span>
-<span class="normal">432</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunSettings</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunSettings</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="s2">&quot;A dict of settings to use with [async_kernel.event_loop.run][].&quot;</span>
 
     <span class="n">backend</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Backend</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">]]</span>
     <span class="s2">&quot;The backend to use for the caller.&quot;</span>
 
     <span class="n">backend_options</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
-    <span class="s2">&quot;The backend options to specify for [anyio.run][] (or `start_guest_run` when a loop is specified).&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The backend options to specify for [anyio.run][] (or `start_guest_run` when a host is specified).</span>
+
+<span class="sd">    Tip:</span>
+<span class="sd">        When there is no host and the backend is asyncio. &#39;loop_factory&#39; can be specified as a function</span>
+<span class="sd">        or importable path like `&#39;asyncio.new_event_loop&#39;`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">host</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;tk&quot;</span><span class="p">,</span> <span class="s2">&quot;qt&quot;</span><span class="p">]]</span>
     <span class="s2">&quot;The type of host where the backend will run.&quot;</span>
@@ -10346,8 +10358,14 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>The backend options to specify for <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a> (or <code>start_guest_run</code> when a loop is specified).</p>
+        <p>The backend options to specify for <a class="autorefs autorefs-external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run">anyio.run</a> (or <code>start_guest_run</code> when a host is specified).</p>
 
+
+<details class="tip" open>
+  <summary>Tip</summary>
+  <p>When there is no host and the backend is asyncio. 'loop_factory' can be specified as a function
+or importable path like <code>'asyncio.new_event_loop'</code>.</p>
+</details>
           
     </div>
 
@@ -10564,13 +10582,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
 <span class="normal">442</span>
 <span class="normal">443</span>
 <span class="normal">444</span>
@@ -10581,7 +10593,13 @@ viewing the latest version.
 <span class="normal">449</span>
 <span class="normal">450</span>
 <span class="normal">451</span>
-<span class="normal">452</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerCreateOptions</span><span class="p">(</span><span class="n">RunSettings</span><span class="p">):</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerCreateOptions</span><span class="p">(</span><span class="n">RunSettings</span><span class="p">):</span>
     <span class="s2">&quot;Options to use when creating an instance of a [Caller][async_kernel.caller.Caller].&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
