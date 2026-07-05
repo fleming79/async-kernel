@@ -7,12 +7,13 @@ import os
 import sys
 import threading
 import time
-from contextlib import asynccontextmanager
+from collections.abc import Callable
+from contextlib import asynccontextmanager, contextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import zmq
-from aiologic import BinarySemaphore, CountdownEvent
-from aiologic.lowlevel import enable_signal_safety
+from aiologic import BinarySemaphore
+from aiologic.lowlevel import AsyncEvent, create_async_event, enable_signal_safety
 from jupyter_client.connect import ConnectionFileMixin
 from jupyter_client.session import Session
 from traitlets import traitlets
@@ -23,6 +24,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.interface.base import BaseInterface, HasInterface
+from async_kernel.interface.poll_zmq import PollZMQ
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
 
 if TYPE_CHECKING:
@@ -69,6 +71,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     _zmq_context = Fixed(zmq.Context)
     _iopub_url = "inproc://iopub-capture"
     _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
+
+    poll_zmq: Fixed[Self, PollZMQ] = Fixed(PollZMQ)
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
@@ -121,92 +125,79 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         if os.path.exists(self.connection_file):  # noqa: PTH110
             self.load_connection_file()
         self.write_connection_file()
-        try:
+        with self._open_sockets() as ready:
             async with super().__asynccontextmanager__(set_started=False):
-                self._start_hb_iopub_shell_control_threads()
-                with self._bind_socket(Channel.stdin):
-                    assert len(self._sockets) == len(Channel)
-                    if set_started:
-                        self._started()
-                    yield self
+                await ready
+                assert len(self._sockets) == len(Channel)
+                self.started.add_done_callback(lambda _: self.poll_zmq.start())
+                if set_started:
+                    self._started()
+                yield self
+
+    @contextmanager
+    def _open_sockets(self) -> Generator[AsyncEvent, Any, None]:
+        ready = create_async_event()
+        try:
+            with (
+                self._heartbeat(),
+                self._message_handler(Channel.shell),
+                self._message_handler(Channel.control),
+                self._bind_socket(Channel.stdin),
+            ):
+                threading.Thread(target=self._pub_proxy, name="iopub proxy", args=[ready.set]).start()
+                yield ready
         finally:
-            self._zmq_context.term()
+            self.poll_zmq.stop()
+            self.log.info("Destroying zmq context")
+            self._zmq_context.destroy(0)
+            self.log.info("zmq context destroyed")
 
-    def _start_hb_iopub_shell_control_threads(self) -> None:
-        def heartbeat(ready: Callable[[], None]) -> None:
-            # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
-            utils.mark_thread_pydev_do_not_trace()
-            with self._bind_socket(Channel.heartbeat) as socket:
-                ready()
-                self.started.wait_sync()
-                try:
-                    zmq.proxy(socket, socket)
-                except zmq.ContextTerminated:
-                    return
+    @contextmanager
+    def _heartbeat(self) -> Generator[None, Any, None]:
+        # ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels
+        def heartbeat(socket: zmq.Socket, flags: int) -> None:
+            msg = socket.recv_multipart()
+            socket.send_multipart(msg)
 
-        def pub_proxy(ready: Callable[[], None]) -> None:
-            utils.mark_thread_pydev_do_not_trace()
+        with self._bind_socket(Channel.heartbeat) as socket, self.poll_zmq.event_handler(socket, heartbeat):
+            yield
 
-            # We use an internal proxy to collect pub messages for distribution.
-            # Each thread needs to open its own socket to publish to the internal proxy.
-            # Ref: https://zguide.zeromq.org/docs/chapter2/#Working-with-Messages (fig 14)
-
-            frontend: zmq.Socket = self._zmq_context.socket(zmq.XSUB)
-            frontend.bind(Caller.iopub_url)
-
-            # Capture broadcast messages received on both frontend and backend
-            capture = self._zmq_context.socket(zmq.PUB)
-            capture.bind(self._iopub_url)
-
-            with self._bind_socket(Channel.iopub) as iopub_socket:
-                ready()
-                try:
-                    zmq.proxy(frontend, iopub_socket, capture)
-                except (zmq.ContextTerminated, Exception):
-                    pass
-            frontend.close(linger=50)
-            capture.close(linger=50)
-
-        ready = CountdownEvent(5)
-
-        threading.Thread(target=heartbeat, name="heartbeat", args=[ready.down]).start()
-        threading.Thread(target=pub_proxy, name="iopub proxy", args=[ready.down]).start()
-        threading.Thread(target=self._pub_capture, args=[ready.down]).start()
-        # message loops
-        for channel in [Channel.shell, Channel.control]:
-            name = f"{channel}-receive_msg_loop"
-            threading.Thread(target=self.receive_msg_loop, name=name, args=(channel, ready.down)).start()
-        ready.wait()
-
-    def _pub_capture(self, ready: Callable[[], None]) -> None:
-        """
-        Capture connection messages on iopub.
-
-        Will send an 'iopub_welcome' whenever a socket subscribes to the iopub socket [ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message).
-        """
-
+    def _pub_proxy(self, ready: Callable[[], None]) -> None:
         utils.mark_thread_pydev_do_not_trace()
 
-        socket: zmq.Socket = self._zmq_context.socket(zmq.SUB)
-        socket.linger = 0
-        socket.connect(self._iopub_url)
+        def on_reg_msg(socket: Socket, flags: int) -> None:
+            if frames := socket.recv_multipart():
+                frame = next(iter(frames))
+                if frame[0] == 1:
+                    msg = self.msg("iopub_welcome", content={"subscription": frame[1:].decode()})
+                    self.iopub_send(msg, parent=None)
+
+        # We use an internal proxy to collect pub messages for distribution.
+        # Each thread needs to open its own socket to publish to the internal proxy.
+        # Ref: https://zguide.zeromq.org/docs/chapter2/#Working-with-Messages (fig 14)
+
+        frontend: zmq.Socket = self._zmq_context.socket(zmq.XSUB)
+        frontend.bind(Caller.iopub_url)
+
+        # Capture broadcast messages received on both frontend and backend
         # welcome_message:  https://jupyter.org/enhancement-proposals/65-jupyter-xpub/jupyter-xpub.html#replace-pub-socket-with-xpub-socket
+        capture: zmq.Socket = zmq.Context(0).socket(zmq.PUB)
+        capture_: zmq.Socket = capture.context.socket(zmq.SUB)
+
+        capture.bind(self._iopub_url)
+        capture_.connect(self._iopub_url)
         # Only subscribe to the 'pub subscribe' topic byte `1` (byte `0` is 'pub unsubscribe').
-        socket.subscribe(b"\x01")
-        with socket:
+        capture_.subscribe(b"\x01")
+
+        with (
+            self._bind_socket(Channel.iopub) as iopub_socket,
+            capture,
+            capture_,
+            self.poll_zmq.event_handler(capture_, on_reg_msg),
+            contextlib.suppress(zmq.ContextTerminated, Exception),
+        ):
             ready()
-            self.started.wait_sync()
-            while True:
-                try:
-                    if frames := socket.recv_multipart():
-                        frame = next(iter(frames))
-                        if frame[0] == 1:
-                            msg = self.msg("iopub_welcome", content={"subscription": frame[1:].decode()})
-                            self.iopub_send(msg, parent=None)
-                except zmq.ContextTerminated:
-                    break
-                except Exception:
-                    continue
+            zmq.proxy(frontend, iopub_socket, capture)
 
     @contextlib.contextmanager
     def _bind_socket(self, channel: Channel) -> Generator[Any | Socket[Any], Any, None]:
@@ -249,7 +240,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         socket = self._sockets[Channel.stdin]
         # Clear messages on the stdin socket
         while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
-            socket.recv_multipart(flags=Flag.DONTWAIT, copy=False)
+            socket.recv_multipart(flags=Flag.DONTWAIT)
         # Send the input request.
         assert self is not None
         self.session.send(
@@ -304,13 +295,11 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 buffers=buffers,
             )
 
-    def receive_msg_loop(self, channel: Literal[Channel.control, Channel.shell], ready: Callable[[], None]) -> None:
+    @contextmanager
+    def _message_handler(self, channel: Literal[Channel.control, Channel.shell]):
         """
         Opens a zmq socket for the channel, receives messages and calls the message handler.
         """
-        if not utils.LAUNCHED_BY_DEBUGPY:
-            utils.mark_thread_pydev_do_not_trace()
-
         session, log, message_handler = self.session, self.log, self.kernel.message_handler
         lock = BinarySemaphore()
 
@@ -329,18 +318,14 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 if msg:
                     log.debug("***send_reply %s*** %s", channel, msg)
 
-        with self._bind_socket(channel) as socket:
-            ready()
-            self.started.wait_sync()
+        def recv_msg(socket: Socket, flags: int) -> None:
+            try:
+                ident, msg = session.recv(socket, mode=zmq.DONTWAIT)
+                msg["channel"] = channel  # pyright: ignore[reportOptionalSubscript]
+                job = Job(received_time=time.monotonic(), msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
+                message_handler(job, send_reply, self.iopub_send)
+            except Exception as e:
+                log.debug("Bad message on %s: %s", channel, e)
 
-            while True:
-                try:
-                    ident, msg = session.recv(socket, mode=zmq.BLOCKY, copy=False)
-                    msg["channel"] = channel  # pyright: ignore[reportOptionalSubscript]
-                    job = Job(received_time=time.monotonic(), msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
-                    message_handler(job, send_reply, self.iopub_send)
-                except zmq.ContextTerminated:
-                    break
-                except Exception as e:
-                    log.debug("Bad message on %s: %s", channel, e)
-                    continue
+        with self._bind_socket(channel) as socket, self.poll_zmq.event_handler(socket, recv_msg):
+            yield

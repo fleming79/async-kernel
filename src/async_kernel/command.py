@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import contextlib
 import sys
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
@@ -223,10 +224,9 @@ Tips:
         case Mode.start | Mode.help_all | Mode.show_config | Mode.show_config_json:
             launcher: InterfaceStartType = import_launcher(settings.get("launcher", ""))
             settings["flags"] = flags
-            try:
+            with contextlib.suppress(KeyboardInterrupt):
                 launcher(settings)
-            except KeyboardInterrupt:
-                sys.exit(0)
         case _:
             parser.print_help()
+
     sys.exit(0)
