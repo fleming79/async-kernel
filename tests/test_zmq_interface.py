@@ -3,7 +3,6 @@ from __future__ import annotations
 import pathlib
 from typing import TYPE_CHECKING, Any, Literal
 
-import anyio
 import pytest
 
 from async_kernel import Pending
@@ -101,7 +100,6 @@ async def test_interrupt_request_async_request(subprocess_kernels_client: AsyncK
     msg_id = client.execute(f"import anyio;await anyio.sleep({utils.TIMEOUT * 4})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await anyio.sleep(0.5)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
