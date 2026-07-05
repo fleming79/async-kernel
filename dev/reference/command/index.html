@@ -1635,8 +1635,7 @@ program is interrupted.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/command.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 69</span>
-<span class="normal"> 70</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 70</span>
 <span class="normal"> 71</span>
 <span class="normal"> 72</span>
 <span class="normal"> 73</span>
@@ -1955,12 +1954,11 @@ program is interrupted.</p>
         <span class="k">case</span> <span class="n">Mode</span><span class="o">.</span><span class="n">start</span> <span class="o">|</span> <span class="n">Mode</span><span class="o">.</span><span class="n">help_all</span> <span class="o">|</span> <span class="n">Mode</span><span class="o">.</span><span class="n">show_config</span> <span class="o">|</span> <span class="n">Mode</span><span class="o">.</span><span class="n">show_config_json</span><span class="p">:</span>
             <span class="n">launcher</span><span class="p">:</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">import_launcher</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;launcher&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
             <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flags</span>
-            <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">):</span>
                 <span class="n">launcher</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
             <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
