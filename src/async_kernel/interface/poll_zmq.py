@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 
 import zmq
 from aiologic import BusyResourceError
-from aiologic.lowlevel import create_green_waiter
+from aiologic.lowlevel import create_thread_lock
 from typing_extensions import TypeVar
 from zmq import Socket
 from zmq.backend import zmq_poll
@@ -88,10 +88,12 @@ class PollZMQ:
         sock.bind(addr := f"inproc://async_kernel_zmq_poller_{id(self)}")
         self._sock_ctrl_send.connect(addr)
 
-        started = create_green_waiter()
-        self._thread = threading.Thread(target=zmq_poll_thread, args=[self._handlers, sock, started.wake])
+        self._lock = create_thread_lock()
+        self._lock.acquire()
+        self._thread = threading.Thread(target=zmq_poll_thread, args=[self._handlers, sock, self._lock.release])
         self._thread.start()
-        started.wait()
+        self._lock.acquire()
+        self._lock.release()
         return self
 
     def __del__(self) -> None:
@@ -111,11 +113,14 @@ class PollZMQ:
         return not alive
 
     def _wake_thread(self):
-        if self._thread and self._thread.is_alive():
+        if self._thread and self._handlers:
+            self._lock.acquire()
             try:
-                self._sock_ctrl_send.send(b"")
+                self._sock_ctrl_send.send(b"", zmq.DONTWAIT)
             except zmq.ZMQError:
                 pass
+            finally:
+                self._lock.release()
 
     def stop(self) -> None:
         """Stop the poll thread."""

@@ -143,8 +143,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                             self._started()
                         yield self
             finally:
-                while self._iopub_sockets:
-                    self._iopub_sockets.popitem()[1].close(0)
                 self.log.debug("Stopping PollZMQ")
                 self._poll_zmq.stop()
                 self.log.debug("Terminating zmq sontexts")
