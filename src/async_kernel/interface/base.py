@@ -184,8 +184,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     """
 
     _instance: Self | None = None
-    _zmq_context = None
-    last_interrupt_frame = None
 
     @traitlets.default("backend")
     def _default_backend(self) -> Backend:
@@ -344,14 +342,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         self.iopub_send = cache_iopub_send
         self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
 
-        caller = Caller(
-            "manual",
-            name="Shell",
-            protected=True,
-            log=self.log,
-            zmq_context=self._zmq_context,
-            host=self.host,
-        )
+        caller = Caller("manual", name="Shell", protected=True, log=self.log, host=self.host)
         self.callers[Channel.shell] = caller
         self.callers[Channel.control] = caller.get(name="Control", log=self.log, protected=True)
         self.backend = Backend(current_async_library())

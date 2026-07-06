@@ -42,7 +42,6 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     import trio  # noqa: TC004
-    import zmq
     from aiologic.lowlevel import AsyncEvent
 
     from async_kernel.typing import P
@@ -196,7 +195,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         CallerState.stopping: "🏁 stopping",
         CallerState.stopped: "🏁 stopped",
     }
-    _zmq_context: zmq.Context[Any] | None = None
 
     _parent_ref: weakref.ref[Self] | None = None
 
@@ -220,10 +218,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.Logger | logging.LoggerAdapter
-    ""
-    iopub_sockets: ClassVar[dict[int, zmq.Socket]] = {}
-    ""
-    iopub_url: ClassVar = "inproc://iopub"
     ""
 
     @property
@@ -260,11 +254,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     def protected(self) -> bool:
         "Returns `True` if the caller is protected from stopping."
         return self._protected
-
-    @property
-    def zmq_context(self) -> zmq.Context | None:
-        "A zmq socket, which if present indicates that an iopub socket is loaded."
-        return self._zmq_context
 
     @property
     def running(self) -> bool:
@@ -335,7 +324,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 - backend: The async backend to use.
                 - backend_options: Options for the backend.
                 - protected: Whether the Caller is protected.
-                - zmq_context: ZeroMQ context.
                 - log: Logger instance.
 
         Returns:
@@ -378,7 +366,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._backend_options = kwargs.get("backend_options")
             inst._host_options = kwargs.get("host_options")
             inst._protected = kwargs.get("protected", False)
-            inst._zmq_context = kwargs.get("zmq_context")
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
             if (sys.platform == "emscripten") and (caller_id is None):
                 caller_id = id(inst)
@@ -501,12 +488,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._state is CallerState.stopped:
             msg = f"Stopped: {self}"
             raise RuntimeError(msg)
-        socket = None
         try:
-            if self._zmq_context:
-                socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
-                socket.connect(self.iopub_url)
-                self.iopub_sockets[self._caller_id] = socket
             async with task_factory() as create_task:
                 try:
                     create_task(contextvars.Context(), self._scheduler, self._queue)
@@ -527,9 +509,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                             await caller.stopped
                 except KeyError:
                     pass
-            if socket:
-                self.iopub_sockets.pop(self._caller_id, None)
-                socket.close(linger=0)
             self._stop_finalize()
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
@@ -682,8 +661,8 @@ class Caller(anyio.AsyncContextManagerMixin):
             RuntimeError: If a caller with the specified name exists but the backend does not match.
 
         Notes:
-            - The returned caller is added to `children` and stopped with the caller.
-            - If 'backend' or 'zmq_context' are not specified they are copied from the caller.
+            - The returned caller is added to `children` and stopped with this caller.
+            - If 'backend' is not specified it is taken from this caller.
         """
         if self._state in [CallerState.stopping, CallerState.stopped]:
             msg = f"Caller is stopping or stopped {self}"
@@ -702,8 +681,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             if "backend" not in kwargs:
                 kwargs["backend"] = self._backend
                 kwargs["backend_options"] = self.backend_options
-            if "zmq_context" not in kwargs and self._zmq_context:
-                kwargs["zmq_context"] = self._zmq_context
             caller = self.__class__("NewThread", **kwargs)
             self._children.add(caller)
             caller._parent_ref = weakref.ref(self)
