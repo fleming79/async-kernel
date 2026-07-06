@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+import threading
 from typing import TYPE_CHECKING, Any, Literal
 
 import pytest
@@ -42,6 +43,21 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
     stdout, stderr = await utils.assemble_output(client)
     assert stdout == "🌈\n"
     assert stderr == ""
+
+
+async def test_print_non_caller_thread(kernel: Kernel[ZMQInterface], client: AsyncKernelClient):
+
+    await utils.clear_iopub(client)
+    t = threading.Thread(target=print, args=["-test-"])
+    t.start()
+    t.join()
+    out = await client.get_iopub_msg()
+    assert out["content"]["text"] == "-test-"
+    assert t.ident in kernel.parent._iopub_sockets
+    kernel.parent._time_last_clean_iopub_sockets = 0  # pyright: ignore[reportAttributeAccessIssue]
+    print("-test2-")
+    assert t.ident not in kernel.parent._iopub_sockets, "should have been cleaned"
+    await utils.clear_iopub(client)
 
 
 @pytest.mark.parametrize("test_mode", ["interrupt", "reply", "allow_stdin=False"])

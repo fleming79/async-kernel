@@ -66,7 +66,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     ).tag(config=True)
     "Transport for sockets."
     _zmq_context = Fixed(zmq.Context)
+
+    _iopub_zmq_context = Fixed(lambda _: zmq.Context(0))
     _iopub_url = "inproc://iopub-capture"
+
     _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
     _poll_zmq: Fixed[Self, PollZMQ] = Fixed(PollZMQ)
 
@@ -123,7 +126,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         if os.path.exists(self.connection_file):  # noqa: PTH110
             self.load_connection_file()
         self.write_connection_file()
-        with self._zmq_context:
+        with self._zmq_context, self._iopub_zmq_context:
             try:
                 with (
                     self._heartbeat(),
@@ -139,11 +142,11 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                             self._started()
                         yield self
             finally:
-                for sock in self._iopub_sockets.values():
-                    sock.close(0)
+                while self._iopub_sockets:
+                    self._iopub_sockets.popitem()[1].close(0)
                 self.log.debug("Stopping PollZMQ")
                 self._poll_zmq.stop()
-                self.log.debug("Terminating zmq Context")
+                self.log.debug("Terminating zmq sontexts")
         self.log.debug("ZMQ Interface stopped")
 
     @contextlib.contextmanager
@@ -194,7 +197,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     @contextmanager
     def _iopub(self) -> Generator[None]:
 
-        sock_iopub_int: zmq.Socket = self._zmq_context.socket(zmq.SUB)
+        sock_iopub_int: zmq.Socket = self._iopub_zmq_context.socket(zmq.SUB)
         sock_iopub_int.bind(self._iopub_url)
         sock_iopub_int.subscribe(b"")
 
@@ -305,7 +308,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             return
         if not (sock := self._iopub_sockets.get(threading.get_ident())):
             # We create an internal socket per-thread to avoid using a thread-lock
-            sock = self._zmq_context.socket(zmq.XPUB)
+            sock = self._iopub_zmq_context.socket(zmq.XPUB)
             try:
                 sock.connect(self._iopub_url)
                 # Wait for connection
@@ -313,7 +316,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 assert pen.wait_sync(timeout=1) == 1
                 sock.recv()
             except BaseException:
-                sock.close(0)
+                sock.close(linger=0)
                 raise
             self._iopub_sockets[threading.get_ident()] = sock
 
@@ -328,3 +331,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         )
         if msg:
             self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["header"]["msg_type"], msg["content"])
+
+            # Clean up sockets for closed threads
+            if (time.monotonic() - getattr(self, k := "_time_last_clean_iopub_sockets", 0)) > 60:
+                setattr(self, k, time.monotonic())
+                for t_ident in set(self._iopub_sockets.copy()).difference(t.ident for t in threading.enumerate()):
+                    if sock := self._iopub_sockets.pop(t_ident, None):
+                        sock.close(0)

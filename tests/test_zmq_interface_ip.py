@@ -42,10 +42,11 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
         try:
             sock.connect(addr)
             sock.subscribe(topic)
-            ident, msg = interface.session.recv(sock, zmq.BLOCKY)
+            await interface._poll_zmq.poll(sock)
+            ident, msg = interface.session.recv(sock)
             assert ident == [topic.encode()]
             assert msg
             assert msg["msg_type"] == "iopub_welcome"
             assert msg["content"]["subscription"] == topic
         finally:
-            sock.close(0)
+            sock.close()
