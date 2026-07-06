@@ -81,7 +81,7 @@ class Test_PollZMQ:
                 await func(0)
                 wrt.stop()
 
-                with pytest.raises(RuntimeError, match="is stopped or shutting down"):  # noqa: SIM117
+                with pytest.raises(RuntimeError, match="is stopped!"):  # noqa: SIM117
                     with wrt.event_handler(sock, lambda _, __: None):
                         pass
             else:

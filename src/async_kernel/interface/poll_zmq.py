@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import atexit
 import threading
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
@@ -39,14 +40,16 @@ class PollZMQ:
 
     _handlers: Fixed[Self, dict[tuple[Any | Socket[Any], int], Callable[..., None]]] = Fixed(dict)
     _thread: None | threading.Thread = None
+    stopped = Fixed(Pending)
+    "A pending that is set when the instance is stopped."
 
     def start(self) -> Self:
         "Start the thread and begin polling registered sockets."
-        assert not self.stopped
+        assert not self.stopped.done()
         if self._thread:
             return self
 
-        def zmq_poll_thread(callbacks: dict, sock: zmq.Socket, started: Callable[[], Any]) -> None:
+        def zmq_poll_thread(callbacks: dict, sock: zmq.Socket, started: Callable[[], Any], stopped: Pending) -> None:
 
             def ctrl_msg(socket: Socket, flags: int) -> None:
                 # Every time a message is sent callbacks should be rebuild.
@@ -60,7 +63,7 @@ class PollZMQ:
             if not utils.LAUNCHED_BY_DEBUGPY:
                 utils.mark_thread_pydev_do_not_trace()
             try:
-                while callbacks:
+                while callbacks and not sock.closed:
                     try:
                         if not sockets:
                             sockets = list(callbacks)
@@ -80,20 +83,30 @@ class PollZMQ:
                     except BaseException:
                         continue
             finally:
-                callbacks.clear()
-                sock.close(0)
+                stopped.set_result(None)
 
-        self._sock_ctrl_send: zmq.Socket = zmq.Context(0).socket(zmq.PAIR)
-        sock: zmq.Socket = self._sock_ctrl_send.context.socket(zmq.PAIR)
-        sock.bind(addr := f"inproc://async_kernel_zmq_poller_{id(self)}")
+        def _on_stopped(_):
+            if self._thread and self._thread.is_alive():
+                atexit.unregister(self.stop)
+                sock_ctrl_wake.context.destroy(0)
+
+        # Inter-thread locks.
+
+        sock_ctrl_wake: zmq.Socket = zmq.Context(0).socket(zmq.PAIR)
+        self._sock_ctrl_send = sock_ctrl_wake.context.socket(zmq.PAIR)
+        sock_ctrl_wake.bind(addr := f"inproc://async_kernel_zmq_poller_{id(self)}")
         self._sock_ctrl_send.connect(addr)
 
         self._lock = create_thread_lock()
         self._lock.acquire()
-        self._thread = threading.Thread(target=zmq_poll_thread, args=[self._handlers, sock, self._lock.release])
+        args = [self._handlers, sock_ctrl_wake, self._lock.release, self.stopped]
+        self._thread = threading.Thread(target=zmq_poll_thread, args=args)
         self._thread.start()
         self._lock.acquire()
         self._lock.release()
+
+        atexit.register(self.stop)
+        self.stopped.add_done_callback(_on_stopped)
         return self
 
     def __del__(self) -> None:
@@ -103,37 +116,25 @@ class PollZMQ:
         if not callable(getattr(sock, "fileno", None)):
             msg = f"{sock=} is not valid"
             raise TypeError(msg)
-        if self.stopped:
-            msg = f"{self} is stopped or shutting down!"
+        if self.stopped.done():
+            msg = f"{self} is stopped!"
             raise RuntimeError(msg)
 
-    @property
-    def stopped(self) -> bool:
-        alive = not self._thread or (self._thread.is_alive() and self._handlers)
-        return not alive
-
     def _wake_thread(self):
-        if self._thread and self._handlers:
+        if self._thread and not self.stopped.done():
             self._lock.acquire()
             try:
-                self._sock_ctrl_send.send(b"", zmq.DONTWAIT)
-            except zmq.ZMQError:
+                self._sock_ctrl_send.send(b"", flags=zmq.NOBLOCK, track=False, copy=False)
+            except Exception:
                 pass
             finally:
                 self._lock.release()
 
     def stop(self) -> None:
         """Stop the poll thread."""
-        if not self.stopped:
-            self._handlers.clear()
-            if self._thread:
-                if self._thread.is_alive():
-                    self._wake_thread()
-                    self._thread.join(timeout=1)
-                    self._sock_ctrl_send.context.destroy(0)
-            else:
-                self._thread = threading.Thread(target=lambda: None)
-                self._thread.start()
+        self.stopped.set_result(None)
+        if self._thread and self._thread is not threading.current_thread():
+            self._thread.join()
 
     @contextmanager
     def event_handler(
