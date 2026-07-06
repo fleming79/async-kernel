@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from async_kernel import Kernel
     from async_kernel.shell import IPShell
 
-
 # pyright: reportPrivateUsage=false
 
 

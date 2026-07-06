@@ -80,7 +80,9 @@ class PollZMQ:
                         if e.errno == zmq.Errno.ENOTSOCK:
                             # This exception occurs when the interpreter is shutting down.
                             return
-                    except Exception:
+                    except SystemExit:
+                        return
+                    except BaseException:
                         continue
             finally:
                 callbacks.clear()
@@ -118,11 +120,7 @@ class PollZMQ:
                 pass
 
     def stop(self) -> None:
-        """
-        Stop the poll thread.
-
-        Once stopped, the poller cannot be restarted.
-        """
+        """Stop the poll thread."""
         if not self.stopped:
             self._handlers.clear()
             if self._thread:
