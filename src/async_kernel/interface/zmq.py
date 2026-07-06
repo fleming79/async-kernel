@@ -311,6 +311,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 # Wait for connection
                 pen = self._poll_zmq.poll(sock)
                 assert pen.wait_sync(timeout=1) == 1
+                sock.recv()
             except BaseException:
                 sock.close(0)
                 raise

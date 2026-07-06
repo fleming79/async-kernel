@@ -46,25 +46,20 @@ class PollZMQ:
         if self._thread:
             return self
 
-        self._sock_ctrl_send: zmq.Socket = zmq.Context(0).socket(zmq.PAIR)
-        sock: zmq.Socket = self._sock_ctrl_send.context.socket(zmq.PAIR)
-        addr = f"inproc://async_kernel_zmq_poller_{id(self)}"
-
-        def zmq_poll_thread(callbacks=self._handlers) -> None:
-
-            if not utils.LAUNCHED_BY_DEBUGPY:
-                utils.mark_thread_pydev_do_not_trace()
+        def zmq_poll_thread(callbacks: dict, sock: zmq.Socket, started: Callable[[], Any]) -> None:
 
             def ctrl_msg(socket: Socket, flags: int) -> None:
                 # Every time a message is sent callbacks should be rebuild.
                 socket.recv()
                 sockets.clear()
 
-            sock.bind(addr)
-            callbacks[(sock, int(zmq.POLLIN))] = ctrl_msg
-            ready.wake()
+            callbacks[(sock, zmq.POLLIN)] = ctrl_msg
+            sockets = list(callbacks)
+            started()
+
+            if not utils.LAUNCHED_BY_DEBUGPY:
+                utils.mark_thread_pydev_do_not_trace()
             try:
-                sockets = []
                 while callbacks:
                     try:
                         if not sockets:
@@ -88,12 +83,15 @@ class PollZMQ:
                 callbacks.clear()
                 sock.close(0)
 
-        ready = create_green_waiter()
-        self._thread = threading.Thread(target=zmq_poll_thread)
-        self._thread.start()
-        ready.wait()
-
+        self._sock_ctrl_send: zmq.Socket = zmq.Context(0).socket(zmq.PAIR)
+        sock: zmq.Socket = self._sock_ctrl_send.context.socket(zmq.PAIR)
+        sock.bind(addr := f"inproc://async_kernel_zmq_poller_{id(self)}")
         self._sock_ctrl_send.connect(addr)
+
+        started = create_green_waiter()
+        self._thread = threading.Thread(target=zmq_poll_thread, args=[self._handlers, sock, started.wake])
+        self._thread.start()
+        started.wait()
         return self
 
     def __del__(self) -> None:
