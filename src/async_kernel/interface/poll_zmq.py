@@ -65,15 +65,16 @@ class PollZMQ:
             try:
                 while callbacks and not sock.closed:
                     try:
-                        if not sockets:
+                        if sockets:
+                            for k in zmq_poll(sockets, timeout=-1):
+                                try:
+                                    callbacks[k](*k)
+                                except SystemExit:
+                                    return
+                                except BaseException:
+                                    continue
+                        else:
                             sockets = list(callbacks)
-                        for k in zmq_poll(sockets, timeout=-1):
-                            try:
-                                callbacks[k](*k)
-                            except SystemExit:
-                                return
-                            except BaseException:
-                                continue
                     except zmq.ZMQError as e:
                         if e.errno == zmq.Errno.ENOTSOCK:
                             # This exception occurs when the interpreter is shutting down.
@@ -86,14 +87,14 @@ class PollZMQ:
                 stopped.set_result(None)
 
         def _on_stopped(_):
-            if self._thread and self._thread.is_alive():
-                atexit.unregister(self.stop)
+            atexit.unregister(self.stop)
+            with self._lock:
                 sock_ctrl_wake.context.destroy(0)
 
         # Inter-thread locks.
 
         sock_ctrl_wake: zmq.Socket = zmq.Context(0).socket(zmq.PAIR)
-        self._sock_ctrl_send = sock_ctrl_wake.context.socket(zmq.PAIR)
+        self._sock_ctrl_send: zmq.Socket = sock_ctrl_wake.context.socket(zmq.PAIR)
         sock_ctrl_wake.bind(addr := f"inproc://async_kernel_zmq_poller_{id(self)}")
         self._sock_ctrl_send.connect(addr)
 
@@ -121,12 +122,14 @@ class PollZMQ:
             raise RuntimeError(msg)
 
     def _wake_thread(self):
-        if self._thread and not self.stopped.done():
+        if self._thread and not self._sock_ctrl_send.closed:
             self._lock.acquire()
             try:
-                self._sock_ctrl_send.send(b"", flags=zmq.NOBLOCK, track=False, copy=False)
-            except Exception:
-                pass
+                if not self._sock_ctrl_send.closed:
+                    self._sock_ctrl_send.send(b"")
+            except Exception as e:
+                self.stopped.set_exception(e)
+                raise
             finally:
                 self._lock.release()
 
