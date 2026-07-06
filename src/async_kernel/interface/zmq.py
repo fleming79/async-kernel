@@ -21,6 +21,7 @@ from typing_extensions import override
 from zmq import Flag, PollEvent, Socket, SocketOption
 
 from async_kernel import utils
+from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.interface.poll_zmq import PollZMQ
@@ -304,9 +305,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         """
         Send a message on the zmq iopub socket.
         """
-        if not self._sockets:
-            return
-        if not (sock := self._iopub_sockets.get(threading.get_ident())):
+
+        if not (sock := self._iopub_sockets.get(t_ident := threading.get_ident())) and (
+            caller := Caller.get_existing()
+        ):
             # We create an internal socket per-thread to avoid using a thread-lock
             sock = self._iopub_zmq_context.socket(zmq.XPUB)
             try:
@@ -315,26 +317,35 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 pen = self._poll_zmq.poll(sock)
                 assert pen.wait_sync(timeout=1) == 1
                 sock.recv()
+
+                def close_socket(pen, sock=sock, sockets=self._iopub_sockets, t_ident=t_ident):
+                    sock.close(100)
+                    sockets.discard(t_ident)
+
+                caller._stopping.add_done_callback(close_socket)  # pyright: ignore[reportPrivateUsage]
+
             except BaseException:
                 sock.close(linger=0)
                 raise
             self._iopub_sockets[threading.get_ident()] = sock
-
-        msg = self.session.send(
-            stream=sock,
-            msg_or_type=msg_or_type,  # pyright: ignore[reportArgumentType]
-            content=content,
-            metadata=metadata,
-            parent=parent if parent is not NoValue else utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
-            ident=ident,
-            buffers=buffers,  # pyright: ignore[reportArgumentType]
-        )
-        if msg:
-            self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["header"]["msg_type"], msg["content"])
-
-            # Clean up sockets for closed threads
-            if (time.monotonic() - getattr(self, k := "_time_last_clean_iopub_sockets", 0)) > 60:
-                setattr(self, k, time.monotonic())
-                for t_ident in set(self._iopub_sockets.copy()).difference(t.ident for t in threading.enumerate()):
-                    if sock := self._iopub_sockets.pop(t_ident, None):
-                        sock.close(0)
+        if sock:
+            if msg := self.session.send(
+                stream=sock,
+                msg_or_type=msg_or_type,  # pyright: ignore[reportArgumentType]
+                content=content,
+                metadata=metadata,
+                parent=parent if parent is not NoValue else utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
+                ident=ident,
+                buffers=buffers,  # pyright: ignore[reportArgumentType]
+            ):
+                self.log.debug("iopub_send: msg_type:'%s', content: %s", msg["header"]["msg_type"], msg["content"])
+        else:
+            self.callers[Channel.control].queue_call(
+                self.iopub_send,
+                msg_or_type=msg_or_type,
+                content=content,
+                metadata=metadata,
+                parent=parent if parent is not NoValue else utils.get_parent_message(),
+                ident=ident,
+                buffers=buffers,
+            )
