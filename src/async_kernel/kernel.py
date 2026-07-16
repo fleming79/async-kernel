@@ -9,13 +9,11 @@ import signal
 import sys
 from collections.abc import Callable
 from contextlib import asynccontextmanager
-from io import TextIOBase
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
 import traitlets
 from aiologic.lowlevel import enable_signal_safety
 from traitlets.config import LoggingConfigurable
-from typing_extensions import override
 
 import async_kernel
 from async_kernel import utils
@@ -24,6 +22,7 @@ from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
 from async_kernel.interface import HasInterface
+from async_kernel.outstream import OutStream
 from async_kernel.pending import Pending
 from async_kernel.shell.base import ShellPendingManager
 from async_kernel.typing import (
@@ -41,83 +40,11 @@ from async_kernel.typing import (
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
-    from contextvars import ContextVar
     from types import CoroutineType, FrameType
 
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
-
-
-class OutStream(HasInterface, TextIOBase):
-    """
-    A file like object that sends or redirects text as it is written.
-
-    Only intended for internal use.
-    """
-
-    def __init__(self, name: Literal["stdout", "stderr"]) -> None:
-        """
-        Args:
-            send: A callback to send text as it is written.
-            context: A context variable to an potential alternate target for the text.
-        """
-        super().__init__()
-        self.name = name
-        self._context: ContextVar = getattr(async_kernel.utils, f"_{name}_context")
-        self.ident = f"stream.{self.name}".encode()
-        self._origin = None
-
-    def patch(self) -> Callable[[], None]:
-        self._origin = origin = getattr(sys, self.name)
-        setattr(sys, self.name, self)
-
-        def restore() -> None:
-            setattr(sys, self.name, origin)
-
-        return restore
-
-    @override
-    def isatty(self) -> Literal[True]:
-        return True
-
-    @override
-    def readable(self) -> Literal[False]:
-        return False
-
-    @override
-    def seekable(self) -> Literal[False]:
-        return False
-
-    @override
-    def writable(self) -> Literal[True]:
-        return True
-
-    @override
-    def flush(self) -> None:
-        if c_out := self._context.get():
-            c_out.flush()
-
-    @override
-    def write(self, string: str) -> int:
-        if not isinstance(string, str):  # pyright: ignore[reportUnnecessaryIsInstance]
-            msg = f"Not a string: {string!r}"  # pyright: ignore[reportUnreachable]
-            raise TypeError(msg)
-        if out := self._context.get():
-            out.write(string)
-        else:
-            interface = self.parent
-            interface.iopub_send(msg_or_type="stream", content={"name": self.name, "text": string}, ident=self.ident)
-            if self._origin and not self.parent.quiet:
-                self._origin.write(string)  # pragma: no cover
-                self._origin.flush()  # pragma: no cover
-
-        return len(string)
-
-    @override
-    def writelines(self, sequence) -> None:
-        self.write("".join(sequence))
-        self.flush()
 
 
 class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interface_co, T_shell_co]):

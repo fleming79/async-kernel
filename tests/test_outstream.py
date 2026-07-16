@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from async_kernel.interface import BaseInterface
-from async_kernel.kernel import OutStream
+from async_kernel.outstream import OutStream
 from async_kernel.shell.base import BaseShell
 
 if TYPE_CHECKING:

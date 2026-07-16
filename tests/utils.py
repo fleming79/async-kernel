@@ -15,7 +15,7 @@ from tests.references import RMessage, references
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
 
-
+LAUNCHED_BY_DEBUGPY = async_kernel.utils.LAUNCHED_BY_DEBUGPY
 TIMEOUT = 10 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
 MATPLOTLIB_INLINE_BACKEND = "module://matplotlib_inline.backend_inline"
 
@@ -190,7 +190,7 @@ async def check_pub_message(client: AsyncKernelClient, msg_id: str, /, *, msg_ty
     content = msg["content"]
     for k, v in content_checks.items():
         if content[k] != v:
-            msg = f"Failed content check for {msg_type=}  {k}!={v}"
+            msg = f"Failed content check for {msg_type=}  expected: {content[k]!r} got: {v!r}"
             raise ValueError(msg)
     return msg
 
