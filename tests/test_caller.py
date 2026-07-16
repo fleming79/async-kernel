@@ -56,7 +56,7 @@ class TestCaller:
         assert okay
 
     async def test_worker_lifecycle(self, anyio_backend: Backend):
-        async with Caller("manual") as caller:
+        async with Caller("manual", name="manual") as caller:
             assert not caller.protected
             # worker thread
             assert await caller.to_thread(lambda: 2 + 1) == 3
@@ -80,12 +80,12 @@ class TestCaller:
             assert c1.get(name="c2") is c2
             assert Caller("MainThread") is caller
 
-        assert len(caller.children) == 0
-        assert c1.stopped
-        assert c2.stopped
+        assert not caller.children
+        assert c1.stopped.done()
+        assert c2.stopped.done()
         c3 = Caller("manual")
         c3.stop()
-        assert c3.stopped
+        assert c3.stopped.done()
 
     async def test_already_exists(self, caller: Caller):
         assert Caller.get_existing(caller.id)
@@ -161,8 +161,8 @@ class TestCaller:
     async def test_protected(self, anyio_backend: Backend):
         async with Caller("manual", protected=True) as caller:
             caller.stop()
-            assert not caller.stopped
-        assert caller.stopped
+            assert not caller.stopped.done()
+        assert caller.stopped.done()
 
     @pytest.mark.parametrize("args_kwargs", argvalues=[((), {}), ((1, 2, 3), {"a": 10})])
     async def test_async(self, args_kwargs: tuple[tuple, dict]):
@@ -261,22 +261,26 @@ class TestCaller:
 
     async def test_get_current_thread(self, anyio_backend: Backend):
         # Test starting in the async event loop of a non-main-thread
-        pen = Pending[Caller]()
-        done = Event()
+        ready, done = Event(), Event()
+        caller: Caller = None  # pyright: ignore[reportAssignmentType]
 
         def caller_not_already_running():
             async def async_loop_before_caller_started():
+                nonlocal caller
                 caller = Caller()
-                pen.set_result(caller)
+                ready.set()
                 await done
+                caller.stop()
+                await caller.stopped
 
             anyio.run(async_loop_before_caller_started, backend=anyio_backend)
 
-        thread = threading.Thread(target=caller_not_already_running)
-        thread.start()
-        caller = await pen
+        (t := threading.Thread(target=caller_not_already_running)).start()
+        await ready
+        assert caller
         assert (await caller.call_soon(lambda: 2 + 2)) == 4
         done.set()
+        t.join()
 
     async def test_stop_early(self, anyio_backend: Backend):
         caller = Caller()
@@ -404,7 +408,7 @@ class TestCaller:
             with pytest.raises(RuntimeError):
                 async with caller:
                     pass
-        assert caller.stopped
+        assert caller.stopped.done()
         await caller.stopped
         with pytest.raises(RuntimeError):
             async with caller:
@@ -649,7 +653,7 @@ class TestCaller:
         assert w1 not in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
         w2 = Caller.get_existing(await pen2)
         assert w2
-        assert not w2.stopped
+        assert not w2.stopped.done()
         w2.stop()
         await w2.stopped
         assert not caller._worker_pool  # pyright: ignore[reportPrivateUsage]
@@ -675,6 +679,8 @@ class TestCaller:
         caller2 = await caller.to_thread(Caller)
         assert caller2 is not caller
         assert caller2.id != caller.id
+        caller2.stop()
+        await caller2.stopped
 
     @pytest.mark.parametrize("anyio_backend", anyio_backends)
     @pytest.mark.parametrize("mode", ["sync", "async"])
@@ -699,23 +705,24 @@ class TestCaller:
 
         assert results == ["call_direct", "queue_call", "call_soon"] * n
 
-    async def test_call_soon_with_backend(self, caller: Caller):
-        opposite = next(b for b in Backend if b is not caller.backend)
+    async def test_call_soon_with_backend(self):
+        async with Caller("manual") as caller:
+            opposite = next(b for b in Backend if b is not caller.backend)
 
-        async def check_backend(backend: Backend, fail=False):
-            assert current_async_library() == backend
-            if backend is Backend.asyncio:
-                await asyncio.sleep(0.01)
-            else:
-                await trio.sleep(0.01)
-            if fail:
-                raise RuntimeError
+            async def check_backend(backend: Backend, fail=False):
+                assert current_async_library() == backend
+                if backend is Backend.asyncio:
+                    await asyncio.sleep(0.01)
+                else:
+                    await trio.sleep(0.01)
+                if fail:
+                    raise RuntimeError
 
-        await check_backend(caller.backend)
-        await caller.call_using_backend(caller.backend, check_backend, caller.backend)
-        await caller.call_using_backend(opposite, check_backend, opposite)
-        with pytest.raises(RuntimeError):
-            await caller.call_using_backend(opposite, check_backend, opposite, fail=True)
+            await check_backend(caller.backend)
+            await caller.call_using_backend(caller.backend, check_backend, caller.backend)
+            await caller.call_using_backend(opposite, check_backend, opposite)
+            with pytest.raises(RuntimeError):
+                await caller.call_using_backend(opposite, check_backend, opposite, fail=True)
 
     async def test_call_soon_with_backend_pending_group(self, caller: Caller):
         opposite = next(b for b in Backend if b is not caller.backend)

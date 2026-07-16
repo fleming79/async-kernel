@@ -317,6 +317,7 @@ class CallerState(enum.Enum):
 
     initial = enum.auto()
     start_sync = enum.auto()
+    starting = enum.auto()
     running = enum.auto()
     stopping = enum.auto()
     stopped = enum.auto()
