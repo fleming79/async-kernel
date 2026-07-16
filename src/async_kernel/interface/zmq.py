@@ -35,12 +35,8 @@ if TYPE_CHECKING:
 __all__ = ["ZMQInterface"]
 
 
-class Session(HasInterface, jupyter_client.session.Session):
-    check_pid = traitlets.Bool(False).tag(config=True)
-
-
-class SocketProxy(wrapt.BaseObjectProxy[zmq.Socket]):
-    "A proxy for a socket that provides a lock for send_multipart."
+class IOPubSocketProxy(wrapt.BaseObjectProxy[zmq.Socket]):
+    "A proxy for the iopub socket that provides a lock for send_multipart."
 
     _lock = BinarySemaphore()
 
@@ -54,6 +50,10 @@ class SocketProxy(wrapt.BaseObjectProxy[zmq.Socket]):
     ):
         with self._lock:
             return self.__wrapped__.send_multipart(msg_parts, flags, copy, track, **kwargs)
+
+
+class Session(HasInterface, jupyter_client.session.Session):
+    check_pid = traitlets.Bool(False).tag(config=True)
 
 
 class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
@@ -84,7 +84,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     "Transport for sockets."
 
     _sockets: Fixed[Self, dict[Channel, zmq.sugar.Socket]] = Fixed(dict)
-    _iopub_socket: SocketProxy | None = None
+    _iopub_socket: IOPubSocketProxy | None = None
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
@@ -207,7 +207,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 self.iopub_send(msg, ident=ident)
 
         with self._open_socket(Channel.iopub) as iopub_sock, self._poll.event_handler(iopub_sock, on_reg_msg):
-            self._iopub_socket = SocketProxy(iopub_sock)
+            self._iopub_socket = IOPubSocketProxy(iopub_sock)
             yield
             del self._iopub_socket
 
