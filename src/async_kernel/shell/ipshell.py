@@ -45,6 +45,7 @@ from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import BaseInterface, HasInterface
+from async_kernel.outstream import print_concat
 from async_kernel.shell.base import BaseShell
 from async_kernel.typing import Content, RunMode, Tags
 
@@ -519,6 +520,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             builtins.__dict__["display"] = display
             builtins.__dict__["get_ipython"] = utils.get_ipython
             builtins.__dict__["Caller"] = Caller
+            builtins.__dict__["print"] = print_concat
 
     @override
     def init_hooks(self) -> None:
