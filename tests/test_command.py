@@ -5,6 +5,7 @@ import importlib.util
 import json
 import platform
 import signal
+import subprocess
 import sys
 import weakref
 from typing import TYPE_CHECKING, Literal, cast
@@ -12,6 +13,7 @@ from typing import TYPE_CHECKING, Literal, cast
 import anyio
 import pytest
 from aiologic import Event
+from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel
 from async_kernel import Kernel, Pending
@@ -25,8 +27,6 @@ from tests import utils
 
 if TYPE_CHECKING:
     import pathlib
-
-    from jupyter_client.asynchronous.client import AsyncKernelClient
 
     from async_kernel.kernel import Kernel
     from async_kernel.shell import IPShell
@@ -288,18 +288,25 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Can't simulate keyboard interrupt on windows.")
-async def test_subprocess_kernel_keyboard_interrupt(tmp_path, anyio_backend):
+async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyio_backend):
     # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
     connection_file = tmp_path / "connection_file.json"
-    command = make_argv(connection_file=connection_file)
-    process = await anyio.open_process(command)
-    async with process:
-        while not connection_file.exists():
-            await anyio.sleep(0.1)
+    command = make_argv(connection_file=str(connection_file))
+
+    process = subprocess.Popen(command)
+    client = AsyncKernelClient()
+
+    while not connection_file.exists():
         await anyio.sleep(0.1)
-        # Simulate a keyboard interrupt from the console.
-        process.send_signal(signal.SIGINT)
-    assert process.returncode == 0
+
+    client.load_connection_file(str(connection_file))
+    client.start_channels()
+    await client.get_iopub_msg()
+    await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
+
+    # Simulate a keyboard interrupt from the console.
+    process.send_signal(signal.SIGINT)
+    process.wait(utils.TIMEOUT)
 
 
 async def test_ZMQInterface_gc(anyio_backend: Backend):

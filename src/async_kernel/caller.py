@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
 import contextlib
 import contextvars
 import inspect
@@ -42,7 +43,6 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     import trio  # noqa: TC004
-    import zmq
 
     from async_kernel.typing import P
 
@@ -195,7 +195,6 @@ class Caller(anyio.AsyncContextManagerMixin):
         CallerState.stopping: "🏁 stopping",
         CallerState.stopped: "🏁 stopped",
     }
-    _zmq_context: zmq.Context[Any] | None = None
 
     # Fixed
     _child_lock = Fixed(BinarySemaphore)
@@ -218,10 +217,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.Logger | logging.LoggerAdapter
-    ""
-    iopub_sockets: ClassVar[dict[int, zmq.Socket]] = {}
-    ""
-    iopub_url: ClassVar = "inproc://iopub"
     ""
 
     @property
@@ -258,11 +253,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     def protected(self) -> bool:
         "Returns `True` if the caller is protected from stopping."
         return self._protected
-
-    @property
-    def zmq_context(self) -> zmq.Context | None:
-        "A zmq socket, which if present indicates that an iopub socket is loaded."
-        return self._zmq_context
 
     @property
     def running(self) -> bool:
@@ -334,7 +324,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 - backend: The async backend to use.
                 - backend_options: Options for the backend.
                 - protected: Whether the Caller is protected.
-                - zmq_context: ZeroMQ context.
                 - log: Logger instance.
 
         Returns:
@@ -377,7 +366,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._backend_options = kwargs.get("backend_options")
             inst._host_options = kwargs.get("host_options")
             inst._protected = kwargs.get("protected", False)
-            inst._zmq_context = kwargs.get("zmq_context")
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
             if (sys.platform == "emscripten") and (caller_id is None):
                 caller_id = id(inst)
@@ -390,6 +378,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 inst.start_sync(no_debug=kwargs.get("no_debug", False))
             assert inst._caller_id
             assert inst._caller_id not in cls._instances
+            atexit.register(inst.stop, force=True)
+            inst._stopping.add_done_callback(lambda _: atexit.unregister(inst.stop))
             cls._instances[inst._caller_id] = inst
         return inst
 
@@ -415,7 +405,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                 utils.mark_thread_pydev_do_not_trace()
             try:
                 async with self:
-                    await self._stopping.wait(result=False)
+                    try:
+                        await self._stopping.wait(result=False)
+                    finally:
+                        self.stopped.set_result(None)
             except Exception as e:
                 self.log.exception("Caller did not exit context nicely!", exc_info=e)
 
@@ -436,7 +429,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         if not "shutdown" not in str(e):
                             raise
 
-                threading.Thread(target=to_thread, daemon=False).start()
+                threading.Thread(target=to_thread).start()
         else:
 
             def async_kernel_caller() -> None:
@@ -508,21 +501,13 @@ class Caller(anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         "The asynchronous context for caller."
-        socket = None
+        if self._state is CallerState.start_sync:
+            msg = 'Already starting! Did you mean to use Caller("manual")?'
+            raise RuntimeError(msg)
+        if self._state is CallerState.stopped:
+            msg = f"Stopped: {self}"
+            raise RuntimeError(msg)
         try:
-            match self._state:
-                case CallerState.start_sync:
-                    msg = 'Already starting! Did you mean to use Caller("manual")?'
-                    raise RuntimeError(msg)
-                case CallerState.initial:
-                    self._state = CallerState.starting
-                case _:
-                    msg = f"Invalid state {self}"
-                    raise RuntimeError(msg)
-            if self._zmq_context:
-                socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
-                socket.connect(self.iopub_url)
-                self.iopub_sockets[self._caller_id] = socket
             async with task_factory() as create_task:
                 create_task(contextvars.Context(), self._scheduler, self._queue)
                 with anyio.CancelScope() as scope:
@@ -538,11 +523,14 @@ class Caller(anyio.AsyncContextManagerMixin):
                             with anyio.CancelScope(shield=True):
                                 await self._guest_done_event
         finally:
-            if socket:
-                self.iopub_sockets.pop(self._caller_id, None)
-                socket.close(linger=0)
-            if self._state is CallerState.stopping:
-                self._stop_finalize()
+            while self._children:
+                try:
+                    if not (caller := self._children.pop()).stopped.done():
+                        with anyio.CancelScope(shield=True):
+                            await caller.stopped
+                except KeyError:
+                    pass
+            self._stop_finalize()
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
         """
@@ -723,8 +711,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             if "backend" not in kwargs:
                 kwargs["backend"] = self._backend
                 kwargs["backend_options"] = self.backend_options
-            if "zmq_context" not in kwargs and self._zmq_context:
-                kwargs["zmq_context"] = self._zmq_context
             child = self.__class__("NewThread", **kwargs)
             child._parent_ref = ref = weakref.ref(self)
             if self._children_stopped is None:
@@ -985,9 +971,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                         try:
                             async for item in queue:
                                 try:
-                                    await item[0](*item[1], **item[2])
-                                except TypeError:
-                                    continue
+                                    result = item[0](*item[1], **item[2])
+                                    if iscoroutinelike(result):
+                                        await result
+                                    del result
                                 except (anyio.get_cancelled_exc_class(), Exception) as e:
                                     if pen.cancelled():
                                         raise
