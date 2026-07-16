@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
 
 import anyio.abc
-from aiologic import Event, Lock
+from aiologic import BinarySemaphore, Event
 from aiologic.lowlevel import create_async_waiter
 from traitlets import traitlets
 from traitlets.config import LoggingConfigurable
@@ -19,7 +19,7 @@ from async_kernel.caller import Caller
 from async_kernel.common import Fixed
 from async_kernel.compat.json import pack_json_bytes, unpack_json
 from async_kernel.interface import HasInterface
-from async_kernel.pending import Pending
+from async_kernel.pending import Pending, PendingTracker
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -119,7 +119,7 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
     capabilities = traitlets.Dict()
     kernel: Fixed[Self, Kernel] = Fixed(lambda c: c["owner"].parent.kernel)
     _socketstream: anyio.abc.SocketStream | None = None
-    _send_lock = traitlets.Instance(Lock, ())
+    _send_lock = traitlets.Instance(BinarySemaphore, ())
 
     @property
     def connected(self) -> bool:
@@ -129,7 +129,7 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
         if not (socketstream := self._socketstream):
             raise RuntimeError
         async with self._send_lock:
-            self._result_responses[request["seq"]] = pen = Pending()
+            self._result_responses[request["seq"]] = pen = Pending(None, PendingTracker)
             content = pack_json_bytes(request)
             content_length = str(len(content)).encode()
             buf = self.HEADER + content_length + self.SEPARATOR

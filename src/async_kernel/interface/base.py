@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
+from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_event, create_async_waiter, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
 from traitlets.config.application import Application, ClassesType
@@ -41,7 +41,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
+    from collections.abc import AsyncGenerator, Awaitable, Callable
 
     from async_kernel.kernel import Kernel
     from async_kernel.typing import Content
@@ -173,7 +173,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     "The kernel."
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
-    "The caller associated with the kernel once it has started."
+    "The caller associated with the kernel."
 
     started = Fixed(Pending)
     "A Pending that is set when the interface has started."
@@ -184,8 +184,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     """
 
     _instance: Self | None = None
-    _zmq_context = None
-    last_interrupt_frame = None
 
     @traitlets.default("backend")
     def _default_backend(self) -> Backend:
@@ -332,51 +330,59 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
-        def cache_iopub_send(*args, **kwargs) -> None:  # pragma: no cover
+
+        def cache_iopub_send(*args, __send__=self.iopub_send, **kwargs) -> None:  # pragma: no cover
             # Cache iopub messages, send when started or discard if stopped early.
-            self.started.add_done_callback(lambda _: not self.stopping.done() and send(*args, **kwargs))
+            self.started.add_done_callback(lambda _: not self.stopping.done() and __send__(*args, **kwargs))
 
-        if self.stopping.done() or self.started.done():
-            msg = "Stopped early"
-            raise RuntimeError(msg)
+        def stop() -> None:
+            del self.stop
+            self.stopping.set_result(None)
+            self.log.info("Stopping kernel")
+            self.callers[Channel.control].call_later(0.5, scope.cancel, "Stopping kernel")
 
-        send = self.iopub_send
+        def _check_stopped_early():
+            if self.stopping.done() or self.started.done():
+                msg = "Stopped early"
+                raise RuntimeError(msg)
+
+        _check_stopped_early()
+
         self.iopub_send = cache_iopub_send
         self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
-
-        caller = Caller(
-            "manual",
-            name="Shell",
-            protected=True,
-            log=self.log,
-            zmq_context=self._zmq_context,
-            host=self.host,
-        )
-        self.callers[Channel.shell] = caller
-        self.callers[Channel.control] = caller.get(name="Control", log=self.log, protected=True)
         self.backend = Backend(current_async_library())
+        channels_started, stop_channels = create_async_waiter(), create_async_event()
         try:
-            async with caller:
-                with anyio.CancelScope() as scope:
+            self.log.info("Starting Shell caller")
 
-                    def stop(_):
-                        self.log.info("Stopping kernel")
-                        caller.call_later(0.5, scope.cancel, "Stopping kernel")
-
-                    self.stopping.add_done_callback(stop)
-                    try:
-                        async with self.kernel.running():
+            async with Caller("manual", name="Shell", protected=True, log=self.log, host=self.host) as caller:
+                caller_ctrl = caller.get(name="Control", log=self.log, protected=True)
+                self.callers[Channel.shell] = caller
+                self.callers[Channel.control] = caller_ctrl
+                pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
+                await channels_started
+                _check_stopped_early()
+                try:
+                    async with self.kernel:
+                        _check_stopped_early()
+                        with anyio.CancelScope() as scope:
+                            self.stop = stop
                             if set_started:
                                 self._started()
                             yield self
-                    finally:
-                        self.stop()
+                finally:
+                    stop_channels.set()
+                    await pen_channels.wait(shield=True)
         finally:
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
             self.log.info("Interface stopped")
 
-    def _started(self):
+    async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
+        ready()
+        await stop
+
+    def _started(self) -> None:
         self.log.info("Interface started: %s", self.summary)
         self.started.set_result(None)
 
@@ -401,10 +407,9 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         Stop the kernel and this interface.
         """
         self.stopping.set_result(None)
-        if not self.started.done():
-            self.started.cancel("Stopped early")
-            if BaseInterface._instance is self:
-                BaseInterface._instance = None
+        self.started.cancel("Stopped early")
+        if BaseInterface._instance is self:
+            BaseInterface._instance = None
 
     def input_request(self, prompt: str, *, password: bool = False) -> str:
         """

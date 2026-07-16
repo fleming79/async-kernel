@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+import threading
 from typing import TYPE_CHECKING, Any, Literal
 
 import anyio
@@ -18,7 +19,6 @@ if TYPE_CHECKING:
 
     from async_kernel import Kernel
     from async_kernel.shell import IPShell
-
 
 # pyright: reportPrivateUsage=false
 
@@ -44,6 +44,15 @@ async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
     stdout, stderr = await utils.assemble_output(client)
     assert stdout == "🌈\n"
     assert stderr == ""
+
+
+async def test_print_non_caller_thread(kernel: Kernel[ZMQInterface], client: AsyncKernelClient):
+
+    await utils.clear_iopub(client)
+    t = threading.Thread(target=print, args=["-non_caller_thread-"])
+    t.start()
+    out = await client.get_iopub_msg()
+    assert out["content"]["text"] == "-non_caller_thread-\n"
 
 
 @pytest.mark.parametrize("test_mode", ["interrupt", "reply", "allow_stdin=False"])
@@ -86,7 +95,7 @@ async def test_input(
     assert text in reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
 
 
-async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
+async def test_interrupt_request_not_blocked(client: AsyncKernelClient, kernel: Kernel):
     pen: Any = Pending()
     kernel.active_execute_requests.add(pen)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
@@ -95,38 +104,22 @@ async def test_interrupt_request(client: AsyncKernelClient, kernel: Kernel):
     assert pen.cancelled()
 
 
-async def test_interrupt_request_async_request(subprocess_kernels_client: AsyncKernelClient):
+@pytest.mark.parametrize("mode", ["exec_request", "task", "async"])
+async def test_interrupt_request(
+    subprocess_kernels_client: AsyncKernelClient, mode: Literal["exec_request", "task", "async"]
+):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
-    msg_id = client.execute(f"import anyio;await anyio.sleep({utils.TIMEOUT * 4})")
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    reply = await utils.send_control_message(client, MsgType.interrupt_request)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "error"
-
-
-async def test_interrupt_request_direct_exec_request(subprocess_kernels_client: AsyncKernelClient):
-    await utils.clear_iopub(subprocess_kernels_client)
-    client = subprocess_kernels_client
-    msg_id = client.execute(f"import time\nprint('started')\ntime.sleep({utils.TIMEOUT * 2})")
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started\n")
-    await utils.send_control_message(client, MsgType.interrupt_request)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "KernelInterrupt"
-
-
-async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKernelClient):
-    await utils.clear_iopub(subprocess_kernels_client)
-    code = f"""
+    if mode == "async":
+        code = f"import anyio\nprint('started')\nawait anyio.sleep({utils.TIMEOUT * 4})"
+    elif mode == "exec_request":
+        code = f"import time\nprint('started')\ntime.sleep({utils.TIMEOUT})"
+    else:
+        code = f"""
     import time
     from async_kernel import Caller
     await Caller().call_soon(lambda: [print('started'), time.sleep({utils.TIMEOUT * 2})])
     """
-    client = subprocess_kernels_client
     msg_id = client.execute(code)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
@@ -206,7 +199,7 @@ async def test_launch_too_late(kernel: Kernel):
         ZMQInterface.launch_instance()
 
 
-# async def test_already_entered(kernel: Kernel):
-#     with pytest.raises(RuntimeError, match="has already been entered"):
-#         async with kernel.parent:
-#             pass
+async def test_already_entered(kernel: Kernel):
+    with pytest.raises(RuntimeError, match="has already been entered"):
+        async with kernel.parent:
+            pass

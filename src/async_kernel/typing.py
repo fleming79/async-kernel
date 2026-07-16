@@ -10,8 +10,6 @@ if TYPE_CHECKING:
     import datetime
     import logging
 
-    import zmq
-
     from async_kernel.interface import BaseInterface
     from async_kernel.shell import BaseShell
     from async_kernel.shell.ipshell import IPShell
@@ -451,9 +449,6 @@ class CallerCreateOptions(RunSettings):
     "Options to pass when calling [anyio.run][]."
     protected: NotRequired[bool]
     "The caller should be protected against accidental closure (default=`False`)."
-
-    zmq_context: NotRequired[zmq.Context[Any] | None]
-    "A zmq Context to use."
 
     no_debug: NotRequired[bool]
     "Disable debugpy in the thread if a new thread is created."

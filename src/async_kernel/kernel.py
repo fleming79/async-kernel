@@ -11,6 +11,7 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
+import anyio
 import traitlets
 from aiologic.lowlevel import enable_signal_safety
 from traitlets.config import LoggingConfigurable
@@ -47,7 +48,12 @@ if TYPE_CHECKING:
 __all__ = ["Kernel", "KernelInterrupt"]
 
 
-class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interface_co, T_shell_co]):
+class Kernel(
+    HasInterface[T_interface_co],
+    LoggingConfigurable,
+    anyio.AsyncContextManagerMixin,
+    Generic[T_interface_co, T_shell_co],
+):
     """
     The class containing the handler methods to implement a Jupyter Kernel.
     """
@@ -71,7 +77,9 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
     A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler.
     """
 
-    callers: Fixed[Self, dict] = Fixed(lambda c: c["owner"].parent.callers)
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(
+        lambda c: c["owner"].parent.callers
+    )
     "A shortcut to the callers dict on the parent."
 
     caller: Fixed[Self, Caller] = Fixed(lambda c: c["owner"].callers[Channel.shell])
@@ -85,6 +93,9 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
 
     active_execute_requests: Fixed[Self, set[Pending[Any]]] = Fixed(set)
     "A set of active execute requests that gets updated by the shell."
+
+    interrupt_check_delay = traitlets.CFloat(1.0).tag(config=True)
+    "The delay for a check before raising an interrupt in seconds."
 
     _interrupt_message = "Kernel interrupted"
 
@@ -176,7 +187,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         self._shell_class = shell_class
 
     @asynccontextmanager
-    async def running(self) -> AsyncGenerator[None]:
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """
         The kernel runs in this context.
 
@@ -189,7 +200,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
             self._main_shell = self._shell_class(protected=True, is_mainshell=True)
             async with self._main_shell.mainshell_running():
                 self.log.info("Kernel started")
-                yield
+                yield self
         finally:
             self.log.info("Kernel stopped")
             for subshell in self._subshells.copy().values():
@@ -208,8 +219,9 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
                 with enable_signal_safety():
                     pen.set_result(None)
                 raise KernelInterrupt
-        else:
-            signal.default_int_handler(signum, frame)
+        elif signum == signal.SIGINT:
+            self.log.info("Keyboard interrupt")
+            self.parent.stop()
 
     async def do_interrupt(self) -> None:
         """
@@ -222,10 +234,11 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         if (
             (sys.platform != "emscripten")
             and (not self.debugger.enabled or not self.debugger.stopped_threads)
-            and (caller := Caller("MainThread")).running  # Can only interrupt the main thread
+            and (self.caller.id == self.caller.CALLER_MAIN_THREAD_ID)
         ):
+            # Can only signal when the shell's thread is the  MainThread.
             self._interrupt_requested = pen = Pending()
-            caller.call_direct(lambda: pen.set_result(None))
+            self.caller.call_direct(lambda: pen.set_result(None))
             try:
                 await pen.wait(result=False, timeout=1, protect=True)
             except TimeoutError:
@@ -371,7 +384,7 @@ class Kernel(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interf
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
 
         if msg_type is MsgType.execute_request:
-            caller = self.callers[job["msg"]["channel"]]
+            caller = self.callers[job["msg"]["channel"]]  # pyright: ignore[reportArgumentType]
             try:
                 run_mode = next(mode for tag in utils.get_tags(job) if (mode := RunMode.to_runmode(tag)))
             except StopIteration:

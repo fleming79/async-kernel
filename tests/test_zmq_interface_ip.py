@@ -2,10 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import anyio
 import pytest
+import zmq
+from aiologic.lowlevel import create_async_waiter
 
+from async_kernel.event_loop.zmq_poll import Poll
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
+from async_kernel.interface.zmq import ZMQInterface
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
@@ -29,3 +34,47 @@ async def test_user_ns(anyio_backend: Backend):
         assert interface.user_ns is interface.shell.user_ns
         with pytest.raises(AttributeError):
             interface.user_ns = {}  # pyright: ignore[reportAttributeAccessIssue]
+
+
+@pytest.mark.parametrize("topic", ["", "kernel"])
+async def test_iopub_welcome(topic: str, anyio_backend: Backend):
+    """Test iopub welcome message. https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message"""
+    async with IPApp() as interface:
+        with Poll() as poll:
+            ip, port, transport = interface.ip, interface.iopub_port, interface.transport
+            addr = f"tcp://{ip}:{port}" if transport == "tcp" else f"ipc://{ip}-{port}"
+            sock = poll.socket(zmq.SocketType.SUB)
+            msg, ident = None, None
+
+            await poll.execute(lambda: sock.connect(addr))
+            await poll.execute(lambda: sock.subscribe(topic))
+
+            def read_iopub(sock: zmq.Socket, event: int) -> None:
+                nonlocal ident, msg
+                ident, msg = interface.session.recv(sock)
+
+            done = create_async_waiter()
+            with poll.event_handler(sock, read_iopub, countdown=(1, done.wake)):
+                await done
+
+            assert ident == [topic.encode()]
+            assert msg
+            assert msg["msg_type"] == "iopub_welcome"
+            assert msg["content"]["subscription"] == topic
+
+
+async def test_cache_factory(anyio_backend: Backend):
+
+    async def f():
+        with interface._iopub_socket_cache as sock:
+            while hasattr(interface._iopub_socket_cache, "_factory"):
+                await anyio.sleep(0.1)
+            return sock
+
+    async with ZMQInterface() as interface:
+        with interface._iopub_socket_cache, interface._iopub_socket_cache, interface._iopub_socket_cache:
+            pen = interface.kernel.caller.call_soon(f)
+            interface.stop()
+    sock = await pen
+    assert sock
+    assert sock.closed
