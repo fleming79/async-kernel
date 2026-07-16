@@ -20,7 +20,6 @@ from jupyter_client.connect import ConnectionFileMixin
 from traitlets import traitlets
 from typing_extensions import override
 from zmq import Flag, PollEvent, SocketOption
-from zmq.sugar.socket import Socket
 
 from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
@@ -32,6 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 
     from jupyter_client import KernelConnectionInfo
+    from zmq.sugar.socket import Socket
 
 
 __all__ = ["ZMQInterface"]
@@ -247,7 +247,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 with (
                     self._poll.socket(zmq.SocketType.XSUB) as frontend,
                     self._poll.socket(zmq.SocketType.PUB) as capture,
-                    self._open_socket(Channel.iopub) as backend,
                 ):
                     frontend.bind("inproc://iopub")
                     capture.bind("inproc://iopub-capture")
@@ -270,31 +269,32 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 msg = self.msg("iopub_welcome", content={"subscription": ident.decode()})
                 self.iopub_send(msg, ident=ident)
 
-        def iopub_socket_factory() -> zmq.sugar.Socket:
-            # Create a new socket on demand.
-            sock = self._poll.socket(zmq.SocketType.PUB)
-            sock.setsockopt(zmq.SocketOption.LINGER, 100)
-            self._poll.execute(lambda: sock.connect("inproc://iopub")).wait_sync()
-            return sock
+        # def iopub_socket_factory() -> zmq.sugar.Socket:
+        #     # Create a new socket on demand.
+        #     sock = self._poll.socket(zmq.SocketType.PUB)
+        #     sock.setsockopt(zmq.SocketOption.LINGER, 100)
+        #     self._poll.execute(lambda: sock.connect("inproc://iopub")).wait_sync()
+        #     return sock
 
-        def close_socket(sock: zmq.Socket) -> None:
-            self._poll.execute(sock.close).wait_sync()
+        # def close_socket(sock: zmq.Socket) -> None:
+        #     self._poll.execute(sock.close).wait_sync()
 
         proxy_started = create_async_waiter()
 
-        self._iopub_socket_cache = CacheFactory[Socket](iopub_socket_factory, close_socket)
+        # self._iopub_socket_cache = CacheFactory[Socket](iopub_socket_factory, close_socket)
 
         capture_sub = self._poll.socket(zmq.SocketType.SUB)
         capture_sub.connect("inproc://iopub-capture")
         # Only subscribe to the 'pub subscribe' topic byte `1` (byte `0` is 'pub unsubscribe').
         capture_sub.subscribe(b"\x01")
-        with self._poll.event_handler(capture_sub, on_reg_msg):
+        with self._poll.event_handler(capture_sub, on_reg_msg), self._open_socket(Channel.iopub) as backend:
+            self._iopub_socket = backend
             threading.Thread(target=_pub_proxy).start()
             await proxy_started
             yield
-            self.log.debug("Closing iopub socket cache (open sockets: %d)", len(self._iopub_socket_cache))
-            await self._iopub_socket_cache.stop()
-            self.log.debug("All cached sockets closed")
+            # self.log.debug("Closing iopub socket cache (open sockets: %d)", len(self._iopub_socket_cache))
+            # await self._iopub_socket_cache.stop()
+            # self.log.debug("All cached sockets closed")
 
     @contextmanager
     def _message_handler(
@@ -361,6 +361,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 raise KernelInterrupt
         return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
 
+    _iopub_socket_lock = BinarySemaphore()
+
     @override
     def iopub_send(
         self,
@@ -375,7 +377,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         """
         Send a message on the zmq iopub socket.
         """
-        with self._iopub_socket_cache as sock:
+        with self._iopub_socket_lock:
+            sock = self._iopub_socket
             if sock and (
                 msg := self.session.send(
                     stream=sock,

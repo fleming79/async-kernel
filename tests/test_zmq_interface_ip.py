@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import anyio
 import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
@@ -10,7 +9,6 @@ from aiologic.lowlevel import create_async_waiter
 from async_kernel.event_loop.zmq_poll import Poll
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
-from async_kernel.interface.zmq import ZMQInterface
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
@@ -63,18 +61,18 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
             assert msg["content"]["subscription"] == topic
 
 
-async def test_cache_factory(anyio_backend: Backend):
+# async def test_cache_factory(anyio_backend: Backend):
 
-    async def f():
-        with interface._iopub_socket_cache as sock:
-            while hasattr(interface._iopub_socket_cache, "_factory"):
-                await anyio.sleep(0.1)
-            return sock
+#     async def f():
+#         with interface._iopub_socket_cache as sock:
+#             while hasattr(interface._iopub_socket_cache, "_factory"):
+#                 await anyio.sleep(0.1)
+#             return sock
 
-    async with ZMQInterface() as interface:
-        with interface._iopub_socket_cache, interface._iopub_socket_cache, interface._iopub_socket_cache:
-            pen = interface.kernel.caller.call_soon(f)
-            interface.stop()
-    sock = await pen
-    assert sock
-    assert sock.closed
+#     async with ZMQInterface() as interface:
+#         with interface._iopub_socket_cache, interface._iopub_socket_cache, interface._iopub_socket_cache:
+#             pen = interface.kernel.caller.call_soon(f)
+#             interface.stop()
+#     sock = await pen
+#     assert sock
+#     assert sock.closed

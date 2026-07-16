@@ -41,6 +41,7 @@ debug = utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
     logging.basicConfig(level=10)
 
+
 @pytest.hookimpl
 def pytest_configure(config):
     global debug  # noqa: PLW0603
