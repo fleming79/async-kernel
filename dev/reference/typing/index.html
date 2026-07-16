@@ -7895,33 +7895,6 @@ viewing the latest version.
           
 
 
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Returned by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../caller/#">caller</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../caller/#async_kernel.caller.Caller.stop"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stop</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
-
-
 
 
 
@@ -7941,11 +7914,13 @@ viewing the latest version.
 <span class="normal">319</span>
 <span class="normal">320</span>
 <span class="normal">321</span>
-<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="normal">322</span>
+<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
     <span class="s2">&quot;The State of a [async_kernel.caller.Caller][].&quot;</span>
 
     <span class="n">initial</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
     <span class="n">start_sync</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
+    <span class="n">starting</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
     <span class="n">running</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
     <span class="n">stopping</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
     <span class="n">stopped</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
@@ -8210,8 +8185,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">325</span>
-<span class="normal">326</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
@@ -8226,7 +8200,8 @@ viewing the latest version.
 <span class="normal">338</span>
 <span class="normal">339</span>
 <span class="normal">340</span>
-<span class="normal">341</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgHeader</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgHeader</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="s2">&quot;A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header).&quot;</span>
 
     <span class="n">msg_id</span><span class="p">:</span> <span class="nb">str</span>
@@ -8723,8 +8698,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
-<span class="normal">345</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
@@ -8745,7 +8719,8 @@ viewing the latest version.
 <span class="normal">363</span>
 <span class="normal">364</span>
 <span class="normal">365</span>
-<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Message</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">366</span>
+<span class="normal">367</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Message</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="s2">&quot;A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format).&quot;</span>
 
     <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span>
@@ -9218,8 +9193,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">369</span>
-<span class="normal">370</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">370</span>
 <span class="normal">371</span>
 <span class="normal">372</span>
 <span class="normal">373</span>
@@ -9228,7 +9202,8 @@ viewing the latest version.
 <span class="normal">376</span>
 <span class="normal">377</span>
 <span class="normal">378</span>
-<span class="normal">379</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Job</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">379</span>
+<span class="normal">380</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Job</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="s2">&quot;A `Message` bundle.&quot;</span>
 
     <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
@@ -9504,8 +9479,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">382</span>
-<span class="normal">383</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
@@ -9518,7 +9492,8 @@ viewing the latest version.
 <span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
-<span class="normal">396</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ExecuteContent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">396</span>
+<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ExecuteContent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="s2">&quot;[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).&quot;</span>
 
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>
@@ -9803,13 +9778,13 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">399</span>
-<span class="normal">400</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
 <span class="normal">401</span>
 <span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
-<span class="normal">405</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreate</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">]):</span>
+<span class="normal">405</span>
+<span class="normal">406</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreate</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">]):</span>
     <span class="s2">&quot;A TypedDict relevant to Fixed.&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -9987,15 +9962,15 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">408</span>
-<span class="normal">409</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
 <span class="normal">414</span>
 <span class="normal">415</span>
-<span class="normal">416</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreated</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
+<span class="normal">416</span>
+<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreated</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
     <span class="s2">&quot;A TypedDict relevant to Fixed.&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -10231,8 +10206,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
-<span class="normal">420</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
 <span class="normal">423</span>
@@ -10250,7 +10224,8 @@ viewing the latest version.
 <span class="normal">435</span>
 <span class="normal">436</span>
 <span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunSettings</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">438</span>
+<span class="normal">439</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunSettings</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="s2">&quot;A dict of settings to use with [async_kernel.event_loop.run][].&quot;</span>
 
     <span class="n">backend</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Backend</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">]]</span>
@@ -10550,8 +10525,7 @@ or importable path like <code>'asyncio.new_event_loop'</code>.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/typing.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
-<span class="normal">442</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">442</span>
 <span class="normal">443</span>
 <span class="normal">444</span>
 <span class="normal">445</span>
@@ -10567,7 +10541,8 @@ or importable path like <code>'asyncio.new_event_loop'</code>.</p>
 <span class="normal">455</span>
 <span class="normal">456</span>
 <span class="normal">457</span>
-<span class="normal">458</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerCreateOptions</span><span class="p">(</span><span class="n">RunSettings</span><span class="p">):</span>
+<span class="normal">458</span>
+<span class="normal">459</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerCreateOptions</span><span class="p">(</span><span class="n">RunSettings</span><span class="p">):</span>
     <span class="s2">&quot;Options to use when creating an instance of a [Caller][async_kernel.caller.Caller].&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
