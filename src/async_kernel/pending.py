@@ -520,13 +520,32 @@ class Pending(Awaitable[T]):
 
         @overload
         def wait_sync(
-            self, *, timeout: float | None = ..., protect: bool = False | ..., result: Literal[True] = True
+            self,
+            *,
+            timeout: float | None = ...,
+            protect: bool = False | ...,
+            result: Literal[True] = True,
+            shield: bool = ...,
         ) -> T: ...
 
         @overload
-        def wait_sync(self, *, timeout: float | None = ..., protect: bool = ..., result: Literal[False]) -> None: ...
+        def wait_sync(
+            self,
+            *,
+            timeout: float | None = ...,
+            protect: bool = ...,
+            result: Literal[False],
+            shield: bool = ...,
+        ) -> None: ...
 
-    def wait_sync(self, *, timeout: float | None = None, protect: bool = False, result: bool = True) -> T | None:
+    def wait_sync(
+        self,
+        *,
+        timeout: float | None = None,
+        protect: bool = False,
+        result: bool = True,
+        shield: bool = False,
+    ) -> T | None:
         """
         Wait synchronously for `result` or `exception` (internally synchronised) returning the result if specified.
 
@@ -545,7 +564,7 @@ class Pending(Awaitable[T]):
             will result in deadlock unless a greenlet based event library is in use.**
         """
         if not self._done:
-            event = create_green_event()
+            event = create_green_event(shield=shield)
             self.add_done_callback(lambda _: event.set())
             event.wait(timeout)
             if not self._done:
@@ -717,11 +736,9 @@ class Pending(Awaitable[T]):
             raise PendingCancelled(self._cancelled)
         if not self._done:
             raise PendingNotDone
-        try:
+        if hasattr(self, "_result"):
             return self._result
-        except AttributeError:
-            e = getattr(self, "_exception", RuntimeError)
-            raise e from None
+        raise self._exception from None
 
     def exception(self) -> BaseException | None:
         """
