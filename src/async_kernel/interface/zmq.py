@@ -23,8 +23,8 @@ from zmq import Flag, PollEvent, Socket, SocketOption
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
+from async_kernel.event_loop.zmq_poll import Poll
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.interface.poll_zmq import PollZMQ
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
 
 if TYPE_CHECKING:
@@ -68,11 +68,11 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     "Transport for sockets."
 
     _initialized = False
-    _zmq_context = Fixed(zmq.Context)
+    _zmq_context: Fixed[Self, zmq.sugar.Context] = Fixed(lambda c: c["owner"]._poll._zmq_context)  # pyright: ignore[reportPrivateUsage]
     _iopub_url = "inproc://iopub-capture"
     _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
 
-    poll_zmq: Fixed[Self, PollZMQ] = Fixed(PollZMQ)
+    _poll: Fixed[Self, Poll] = Fixed(lambda _: Poll(False))
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
@@ -126,10 +126,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             self.load_connection_file()
         self.write_connection_file()
         with self._open_sockets() as ready:
+            await ready
+            assert len(self._sockets) == len(Channel)
             async with super().__asynccontextmanager__(set_started=False):
-                await ready
-                assert len(self._sockets) == len(Channel)
-                self.started.add_done_callback(lambda _: self.poll_zmq.start())
+                self.started.add_done_callback(lambda _: self._poll.start())
                 if set_started:
                     self._started()
                 yield self
@@ -137,20 +137,15 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     @contextmanager
     def _open_sockets(self) -> Generator[AsyncEvent, Any, None]:
         ready = create_async_event()
-        try:
-            with (
-                self._heartbeat(),
-                self._message_handler(Channel.shell),
-                self._message_handler(Channel.control),
-                self._bind_socket(Channel.stdin),
-            ):
-                threading.Thread(target=self._pub_proxy, name="iopub proxy", args=[ready.set]).start()
-                yield ready
-        finally:
-            self.poll_zmq.stop()
-            self.log.info("Destroying zmq context")
-            self._zmq_context.destroy(0)
-            self.log.info("zmq context destroyed")
+        with (
+            self._poll,
+            self._heartbeat(),
+            self._message_handler(Channel.shell),
+            self._message_handler(Channel.control),
+            self._bind_socket(Channel.stdin),
+        ):
+            threading.Thread(target=self._pub_proxy, name="iopub proxy", args=[ready.set]).start()
+            yield ready
 
     @contextmanager
     def _heartbeat(self) -> Generator[None, Any, None]:
@@ -159,7 +154,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             msg = socket.recv_multipart()
             socket.send_multipart(msg)
 
-        with self._bind_socket(Channel.heartbeat) as socket, self.poll_zmq.event_handler(socket, heartbeat):
+        with self._bind_socket(Channel.heartbeat) as socket, self._poll.event_handler(socket, heartbeat):
             yield
 
     def _pub_proxy(self, ready: Callable[[], None]) -> None:
@@ -193,8 +188,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             self._bind_socket(Channel.iopub) as iopub_socket,
             capture,
             capture_,
-            self.poll_zmq.event_handler(capture_, on_reg_msg),
-            contextlib.suppress(zmq.ContextTerminated, Exception),
+            self._poll.event_handler(capture_, on_reg_msg),
+            contextlib.suppress(zmq.ZMQError, Exception),
         ):
             ready()
             zmq.proxy(frontend, iopub_socket, capture)
@@ -327,5 +322,5 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             except Exception as e:
                 log.debug("Bad message on %s: %s", channel, e)
 
-        with self._bind_socket(channel) as socket, self.poll_zmq.event_handler(socket, recv_msg):
+        with self._bind_socket(channel) as socket, self._poll.event_handler(socket, recv_msg):
             yield

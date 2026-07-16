@@ -39,9 +39,9 @@ __all__ = [
     "show_result",
     "subshell_context",
 ]
-
+LAUNCHED_BY_PYTEST = "pytest" in sys.modules
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
-LAUNCHED_BY_DEBUGPY_PYTEST = LAUNCHED_BY_DEBUGPY and "pytest" in sys.modules
+LAUNCHED_BY_DEBUGPY_PYTEST = LAUNCHED_BY_DEBUGPY and LAUNCHED_BY_PYTEST
 "Useful to allow exceptiosn to be raised with the debugger launched with pytest and debugger."
 
 
