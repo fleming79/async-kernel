@@ -67,9 +67,12 @@ class Poll:
         return self
 
     def __exit__(self, type, value, traceback) -> Literal[False]:
-        self._stop()
-        self.stopped.wait_sync(shield=True)
-        self.thread.join()
+        with self._lock:
+            self._handlers.clear()
+            self.start()
+            self._ctrl_sock.send(b"")
+            self.stopped.wait_sync(shield=True)
+            self.thread.join()
         return False
 
     def start(self) -> bool:
@@ -146,7 +149,6 @@ class Poll:
                         except Exception:
                             continue
             finally:
-                del self._ctrl_sock
                 stopped.set_result(None)
                 self.log.debug("Stopped poll event loop")
 
@@ -160,25 +162,12 @@ class Poll:
         started.wait()
         self.log.debug("poll event loop started")
 
-    def _wakeup_thread(self) -> None:
-        "Send a message to the wake socket."
-        with self._lock:
-            try:
-                self._ctrl_sock.send(b"")
-            except Exception:
-                pass
-
     @staticmethod
     def _validate_socket(sock: zmq.sugar.Socket) -> zmq.sugar.Socket:
         if not callable(getattr(sock, "fileno", None)):
             msg = f"{sock=} is not valid"
             raise TypeError(msg)
         return sock
-
-    def _stop(self):
-        """Initiate shutdown."""
-        self._handlers.clear()
-        self._wakeup_thread()
 
     @contextmanager
     def event_handler(
@@ -214,13 +203,17 @@ class Poll:
         if countdown:
             assert countdown[0] > 0
             assert callable(countdown[1])
-        if handler is not self._handlers.setdefault(k := (sock_, int(flags)), handler):
-            raise BusyResourceError
-        try:
+        with self._lock:
+            assert not self.stopped.done()
+            if handler is not self._handlers.setdefault(k := (sock_, int(flags)), handler):
+                raise BusyResourceError
             self._countdown[k] = countdown
-            self._wakeup_thread()
+            self._ctrl_sock.send(b"")
+        try:
             yield None
         finally:
-            self._handlers.pop(k, None)
-            self._countdown.pop(k, None)
-            self._wakeup_thread()
+            with self._lock:
+                self._handlers.pop(k, None)
+                self._countdown.pop(k, None)
+                if not self.stopped.done():
+                    self._ctrl_sock.send(b"")
