@@ -35,8 +35,7 @@ async def stop_caller_post_test():
     yield
     if caller := Caller.get_existing():
         caller.stop(force=True)
-        with anyio.CancelScope(shield=True):
-            await caller.stopped
+        await caller.stopped
 
 
 @pytest.mark.anyio
