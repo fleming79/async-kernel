@@ -1,5 +1,4 @@
 import asyncio
-import gc
 import importlib.util
 import logging
 import os
@@ -11,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import anyio
 import pytest
+import traitlets.config
 import zmq
 from aiologic.lowlevel import current_async_library
 from jupyter_client.asynchronous.client import AsyncKernelClient
@@ -38,6 +38,7 @@ else:
 
 
 if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    traitlets.config.Application.log_level.default_value = 10  # pyright: ignore[reportAttributeAccessIssue]
     logging.basicConfig(level=10)
 
 
@@ -80,30 +81,24 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     interface = (interface_class)(connection_file=connection_file.as_posix(), transport=transport)
     if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
         interface.log_level = 10
-    try:
-        if request.param == "MainThread":
-            async with interface:
-                await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
-                assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
-                yield interface.kernel
-
-        else:
-            if anyio_backend[0] == "asyncio" and not anyio_backend[1]["use_uvloop"]:
-                interface.backend_options = {}
-            thread = threading.Thread(target=interface.start, name="ShellThread")
-            thread.start()
-            await interface.started
-            assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
+    if request.param == "MainThread":
+        async with interface:
             await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
-            try:
-                yield interface.kernel
-            finally:
-                interface.stop()
-                thread.join()
-    finally:
-        del interface
-        for _ in range(3):
-            gc.collect()
+            assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
+            yield interface.kernel
+
+    else:
+        thread = threading.Thread(target=interface.start, name="ShellThread")
+        thread.start()
+        await interface.started
+        assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
+        await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
+        try:
+            yield interface.kernel
+            await anyio.sleep(0)
+        finally:
+            interface.stop()
+            thread.join()
 
 
 @pytest.fixture(scope="module")
