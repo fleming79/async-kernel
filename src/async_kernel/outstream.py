@@ -86,3 +86,17 @@ class OutStream(HasInterface, io.TextIOBase):
     def writelines(self, sequence) -> None:
         self.write("".join(sequence))
         self.flush()
+
+
+# Retain a ref to the original print function.
+__print__ = print
+
+
+def print_concat(*args, **kwargs) -> None:
+    "Concatenate the print output if printing to stdout."
+    if "file" not in kwargs:
+        with io.StringIO() as f:
+            __print__(*args, file=f, **kwargs)
+            sys.stdout.write(f.getvalue())
+    else:
+        __print__(*args, **kwargs)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import pathlib
 from typing import TYPE_CHECKING, Any, Literal
 
+import anyio
 import pytest
 
 from async_kernel import Pending
@@ -111,7 +112,7 @@ async def test_interrupt_request_direct_exec_request(subprocess_kernels_client: 
     msg_id = client.execute(f"import time\nprint('started')\ntime.sleep({utils.TIMEOUT * 2})")
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started")
+    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started\n")
     await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
@@ -129,7 +130,7 @@ async def test_interrupt_request_direct_task(subprocess_kernels_client: AsyncKer
     msg_id = client.execute(code)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
     await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started")
+    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started\n")
     await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
@@ -156,12 +157,18 @@ async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monke
     assert isinstance(kernel.parent, ZMQInterface)
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.parent.connection_file).parent))
     assert code
-    _, reply = await utils.execute(client, code, clear_pub=False)
-    assert reply["status"] == "ok"
-    stdout, _ = await utils.assemble_output(client)
-    assert stdout
+    client.execute(code)
+    with anyio.fail_after(utils.TIMEOUT):
+        while True:
+            msg = await client.get_iopub_msg()
+            if msg["content"].get("name") == "stdout":
+                break
+    await utils.clear_iopub(client)
+
+    text = msg["content"]["text"]
+    assert text
     if code == "%connect_info":
-        assert "Paste the above JSON into a file" in stdout
+        assert "Paste the above JSON into a file" in text
 
 
 async def test_magic_error(client: AsyncKernelClient):
