@@ -148,14 +148,15 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                     self._open_socket(Channel.heartbeat) as hb,
                     poll.event_handler(hb, heartbeat),
                     self._open_socket(Channel.stdin),
-                    self._message_handler(Channel.control, self.started) as ctrl,
-                    self._message_handler(Channel.shell, self.started) as shell,
+                    self._message_handler(Channel.control) as ctrl,
+                    self._message_handler(Channel.shell) as shell,
                 ):
                     assert len(self._sockets) == 5
                     ready()
                     await self.started
                     with ctrl, shell:
                         await stop
+            del ctrl, shell, self._poll
 
     @contextmanager
     def _open_socket(self, channel: Channel, /) -> Generator[zmq.sugar.Socket]:
@@ -212,7 +213,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
     @contextmanager
     def _message_handler(
-        self, channel: Literal[Channel.control, Channel.shell], start: Awaitable, /
+        self, channel: Literal[Channel.control, Channel.shell], /
     ) -> Generator[AbstractContextManager[None]]:
         """
         Opens a zmq socket for the channel, receives messages and calls the message handler.

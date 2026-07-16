@@ -319,7 +319,7 @@ async def test_ZMQInterface_gc(anyio_backend: Backend):
     with anyio.move_on_after(2):
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.sleep(0.1)
     if obj := ref():
         referrers = gc.get_referrers(obj)
         assert not referrers
