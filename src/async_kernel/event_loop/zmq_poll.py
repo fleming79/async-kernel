@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 from collections import deque
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
@@ -65,7 +66,7 @@ class Poll:
         with self._lock:
             if not self.stopped.done():
                 self._handlers.clear()
-                self._ctrl_sock.send(b"")
+                self._send_wake()
                 self.stopped.wait_sync(shield=True)
                 self.thread.join()
         return False
@@ -73,6 +74,15 @@ class Poll:
     def socket(self, socket_type: zmq.SocketType) -> zmq.sugar.Socket:
         "Create a zmq socket."
         return self._validate_socket(self._zmq_context.socket(socket_type))
+
+    def _send_wake(self) -> None:
+        assert self._lock.value == 0
+        try:
+            self._ctrl_sock.send(b"")
+        except zmq.ZMQError:
+            time.sleep(1)
+            if not self.stopped.done():
+                raise
 
     def __start(self) -> None:
 
@@ -196,12 +206,11 @@ class Poll:
             if handler is not self._handlers.setdefault(k := (sock_, int(flags)), handler):
                 raise BusyResourceError
             self._countdown[k] = countdown
-            self._ctrl_sock.send(b"")
+            self._send_wake()
         try:
             yield None
         finally:
             with self._lock:
                 self._handlers.pop(k, None)
                 self._countdown.pop(k, None)
-                if not self.stopped.done():
-                    self._ctrl_sock.send(b"")
+                self._send_wake()
