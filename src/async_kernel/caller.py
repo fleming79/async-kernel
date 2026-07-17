@@ -19,7 +19,7 @@ from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
 
 import anyio
-from aiologic import BinarySemaphore, CountdownEvent, Event
+from aiologic import BinarySemaphore, CountdownEvent
 from aiologic.lowlevel import create_async_event, current_async_library
 from aiologic.meta import await_for, iscoroutinelike
 from typing_extensions import override
@@ -213,7 +213,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     stopped = Fixed(Pending)
     "A pending that is done when the caller is stopped."
 
-    _children_stopped: Event | None = None
+    _children_countdown: CountdownEvent | None = None
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.Logger | logging.LoggerAdapter
@@ -487,8 +487,8 @@ class Caller(anyio.AsyncContextManagerMixin):
     def _stop_finalize(self) -> None:
         with self._inst_lock:
             if not self.stopped.done():
-                if self._children and self._children_stopped is not None:
-                    self._children_stopped.wait()
+                if (countdown := self._children_countdown) is not None:
+                    countdown.wait()
                 self._instances.pop(self._caller_id)
                 self._queue.stop()
                 self._state = CallerState.stopped
@@ -515,12 +515,13 @@ class Caller(anyio.AsyncContextManagerMixin):
                         yield self
                 finally:
                     self.stop(force=True)
-                    # Warning: `queue` must not be stopped until guests have been stopped.
                     if self._guest_done_event.value > 0:
+                        # Warning: `queue` must not be stopped until guests have been stopped.
                         with anyio.CancelScope(shield=True):
                             await self._guest_done_event
-                            if self._children_stopped is not None:
-                                await self._children_stopped
+                    if (countdown := self._children_countdown) is not None:
+                        with anyio.CancelScope(shield=True):
+                            await countdown
         finally:
             self._stop_finalize()
 
@@ -693,20 +694,20 @@ class Caller(anyio.AsyncContextManagerMixin):
                             raise RuntimeError(msg)
                         return child
 
-            def on_child_stopped(_) -> None:
-                if parent := ref():
-                    parent._children.discard(child)
-                    if (not parent._children) and parent._stopping.done():
-                        parent._children_stopped.set()  # pyright: ignore[reportOptionalMemberAccess]
-
             if "backend" not in kwargs:
                 kwargs["backend"] = self._backend
                 kwargs["backend_options"] = self.backend_options
             child = self.__class__("NewThread", **kwargs)
-            child._parent_ref = ref = weakref.ref(self)
-            if self._children_stopped is None:
-                self._children_stopped = Event()
+            child._parent_ref = weakref.ref(self)
+            if self._children_countdown is None:
+                self._children_countdown = CountdownEvent()
             self._children.add(child)
+            self._children_countdown.up()
+
+            def on_child_stopped(_, children=self._children, done=self._children_countdown.down) -> None:
+                children.discard(child)
+                done()
+
             child.stopped.add_done_callback(on_child_stopped)
             return child
 
