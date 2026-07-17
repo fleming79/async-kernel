@@ -3475,13 +3475,6 @@ viewing the latest version.
           </div>
         </li>
         <li class="doc-section-item field-body">
-          <b><code><span title="async_kernel.interface.poll_zmq">poll_zmq</span></code></b>
-          –
-          <div class="doc-md-description">
-            <p>Defines a background ZMQ poller thread.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title="async_kernel.interface.zmq" href="#async_kernel.interface.zmq">zmq</a></code></b>
           –
           <div class="doc-md-description">
@@ -4018,7 +4011,7 @@ async context:
    (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>], <a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a>]]</code>)
           –
           <div class="doc-md-description">
-            <p>The caller associated with the kernel once it has started.</p>
+            <p>The caller associated with the kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -4445,7 +4438,12 @@ async context:
 <span class="normal">475</span>
 <span class="normal">476</span>
 <span class="normal">477</span>
-<span class="normal">478</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class for kernel interface (singleton).</span>
 
@@ -4537,7 +4535,7 @@ async context:
     <span class="s2">&quot;The kernel.&quot;</span>
 
     <span class="n">callers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span> <span class="n">Caller</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="s2">&quot;The caller associated with the kernel once it has started.&quot;</span>
+    <span class="s2">&quot;The caller associated with the kernel.&quot;</span>
 
     <span class="n">started</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">)</span>
     <span class="s2">&quot;A Pending that is set when the interface has started.&quot;</span>
@@ -4548,8 +4546,6 @@ async context:
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_instance</span><span class="p">:</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_zmq_context</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">last_interrupt_frame</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@traitlets</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_default_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
@@ -4696,51 +4692,59 @@ async context:
 
     <span class="nd">@asynccontextmanager</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">set_started</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">cache_iopub_send</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">cache_iopub_send</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">__send__</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
             <span class="c1"># Cache iopub messages, send when started or discard if stopped early.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">send</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">__send__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Stopped early&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span><span class="o">.</span><span class="n">call_later</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
 
-        <span class="n">send</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_check_stopped_early</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Stopped early&quot;</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">_check_stopped_early</span><span class="p">()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span> <span class="o">=</span> <span class="n">cache_iopub_send</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;iopub_send&quot;</span><span class="p">))</span>
-
-        <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">(</span>
-            <span class="s2">&quot;manual&quot;</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Shell&quot;</span><span class="p">,</span>
-            <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
-            <span class="n">zmq_context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="p">,</span>
-            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">current_async_library</span><span class="p">())</span>
+        <span class="n">channels_started</span><span class="p">,</span> <span class="n">stop_channels</span> <span class="o">=</span> <span class="n">create_async_waiter</span><span class="p">(),</span> <span class="n">create_async_event</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">with</span> <span class="n">caller</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting Shell caller&quot;</span><span class="p">)</span>
 
-                    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
-                        <span class="n">caller</span><span class="o">.</span><span class="n">call_later</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
-
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Shell&quot;</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span> <span class="k">as</span> <span class="n">caller</span><span class="p">:</span>
+                <span class="n">caller_ctrl</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller_ctrl</span>
+                <span class="n">pen_channels</span> <span class="o">=</span> <span class="n">caller_ctrl</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_channels</span><span class="p">,</span> <span class="n">channels_started</span><span class="o">.</span><span class="n">wake</span><span class="p">,</span> <span class="n">stop_channels</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">channels_started</span>
+                <span class="n">_check_stopped_early</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+                        <span class="n">_check_stopped_early</span><span class="p">()</span>
+                        <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
                             <span class="k">if</span> <span class="n">set_started</span><span class="p">:</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">_started</span><span class="p">()</span>
                             <span class="k">yield</span> <span class="bp">self</span>
-                    <span class="k">finally</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">stop_channels</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+                    <span class="k">await</span> <span class="n">pen_channels</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Interface stopped&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_started</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_open_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ready</span><span class="p">()</span>
+        <span class="k">await</span> <span class="n">stop</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_started</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Interface started: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
@@ -4765,10 +4769,9 @@ async context:
 <span class="sd">        Stop the kernel and this interface.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5299,7 +5302,7 @@ async context:
 
     <div class="doc doc-contents ">
 
-        <p>The caller associated with the kernel once it has started.</p>
+        <p>The caller associated with the kernel.</p>
 
           
     </div>
@@ -5384,11 +5387,11 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
 <span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialized</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Has an instance been created?&quot;&quot;&quot;</span>
@@ -5422,7 +5425,9 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
@@ -5430,9 +5435,7 @@ async context:
 <span class="normal">225</span>
 <span class="normal">226</span>
 <span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">instance</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
     <span class="s2">&quot;Get the singleton instance that was created using `launch_instance`.&quot;</span>
@@ -5478,7 +5481,9 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">283</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
@@ -5495,9 +5500,7 @@ async context:
 <span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the interface **DO NOT CALL DIRECTLY**.</span>
@@ -5554,7 +5557,9 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">304</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span>
@@ -5579,9 +5584,7 @@ async context:
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the interface blocking until it stops.</span>
@@ -5654,13 +5657,7 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">389</span>
 <span class="normal">390</span>
 <span class="normal">391</span>
 <span class="normal">392</span>
@@ -5668,7 +5665,13 @@ async context:
 <span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
-<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the kernel.</span>
 
@@ -5708,23 +5711,21 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">405</span>
 <span class="normal">406</span>
-<span class="normal">407</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop the kernel and this interface.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+        <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5773,15 +5774,15 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">414</span>
 <span class="normal">415</span>
 <span class="normal">416</span>
-<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -5829,12 +5830,7 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">424</span>
 <span class="normal">425</span>
 <span class="normal">426</span>
 <span class="normal">427</span>
@@ -5861,7 +5857,12 @@ async context:
 <span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span>
-<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">MsgType</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5942,18 +5943,18 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span>
 <span class="normal">463</span>
-<span class="normal">464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -6151,12 +6152,7 @@ instances using this mixin.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
@@ -6208,7 +6204,12 @@ instances using this mixin.</p>
 <span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
-<span class="normal">538</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A mixin class providing a reference to the global [interface][async_kernel.interface.base.BaseInterface].</span>
 
@@ -7073,7 +7074,7 @@ async context:
    (async_kernel.typing.Channel.control)" href="../typing/#async_kernel.typing.Channel.control">control</a>], <a class="autorefs autorefs-internal" title="            Caller (async_kernel.caller.Caller)" href="../caller/#async_kernel.caller.Caller">Caller</a>]]</code>)
           –
           <div class="doc-md-description">
-            <p>The caller associated with the kernel once it has started.</p>
+            <p>The caller associated with the kernel.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -7500,7 +7501,12 @@ async context:
 <span class="normal">475</span>
 <span class="normal">476</span>
 <span class="normal">477</span>
-<span class="normal">478</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseInterface</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The base class for kernel interface (singleton).</span>
 
@@ -7592,7 +7598,7 @@ async context:
     <span class="s2">&quot;The kernel.&quot;</span>
 
     <span class="n">callers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span> <span class="n">Caller</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="s2">&quot;The caller associated with the kernel once it has started.&quot;</span>
+    <span class="s2">&quot;The caller associated with the kernel.&quot;</span>
 
     <span class="n">started</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">)</span>
     <span class="s2">&quot;A Pending that is set when the interface has started.&quot;</span>
@@ -7603,8 +7609,6 @@ async context:
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_instance</span><span class="p">:</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_zmq_context</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">last_interrupt_frame</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@traitlets</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_default_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
@@ -7751,51 +7755,59 @@ async context:
 
     <span class="nd">@asynccontextmanager</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">set_started</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">cache_iopub_send</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">cache_iopub_send</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">__send__</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
             <span class="c1"># Cache iopub messages, send when started or discard if stopped early.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">send</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">__send__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Stopped early&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span><span class="o">.</span><span class="n">call_later</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
 
-        <span class="n">send</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_check_stopped_early</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Stopped early&quot;</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">_check_stopped_early</span><span class="p">()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span> <span class="o">=</span> <span class="n">cache_iopub_send</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;iopub_send&quot;</span><span class="p">))</span>
-
-        <span class="n">caller</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">(</span>
-            <span class="s2">&quot;manual&quot;</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Shell&quot;</span><span class="p">,</span>
-            <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
-            <span class="n">zmq_context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="p">,</span>
-            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">current_async_library</span><span class="p">())</span>
+        <span class="n">channels_started</span><span class="p">,</span> <span class="n">stop_channels</span> <span class="o">=</span> <span class="n">create_async_waiter</span><span class="p">(),</span> <span class="n">create_async_event</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">with</span> <span class="n">caller</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting Shell caller&quot;</span><span class="p">)</span>
 
-                    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
-                        <span class="n">caller</span><span class="o">.</span><span class="n">call_later</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">&quot;Stopping kernel&quot;</span><span class="p">)</span>
-
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">(</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Shell&quot;</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span> <span class="k">as</span> <span class="n">caller</span><span class="p">:</span>
+                <span class="n">caller_ctrl</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller_ctrl</span>
+                <span class="n">pen_channels</span> <span class="o">=</span> <span class="n">caller_ctrl</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_channels</span><span class="p">,</span> <span class="n">channels_started</span><span class="o">.</span><span class="n">wake</span><span class="p">,</span> <span class="n">stop_channels</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">channels_started</span>
+                <span class="n">_check_stopped_early</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+                        <span class="n">_check_stopped_early</span><span class="p">()</span>
+                        <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
                             <span class="k">if</span> <span class="n">set_started</span><span class="p">:</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">_started</span><span class="p">()</span>
                             <span class="k">yield</span> <span class="bp">self</span>
-                    <span class="k">finally</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">stop_channels</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+                    <span class="k">await</span> <span class="n">pen_channels</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">shield</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Interface stopped&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_started</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_open_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ready</span><span class="p">()</span>
+        <span class="k">await</span> <span class="n">stop</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_started</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Interface started: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
@@ -7820,10 +7832,9 @@ async context:
 <span class="sd">        Stop the kernel and this interface.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -8354,7 +8365,7 @@ async context:
 
     <div class="doc doc-contents ">
 
-        <p>The caller associated with the kernel once it has started.</p>
+        <p>The caller associated with the kernel.</p>
 
           
     </div>
@@ -8439,11 +8450,11 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
 <span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialized</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Has an instance been created?&quot;&quot;&quot;</span>
@@ -8477,7 +8488,9 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
@@ -8485,9 +8498,7 @@ async context:
 <span class="normal">225</span>
 <span class="normal">226</span>
 <span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">instance</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
     <span class="s2">&quot;Get the singleton instance that was created using `launch_instance`.&quot;</span>
@@ -8533,7 +8544,9 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">283</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
@@ -8550,9 +8563,7 @@ async context:
 <span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the interface **DO NOT CALL DIRECTLY**.</span>
@@ -8609,7 +8620,9 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">304</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span>
@@ -8634,9 +8647,7 @@ async context:
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start the interface blocking until it stops.</span>
@@ -8709,13 +8720,7 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">389</span>
 <span class="normal">390</span>
 <span class="normal">391</span>
 <span class="normal">392</span>
@@ -8723,7 +8728,13 @@ async context:
 <span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
-<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stopped</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the kernel.</span>
 
@@ -8763,23 +8774,21 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">405</span>
 <span class="normal">406</span>
-<span class="normal">407</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop the kernel and this interface.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;Stopped early&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+        <span class="n">BaseInterface</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -8828,15 +8837,15 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">414</span>
 <span class="normal">415</span>
 <span class="normal">416</span>
-<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Forward an input request to the frontend.</span>
 
@@ -8884,12 +8893,7 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">424</span>
 <span class="normal">425</span>
 <span class="normal">426</span>
 <span class="normal">427</span>
@@ -8916,7 +8920,12 @@ async context:
 <span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span>
-<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">MsgType</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -8997,18 +9006,18 @@ async context:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">458</span>
 <span class="normal">459</span>
 <span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span>
 <span class="normal">463</span>
-<span class="normal">464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -9206,12 +9215,7 @@ instances using this mixin.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
@@ -9263,7 +9267,12 @@ instances using this mixin.</p>
 <span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
-<span class="normal">538</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HasInterface</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A mixin class providing a reference to the global [interface][async_kernel.interface.base.BaseInterface].</span>
 
@@ -10361,7 +10370,7 @@ kernel_interface["stop"](msg, buffer)
    (async_kernel.interface.zmq.ZMQInterface.session)" href="#async_kernel.interface.zmq.ZMQInterface.session">session</a></code></b>
           –
           <div class="doc-md-description">
-            
+            <p>Provides messaging utilities.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -10382,23 +10391,7 @@ kernel_interface["stop"](msg, buffer)
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 43</span>
-<span class="normal"> 44</span>
-<span class="normal"> 45</span>
-<span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
-<span class="normal"> 54</span>
-<span class="normal"> 55</span>
-<span class="normal"> 56</span>
-<span class="normal"> 57</span>
-<span class="normal"> 58</span>
-<span class="normal"> 59</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 59</span>
 <span class="normal"> 60</span>
 <span class="normal"> 61</span>
 <span class="normal"> 62</span>
@@ -10643,34 +10636,7 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQInterface</span><span class="p">(</span><span class="n">BaseInterface</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">],</span> <span class="n">ConnectionFileMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance]</span>
+<span class="normal">304</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQInterface</span><span class="p">(</span><span class="n">BaseInterface</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">],</span> <span class="n">ConnectionFileMixin</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance]</span>
     <span class="s2">&quot;The base kernel interface using ZMQ sockets.&quot;</span>
 
     <span class="n">aliases</span> <span class="o">=</span> <span class="n">BaseInterface</span><span class="o">.</span><span class="n">aliases</span> <span class="o">|</span> <span class="p">{</span>
@@ -10689,20 +10655,16 @@ kernel_interface["stop"](msg, buffer)
     <span class="p">}</span>
     <span class="s2">&quot;&quot;</span>
 
-    <span class="n">session</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Instance</span><span class="p">(</span><span class="n">AsyncSession</span><span class="p">,</span> <span class="p">())</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Instance</span><span class="p">(</span><span class="n">Session</span><span class="p">,</span> <span class="p">())</span>
+    <span class="s2">&quot;Provides messaging utilities.&quot;</span>
 
     <span class="n">transport</span><span class="p">:</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CaselessStrEnum</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CaselessStrEnum</span><span class="p">(</span>
         <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">,</span> <span class="s2">&quot;ipc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;linux&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;tcp&quot;</span><span class="p">],</span> <span class="n">default_value</span><span class="o">=</span><span class="s2">&quot;tcp&quot;</span>
     <span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="s2">&quot;Transport for sockets.&quot;</span>
 
-    <span class="n">_initialized</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span>
-    <span class="n">_iopub_url</span> <span class="o">=</span> <span class="s2">&quot;inproc://iopub-capture&quot;</span>
-    <span class="n">_sockets</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Channel</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Socket</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-
-    <span class="n">poll_zmq</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">PollZMQ</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">PollZMQ</span><span class="p">)</span>
+    <span class="n">_sockets</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Channel</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">sugar</span><span class="o">.</span><span class="n">Socket</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">_iopub_socket</span><span class="p">:</span> <span class="n">IOPubSocketProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@traitlets</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">&quot;connection_file&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_connection_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proposal</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -10749,117 +10711,123 @@ kernel_interface["stop"](msg, buffer)
         <span class="k">raise</span> <span class="n">MethodNotSupported</span>  <span class="c1"># pragma: no cover</span>
 
     <span class="nd">@override</span>
-    <span class="nd">@asynccontextmanager</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">set_started</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_open_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Thread: control</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">heartbeat</span><span class="p">(</span><span class="n">hb</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Socket</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">hb</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">hb</span><span class="o">.</span><span class="n">recv</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_file</span><span class="p">):</span>  <span class="c1"># noqa: PTH110</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_connection_file</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_connection_file</span><span class="p">()</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_open_sockets</span><span class="p">()</span> <span class="k">as</span> <span class="n">ready</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">with</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__asynccontextmanager__</span><span class="p">(</span><span class="n">set_started</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-                <span class="k">await</span> <span class="n">ready</span>
-                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">Channel</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_zmq</span><span class="o">.</span><span class="n">start</span><span class="p">())</span>
-                <span class="k">if</span> <span class="n">set_started</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_started</span><span class="p">()</span>
-                <span class="k">yield</span> <span class="bp">self</span>
+
+        <span class="k">with</span> <span class="n">Poll</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">)</span> <span class="k">as</span> <span class="n">poll</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_poll</span> <span class="o">=</span> <span class="n">poll</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iopub</span><span class="p">():</span>
+                <span class="k">with</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_open_socket</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">heartbeat</span><span class="p">)</span> <span class="k">as</span> <span class="n">hb</span><span class="p">,</span>
+                    <span class="n">poll</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">hb</span><span class="p">,</span> <span class="n">heartbeat</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_open_socket</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_message_handler</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">)</span> <span class="k">as</span> <span class="n">ctrl</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_message_handler</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">)</span> <span class="k">as</span> <span class="n">shell</span><span class="p">,</span>
+                <span class="p">):</span>
+                    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span>
+                    <span class="n">ready</span><span class="p">()</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span>
+                    <span class="k">with</span> <span class="n">ctrl</span><span class="p">,</span> <span class="n">shell</span><span class="p">:</span>
+                        <span class="k">await</span> <span class="n">stop</span>
+            <span class="k">del</span> <span class="n">ctrl</span><span class="p">,</span> <span class="n">shell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll</span>
 
     <span class="nd">@contextmanager</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_open_sockets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">AsyncEvent</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="n">ready</span> <span class="o">=</span> <span class="n">create_async_event</span><span class="p">()</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_heartbeat</span><span class="p">(),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_message_handler</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_message_handler</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bind_socket</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">),</span>
-            <span class="p">):</span>
-                <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pub_proxy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;iopub proxy&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">ready</span><span class="o">.</span><span class="n">set</span><span class="p">])</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-                <span class="k">yield</span> <span class="n">ready</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">poll_zmq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Destroying zmq context&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;zmq context destroyed&quot;</span><span class="p">)</span>
-
-    <span class="nd">@contextmanager</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_heartbeat</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="c1"># ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#heartbeat-for-kernels</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">heartbeat</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Socket</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
-            <span class="n">socket</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_socket</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">heartbeat</span><span class="p">)</span> <span class="k">as</span> <span class="n">socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_zmq</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">heartbeat</span><span class="p">):</span>
-            <span class="k">yield</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_pub_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">mark_thread_pydev_do_not_trace</span><span class="p">()</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">on_reg_msg</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span> <span class="n">Socket</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">frames</span> <span class="o">:=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">():</span>
-                <span class="n">frame</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">frames</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">frame</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s2">&quot;iopub_welcome&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="n">frame</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">()})</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-
-        <span class="c1"># We use an internal proxy to collect pub messages for distribution.</span>
-        <span class="c1"># Each thread needs to open its own socket to publish to the internal proxy.</span>
-        <span class="c1"># Ref: https://zguide.zeromq.org/docs/chapter2/#Working-with-Messages (fig 14)</span>
-
-        <span class="n">frontend</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XSUB</span><span class="p">)</span>
-        <span class="n">frontend</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">Caller</span><span class="o">.</span><span class="n">iopub_url</span><span class="p">)</span>
-
-        <span class="c1"># Capture broadcast messages received on both frontend and backend</span>
-        <span class="c1"># welcome_message:  https://jupyter.org/enhancement-proposals/65-jupyter-xpub/jupyter-xpub.html#replace-pub-socket-with-xpub-socket</span>
-        <span class="n">capture</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Socket</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
-        <span class="n">capture_</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Socket</span> <span class="o">=</span> <span class="n">capture</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">)</span>
-
-        <span class="n">capture</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iopub_url</span><span class="p">)</span>
-        <span class="n">capture_</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iopub_url</span><span class="p">)</span>
-        <span class="c1"># Only subscribe to the &#39;pub subscribe&#39; topic byte `1` (byte `0` is &#39;pub unsubscribe&#39;).</span>
-        <span class="n">capture_</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x01</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">with</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_bind_socket</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">)</span> <span class="k">as</span> <span class="n">iopub_socket</span><span class="p">,</span>
-            <span class="n">capture</span><span class="p">,</span>
-            <span class="n">capture_</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">poll_zmq</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">capture_</span><span class="p">,</span> <span class="n">on_reg_msg</span><span class="p">),</span>
-            <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">ContextTerminated</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">),</span>
-        <span class="p">):</span>
-            <span class="n">ready</span><span class="p">()</span>
-            <span class="n">zmq</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">frontend</span><span class="p">,</span> <span class="n">iopub_socket</span><span class="p">,</span> <span class="n">capture</span><span class="p">)</span>
-
-    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_bind_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Any</span> <span class="o">|</span> <span class="n">Socket</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Bind a zmq.Socket storing a reference to the socket and the port</span>
-<span class="sd">        details and closing the socket on leaving the context.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_open_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">sugar</span><span class="o">.</span><span class="n">Socket</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create, bind and configure a socket.&quot;&quot;&quot;</span>
         <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">_port&quot;</span><span class="p">))</span>
         <span class="k">assert</span> <span class="n">port</span>
-        <span class="k">assert</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span>
+        <span class="k">if</span> <span class="n">channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span>
 
         <span class="k">match</span> <span class="n">channel</span><span class="p">:</span>
             <span class="k">case</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span> <span class="o">|</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span> <span class="o">|</span> <span class="n">Channel</span><span class="o">.</span><span class="n">heartbeat</span> <span class="o">|</span> <span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
-                <span class="n">socket_type</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ROUTER</span>
+                <span class="n">socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">ROUTER</span><span class="p">)</span>
             <span class="k">case</span> <span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">:</span>
-                <span class="n">socket_type</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">XPUB</span>
-        <span class="n">socket</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket_type</span><span class="p">)</span>
-        <span class="n">socket</span><span class="o">.</span><span class="n">linger</span> <span class="o">=</span> <span class="mi">1000</span>
+                <span class="n">socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">XPUB</span><span class="p">)</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketOption</span><span class="o">.</span><span class="n">LINGER</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">curve_secretkey</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">curve_publickey</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">socket</span><span class="o">.</span><span class="n">curve_secretkey</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curve_secretkey</span>
             <span class="n">socket</span><span class="o">.</span><span class="n">curve_publickey</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curve_publickey</span>
             <span class="n">socket</span><span class="o">.</span><span class="n">curve_server</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="c1"># bind the socket</span>
+
+        <span class="c1"># Bind the socket.</span>
         <span class="n">addr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;tcp://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span> <span class="o">==</span> <span class="s2">&quot;tcp&quot;</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;ipc://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> socket on port: </span><span class="si">%i</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">socket</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">socket</span>
+            <span class="k">with</span> <span class="n">socket</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">socket</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="n">socket</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> socket closed&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+
+    <span class="nd">@asynccontextmanager</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_iopub</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Managages the iopub socket, handles connection welcome messages, and provides internal sockets so that `iopub_send` works everywhere.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">on_reg_msg</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span> <span class="n">Socket</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="s2">&quot;https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message&quot;</span>
+            <span class="c1"># Thread: zmq_poll_thread</span>
+            <span class="c1"># handle PUB subscribe/unsubscribe messages.</span>
+            <span class="c1"># welcome_message:  https://jupyter.org/enhancement-proposals/65-jupyter-xpub/jupyter-xpub.html#replace-pub-socket-with-xpub-socket</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">ident</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s2">&quot;iopub_welcome&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="n">ident</span><span class="o">.</span><span class="n">decode</span><span class="p">()})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="n">ident</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_open_socket</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">)</span> <span class="k">as</span> <span class="n">iopub_sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">iopub_sock</span><span class="p">,</span> <span class="n">on_reg_msg</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iopub_socket</span> <span class="o">=</span> <span class="n">IOPubSocketProxy</span><span class="p">(</span><span class="n">iopub_sock</span><span class="p">)</span>
+            <span class="k">yield</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iopub_socket</span>
+
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_message_handler</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="o">/</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">AbstractContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Opens a zmq socket for the channel, receives messages and calls the message handler.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">session</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">message_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">message_handler</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
+
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_reply</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;status&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                <span class="n">content</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ok&quot;</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+                    <span class="n">stream</span><span class="o">=</span><span class="n">socket</span><span class="p">,</span>
+                    <span class="n">msg_or_type</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;request&quot;</span><span class="p">,</span> <span class="s2">&quot;reply&quot;</span><span class="p">),</span>
+                    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
+                    <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
+                    <span class="n">ident</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;ident&quot;</span><span class="p">],</span>
+                    <span class="n">buffers</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;buffers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;send_reply </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">recv_msg</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span> <span class="n">Socket</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Thread: zmq_poll_thread</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ident</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">zmq</span><span class="o">.</span><span class="n">DONTWAIT</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span>  <span class="c1"># pyright: ignore[reportOptionalSubscript]</span>
+                <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">received_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="n">ident</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
+                <span class="n">message_handler</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">send_reply</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Bad message on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_open_socket</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="k">as</span> <span class="n">socket</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">recv_msg</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
@@ -10868,7 +10836,7 @@ kernel_interface["stop"](msg, buffer)
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Stdin is not allowed in this context!&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="n">socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">]</span>
-        <span class="c1"># Clear messages on the stdin socket</span>
+        <span class="c1"># Clear messages on the stdin socket.</span>
         <span class="k">while</span> <span class="n">socket</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SocketOption</span><span class="o">.</span><span class="n">EVENTS</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportOperatorIssue]</span>
             <span class="n">socket</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="n">Flag</span><span class="o">.</span><span class="n">DONTWAIT</span><span class="p">)</span>
         <span class="c1"># Send the input request.</span>
@@ -10902,9 +10870,9 @@ kernel_interface["stop"](msg, buffer)
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Send a message on the zmq iopub socket.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">socket</span> <span class="o">:=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">iopub_sockets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">t_ident</span> <span class="o">:=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">id_current</span><span class="p">()):</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
-                <span class="n">stream</span><span class="o">=</span><span class="n">socket</span><span class="p">,</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">sock</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iopub_socket</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">msg</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+                <span class="n">stream</span><span class="o">=</span><span class="n">sock</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
                 <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_or_type</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
                 <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
                 <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
@@ -10912,53 +10880,8 @@ kernel_interface["stop"](msg, buffer)
                 <span class="n">ident</span><span class="o">=</span><span class="n">ident</span><span class="p">,</span>
                 <span class="n">buffers</span><span class="o">=</span><span class="n">buffers</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
             <span class="p">)</span>
-            <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;iopub_send: msg_type:&#39;</span><span class="si">%s</span><span class="s2">&#39;, content: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">caller</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">id</span> <span class="o">!=</span> <span class="n">t_ident</span><span class="p">:</span>
-            <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">,</span>
-                <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_or_type</span><span class="p">,</span>
-                <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
-                <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
-                <span class="n">parent</span><span class="o">=</span><span class="n">parent</span> <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NoValue</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="n">ident</span><span class="o">=</span><span class="n">ident</span><span class="p">,</span>
-                <span class="n">buffers</span><span class="o">=</span><span class="n">buffers</span><span class="p">,</span>
-            <span class="p">)</span>
-
-    <span class="nd">@contextmanager</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_message_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Opens a zmq socket for the channel, receives messages and calls the message handler.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">session</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">message_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">message_handler</span>
-        <span class="n">lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
-
-        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_reply</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;status&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
-                <span class="n">content</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ok&quot;</span>
-            <span class="k">async</span> <span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
-                    <span class="n">stream</span><span class="o">=</span><span class="n">socket</span><span class="p">,</span>
-                    <span class="n">msg_or_type</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;request&quot;</span><span class="p">,</span> <span class="s2">&quot;reply&quot;</span><span class="p">),</span>
-                    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
-                    <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
-                    <span class="n">ident</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;ident&quot;</span><span class="p">],</span>
-                    <span class="n">buffers</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;buffers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                <span class="p">)</span>
-                <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;***send_reply </span><span class="si">%s</span><span class="s2">*** </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">recv_msg</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span> <span class="n">Socket</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">ident</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">zmq</span><span class="o">.</span><span class="n">DONTWAIT</span><span class="p">)</span>
-                <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span>  <span class="c1"># pyright: ignore[reportOptionalSubscript]</span>
-                <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">received_time</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="n">ident</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
-                <span class="n">message_handler</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">send_reply</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Bad message on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_socket</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="k">as</span> <span class="n">socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_zmq</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">recv_msg</span><span class="p">):</span>
-            <span class="k">yield</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;iopub_send: msg_type:</span><span class="si">%r</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg_or_type</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -11056,10 +10979,12 @@ kernel_interface["stop"](msg, buffer)
   </span>
 
 <a href="#async_kernel.interface.zmq.ZMQInterface.session" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Instance" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Instance">Instance</a></span><span class="p">(</span><span class="n"><span title="async_kernel.interface.zmq.AsyncSession">AsyncSession</span></span><span class="p">,</span> <span class="p">())</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span> <span class="o">=</span> <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Instance" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Instance">Instance</a></span><span class="p">(</span><span class="n"><span title="async_kernel.interface.zmq.Session">Session</span></span><span class="p">,</span> <span class="p">())</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
+        <p>Provides messaging utilities.</p>
 
           
     </div>
@@ -11139,25 +11064,7 @@ kernel_interface["stop"](msg, buffer)
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/interface/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
 <span class="normal">282</span>
@@ -11174,7 +11081,15 @@ kernel_interface["stop"](msg, buffer)
 <span class="normal">293</span>
 <span class="normal">294</span>
 <span class="normal">295</span>
-<span class="normal">296</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_or_type</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
@@ -11188,9 +11103,9 @@ kernel_interface["stop"](msg, buffer)
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Send a message on the zmq iopub socket.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">socket</span> <span class="o">:=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">iopub_sockets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">t_ident</span> <span class="o">:=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">id_current</span><span class="p">()):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
-            <span class="n">stream</span><span class="o">=</span><span class="n">socket</span><span class="p">,</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">sock</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iopub_socket</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">msg</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">sock</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
             <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_or_type</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
             <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
@@ -11198,18 +11113,8 @@ kernel_interface["stop"](msg, buffer)
             <span class="n">ident</span><span class="o">=</span><span class="n">ident</span><span class="p">,</span>
             <span class="n">buffers</span><span class="o">=</span><span class="n">buffers</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;iopub_send: msg_type:&#39;</span><span class="si">%s</span><span class="s2">&#39;, content: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;msg_type&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
-    <span class="k">elif</span> <span class="p">(</span><span class="n">caller</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">))</span> <span class="ow">and</span> <span class="n">caller</span><span class="o">.</span><span class="n">id</span> <span class="o">!=</span> <span class="n">t_ident</span><span class="p">:</span>
-        <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">,</span>
-            <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_or_type</span><span class="p">,</span>
-            <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
-            <span class="n">parent</span><span class="o">=</span><span class="n">parent</span> <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NoValue</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">ident</span><span class="o">=</span><span class="n">ident</span><span class="p">,</span>
-            <span class="n">buffers</span><span class="o">=</span><span class="n">buffers</span><span class="p">,</span>
-        <span class="p">)</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;iopub_send: msg_type:</span><span class="si">%r</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">msg_or_type</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
