@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 
 import zmq
 from aiologic import BinarySemaphore, BusyResourceError
-from aiologic.lowlevel import create_green_event, create_green_waiter
+from aiologic.lowlevel import create_green_waiter
 from zmq import Socket
 from zmq.backend import zmq_poll
 
@@ -42,18 +42,13 @@ class Poll:
 
     stopped: Fixed[Any, Pending[None]] = Fixed(Pending)
 
-    def __init__(
-        self, auto_start: bool = True, /, *, log: logging.Logger | logging.LoggerAdapter | None = None
-    ) -> None:
+    def __init__(self, *, log: logging.Logger | logging.LoggerAdapter | None = None) -> None:
 
         self._zmq_context = zmq.Context()
         self._handlers: dict[T_key, Callable[[zmq.sugar.Socket, int], Any]] = {}
         self._countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
         self._execute: deque[Callable[[], Any]] = deque()
         self._not_started = False
-        self._start = create_green_event()
-        if auto_start:
-            self._start.set()
         self._lock = BinarySemaphore()
         self.log = log or logging.LoggerAdapter(logging.getLogger())
 
@@ -68,16 +63,12 @@ class Poll:
 
     def __exit__(self, type, value, traceback) -> Literal[False]:
         with self._lock:
-            self._handlers.clear()
-            self.start()
-            self._ctrl_sock.send(b"")
-            self.stopped.wait_sync(shield=True)
-            self.thread.join()
+            if not self.stopped.done():
+                self._handlers.clear()
+                self._ctrl_sock.send(b"")
+                self.stopped.wait_sync(shield=True)
+                self.thread.join()
         return False
-
-    def start(self) -> bool:
-        assert hasattr(self, "thread"), "Must be opened in a context before calling start."
-        return self._start.set()
 
     def socket(self, socket_type: zmq.SocketType) -> zmq.sugar.Socket:
         "Create a zmq socket."
@@ -93,13 +84,12 @@ class Poll:
             countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._countdown,
             execute: deque[Callable[[], Any]] = self._execute,
             context: zmq.Context = self._zmq_context,
-            start=self._start,
         ) -> None:
             # Thread: zmq_poll_thread
             if not utils.LAUNCHED_BY_DEBUGPY:
                 utils.mark_thread_pydev_do_not_trace()
 
-            def do_wake(sock: zmq.backend.Socket, flags: int) -> None:
+            def do_wake(sock: zmq.sugar.Socket, flags: int) -> None:
                 # Called on receipt of a message (b'') on the 'wake' socket.
                 nonlocal prev, current, sockets
                 prev, current, sockets = current, set(sockets), list(handlers)
@@ -108,12 +98,9 @@ class Poll:
             sockets, current, prev = [], set(), set()
             c: tuple[int, Callable] | None
             try:
-                with context, wake:
-                    wake.bind(addr)
+                with context, wake, send:
                     handlers[(wake, zmq.POLLIN)] = do_wake
-
                     started()
-                    start.wait()
                     # The main loop polls the handler keys for events in a loop.
                     # It will block until an event occurs.
                     while handlers or execute:
@@ -154,9 +141,10 @@ class Poll:
 
         self.log.debug("Starting poll event loop")
         started = create_green_waiter()
-        self._ctrl_sock = send = self._zmq_context.socket(zmq.PAIR)
-        wake: zmq.Socket = self._zmq_context.socket(zmq.PAIR)
-        send.connect(addr := f"inproc://async_kernel_zmq_poller_{id(self)}")
+        self._ctrl_sock = send = self.socket(zmq.SocketType.PAIR)
+        wake = self.socket(zmq.SocketType.PAIR)
+        wake.bind(addr := f"inproc://async_kernel_zmq_poller_{id(self)}")
+        self._ctrl_sock.connect(addr)
         self.thread = threading.Thread(target=zmq_poll_thread, kwargs={"started": started.wake})
         self.thread.start()
         started.wait()
