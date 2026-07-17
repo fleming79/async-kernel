@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from collections import deque
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Literal, Self
@@ -36,8 +35,6 @@ class Poll:
 
     Methods:
         'socket': Create a new socket using the zmq context associated with `Poll`.
-        'execute': Execute a function in the poll thread. The returned pending can be
-            awaited/waited from any thread.
         `event_handler`: A context manager to execute a handler while the context has been held.
     """
 
@@ -48,7 +45,6 @@ class Poll:
         self._zmq_context = zmq.Context()
         self._handlers: dict[T_key, Callable[[zmq.sugar.Socket, int], Any]] = {}
         self._countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
-        self._execute: deque[Callable[[], Any]] = deque()
         self._not_started = False
         self._lock = BinarySemaphore()
         self.log = log or logging.LoggerAdapter(logging.getLogger())
@@ -92,7 +88,6 @@ class Poll:
             handlers: dict[T_key, Callable[[zmq.sugar.Socket, int], Any]] = self._handlers,
             stopped: Pending[None] = self.stopped,
             countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._countdown,
-            execute: deque[Callable[[], Any]] = self._execute,
             context: zmq.Context = self._zmq_context,
         ) -> None:
             # Thread: zmq_poll_thread
@@ -113,9 +108,7 @@ class Poll:
                     started()
                     # The main loop polls the handler keys for events in a loop.
                     # It will block until an event occurs.
-                    while handlers or execute:
-                        while execute:
-                            execute.popleft()()
+                    while handlers:
                         if not sockets:
                             sockets = list(handlers)
                         try:
