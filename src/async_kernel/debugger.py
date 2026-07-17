@@ -173,15 +173,6 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
         except anyio.EndOfStream:
             self.log.debug("debugpy socketstream disconnected")
             return
-        except anyio.get_cancelled_exc_class():
-            msg = {
-                "type": "request",
-                "seq": self.kernel.debugger.next_seq(),
-                "command": "configurationDone",
-            }
-            with anyio.CancelScope(shield=True):
-                await self.kernel.debugger.do_disconnect(msg)
-            raise
         finally:
             self._socketstream = None
 
@@ -314,26 +305,24 @@ class Debugger(HasInterface, LoggingConfigurable):
                 utils.mark_thread_pydev_do_not_trace(thread)
         if not self.debugpy_client.connected:
             ready = create_async_waiter()
-            Caller().call_soon(self._debupy_socket_connection, ready.wake)
+            pen = (caller := Caller()).call_soon(self.debugpy_client._connect_tcp_socket, ready.wake)  # pyright: ignore[reportPrivateUsage]
+
+            def stop(_):
+                msg = {
+                    "type": "request",
+                    "seq": self.kernel.debugger.next_seq(),
+                    "command": "configurationDone",
+                }
+                caller.call_direct(self.do_disconnect, msg)
+
+            self.parent.stopping.add_done_callback(stop)
+            pen.add_done_callback(lambda _: self.parent.stopping.remove_done_callback(stop))
             await ready
 
         reply = await self.send_dap_request(msg)
         if capabilities := reply.get("body"):
             self.capabilities = capabilities
         return reply
-
-    async def _debupy_socket_connection(self, ready: Callable[[], Any]) -> None:
-        "Maintain a connection to the debugger"
-        msg = {
-            "type": "request",
-            "seq": self.next_seq(),
-            "command": "configurationDone",
-        }
-        async with anyio.create_task_group() as tg:
-            tg.start_soon(self.debugpy_client._connect_tcp_socket, ready)  # pyright: ignore[reportPrivateUsage]
-            await self.parent.stopping
-            await self.do_disconnect(msg)
-            tg.cancel_scope.cancel()
 
     async def do_debug_info(self, msg: DebugMessage, /) -> dict[str, Any]:
         """Handle an debug info message."""
