@@ -248,7 +248,7 @@ reportUnusedParameter = false
 reportUnknownLambdaType = false
 
 [tool.uv]
-required-version = "==0.11.16"
+required-version = "==0.11.29"
 
 [tool.uv.sources]
 jupyter-client = { git = "https://github.com/jupyter/jupyter_client.git" }

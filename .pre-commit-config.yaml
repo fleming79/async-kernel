@@ -28,12 +28,12 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.3
+    rev: 0.37.4
     hooks:
       - id: check-github-workflows
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.8.4
+    rev: v3.9.5
     hooks:
       - id: prettier
         types_or: [yaml, html, json]
@@ -48,7 +48,7 @@ repos:
         additional_dependencies: [black==23.7.0]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.2
+    rev: v2.4.3
     hooks:
       - id: codespell
         args: ["-L", "sur,nd"]
@@ -59,7 +59,7 @@ repos:
       - id: python-use-type-annotations
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.19
+    rev: v0.15.22
     hooks:
       - id: ruff-check
         types_or: [python, jupyter]
