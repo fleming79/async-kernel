@@ -89,18 +89,19 @@ class Poll:
             stopped: Pending[None] = self.stopped,
             countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._countdown,
             context: zmq.Context = self._zmq_context,
+            log=self.log,
         ) -> None:
             # Thread: zmq_poll_thread
             if not utils.LAUNCHED_BY_DEBUGPY:
                 utils.mark_thread_pydev_do_not_trace()
 
             def do_wake(sock: zmq.sugar.Socket, flags: int) -> None:
+                nonlocal sockets
                 # Called on receipt of a message (b'') on the 'wake' socket.
-                nonlocal prev, current, sockets
-                prev, current, sockets = current, set(sockets), list(handlers)
+                sockets = None
                 sock.recv()
 
-            sockets, current, prev = [], set(), set()
+            sockets = None
             c: tuple[int, Callable] | None
             try:
                 with context, wake, send:
@@ -132,15 +133,15 @@ class Poll:
                                         countdown[k] = None
                                         c[1]()
                         except zmq.ZMQError:
-                            for k, v in self._handlers.copy().items():
+                            for k, v in handlers.copy().items():
                                 if k[0].closed:
-                                    self._handlers.pop(k)
-                                    self.log.warning("Closed sockets detected %s -> %s", k[0], v)
+                                    handlers.pop(k)
+                                    log.warning("Closed sockets detected %s -> %s", k[0], v)
                         except Exception:
                             continue
             finally:
                 stopped.set_result(None)
-                self.log.debug("Stopped poll event loop")
+                log.debug("Stopped poll event loop")
 
         self.log.debug("Starting poll event loop")
         started = create_green_waiter()
