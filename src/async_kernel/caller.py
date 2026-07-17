@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
 import contextlib
 import contextvars
 import inspect
@@ -18,7 +19,7 @@ from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
 
 import anyio
-from aiologic import BinarySemaphore, CountdownEvent, Event
+from aiologic import BinarySemaphore, CountdownEvent
 from aiologic.lowlevel import create_async_event, current_async_library
 from aiologic.meta import await_for, iscoroutinelike
 from typing_extensions import override
@@ -42,7 +43,6 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
     import trio  # noqa: TC004
-    import zmq
 
     from async_kernel.typing import P
 
@@ -195,10 +195,9 @@ class Caller(anyio.AsyncContextManagerMixin):
         CallerState.stopping: "🏁 stopping",
         CallerState.stopped: "🏁 stopped",
     }
-    _zmq_context: zmq.Context[Any] | None = None
 
     # Fixed
-    _child_lock = Fixed(BinarySemaphore)
+    _inst_lock = Fixed(BinarySemaphore)
     _children: Fixed[Self, set[Self]] = Fixed(set)
     _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
@@ -214,14 +213,10 @@ class Caller(anyio.AsyncContextManagerMixin):
     stopped = Fixed(Pending)
     "A pending that is done when the caller is stopped."
 
-    _children_stopped: Event | None = None
+    _children_countdown: CountdownEvent | None = None
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.Logger | logging.LoggerAdapter
-    ""
-    iopub_sockets: ClassVar[dict[int, zmq.Socket]] = {}
-    ""
-    iopub_url: ClassVar = "inproc://iopub"
     ""
 
     @property
@@ -258,11 +253,6 @@ class Caller(anyio.AsyncContextManagerMixin):
     def protected(self) -> bool:
         "Returns `True` if the caller is protected from stopping."
         return self._protected
-
-    @property
-    def zmq_context(self) -> zmq.Context | None:
-        "A zmq socket, which if present indicates that an iopub socket is loaded."
-        return self._zmq_context
 
     @property
     def running(self) -> bool:
@@ -334,7 +324,6 @@ class Caller(anyio.AsyncContextManagerMixin):
                 - backend: The async backend to use.
                 - backend_options: Options for the backend.
                 - protected: Whether the Caller is protected.
-                - zmq_context: ZeroMQ context.
                 - log: Logger instance.
 
         Returns:
@@ -377,7 +366,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             inst._backend_options = kwargs.get("backend_options")
             inst._host_options = kwargs.get("host_options")
             inst._protected = kwargs.get("protected", False)
-            inst._zmq_context = kwargs.get("zmq_context")
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
             if (sys.platform == "emscripten") and (caller_id is None):
                 caller_id = id(inst)
@@ -390,6 +378,8 @@ class Caller(anyio.AsyncContextManagerMixin):
                 inst.start_sync(no_debug=kwargs.get("no_debug", False))
             assert inst._caller_id
             assert inst._caller_id not in cls._instances
+            atexit.register(inst.stop, force=True)
+            inst._stopping.add_done_callback(lambda _: atexit.unregister(inst.stop))
             cls._instances[inst._caller_id] = inst
         return inst
 
@@ -436,7 +426,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         if not "shutdown" not in str(e):
                             raise
 
-                threading.Thread(target=to_thread, daemon=False).start()
+                threading.Thread(target=to_thread).start()
         else:
 
             def async_kernel_caller() -> None:
@@ -460,7 +450,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             assert thread.ident
             self._thread, self._caller_id = thread, thread.ident
 
-    def stop(self, *, force: bool = False) -> Event | None:
+    def stop(self, *, force: bool = False) -> None:
         """
         Stop the caller cancelling all incomplete tasks.
 
@@ -473,76 +463,67 @@ class Caller(anyio.AsyncContextManagerMixin):
         if self._protected and not force:
             self.log.warning("Non-force stop ignored for  %s", self)
             return
-        with self._child_lock:
-            if self._state in [CallerState.stopping, CallerState.stopped]:
-                return None
+        with self._inst_lock:
+            if self._stopping.done():
+                return
             state = self._state
             self._state = CallerState.stopping
+            self._stopping.set_result(None)
             self.log.debug("Stopping %s", self)
             # Remove from worker pool
             if (parent := self.parent) and (workers := parent._worker_pool):
                 with contextlib.suppress(ValueError):
                     workers.remove(self)
-
-        # Invoke stop callbacks
-        self._stopping.set_result(None)
-        for func in self._queue_map.copy():
-            self.queue_close(func)
-
-        # Stop the children
-        if self._children and ((stopped := self._children_stopped) is not None):
+            # Invoke stop callbacks
             for child in self._children.copy():
                 child.stop(force=True)
-            stopped.wait()
+            # Shutdown queue_call
+            for func in self._queue_map.copy():
+                self.queue_close(func)
+        # Stop the children
         if state in [CallerState.initial, CallerState.start_sync]:
             self._stop_finalize()
 
     def _stop_finalize(self) -> None:
-        assert self._state is CallerState.stopping
-        self._state = CallerState.stopped
-        self.stopped.set_result(None)
-        self._queue.stop()
-        self._instances.pop(self._caller_id, None)
-        self.log.debug("Stopped %s", self)
+        with self._inst_lock:
+            if not self.stopped.done():
+                if (countdown := self._children_countdown) is not None:
+                    countdown.wait()
+                self._instances.pop(self._caller_id)
+                self._queue.stop()
+                self._state = CallerState.stopped
+                self.stopped.set_result(None)
+                self.log.debug("Stopped %s", self)
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         "The asynchronous context for caller."
-        socket = None
+        if self._state is CallerState.start_sync:
+            msg = 'Already starting! Did you mean to use Caller("manual")?'
+            raise RuntimeError(msg)
+        if self._state is CallerState.stopped:
+            msg = f"Stopped: {self}"
+            raise RuntimeError(msg)
         try:
-            match self._state:
-                case CallerState.start_sync:
-                    msg = 'Already starting! Did you mean to use Caller("manual")?'
-                    raise RuntimeError(msg)
-                case CallerState.initial:
-                    self._state = CallerState.starting
-                case _:
-                    msg = f"Invalid state {self}"
-                    raise RuntimeError(msg)
-            if self._zmq_context:
-                socket = self._zmq_context.socket(1)  # zmq.SocketType.PUB
-                socket.connect(self.iopub_url)
-                self.iopub_sockets[self._caller_id] = socket
             async with task_factory() as create_task:
                 create_task(contextvars.Context(), self._scheduler, self._queue)
-                with anyio.CancelScope() as scope:
-                    try:
+                try:
+                    with anyio.CancelScope() as scope:
                         self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
                         self._state = CallerState.running
                         self.log.debug("Started %s", self)
                         yield self
-                    finally:
-                        self.stop(force=True)
+                finally:
+                    self.stop(force=True)
+                    if self._guest_done_event.value > 0:
                         # Warning: `queue` must not be stopped until guests have been stopped.
-                        if self._guest_done_event.value > 0:
-                            with anyio.CancelScope(shield=True):
-                                await self._guest_done_event
+                        with anyio.CancelScope(shield=True):
+                            await self._guest_done_event
+                    if (countdown := self._children_countdown) is not None:
+                        with anyio.CancelScope(shield=True):
+                            await countdown
         finally:
-            if socket:
-                self.iopub_sockets.pop(self._caller_id, None)
-                socket.close(linger=0)
-            if self._state is CallerState.stopping:
-                self._stop_finalize()
+            self._stop_finalize()
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
         """
@@ -698,12 +679,12 @@ class Caller(anyio.AsyncContextManagerMixin):
             - If 'backend' or 'zmq_context' are not specified they are copied from the caller.
         """
 
-        if self._state in [CallerState.stopping, CallerState.stopped]:
-            msg = f"Caller is stopping or stopped {self}"
-            raise RuntimeError(msg)
-        with self._child_lock:
+        with self._inst_lock:
+            if self._stopping.done():
+                msg = f"Caller is stopping or stopped {self}"
+                raise RuntimeError(msg)
             if name := kwargs.get("name"):
-                for child in self._children.copy():
+                for child in self._children:
                     if child.name == name:
                         if (backend := kwargs.get("backend")) and child.backend != backend:
                             msg = f"Backend mismatch! {backend=} {child.backend=}"
@@ -713,23 +694,20 @@ class Caller(anyio.AsyncContextManagerMixin):
                             raise RuntimeError(msg)
                         return child
 
-            def on_child_stopped(_) -> None:
-                if parent := ref():
-                    with parent._child_lock:
-                        parent._children.discard(child)
-                        if (not parent._children) and (parent._state in [CallerState.stopping, CallerState.stopped]):
-                            parent._children_stopped.set()  # pyright: ignore[reportOptionalMemberAccess]
-
             if "backend" not in kwargs:
                 kwargs["backend"] = self._backend
                 kwargs["backend_options"] = self.backend_options
-            if "zmq_context" not in kwargs and self._zmq_context:
-                kwargs["zmq_context"] = self._zmq_context
             child = self.__class__("NewThread", **kwargs)
-            child._parent_ref = ref = weakref.ref(self)
-            if self._children_stopped is None:
-                self._children_stopped = Event()
+            child._parent_ref = weakref.ref(self)
+            if self._children_countdown is None:
+                self._children_countdown = CountdownEvent()
             self._children.add(child)
+            self._children_countdown.up()
+
+            def on_child_stopped(_, children=self._children, done=self._children_countdown.down) -> None:
+                children.discard(child)
+                done()
+
             child.stopped.add_done_callback(on_child_stopped)
             return child
 
@@ -765,7 +743,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
             queue = self._queue
         elif not (queue := self._guest_queues.get(backend)):
-            with self._child_lock:
+            with self._inst_lock:
                 if backend is Backend.trio:
                     trio.sleep  # noqa: B018 # Check trio is available.
                 if not (queue := self._guest_queues.get(backend)):
@@ -920,7 +898,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
         def _to_thread_on_done(_) -> None:
             if not caller.stopped.done() and self.running:
-                with self._child_lock:
+                with self._inst_lock:
                     if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
                         caller._idle_time = time.monotonic()
                         self._worker_pool.append(caller)
@@ -973,7 +951,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 trackers and **not** PendingGroup.
         """
         if not (pen_ := self._queue_map.get(key := hash(func))):
-            with self._child_lock:
+            with self._inst_lock:
                 if not (pen_ := self._queue_map.get(key)):
                     queue = SingleAsyncQueue[tuple[Callable, tuple, dict]](reject=self._reject)
                     with contextlib.suppress(TypeError):
@@ -985,9 +963,10 @@ class Caller(anyio.AsyncContextManagerMixin):
                         try:
                             async for item in queue:
                                 try:
-                                    await item[0](*item[1], **item[2])
-                                except TypeError:
-                                    continue
+                                    result = item[0](*item[1], **item[2])
+                                    if iscoroutinelike(result):
+                                        await result
+                                    del result
                                 except (anyio.get_cancelled_exc_class(), Exception) as e:
                                     if pen.cancelled():
                                         raise

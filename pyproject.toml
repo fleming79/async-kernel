@@ -85,7 +85,7 @@ test = [
     "trio>=0.31.0",
 ]
 uvloop = ["uvloop; python_version <= '3.13' and sys_platform != 'win32' and implementation_name == 'cpython'",
-"winloop; sys_platform == 'win32' and implementation_name == 'cpython'"
+"winloop; sys_platform == 'win32' and implementation_name == 'cpython' and python_version <= '3.13'"
 ]    
 dev = [
   "matplotlib>=3.10.9; python_version < '3.15'",

@@ -71,7 +71,7 @@ jobs:
         if: ${{runner.debug == '1'}}
         timeout-minutes: 3
         run: |
-          uv run pytest -vvl --override-ini=log_cli_level=DEBUG --override-ini=log_cli=true
+          uv run pytest -vvl --override-ini=log_cli_level=DEBUG
 
       - name: Run tests
         if: ${{runner.debug != '1'}}

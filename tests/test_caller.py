@@ -35,8 +35,7 @@ async def stop_caller_post_test():
     yield
     if caller := Caller.get_existing():
         caller.stop(force=True)
-        with anyio.CancelScope(shield=True):
-            await caller.stopped
+        await caller.stopped
 
 
 @pytest.mark.anyio
@@ -141,9 +140,6 @@ class TestCaller:
         pen = Pending()
         caller.call_direct(lambda: pen)
         assert await caller.call_soon(lambda: pen) is pen
-
-    async def test_zmq_context(self, caller: Caller):
-        assert caller.zmq_context is None
 
     async def test_repr_caller_result(self, caller):
         async def test_func(a, b, c):

@@ -1,6 +1,5 @@
 import asyncio
 import importlib.util
-import logging
 import os
 import subprocess
 import sys
@@ -15,7 +14,6 @@ import zmq
 from aiologic.lowlevel import current_async_library
 from jupyter_client.asynchronous.client import AsyncKernelClient
 
-import async_kernel
 from async_kernel import Caller
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernel import Kernel
@@ -36,10 +34,16 @@ if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
 else:
     params = [pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio")]
 
+debug = False
 
-if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
-    traitlets.config.Application.log_level.default_value = 10  # pyright: ignore[reportAttributeAccessIssue]
-    logging.basicConfig(level=10)
+
+@pytest.hookimpl
+def pytest_configure(config):
+    global debug  # noqa: PLW0603
+    if config.getini("log_cli_level") == "DEBUG":
+        debug = True
+    if debug:
+        traitlets.config.Application.log_level.default_value = 10  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def check_anyio_backend(anyio_backend):
@@ -79,7 +83,7 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
     # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
     interface_class = IPApp if anyio_backend[0] == "asyncio" else ZMQInterface
     interface = (interface_class)(connection_file=connection_file.as_posix(), transport=transport)
-    if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    if debug:
         interface.log_level = 10
     if request.param == "MainThread":
         async with interface:
@@ -157,7 +161,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
 
     # Start the interface
     command = make_argv(connection_file=client.connection_file, name=name, backend=backend)
-    if utils.CI_DEBUGGING or async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    if debug:
         command.append("--debug")
     process = subprocess.Popen(command)
     try:
