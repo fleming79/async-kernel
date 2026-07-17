@@ -4725,7 +4725,7 @@ async context:
                 <span class="k">await</span> <span class="n">channels_started</span>
                 <span class="n">_check_stopped_early</span><span class="p">()</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+                    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">:</span>
                         <span class="n">_check_stopped_early</span><span class="p">()</span>
                         <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
@@ -7788,7 +7788,7 @@ async context:
                 <span class="k">await</span> <span class="n">channels_started</span>
                 <span class="n">_check_stopped_early</span><span class="p">()</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+                    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">:</span>
                         <span class="n">_check_stopped_early</span><span class="p">()</span>
                         <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
