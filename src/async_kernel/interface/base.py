@@ -363,7 +363,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
                 await channels_started
                 _check_stopped_early()
                 try:
-                    async with self.kernel.running():
+                    async with self.kernel:
                         _check_stopped_early()
                         with anyio.CancelScope() as scope:
                             self.stop = stop
