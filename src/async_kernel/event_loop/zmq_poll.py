@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import threading
-import time
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Literal, Self
@@ -31,11 +30,9 @@ T_key = tuple[Any | Socket[Any], int]
 
 class Poll:
     """
-    Provides a [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.
-
-    Methods:
-        'socket': Create a new socket using the zmq context associated with `Poll`.
-        `event_handler`: A context manager to execute a handler while the context has been held.
+    A simple [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.
+    This event loop is synchronous and is intended for quick message dispatch to separate threads
+    for handling.
     """
 
     stopped: Fixed[Any, Pending[None]] = Fixed(Pending)
@@ -68,7 +65,7 @@ class Poll:
         return False
 
     def socket(self, socket_type: zmq.SocketType) -> zmq.sugar.Socket:
-        "Create a zmq socket."
+        "Create a new zmq socket."
         return self._validate_socket(self._zmq_context.socket(socket_type))
 
     def _send_wake(self) -> None:
@@ -76,8 +73,7 @@ class Poll:
         try:
             self._ctrl_sock.send(b"")
         except zmq.ZMQError:
-            time.sleep(1)
-            if not self.stopped.done():
+            if not self._ctrl_sock.closed:
                 raise
 
     def __start(self) -> None:
@@ -178,13 +174,14 @@ class Poll:
 
         Args:
             sock: A zmq socket or a IO style object with a `fileno`.
-            handler: A handler to handle the event. The handler is always called inside a
-                dedicated thread. Thread-safe primitives must be used by the handler.
+            handler: A handler to handle the event. The handler is called inside the
+                poll thread. Thread-safe primitives must be used by the handler such
+                as [async_kernel.caller.Caller.call_soon][], etc.
             flags: The type of event to listen for.
                 [zmq.PollEvent.POLLIN][]: `sock` is readable.
                 [zmq.PollEvent.POLLOUT][]: `sock` was read from.
             countdown: A tuple ('n', callback) where the handler is run to completion
-                exactly 'n' times. The callback is normally an `event.set` to release
+                exactly 'n' times. The callback could be an `event.set` to release
                 the context.
 
         Tip:
