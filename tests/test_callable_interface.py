@@ -91,6 +91,7 @@ class TestCallableInterface:
         with pytest.raises(RuntimeError, match="An interface already exists!"):
             CallableInterface()
 
-    async def test_keyboard_interrupt(self, interface) -> None:
-        with pytest.raises(KeyboardInterrupt):
-            signal.raise_signal(signal.SIGINT)
+    async def test_keyboard_interrupt(self, interface, mocker) -> None:
+        stop = mocker.patch.object(interface, "stop")
+        signal.raise_signal(signal.SIGINT)
+        assert stop.call_count == 1
