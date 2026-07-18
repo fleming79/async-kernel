@@ -268,7 +268,6 @@ class SingleAsyncQueue(Generic[T]):
             waiter = self._waiter
             del self._waiter
             waiter.wake()
-            del waiter
         except AttributeError:
             pass
 
