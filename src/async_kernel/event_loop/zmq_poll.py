@@ -142,7 +142,7 @@ class Poll:
                                     return
                                 except BaseException:
                                     pass
-                                if (c := countdown.get(k)) is not None:
+                                if countdown and (c := countdown.get(k)) is not None:
                                     c = countdown[k] = (int(c[0]) - 1, c[1])
                                     # Auto eject after 'n' events
                                     if c[0] == 0:
