@@ -104,21 +104,21 @@ async def test_interrupt_request_not_blocked(client: AsyncKernelClient, kernel: 
     assert pen.cancelled()
 
 
-@pytest.mark.parametrize("mode", ["exec_request", "task", "async"])
+@pytest.mark.parametrize("mode", ["exec_request_sync", "caller", "exec_request_async"])
 async def test_interrupt_request(
-    subprocess_kernels_client: AsyncKernelClient, mode: Literal["exec_request", "task", "async"]
+    subprocess_kernels_client: AsyncKernelClient, mode: Literal["exec_request_sync", "exec_request_async", "caller"]
 ):
     await utils.clear_iopub(subprocess_kernels_client)
     client = subprocess_kernels_client
-    if mode == "async":
+    if mode == "exec_request_async":
         code = f"import anyio\nprint('started')\nawait anyio.sleep({utils.TIMEOUT * 4})"
-    elif mode == "exec_request":
+    elif mode == "exec_request_sync":
         code = f"import time\nprint('started')\ntime.sleep({utils.TIMEOUT})"
-    else:
+    elif mode == "caller":
         code = f"""
     import time
-    from async_kernel import Caller
-    await Caller().call_soon(lambda: [print('started'), time.sleep({utils.TIMEOUT * 2})])
+    pen_timeout= get_ipython().kernel.caller.call_soon(lambda: [print('started'), time.sleep({utils.TIMEOUT * 2})])
+    await pen_timeout
     """
     msg_id = client.execute(code)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
@@ -128,6 +128,12 @@ async def test_interrupt_request(
     reply = await utils.get_reply(client, msg_id)
     assert reply["content"]["status"] == "error"
     assert reply["content"]["ename"] == "KernelInterrupt"
+    if mode == "caller":
+        code = "assert pen_timeout.done()"
+        user_expressions = {"result": "pen_timeout.exception()"}
+        _, reply = await utils.execute(client, code, user_expressions=user_expressions, clear_pub=False)
+        assert "KernelInterrupt" in reply["user_expressions"]["result"]["data"]["text/plain"]
+    await utils.clear_iopub(client)
 
 
 @pytest.mark.parametrize(
