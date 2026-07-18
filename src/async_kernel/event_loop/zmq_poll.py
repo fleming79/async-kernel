@@ -152,8 +152,8 @@ class Poll:
                         except zmq.ZMQError:
                             for k, v in handlers.copy().items():
                                 if k[0].closed:
-                                    handlers.pop(k)
-                                    log.warning("Closed sockets detected %s -> %s", k[0], v)
+                                    handlers.pop(k, None)
+                                    log.debug("Closed sockets detected %s -> %s", k[0], v)
                         except Exception:
                             continue
             finally:
