@@ -142,7 +142,7 @@ class Poll:
                                     return
                                 except BaseException:
                                     pass
-                                if (c := countdown.get(k)) is not None:
+                                if countdown and (c := countdown.get(k)) is not None:
                                     c = countdown[k] = (int(c[0]) - 1, c[1])
                                     # Auto eject after 'n' events
                                     if c[0] == 0:
@@ -152,8 +152,8 @@ class Poll:
                         except zmq.ZMQError:
                             for k, v in handlers.copy().items():
                                 if k[0].closed:
-                                    handlers.pop(k)
-                                    log.warning("Closed sockets detected %s -> %s", k[0], v)
+                                    handlers.pop(k, None)
+                                    log.debug("Closed sockets detected %s -> %s", k[0], v)
                         except Exception:
                             continue
             finally:
