@@ -10,9 +10,7 @@ from contextlib import AbstractContextManager, asynccontextmanager, contextmanag
 from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import jupyter_client.session
-import wrapt
 import zmq
-from aiologic import BinarySemaphore
 from aiologic.lowlevel import enable_signal_safety
 from jupyter_client.connect import ConnectionFileMixin
 from traitlets import traitlets
@@ -29,27 +27,9 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 
     from jupyter_client import KernelConnectionInfo
-    from zmq.sugar.socket import Socket
 
 
 __all__ = ["ZMQInterface"]
-
-
-class IOPubSocketProxy(wrapt.BaseObjectProxy[zmq.Socket]):
-    "A proxy for the iopub socket that provides a lock for send_multipart."
-
-    _lock = BinarySemaphore()
-
-    def send_multipart(
-        self,
-        msg_parts,
-        flags: int = 0,
-        copy: bool = True,
-        track: bool = False,
-        **kwargs,
-    ):
-        with self._lock:
-            return self.__wrapped__.send_multipart(msg_parts, flags, copy, track, **kwargs)
 
 
 class Session(HasInterface, jupyter_client.session.Session):
@@ -83,8 +63,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     ).tag(config=True)
     "Transport for sockets."
 
-    _sockets: Fixed[Self, dict[Channel, zmq.sugar.Socket]] = Fixed(dict)
-    _iopub_socket: IOPubSocketProxy | None = None
+    _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
+    _iopub_socket: zmq.Socket | None = None
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
@@ -159,7 +139,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             del ctrl, shell, self._poll
 
     @contextmanager
-    def _open_socket(self, channel: Channel, /) -> Generator[zmq.sugar.Socket]:
+    def _open_socket(self, channel: Channel, /) -> Generator[zmq.Socket]:
         """Create, bind and configure a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
@@ -195,7 +175,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         Managages the iopub socket, handles connection welcome messages, and provides internal sockets so that `iopub_send` works everywhere.
         """
 
-        def on_reg_msg(socket: Socket, flags: int) -> None:
+        def on_reg_msg(socket: zmq.Socket, flags: int) -> None:
             "https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message"
             # Thread: zmq_poll_thread
             # handle PUB subscribe/unsubscribe messages.
@@ -207,9 +187,9 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 self.iopub_send(msg, ident=ident)
 
         with self._open_socket(Channel.iopub) as iopub_sock, self._poll.event_handler(iopub_sock, on_reg_msg):
-            self._iopub_socket = IOPubSocketProxy(iopub_sock)
+            self._iopub_socket = iopub_sock
             yield
-            del self._iopub_socket
+            self._iopub_socket = None
 
     @contextmanager
     def _message_handler(
@@ -219,24 +199,22 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         Opens a zmq socket for the channel, receives messages and calls the message handler.
         """
         session, log, message_handler = self.session, self.log, self.kernel.message_handler
-        lock = BinarySemaphore()
 
         async def send_reply(job: Job, content: dict, /) -> None:
             if "status" not in content:
                 content["status"] = "ok"
-            async with lock:
-                msg = session.send(
-                    stream=socket,
-                    msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
-                    content=content,
-                    parent=job["msg"],  # pyright: ignore[reportArgumentType]
-                    ident=job["ident"],
-                    buffers=content.pop("buffers", None),
-                )
-                if msg:
-                    log.debug("send_reply %s %s", channel, msg)
+            msg = session.send(
+                stream=socket,
+                msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
+                content=content,
+                parent=job["msg"],  # pyright: ignore[reportArgumentType]
+                ident=job["ident"],
+                buffers=content.pop("buffers", None),
+            )
+            if msg:
+                log.debug("send_reply %s %s", channel, msg)
 
-        def recv_msg(socket: Socket, flags: int) -> None:
+        def recv_msg(socket: zmq.Socket, flags: int) -> None:
             # Thread: zmq_poll_thread
             try:
                 ident, msg = session.recv(socket, mode=zmq.DONTWAIT)
@@ -292,7 +270,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         """
         if (sock := self._iopub_socket) and (
             msg := self.session.send(
-                stream=sock,  # pyright: ignore[reportArgumentType]
+                stream=sock,
                 msg_or_type=msg_or_type,  # pyright: ignore[reportArgumentType]
                 content=content,
                 metadata=metadata,

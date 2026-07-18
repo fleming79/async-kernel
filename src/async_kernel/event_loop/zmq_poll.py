@@ -14,13 +14,12 @@ from aiologic.lowlevel import create_green_waiter
 from zmq import Socket
 from zmq.backend import zmq_poll
 
-import async_kernel
 from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.pending import Pending
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable, Generator, Sequence
 
 
 __all__ = ["Poll"]
@@ -40,7 +39,7 @@ class Poll:
     def __init__(self, *, log: logging.Logger | logging.LoggerAdapter | None = None) -> None:
 
         self._zmq_context = zmq.Context()
-        self._handlers: dict[T_key, Callable[[zmq.sugar.Socket, int], Any]] = {}
+        self._handlers: dict[T_key, Callable[[zmq.Socket, int], Any]] = {}
         self._countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
         self._not_started = False
         self._lock = BinarySemaphore()
@@ -64,9 +63,32 @@ class Poll:
                 self.thread.join()
         return False
 
-    def socket(self, socket_type: zmq.SocketType) -> zmq.sugar.Socket:
-        "Create a new zmq socket."
-        return self._validate_socket(self._zmq_context.socket(socket_type))
+    def socket(self, socket_type: zmq.SocketType, *, threadsafe=True) -> zmq.Socket:
+        """
+        Create a new zmq socket.
+
+        Args:
+            socket_type: The mode of the socket.
+            threadsafe: Patch `send_multipart` with a thread lock for thread-safe sending.
+        """
+        sock = self._zmq_context.socket(socket_type)
+        if threadsafe:
+            lock = BinarySemaphore()
+
+            def send_multipart(
+                msg_parts: Sequence,
+                flags: int = 0,
+                copy: bool = True,
+                track: bool = False,
+                _send_multipart=sock.send_multipart,
+                _lock=lock,
+                **kwargs,
+            ):
+                with _lock:
+                    return _send_multipart(msg_parts, flags, copy, track)
+
+            sock.send_multipart = send_multipart
+        return sock
 
     def _send_wake(self) -> None:
         assert self._lock.value == 0
@@ -81,7 +103,7 @@ class Poll:
         def zmq_poll_thread(
             *,
             started: Callable[[], None],
-            handlers: dict[T_key, Callable[[zmq.sugar.Socket, int], Any]] = self._handlers,
+            handlers: dict[T_key, Callable[[zmq.Socket, int], Any]] = self._handlers,
             stopped: Pending[None] = self.stopped,
             countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._countdown,
             context: zmq.Context = self._zmq_context,
@@ -91,7 +113,7 @@ class Poll:
             if not utils.LAUNCHED_BY_DEBUGPY:
                 utils.mark_thread_pydev_do_not_trace()
 
-            def do_wake(sock: zmq.sugar.Socket, flags: int) -> None:
+            def do_wake(sock: zmq.Socket, flags: int) -> None:
                 nonlocal sockets
                 # Called on receipt of a message (b'') on the 'wake' socket.
                 sockets = None
@@ -115,8 +137,7 @@ class Poll:
                                 try:
                                     handlers[k](*k)  # pyright: ignore[reportArgumentType]
                                 except KeyError:
-                                    if k not in handlers and async_kernel.utils.LAUNCHED_BY_PYTEST:
-                                        raise
+                                    sockets = None
                                 except SystemExit:
                                     return
                                 except BaseException:
@@ -126,7 +147,7 @@ class Poll:
                                     # Auto eject after 'n' events
                                     if c[0] == 0:
                                         handlers.pop(k, None)
-                                        countdown[k] = None
+                                        countdown[k] = sockets = None
                                         c[1]()
                         except zmq.ZMQError:
                             for k, v in handlers.copy().items():
@@ -151,7 +172,7 @@ class Poll:
         self.log.debug("poll event loop started")
 
     @staticmethod
-    def _validate_socket(sock: zmq.sugar.Socket) -> zmq.sugar.Socket:
+    def _validate_socket(sock: zmq.Socket) -> zmq.Socket:
         if not callable(getattr(sock, "fileno", None)):
             msg = f"{sock=} is not valid"
             raise TypeError(msg)
@@ -160,8 +181,8 @@ class Poll:
     @contextmanager
     def event_handler(
         self,
-        sock: zmq.sugar.Socket,
-        handler: Callable[[zmq.sugar.Socket, int], Any],
+        sock: zmq.Socket,
+        handler: Callable[[zmq.Socket, int], Any],
         /,
         *,
         flags: Literal[zmq.PollEvent.POLLIN, zmq.PollEvent.POLLOUT] = zmq.PollEvent.POLLIN,
