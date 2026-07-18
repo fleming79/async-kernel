@@ -63,16 +63,16 @@ class Poll:
                 self.thread.join()
         return False
 
-    def socket(self, socket_type: zmq.SocketType, *, threadsafe=True) -> zmq.Socket:
+    def socket(self, socket_type: zmq.SocketType, *, safe_send_multipart: bool = True) -> zmq.Socket:
         """
         Create a new zmq socket.
 
         Args:
             socket_type: The mode of the socket.
-            threadsafe: Patch `send_multipart` with a thread lock for thread-safe sending.
+            safe_send_multipart: Patch `send_multipart` with a thread lock for thread-safe sending.
         """
         sock = self._zmq_context.socket(socket_type)
-        if threadsafe:
+        if safe_send_multipart:
             lock = BinarySemaphore()
 
             def send_multipart(
