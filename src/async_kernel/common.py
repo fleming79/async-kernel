@@ -25,8 +25,7 @@ globals()["BaseInterface"] = lazy_import("async_kernel.interface.base", "BaseInt
 
 
 def import_item(dottedname: str, /) -> Any:
-    """
-    Import an item from a module, given its dotted name.
+    """Import an item from a module, given its dotted name.
 
     Example:
         ```python
@@ -43,19 +42,15 @@ def asyncio_checkpoint():
 
 
 class KernelInterrupt(InterruptedError):
-    "Raised to interrupt the kernel."
+    """Raised to interrupt the kernel."""
 
 
 class MethodNotSupported(Exception):
-    """
-    This exception is used inside overridden methods to indicate that it
-    should not be used.
-    """
+    """This exception is used inside overridden methods to indicate that it should not be used."""
 
 
 class Fixed(Generic[S, T]):
-    """
-    A property-like descriptor factory that always returns the same object.
+    """A property-like descriptor factory that always returns the same object.
 
     The descriptor is defined with a callable or importable string to a callable.
 
@@ -192,8 +187,7 @@ class Fixed(Generic[S, T]):
 
 
 class SingleAsyncQueue(Generic[T]):
-    """
-    A single-use asynchronous iterator with a queue.
+    """A single-use asynchronous iterator with a queue.
 
     Notes:
         - Append to the queue from anywhere (internally synchronised).
@@ -272,9 +266,7 @@ class SingleAsyncQueue(Generic[T]):
             pass
 
     def stop(self) -> None:
-        """
-        Stop the queue rejecting any items currently in the queue.
-        """
+        """Stop the queue rejecting any items currently in the queue."""
         try:
             queue = self._queue
             del self._queue
@@ -287,8 +279,7 @@ class SingleAsyncQueue(Generic[T]):
             pass
 
     def append(self, item: T, /) -> None:
-        """
-        Append `item` to the queue.
+        """Append `item` to the queue.
 
         If the queue has been stopped `item` will be rejected immediately.
         """
@@ -300,8 +291,7 @@ class SingleAsyncQueue(Generic[T]):
                 self._reject(item)
 
     def appendleft(self, item: T, /) -> None:
-        """
-        Append `item` to the left side of the queue.
+        """Append `item` to the left side of the queue.
 
         If the queue has been stopped `item` will be rejected immediately.
         """
@@ -313,8 +303,7 @@ class SingleAsyncQueue(Generic[T]):
                 self._reject(item)
 
     def extend(self, iterable: Iterable[T], /) -> None:
-        """
-        Append all items in `iterable` to the queue.
+        """Append all items in `iterable` to the queue.
 
         If the queue has been stopped all items in `iterable` will be rejected immediately.
         """
@@ -328,7 +317,5 @@ class SingleAsyncQueue(Generic[T]):
 
     @property
     def stopped(self) -> bool:
-        """
-        Will return `True` once stop has been called meaning there are no items left in the queue.
-        """
+        """Will return `True` once stop has been called meaning there are no items left in the queue."""
         return not hasattr(self, "_queue")

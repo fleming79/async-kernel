@@ -30,16 +30,12 @@ globals()["start_guest_run_trio"] = lazy_import("trio.lowlevel", "start_guest_ru
 
 
 def get_start_guest_run(backend: Backend):
-    """
-    Get the `start_guest_run` function to run a function inside `backend` running as a guest.
-    """
+    """Get the `start_guest_run` function to run a function inside `backend` running as a guest."""
     return start_guest_run_asyncio if Backend(backend) is Backend.asyncio else start_guest_run_trio
 
 
 def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
-    """
-    Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend]
-    with an optional host (gui event loop).
+    """Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend] with an optional host (gui event loop).
 
     The default backend is ['asyncio'][async_kernel.typing.Backend.asyncio].
 
@@ -74,16 +70,14 @@ def run(func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: 
 
 
 def get_runtime_matplotlib_guis(thread: threading.Thread | None = None) -> tuple[str, ...]:
-    "A list of runtime guis supported by the host for the associated thread."
+    """A list of runtime guis supported by the host for the associated thread."""
     if host := Host.current(thread):
         return host.MATPLOTLIB_GUIS
     return ()
 
 
 class Host(Generic[T]):
-    """
-    A class that provides the necessary callbacks to run a gui event loop with a `backend` started using `start_guest_run`.
-    """
+    """A class that provides the necessary callbacks to run a gui event loop with a `backend` started using `start_guest_run`."""
 
     HOST: Hosts
     MATPLOTLIB_GUIS = ()
@@ -100,14 +94,13 @@ class Host(Generic[T]):
 
     @classmethod
     def current(cls, thread: threading.Thread | None = None) -> Host | None:
-        "The host running in the corresponding thread or current thread."
+        """The host running in the corresponding thread or current thread."""
         thread = thread or threading.current_thread()
         return cls._instances.get(thread)
 
     @classmethod
     def run(cls, func: Callable[..., CoroutineType[Any, Any, T]], args: tuple, settings: RunSettings, /) -> T:
-        "Run the loop in the current thread with a backend guest."
-
+        """Run the loop in the current thread with a backend guest."""
         if (thread := threading.current_thread()) in cls._instances:
             msg = "A host is already running in this thread"
             raise RuntimeError(msg)
@@ -164,7 +157,7 @@ class Host(Generic[T]):
         self._outcome = outcome
 
     def mainloop(self) -> T:
-        "Start the main event loop of the host."
+        """Start the main event loop of the host."""
         self.start_guest()  # Call at an appropriate time in the overriding subclass.
         if not self._outcome:
             msg = "The mainloop should only exit once done_callback has been called!"

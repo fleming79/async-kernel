@@ -27,9 +27,7 @@ ZMQInterface.classes.append(ProfileDir)
 class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
     ZMQInterface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]
 ):
-    """
-    An IPython application with a zmq interface.
-    """
+    """An IPython application with a zmq interface."""
 
     description = traitlets.Unicode(
         "async-kernel: A Jupyter kernel providing an asynchronous IPython shell.",

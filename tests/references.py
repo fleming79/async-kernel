@@ -17,8 +17,7 @@ __all__ = ["Reference", "references"]
 
 
 class Reference(HasTraits):
-    """
-    Base class for message spec specification testing.
+    """Base class for message spec specification testing.
 
     This class is the core of the message specification test.  The
     idea is that child classes implement trait attributes for each

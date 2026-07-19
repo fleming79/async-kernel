@@ -12,27 +12,25 @@ if TYPE_CHECKING:
     from jupyter_client.jsonutil import json_default
 
     def pack_json_bytes(obj: Any, /, default: Callable[[Any], Any] | None = json_default) -> bytes:
-        """
-        Pack obj into json serialized bytes.
+        """Pack obj into json serialized bytes.
 
         Args:
-            data: The data to serialize.
+            obj: The data to serialize.
             default: A function that should return a serializable version of obj or raise TypeError.
         """
         ...
 
     def pack_json_str(obj: Any, /, default: Callable[[Any], Any] | None = json_default) -> str:
-        """
-        Pack obj into json serialized string.
+        """Pack obj into json serialized string.
 
         Args:
-            data: The data to serialize.
+            obj: The data to serialize.
             default: A function that should return a serializable version of obj or raise TypeError.
         """
         ...
 
     def unpack_json(data: str | bytes, /) -> Any:
-        "Deserialize data in a Python object."
+        """Deserialize data in a Python object."""
         ...
 
 

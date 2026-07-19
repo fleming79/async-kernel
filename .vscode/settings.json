@@ -18,5 +18,8 @@
     "tag:yaml.org,2002:python/object/apply:pymdownx.slugs.slugify mapping"
   ],
   "spellright.language": ["en"],
-  "spellright.documentTypes": ["markdown", "plaintext"]
+  "spellright.documentTypes": ["markdown", "plaintext"],
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  }
 }

@@ -17,8 +17,7 @@ __all__ = ["BaseInterface", "HasInterface", "launch_interface", "start_kernel_ca
 async def start_kernel_callable_interface(
     *, send: Callable[[str, list | None, bool], None | str], stopped: Callable[[], None], settings: dict | None = None
 ) -> Handlers:
-    """
-    Start the global interface as an instance of [CallableInterface][async_kernel.interface.callable.CallableInterface].
+    """Start the global interface as an instance of [CallableInterface][async_kernel.interface.callable.CallableInterface].
 
     Args:
         send: A callback responsible for sending messages from the kernel on all channels.
@@ -33,7 +32,6 @@ async def start_kernel_callable_interface(
             async-kernel --help-all --interface_class=async_kernel.interface.callable.CallableInterface
             ```
     """
-
     settings = settings or {}
     interface_class = settings.get("interface_class") or "async_kernel.interface.callable.CallableInterface"
     cls: type[CallableInterface] = import_item(interface_class)
@@ -45,8 +43,7 @@ async def start_kernel_callable_interface(
 
 
 def launch_interface(settings: dict) -> None:
-    """
-    Launch a kernel interface blocking until it has stopped.
+    """Launch a kernel interface blocking until it has stopped.
 
     Notes:
         - Available in CPython.
@@ -56,7 +53,6 @@ def launch_interface(settings: dict) -> None:
         - `sys.argv` is used for configuration. Use `async-kernel --help-all` to see all configuration options.
         - [traitlets configuration documentation](https://traitlets.readthedocs.io/en/stable/config.html#module-traitlets.config).
     """
-
     val = settings.get("interface_class") or settings.get("BaseInterface.interface_class")
     val = val or "async_kernel.interface.ip_app.IPApp"
     cls = import_item(val) if isinstance(val, str) else val

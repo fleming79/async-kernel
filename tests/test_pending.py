@@ -29,7 +29,7 @@ def anyio_backend(request):
 
 
 class PendingManagerTest(PendingManager):
-    "A pending manager for these tests"
+    """A pending manager for these tests."""
 
 
 @pytest.fixture

@@ -49,8 +49,7 @@ class TkHost(Host[T]):
 
     @override
     def run_sync_soon_threadsafe(self, fn: Callable[[], Any]) -> None:
-        """
-        Use Tcl "after" command to schedule a function call.
+        """Use Tcl "after" command to schedule a function call.
 
         Based on [tkinter source comments](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1472-L1555)
         the issuance of the tcl call to after itself is thread-safe since it is sent
@@ -69,8 +68,7 @@ class TkHost(Host[T]):
 
     @override
     def run_sync_soon_not_threadsafe(self, fn) -> None:
-        """
-        Use Tcl "after" command to schedule a function call from the main thread
+        """Use Tcl "after" command to schedule a function call from the main thread.
 
         If .call is called from the Tcl thread, the locking and sending are optimized away
         so it should be fast enough.
@@ -88,9 +86,7 @@ class TkHost(Host[T]):
 
     @override
     def done_callback(self, outcome) -> None:
-        """
-        End the Tk app.
-        """
+        """End the Tk app."""
         super().done_callback(outcome)
         self.root.destroy()
 

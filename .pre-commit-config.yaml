@@ -36,7 +36,7 @@ repos:
     rev: v3.9.5
     hooks:
       - id: prettier
-        types_or: [yaml, html, json]
+        types_or: [yaml, html, json, toml]
       - id: prettier
         types_or: [markdown]
         args: ["--tab-width", "4"]

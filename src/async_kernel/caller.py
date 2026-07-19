@@ -58,8 +58,7 @@ truncated_rep.fillvalue = "…"
 
 @asynccontextmanager
 async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
-    """
-    An async context that yields a function to start tasks for the current async library ('asyncio' or 'trio').
+    """An async context that yields a function to start tasks for the current async library ('asyncio' or 'trio').
 
     Asyncio will use `eager_start` where the loop supports it.
 
@@ -121,8 +120,7 @@ async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None,
 
 @final
 class Caller(anyio.AsyncContextManagerMixin):
-    """
-    A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).
+    """A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).
 
     - CPython: there is only one caller instance per thread.
     - Pyodide: Pyodide does not support threads, It is a context-varible local class instead.
@@ -221,42 +219,42 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @property
     def name(self) -> str:
-        "The name of the thread when the caller was created."
+        """The name of the thread when the caller was created."""
         return self._name
 
     @property
     def id(self) -> int:
-        "The id for the caller."
+        """The id for the caller."""
         return self._caller_id
 
     @property
     def backend(self) -> Backend:
-        "The backend used by caller."
+        """The backend used by caller."""
         return self._backend
 
     @property
     def backend_options(self) -> dict | None:
-        "Options used to create the backend."
+        """Options used to create the backend."""
         return self._backend_options
 
     @property
     def host(self) -> Hosts | None:
-        "The [name][async_kernel.typing.Hosts] of the gui event loop if there is one."
+        """The [name][async_kernel.typing.Hosts] of the gui event loop if there is one."""
         return self._host
 
     @property
     def host_options(self) -> dict | None:
-        "Options used to create the gui event loop."
+        """Options used to create the gui event loop."""
         return self._host_options
 
     @property
     def protected(self) -> bool:
-        "Returns `True` if the caller is protected from stopping."
+        """Returns `True` if the caller is protected from stopping."""
         return self._protected
 
     @property
     def running(self) -> bool:
-        "Returns `True` when the caller is available to run requests."
+        """Returns `True` when the caller is available to run requests."""
         return self._state is CallerState.running
 
     @property
@@ -271,12 +269,12 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @property
     def thread(self) -> threading.Thread:
-        "The thread where the caller is running."
+        """The thread where the caller is running."""
         return self._thread
 
     @property
     def parent(self) -> Self | None:
-        "The parent caller if it exists."
+        """The parent caller if it exists."""
         return self._parent_ref()
 
     def _parent_ref(self) -> Self | None:
@@ -306,8 +304,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
-        """
-        Create or retrieve a caller.
+        """Create or retrieve a caller.
 
         Args:
             modifier: Specifies the caller instance to retrieve.
@@ -384,13 +381,11 @@ class Caller(anyio.AsyncContextManagerMixin):
         return inst
 
     def start_sync(self, *, no_debug: bool = False) -> None:
-        """
-        Start synchronously.
+        """Start synchronously.
 
         Args:
             no_debug: If debugpy should be disabled in the thread.
         """
-
         assert self._state is CallerState.initial
         self._state = CallerState.start_sync
 
@@ -451,11 +446,11 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._thread, self._caller_id = thread, thread.ident
 
     def stop(self, *, force: bool = False) -> None:
-        """
-        Stop the caller cancelling all incomplete tasks.
+        """Stop the caller cancelling all incomplete tasks.
 
         Args:
             force: If the caller is protected the call is a no-op unless force=True.
+
         Returns:
             Event: If stopping is initiated or complete.
             None: If stop is ignored when the caller is protected.
@@ -497,7 +492,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        "The asynchronous context for caller."
+        """The asynchronous context for caller."""
         if self._state is CallerState.start_sync:
             msg = 'Already starting! Did you mean to use Caller("manual")?'
             raise RuntimeError(msg)
@@ -526,8 +521,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             self._stop_finalize()
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
-        """
-        A function that async iterates the queue and executes items as they arrive.
+        """A function that async iterates the queue and executes items as they arrive.
 
         It handles two types of items:
             - tuple: A tuple of `func`, `args`, `kwargs` is called directly in the scheduler.
@@ -605,7 +599,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @classmethod
     def _start_idle_worker_cleanup_thead(cls) -> None:
-        "A single thread to shutdown idle workers that have not been used for an extended duration."
+        """A single thread to shutdown idle workers that have not been used for an extended duration."""
         if cls.IDLE_WORKER_SHUTDOWN_DURATION > 0 and not hasattr(cls, "_thread_cleanup_idle_workers"):
 
             def _cleanup_workers():
@@ -630,14 +624,12 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @classmethod
     def id_current(cls) -> int:
-        "The immutable id of a caller for the current thread in CPython or context in Pyodide."
-
+        """The immutable id of a caller for the current thread in CPython or context in Pyodide."""
         return cls._caller_token.get() if sys.platform == "emscripten" else threading.get_ident()
 
     @classmethod
     def get_existing(cls, caller_id: int | None = None, /) -> Self | None:
-        """
-        A [classmethod][] to get the caller instance from the corresponding thread if it exists.
+        """A [classmethod][] to get the caller instance from the corresponding thread if it exists.
 
         Args:
             caller_id: The id of the caller which in CPython is also the the id of the thread in which it is running.
@@ -653,8 +645,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
     @classmethod
     def all_callers(cls, running_only: bool = True) -> list[Caller]:
-        """
-        A [classmethod][] to get a list of the callers.
+        """A [classmethod][] to get a list of the callers.
 
         Args:
             running_only: Restrict the list to callers that are active (running in an async context).
@@ -662,8 +653,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return [caller for caller in Caller._instances.values() if caller.running or not running_only]
 
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
-        """
-        Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.
+        """Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.
 
         Args:
             **kwargs: Options for creating or retrieving a caller.
@@ -678,7 +668,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             - The returned caller is added to `children` and stopped with the caller.
             - If 'backend' or 'zmq_context' are not specified they are copied from the caller.
         """
-
         with self._inst_lock:
             if self._stopping.done():
                 msg = f"Caller is stopping or stopped {self}"
@@ -722,8 +711,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         /,
         **metadata: Any,
     ) -> Pending[T]:
-        """
-        A low-level function to schedule execution of `func`in a task running in the caller's thread.
+        """A low-level function to schedule execution of `func`in a task running in the caller's thread.
 
         Args:
             func: The function to be called.
@@ -731,6 +719,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             kwargs: Keyword arguments to use with in the call to `func`.
             context: A context to copy, if not provided the current context is copied.
             trackers: The tracker subclasses of active trackers which to add the pending.
+            backend: The backend to use to execute func which may execute the code a backend running as a guest.
             **metadata: Additional metadata to store in the instance.
 
         Returns:
@@ -756,7 +745,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                         self._guest_queues.pop(backend)
 
                     def _start_guest() -> None:
-                        "Start a guest event loop"
+                        """Start a guest event loop."""
                         if self._state is CallerState.running:
                             host: Host[Any] | None = Host.current(self.thread)
                             get_start_guest_run(backend)(
@@ -781,8 +770,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """
-        Schedule func to be called in caller's event loop copying the current context.
+        """Schedule func to be called in caller's event loop copying the current context.
 
         Args:
             func: The function.
@@ -812,8 +800,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """
-        Schedule func to be executed.
+        """Schedule func to be executed.
 
         Args:
             func: The function.
@@ -830,8 +817,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """
-        Schedule func to be executed using the specified `backend`.
+        """Schedule func to be executed using the specified `backend`.
 
         This methods enables coroutines written for a specific function to be run irresective
         of the callers backend.
@@ -845,7 +831,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
 
-        See also:
+        See Also:
             - [Caller.get][]
         """
         return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))
@@ -857,8 +843,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """
-        A low-level function to schedule execution of `func` in caller's scheduler.
+        """A low-level function to schedule execution of `func` in caller's scheduler.
 
         Use this for short-running function calls only.
 
@@ -868,7 +853,6 @@ class Caller(anyio.AsyncContextManagerMixin):
             **kwargs: Keyword arguments to use with `func`.
 
         Warning:
-
             **Use this method for lightweight calls only!**
         """
         self._queue.append((func, args, kwargs))
@@ -880,8 +864,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """
-        Call `func` in a worker thread using the same backend as the caller.
+        """Call `func` in a worker thread using the same backend as the caller.
 
         Args:
             func: The function.
@@ -915,8 +898,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         return pen
 
     def queue_get(self, func: Callable) -> Pending[None] | None:
-        """
-        Returns the pending associated with the `queue_call` for func.
+        """Returns the pending associated with the `queue_call` for func.
 
         Notes:
             - `queue_close` is the preferred means to shutdown the queue.
@@ -930,8 +912,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """
-        A low-level function to queue the execution of `func` in a queue unique to it and the caller.
+        """A low-level function to queue the execution of `func` in a queue unique to it and the caller.
 
         This sets up a long-lived task to provide a fast pathway for repetitive calls to a function.
 
@@ -981,8 +962,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         pen_.metadata["queue"].append((func, args, kwargs))
 
     def queue_close(self, func: Callable | int) -> None:
-        """
-        Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.
+        """Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.
 
         Args:
             func: The queue of the function to close.
@@ -998,8 +978,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         cancel_unfinished: bool = True,
     ) -> AsyncGenerator[Pending[T], Any]:
-        """
-        An async iterator to yield a pending for each awaitable in items as they complete (are done).
+        """An async iterator to yield a pending for each awaitable in items as they complete (are done).
 
         How the pending was marked as done does not affect the iterator.
 
@@ -1077,8 +1056,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         timeout: float | None = None,
         return_when: Literal["FIRST_COMPLETED", "FIRST_EXCEPTION", "ALL_COMPLETED"] = "ALL_COMPLETED",
     ) -> tuple[set[Pending[T]], set[Pending[T]]]:
-        """
-        Wait for one or more of the awaitable items to complete.
+        """Wait for one or more of the awaitable items to complete.
 
         Returns two sets of the results: (done, pending).
 
@@ -1130,8 +1108,7 @@ class Caller(anyio.AsyncContextManagerMixin):
         mode: Literal[0, 1, 2, 3] = 0,
         timeout: float | None = None,
     ) -> PendingGroup:
-        """
-        Create a new [PendingGroup][async_kernel.pending.PendingGroup].
+        """Create a new [PendingGroup][async_kernel.pending.PendingGroup].
 
         [Pending][async_kernel.pending.Pending] created in the context that opt-in by including `PendingTracker`
         as a 'tracker', including all methods on [Caller][] that return pending are automatically registered.
@@ -1146,6 +1123,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
                 - 2: Cancel if any pending is cancelled - exit quietly.
                 - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.
+            timeout: An approximate time limit for the context to remain open before cancelling unfinished pending.
 
         Usage:
 

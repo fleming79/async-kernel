@@ -1,4 +1,4 @@
-"Defines a base kernel interface using zmq sockets."
+"""Defines a base kernel interface using zmq sockets."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ class Session(HasInterface, jupyter_client.session.Session):
 
 
 class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
-    "The base kernel interface using ZMQ sockets."
+    """The base kernel interface using ZMQ sockets."""
 
     aliases = BaseInterface.aliases | {
         ("f", "connection_file"): "ZMQInterface.connection_file",
@@ -171,12 +171,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
     @asynccontextmanager
     async def _iopub(self) -> AsyncGenerator[None]:
-        """
-        Managages the iopub socket, handles connection welcome messages, and provides internal sockets so that `iopub_send` works everywhere.
-        """
+        """Managages the iopub socket, handles connection welcome messages, and provides internal sockets so that `iopub_send` works everywhere."""
 
         def on_reg_msg(socket: zmq.Socket, flags: int) -> None:
-            "https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message"
+            """https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
             # Thread: zmq_poll_thread
             # handle PUB subscribe/unsubscribe messages.
             # welcome_message:  https://jupyter.org/enhancement-proposals/65-jupyter-xpub/jupyter-xpub.html#replace-pub-socket-with-xpub-socket
@@ -195,9 +193,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     def _message_handler(
         self, channel: Literal[Channel.control, Channel.shell], /
     ) -> Generator[AbstractContextManager[None]]:
-        """
-        Opens a zmq socket for the channel, receives messages and calls the message handler.
-        """
+        """Opens a zmq socket for the channel, receives messages and calls the message handler."""
         session, log, message_handler = self.session, self.log, self.kernel.message_handler
 
         async def send_reply(job: Job, content: dict, /) -> None:
@@ -265,9 +261,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         ident: bytes | list[bytes] | None = None,
         buffers: list[bytes] | None = None,
     ) -> None:
-        """
-        Send a message on the zmq iopub socket.
-        """
+        """Send a message on the zmq iopub socket."""
         if (sock := self._iopub_socket) and (
             msg := self.session.send(
                 stream=sock,

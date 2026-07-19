@@ -29,7 +29,6 @@ from typing import Any
 
 def get_attr_docs(cls: type[Any]) -> dict[str, str]:
     """Get any docstrings placed after attribute assignments in a class body."""
-
     cls_node = ast.parse(textwrap.dedent(inspect.getsource(cls))).body[0]
 
     if not isinstance(cls_node, ast.ClassDef):

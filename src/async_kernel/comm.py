@@ -19,9 +19,7 @@ __all__ = ["Comm"]
 
 
 class Comm(HasInterface, BaseComm):
-    """
-    An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).
-    """
+    """An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/))."""
 
     @override
     def publish_msg(
@@ -46,14 +44,13 @@ class Comm(HasInterface, BaseComm):
 
     @override
     def handle_msg(self, msg: comm.base_comm.MessageType) -> None:
-        """Handle an comm_msg message"""
+        """Handle an comm_msg message."""
         if self._msg_callback:
             self._msg_callback(msg)
 
 
 class CommManager(HasInterface, comm.base_comm.CommManager):
-    """
-    The comm manager for all Comm instances.
+    """The comm manager for all Comm instances.
 
     Not to be called directly; use `get_comm_manager` to obtain the comm manager.
     """
@@ -62,8 +59,7 @@ class CommManager(HasInterface, comm.base_comm.CommManager):
     targets: dict[str, comm.base_comm.CommTargetCallback]
 
     def patch_comm(self) -> Callable[[], None]:
-        """
-        Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
+        """Monkey patch the [comm](https://pypi.org/project/comm/) module's functions to provide iopub comms.
 
         1.  `comm.create_comm` to [Comm][].
         1. `comm.get_com_manager` to [CommManager][].

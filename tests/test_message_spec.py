@@ -80,7 +80,6 @@ async def test_execute_error(client: AsyncKernelClient):
 
 async def test_execute_inc(client: AsyncKernelClient):
     """Execute request should increment execution_count."""
-
     _, reply = await utils.execute(client, code="x=1")
     count = reply["execution_count"]
 
@@ -91,7 +90,6 @@ async def test_execute_inc(client: AsyncKernelClient):
 
 async def test_execute_stop_on_error(client: AsyncKernelClient):
     """Execute request should not abort execution queue with stop_on_error False."""
-
     bad_code = "\n".join(
         [
             # sleep to ensure subsequent message is waiting in the queue to be aborted
@@ -125,7 +123,6 @@ async def test_execute_stop_on_error(client: AsyncKernelClient):
 
 async def test_execute_stop_on_error_task(client: AsyncKernelClient):
     """Execute request should not abort execution queue with stop_on_error False."""
-
     bad_code = "\n".join(
         [
             # sleep to ensure subsequent message is waiting in the queue to be aborted

@@ -47,7 +47,7 @@ def pytest_configure(config):
 
 
 def check_anyio_backend(anyio_backend):
-    "Checks the running backend is loaded"
+    """Checks the running backend is loaded."""
     assert current_async_library() == anyio_backend[0]
     if anyio_backend[0] == "asyncio":
         loop = asyncio.get_running_loop()
@@ -137,9 +137,7 @@ def encryption(request):
 
 @pytest.fixture(scope="module")
 async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, transport: str, encryption: str):
-    """
-    Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it.
-    """
+    """Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it."""
     assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
 
     tmpdir: pathlib.Path = tmp_path_factory.mktemp("async_kernel")
@@ -179,7 +177,7 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
 
 @pytest.fixture
 def job() -> Job[ExecuteContent]:
-    "An execute dummy job"
+    """An execute dummy job."""
     content = ExecuteContent(
         code="", silent=True, store_history=True, user_expressions={}, allow_stdin=False, stop_on_error=True
     )

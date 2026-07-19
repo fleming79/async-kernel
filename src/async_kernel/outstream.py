@@ -15,18 +15,12 @@ if TYPE_CHECKING:
 
 
 class OutStream(HasInterface, io.TextIOBase):
-    """
-    A file like object that sends or redirects text as it is written.
+    """A file like object that sends or redirects text as it is written.
 
     Only intended for internal use.
     """
 
     def __init__(self, name: Literal["stdout", "stderr"]) -> None:
-        """
-        Args:
-            send: A callback to send text as it is written.
-            context: A context variable to an potential alternate target for the text.
-        """
         super().__init__()
         self.name = name
         if name == "stdout":
@@ -93,7 +87,7 @@ __print__ = print
 
 
 def print_concat(*args, **kwargs) -> None:
-    "Concatenate the print output if printing to stdout."
+    """Concatenate the print output if printing to stdout."""
     if "file" not in kwargs:
         with io.StringIO() as f:
             __print__(*args, file=f, **kwargs)
