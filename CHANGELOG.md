@@ -5,13 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.2] - 2026-06-29
+## [0.21.0] - 2026-07-18
+
+### <!-- 1 --> 🚀 Features
+
+- Add print_concat to concatenate print statements into a single string when 'file' is not specified. [#522](https://github.com/fleming79/async-kernel/pull/522)
+
+- Added PollZMQ - a thread based zmq poller callback registry. [#515](https://github.com/fleming79/async-kernel/pull/515)
+
+- Support loop_factory as an importable path. [#514](https://github.com/fleming79/async-kernel/pull/514)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Poll maintenance [#529](https://github.com/fleming79/async-kernel/pull/529)
+
+- Add threadsafe option to Poll.socket [#528](https://github.com/fleming79/async-kernel/pull/528)
+
+- Update lock files and pre-commit and basedpyright. [#527](https://github.com/fleming79/async-kernel/pull/527)
+
+- Kernel updates - handle external kernel interrupt. [#526](https://github.com/fleming79/async-kernel/pull/526)
+
+- Add docstrings for Poll [#525](https://github.com/fleming79/async-kernel/pull/525)
+
+- Bump astral-sh/setup-uv from 8.2.0 to 8.3.0 in the actions group [#518](https://github.com/fleming79/async-kernel/pull/518)
+
+- Change PollZMQ to Poll and move to event_loop/zmq_poll.py. [#524](https://github.com/fleming79/async-kernel/pull/524)
+
+- Add more log messages when running pytest from the command line. [#523](https://github.com/fleming79/async-kernel/pull/523)
+
+- Move OutStream from kernel.py to outstream.py [#521](https://github.com/fleming79/async-kernel/pull/521)
+
+- Refactor Caller. [#520](https://github.com/fleming79/async-kernel/pull/520)
+
+## [0.20.2] - 2026-06-30
 
 ### <!-- 5 --> 📝 Documentation
 
 - Update docstrings for BaseInterface. [#508](https://github.com/fleming79/async-kernel/pull/508)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.20.2 [#512](https://github.com/fleming79/async-kernel/pull/512)
 
 - Avoid attribute error in Comm.publish_msg in case the parent is gc before the object. [#511](https://github.com/fleming79/async-kernel/pull/511)
 
@@ -1419,6 +1453,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.21.0]: https://github.com/fleming79/async-kernel/compare/v0.20.2..v0.21.0
 [0.20.2]: https://github.com/fleming79/async-kernel/compare/v0.20.1..v0.20.2
 [0.20.1]: https://github.com/fleming79/async-kernel/compare/v0.20.0..v0.20.1
 [0.20.0]: https://github.com/fleming79/async-kernel/compare/v0.19.2..v0.20.0
