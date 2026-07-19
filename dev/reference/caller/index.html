@@ -3043,7 +3043,8 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 122</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 121</span>
+<span class="normal"> 122</span>
 <span class="normal"> 123</span>
 <span class="normal"> 124</span>
 <span class="normal"> 125</span>
@@ -4056,32 +4057,9 @@ viewing the latest version.
 <span class="normal">1132</span>
 <span class="normal">1133</span>
 <span class="normal">1134</span>
-<span class="normal">1135</span>
-<span class="normal">1136</span>
-<span class="normal">1137</span>
-<span class="normal">1138</span>
-<span class="normal">1139</span>
-<span class="normal">1140</span>
-<span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
-<span class="normal">1144</span>
-<span class="normal">1145</span>
-<span class="normal">1146</span>
-<span class="normal">1147</span>
-<span class="normal">1148</span>
-<span class="normal">1149</span>
-<span class="normal">1150</span>
-<span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
-<span class="normal">1157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
+<span class="normal">1135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Caller</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">AsyncContextManagerMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).</span>
 
 <span class="sd">    - CPython: there is only one caller instance per thread.</span>
 <span class="sd">    - Pyodide: Pyodide does not support threads, It is a context-varible local class instead.</span>
@@ -4180,42 +4158,42 @@ viewing the latest version.
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="s2">&quot;The name of the thread when the caller was created.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The name of the thread when the caller was created.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="s2">&quot;The id for the caller.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The id for the caller.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller_id</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">backend</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
-        <span class="s2">&quot;The backend used by caller.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The backend used by caller.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">backend_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="s2">&quot;Options used to create the backend.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Options used to create the backend.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend_options</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="s2">&quot;The [name][async_kernel.typing.Hosts] of the gui event loop if there is one.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The [name][async_kernel.typing.Hosts] of the gui event loop if there is one.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">host_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="s2">&quot;Options used to create the gui event loop.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Options used to create the gui event loop.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_options</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">protected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="s2">&quot;Returns `True` if the caller is protected from stopping.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns `True` if the caller is protected from stopping.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_protected</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">running</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="s2">&quot;Returns `True` when the caller is available to run requests.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns `True` when the caller is available to run requests.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">running</span>
 
     <span class="nd">@property</span>
@@ -4230,12 +4208,12 @@ viewing the latest version.
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">thread</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">:</span>
-        <span class="s2">&quot;The thread where the caller is running.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The thread where the caller is running.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="s2">&quot;The parent caller if it exists.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The parent caller if it exists.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent_ref</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_parent_ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -4265,8 +4243,7 @@ viewing the latest version.
         <span class="o">/</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerCreateOptions</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create or retrieve a caller.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create or retrieve a caller.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            modifier: Specifies the caller instance to retrieve.</span>
@@ -4343,13 +4320,11 @@ viewing the latest version.
         <span class="k">return</span> <span class="n">inst</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">start_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">no_debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Start synchronously.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start synchronously.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            no_debug: If debugpy should be disabled in the thread.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">initial</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">start_sync</span>
 
@@ -4410,11 +4385,11 @@ viewing the latest version.
             <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller_id</span> <span class="o">=</span> <span class="n">thread</span><span class="p">,</span> <span class="n">thread</span><span class="o">.</span><span class="n">ident</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Stop the caller cancelling all incomplete tasks.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the caller cancelling all incomplete tasks.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            force: If the caller is protected the call is a no-op unless force=True.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            Event: If stopping is initiated or complete.</span>
 <span class="sd">            None: If stop is ignored when the caller is protected.</span>
@@ -4456,7 +4431,7 @@ viewing the latest version.
 
     <span class="nd">@asynccontextmanager</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
-        <span class="s2">&quot;The asynchronous context for caller.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The asynchronous context for caller.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">start_sync</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Already starting! Did you mean to use Caller(&quot;manual&quot;)?&#39;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -4485,8 +4460,7 @@ viewing the latest version.
             <span class="bp">self</span><span class="o">.</span><span class="n">_stop_finalize</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue</span><span class="p">:</span> <span class="n">SingleAsyncQueue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A function that async iterates the queue and executes items as they arrive.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A function that async iterates the queue and executes items as they arrive.</span>
 
 <span class="sd">        It handles two types of items:</span>
 <span class="sd">            - tuple: A tuple of `func`, `args`, `kwargs` is called directly in the scheduler.</span>
@@ -4564,7 +4538,7 @@ viewing the latest version.
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_start_idle_worker_cleanup_thead</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="s2">&quot;A single thread to shutdown idle workers that have not been used for an extended duration.&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A single thread to shutdown idle workers that have not been used for an extended duration.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">IDLE_WORKER_SHUTDOWN_DURATION</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_thread_cleanup_idle_workers&quot;</span><span class="p">):</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">_cleanup_workers</span><span class="p">():</span>
@@ -4589,14 +4563,12 @@ viewing the latest version.
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">id_current</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="s2">&quot;The immutable id of a caller for the current thread in CPython or context in Pyodide.&quot;</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The immutable id of a caller for the current thread in CPython or context in Pyodide.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_caller_token</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;emscripten&quot;</span> <span class="k">else</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_existing</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">caller_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A [classmethod][] to get the caller instance from the corresponding thread if it exists.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A [classmethod][] to get the caller instance from the corresponding thread if it exists.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            caller_id: The id of the caller which in CPython is also the the id of the thread in which it is running.</span>
@@ -4612,8 +4584,7 @@ viewing the latest version.
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">all_callers</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">running_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Caller</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A [classmethod][] to get a list of the callers.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A [classmethod][] to get a list of the callers.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            running_only: Restrict the list to callers that are active (running in an async context).</span>
@@ -4621,8 +4592,7 @@ viewing the latest version.
         <span class="k">return</span> <span class="p">[</span><span class="n">caller</span> <span class="k">for</span> <span class="n">caller</span> <span class="ow">in</span> <span class="n">Caller</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">caller</span><span class="o">.</span><span class="n">running</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">running_only</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerCreateOptions</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            **kwargs: Options for creating or retrieving a caller.</span>
@@ -4637,7 +4607,6 @@ viewing the latest version.
 <span class="sd">            - The returned caller is added to `children` and stopped with the caller.</span>
 <span class="sd">            - If &#39;backend&#39; or &#39;zmq_context&#39; are not specified they are copied from the caller.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inst_lock</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stopping</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Caller is stopping or stopped </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -4681,8 +4650,7 @@ viewing the latest version.
         <span class="o">/</span><span class="p">,</span>
         <span class="o">**</span><span class="n">metadata</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A low-level function to schedule execution of `func`in a task running in the caller&#39;s thread.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A low-level function to schedule execution of `func`in a task running in the caller&#39;s thread.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: The function to be called.</span>
@@ -4690,6 +4658,7 @@ viewing the latest version.
 <span class="sd">            kwargs: Keyword arguments to use with in the call to `func`.</span>
 <span class="sd">            context: A context to copy, if not provided the current context is copied.</span>
 <span class="sd">            trackers: The tracker subclasses of active trackers which to add the pending.</span>
+<span class="sd">            backend: The backend to use to execute func which may execute the code a backend running as a guest.</span>
 <span class="sd">            **metadata: Additional metadata to store in the instance.</span>
 
 <span class="sd">        Returns:</span>
@@ -4715,7 +4684,7 @@ viewing the latest version.
                         <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 
                     <span class="k">def</span><span class="w"> </span><span class="nf">_start_guest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="s2">&quot;Start a guest event loop&quot;</span>
+<span class="w">                        </span><span class="sd">&quot;&quot;&quot;Start a guest event loop.&quot;&quot;&quot;</span>
                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
                             <span class="n">host</span><span class="p">:</span> <span class="n">Host</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Host</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
                             <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)(</span>
@@ -4740,8 +4709,7 @@ viewing the latest version.
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Schedule func to be called in caller&#39;s event loop copying the current context.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Schedule func to be called in caller&#39;s event loop copying the current context.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: The function.</span>
@@ -4771,8 +4739,7 @@ viewing the latest version.
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Schedule func to be executed.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Schedule func to be executed.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: The function.</span>
@@ -4789,8 +4756,7 @@ viewing the latest version.
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Schedule func to be executed using the specified `backend`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Schedule func to be executed using the specified `backend`.</span>
 
 <span class="sd">        This methods enables coroutines written for a specific function to be run irresective</span>
 <span class="sd">        of the callers backend.</span>
@@ -4804,7 +4770,7 @@ viewing the latest version.
 <span class="sd">            *args: Arguments to use with `func`.</span>
 <span class="sd">            **kwargs: Keyword arguments to use with `func`.</span>
 
-<span class="sd">        See also:</span>
+<span class="sd">        See Also:</span>
 <span class="sd">            - [Caller.get][]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule_call</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">PendingTracker</span><span class="p">,</span> <span class="n">Backend</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
@@ -4816,8 +4782,7 @@ viewing the latest version.
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A low-level function to schedule execution of `func` in caller&#39;s scheduler.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A low-level function to schedule execution of `func` in caller&#39;s scheduler.</span>
 
 <span class="sd">        Use this for short-running function calls only.</span>
 
@@ -4827,7 +4792,6 @@ viewing the latest version.
 <span class="sd">            **kwargs: Keyword arguments to use with `func`.</span>
 
 <span class="sd">        Warning:</span>
-
 <span class="sd">            **Use this method for lightweight calls only!**</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
@@ -4839,8 +4803,7 @@ viewing the latest version.
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Call `func` in a worker thread using the same backend as the caller.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call `func` in a worker thread using the same backend as the caller.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: The function.</span>
@@ -4874,8 +4837,7 @@ viewing the latest version.
         <span class="k">return</span> <span class="n">pen</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">queue_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the pending associated with the `queue_call` for func.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the pending associated with the `queue_call` for func.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            - `queue_close` is the preferred means to shutdown the queue.</span>
@@ -4889,8 +4851,7 @@ viewing the latest version.
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A low-level function to queue the execution of `func` in a queue unique to it and the caller.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A low-level function to queue the execution of `func` in a queue unique to it and the caller.</span>
 
 <span class="sd">        This sets up a long-lived task to provide a fast pathway for repetitive calls to a function.</span>
 
@@ -4940,8 +4901,7 @@ viewing the latest version.
         <span class="n">pen_</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;queue&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: The queue of the function to close.</span>
@@ -4957,8 +4917,7 @@ viewing the latest version.
         <span class="n">max_concurrent</span><span class="p">:</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
         <span class="n">cancel_unfinished</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        An async iterator to yield a pending for each awaitable in items as they complete (are done).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;An async iterator to yield a pending for each awaitable in items as they complete (are done).</span>
 
 <span class="sd">        How the pending was marked as done does not affect the iterator.</span>
 
@@ -5036,8 +4995,7 @@ viewing the latest version.
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_when</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;FIRST_COMPLETED&quot;</span><span class="p">,</span> <span class="s2">&quot;FIRST_EXCEPTION&quot;</span><span class="p">,</span> <span class="s2">&quot;ALL_COMPLETED&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL_COMPLETED&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="nb">set</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Wait for one or more of the awaitable items to complete.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for one or more of the awaitable items to complete.</span>
 
 <span class="sd">        Returns two sets of the results: (done, pending).</span>
 
@@ -5089,8 +5047,7 @@ viewing the latest version.
         <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a new [PendingGroup][async_kernel.pending.PendingGroup].</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new [PendingGroup][async_kernel.pending.PendingGroup].</span>
 
 <span class="sd">        [Pending][async_kernel.pending.Pending] created in the context that opt-in by including `PendingTracker`</span>
 <span class="sd">        as a &#39;tracker&#39;, including all methods on [Caller][] that return pending are automatically registered.</span>
@@ -5105,6 +5062,7 @@ viewing the latest version.
 <span class="sd">                - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
 <span class="sd">                - 2: Cancel if any pending is cancelled - exit quietly.</span>
 <span class="sd">                - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.</span>
+<span class="sd">            timeout: An approximate time limit for the context to remain open before cancelling unfinished pending.</span>
 
 <span class="sd">        Usage:</span>
 
@@ -5611,7 +5569,9 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">303</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
@@ -5689,17 +5649,13 @@ viewing the latest version.
 <span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span>
+<span class="normal">381</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">modifier</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;CurrentThread&quot;</span><span class="p">,</span> <span class="s2">&quot;MainThread&quot;</span><span class="p">,</span> <span class="s2">&quot;NewThread&quot;</span><span class="p">,</span> <span class="s2">&quot;manual&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;CurrentThread&quot;</span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerCreateOptions</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create or retrieve a caller.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create or retrieve a caller.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        modifier: Specifies the caller instance to retrieve.</span>
@@ -5814,7 +5770,10 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">386</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
 <span class="normal">389</span>
@@ -5874,19 +5833,12 @@ viewing the latest version.
 <span class="normal">443</span>
 <span class="normal">444</span>
 <span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">no_debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Start synchronously.</span>
+<span class="normal">446</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">no_debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start synchronously.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        no_debug: If debugpy should be disabled in the thread.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">initial</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">start_sync</span>
 
@@ -5980,15 +5932,36 @@ viewing the latest version.
           </div>
         </li>
     </ul>
-        <p>Returns:
-    Event: If stopping is initiated or complete.
-    None: If stop is ignored when the caller is protected.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>Event</code></b> (              <code>None</code>
+)          –
+          <div class="doc-md-description">
+            <p>If stopping is initiated or complete.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<b><code>None</code></b> (              <code>None</code>
+)          –
+          <div class="doc-md-description">
+            <p>If stop is ignored when the caller is protected.</p>
+          </div>
+        </li>
+    </ul>
 
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">453</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
 <span class="normal">454</span>
 <span class="normal">455</span>
 <span class="normal">456</span>
@@ -6015,17 +5988,12 @@ viewing the latest version.
 <span class="normal">477</span>
 <span class="normal">478</span>
 <span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Stop the caller cancelling all incomplete tasks.</span>
+<span class="normal">480</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop the caller cancelling all incomplete tasks.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        force: If the caller is protected the call is a no-op unless force=True.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Event: If stopping is initiated or complete.</span>
 <span class="sd">        None: If stop is ignored when the caller is protected.</span>
@@ -6082,7 +6050,12 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">498</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
 <span class="normal">499</span>
 <span class="normal">500</span>
 <span class="normal">501</span>
@@ -6105,14 +6078,9 @@ viewing the latest version.
 <span class="normal">518</span>
 <span class="normal">519</span>
 <span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="normal">521</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__asynccontextmanager__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
-    <span class="s2">&quot;The asynchronous context for caller.&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The asynchronous context for caller.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">start_sync</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Already starting! Did you mean to use Caller(&quot;manual&quot;)?&#39;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -6191,14 +6159,12 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">id_current</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="s2">&quot;The immutable id of a caller for the current thread in CPython or context in Pyodide.&quot;</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The immutable id of a caller for the current thread in CPython or context in Pyodide.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_caller_token</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;emscripten&quot;</span> <span class="k">else</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6267,20 +6233,18 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">637</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
 <span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
-<span class="normal">641</span>
-<span class="normal">642</span>
-<span class="normal">643</span>
-<span class="normal">644</span>
-<span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">639</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_existing</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">caller_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A [classmethod][] to get the caller instance from the corresponding thread if it exists.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A [classmethod][] to get the caller instance from the corresponding thread if it exists.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        caller_id: The id of the caller which in CPython is also the the id of the thread in which it is running.</span>
@@ -6340,10 +6304,10 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">649</span>
-<span class="normal">650</span>
-<span class="normal">651</span>
-<span class="normal">652</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">current_pending</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A [classmethod][] that returns the current pending when called from inside a function scheduled by Caller.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_pending_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
@@ -6414,18 +6378,16 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">654</span>
-<span class="normal">655</span>
-<span class="normal">656</span>
-<span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
-<span class="normal">660</span>
-<span class="normal">661</span>
-<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">all_callers</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">running_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Caller</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A [classmethod][] to get a list of the callers.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A [classmethod][] to get a list of the callers.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        running_only: Restrict the list to callers that are active (running in an async context).</span>
@@ -6519,7 +6481,7 @@ viewing the latest version.
   </span>
 
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
+      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
   </span>
 
       </li>
@@ -6530,7 +6492,16 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
 <span class="normal">665</span>
 <span class="normal">666</span>
 <span class="normal">667</span>
@@ -6567,20 +6538,8 @@ viewing the latest version.
 <span class="normal">698</span>
 <span class="normal">699</span>
 <span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerCreateOptions</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.</span>
+<span class="normal">701</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerCreateOptions</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        **kwargs: Options for creating or retrieving a caller.</span>
@@ -6595,7 +6554,6 @@ viewing the latest version.
 <span class="sd">        - The returned caller is added to `children` and stopped with the caller.</span>
 <span class="sd">        - If &#39;backend&#39; or &#39;zmq_context&#39; are not specified they are copied from the caller.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inst_lock</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stopping</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Caller is stopping or stopped </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -6647,7 +6605,7 @@ viewing the latest version.
     <span class="n"><a class="autorefs autorefs-internal" title="kwargs (async_kernel.caller.Caller.schedule_call(kwargs))" href="#async_kernel.caller.Caller.schedule_call(kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="context (async_kernel.caller.Caller.schedule_call(context))" href="#async_kernel.caller.Caller.schedule_call(context)">context</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="contextvars.Context" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context">Context</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="trackers (async_kernel.caller.Caller.schedule_call(trackers))" href="#async_kernel.caller.Caller.schedule_call(trackers)">trackers</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#type">type</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            PendingTracker (async_kernel.pending.PendingTracker)" href="../pending/#async_kernel.pending.PendingTracker">PendingTracker</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.caller.Caller.schedule_call(backend)">backend</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
+    <span class="n"><a class="autorefs autorefs-internal" title="backend (async_kernel.caller.Caller.schedule_call(backend))" href="#async_kernel.caller.Caller.schedule_call(backend)">backend</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
 
 
   
@@ -6715,6 +6673,26 @@ viewing the latest version.
           </div>
         </li>
         <li class="doc-section-item field-body">
+<h4 id="async_kernel.caller.Caller.schedule_call(backend)" class="doc doc-heading doc-heading-parameter">              <b><code>backend</code></b>
+<a href="#async_kernel.caller.Caller.schedule_call(backend)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a> | <a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="../typing/#async_kernel.typing.Backend">Backend</a></code>, default:
+                  <code><a class="autorefs autorefs-internal" title="            NoValue
+
+
+  
+      module-attribute
+   (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The backend to use to execute func which may execute the code a backend running as a guest.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
 <h4 id="async_kernel.caller.Caller.schedule_call(**metadata)" class="doc doc-heading doc-heading-parameter">              <b><code>**metadata</code></b>
 <a href="#async_kernel.caller.Caller.schedule_call(**metadata)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>, default:
                   <code>{}</code>
@@ -6765,7 +6743,18 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">714</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
 <span class="normal">715</span>
 <span class="normal">716</span>
 <span class="normal">717</span>
@@ -6814,18 +6803,7 @@ viewing the latest version.
 <span class="normal">760</span>
 <span class="normal">761</span>
 <span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">schedule_call</span><span class="p">(</span>
+<span class="normal">763</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">schedule_call</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="n">T</span><span class="p">],</span>
     <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
@@ -6836,8 +6814,7 @@ viewing the latest version.
     <span class="o">/</span><span class="p">,</span>
     <span class="o">**</span><span class="n">metadata</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A low-level function to schedule execution of `func`in a task running in the caller&#39;s thread.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A low-level function to schedule execution of `func`in a task running in the caller&#39;s thread.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        func: The function to be called.</span>
@@ -6845,6 +6822,7 @@ viewing the latest version.
 <span class="sd">        kwargs: Keyword arguments to use with in the call to `func`.</span>
 <span class="sd">        context: A context to copy, if not provided the current context is copied.</span>
 <span class="sd">        trackers: The tracker subclasses of active trackers which to add the pending.</span>
+<span class="sd">        backend: The backend to use to execute func which may execute the code a backend running as a guest.</span>
 <span class="sd">        **metadata: Additional metadata to store in the instance.</span>
 
 <span class="sd">    Returns:</span>
@@ -6870,7 +6848,7 @@ viewing the latest version.
                     <span class="bp">self</span><span class="o">.</span><span class="n">_guest_queues</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">_start_guest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="s2">&quot;Start a guest event loop&quot;</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;Start a guest event loop.&quot;&quot;&quot;</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="n">CallerState</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
                         <span class="n">host</span><span class="p">:</span> <span class="n">Host</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Host</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
                         <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)(</span>
@@ -6986,7 +6964,18 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">776</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
 <span class="normal">777</span>
 <span class="normal">778</span>
 <span class="normal">779</span>
@@ -7004,19 +6993,7 @@ viewing the latest version.
 <span class="normal">791</span>
 <span class="normal">792</span>
 <span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
-<span class="normal">806</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_later</span><span class="p">(</span>
+<span class="normal">794</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_later</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">delay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
@@ -7024,8 +7001,7 @@ viewing the latest version.
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Schedule func to be called in caller&#39;s event loop copying the current context.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Schedule func to be called in caller&#39;s event loop copying the current context.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        func: The function.</span>
@@ -7159,30 +7135,28 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">808</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">796</span>
+<span class="normal">797</span>
+<span class="normal">798</span>
+<span class="normal">799</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
 <span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span>
-<span class="normal">818</span>
-<span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_soon</span><span class="p">(</span>
+<span class="normal">810</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_soon</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Schedule func to be executed.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Schedule func to be executed.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        func: The function.</span>
@@ -7266,7 +7240,7 @@ of the callers backend.</p>
 
 
 <details class="see-also" open>
-  <summary>See also</summary>
+  <summary>See Also</summary>
   <ul>
 <li><a class="autorefs autorefs-internal" title="            get" href="#async_kernel.caller.Caller.get">Caller.get</a></li>
 </ul>
@@ -7312,7 +7286,20 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">825</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
 <span class="normal">826</span>
 <span class="normal">827</span>
 <span class="normal">828</span>
@@ -7324,21 +7311,7 @@ of the callers backend.</p>
 <span class="normal">834</span>
 <span class="normal">835</span>
 <span class="normal">836</span>
-<span class="normal">837</span>
-<span class="normal">838</span>
-<span class="normal">839</span>
-<span class="normal">840</span>
-<span class="normal">841</span>
-<span class="normal">842</span>
-<span class="normal">843</span>
-<span class="normal">844</span>
-<span class="normal">845</span>
-<span class="normal">846</span>
-<span class="normal">847</span>
-<span class="normal">848</span>
-<span class="normal">849</span>
-<span class="normal">850</span>
-<span class="normal">851</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_using_backend</span><span class="p">(</span>
+<span class="normal">837</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_using_backend</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">],</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
@@ -7346,8 +7319,7 @@ of the callers backend.</p>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Schedule func to be executed using the specified `backend`.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Schedule func to be executed using the specified `backend`.</span>
 
 <span class="sd">    This methods enables coroutines written for a specific function to be run irresective</span>
 <span class="sd">    of the callers backend.</span>
@@ -7361,7 +7333,7 @@ of the callers backend.</p>
 <span class="sd">        *args: Arguments to use with `func`.</span>
 <span class="sd">        **kwargs: Keyword arguments to use with `func`.</span>
 
-<span class="sd">    See also:</span>
+<span class="sd">    See Also:</span>
 <span class="sd">        - [Caller.get][]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule_call</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">PendingTracker</span><span class="p">,</span> <span class="n">Backend</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
@@ -7421,10 +7393,12 @@ of the callers backend.</p>
           </div>
         </li>
     </ul>
-        <p>Warning:</p>
-<pre><code>**Use this method for lightweight calls only!**
-</code></pre>
 
+
+<details class="warning" open>
+  <summary>Warning</summary>
+  <p><strong>Use this method for lightweight calls only!</strong></p>
+</details>
           
 
 
@@ -7452,36 +7426,33 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">853</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
 <span class="normal">854</span>
 <span class="normal">855</span>
 <span class="normal">856</span>
 <span class="normal">857</span>
-<span class="normal">858</span>
-<span class="normal">859</span>
-<span class="normal">860</span>
-<span class="normal">861</span>
-<span class="normal">862</span>
-<span class="normal">863</span>
-<span class="normal">864</span>
-<span class="normal">865</span>
-<span class="normal">866</span>
-<span class="normal">867</span>
-<span class="normal">868</span>
-<span class="normal">869</span>
-<span class="normal">870</span>
-<span class="normal">871</span>
-<span class="normal">872</span>
-<span class="normal">873</span>
-<span class="normal">874</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_direct</span><span class="p">(</span>
+<span class="normal">858</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_direct</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A low-level function to schedule execution of `func` in caller&#39;s scheduler.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A low-level function to schedule execution of `func` in caller&#39;s scheduler.</span>
 
 <span class="sd">    Use this for short-running function calls only.</span>
 
@@ -7491,7 +7462,6 @@ of the callers backend.</p>
 <span class="sd">        **kwargs: Keyword arguments to use with `func`.</span>
 
 <span class="sd">    Warning:</span>
-
 <span class="sd">        **Use this method for lightweight calls only!**</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
@@ -7581,24 +7551,9 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7621,7 +7576,23 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">876</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span>
+<span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span>
+<span class="normal">872</span>
+<span class="normal">873</span>
+<span class="normal">874</span>
+<span class="normal">875</span>
+<span class="normal">876</span>
 <span class="normal">877</span>
 <span class="normal">878</span>
 <span class="normal">879</span>
@@ -7643,32 +7614,14 @@ of the callers backend.</p>
 <span class="normal">895</span>
 <span class="normal">896</span>
 <span class="normal">897</span>
-<span class="normal">898</span>
-<span class="normal">899</span>
-<span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span>
-<span class="normal">904</span>
-<span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span>
-<span class="normal">910</span>
-<span class="normal">911</span>
-<span class="normal">912</span>
-<span class="normal">913</span>
-<span class="normal">914</span>
-<span class="normal">915</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_thread</span><span class="p">(</span>
+<span class="normal">898</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_thread</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Call `func` in a worker thread using the same backend as the caller.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call `func` in a worker thread using the same backend as the caller.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        func: The function.</span>
@@ -7755,16 +7708,14 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">917</span>
-<span class="normal">918</span>
-<span class="normal">919</span>
-<span class="normal">920</span>
-<span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span>
-<span class="normal">924</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the pending associated with the `queue_call` for func.</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the pending associated with the `queue_call` for func.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        - `queue_close` is the preferred means to shutdown the queue.</span>
@@ -7871,6 +7822,20 @@ of the callers backend.</p>
       </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
+      <a href="../event_loop/#">event_loop</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../event_loop/#async_kernel.event_loop.zmq_poll.Poll"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Poll</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../event_loop/#async_kernel.event_loop.zmq_poll.Poll.event_handler"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;event_handler</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
       <a href="../kernel/#">kernel</a>
   </span>
 
@@ -7917,7 +7882,25 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">926</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span>
+<span class="normal">911</span>
+<span class="normal">912</span>
+<span class="normal">913</span>
+<span class="normal">914</span>
+<span class="normal">915</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span>
 <span class="normal">927</span>
 <span class="normal">928</span>
 <span class="normal">929</span>
@@ -7953,34 +7936,14 @@ of the callers backend.</p>
 <span class="normal">959</span>
 <span class="normal">960</span>
 <span class="normal">961</span>
-<span class="normal">962</span>
-<span class="normal">963</span>
-<span class="normal">964</span>
-<span class="normal">965</span>
-<span class="normal">966</span>
-<span class="normal">967</span>
-<span class="normal">968</span>
-<span class="normal">969</span>
-<span class="normal">970</span>
-<span class="normal">971</span>
-<span class="normal">972</span>
-<span class="normal">973</span>
-<span class="normal">974</span>
-<span class="normal">975</span>
-<span class="normal">976</span>
-<span class="normal">977</span>
-<span class="normal">978</span>
-<span class="normal">979</span>
-<span class="normal">980</span>
-<span class="normal">981</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_call</span><span class="p">(</span>
+<span class="normal">962</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_call</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A low-level function to queue the execution of `func` in a queue unique to it and the caller.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A low-level function to queue the execution of `func` in a queue unique to it and the caller.</span>
 
 <span class="sd">    This sets up a long-lived task to provide a fast pathway for repetitive calls to a function.</span>
 
@@ -8077,12 +8040,8 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.queue_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_call</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -8093,18 +8052,16 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">983</span>
-<span class="normal">984</span>
-<span class="normal">985</span>
-<span class="normal">986</span>
-<span class="normal">987</span>
-<span class="normal">988</span>
-<span class="normal">989</span>
-<span class="normal">990</span>
-<span class="normal">991</span>
-<span class="normal">992</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span>
+<span class="normal">971</span>
+<span class="normal">972</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Close the [Caller.queue_call][async_kernel.caller.Caller.queue_call] execution queue associated with `func`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        func: The queue of the function to close.</span>
@@ -8232,7 +8189,27 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 994</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 974</span>
+<span class="normal"> 975</span>
+<span class="normal"> 976</span>
+<span class="normal"> 977</span>
+<span class="normal"> 978</span>
+<span class="normal"> 979</span>
+<span class="normal"> 980</span>
+<span class="normal"> 981</span>
+<span class="normal"> 982</span>
+<span class="normal"> 983</span>
+<span class="normal"> 984</span>
+<span class="normal"> 985</span>
+<span class="normal"> 986</span>
+<span class="normal"> 987</span>
+<span class="normal"> 988</span>
+<span class="normal"> 989</span>
+<span class="normal"> 990</span>
+<span class="normal"> 991</span>
+<span class="normal"> 992</span>
+<span class="normal"> 993</span>
+<span class="normal"> 994</span>
 <span class="normal"> 995</span>
 <span class="normal"> 996</span>
 <span class="normal"> 997</span>
@@ -8287,36 +8264,14 @@ of the callers backend.</p>
 <span class="normal">1046</span>
 <span class="normal">1047</span>
 <span class="normal">1048</span>
-<span class="normal">1049</span>
-<span class="normal">1050</span>
-<span class="normal">1051</span>
-<span class="normal">1052</span>
-<span class="normal">1053</span>
-<span class="normal">1054</span>
-<span class="normal">1055</span>
-<span class="normal">1056</span>
-<span class="normal">1057</span>
-<span class="normal">1058</span>
-<span class="normal">1059</span>
-<span class="normal">1060</span>
-<span class="normal">1061</span>
-<span class="normal">1062</span>
-<span class="normal">1063</span>
-<span class="normal">1064</span>
-<span class="normal">1065</span>
-<span class="normal">1066</span>
-<span class="normal">1067</span>
-<span class="normal">1068</span>
-<span class="normal">1069</span>
-<span class="normal">1070</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
+<span class="normal">1049</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">max_concurrent</span><span class="p">:</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportInvalidTypeForm]</span>
     <span class="n">cancel_unfinished</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    An async iterator to yield a pending for each awaitable in items as they complete (are done).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An async iterator to yield a pending for each awaitable in items as they complete (are done).</span>
 
 <span class="sd">    How the pending was marked as done does not affect the iterator.</span>
 
@@ -8498,7 +8453,28 @@ of the callers backend.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1072</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span>
+<span class="normal">1063</span>
+<span class="normal">1064</span>
+<span class="normal">1065</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span>
+<span class="normal">1072</span>
 <span class="normal">1073</span>
 <span class="normal">1074</span>
 <span class="normal">1075</span>
@@ -8528,29 +8504,7 @@ of the callers backend.</p>
 <span class="normal">1099</span>
 <span class="normal">1100</span>
 <span class="normal">1101</span>
-<span class="normal">1102</span>
-<span class="normal">1103</span>
-<span class="normal">1104</span>
-<span class="normal">1105</span>
-<span class="normal">1106</span>
-<span class="normal">1107</span>
-<span class="normal">1108</span>
-<span class="normal">1109</span>
-<span class="normal">1110</span>
-<span class="normal">1111</span>
-<span class="normal">1112</span>
-<span class="normal">1113</span>
-<span class="normal">1114</span>
-<span class="normal">1115</span>
-<span class="normal">1116</span>
-<span class="normal">1117</span>
-<span class="normal">1118</span>
-<span class="normal">1119</span>
-<span class="normal">1120</span>
-<span class="normal">1121</span>
-<span class="normal">1122</span>
-<span class="normal">1123</span>
-<span class="normal">1124</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
+<span class="normal">1102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -8558,8 +8512,7 @@ of the callers backend.</p>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">return_when</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;FIRST_COMPLETED&quot;</span><span class="p">,</span> <span class="s2">&quot;FIRST_EXCEPTION&quot;</span><span class="p">,</span> <span class="s2">&quot;ALL_COMPLETED&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL_COMPLETED&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="nb">set</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wait for one or more of the awaitable items to complete.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for one or more of the awaitable items to complete.</span>
 
 <span class="sd">    Returns two sets of the results: (done, pending).</span>
 
@@ -8618,7 +8571,7 @@ of the callers backend.</p>
 
 <a href="#async_kernel.caller.Caller.create_pending_group" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_pending_group</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.Caller.create_pending_group(shield))" href="#async_kernel.caller.Caller.create_pending_group(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (async_kernel.caller.Caller.create_pending_group(mode))" href="#async_kernel.caller.Caller.create_pending_group(mode)">mode</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n"><span title="async_kernel.caller.Caller.create_pending_group(timeout)">timeout</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.caller.Caller.create_pending_group(shield))" href="#async_kernel.caller.Caller.create_pending_group(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="mode (async_kernel.caller.Caller.create_pending_group(mode))" href="#async_kernel.caller.Caller.create_pending_group(mode)">mode</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.caller.Caller.create_pending_group(timeout))" href="#async_kernel.caller.Caller.create_pending_group(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            PendingGroup (async_kernel.pending.PendingGroup)" href="../pending/#async_kernel.pending.PendingGroup">PendingGroup</a></span>
 </code></pre></div>
 
@@ -8655,6 +8608,16 @@ is determined by the <code>mode</code>.</p>
 - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.
 - 2: Cancel if any pending is cancelled - exit quietly.
 - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.caller.Caller.create_pending_group(timeout)" class="doc doc-heading doc-heading-parameter">              <b><code>timeout</code></b>
+<a href="#async_kernel.caller.Caller.create_pending_group(timeout)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>An approximate time limit for the context to remain open before cancelling unfinished pending.</p>
           </div>
         </li>
     </ul>
@@ -8696,7 +8659,29 @@ async with Caller().create_pending_group() as pg:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/caller.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1126</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1104</span>
+<span class="normal">1105</span>
+<span class="normal">1106</span>
+<span class="normal">1107</span>
+<span class="normal">1108</span>
+<span class="normal">1109</span>
+<span class="normal">1110</span>
+<span class="normal">1111</span>
+<span class="normal">1112</span>
+<span class="normal">1113</span>
+<span class="normal">1114</span>
+<span class="normal">1115</span>
+<span class="normal">1116</span>
+<span class="normal">1117</span>
+<span class="normal">1118</span>
+<span class="normal">1119</span>
+<span class="normal">1120</span>
+<span class="normal">1121</span>
+<span class="normal">1122</span>
+<span class="normal">1123</span>
+<span class="normal">1124</span>
+<span class="normal">1125</span>
+<span class="normal">1126</span>
 <span class="normal">1127</span>
 <span class="normal">1128</span>
 <span class="normal">1129</span>
@@ -8705,37 +8690,14 @@ async with Caller().create_pending_group() as pg:
 <span class="normal">1132</span>
 <span class="normal">1133</span>
 <span class="normal">1134</span>
-<span class="normal">1135</span>
-<span class="normal">1136</span>
-<span class="normal">1137</span>
-<span class="normal">1138</span>
-<span class="normal">1139</span>
-<span class="normal">1140</span>
-<span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
-<span class="normal">1144</span>
-<span class="normal">1145</span>
-<span class="normal">1146</span>
-<span class="normal">1147</span>
-<span class="normal">1148</span>
-<span class="normal">1149</span>
-<span class="normal">1150</span>
-<span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
-<span class="normal">1155</span>
-<span class="normal">1156</span>
-<span class="normal">1157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span>
+<span class="normal">1135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_pending_group</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingGroup</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create a new [PendingGroup][async_kernel.pending.PendingGroup].</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new [PendingGroup][async_kernel.pending.PendingGroup].</span>
 
 <span class="sd">    [Pending][async_kernel.pending.Pending] created in the context that opt-in by including `PendingTracker`</span>
 <span class="sd">    as a &#39;tracker&#39;, including all methods on [Caller][] that return pending are automatically registered.</span>
@@ -8750,6 +8712,7 @@ async with Caller().create_pending_group() as pg:
 <span class="sd">            - 1: Cancel if any pending is cancelled - raise PendingCancelled on exit.</span>
 <span class="sd">            - 2: Cancel if any pending is cancelled - exit quietly.</span>
 <span class="sd">            - 3: Ignore cancellation of pending, if any pending is cancelled - raise PendingCancelled on exit.</span>
+<span class="sd">        timeout: An approximate time limit for the context to remain open before cancelling unfinished pending.</span>
 
 <span class="sd">    Usage:</span>
 

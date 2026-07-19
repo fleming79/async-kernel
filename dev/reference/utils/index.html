@@ -2009,6 +2009,8 @@ viewing the latest version.
 <a id="async_kernel.utils"></a>
     <div class="doc doc-contents first">
 
+        <p>Provides publicly utility functions.</p>
+
           
 
 
@@ -2191,11 +2193,11 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">57</span>
 <span class="normal">58</span>
-<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifies the given thread&#39;s attributes to hide or unhide it from the debugger (e.g., debugpy).&quot;&quot;&quot;</span>
     <span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span> <span class="ow">or</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
     <span class="n">thread</span><span class="o">.</span><span class="n">pydev_do_not_trace</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">remove</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
@@ -2225,15 +2227,13 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">64</span>
 <span class="normal">65</span>
 <span class="normal">66</span>
 <span class="normal">67</span>
-<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Kernel</span><span class="p">:</span>
-    <span class="s2">&quot;Get the current kernel.&quot;</span>
-
+<span class="normal">68</span>
+<span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Kernel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the current kernel.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">BaseInterface</span><span class="o">.</span><span class="n">initialized</span><span class="p">():</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;A kernel interface is not started!&quot;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -2275,16 +2275,14 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">76</span>
-<span class="normal">77</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">77</span>
 <span class="normal">78</span>
 <span class="normal">79</span>
 <span class="normal">80</span>
 <span class="normal">81</span>
 <span class="normal">82</span>
 <span class="normal">83</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Job</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get the job for the current context.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the job for the current context.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        LookupError: If there is no job in the current context.</span>
@@ -2321,7 +2319,7 @@ viewing the latest version.
 <span class="normal">89</span>
 <span class="normal">90</span>
 <span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent_message</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="s2">&quot;Get the parent message for the current context.&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the parent message for the current context.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">get_job</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;msg&quot;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">LookupError</span><span class="p">:</span>
@@ -2354,7 +2352,7 @@ viewing the latest version.
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">94</span>
 <span class="normal">95</span>
 <span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_subshell_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="s2">&quot;Get the `subshell_id` for the current context.&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the `subshell_id` for the current context.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">subshell_id</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2442,7 +2440,7 @@ viewing the latest version.
 <span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="s2">&quot;Gets the metadata for the current context.&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the metadata for the current context.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">_job_var</span><span class="o">.</span><span class="n">get</span><span class="p">())[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -2501,7 +2499,7 @@ viewing the latest version.
 <span class="normal">121</span>
 <span class="normal">122</span>
 <span class="normal">123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-    <span class="s2">&quot;Gets the tags for the current context.&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the tags for the current context.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">)[</span><span class="s2">&quot;tags&quot;</span><span class="p">]</span>  <span class="c1"># pyright: ignore[reportOptionalSubscript]</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -2555,7 +2553,7 @@ viewing the latest version.
 )
           –
           <div class="doc-md-description">
-            <p>A list of tags to search. When not provide <a class="autorefs autorefs-internal" title="            get_tags" href="#async_kernel.utils.get_tags">get_tags</a> is used.</p>
+            <p>A list of tags to search. When not provided <a class="autorefs autorefs-internal" title="            get_tags" href="#async_kernel.utils.get_tags">get_tags</a> is used.</p>
           </div>
         </li>
     </ul>
@@ -2580,34 +2578,20 @@ the type of the default.</p>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tag_value</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">_TagType</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TagType</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get the value for the tag from a collection of tags.</span>
+<span class="normal">148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tag_value</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">_TagType</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TagType</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the value for the tag from a collection of tags.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tag: The tag to get the value from.</span>
 <span class="sd">        default: The default value if a tag is not found. The default is also used to determine the type for conversion of the value.</span>
-<span class="sd">        tags: A list of tags to search. When not provide [get_tags][] is used.</span>
+<span class="sd">        tags: A list of tags to search. When not provided [get_tags][] is used.</span>
 
 <span class="sd">    The tag value is the value trailing behind &lt;tag&gt;=&lt;value&gt;. The value is transformed according to</span>
 <span class="sd">    the type of the default.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">if</span> <span class="n">tags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_tags</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="n">tag</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">tag</span><span class="o">.</span><span class="n">get_float</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">tag</span><span class="o">.</span><span class="n">get_bool</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">tag</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
-            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">get_float</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">default</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">tag</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">default</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2686,7 +2670,14 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
@@ -2711,17 +2702,8 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">180</span>
 <span class="normal">181</span>
 <span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">_return_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Replace an existing nested attribute/trait of an object.</span>
+<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">_return_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replace an existing nested attribute/trait of an object.</span>
 
 <span class="sd">    If the attribute name contains dots, it is interpreted as a nested attribute.</span>
 <span class="sd">    For example, if name is &quot;a.b.c&quot;, then the code will attempt to set obj.a.b.c to value.</span>
@@ -2799,7 +2781,15 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">194</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
@@ -2809,18 +2799,8 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">apply_settings</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Apply the settings onto the object.</span>
+<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">apply_settings</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply the settings onto the object.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: A copy of the settings that were applied.</span>
@@ -2869,20 +2849,18 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">error_to_content</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert the error to a dict.</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">error_to_content</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the error to a dict.</span>
 
 <span class="sd">    ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2915,7 +2893,7 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
 
 <details class="see-also" open>
-  <summary>See also</summary>
+  <summary>See Also</summary>
   <ul>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextlib.html#contextlib.redirect_stdout">contextlib.redirect_stdout</a></li>
 </ul>
@@ -2951,24 +2929,22 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stdout</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Re-direct [sys.stdout][] generated in the current context.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Re-direct [sys.stdout][] generated in the current context.</span>
 
-<span class="sd">    See also:</span>
+<span class="sd">    See Also:</span>
 <span class="sd">        - [contextlib.redirect_stdout][]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stdout_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
@@ -2999,7 +2975,7 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
 
 <details class="see-also" open>
-  <summary>See also</summary>
+  <summary>See Also</summary>
   <ul>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextlib.html#contextlib.redirect_stderr">contextlib.redirect_stderr</a></li>
 </ul>
@@ -3035,28 +3011,24 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stderr</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Re-direct [sys.stderr][] generated in the current context.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Re-direct [sys.stderr][] generated in the current context.</span>
 
-<span class="sd">    See also:</span>
+<span class="sd">    See Also:</span>
 <span class="sd">        - [contextlib.redirect_stderr][]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stderr_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">stream</span>
@@ -3087,17 +3059,17 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_result</span><span class="p">(</span><span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-    <span class="s2">&quot;A context where `show_result` is enabled/disabled.&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A context where `show_result` is enabled/disabled.&quot;&quot;&quot;</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_show_result_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">show</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span>
