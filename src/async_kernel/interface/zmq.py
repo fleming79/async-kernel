@@ -115,7 +115,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         # Thread: control
 
         def heartbeat(hb: zmq.Socket, event: int) -> None:
-            hb.send(hb.recv())
+            hb.send_multipart(hb.recv_multipart())
 
         if os.path.exists(self.connection_file):  # noqa: PTH110
             self.load_connection_file()
