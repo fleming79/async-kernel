@@ -1,3 +1,5 @@
+"""Provides publicly utility functions."""
+
 from __future__ import annotations
 
 import sys
@@ -135,20 +137,14 @@ def get_tag_value(tag: Tags, default: _TagType, /, *, tags: Iterable[str] | None
     Args:
         tag: The tag to get the value from.
         default: The default value if a tag is not found. The default is also used to determine the type for conversion of the value.
-        tags: A list of tags to search. When not provide [get_tags][] is used.
+        tags: A list of tags to search. When not provided [get_tags][] is used.
 
     The tag value is the value trailing behind <tag>=<value>. The value is transformed according to
     the type of the default.
     """
     for t in tags if tags is not None else get_tags():
         if t == tag:
-            if isinstance(default, float):
-                return tag.get_float(t, default)
-            if isinstance(default, bool):
-                return tag.get_bool(t, default)
-            if isinstance(default, str):
-                return tag.get_string(t, default)
-            return int(tag.get_float(t, default))
+            return tag.get_value(t, default)
     return default
 
 

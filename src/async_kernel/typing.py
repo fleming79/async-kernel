@@ -1,3 +1,5 @@
+"""Provides publicly available typing definitions."""
+
 from __future__ import annotations
 
 import enum
@@ -234,7 +236,7 @@ class MsgType(enum.StrEnum):
     "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
 
 
-T_fsb = TypeVar("T_fsb", float, str, bool)
+T_fsb = TypeVar("T_fsb", int, float, str, bool)
 
 
 class Tags(enum.StrEnum):
@@ -256,26 +258,25 @@ class Tags(enum.StrEnum):
         return hash(self.name)
 
     @classmethod
-    def get_bool(cls, value: str | Tags, default: bool = True) -> bool:
+    def get_value(cls, value: str, default: T_fsb) -> T_fsb:
+        """Extract the value and convert it to match the type of default using `tag=value`."""
         try:
-            return value.split("=")[1].lower() == "true"
+            value = value.split("=")[1].strip()
         except Exception:
             return default
-
-    @classmethod
-    def get_float(cls, value: str | Tags, default: float = 0.0) -> float:
         try:
-            return float(value.split("=")[1])
+            if isinstance(default, bool):
+                return value.lower() == "true"
+            if isinstance(default, int):
+                return int(value)
+            if isinstance(default, float):
+                return float(value)
+            if isinstance(default, str):  # pyright: ignore[reportUnnecessaryIsInstance]
+                return value
         except Exception:
             return default
-
-    @classmethod
-    def get_string(cls, value: str | Tags, default: str = "") -> str:
-
-        try:
-            return value.split("=")[1].strip()
-        except Exception:
-            return default
+        msg = "default must be a one of string, int, float, bool."  # pyright: ignore[reportUnreachable]
+        raise ValueError(msg)
 
     raises_exception = "raises-exception"
     """
@@ -299,7 +300,7 @@ class Tags(enum.StrEnum):
             - stop_on_error=False
     """
 
-    timeout = "timeout="
+    timeout = "timeout"
     """
     Specify a timeout in seconds for code execution to complete.
 

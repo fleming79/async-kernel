@@ -1,3 +1,5 @@
+import pytest
+
 from async_kernel.kernel import Kernel
 from async_kernel.typing import MsgType, RunMode, Tags
 
@@ -36,3 +38,23 @@ class TestTags:
 
     def test_hash(self):
         assert hash(Tags.raises_exception) == hash(Tags.raises_exception)
+
+    @pytest.mark.parametrize(
+        ("value", "default", "expected"),
+        [
+            (f"{Tags.stop_on_error}=False", True, False),
+            (f"{Tags.stop_on_error}", True, True),
+            (f"{Tags.timeout}", 0.0, 0.0),
+            (f"{Tags.timeout}=1", 0.0, 1.0),
+            (f"{Tags.timeout}=2", "", "2"),
+            (f"{Tags.timeout}=2", 0, 2),
+        ],
+    )
+    def test_get_value(self, value, default, expected) -> None:
+        val = Tags.get_value(value, default)
+        assert val == expected
+        assert isinstance(val, type(default))
+
+    def test_get_invalid_value(self) -> None:
+        with pytest.raises(ValueError, match="default must be a one of"):
+            Tags.get_value(f"{Tags.timeout}=1", {})  # pyright: ignore[reportArgumentType]
