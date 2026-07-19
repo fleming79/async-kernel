@@ -68,7 +68,7 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
 
 
 class DictValueLiteralEval(traitlets.Dict):
-    "An instance of a Python dict which converts string values to Python literals."
+    """An instance of a Python dict which converts string values to Python literals."""
 
     @override
     def item_from_string(self, s: str) -> dict:
@@ -82,8 +82,7 @@ class DictValueLiteralEval(traitlets.Dict):
 
 
 class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]):
-    """
-    The base class for kernel interface (singleton).
+    """The base class for kernel interface (singleton).
 
     The interface creates the kernel and provides external communication. It is also
     the parent object for all objects that subclass from `HasInterface`. Configurable
@@ -218,7 +217,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     @classmethod
     @override
     def instance(cls) -> Self:
-        "Get the singleton instance that was created using `launch_instance`."
+        """Get the singleton instance that was created using `launch_instance`."""
         if not cls._instance:
             msg = "An instance does not exist!"
             raise RuntimeError(msg)
@@ -280,9 +279,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     @override
     def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
-        """
-        Initialize the interface **DO NOT CALL DIRECTLY**.
-        """
+        """Initialize the interface **DO NOT CALL DIRECTLY**."""
         assert self._instance is self
 
         def initialized(argv: Any = NoValue) -> None:
@@ -301,8 +298,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
     @override
     def start(self) -> None:
-        """
-        Start the interface blocking until it stops.
+        """Start the interface blocking until it stops.
 
         Warning:
             - Running in a thread other than the 'MainThread' is permitted, but discouraged.
@@ -387,8 +383,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         self.started.set_result(None)
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
-        """
-        Run the kernel.
+        """Run the kernel.
 
         Args:
             stopped: An optional callback that is called when the kernel has stopped.
@@ -403,17 +398,14 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
                 stopped()
 
     def stop(self) -> None:
-        """
-        Stop the kernel and this interface.
-        """
+        """Stop the kernel and this interface."""
         self.stopping.set_result(None)
         self.started.cancel("Stopped early")
         if BaseInterface._instance is self:
             BaseInterface._instance = None
 
     def input_request(self, prompt: str, *, password: bool = False) -> str:
-        """
-        Forward an input request to the frontend.
+        """Forward an input request to the frontend.
 
         Args:
             prompt: The user prompt.
@@ -431,9 +423,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         metadata: dict[str, Any] | None = None,
         channel: Channel = Channel.shell,
     ) -> Message[T]:
-        """
-        Create a new message.
-        """
+        """Create a new message."""
         parent = parent or utils.get_parent_message()
         if header is None:
             session = ""
@@ -484,8 +474,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
 
 
 class HasInterface(Generic[T_interface_co]):
-    """
-    A mixin class providing a reference to the global [interface][async_kernel.interface.base.BaseInterface].
+    """A mixin class providing a reference to the global [interface][async_kernel.interface.base.BaseInterface].
 
     This class is designed to be compatible with [Configurable][] objects enabling the sharing
     of configuration and log objects. The global _interface_ must exist before creating subclass
@@ -496,7 +485,7 @@ class HasInterface(Generic[T_interface_co]):
 
     @property
     def parent(self) -> T_interface_co:
-        "The interface at the time of creation."
+        """The interface at the time of creation."""
         return self._interface()  # pyright: ignore[reportReturnType]
 
     @parent.setter
@@ -505,8 +494,7 @@ class HasInterface(Generic[T_interface_co]):
 
     @property
     def config(self) -> Config:
-        """
-        A reference to the `parent.config`.
+        """A reference to the `parent.config`.
 
         Setting the config will update `parent.config`instead of replacing it.
         """

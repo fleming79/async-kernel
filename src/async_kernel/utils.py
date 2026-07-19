@@ -1,3 +1,5 @@
+"""Provides publicly utility functions."""
+
 from __future__ import annotations
 
 import sys
@@ -60,8 +62,7 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
 
 
 def get_kernel() -> Kernel:
-    "Get the current kernel."
-
+    """Get the current kernel."""
     if not async_kernel.interface.BaseInterface.initialized():
         msg = "A kernel interface is not started!"
         raise RuntimeError(msg)
@@ -69,13 +70,12 @@ def get_kernel() -> Kernel:
 
 
 def get_ipython() -> BaseShell:
-    "Get the shell in the current context."
+    """Get the shell in the current context."""
     return get_kernel().get_shell()
 
 
 def get_job() -> Job[Any]:
-    """
-    Get the job for the current context.
+    """Get the job for the current context.
 
     Raises:
         LookupError: If there is no job in the current context.
@@ -84,7 +84,7 @@ def get_job() -> Job[Any]:
 
 
 def get_parent_message(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
-    "Get the parent message for the current context."
+    """Get the parent message for the current context."""
     try:
         return (job or get_job()).get("msg")
     except LookupError:
@@ -92,7 +92,7 @@ def get_parent_message(job: Job | None = None, /) -> Message[dict[str, Any]] | N
 
 
 def get_subshell_id() -> str | None:
-    "Get the `subshell_id` for the current context."
+    """Get the `subshell_id` for the current context."""
     return get_kernel().shell.subshell_id
 
 
@@ -108,7 +108,7 @@ def subshell_context(subshell_id: str | None) -> Generator[None, Any, None]:
 
 
 def get_metadata(job: Job | None = None, /) -> dict[str, Any] | None:
-    "Gets the metadata for the current context."
+    """Gets the metadata for the current context."""
     try:
         return (job or _job_var.get())["msg"]["metadata"]
     except Exception:
@@ -116,7 +116,7 @@ def get_metadata(job: Job | None = None, /) -> dict[str, Any] | None:
 
 
 def get_tags(job: Job | None = None, /) -> list[str]:
-    "Gets the tags for the current context."
+    """Gets the tags for the current context."""
     try:
         return get_metadata(job)["tags"]  # pyright: ignore[reportOptionalSubscript]
     except Exception:
@@ -124,7 +124,7 @@ def get_tags(job: Job | None = None, /) -> list[str]:
 
 
 def get_cell_id(job: Job | None = None, /) -> str | None:
-    "The `cell_id` for the current context."
+    """The `cell_id` for the current context."""
     return _cell_id_var.get() or (metadata.get("cellId") if (metadata := get_metadata(job)) else None)
 
 
@@ -132,32 +132,24 @@ _TagType = TypeVar("_TagType", str, float, int, bool)
 
 
 def get_tag_value(tag: Tags, default: _TagType, /, *, tags: Iterable[str] | None = None) -> _TagType:
-    """
-    Get the value for the tag from a collection of tags.
+    """Get the value for the tag from a collection of tags.
 
     Args:
         tag: The tag to get the value from.
         default: The default value if a tag is not found. The default is also used to determine the type for conversion of the value.
-        tags: A list of tags to search. When not provide [get_tags][] is used.
+        tags: A list of tags to search. When not provided [get_tags][] is used.
 
     The tag value is the value trailing behind <tag>=<value>. The value is transformed according to
     the type of the default.
     """
     for t in tags if tags is not None else get_tags():
         if t == tag:
-            if isinstance(default, float):
-                return tag.get_float(t, default)
-            if isinstance(default, bool):
-                return tag.get_bool(t, default)
-            if isinstance(default, str):
-                return tag.get_string(t, default)
-            return int(tag.get_float(t, default))
+            return tag.get_value(t, default)
     return default
 
 
 def setattr_nested(obj: object, name: str, value: str | Any, *, _return_value=False) -> dict[str, Any]:
-    """
-    Replace an existing nested attribute/trait of an object.
+    """Replace an existing nested attribute/trait of an object.
 
     If the attribute name contains dots, it is interpreted as a nested attribute.
     For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.
@@ -192,8 +184,7 @@ def setattr_nested(obj: object, name: str, value: str | Any, *, _return_value=Fa
 
 
 def apply_settings(obj: object, settings: Mapping[str, Any]) -> dict[str, Any]:
-    """
-    Apply the settings onto the object.
+    """Apply the settings onto the object.
 
     Returns:
         dict: A copy of the settings that were applied.
@@ -214,8 +205,7 @@ def apply_settings(obj: object, settings: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def error_to_content(error: BaseException, /) -> Content:
-    """
-    Convert the error to a dict.
+    """Convert the error to a dict.
 
     ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply
     """
@@ -229,10 +219,9 @@ def error_to_content(error: BaseException, /) -> Content:
 
 @contextmanager
 def redirect_stdout(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirectT, Any, None]:
-    """
-    Re-direct [sys.stdout][] generated in the current context.
+    """Re-direct [sys.stdout][] generated in the current context.
 
-    See also:
+    See Also:
         - [contextlib.redirect_stdout][]
     """
     token = _stdout_context.set(stream)
@@ -244,13 +233,11 @@ def redirect_stdout(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirec
 
 @contextmanager
 def redirect_stderr(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirectT, Any, None]:
-    """
-    Re-direct [sys.stderr][] generated in the current context.
+    """Re-direct [sys.stderr][] generated in the current context.
 
-    See also:
+    See Also:
         - [contextlib.redirect_stderr][]
     """
-
     token = _stderr_context.set(stream)
     try:
         yield stream
@@ -260,7 +247,7 @@ def redirect_stderr(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirec
 
 @contextmanager
 def show_result(show: bool = True, /) -> Generator[None, Any, None]:
-    "A context where `show_result` is enabled/disabled."
+    """A context where `show_result` is enabled/disabled."""
     token = _show_result_context.set(show)
     try:
         yield
@@ -270,5 +257,5 @@ def show_result(show: bool = True, /) -> Generator[None, Any, None]:
 
 
 def show_result_enabled() -> bool:
-    "Is the output suppressed in the current context?"
+    """Is the output suppressed in the current context?"""
     return _show_result_context.get()

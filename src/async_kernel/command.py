@@ -23,8 +23,7 @@ if TYPE_CHECKING:
 
 
 def to_flags_and_settings(args: list[str]) -> tuple[list[str], dict[str, Any]]:
-    """
-    Convert `argvs` to flags and settings.
+    """Convert `argvs` to flags and settings.
 
     Args:
         args: A list of arguments, the first of which must start with '-' or '--'.
@@ -68,8 +67,7 @@ def to_flags_and_settings(args: list[str]) -> tuple[list[str], dict[str, Any]]:
 
 
 def command_line() -> None:
-    """
-    Parses command-line arguments to manage kernel specs and start kernels.
+    """Parses command-line arguments to manage kernel specs and start kernels.
 
     This function uses `argparse` to handle command-line arguments for
     various kernel operations, including:

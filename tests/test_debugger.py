@@ -36,12 +36,10 @@ initialize_args = {
 
 
 async def send_debug_request(client: AsyncKernelClient, command: str, arguments: dict | None = None):
-    """
-    Carry out a debug request and return the reply content.
+    """Carry out a debug request and return the reply content.
 
     It does not check if the request was successful.
     """
-
     send_debug_request._seq = seq = getattr(send_debug_request, "_seq", 0) + 1  # pyright: ignore[reportFunctionMemberAccess]
     # DAP Ref: https://microsoft.github.io/debug-adapter-protocol/specification
     reply = await utils.send_control_message(

@@ -1,6 +1,4 @@
-"""
-Defines the shell base class.
-"""
+"""Defines the shell base class."""
 
 from __future__ import annotations
 
@@ -29,12 +27,11 @@ __all__ = ["BaseShell"]
 
 
 class ShellPendingManager(PendingManager):
-    "A pending manager to track the active shell/subshell."
+    """A pending manager to track the active shell/subshell."""
 
 
 class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interface_co]):
-    """
-    The base shell implementation.
+    """The base shell implementation.
 
     This should be the left most inherited class to be used.
     """
@@ -157,13 +154,11 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         pass
 
     def stop(self, *, force: bool = False) -> None:
-        """
-        Stop the shell.
+        """Stop the shell.
 
         Args:
             force: Force a protected shell to stop.
         """
-
         if self.protected and not force:
             return
         if not self.is_mainshell:
@@ -171,7 +166,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         self.reset(new_session=False)
 
     def reset(self, new_session=True, aggressive=False) -> None:
-        "Reset the shell, cancelling all associated pending."
+        """Reset the shell, cancelling all associated pending."""
         if not self._resetting:
             self._resetting = True
             try:
@@ -189,13 +184,12 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
-        "A context manager where the shell is active."
+        """A context manager where the shell is active."""
         with self.pending_manager.context():
             yield
 
     def displayhook(self, result: Any) -> None:
-        """
-        Publish execution results.
+        """Publish execution results.
 
         This is invoked every time the interpreter needs to print, and is
         activated by setting the variable sys.displayhook to it.
@@ -221,9 +215,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         tags: Iterable[str] = (),
         **_ignored,
     ) -> Content:
-        """
-        Execute code in the shell.
-        """
+        """Execute code in the shell."""
         raise NotImplementedError
 
     async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:

@@ -102,8 +102,7 @@ class Test_zmq_Poll:
             assert n == N
 
     async def test_stress_socket_threadsafe(self, caller: Caller):
-        "Stress test interface.iopub_send and the associated socket."
-
+        """Stress test interface.iopub_send and the associated socket."""
         for n in range(2, 20, 4):
             with Poll() as poll, poll.socket(zmq.SocketType.XPUB) as pub, poll.socket(zmq.SocketType.SUB) as sub:
                 pub.bind(addr := "inproc://socket_proxy_test")

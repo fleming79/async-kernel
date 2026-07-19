@@ -1,4 +1,4 @@
-"Defines a background ZMQ poller thread."
+"""Defines a background ZMQ poller thread."""
 
 from __future__ import annotations
 
@@ -28,8 +28,8 @@ T_key = tuple[Any | Socket[Any], int]
 
 
 class Poll:
-    """
-    A simple [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.
+    """A simple [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.
+
     This event loop is synchronous and is intended for quick message dispatch to separate threads
     for handling.
     """
@@ -64,8 +64,7 @@ class Poll:
         return False
 
     def socket(self, socket_type: zmq.SocketType, *, safe_send_multipart: bool = True) -> zmq.Socket:
-        """
-        Create a new zmq socket.
+        """Create a new zmq socket.
 
         Args:
             socket_type: The mode of the socket.
@@ -188,8 +187,7 @@ class Poll:
         flags: Literal[zmq.PollEvent.POLLIN, zmq.PollEvent.POLLOUT] = zmq.PollEvent.POLLIN,
         countdown: tuple[int, Callable[[], Any]] | None = None,
     ) -> Generator[None, Any, None]:
-        """
-        A context manager where `handler` is called with the event number when it occurs for `sock`.
+        """A context manager where `handler` is called with the event number when it occurs for `sock`.
 
         Only one `handler` is allowed per `(socket, flags)` combination.
 
@@ -197,7 +195,7 @@ class Poll:
             sock: A zmq socket or a IO style object with a `fileno`.
             handler: A handler to handle the event. The handler is called inside the
                 poll thread. Thread-safe primitives must be used by the handler such
-                as [async_kernel.caller.Caller.call_soon][], etc.
+                as [async_kernel.caller.Caller.call_soon][],[async_kernel.caller.Caller.queue_call][], etc.
             flags: The type of event to listen for.
                 [zmq.PollEvent.POLLIN][]: `sock` is readable.
                 [zmq.PollEvent.POLLOUT][]: `sock` was read from.

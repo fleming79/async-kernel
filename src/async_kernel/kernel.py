@@ -54,9 +54,7 @@ class Kernel(
     anyio.AsyncContextManagerMixin,
     Generic[T_interface_co, T_shell_co],
 ):
-    """
-    The class containing the handler methods to implement a Jupyter Kernel.
-    """
+    """The class containing the handler methods to implement a Jupyter Kernel."""
 
     help_links = traitlets.List(trait=traitlets.Dict()).tag(config=True)
     "A list of links provided kernel info request."
@@ -141,7 +139,7 @@ class Kernel(
 
     @property
     def kernel_info(self) -> dict[str, Any]:
-        "Info provided to a kernel info request."
+        """Info provided to a kernel info request."""
         return {
             "protocol_version": async_kernel.kernel_protocol_version,
             "implementation": async_kernel.distribution_name,
@@ -163,8 +161,7 @@ class Kernel(
 
     @property
     def shell(self) -> T_shell_co:
-        """
-        The shell given the current context.
+        """The shell given the current context.
 
         Notes:
             - The `subshell_id` of the main shell is `None`.
@@ -183,8 +180,7 @@ class Kernel(
 
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        """
-        The kernel runs in this context.
+        """The kernel runs in this context.
 
         Notes:
             - Entered by the interface (parent).
@@ -206,8 +202,7 @@ class Kernel(
             self._handler_cache.clear()
 
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
-        "Handle interrupt signals."
-
+        """Handle interrupt signals."""
         if pen := self._interrupt_requested:
             self._interrupt_requested = None
             if not pen.done():
@@ -220,9 +215,7 @@ class Kernel(
                 self.parent.stop()
 
     async def do_interrupt(self) -> None:
-        """
-        Interrupt/cancel non-silent active execute requests.
-        """
+        """Interrupt/cancel non-silent active execute requests."""
         assert Caller() is self.callers[Channel.control], "Must be called from the control thread."
         for pen in self.active_execute_requests.copy():
             if not pen.metadata.get("kwargs", {}).get("silent", False):
@@ -259,7 +252,6 @@ class Kernel(
 
     def apply_patches(self) -> Callable[[], None]:
         """Apply patches returning a callable to reverse the patches."""
-
         original = sys.displayhook, builtins.input, getpass.getpass
         builtins.input, sys.displayhook, getpass.getpass = self.raw_input, self.displayhook, self.getpass
         restore_comm = self.comm_manager.patch_comm()
@@ -277,16 +269,16 @@ class Kernel(
         return restore
 
     def displayhook(self, result: Any):
-        "The global patch for [sys.displayhook][] responsible for python display callbacks."
+        """The global patch for [sys.displayhook][] responsible for python display callbacks."""
         self.get_shell().displayhook(result)
 
     def _shell_created(self, shell: T_shell_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
-        "Called by `BaseShell.__init__`"
+        """Called by `BaseShell.__init__`."""
         if shell.subshell_id:
             self._subshells[shell.subshell_id] = shell
 
     def _subshell_stopped(self, shell: T_shell_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
-        "Called by `BaseShell.stop`"
+        """Called by `BaseShell.stop`."""
         if subshell_id := shell.subshell_id:
             self._subshells.pop(subshell_id, None)
         for key in list(self._handler_cache):
@@ -355,8 +347,7 @@ class Kernel(
         iopub_send: Callable,
         /,
     ) -> None:
-        """
-        Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
+        """Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
 
         Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
         Typically, jobs are queued for execution by either the 'shell' or 'control' caller using
@@ -373,6 +364,7 @@ class Kernel(
         Args:
             job: A dict with the msg and supporting details.
             send_reply: The function for the handler to use to send the reply to the message.
+            iopub_send: A function responsible for sending iopub messages.
         """
         handler = self._get_handler(job, send_reply, iopub_send)
 
@@ -412,8 +404,7 @@ class Kernel(
         self.log.debug("***handle message %s*** %s %s %s", msg_type, run_mode, handler, job)
 
     def get_shell(self, subshell_id: str | None | NoValue = NoValue) -> T_shell_co:  # pyright: ignore[reportInvalidTypeForm]
-        """
-        Get a shell by `subshell_id`.
+        """Get a shell by `subshell_id`.
 
         Args:
             subshell_id: The id of an existing subshell.
@@ -423,18 +414,17 @@ class Kernel(
         return self._subshells.get(subshell_id) or self.main_shell
 
     def create_subshell(self, *, protected: bool = False) -> T_shell_co:
-        """
-        Create a subshell.
+        """Create a subshell.
 
         Use [`shell.stop(force=True)`][async_kernel.shell.base.BaseShell.stop] to stop a
         protected subshell when it is no longer required.
 
         Args:
             protected: Protect the subshell from accidental deletion.
+
         Tip:
             - `await shell.ready` to ensure the shell is 'ready'.
         """
-
         return self._shell_class(protected=protected)
 
     async def kernel_info_request(self, job: Job[Content], /) -> Content:
@@ -528,12 +518,11 @@ class Kernel(
         return {"subshell_id": list(self._subshells)}
 
     def get_parent(self) -> Message[dict[str, Any]] | None:
-        """
-        A convenience method to access the 'message' in the current context if there is one.
+        """A convenience method to access the 'message' in the current context if there is one.
 
         'parent' is the parameter name used by [Session.send][jupyter_client.session.Session.send] to provide context when sending a reply.
 
-        See also:
+        See Also:
             - [ipywidgets.Output][ipywidgets.widgets.widget_output.Output]:
                 Uses `get_ipython().kernel.get_parent()` to obtain the `msg_id` which
                 is used to 'capture' output when its context has been acquired.
@@ -541,13 +530,13 @@ class Kernel(
         return utils.get_parent_message()
 
     async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
-        "Matches signature of [ipykernel.kernelbase.Kernel.do_complete][]."
+        """Matches signature of [ipykernel.kernelbase.Kernel.do_complete][]."""
         return await self.shell.do_complete(code=code, cursor_pos=cursor_pos)
 
     async def do_inspect(
         self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0, omit_sections=()
     ) -> Content:
-        "Matches signature of [ipykernel.kernelbase.Kernel.do_inspect][]."
+        """Matches signature of [ipykernel.kernelbase.Kernel.do_inspect][]."""
         return await self.shell.do_inspect(code=code, cursor_pos=cursor_pos, detail_level=detail_level)
 
     async def do_history(
@@ -562,7 +551,7 @@ class Kernel(
         pattern=None,
         unique=False,
     ) -> Content:
-        "Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."
+        """Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."""
         return await self.shell.do_history(
             output=output,
             raw=raw,
@@ -584,7 +573,7 @@ class Kernel(
         cell_id: str | None = None,
         **_ignored,
     ) -> Content:
-        "Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."
+        """Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."""
         return await self.shell.do_execute(
             code=code,
             silent=silent,
@@ -595,9 +584,9 @@ class Kernel(
         )
 
     def getpass(self, prompt="", stream=None) -> str:
-        "Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."
+        """Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."""
         return self.parent.input_request(str(prompt), password=True)
 
     def raw_input(self, prompt="") -> str:
-        "Matches signature of [ipykernel.kernelbase.Kernel.raw_input][]."
+        """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][]."""
         return self.parent.input_request(str(prompt), password=False)

@@ -36,7 +36,7 @@ async def test_user_ns(anyio_backend: Backend):
 
 @pytest.mark.parametrize("topic", ["", "kernel"])
 async def test_iopub_welcome(topic: str, anyio_backend: Backend):
-    """Test iopub welcome message. https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message"""
+    """Test iopub welcome message. https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
     async with IPApp() as interface:
         with Poll() as poll:
             ip, port, transport = interface.ip, interface.iopub_port, interface.transport

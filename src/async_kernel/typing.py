@@ -1,3 +1,5 @@
+"""Provides publicly available typing definitions."""
+
 from __future__ import annotations
 
 import enum
@@ -52,7 +54,7 @@ T_interface_co = TypeVar("T_interface_co", covariant=True, bound="BaseInterface"
 
 
 class Backend(enum.StrEnum):
-    "An enum of library names corresponding to anyio."
+    """An enum of library names corresponding to anyio."""
 
     asyncio = "asyncio"
     "An asyncio style event loop."
@@ -63,7 +65,7 @@ class Backend(enum.StrEnum):
 
 @final
 class Hosts(enum.StrEnum):
-    "An enum of host names that are available in [async_kernel.event_loop.run.run][]."
+    """An enum of host names that are available in [async_kernel.event_loop.run.run][]."""
 
     tk = "tk"
     "An eventloop for [tkinter][]."
@@ -86,7 +88,7 @@ class Hosts(enum.StrEnum):
 
 
 class Channel(enum.StrEnum):
-    "An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."
+    """An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."""
 
     heartbeat = "hb"
     ""
@@ -101,8 +103,7 @@ class Channel(enum.StrEnum):
 
 
 class RunMode(enum.StrEnum):
-    """
-    An Enum of the run modes available for handling `execute_request` messages.
+    """An Enum of the run modes available for handling `execute_request` messages.
 
     Cell overrides:
         The user can also specify an execution mode in execute requests.
@@ -132,8 +133,7 @@ class RunMode(enum.StrEnum):
 
     @classmethod
     def to_runmode(cls, value: Any, default: T = None, /) -> Self | T | CallerCreateOptions:
-        """
-        Converts value to `Runmode`, `CallerCreateOptions` or  default where it is not possible.
+        """Converts value to `Runmode`, `CallerCreateOptions` or  default where it is not possible.
 
         `CallerCreateOptions` will only return when a string is passed specifying a thread and options.
 
@@ -152,7 +152,7 @@ class RunMode(enum.StrEnum):
 
     @classmethod
     def line_to_options(cls, line: str, /) -> CallerCreateOptions:
-        "Convert the line string to CallerCreateOptions."
+        """Convert the line string to CallerCreateOptions."""
         import shlex  # noqa: PLC0415
 
         items = CallerCreateOptions()
@@ -181,8 +181,7 @@ class RunMode(enum.StrEnum):
 
 
 class MsgType(enum.StrEnum):
-    """
-    An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).
+    """An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).
 
     Some message types are on the [control channel](https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-control-router-dealer-channel) only.
     """
@@ -237,9 +236,11 @@ class MsgType(enum.StrEnum):
     "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
 
 
+T_fsb = TypeVar("T_fsb", int, float, str, bool)
+
+
 class Tags(enum.StrEnum):
-    """
-    Cell tags used in async-kernel.
+    """Cell tags used in async-kernel.
 
     Info:
         Tags are can be added per cell.
@@ -257,25 +258,25 @@ class Tags(enum.StrEnum):
         return hash(self.name)
 
     @classmethod
-    def get_bool(cls, value: str | Tags, default: bool = True) -> bool:
+    def get_value(cls, value: str, default: T_fsb) -> T_fsb:
+        """Extract the value and convert it to match the type of default using `tag=value`."""
         try:
-            return value.split("=")[1].lower() == "true"
+            value = value.split("=")[1].strip()
         except Exception:
             return default
-
-    @classmethod
-    def get_float(cls, value: str | Tags, default: float = 0.0) -> float:
         try:
-            return float(value.split("=")[1])
+            if isinstance(default, bool):
+                return value.lower() == "true"
+            if isinstance(default, int):
+                return int(value)
+            if isinstance(default, float):
+                return float(value)
+            if isinstance(default, str):  # pyright: ignore[reportUnnecessaryIsInstance]
+                return value
         except Exception:
             return default
-
-    @classmethod
-    def get_string(cls, value: str | Tags, default: str = "") -> str:
-        try:
-            return value.split("=")[1].strip()
-        except Exception:
-            return default
+        msg = "default must be a one of string, int, float, bool."  # pyright: ignore[reportUnreachable]
+        raise ValueError(msg)
 
     raises_exception = "raises-exception"
     """
@@ -299,7 +300,7 @@ class Tags(enum.StrEnum):
             - stop_on_error=False
     """
 
-    timeout = "timeout="
+    timeout = "timeout"
     """
     Specify a timeout in seconds for code execution to complete.
 
@@ -311,7 +312,7 @@ class Tags(enum.StrEnum):
 
 
 class CallerState(enum.Enum):
-    "The State of a [async_kernel.caller.Caller][]."
+    """The State of a [async_kernel.caller.Caller][]."""
 
     initial = enum.auto()
     start_sync = enum.auto()
@@ -322,7 +323,7 @@ class CallerState(enum.Enum):
 
 
 class MsgHeader(TypedDict):
-    "A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."
+    """A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."""
 
     msg_id: str
     ""
@@ -341,7 +342,7 @@ class MsgHeader(TypedDict):
 
 
 class Message(TypedDict, Generic[T]):
-    "A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format)."
+    """A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format)."""
 
     channel: Channel
     "The channel of the message."
@@ -366,7 +367,7 @@ class Message(TypedDict, Generic[T]):
 
 
 class Job(TypedDict, Generic[T]):
-    "A `Message` bundle."
+    """A `Message` bundle."""
 
     msg: Message[T]
     "The message received over the socket."
@@ -379,7 +380,7 @@ class Job(TypedDict, Generic[T]):
 
 
 class ExecuteContent(TypedDict):
-    "[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."
+    """[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
 
     code: str
     "The code to execute."
@@ -396,7 +397,7 @@ class ExecuteContent(TypedDict):
 
 
 class FixedCreate(TypedDict, Generic[S]):
-    "A TypedDict relevant to Fixed."
+    """A TypedDict relevant to Fixed."""
 
     name: str
     ""
@@ -405,7 +406,7 @@ class FixedCreate(TypedDict, Generic[S]):
 
 
 class FixedCreated(TypedDict, Generic[S, T]):
-    "A TypedDict relevant to Fixed."
+    """A TypedDict relevant to Fixed."""
 
     name: str
     ""
@@ -416,7 +417,7 @@ class FixedCreated(TypedDict, Generic[S, T]):
 
 
 class RunSettings(TypedDict):
-    "A dict of settings to use with [async_kernel.event_loop.run][]."
+    """A dict of settings to use with [async_kernel.event_loop.run][]."""
 
     backend: NotRequired[Backend | Literal["asyncio", "trio"]]
     "The backend to use for the caller."
@@ -438,7 +439,7 @@ class RunSettings(TypedDict):
 
 
 class CallerCreateOptions(RunSettings):
-    "Options to use when creating an instance of a [Caller][async_kernel.caller.Caller]."
+    """Options to use when creating an instance of a [Caller][async_kernel.caller.Caller]."""
 
     name: NotRequired[str]
     "The name for the new caller instance."

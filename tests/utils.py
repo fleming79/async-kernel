@@ -31,7 +31,7 @@ async def get_reply(
     timeout=TIMEOUT,
     clear_pub: float = 0.02,
 ) -> Mapping[str, Mapping[str, Any]]:
-    "Gets the first revieved reply correspond to the msg_id."
+    """Gets the first revieved reply correspond to the msg_id."""
     with anyio.fail_after(timeout):
         while True:
             match channel:
@@ -46,8 +46,7 @@ async def get_reply(
 
 
 def validate_message(msg: Mapping[str, Any], msg_type="", parent=None):
-    """
-    Validate a message.
+    """Validate a message.
 
     If msg_type and/or parent are given, the msg_type and/or parent msg_id
     are compared with the given values.
@@ -78,7 +77,6 @@ async def execute(
     **kwargs,
 ):
     """Send an execute_request to the kernel and return the msg_id and content of the reply from the kernel."""
-
     assert isinstance(client, AsyncKernelClient)
     header = client.session.msg_header("execute_request")
     if header_extras:
@@ -152,7 +150,7 @@ async def wait_for_idle(client: AsyncKernelClient, *, wait=1.0):
 
 
 async def clear_iopub(client, *, timeout=0.02):
-    "Ensure there are no further iopub messages waiting."
+    """Ensure there are no further iopub messages waiting."""
     with anyio.move_on_after(timeout):
         while True:
             await assemble_output(client, timeout=None, exit_at_idle=False)
@@ -202,7 +200,7 @@ async def get_shell_message(client: AsyncKernelClient, msg_id: str, msg_type: st
 
 
 def skip_if_missing(name: str, reason="") -> Callable[[T], Callable[[T], Any]]:
-    "Skip the test if the module is not installed."
+    """Skip the test if the module is not installed."""
     # Inspiration: https://github.com/pytest-dev/pytest/discussions/13140#discussioncomment-11869648
     if not importlib.util.find_spec(name):
         return pytest.mark.skip(reason or f"{name} missing")

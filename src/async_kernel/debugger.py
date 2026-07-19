@@ -64,8 +64,7 @@ class _DummyPyDB:
 
 
 class VariableExplorer(HasInterface, traitlets.HasTraits):
-    """
-    A variable explorer.
+    """A variable explorer.
 
     Origin: [IPyKernel][ipykernel.debugger.VariableExplorer]
     """
@@ -229,7 +228,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         return await (await self.debugpy_client.send_request(msg))
 
     def next_seq(self) -> int:
-        "A monotonically decreasing negative number so as not to clash with the frontend seq."
+        """A monotonically decreasing negative number so as not to clash with the frontend seq."""
         self._seq = self._seq - 1
         return self._seq
 
@@ -297,8 +296,7 @@ class Debugger(HasInterface, LoggingConfigurable):
     ## Static handlers
 
     async def do_initialize(self, msg: DebugMessage, /) -> dict[str, Any]:
-        "Initialize debugpy server starting as required."
-
+        """Initialize debugpy server starting as required."""
         utils.mark_thread_pydev_do_not_trace()
         for thread in threading.enumerate():
             if thread.name in self.no_debug:

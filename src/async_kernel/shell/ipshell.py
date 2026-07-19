@@ -1,6 +1,4 @@
-"""
-Defines an IPython compatible shell.
-"""
+"""Defines an IPython compatible shell."""
 
 from __future__ import annotations
 
@@ -74,7 +72,7 @@ __all__ = [
 
 
 class NullContext:
-    "A context that does nothing that can be used where a context is expected."
+    """A context that does nothing that can be used where a context is expected."""
 
     __slots__ = ["weakref"]
 
@@ -86,8 +84,7 @@ class NullContext:
 
 
 class IPDisplayHook(HasInterface, DisplayHook):
-    """
-    Called by the kernel whenever the interpreter needs to display results.
+    """Called by the kernel whenever the interpreter needs to display results.
 
     The output is always published with `msg_type="execute_result"`.
     """
@@ -141,8 +138,7 @@ class IPDisplayHook(HasInterface, DisplayHook):
 
     @override
     def __call__(self, result=None) -> None:
-        """
-        Publish the result.
+        """Publish the result.
 
         This is invoked every time the interpreter needs to print, and is
         activated by setting the variable sys.displayhook to it.
@@ -160,9 +156,7 @@ class IPDisplayHook(HasInterface, DisplayHook):
 
 
 class IPDisplayPublisher(HasInterface, DisplayPublisher):
-    """
-    A display publisher used by [IPython.display.publish_display_data][].
-    """
+    """A display publisher used by [IPython.display.publish_display_data][]."""
 
     _hooks: Fixed[Self, list[Callable[[Message[Any]], Any]]] = Fixed(list)
 
@@ -174,10 +168,9 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
         *,
         transient: dict | None = None,
         update: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
-        """
-        Publish a display-data message.
+        """Publish a display-data message.
 
         Args:
             data: A mime-bundle dict, keyed by mime-type.
@@ -185,6 +178,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
             transient: Transient data that may only be relevant during a live display, such as display_id.
                 Transient data should not be persisted to documents.
             update: If True, send an update_display_data message instead of display_data.
+            **kwargs: Additional items to include in the content.
 
         [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)
         """
@@ -202,8 +196,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
 
     @override
     def clear_output(self, wait: bool = False) -> None:
-        """
-        Clear output associated with the current execution (cell).
+        """Clear output associated with the current execution (cell).
 
         Args:
             wait: If True, the output will not be cleared immediately,
@@ -226,9 +219,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
 
 
 class IPHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
-    """
-    A class to organize history-related functionality in one place.
-    """
+    """A class to organize history-related functionality in one place."""
 
     @property
     @override
@@ -306,9 +297,7 @@ class IPExtensionManager(HasInterface, ExtensionManager):
 
 
 class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]
-    """
-    An IPython InteractiveShell implementation.
-    """
+    """An IPython InteractiveShell implementation."""
 
     timeout = traitlets.CFloat(0.0).tag(config=True)
     "A timeout in seconds to complete execute requests."
@@ -509,6 +498,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             self.parent.stop()
 
     def ask_exit(self) -> None:
+        """Open a dialog in the client asking if the kernel should be stopped."""
         if self.kernel.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
             self.exit_now = True
 
@@ -528,7 +518,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         super().init_hooks()
 
         def _show_in_pager(self, data: str | dict, start=0, screen_lines=0, pager_cmd=None) -> None:
-            "Handle IPython page calls"
+            """Handle IPython page calls."""
             if isinstance(data, dict):
                 self.parent.iopub_send("display_data", content=data)
             else:
@@ -558,7 +548,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         return {"user_global": self.user_global_ns, "user_local": self.user_ns, "builtin": builtins.__dict__}
 
     async def run_line_magic_async(self, magic_name: str, line: str, _stack_depth=1) -> Any:
-        "Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."
+        """Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."""
         async with Caller().create_pending_group(mode=1):
             result = self.run_line_magic(magic_name, line, _stack_depth)
             try:
@@ -567,7 +557,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 return result
 
     async def run_cell_magic_async(self, magic_name: str, line: str, cell: str) -> Any:
-        "Call and awaits [run_cell_magic][IPython.core.interactiveshell.InteractiveShell.run_cell_magic]."
+        """Call and awaits [run_cell_magic][IPython.core.interactiveshell.InteractiveShell.run_cell_magic]."""
         async with Caller().create_pending_group(mode=1):
             result = self.run_cell_magic(magic_name, line, cell)
             try:
@@ -577,8 +567,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
     @override
     def system(self, cmd: list[str] | str, *, stderr_to_stdout: bool = False, **kwargs: Any) -> Pending[None]:
-        """
-        Make a system call in a separate thread.
+        """Make a system call in a separate thread.
 
         Args:
             cmd: Passed as the first argument 'command' when calling [anyio.open_process][].
@@ -638,8 +627,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         return True
 
     def transform_cell_async(self, raw_cell: str) -> str:
-        "Transform the cell and substitute magic calls with an awaitable wrapper."
-
+        """Transform the cell and substitute magic calls with an awaitable wrapper."""
         return (
             self.transform_cell(raw_cell)
             .replace("get_ipython().run_line_magic(", "await get_ipython().run_line_magic_async(")
@@ -693,9 +681,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         tags: Iterable[str] = (),
         **_ignored,
     ) -> Content:
-        """
-        Execute code in the shell's user_ns and global_ns.
-        """
+        """Execute code in the shell's user_ns and global_ns."""
         if received_time > 0 and (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
             return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
                 "execution_count": self._stop_on_error_info.get("execution_count", 0)
@@ -864,8 +850,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
     @override
     def enable_matplotlib(self, gui: str | None = None) -> tuple[str | Any | None, Any | str]:  # pragma: no cover
-        """
-        Enable interactive matplotlib and inline figure support.
+        """Enable interactive matplotlib and inline figure support.
 
         This takes the following steps:
 
@@ -944,7 +929,7 @@ class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
 
     @line_magic
     def callers(self, _) -> None:
-        "Print a table of [Callers][async_kernel.caller.Caller] indicating it's status."
+        """Print a table of [Callers][async_kernel.caller.Caller] indicating it's status."""
         callers = Caller.all_callers(running_only=False)
         n = max(len(c.name) for c in callers) + 6
         m = max(len(repr(c.id)) for c in callers) + 6
@@ -966,9 +951,7 @@ class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
 
     @line_magic
     def subshell(self, _) -> None:
-        """
-        Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells).
-        """
+        """Print subshell info [ref](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells)."""
         subshells = list(self.parent.kernel.subshells)
         subshell_list = (
             f"\t----- {len(subshells)} x subshell -----\n" + "\n".join(subshells) if subshells else "-- No subshells --"
@@ -1020,8 +1003,7 @@ class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
     @no_var_expand
     @line_cell_magic
     async def thread(self, line: str, cell: str | None = None) -> None:
-        """
-        Run the python code in a caller managed child thread.
+        """Run the python code in a caller managed child thread.
 
         Both line and cell magic are supported.
 

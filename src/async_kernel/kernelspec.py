@@ -82,8 +82,7 @@ def make_argv(
 
 
 def get_kernel_dir(*, folder: str = "", prefix: str = "", user: bool = False) -> Path:
-    """
-    The path to where kernel specs are stored for Jupyter.
+    """The path to where kernel specs are stored for Jupyter.
 
     If folder is passed, it is assumed to be the full path ending in 'kernels', prefix is ignored.
 
@@ -94,7 +93,6 @@ def get_kernel_dir(*, folder: str = "", prefix: str = "", user: bool = False) ->
 
     Search locations: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs
     """
-
     if len([p for p in [folder, prefix, user] if p]) > 1:
         msg = "Providing more than one of [folder, prefix, user] is ambiguous"
         raise ValueError(msg)
@@ -122,13 +120,12 @@ def write_kernel_spec(
     connection_file: str = "{connection_file}",
     env: dict | None = None,
     metadata: dict | None = None,
-    language="python",
+    language: str = "python",
     resources: Path | None = RESOURCES,
     flags: Iterable[str] = (),
     **kwargs: Any,
 ) -> Path:
-    """
-    Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).
+    """Write a kernel spec for launching a kernel [ref](https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs).
 
     Args:
         path:
@@ -155,6 +152,8 @@ def write_kernel_spec(
             A mapping environment variables for the kernel to set prior to starting.
         metadata:
             A mapping of additional attributes to aid the client in kernel selection.
+        language:
+            The language the kernel supports.
         resources:
             The path to the resources folder to include with the kernel spec.
         flags:
@@ -218,8 +217,7 @@ def write_kernel_spec(
 
 
 def validate_name(name: str, /) -> None:
-    """
-    Check the name is a valid kernel name.
+    """Check the name is a valid kernel name.
 
     Raises:
         ValueError: If the name is not valid.
@@ -230,7 +228,7 @@ def validate_name(name: str, /) -> None:
 
 
 def remove_kernelspec(kernel_dir: Path, name: str) -> None:
-    "Remove a kernelspect."
+    """Remove a kernelspect."""
     import shutil  # noqa: PLC0415
 
     kernels = get_kernel_info(kernel_dir)
@@ -254,8 +252,7 @@ def get_kernel_info(kernel_dir: Path) -> dict[str, dict[str, Any]]:
 
 
 def expand_path(path: str | Path) -> Path:
-    """
-    Make the path absolute returning a new path object.
+    """Make the path absolute returning a new path object.
 
     Args:
         path: The path to process.
@@ -278,8 +275,7 @@ def expand_path(path: str | Path) -> Path:
 
 
 def import_launcher(launcher: str = "", /) -> InterfaceStartType:
-    """
-    Import a custom launcher or the default launcher.
+    """Import a custom launcher or the default launcher.
 
     Args:
         launcher: The name of the interface factory.

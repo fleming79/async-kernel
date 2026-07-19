@@ -22,7 +22,7 @@ __all__ = ["CallableInterface", "Handlers"]
 
 
 class Handlers(TypedDict):
-    "Handlers returned by [async_kernel.interface.callable.CallableInterface][] when it is started."
+    """Handlers returned by [async_kernel.interface.callable.CallableInterface][] when it is started."""
 
     handle_msg: Callable[[str, list[bytes] | list[bytearray] | None]]
     """
@@ -40,8 +40,7 @@ class Handlers(TypedDict):
 
 
 class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
-    """
-    A callback based interface to interact with the kernel using serialized messages.
+    """A callback based interface to interact with the kernel using serialized messages.
 
     Usage:
 
@@ -72,8 +71,7 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         send: Callable[[str, list | None, bool], None | str],
         stopped: Callable[[], None],
     ) -> Handlers:
-        """
-        Start the kernel.
+        """Start the kernel.
 
         Args:
             send: The function to send kernel messages to the client. It must accept
@@ -114,7 +112,7 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         self._send_to_frontend(msg, channel=job["msg"]["channel"], buffers=content.pop("buffers", None))
 
     def _handle_msg(self, msg_json: str, buffers: list[bytearray] | list[bytes] | None = None, /):
-        "The main message handler that gets returned by the `start` method."
+        """The main message handler that gets returned by the `start` method."""
         msg: Message[dict[str, Any]] = unpack_json(msg_json)
         # Copy the buffer
         msg["buffers"] = [b[:] for b in buffers] if buffers else []
