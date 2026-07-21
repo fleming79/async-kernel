@@ -7,6 +7,7 @@ import json
 import math
 import pathlib
 import shlex
+import shutil
 import sys
 import threading
 import time
@@ -995,7 +996,15 @@ class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
         Usage:
           %uv pip install [pkgs]
         """
-        cmd = ["uv", *shlex.split(line or "-h")]
+        fname = shutil.which("uv") or "uv"
+        try:
+            import uv  # noqa: PLC0415
+
+            fname = uv.find_uv_bin()
+        except Exception:
+            pass
+
+        cmd = [fname, *shlex.split(line or "-h")]
         if "--color" not in line:
             cmd.extend(["--color", "always"])
         return self.parent.kernel.get_shell().system(cmd, stderr_to_stdout=True)
