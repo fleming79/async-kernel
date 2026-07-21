@@ -2356,14 +2356,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre><span class="ansi-cyan-intense-fg ansi-bold">Downloading</span> cpython-3.15.0b3-linux-x86_64-gnu (download) (35.7MiB)
+<pre>error: Required uv version `==0.11.29` does not match the running version `0.11.30`. Update `uv` by running `uv self update 0.11.29`.
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre> <span class="ansi-cyan-intense-fg ansi-bold">Downloaded</span> cpython-3.15.0b3-linux-x86_64-gnu (download)
+<pre>error: No such file or directory (os error 2)
 </pre>
 </div>
 </div>
@@ -2441,12 +2441,12 @@ write_kernel_spec(
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">AssertionError</span>                            Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/shell/ipshell.py:615</span>, in <span class="ansi-cyan-fg">IPShell.run_code</span><span class="ansi-blue-fg">(self, code_obj, result, async_)</span>
-<span class="ansi-green-fg">    613</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> <span style="color: rgb(0,135,0)">eval</span>(code_obj, <span style="color: rgb(0,135,0)">self</span>.user_global_ns, <span style="color: rgb(0,135,0)">self</span>.user_ns)
-<span class="ansi-green-fg">    614</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">615</span>         <span class="ansi-black-fg ansi-yellow-bg">exec</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">code_obj</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_global_ns</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_ns</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    616</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span style="color: rgb(0,135,0)">self</span>.custom_exceptions:
-<span class="ansi-green-fg">    617</span>     etype, value, tb = sys.exc_info()
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/shell/ipshell.py:616</span>, in <span class="ansi-cyan-fg">IPShell.run_code</span><span class="ansi-blue-fg">(self, code_obj, result, async_)</span>
+<span class="ansi-green-fg">    614</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> <span style="color: rgb(0,135,0)">eval</span>(code_obj, <span style="color: rgb(0,135,0)">self</span>.user_global_ns, <span style="color: rgb(0,135,0)">self</span>.user_ns)
+<span class="ansi-green-fg">    615</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">616</span>         <span class="ansi-black-fg ansi-yellow-bg">exec</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">code_obj</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_global_ns</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_ns</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    617</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span style="color: rgb(0,135,0)">self</span>.custom_exceptions:
+<span class="ansi-green-fg">    618</span>     etype, value, tb = sys.exc_info()
 
 <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 6</span>
 <span class="ansi-green-fg">      2</span> 
