@@ -143,8 +143,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         """Create, bind and configure a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
-        if channel is not Channel.stdin:
-            assert channel not in self._sockets
+        assert channel not in self._sockets
 
         match channel:
             case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
@@ -238,9 +237,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         self.session.send(
             stream=socket,
             msg_or_type="input_request",
-            content={"prompt": prompt, "password": password},
+            content=Content(prompt=prompt, password=password),
             parent=job["msg"],  # pyright: ignore[reportArgumentType]
-            ident=job["ident"],
+            # The client is assumed to have set the 'identity' of the stdin socket to 'session.bsession'.
+            ident=job["msg"]["header"]["session"].encode(),
         )
         # Poll for a reply.
         while not (socket.poll(100) & PollEvent.POLLIN):
