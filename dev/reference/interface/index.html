@@ -10637,8 +10637,7 @@ kernel_interface["stop"](msg, buffer)
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create, bind and configure a socket.&quot;&quot;&quot;</span>
         <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">_port&quot;</span><span class="p">))</span>
         <span class="k">assert</span> <span class="n">port</span>
-        <span class="k">if</span> <span class="n">channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span>
+        <span class="k">assert</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span>
 
         <span class="k">match</span> <span class="n">channel</span><span class="p">:</span>
             <span class="k">case</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span> <span class="o">|</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span> <span class="o">|</span> <span class="n">Channel</span><span class="o">.</span><span class="n">heartbeat</span> <span class="o">|</span> <span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
@@ -10732,9 +10731,10 @@ kernel_interface["stop"](msg, buffer)
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
             <span class="n">stream</span><span class="o">=</span><span class="n">socket</span><span class="p">,</span>
             <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;input_request&quot;</span><span class="p">,</span>
-            <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="n">password</span><span class="p">},</span>
+            <span class="n">content</span><span class="o">=</span><span class="n">Content</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">),</span>
             <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">],</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
-            <span class="n">ident</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;ident&quot;</span><span class="p">],</span>
+            <span class="c1"># The client is assumed to have set the &#39;identity&#39; of the stdin socket to &#39;session.bsession&#39;.</span>
+            <span class="n">ident</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;session&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
         <span class="p">)</span>
         <span class="c1"># Poll for a reply.</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">):</span>
