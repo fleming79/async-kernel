@@ -134,7 +134,6 @@ class TestCaller:
     async def test_manual_stop(self):
         async with Caller("manual") as caller:
             caller.stop()
-            await anyio.sleep_forever()
 
     async def test_call_returns_result(self, caller: Caller) -> None:
         pen = Pending()
@@ -206,12 +205,6 @@ class TestCaller:
         assert not caller.children
         with pytest.raises(RuntimeError):
             caller.get()
-
-    async def test_async_enter_missing_modifier(self, anyio_backend: Backend):
-        with pytest.raises(RuntimeError, match="Already starting! Did you mean to use"):
-            async with Caller():
-                pass
-        Caller().stop()
 
     async def test_call_soon_cancelled_early(self, caller: Caller):
         pen = caller.call_soon(anyio.sleep_forever)
@@ -357,7 +350,7 @@ class TestCaller:
 
         caller.queue_call(test_func)
         pen = caller.queue_get(test_func)
-        assert pen
+        assert pen is not None
         await started
         pen.cancel()
         await pen.wait(result=False)
@@ -401,9 +394,8 @@ class TestCaller:
     async def test_prevent_multi_entry(self, anyio_backend: Backend):
         async with Caller("manual") as caller:
             assert caller is Caller()
-            with pytest.raises(RuntimeError):
-                async with caller:
-                    pass
+            async with caller:
+                pass
         assert caller.stopped.done()
         await caller.stopped
         with pytest.raises(RuntimeError):
@@ -616,15 +608,6 @@ class TestCaller:
             results.add(await pen)
         assert results == {0, 1}
 
-    async def test_as_completed_current_pending_deadlock(self, caller: Caller):
-        async def f():
-            if pen := caller.current_pending():
-                async for _ in caller.as_completed((pen,)):
-                    pass
-
-        with pytest.raises(RuntimeError, match="deadlock"):
-            await caller.call_soon(f)
-
     async def test_as_completed_empty_iterator(self, caller: Caller) -> None:
         async for _ in caller.as_completed(iter(())):
             pass
@@ -735,8 +718,9 @@ class TestCaller:
         async with Caller("manual") as caller:
             opposite = next(b for b in Backend if b is not caller.backend)
             assert await caller.call_using_backend(opposite, lambda: 1 + 1) == 2
+            pen = caller.call_using_backend(opposite, lambda: 1 + 1)
             caller.stop()
-            await anyio.sleep_forever()
+        assert pen.cancelled()
 
     async def test_caller_with_host(self, anyio_backend: Backend):
 

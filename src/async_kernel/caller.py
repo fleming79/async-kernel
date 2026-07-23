@@ -119,7 +119,7 @@ async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None,
 
 
 @final
-class Caller(anyio.AsyncContextManagerMixin):
+class Caller:
     """A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).
 
     - CPython: there is only one caller instance per thread.
@@ -186,6 +186,7 @@ class Caller(anyio.AsyncContextManagerMixin):
     _protected = False
     _use_safe_checkpoint = False
     _state: CallerState = CallerState.initial
+    _enter_count = 0
     _state_reprs: ClassVar[dict] = {
         CallerState.initial: "❗ not running",
         CallerState.start_sync: "starting sync",
@@ -207,6 +208,9 @@ class Caller(anyio.AsyncContextManagerMixin):
     _guest_done_event: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
     _stopping = Fixed(Pending[None])
     "A pending that is set done the first time stop is called."
+
+    started = Fixed(Pending)
+    "A pending that is set once the caller has started."
 
     stopped = Fixed(Pending)
     "A pending that is done when the caller is stopped."
@@ -372,7 +376,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
             # finalize
             if modifier != "manual":
-                inst.start_sync(no_debug=kwargs.get("no_debug", False))
+                inst._start_sync(no_debug=kwargs.get("no_debug", False))
             assert inst._caller_id
             assert inst._caller_id not in cls._instances
             atexit.register(inst.stop, force=True)
@@ -380,7 +384,26 @@ class Caller(anyio.AsyncContextManagerMixin):
             cls._instances[inst._caller_id] = inst
         return inst
 
-    def start_sync(self, *, no_debug: bool = False) -> None:
+    async def __aenter__(self) -> Self:
+        if self._stopping.done():
+            msg = "The caller is stopping!"
+            raise RuntimeError(msg)
+        assert self.get_existing() is self, "Invalid thread"
+        if self._state is CallerState.initial:
+            self._start_sync()
+        await self.started
+        self._enter_count = self._enter_count + 1
+        return self
+
+    async def __aexit__(self, type, value, traceback) -> Literal[False]:
+        self._enter_count = self._enter_count - 1
+        if self._enter_count == 0:
+            self.stop(force=True)
+        if self._stopping.done():
+            await self.stopped.wait(shield=True)
+        return False
+
+    def _start_sync(self, *, no_debug: bool = False) -> None:
         """Start synchronously.
 
         Args:
@@ -399,8 +422,7 @@ class Caller(anyio.AsyncContextManagerMixin):
             if no_debug:
                 utils.mark_thread_pydev_do_not_trace()
             try:
-                async with self:
-                    await self._stopping.wait(result=False)
+                await self._run_scheduler()
             except Exception as e:
                 self.log.exception("Caller did not exit context nicely!", exc_info=e)
 
@@ -490,8 +512,7 @@ class Caller(anyio.AsyncContextManagerMixin):
                 self.stopped.set_result(None)
                 self.log.debug("Stopped %s", self)
 
-    @asynccontextmanager
-    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+    async def _run_scheduler(self):
         """The asynchronous context for caller."""
         if self._state is CallerState.start_sync:
             msg = 'Already starting! Did you mean to use Caller("manual")?'
@@ -503,11 +524,10 @@ class Caller(anyio.AsyncContextManagerMixin):
             async with task_factory() as create_task:
                 create_task(contextvars.Context(), self._scheduler, self._queue)
                 try:
-                    with anyio.CancelScope() as scope:
-                        self._stopping.add_done_callback(lambda _: self.call_direct(scope.cancel, "Stopping"))
-                        self._state = CallerState.running
-                        self.log.debug("Started %s", self)
-                        yield self
+                    self._state = CallerState.running
+                    self.log.debug("Started %s", self)
+                    self.started.set_result(None)
+                    await self._stopping
                 finally:
                     self.stop(force=True)
                     if self._guest_done_event.value > 0:
@@ -940,7 +960,7 @@ class Caller(anyio.AsyncContextManagerMixin):
 
                     async def queue_loop() -> None:
                         pen = self.current_pending()
-                        assert pen
+                        assert pen is not None
                         try:
                             async for item in queue:
                                 try:
