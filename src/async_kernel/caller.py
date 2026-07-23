@@ -188,6 +188,7 @@ class Caller:
     _enter_count = 0
     _state_reprs: ClassVar[dict] = {
         CallerState.initial: "❗ not running",
+        CallerState.start_sync: "pre-start",
         CallerState.starting: "starting",
         CallerState.running: "🏃 running",
         CallerState.stopping: "🏁 stopping",
@@ -205,6 +206,7 @@ class Caller:
     )
     _guest_queues: Fixed[Self, dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]] = Fixed(dict)
     _guest_done_event: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
+    _children_countdown: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
     _stopping = Fixed(Pending[None])
     "A pending that is set done the first time stop is called."
 
@@ -214,7 +216,6 @@ class Caller:
     stopped = Fixed(Pending)
     "A pending that is done when the caller is stopped."
 
-    _children_countdown: CountdownEvent | None = None
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.Logger | logging.LoggerAdapter
@@ -261,14 +262,14 @@ class Caller:
         return self._state is CallerState.running
 
     @property
-    def children(self) -> frozenset[Self]:
+    def children(self) -> set[Self]:
         """A frozenset copy of the instances that were created by the caller.
 
         Notes:
             - When the parent is stopped, all children are stopped.
-            - All children are stopped prior to the parent exiting its async context.
+            - All children are stopped prior to the parent changing state to stopped.
         """
-        return frozenset(self._children)
+        return {c for c in self._children.copy() if not c._stopping.done()}
 
     @property
     def thread(self) -> threading.Thread:
@@ -284,6 +285,8 @@ class Caller:
         return None
 
     def _get_info(self) -> dict[str, Any]:
+        if self._state.value < CallerState.running.value:
+            return {"name": self._name, "backend": str(self._backend), "host": self._host}
         return {
             "name": self._name,
             "backend": str(self._backend),
@@ -295,11 +298,15 @@ class Caller:
     @override
     def __repr__(self) -> str:
         info = " ".join(f"{k}={v!r}" for k, v in self._get_info().items())
-        current = "⚪" if self.id_current() == self._caller_id else "⚫"
+        current = "⚪" if self.id_current() == getattr(self, "_caller_id", None) else "⚫"
         protected = "🔐 " if self.protected else " "
         n = len(self._children)
         children = "" if not n else (" 1 child" if n == 1 else f" {n} children")
         return f"<Caller {current}{self._state_reprs[self._state]}{protected}{info}{children}>"
+
+    def __del__(self) -> None:
+        if self._state not in [CallerState.stopping, CallerState.stopped]:
+            self.stop(force=True)
 
     def __new__(
         cls,
@@ -358,7 +365,6 @@ class Caller:
 
             # create a new instance
             inst = super().__new__(cls)
-            inst._state = CallerState.initial
             if (sys.platform == "emscripten") and (caller_id is None):
                 caller_id = id(inst)
 
@@ -399,20 +405,20 @@ class Caller:
         """Start synchronously.
 
         Args:
-            caller_id: The id of the caller.
+            caller_id: The id to use for the caller, which should match the thread in CPython.
             thread: The thread where the caller is running.
             no_debug: If debugpy should be disabled in the thread.
         """
-        assert self._state is CallerState.initial
-        self._state = CallerState.starting
+        with self._inst_lock:
+            if not self._set_state(CallerState.start_sync):
+                return
 
         async def run_caller_in_context() -> None:
-            if self._state in [CallerState.stopping, CallerState.stopped]:
-                return
+            with self._inst_lock:
+                if not self._set_state(CallerState.starting):
+                    return
             if not self._name:
                 self._name = self._thread.name
-            if self._state is CallerState.starting:
-                self._state = CallerState.initial
             if no_debug:
                 utils.mark_thread_pydev_do_not_trace()
             try:
@@ -457,9 +463,41 @@ class Caller:
                         self.started.set_exception(e)
 
             thread = threading.Thread(target=async_kernel_caller, name=self._name or None)
+            if no_debug:
+                utils.mark_thread_pydev_do_not_trace(thread)
             thread.start()
             assert thread.ident
             self._thread, self._caller_id = thread, thread.ident
+
+    def _set_state(self, state: CallerState) -> bool:
+        assert self._inst_lock.value == 0, "Must be locked to set the state!"
+        if state.value <= self._state.value:
+            return False
+        self._state = state
+        self.log.debug("%s %s", state.name.capitalize(), self)
+        match state:
+            case CallerState.running:
+                self.started.set_result(None)
+            case CallerState.stopping:
+                self._stopping.set_result(None)
+                # Remove from worker pool
+                if (parent := self.parent) and (workers := parent._worker_pool):
+                    with contextlib.suppress(ValueError):
+                        workers.remove(self)
+                # Invoke stop callbacks
+                for child in self._children.copy():
+                    child.stop(force=True)
+                # Shutdown queue_call
+                for func in self._queue_map.copy():
+                    self.queue_close(func)
+            case CallerState.stopped:
+                self._children_countdown.wait()
+                self._instances.pop(self._caller_id)
+                self._queue.stop()
+                self.stopped.set_result(None)
+            case _:
+                pass
+        return True
 
     def stop(self, *, force: bool = False) -> None:
         """Stop the caller cancelling all incomplete tasks.
@@ -475,64 +513,30 @@ class Caller:
             self.log.warning("Non-force stop ignored for  %s", self)
             return
         with self._inst_lock:
-            if self._stopping.done():
-                return
             state = self._state
-            self._state = CallerState.stopping
-            self._stopping.set_result(None)
-            self.log.debug("Stopping %s", self)
-            # Remove from worker pool
-            if (parent := self.parent) and (workers := parent._worker_pool):
-                with contextlib.suppress(ValueError):
-                    workers.remove(self)
-            # Invoke stop callbacks
-            for child in self._children.copy():
-                child.stop(force=True)
-            # Shutdown queue_call
-            for func in self._queue_map.copy():
-                self.queue_close(func)
-        # Stop the children
-        if state in [CallerState.initial, CallerState.starting]:
-            self._stop_finalize()
+            if (
+                self._set_state(CallerState.stopping)
+                and state.value < CallerState.running.value
+                and not self.stopped.done()
+            ):
+                self._set_state(CallerState.stopped)
 
-    def _stop_finalize(self) -> None:
-        with self._inst_lock:
-            if not self.stopped.done():
-                if (countdown := self._children_countdown) is not None:
-                    countdown.wait()
-                self._instances.pop(self._caller_id)
-                self._queue.stop()
-                self._state = CallerState.stopped
-                self.stopped.set_result(None)
-                self.log.debug("Stopped %s", self)
 
     async def _run_scheduler(self):
-        """The asynchronous context for caller."""
-        if self._state is CallerState.starting:
-            msg = "Already starting! Did you mean to use Caller()?"
-            raise RuntimeError(msg)
-        if self._state is CallerState.stopped:
-            msg = f"Stopped: {self}"
-            raise RuntimeError(msg)
+        """Run the scheduler until stopped."""
         try:
+            with self._inst_lock:
+                if not self._set_state(CallerState.running):
+                    return
             async with task_factory() as create_task:
                 create_task(contextvars.Context(), self._scheduler, self._queue)
-                try:
-                    self._state = CallerState.running
-                    self.log.debug("Started %s", self)
-                    self.started.set_result(None)
-                    await self._stopping
-                finally:
-                    self.stop(force=True)
-                    if self._guest_done_event.value > 0:
-                        # Warning: `queue` must not be stopped until guests have been stopped.
-                        with anyio.CancelScope(shield=True):
-                            await self._guest_done_event
-                    if (countdown := self._children_countdown) is not None:
-                        with anyio.CancelScope(shield=True):
-                            await countdown
+                await self._stopping
+                await self._guest_done_event
+                await self._children_countdown
         finally:
-            self._stop_finalize()
+            with self._inst_lock:
+                self._set_state(CallerState.stopping)
+                self._set_state(CallerState.stopped)
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
         """A function that async iterates the queue and executes items as they arrive.

@@ -1,5 +1,6 @@
 import asyncio
 import importlib.util
+import logging
 import os
 import subprocess
 import sys
@@ -14,6 +15,7 @@ import zmq
 from aiologic.lowlevel import current_async_library
 from jupyter_client.asynchronous.client import AsyncKernelClient
 
+import async_kernel
 from async_kernel import Caller
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernel import Kernel
@@ -35,6 +37,9 @@ else:
     params = [pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio")]
 
 debug = False
+
+if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    logging.basicConfig(level=10)
 
 
 @pytest.hookimpl
