@@ -495,6 +495,9 @@ class Caller:
                 self._instances.pop(self._caller_id)
                 self._queue.stop()
                 self.stopped.set_result(None)
+                if parent := self.parent:
+                    parent._children.discard(self)
+                    parent._children_countdown.down()
             case _:
                 pass
         return True
@@ -700,22 +703,13 @@ class Caller:
                             msg = f"Host mismatch! {host=} {child.host=}"
                             raise RuntimeError(msg)
                         return child
-
             if "backend" not in kwargs:
                 kwargs["backend"] = self._backend
                 kwargs["backend_options"] = self.backend_options
             child = self.__class__("NewThread", **kwargs)
             child._parent_ref = weakref.ref(self)
-            if self._children_countdown is None:
-                self._children_countdown = CountdownEvent()
             self._children.add(child)
             self._children_countdown.up()
-
-            def on_child_stopped(_, children=self._children, done=self._children_countdown.down) -> None:
-                children.discard(child)
-                done()
-
-            child.stopped.add_done_callback(on_child_stopped)
             return child
 
     def schedule_call(
