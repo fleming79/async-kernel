@@ -73,7 +73,7 @@ class TestPending:
         result = await pen
         assert result == 42
         assert done_called
-        async with Caller("manual"):
+        async with Caller():
             pen.add_done_callback(callback)
             await after_done
 

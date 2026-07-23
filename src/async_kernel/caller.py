@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import atexit
 import contextlib
 import contextvars
 import inspect
@@ -189,7 +188,7 @@ class Caller:
     _enter_count = 0
     _state_reprs: ClassVar[dict] = {
         CallerState.initial: "❗ not running",
-        CallerState.start_sync: "starting sync",
+        CallerState.starting: "starting",
         CallerState.running: "🏃 running",
         CallerState.stopping: "🏁 stopping",
         CallerState.stopped: "🏁 stopped",
@@ -304,7 +303,7 @@ class Caller:
 
     def __new__(
         cls,
-        modifier: Literal["CurrentThread", "MainThread", "NewThread", "manual"] = "CurrentThread",
+        modifier: Literal["CurrentThread", "MainThread", "NewThread"] = "CurrentThread",
         /,
         **kwargs: Unpack[CallerCreateOptions],
     ) -> Self:
@@ -318,7 +317,6 @@ class Caller:
                 - Advanced:
                     - "NewThread": Create a caller with a new thread.
                         [Caller.get][] and [Caller.to_thread][] are recommended for normal usage.
-                    - "manual": Create a instance for the current thread.
 
             **kwargs: Additional options for Caller creation, such as:
                 - name: The name to use.
@@ -337,18 +335,15 @@ class Caller:
         with cls._lock:
             name, backend = kwargs.get("name", ""), kwargs.get("backend")
             match modifier:
-                case "CurrentThread" | "manual":
-                    caller_id = cls.id_current()
                 case "MainThread":
-                    caller_id = cls.CALLER_MAIN_THREAD_ID
+                    caller_id, thread = cls.CALLER_MAIN_THREAD_ID, threading.main_thread()
                 case "NewThread":
-                    caller_id = None
+                    caller_id, thread = None, None
+                case _:
+                    caller_id, thread = cls.id_current(), threading.current_thread()
 
             # Locate existing
             if caller_id is not None and (caller := cls._instances.get(caller_id)):
-                if modifier == "manual":
-                    msg = f"An instance already exists for {caller_id=}"
-                    raise RuntimeError(msg)
                 if name and name != caller.name:
                     msg = f"The thread and caller's name do not match! {name=} {caller=}"
                     raise ValueError(msg)
@@ -357,30 +352,30 @@ class Caller:
                     raise ValueError(msg)
                 return caller
 
+            host = Hosts(host) if (host := kwargs.get("host")) else None
+            if (backend := Backend(backend or current_async_library())) is Backend.trio:
+                trio.sleep  # noqa: B018 # Check trio is available.
+
             # create a new instance
             inst = super().__new__(cls)
+            inst._state = CallerState.initial
+            if (sys.platform == "emscripten") and (caller_id is None):
+                caller_id = id(inst)
+
+            # Apply settings
             inst._name = name
-            inst._backend = Backend(backend or current_async_library())
-            if inst._backend is Backend.trio:
-                trio.sleep  # noqa: B018 # Check trio is available.
-            inst._host = Hosts(loop) if (loop := kwargs.get("host")) else None
+            inst._backend = backend
+            inst._host = host
             inst._backend_options = kwargs.get("backend_options")
             inst._host_options = kwargs.get("host_options")
             inst._protected = kwargs.get("protected", False)
             inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
-            if (sys.platform == "emscripten") and (caller_id is None):
-                caller_id = id(inst)
-            if caller_id is not None:
-                inst._caller_id = caller_id
-                inst._thread = threading.current_thread()
 
-            # finalize
-            if modifier != "manual":
-                inst._start_sync(no_debug=kwargs.get("no_debug", False))
-            assert inst._caller_id
+            # Set the scheduler to start in either the current thread or a new thread.
+            # It is not possible to wait for it to start without using microthreads like greenlets.
+            inst._start_sync(caller_id, thread, kwargs.get("no_debug", False))
+            assert inst._caller_id is not None
             assert inst._caller_id not in cls._instances
-            atexit.register(inst.stop, force=True)
-            inst._stopping.add_done_callback(lambda _: atexit.unregister(inst.stop))
             cls._instances[inst._caller_id] = inst
         return inst
 
@@ -388,9 +383,6 @@ class Caller:
         if self._stopping.done():
             msg = "The caller is stopping!"
             raise RuntimeError(msg)
-        assert self.get_existing() is self, "Invalid thread"
-        if self._state is CallerState.initial:
-            self._start_sync()
         await self.started
         self._enter_count = self._enter_count + 1
         return self
@@ -403,21 +395,23 @@ class Caller:
             await self.stopped.wait(shield=True)
         return False
 
-    def _start_sync(self, *, no_debug: bool = False) -> None:
+    def _start_sync(self, caller_id: int | None, thread: threading.Thread | None, no_debug: bool = False) -> None:
         """Start synchronously.
 
         Args:
+            caller_id: The id of the caller.
+            thread: The thread where the caller is running.
             no_debug: If debugpy should be disabled in the thread.
         """
         assert self._state is CallerState.initial
-        self._state = CallerState.start_sync
+        self._state = CallerState.starting
 
         async def run_caller_in_context() -> None:
             if self._state in [CallerState.stopping, CallerState.stopped]:
                 return
             if not self._name:
                 self._name = self._thread.name
-            if self._state is CallerState.start_sync:
+            if self._state is CallerState.starting:
                 self._state = CallerState.initial
             if no_debug:
                 utils.mark_thread_pydev_do_not_trace()
@@ -426,8 +420,9 @@ class Caller:
             except Exception as e:
                 self.log.exception("Caller did not exit context nicely!", exc_info=e)
 
-        if hasattr(self, "_thread"):
-            assert self._thread is threading.current_thread()
+        if caller_id and thread:
+            assert thread is threading.current_thread()
+            self._thread, self._caller_id = thread, caller_id
 
             if self.backend == Backend.asyncio:
                 self._tasks.add(asyncio.create_task(run_caller_in_context()))
@@ -459,8 +454,7 @@ class Caller:
                 except Exception as e:
                     if not self._stopping.done():
                         self.stop(force=True)
-                        self.log.exception("%s exited early", self, exc_info=e)
-                        raise
+                        self.started.set_exception(e)
 
             thread = threading.Thread(target=async_kernel_caller, name=self._name or None)
             thread.start()
@@ -498,7 +492,7 @@ class Caller:
             for func in self._queue_map.copy():
                 self.queue_close(func)
         # Stop the children
-        if state in [CallerState.initial, CallerState.start_sync]:
+        if state in [CallerState.initial, CallerState.starting]:
             self._stop_finalize()
 
     def _stop_finalize(self) -> None:
@@ -514,8 +508,8 @@ class Caller:
 
     async def _run_scheduler(self):
         """The asynchronous context for caller."""
-        if self._state is CallerState.start_sync:
-            msg = 'Already starting! Did you mean to use Caller("manual")?'
+        if self._state is CallerState.starting:
+            msg = "Already starting! Did you mean to use Caller()?"
             raise RuntimeError(msg)
         if self._state is CallerState.stopped:
             msg = f"Stopped: {self}"

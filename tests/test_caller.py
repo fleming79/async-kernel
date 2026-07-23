@@ -55,7 +55,7 @@ class TestCaller:
         assert okay
 
     async def test_worker_lifecycle(self, anyio_backend: Backend):
-        async with Caller("manual", name="manual") as caller:
+        async with Caller(name="manual") as caller:
             assert not caller.protected
             # worker thread
             assert await caller.to_thread(lambda: 2 + 1) == 3
@@ -82,7 +82,7 @@ class TestCaller:
         assert not caller.children
         assert c1.stopped.done()
         assert c2.stopped.done()
-        c3 = Caller("manual")
+        c3 = Caller()
         c3.stop()
         assert c3.stopped.done()
 
@@ -90,11 +90,9 @@ class TestCaller:
         assert Caller.get_existing(caller.id)
         assert Caller("MainThread") is caller
         assert caller.thread is threading.main_thread()
-        with pytest.raises(RuntimeError, match="An instance already exists for"):
-            Caller("manual")
 
     async def test_start_after(self, anyio_backend: Backend):
-        caller = Caller("manual")
+        caller = Caller()
         assert not caller.running
         pen = caller.call_soon(lambda: 2 + 3)
         async with caller:
@@ -122,7 +120,7 @@ class TestCaller:
         caller.stop()
 
     async def test_call_later(self, anyio_backend: Backend):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             # We have retries because sleeping can be a bit flaky on CI
             for _ in range(10):
                 start_time = time.monotonic()
@@ -132,7 +130,7 @@ class TestCaller:
             assert dt >= 0.1  # pyright: ignore[reportPossiblyUnboundVariable]
 
     async def test_manual_stop(self):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             caller.stop()
 
     async def test_call_returns_result(self, caller: Caller) -> None:
@@ -154,7 +152,7 @@ class TestCaller:
         assert re.match(matches[1], repr(pen))
 
     async def test_protected(self, anyio_backend: Backend):
-        async with Caller("manual", protected=True) as caller:
+        async with Caller(protected=True) as caller:
             caller.stop()
             assert not caller.stopped.done()
         assert caller.stopped.done()
@@ -169,7 +167,7 @@ class TestCaller:
             is_called.set()
             return args, kwargs
 
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             is_called = Event()
             pen = caller.call_later(0.1, my_func, is_called, *args_kwargs[0], **args_kwargs[1])
             await is_called
@@ -178,7 +176,7 @@ class TestCaller:
 
     async def test_anyio_to_thread(self, anyio_backend: Backend):
         # Test the call works from an anyio thread
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             assert caller.running
             assert caller in Caller.all_callers()
 
@@ -197,7 +195,7 @@ class TestCaller:
         assert caller not in Caller.all_callers()
 
     async def test_usage_example(self, anyio_backend: Backend):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             child_1 = caller.get()
             child_2 = caller.get(name="asyncio backend", backend="asyncio")
             child_3 = caller.get(name="trio backend", backend="trio")
@@ -227,7 +225,7 @@ class TestCaller:
 
     async def test_cancels_on_exit(self):
         is_cancelled = False
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
 
             async def f():
                 nonlocal is_cancelled
@@ -332,7 +330,7 @@ class TestCaller:
 
     async def test_gc(self, anyio_backend: Backend):
         collected = Event()
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             assert await caller.call_soon(lambda: 1 + 1) == 2
             weakref.finalize(caller, collected.set)
             del caller
@@ -374,13 +372,11 @@ class TestCaller:
         assert not any(caller._queue_map)  # pyright: ignore[reportPrivateUsage]
 
     async def test_call_early(self, anyio_backend: Backend) -> None:
-        caller = Caller("manual")
-        assert not caller.running
+        caller = Caller()
         pen = caller.call_soon(lambda: 3 + 3)
-        await anyio.sleep(delay=0.1)
+        assert not caller.running
         assert not pen.done()
-        async with caller:
-            assert await pen == 6
+        assert await pen == 6
 
     async def test_name_mismatch(self, caller: Caller):
         with pytest.raises(ValueError, match="The thread and caller's name do not match!"):
@@ -392,7 +388,7 @@ class TestCaller:
             Caller(backend=wrong_backend)
 
     async def test_prevent_multi_entry(self, anyio_backend: Backend):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             assert caller is Caller()
             async with caller:
                 pass
@@ -403,13 +399,13 @@ class TestCaller:
                 pass
 
     async def test_current_pending(self, anyio_backend: Backend):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             pen = caller.call_soon(Caller.current_pending)
             res = await pen
             assert res is pen
 
     async def test_closed_in_call_soon(self):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             never_called_result = caller.call_later(10, anyio.sleep_forever)
 
         with pytest.raises(PendingCancelled):
@@ -544,7 +540,7 @@ class TestCaller:
 
         threads = set[threading.Thread]()
         n = 40
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             # check can handle completed result okay first
             pen = caller.call_soon(lambda: 1 + 2)
             assert await pen.wait() == 3
@@ -576,7 +572,7 @@ class TestCaller:
                 await pen
 
     async def test_as_completed_cancelled(self, anyio_backend: Backend):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             n = 6
             ready = CountdownEvent(n - 2)
 
@@ -685,7 +681,7 @@ class TestCaller:
         assert results == ["call_direct", "queue_call", "call_soon"] * n
 
     async def test_call_soon_with_backend(self):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             opposite = next(b for b in Backend if b is not caller.backend)
 
             async def check_backend(backend: Backend, fail=False):
@@ -715,7 +711,7 @@ class TestCaller:
             assert pen.result() == opposite
 
     async def test_call_soon_with_backend_cancel(self, anyio_backend):
-        async with Caller("manual") as caller:
+        async with Caller() as caller:
             opposite = next(b for b in Backend if b is not caller.backend)
             assert await caller.call_using_backend(opposite, lambda: 1 + 1) == 2
             pen = caller.call_using_backend(opposite, lambda: 1 + 1)

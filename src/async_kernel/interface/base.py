@@ -139,7 +139,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             raise RuntimeError(msg)
         self.backend = Backend(current_async_library())
         channels_started, stop_channels = create_async_waiter(), create_async_event()
-        async with Caller("manual", name="Shell", protected=True, log=self.log, host=self.host) as caller:
+        async with Caller(name="Shell", protected=True, log=self.log, host=self.host) as caller:
             caller_ctrl = caller.get(name="Control", log=self.log, protected=True)
             self.callers[Channel.shell] = caller
             self.callers[Channel.control] = caller_ctrl
