@@ -502,29 +502,6 @@ class Caller:
                 pass
         return True
 
-    def stop(self, *, force: bool = False) -> None:
-        """Stop the caller cancelling all incomplete tasks.
-
-        Args:
-            force: If the caller is protected the call is a no-op unless force=True.
-
-        Returns:
-            Event: If stopping is initiated or complete.
-            None: If stop is ignored when the caller is protected.
-        """
-        if self._protected and not force:
-            self.log.warning("Non-force stop ignored for  %s", self)
-            return
-        with self._inst_lock:
-            state = self._state
-            if (
-                self._set_state(CallerState.stopping)
-                and state.value < CallerState.running.value
-                and not self.stopped.done()
-            ):
-                self._set_state(CallerState.stopped)
-
-
     async def _run_scheduler(self):
         """Run the scheduler until stopped."""
         try:
@@ -672,6 +649,28 @@ class Caller:
             running_only: Restrict the list to callers that are active (running in an async context).
         """
         return [caller for caller in Caller._instances.values() if caller.running or not running_only]
+
+    def stop(self, *, force: bool = False) -> None:
+        """Stop the caller cancelling all incomplete tasks.
+
+        Args:
+            force: If the caller is protected the call is a no-op unless force=True.
+
+        Returns:
+            Event: If stopping is initiated or complete.
+            None: If stop is ignored when the caller is protected.
+        """
+        if self._protected and not force:
+            self.log.warning("Non-force stop ignored for  %s", self)
+            return
+        with self._inst_lock:
+            state = self._state
+            if (
+                self._set_state(CallerState.stopping)
+                and state.value < CallerState.running.value
+                and not self.stopped.done()
+            ):
+                self._set_state(CallerState.stopped)
 
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.
