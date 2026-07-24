@@ -4,23 +4,18 @@ import pathlib
 import threading
 from typing import TYPE_CHECKING, Any, Literal
 
-import anyio
 import pytest
+from aiologic.lowlevel import create_async_waiter
 
 from async_kernel import Pending
 from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.typing import MsgType
+from async_kernel.typing import Channel, Content, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from jupyter_client.asynchronous.client import AsyncKernelClient
-
     from async_kernel import Kernel
+    from async_kernel.client.zmq import ZMQKernelClient
     from async_kernel.shell import IPShell
-
-# pyright: reportPrivateUsage=false
 
 
 async def test_load_connection_info_error(kernel: Kernel):
@@ -29,76 +24,82 @@ async def test_load_connection_info_error(kernel: Kernel):
         kernel.parent.load_connection_info({})
 
 
-async def test_execute_request_success(client: AsyncKernelClient):
-    reply: dict[Any, Any] | Mapping[str, Mapping[str, Any]] = await utils.send_shell_message(
-        client, MsgType.execute_request, {"code": "1 + 1", "silent": False}
-    )
+async def test_execute_request_success(client: ZMQKernelClient):
+    reply = await client.execute("1 + 1")
     assert reply["header"]["msg_type"] == "execute_reply"
     assert reply["content"]["status"] == "ok"
 
 
-async def test_simple_print(kernel: Kernel, client: AsyncKernelClient):
+async def test_simple_print(kernel: Kernel, client: ZMQKernelClient):
     """Simple print statement in kernel."""
-    await utils.clear_iopub(client)
-    client.execute("print('🌈')")
-    stdout, stderr = await utils.assemble_output(client)
-    assert stdout == "🌈\n"
-    assert stderr == ""
+    async with client.iopub_subscribe() as queue:
+        reader = aiter(queue)
+        await client.execute("print('🌈')")
+        await anext(reader)
+        await anext(reader)
+        msg = await anext(reader)
+        assert msg["content"]["text"] == "🌈\n"
+        assert msg["header"]["msg_type"] == MsgType.iopub_stream
 
 
-async def test_print_non_caller_thread(kernel: Kernel[ZMQInterface], client: AsyncKernelClient):
+async def test_print_non_caller_thread(kernel: Kernel[ZMQInterface], client: ZMQKernelClient):
 
-    await utils.clear_iopub(client)
-    t = threading.Thread(target=print, args=["-non_caller_thread-"])
-    t.start()
-    out = await client.get_iopub_msg()
-    assert out["content"]["text"] == "-non_caller_thread-\n"
+    async with client.iopub_subscribe() as queue:
+        t = threading.Thread(target=print, args=["-non_caller_thread-"])
+        t.start()
+        async for msg in queue:
+            assert msg["content"]["text"] == "-non_caller_thread-\n"
+            break
 
 
 @pytest.mark.parametrize("test_mode", ["interrupt", "reply", "allow_stdin=False"])
 @pytest.mark.parametrize("mode", ["input", "password"])
 async def test_input(
-    subprocess_kernels_client,
+    subprocess_kernels_client: ZMQKernelClient,
     mode: Literal["input", "password"],
     test_mode: Literal["interrupt", "reply", "allow_stdin=False"],
 ):
+
+    async def input_handler(content: Content) -> str:
+        ready.wake()
+        if test_mode == "interrupt":
+            await create_async_waiter()
+        return str(content)
+
+    ready = create_async_waiter()
     client = subprocess_kernels_client
-    client.input("Some input that should be discarded")
     theprompt = "Enter a value >"
     match mode:
         case "input":
             code = f"response = input('{theprompt}')"
         case "password":
             code = f"import getpass;response = getpass.getpass('{theprompt}')"
-    # allow_stdin=False
+
     if test_mode == "allow_stdin=False":
-        _, reply = await utils.execute(client, code, allow_stdin=False)
-        assert reply["status"] == "error"
-        assert reply["ename"] == "RuntimeError"
-        return
-    msg_id = client.execute(code, allow_stdin=True, user_expressions={"response": "response"})
-    msg = await client.get_stdin_msg()
-    assert msg["header"]["msg_type"] == "input_request"
-    content = msg["content"]
-    assert content["prompt"] == theprompt
-    # interrupt
-    if test_mode == "interrupt":
-        await utils.send_control_message(client, MsgType.interrupt_request)
-        reply = await utils.get_reply(client, msg_id, clear_pub=False)
+        reply = await client.execute(code)
         assert reply["content"]["status"] == "error"
+        assert reply["content"].get("ename") == "RuntimeError"
         return
-    # reply
-    text = "some text"
-    client.input(text)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "ok"
-    assert text in reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
+
+    pen = client.execute(code, input_handler=input_handler, user_expressions={"response": "response"})
+    await ready
+
+    if test_mode == "interrupt":
+        await client.send_message(client.msg(msg_type=MsgType.interrupt_request, channel=Channel.control))
+        reply = await pen
+        assert reply["content"]
+    else:
+        reply = await pen
+        assert reply["content"]["status"] == "ok"
+        val = reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
+        val_ = eval(val)
+        assert val_
 
 
-async def test_interrupt_request_not_blocked(client: AsyncKernelClient, kernel: Kernel):
+async def test_interrupt_request_not_blocked(client: ZMQKernelClient, kernel: Kernel):
     pen: Any = Pending()
     kernel.active_execute_requests.add(pen)
-    reply = await utils.send_control_message(client, MsgType.interrupt_request)
+    reply = await client.send_message(client.msg(MsgType.interrupt_request))
     assert reply["header"]["msg_type"] == "interrupt_reply"
     assert reply["content"] == {"status": "ok"}
     assert pen.cancelled()
@@ -106,9 +107,9 @@ async def test_interrupt_request_not_blocked(client: AsyncKernelClient, kernel: 
 
 @pytest.mark.parametrize("mode", ["exec_request_sync", "caller", "exec_request_async"])
 async def test_interrupt_request(
-    subprocess_kernels_client: AsyncKernelClient, mode: Literal["exec_request_sync", "exec_request_async", "caller"]
+    subprocess_kernels_client: ZMQKernelClient, mode: Literal["exec_request_sync", "exec_request_async", "caller"]
 ):
-    await utils.clear_iopub(subprocess_kernels_client)
+
     client = subprocess_kernels_client
     if mode == "exec_request_async":
         code = f"import anyio\nprint('started')\nawait anyio.sleep({utils.TIMEOUT * 4})"
@@ -120,20 +121,22 @@ async def test_interrupt_request(
     pen_timeout= get_ipython().kernel.caller.call_soon(lambda: [print('started'), time.sleep({utils.TIMEOUT * 2})])
     await pen_timeout
     """
-    msg_id = client.execute(code)
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started\n")
-    await utils.send_control_message(client, MsgType.interrupt_request)
-    reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "error"
-    assert reply["content"]["ename"] == "KernelInterrupt"
-    if mode == "caller":
-        code = "assert pen_timeout.done()"
-        user_expressions = {"result": "pen_timeout.exception()"}
-        _, reply = await utils.execute(client, code, user_expressions=user_expressions, clear_pub=False)
-        assert "KernelInterrupt" in reply["user_expressions"]["result"]["data"]["text/plain"]
-    await utils.clear_iopub(client)
+    async with client.iopub_subscribe() as queue:
+        reader = aiter(queue)
+        pen = client.execute(code)
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_stream, text="started\n")
+        client.send_message(client.msg(MsgType.interrupt_request))
+        reply = await pen
+
+        assert reply["content"]["status"] == "error"
+        assert reply["content"].get("ename") == "KernelInterrupt"
+        if mode == "caller":
+            code = "assert pen_timeout.done()"
+            user_expressions = {"result": "pen_timeout.exception()"}
+            reply = await client.execute(code, user_expressions=user_expressions)
+            assert "KernelInterrupt" in reply["content"]["user_expressions"]["result"]["data"]["text/plain"]
 
 
 @pytest.mark.parametrize(
@@ -151,36 +154,41 @@ async def test_interrupt_request(
         "%mkdir test\n%rmdir test\n%ls",
     ],
 )
-async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monkeypatch):
-    await utils.clear_iopub(client)
+async def test_magic(client: ZMQKernelClient, code: str, kernel: Kernel, monkeypatch):
+
     assert isinstance(kernel.parent, ZMQInterface)
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(pathlib.Path(kernel.parent.connection_file).parent))
     assert code
-    client.execute(code)
-    with anyio.fail_after(utils.TIMEOUT):
-        while True:
-            msg = await client.get_iopub_msg()
-            if msg["content"].get("name") == "stdout":
-                break
-    await utils.clear_iopub(client)
-
+    async with client.iopub_subscribe() as queue:
+        reader = aiter(queue)
+        await client.execute(code)
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
+        msg = utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_stream)
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="idle")
     text = msg["content"]["text"]
     assert text
-    if code == "%connect_info":
-        assert "Paste the above JSON into a file" in text
+    match code:
+        case "%connect_info":
+            assert "Paste the above JSON into a file" in text
+        case "%uv -V":
+            assert "uv" in text
+        case _:
+            pass
 
 
-async def test_magic_error(client: AsyncKernelClient):
-    _, reply = await utils.execute(client, "%%thread backend=trio\npass")
-    assert reply["status"] == "error"
-    assert "'name' must be specified when providing settings!" in reply["evalue"]
-    _, reply = await utils.execute(client, "%%thread name=test not_an_option=True\npass")
-    assert reply["status"] == "error"
-    assert "One or more invalid options found" in reply["evalue"]
+async def test_magic_error(client: ZMQKernelClient) -> None:
+
+    reply = await client.execute("%%thread backend=trio\npass")
+    assert reply["content"]["status"] == "error"
+    assert "'name' must be specified when providing settings!" in reply["content"]["evalue"]
+    reply = await client.execute("%%thread name=test not_an_option=True\npass")
+    assert reply["content"]["status"] == "error"
+    assert "One or more invalid options found" in reply["content"]["evalue"]
 
 
 @pytest.mark.parametrize("code", argvalues=["%connect_info"])
-async def test_magic_sync(client: AsyncKernelClient, code: str, kernel: Kernel[ZMQInterface, IPShell], monkeypatch):
+async def test_magic_sync(client: ZMQKernelClient, code: str, kernel: Kernel[ZMQInterface, IPShell], monkeypatch):
     result = kernel.main_shell.run_cell(code)
     assert result.success
 

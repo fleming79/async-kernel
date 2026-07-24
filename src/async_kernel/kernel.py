@@ -95,7 +95,7 @@ class Kernel(
     _restart = False
     _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
     _subshells: dict[str, T_shell_co]
-    _interrupt_requested: None | Pending = None
+    _interrupt_requested: Pending | None = None
 
     @traitlets.default("help_links")
     def _default_help_links(self) -> tuple[dict[str, str], ...]:
@@ -403,7 +403,7 @@ class Kernel(
 
         self.log.debug("***handle message %s*** %s %s %s", msg_type, run_mode, handler, job)
 
-    def get_shell(self, subshell_id: str | None | NoValue = NoValue) -> T_shell_co:  # pyright: ignore[reportInvalidTypeForm]
+    def get_shell(self, subshell_id: str | NoValue | None = NoValue) -> T_shell_co:  # pyright: ignore[reportInvalidTypeForm]
         """Get a shell by `subshell_id`.
 
         Args:

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, TypedDict, final
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, final
 
-from typing_extensions import Sentinel, TypeVar, get_annotations, override
+from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, override
 
 if TYPE_CHECKING:
     import datetime
@@ -234,6 +234,69 @@ class MsgType(enum.StrEnum):
     list_subshell_request = "list_subshell_request"
     "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
 
+    # Reverse messaging (kernel -> client)
+    input_request = "input_request"
+    "A message sent from the kernel interface to a client asking for raw input."
+
+    # iopub messages (kernel -> client)
+    iopub_welcome = "iopub_welcome"
+    "A welcome message on the iopub channel for new iopub channel subscriptions."
+
+    iopub_status = "status"
+    "An iopub message about a handlers status which can be 'busy' or 'idle'."
+
+    iopub_execute_input = "execute_input"
+    "An iopub message with detail of an execute request."
+
+    iopub_execute_result = "execute_result"
+    "An iopub message with for the global display hook. Generally the last executed line of an execute request."
+
+    iopub_error = "error"
+    "An iopub message for an error."
+
+    iopub_stream = "stream"
+    "Stream data such as stdout and stderr."
+
+    iopub_display_data = "display_data"
+    "An iopub message with display output data."
+
+    iopub_clear_output = "clear_output"
+    "An iopub display message instructing the associated display to clear."
+
+    # Reply messages (kernel -> client)
+    kernel_info_reply = "kernel_info_reply"
+
+    comm_info_reply = "comm_info_reply"
+
+    execute_reply = "execute_reply"
+
+    complete_reply = "complete_reply"
+
+    is_complete_reply = "is_complete_reply"
+
+    inspect_reply = "inspect_reply"
+
+    history_reply = "history_reply"
+
+    interrupt_reply = "interrupt_reply"
+
+    shutdown_reply = "shutdown_reply"
+
+    debug_reply = "debug_reply"
+
+    create_subshell_reply = "create_subshell_reply"
+
+    delete_subshell_reply = "delete_subshell_reply"
+
+    list_subshell_reply = "list_subshell_reply"
+
+    # Reverse reply (client -> kernel)
+    input_reply = "input_reply"
+    "A reply sent from the client to a kernel interface corresponding to an input request."
+
+
+MsgTypeNoReply = (MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close)
+
 
 T_fsb = TypeVar("T_fsb", int, float, str, bool)
 
@@ -392,6 +455,8 @@ class ExecuteContent(TypedDict):
     allow_stdin: bool
     ""
     stop_on_error: bool
+    ""
+    subshell_id: NotRequired[str | None]
     ""
 
 

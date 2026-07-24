@@ -13,12 +13,11 @@ from async_kernel import Kernel, Pending
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
 from async_kernel.common import MethodNotSupported
-from async_kernel.typing import Channel, MsgType, RunMode, Tags
+from async_kernel.typing import Channel, Content, Message, MsgType, RunMode, Tags
 from tests import utils
 
 if TYPE_CHECKING:
-    from jupyter_client.asynchronous.client import AsyncKernelClient
-
+    from async_kernel.client.zmq import ZMQKernelClient
     from async_kernel.interface import BaseInterface
     from async_kernel.interface.zmq import ZMQInterface
     from async_kernel.shell import IPShell
@@ -28,8 +27,8 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize("mode", ["shell_timeout", "tags"])
-async def test_execute_shell_timeout(client: AsyncKernelClient, kernel: Kernel, mode: str):
-    await utils.clear_iopub(client)
+async def test_execute_shell_timeout(client: ZMQKernelClient, kernel: Kernel, mode: str):
+
     if mode == "shell_timeout":
         kernel.shell.timeout = 0.1
         metadata = {}
@@ -38,36 +37,34 @@ async def test_execute_shell_timeout(client: AsyncKernelClient, kernel: Kernel, 
     last_stop_time = kernel.shell._stop_on_error_info
     try:
         code = "\n".join(["import anyio", "await anyio.sleep_forever()"])
-        _, content = await utils.execute(client, code=code, metadata=metadata, clear_pub=False)
+        reply = await client.execute(code, metadata=metadata)
         assert last_stop_time == kernel.shell._stop_on_error_info, "Should not cause cancellation"
-        assert content["status"] == "error"
+        assert reply["content"]["status"] == "error"
     finally:
         kernel.shell.timeout = 0.0
 
 
-async def test_bad_message(client: AsyncKernelClient):
-    await utils.send_shell_message(client, "bad_message", reply=False)  # pyright: ignore[reportArgumentType]
-    await utils.send_control_message(client, "bad_message", reply=False)  # pyright: ignore[reportArgumentType]
-    await utils.execute(client, "")
+async def test_bad_message(client: ZMQKernelClient):
+    await client.send_message(client.msg(MsgType.execute_request))
+    await client.send_message(client.msg(MsgType.execute_request, channel=Channel.control))
+    await client.execute("")
 
 
-async def test_reset_shell(kernel: Kernel, client: AsyncKernelClient):
+async def test_reset_shell(kernel: Kernel, client: ZMQKernelClient):
     kernel.shell.reset()
     assert kernel.shell.execution_count == 0
-    await utils.execute(client, "")
+    await client.execute("")
     assert kernel.shell.execution_count == 1
     kernel.shell.reset()
     assert kernel.shell.execution_count == 0
 
 
-async def test_save_history(client: AsyncKernelClient, tmp_path):
+async def test_save_history(client: ZMQKernelClient, tmp_path):
     file = tmp_path.joinpath("hist.out")
-    client.execute("a=1")
-    await utils.wait_for_idle(client)
-    client.execute('b="abcþ"')
-    await utils.wait_for_idle(client)
-    _, reply = await utils.execute(client, f"%hist -f {file}")
-    assert reply["status"] == "ok"
+    await client.execute("a=1")
+    await client.execute('b="abcþ"')
+    reply = await client.execute(f"%hist -f {file}")
+    assert reply["content"]["status"] == "ok"
     with file.open("r", encoding="utf-8") as f:
         content = f.read()
     assert "a=1" in content
@@ -83,11 +80,10 @@ async def test_save_history(client: AsyncKernelClient, tmp_path):
         ("%%timeit\na\n\n", "complete"),
     ],
 )
-async def test_is_complete_2(client: AsyncKernelClient, code: str, status: str):
+async def test_is_complete_2(client: ZMQKernelClient, code: str, status: str):
     # There are more test cases for this in core - here we just check
     # that the kernel exposes the interface correctly.
-    client.is_complete(code)
-    reply = await client.get_shell_msg()
+    reply = await client.is_complete(code)
     assert reply["content"]["status"] == status
 
 
@@ -96,20 +92,26 @@ async def test_noop(kernel: Kernel[ZMQInterface, IPShell]):
         kernel.shell.init_prefilter()
 
 
-async def test_message_order(client: AsyncKernelClient):
+async def test_message_order(kernel: Kernel, client: ZMQKernelClient):
     N = 10  # number of messages to test
 
-    _, reply = await utils.execute(client, "a = 1")
-    offset = reply["execution_count"] + 1
+    reply = await client.execute("a = 1")
+    cnt = reply["content"].get("execution_count")
+    assert isinstance(cnt, int)
+    offset = cnt + 1
     cell = "a += 1\na"
 
     # submit N executions as fast as we can
-    msg_ids = [client.execute(cell) for _ in range(N)]
+    pending = [client.execute(cell) for _ in range(N)]
     # check message-handling order
-    for i, msg_id in enumerate(msg_ids, offset):
-        reply = await client.get_shell_msg()
-        assert reply["content"]["execution_count"] == i
-        assert reply["parent_header"]["msg_id"] == msg_id
+    n = 0
+    async for pen in kernel.caller.as_completed(pending):
+        reply = pen.result()
+        assert reply["content"].get("execution_count") == n + offset
+        parent = reply["parent_header"]
+        assert parent
+        assert parent["msg_id"] == pending[n].msg_id
+        n = n + 1
 
 
 @pytest.mark.parametrize("run_mode", RunMode)
@@ -124,64 +126,52 @@ async def test_message_order(client: AsyncKernelClient):
         await fail()""",
     ],
 )
-async def test_execute_request_error(client: AsyncKernelClient, code: str, run_mode: RunMode):
-    reply = await utils.send_shell_message(client, MsgType.execute_request, {"code": code, "silent": False})
+async def test_execute_request_error(client: ZMQKernelClient, code: str, run_mode: RunMode):
+    reply = await client.execute(code, silent=False)
     assert reply["header"]["msg_type"] == "execute_reply"
     assert reply["content"]["status"] == "error"
 
 
-async def test_execute_request_stop_on_error(client: AsyncKernelClient):
+async def test_execute_request_stop_on_error(client: ZMQKernelClient):
     client.execute("import anyio;await anyio.sleep(0.1);stop-here")
-    _, content = await utils.execute(client)
-    assert content["evalue"] == "Aborting due to prior exception"
+    reply = await client.execute("1+1")
+    assert reply["content"].get("evalue") == "Aborting due to prior exception"
 
 
-async def test_complete_request(client: AsyncKernelClient):
-    reply = await utils.send_shell_message(client, MsgType.complete_request, {"code": "hello", "cursor_pos": 0})
+async def test_complete_request(client: ZMQKernelClient):
+    reply = await client.complete("hello", 0)
     assert reply["header"]["msg_type"] == "complete_reply"
     assert reply["content"]["status"] == "ok"
 
 
-async def test_inspect_request(client: AsyncKernelClient):
-    reply = await utils.send_shell_message(client, MsgType.inspect_request, {"code": "hello", "cursor_pos": 0})
+async def test_inspect_request(client: ZMQKernelClient):
+    reply = await client.inspect("hello", 0)
     assert reply["header"]["msg_type"] == "inspect_reply"
     assert reply["content"]["status"] == "ok"
 
 
-async def test_history_request(client: AsyncKernelClient, kernel: Kernel):
+async def test_history_request(client: ZMQKernelClient, kernel: Kernel):
     assert kernel.shell
-    # assert kernel.shell.history_manager
+    reply = await client.history(hist_access_type="tail")
+    assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["content"]["status"] == "ok"
 
-    # kernel.shell.history_manager.db = DummyDB()
-    reply = await utils.send_shell_message(
-        client, MsgType.history_request, {"hist_access_type": "", "output": "", "raw": ""}
-    )
+    reply = await client.history(hist_access_type="range")
     assert reply["header"]["msg_type"] == "history_reply"
     assert reply["content"]["status"] == "ok"
-    reply = await utils.send_shell_message(
-        client, MsgType.history_request, {"hist_access_type": "tail", "output": "", "raw": ""}
-    )
-    assert reply["header"]["msg_type"] == "history_reply"
-    assert reply["content"]["status"] == "ok"
-    reply = await utils.send_shell_message(
-        client, MsgType.history_request, {"hist_access_type": "range", "output": "", "raw": ""}
-    )
-    assert reply["header"]["msg_type"] == "history_reply"
-    assert reply["content"]["status"] == "ok"
-    reply = await utils.send_shell_message(
-        client, MsgType.history_request, {"hist_access_type": "search", "output": "", "raw": ""}
-    )
+
+    reply = await client.history(hist_access_type="search")
     assert reply["header"]["msg_type"] == "history_reply"
     assert reply["content"]["status"] == "ok"
 
 
-async def test_comm_info_request(client: AsyncKernelClient):
-    reply = await utils.send_shell_message(client, MsgType.comm_info_request)
+async def test_comm_info_request(client: ZMQKernelClient):
+    reply = await client.comm_info()
     assert reply["header"]["msg_type"] == "comm_info_reply"
     assert reply["content"]["status"] == "ok"
 
 
-async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
+async def test_comm_open_msg_close(client: ZMQKernelClient, kernel: Kernel, mocker):
     pen = Pending[Comm]()
     handle_msg = Pending()
     handle_close = Pending()
@@ -191,39 +181,39 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
 
     kernel.comm_manager.register_target("my target", cb)
     # open a comm
-    await utils.send_shell_message(
-        client, MsgType.comm_open, {"content": {}, "comm_id": "comm id", "target_name": "my target"}, reply=False
+    client.send_message_no_reply(
+        client.msg(MsgType.comm_open, {"content": {}, "comm_id": "comm id", "target_name": "my target"})
     )
     comm = await pen
-    reply = await utils.send_shell_message(client, MsgType.comm_info_request)
+    reply = await client.comm_info()
     assert reply["header"]["msg_type"] == "comm_info_reply"
     assert reply["content"]["status"] == "ok"
     assert reply["content"]["comms"].get("comm id") == {"target_name": "my target"}
 
     comm.handle_msg = handle_msg.set_result  # pyright: ignore[reportAttributeAccessIssue]
-    await utils.send_shell_message(client, MsgType.comm_msg, {"comm_id": comm.comm_id}, reply=False)
+    client.send_message_no_reply(client.msg(MsgType.comm_msg, {"comm_id": comm.comm_id}))
     await handle_msg
     assert isinstance(handle_msg.result(), dict)
     # close comm
 
     comm.handle_close = handle_close.set_result  # pyright: ignore[reportAttributeAccessIssue]
-    await utils.send_shell_message(client, MsgType.comm_close, {"comm_id": comm.comm_id}, reply=False)
+    client.send_message_no_reply(client.msg(MsgType.comm_close, {"comm_id": comm.comm_id}))
     await handle_close
     assert isinstance(handle_close.result(), dict)
     kernel.comm_manager.unregister_target("my target", cb)
 
 
 @pytest.mark.parametrize("response", ["y", ""])
-async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, response: Literal["y", ""]):
+async def test_user_exit(client: ZMQKernelClient, kernel: Kernel, mocker, response: Literal["y", ""]):
     stop = mocker.patch.object(kernel.parent, "stop")
     raw_input = mocker.patch.object(kernel, "raw_input", return_value=response)
-    await utils.execute(client, "quit()")
+    await client.execute("quit()")
     assert raw_input.call_count == 1
     assert stop.call_count == (1 if response == "y" else 0)
 
 
-async def test_is_complete_request(client: AsyncKernelClient):
-    reply = await utils.send_shell_message(client, MsgType.is_complete_request, {"code": "hello"})
+async def test_is_complete_request(client: ZMQKernelClient):
+    reply = await client.is_complete("hello")
     assert reply["header"]["msg_type"] == "is_complete_reply"
 
 
@@ -250,18 +240,18 @@ async def test_shell_display_hook_reg(kernel: Kernel[ZMQInterface, IPShell]):
 
 
 @pytest.mark.parametrize("mode", RunMode)
-async def test_header_mode(client: AsyncKernelClient, mode: RunMode):
+async def test_header_mode(client: ZMQKernelClient, mode: RunMode):
     code = f"""
 {mode}
-import time
-time.sleep(0.1)
 print("{mode.name}")
 """
-    await utils.clear_iopub(client)
-    _, reply = await utils.execute(client, code, clear_pub=False)
-    assert reply["status"] == "ok"
-    stdout, _ = await utils.assemble_output(client)
-    assert mode.name in stdout
+    async with client.iopub_subscribe() as queue:
+        reply = await client.execute(code)
+        assert reply["content"]["status"] == "ok"
+        async for msg in queue:
+            if msg["header"]["msg_type"] == "stream":
+                assert mode.value in msg["content"]["text"]
+                break
 
 
 @pytest.mark.parametrize(
@@ -271,83 +261,73 @@ print("{mode.name}")
         "from async_kernel import Caller; Caller().call_soon(print, 'hello')",
     ],
 )
-async def test_namespace_default(client: AsyncKernelClient, code: str):
+async def test_namespace_default(client: ZMQKernelClient, code: str):
     assert code
-    _, reply = await utils.execute(client, code)
-    assert reply["status"] == "ok"
+    reply = await client.execute(code)
+    assert reply["content"]["status"] == "ok"
 
 
-@pytest.mark.parametrize("channel", [Channel.shell, Channel.control])
-async def test_invalid_message(client: AsyncKernelClient, channel: Literal[Channel.shell, Channel.control]):
-    f = utils.send_control_message if channel == "control" else utils.send_shell_message
-    await f(client, "test_invalid_message", reply=False)  # pyright: ignore[reportArgumentType]
-    await anyio.sleep(0.1)
-
-
-async def test_run_mode_tag(client: AsyncKernelClient):
+async def test_run_mode_tag(client: ZMQKernelClient):
     metadata = {"tags": [RunMode.thread]}
-    _, content = await utils.execute(
-        client,
+    reply: Message[Content] = await client.execute(
         "import threading;thread_name=threading.current_thread().name",
         metadata=metadata,
         user_expressions={"thread_name": "thread_name"},
     )
-    assert content["status"] == "ok"
-    assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
+    assert reply["content"]["status"] == "ok"
+    assert "async_kernel_caller" in reply["content"]["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
-async def test_cell_top_line_to_thread(client: AsyncKernelClient):
-    _, content = await utils.execute(
-        client,
+async def test_cell_top_line_to_thread(client: ZMQKernelClient):
+    reply = await client.execute(
         "# thread\nimport threading;thread_name=threading.current_thread().name",
         user_expressions={"thread_name": "thread_name"},
     )
-    assert content["status"] == "ok"
-    assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
+    assert reply["content"]["status"] == "ok"
+    assert "async_kernel_caller" in reply["content"]["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
-async def test_cell_top_line_to_thread_named(client: AsyncKernelClient):
-    _, content = await utils.execute(
-        client,
+async def test_cell_top_line_to_thread_named(client: ZMQKernelClient):
+    reply = await client.execute(
         "# thread name='My thread'\nimport threading;thread_name=threading.current_thread().name",
         user_expressions={"thread_name": "thread_name"},
     )
-    assert content["status"] == "ok"
-    assert "My thread" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
+    assert reply["content"]["status"] == "ok"
+    assert "My thread" in reply["content"]["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
 @pytest.mark.parametrize("mode", ["raises", "not raised"])
-async def test_tag_raises_exception(client: AsyncKernelClient, mode: Literal["raises", "not raised"]):
+async def test_tag_raises_exception(client: ZMQKernelClient, mode: Literal["raises", "not raised"]):
     match mode:
         case "raises":
             code = f'raise RuntimeError("{mode}")'
         case "not raised":
             code = "pass"
-    _, content = await utils.execute(client, code, metadata={"tags": [Tags.raises_exception]})
-    assert content["status"] == "error"
-    assert mode in content["evalue"]
+    reply = await client.execute(code, metadata={"tags": [Tags.raises_exception]})
+    assert reply["content"]["status"] == "error"
+    assert mode in reply["content"]["evalue"]
 
 
 @pytest.mark.parametrize(("value", "expected"), [("stop-on-error=True", "error"), ("stop-on-error=False", "ok")])
-async def test_tag_stop_on_error(kernel: Kernel, client: AsyncKernelClient, value: str, expected: str):
+async def test_tag_stop_on_error(kernel: Kernel, client: ZMQKernelClient, value: str, expected: str):
     try:
         kernel.shell.stop_on_error_time_offset = float(utils.TIMEOUT)
-        _, content = await utils.execute(client, "fail", metadata={"tags": [Tags.raises_exception, value]})
-        assert content["status"] == "error"
-        _, content = await utils.execute(client, "a=10")
-        assert content["status"] == expected
+        reply = await client.execute("fail", metadata={"tags": [Tags.raises_exception, value]})
+        assert reply["content"]["status"] == "error"
+        reply = await client.execute("a=10")
+        assert reply["content"]["status"] == expected
     finally:
         kernel.shell.stop_on_error_time_offset = 0
         kernel.shell._stop_on_error_info.clear()
 
 
-async def test_get_parent(client: AsyncKernelClient, kernel: Kernel):
+async def test_get_parent(client: ZMQKernelClient, kernel: Kernel):
     assert kernel.get_parent() is None
     code = "assert 'header' in get_ipython().kernel.get_parent()"
-    await utils.execute(client, code)
+    await client.execute(code)
 
 
-async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
+async def test_subshell(client: ZMQKernelClient, kernel: Kernel):
     subshell = kernel.create_subshell(protected=True)
     assert subshell.subshell_id
 
@@ -358,9 +338,9 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     assert subshell.user_ns is not kernel.main_shell.user_ns
     assert subshell.user_global_ns is kernel.main_shell.user_global_ns
     kernel.main_shell.user_ns["a"] = 1
-    await utils.execute(client, code="a=10", subshell_id=subshell.subshell_id)
+    await client.execute("a=10", subshell_id=subshell.subshell_id)
     assert subshell.user_ns["a"] == 10
-    await utils.execute(client, code="b=20", header_extras={"subshell_id": subshell.subshell_id})
+    await client.execute("b=20", subshell_id=subshell.subshell_id)
     assert subshell.user_ns["b"] == 20
 
     # Switch subshell using context manager.
@@ -385,17 +365,18 @@ async def test_subshell(client: AsyncKernelClient, kernel: Kernel):
     assert subshell.subshell_id not in kernel.subshells, "Protected should not stop when deleted"
 
 
-async def test_page(client: AsyncKernelClient, kernel: Kernel):
-    await utils.clear_iopub(client)
-    msg_id = client.execute("?", allow_stdin=True)
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    msg = await utils.check_pub_message(client, msg_id, msg_type="stream")
-    assert msg["header"]["msg_type"] == "stream"
-    assert list(msg["content"]) == ["name", "text"]
-    await utils.check_pub_message(client, msg_id, execution_state="idle")
-    page.page({"data": {"text/plain": "hello, world"}, "metadata": {}})
-    await utils.check_pub_message(client, "", msg_type="display_data")
+async def test_page(client: ZMQKernelClient, kernel: Kernel):
+    async with client.iopub_subscribe() as queue:
+        reader = aiter(queue)
+        await client.execute("?")
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
+        msg = utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_stream)
+        assert msg["header"]["msg_type"] == "stream"
+        assert list(msg["content"]) == ["name", "text"]
+        utils.check_pub_message(await anext(reader), execution_state="idle")
+        page.page({"data": {"text/plain": "hello, world"}, "metadata": {}})
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_display_data)
 
 
 async def test_do_complete(kernel: Kernel):

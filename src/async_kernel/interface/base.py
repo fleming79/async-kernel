@@ -14,7 +14,8 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_event, create_async_waiter, current_async_library
+from aiologic import Event
+from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_waiter, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
 from traitlets.config.application import Application, ClassesType
@@ -138,15 +139,14 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             msg = "Stopped early"
             raise RuntimeError(msg)
         self.backend = Backend(current_async_library())
-        channels_started, stop_channels = create_async_waiter(), create_async_event()
-        async with Caller(name="Shell") as caller:
-            caller_ctrl = caller.get(name="Control")
+        channels_started, stop_channels = create_async_waiter(), Event()
+        async with Caller(name="Shell") as caller, caller.get(name="Control") as caller_ctrl:
             self.callers[Channel.shell] = caller
             self.callers[Channel.control] = caller_ctrl
             pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
             await channels_started
             if set_started:
-                self._started()  # pragma: no cover
+                self._started()
             try:
                 yield self
             finally:
@@ -159,14 +159,14 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
         await stop
 
     def _started(self) -> None:
-        self.log.info("%s started started: %s", self, self.summary)
+        self.log.info("Interface started: %s", self.summary)
         self.started.set_result(None)
 
     def _on_stopped(self, _) -> None:
         self.log.info("%s, stopped", self)
 
     def stop(self) -> None:
-        """Stop the application."""
+        """Stop the kernel and this interface."""
         self.stopping.set_result(None)
         if not self.callers:
             self.stopped.set_result(None)
@@ -174,8 +174,8 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     def msg(
         self,
         msg_type: str | MsgType,
-        *,
         content: T | None = None,
+        *,
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
