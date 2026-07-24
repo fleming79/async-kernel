@@ -18,7 +18,9 @@ from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
-from async_kernel.typing import Backend, Hosts
+from async_kernel.typing import Backend, CallerState, Hosts
+
+# pyright: reportPrivateUsage=false
 
 anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
 if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
@@ -253,6 +255,8 @@ class TestCaller:
     async def test_get_start_main_thread(self, anyio_backend: Backend):
         # Check a caller can be started in the main thread synchronously.
         caller = Caller()
+        assert caller._state.value < CallerState.running.value, "needed for __repr__ early check"
+        assert str(caller)
         assert await caller.call_soon(lambda: 1 + 1) == 2
 
     async def test_get_current_thread(self, anyio_backend: Backend):
@@ -378,7 +382,7 @@ class TestCaller:
         while not collected:
             gc.collect()
             await anyio.sleep(0)
-        assert not any(caller._queue_map)  # pyright: ignore[reportPrivateUsage]
+        assert not any(caller._queue_map)
 
     async def test_call_early(self, anyio_backend: Backend) -> None:
         caller = Caller()
@@ -570,7 +574,7 @@ class TestCaller:
                 assert len(threads) == 2
             else:
                 assert len(threads) > 2
-            assert len(caller._worker_pool) == 2  # pyright: ignore[reportPrivateUsage]
+            assert len(caller._worker_pool) == 2
 
     async def test_as_completed_error(self, caller: Caller):
         def func():
@@ -613,6 +617,15 @@ class TestCaller:
             results.add(await pen)
         assert results == {0, 1}
 
+    async def test_as_completed_current_pending_deadlock(self, caller: Caller):
+        async def f():
+            if pen := caller.current_pending():
+                async for _ in caller.as_completed((pen,)):
+                    pass
+
+        with pytest.raises(RuntimeError, match="deadlock"):
+            await caller.call_soon(f)
+
     async def test_as_completed_empty_iterator(self, caller: Caller) -> None:
         async for _ in caller.as_completed(iter(())):
             pass
@@ -630,17 +643,17 @@ class TestCaller:
         pen1 = caller.to_thread(threading.get_ident)
         w1 = Caller.get_existing(await pen1)
         assert w1
-        assert w1 in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        assert w1 in caller._worker_pool
         w1.stop()
         pen2 = caller.to_thread(threading.get_ident)
         await w1.stopped
-        assert w1 not in caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        assert w1 not in caller._worker_pool
         w2 = Caller.get_existing(await pen2)
         assert w2
         assert not w2.stopped.done()
         w2.stop()
         await w2.stopped
-        assert not caller._worker_pool  # pyright: ignore[reportPrivateUsage]
+        assert not caller._worker_pool
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)

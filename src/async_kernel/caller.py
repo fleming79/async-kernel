@@ -313,10 +313,6 @@ class Caller:
         children = "" if not n else (" 1 child" if n == 1 else f" {n} children")
         return f"<Caller {current}{self._state_reprs[self._state]}{protected}{info}{children}>"
 
-    def __del__(self) -> None:
-        if self._state not in [CallerState.stopping, CallerState.stopped]:
-            self.stop(force=True)
-
     def __new__(
         cls,
         modifier: Literal["CurrentThread", "MainThread", "NewThread"] = "CurrentThread",
@@ -420,8 +416,7 @@ class Caller:
             no_debug: If debugpy should be disabled in the thread.
         """
         with self._inst_lock:
-            if not self._set_state(CallerState.start_sync):
-                return
+            self._set_state(CallerState.start_sync)
 
         async def run_scheduler() -> None:
             with self._inst_lock:
@@ -432,11 +427,10 @@ class Caller:
             if no_debug:
                 utils.mark_thread_pydev_do_not_trace()
             try:
-                with self._inst_lock:
-                    if not self._set_state(CallerState.running):
-                        return
                 async with task_factory() as create_task:
                     create_task(contextvars.Context(), self._scheduler, self._queue)
+                    with self._inst_lock:
+                        self._set_state(CallerState.running)
                     await self._stopping
                     await self._guest_done_event
                     await self._children_countdown
