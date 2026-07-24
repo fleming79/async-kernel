@@ -146,7 +146,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
             await channels_started
             if set_started:
-                self._started()
+                self._started()  # pragma: no cover
             try:
                 yield self
             finally:
@@ -490,20 +490,6 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     ) -> None:
         """Send an iopub message."""
         raise NotImplementedError
-
-    @override
-    def print_help(self, classes: bool = False) -> None:
-        from async_kernel.compat.attr_docs import get_attr_docs  # noqa: PLC0415
-
-        # Copy trailing docstrings into trait.help.
-        for cls in self.classes:
-            try:
-                for name, value in get_attr_docs(cls).items():
-                    if value and isinstance(trait := getattr(cls, name), traitlets.TraitType) and not trait.help:
-                        trait.help = value
-            except OSError:
-                continue  # Coverage can cause issues with some files.
-        super().print_help(classes)
 
 
 class HasInterface(Generic[T_interface_co]):
