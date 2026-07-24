@@ -1,5 +1,6 @@
 import asyncio
 import importlib.util
+import logging
 import os
 import subprocess
 import sys
@@ -14,6 +15,7 @@ import zmq
 from aiologic.lowlevel import current_async_library
 from jupyter_client.asynchronous.client import AsyncKernelClient
 
+import async_kernel
 from async_kernel import Caller
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernel import Kernel
@@ -36,6 +38,10 @@ else:
 
 debug = False
 
+if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    debug = True
+    logging.basicConfig(level=10)
+
 
 @pytest.hookimpl
 def pytest_configure(config):
@@ -44,6 +50,7 @@ def pytest_configure(config):
         debug = True
     if debug:
         traitlets.config.Application.log_level.default_value = 10  # pyright: ignore[reportAttributeAccessIssue]
+        logging.basicConfig(level=10)
 
 
 def check_anyio_backend(anyio_backend):
@@ -188,5 +195,5 @@ def job() -> Job[ExecuteContent]:
 
 @pytest.fixture
 async def caller(anyio_backend: Backend):
-    async with Caller("manual") as caller:
+    async with Caller() as caller:
         yield caller
