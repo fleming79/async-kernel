@@ -10,7 +10,6 @@ from typing_extensions import Sentinel, TypeVar, get_annotations, override
 
 if TYPE_CHECKING:
     import datetime
-    import logging
 
     from async_kernel.interface import BaseInterface
     from async_kernel.shell import BaseShell
@@ -443,13 +442,6 @@ class CallerCreateOptions(RunSettings):
 
     name: NotRequired[str]
     "The name for the new caller instance."
-
-    log: NotRequired[logging.Logger | logging.LoggerAdapter]
-    "A logger or logging adapter."
-
-    "Options to pass when calling [anyio.run][]."
-    protected: NotRequired[bool]
-    "The caller should be protected against accidental closure (default=`False`)."
 
     no_debug: NotRequired[bool]
     "Disable debugpy in the thread if a new thread is created."

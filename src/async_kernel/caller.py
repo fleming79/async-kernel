@@ -131,6 +131,15 @@ class Caller:
 
     Code execution is always done within the context of an asynchronous backend.
 
+    Caller can run in any thread where a backend ('asyncio' or 'trio') is running.  But
+    in-order to start, it must be Created inside that thread. After which, methods can
+    be called from any thread.
+
+    An async context is provided for lifecycle management. The async-context of a caller
+    can be entered multiple times from any thread.  Once entered, a count of contexts
+    is maintained. When the count returns to zero `caller.stop(force=True)` is called.
+    A caller is marked as 'protected' once a context has been entered.
+
     **High level methods**
 
     - [Caller.call_soon][]: Schedule a function call in the caller's thread.
@@ -218,7 +227,7 @@ class Caller:
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
-    log: logging.Logger | logging.LoggerAdapter
+    log: logging.LoggerAdapter
     ""
 
     @property
@@ -374,8 +383,7 @@ class Caller:
             inst._host = host
             inst._backend_options = kwargs.get("backend_options")
             inst._host_options = kwargs.get("host_options")
-            inst._protected = kwargs.get("protected", False)
-            inst.log = kwargs.get("log") or logging.LoggerAdapter(logging.getLogger())
+            inst.log = logging.LoggerAdapter(logging.getLogger())
 
             # Set the scheduler to start in either the current thread or a new thread.
             # It is not possible to wait for it to start without using microthreads like greenlets.
@@ -386,18 +394,20 @@ class Caller:
         return inst
 
     async def __aenter__(self) -> Self:
-        if self._stopping.done():
-            msg = "The caller is stopping!"
-            raise RuntimeError(msg)
+        self._protected = True
         await self.started
-        self._enter_count = self._enter_count + 1
+        with self._inst_lock:
+            if self._stopping.done():
+                msg = f"This caller is stopping or stopped {self}"
+                raise RuntimeError(msg)
+            self._enter_count = self._enter_count + 1
         return self
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:
-        self._enter_count = self._enter_count - 1
+        with self._inst_lock:
+            self._enter_count = self._enter_count - 1
         if self._enter_count == 0:
             self.stop(force=True)
-        if self._stopping.done():
             await self.stopped.wait(shield=True)
         return False
 
@@ -470,8 +480,8 @@ class Caller:
                     async_kernel.event_loop.run(run_scheduler, (), settings)
                 except Exception as e:
                     if not self._stopping.done():
-                        self.stop(force=True)
                         self.started.set_exception(e)
+                        self.stop(force=True)
 
             thread = threading.Thread(target=async_kernel_caller, name=self._name or None)
             if no_debug:
@@ -490,6 +500,7 @@ class Caller:
             case CallerState.running:
                 self.started.set_result(None)
             case CallerState.stopping:
+                self.started.cancel("Stopping")
                 self._stopping.set_result(None)
                 # Remove from worker pool
                 if (parent := self.parent) and (workers := parent._worker_pool):

@@ -54,30 +54,30 @@ class TestCaller:
         thread.join()
         assert okay
 
-    async def test_worker_lifecycle(self, anyio_backend: Backend):
-        async with Caller(name="manual") as caller:
-            assert not caller.protected
+    async def test_child_lifecycle(self, anyio_backend: Backend):
+        async with Caller() as caller:
             # worker thread
             assert await caller.to_thread(lambda: 2 + 1) == 3
             assert len(caller.children) == 1
             worker = next(iter(caller.children))
             assert worker.id != caller.id
             # Child thread
-            c1 = caller.get(name="c1", protected=True)
-            assert c1 in caller.children
-            assert len(caller.children) == 2
-            assert caller.get(name="c1") is c1
-            wrong_backend = next(b for b in Backend if b != anyio_backend)
-            with pytest.raises(RuntimeError, match="Backend mismatch!"):
-                caller.get(name="c1", backend=wrong_backend)
-            with pytest.raises(RuntimeError, match="Host mismatch!"):
-                caller.get(name="c1", host=Hosts.tk)
-            # A child's child
-            c2 = c1.get(name="c2")
-            assert c2 in c1.children
-            assert c2 not in caller.children
-            assert c1.get(name="c2") is c2
-            assert Caller("MainThread") is caller
+            async with caller.get(name="c1") as c1:
+                assert c1 in caller.children
+                assert len(caller.children) == 2
+                assert caller.get(name="c1") is c1
+                wrong_backend = next(b for b in Backend if b != anyio_backend)
+                with pytest.raises(RuntimeError, match="Backend mismatch!"):
+                    caller.get(name="c1", backend=wrong_backend)
+                with pytest.raises(RuntimeError, match="Host mismatch!"):
+                    caller.get(name="c1", host=Hosts.tk)
+                # A child's child
+                c2 = c1.get(name="c2")
+                assert c2 in c1.children
+                assert c2 not in caller.children
+                assert c1.get(name="c2") is c2
+                assert Caller("MainThread") is caller
+            assert c1.stopped.done()
 
         assert not caller.children
         assert c1.stopped.done()
@@ -151,8 +151,17 @@ class TestCaller:
         await pen
         assert re.match(matches[1], repr(pen))
 
+    async def test_stopping(self, anyio_backend: Backend):
+        caller = Caller("NewThread")
+        caller.stop()
+        with pytest.raises(PendingCancelled):
+            async with caller:
+                pass
+        assert caller.stopped.done()
+
     async def test_protected(self, anyio_backend: Backend):
-        async with Caller(protected=True) as caller:
+        async with Caller() as caller:
+            assert caller.protected
             caller.stop()
             assert not caller.stopped.done()
         assert caller.stopped.done()
@@ -387,7 +396,7 @@ class TestCaller:
         with pytest.raises(ValueError, match="The backend does not match!"):
             Caller(backend=wrong_backend)
 
-    async def test_prevent_multi_entry(self, anyio_backend: Backend):
+    async def test_multi_entry(self, anyio_backend: Backend):
         async with Caller() as caller:
             assert caller is Caller()
             async with caller:
