@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
     from async_kernel.typing import Content
 
-__all__ = ["BaseInterface", "HasInterface"]
+__all__ = ["BaseInterface", "BaseMessageApplication", "HasInterface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -159,14 +159,14 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
         await stop
 
     def _started(self) -> None:
-        self.log.info("Interface started: %s", self.summary)
+        self.log.info("%s started started: %s", self, self.summary)
         self.started.set_result(None)
 
     def _on_stopped(self, _) -> None:
         self.log.info("%s, stopped", self)
 
     def stop(self) -> None:
-        """Stop the kernel and this interface."""
+        """Stop the application."""
         self.stopping.set_result(None)
         if not self.callers:
             self.stopped.set_result(None)
