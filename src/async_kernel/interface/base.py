@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
     from async_kernel.typing import Content
 
-__all__ = ["BaseInterface", "HasInterface"]
+__all__ = ["BaseInterface", "BaseMessageApplication", "HasInterface"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -81,7 +81,144 @@ class DictValueLiteralEval(traitlets.Dict):
         return d
 
 
-class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]):
+class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
+    """The base application for kernel interfaces and clients."""
+
+    host: traitlets.TraitType[Hosts | None, Hosts | None] = traitlets.UseEnum(
+        Hosts, default_value=None, allow_none=True
+    ).tag(config=True)
+    "The name of a (gui) event loop (if one is used)."
+
+    host_options = DictValueLiteralEval(allow_none=True).tag(config=True)
+    "Options for starting the loop."
+
+    backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend).tag(config=True)
+    "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
+
+    backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
+    "Options for starting the backend."
+
+    started = Fixed(Pending)
+    "A Pending that is set when the application has started."
+
+    stopping = Fixed(Pending)
+    """
+    A Pending that is set when stop is called.
+    """
+    stopped: Fixed[Self, Pending[Any]] = Fixed(
+        Pending, created=lambda c: c["obj"].add_done_callback(c["owner"]._on_stopped)
+    )
+    """
+    A Pending that is set once the application is stopped.
+    """
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
+    "The callers used by the messaging application."
+
+    @property
+    def summary(self) -> str:
+        return f"name={self.name!r} backend={str(self.backend)!r}"
+
+    @traitlets.default("backend")
+    def _default_backend(self) -> Backend:
+        try:
+            return Backend(current_async_library())
+        except AsyncLibraryNotFoundError:
+            if (
+                not self.host
+                and not self.trait_has_value("backend_options")
+                and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
+            ):
+                self.backend_options["use_uvloop"] = True
+            return Backend.asyncio
+
+    @asynccontextmanager
+    async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
+
+        if self.stopped.done():
+            msg = "Stopped early"
+            raise RuntimeError(msg)
+        self.backend = Backend(current_async_library())
+        channels_started, stop_channels = create_async_waiter(), create_async_event()
+        async with Caller("manual", name="Shell", protected=True, log=self.log, host=self.host) as caller:
+            caller_ctrl = caller.get(name="Control", log=self.log, protected=True)
+            self.callers[Channel.shell] = caller
+            self.callers[Channel.control] = caller_ctrl
+            pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
+            await channels_started
+            if set_started:
+                self._started()  # pragma: no cover
+            try:
+                yield self
+            finally:
+                stop_channels.set()
+                await pen_channels.wait(shield=True)
+            self.stopped.set_result(None)
+
+    async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
+        ready()
+        await stop
+
+    def _started(self) -> None:
+        self.log.info("%s started started: %s", self, self.summary)
+        self.started.set_result(None)
+
+    def _on_stopped(self, _) -> None:
+        self.log.info("%s, stopped", self)
+
+    def stop(self) -> None:
+        """Stop the application."""
+        self.stopping.set_result(None)
+        if not self.callers:
+            self.stopped.set_result(None)
+
+    def msg(
+        self,
+        msg_type: str | MsgType,
+        *,
+        content: T | None = None,
+        parent: Message | dict[str, Any] | None = None,
+        header: MsgHeader | dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        channel: Channel = Channel.shell,
+    ) -> Message[T]:
+        """Create a new message."""
+        parent = parent or utils.get_parent_message()
+        if header is None:
+            session = ""
+            if parent and (header := parent.get("header")):
+                session = header.get("session", "")
+            header = MsgHeader(
+                date=datetime.now(UTC),
+                msg_id=str(uuid4()),
+                msg_type=msg_type,
+                session=session,
+                username="",
+                version=async_kernel.kernel_protocol_version,
+            )
+        return Message(  # pyright: ignore[reportCallIssue]
+            channel=channel,
+            header=header,
+            parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
+            content={} if content is None else content,
+            metadata=metadata if metadata is not None else {},
+        )
+
+    @override
+    def print_help(self, classes: bool = False) -> None:
+        from async_kernel.compat.attr_docs import get_attr_docs  # noqa: PLC0415
+
+        # Copy trailing docstrings into trait.help.
+        for cls in self.classes:
+            try:
+                for name, value in get_attr_docs(cls).items():
+                    if value and isinstance(trait := getattr(cls, name), traitlets.TraitType) and not trait.help:
+                        trait.help = value
+            except OSError:
+                continue  # Coverage can cause issues with some files.
+        super().print_help(classes)
+
+
+class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     """The base class for kernel interface (singleton).
 
     The interface creates the kernel and provides external communication. It is also
@@ -125,20 +262,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     name = traitlets.Unicode("async").tag(config=True)
     "The name of the kernel used in the kernelspec."
 
-    host: traitlets.TraitType[Hosts | None, Hosts | None] = traitlets.UseEnum(
-        Hosts, default_value=None, allow_none=True
-    ).tag(config=True)
-    "The name of a (gui) event loop (if one is used)."
-
-    host_options = DictValueLiteralEval(allow_none=True).tag(config=True)
-    "Options for starting the loop."
-
-    backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend).tag(config=True)
-    "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
-
-    backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
-    "Options for starting the backend."
-
     interface_class: traitlets.Type[type[Self], type[Self] | str] = traitlets.Type(
         "async_kernel.interface.base.BaseInterface"
     ).tag(  # pyright: ignore[reportAssignmentType]
@@ -171,31 +294,7 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     )
     "The kernel."
 
-    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
-    "The caller associated with the kernel."
-
-    started = Fixed(Pending)
-    "A Pending that is set when the interface has started."
-
-    stopping = Fixed(Pending)
-    """
-    A Pending that is set when stop is called.
-    """
-
     _instance: Self | None = None
-
-    @traitlets.default("backend")
-    def _default_backend(self) -> Backend:
-        try:
-            return Backend(current_async_library())
-        except AsyncLibraryNotFoundError:
-            if (
-                not self.host
-                and not self.trait_has_value("backend_options")
-                and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
-            ):
-                self.backend_options["use_uvloop"] = True
-            return Backend.asyncio
 
     @traitlets.default("shell_class")
     def _default_shell_class(self):
@@ -203,10 +302,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         from async_kernel.shell.ipshell import IPShell  # noqa: PLC0415
 
         return IPShell
-
-    @property
-    def summary(self) -> str:
-        return f"name={self.name!r} backend={str(self.backend)!r}"
 
     @classmethod
     @override
@@ -249,8 +344,9 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             app.start()
             app.exit()
         except BaseException:
+            if app:
+                app.stop()
             del app
-            BaseInterface._instance = None
             gc.collect()
             raise
 
@@ -258,8 +354,8 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
         if BaseInterface._instance:
             msg = "An interface already exists!"
             raise RuntimeError(msg)
-        BaseInterface._instance = super().__new__(cls, **kwargs)
-        return BaseInterface._instance
+        BaseInterface._instance = inst = super().__new__(cls, **kwargs)
+        return inst
 
     def __init__(
         self,
@@ -276,6 +372,12 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             if value:
                 self.set_trait(name, value)
         self.initialize(argv)
+
+    @override
+    def _on_stopped(self, _) -> None:
+        if BaseInterface._instance is self:
+            BaseInterface._instance = None
+        super()._on_stopped(_)
 
     @override
     def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
@@ -324,6 +426,11 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
 
+    @override
+    def exit(self, exit_status: int | str | None = 0) -> None:
+        self.stopped.set_result(None)
+        return super().exit(exit_status)
+
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
 
@@ -337,50 +444,15 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             self.log.info("Stopping kernel")
             self.callers[Channel.control].call_later(0.5, scope.cancel, "Stopping kernel")
 
-        def _check_stopped_early():
-            if self.stopping.done() or self.started.done():
-                msg = "Stopped early"
-                raise RuntimeError(msg)
-
-        _check_stopped_early()
-
+        self.log.info("Starting base interface")
         self.iopub_send = cache_iopub_send
         self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
-        self.backend = Backend(current_async_library())
-        channels_started, stop_channels = create_async_waiter(), create_async_event()
-        try:
-            self.log.info("Starting Shell caller")
-
-            async with Caller("manual", name="Shell", protected=True, log=self.log, host=self.host) as caller:
-                caller_ctrl = caller.get(name="Control", log=self.log, protected=True)
-                self.callers[Channel.shell] = caller
-                self.callers[Channel.control] = caller_ctrl
-                pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
-                await channels_started
-                _check_stopped_early()
-                try:
-                    async with self.kernel:
-                        _check_stopped_early()
-                        with anyio.CancelScope() as scope:
-                            self.stop = stop
-                            if set_started:
-                                self._started()
-                            yield self
-                finally:
-                    stop_channels.set()
-                    await pen_channels.wait(shield=True)
-        finally:
-            if BaseInterface._instance is self:
-                BaseInterface._instance = None
-            self.log.info("Interface stopped")
-
-    async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
-        ready()
-        await stop
-
-    def _started(self) -> None:
-        self.log.info("Interface started: %s", self.summary)
-        self.started.set_result(None)
+        async with super().__asynccontextmanager__(set_started=False), self.kernel:
+            with anyio.CancelScope() as scope:
+                self.stop = stop
+                if set_started:
+                    self._started()
+                yield self
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """Run the kernel.
@@ -397,13 +469,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             if stopped:
                 stopped()
 
-    def stop(self) -> None:
-        """Stop the kernel and this interface."""
-        self.stopping.set_result(None)
-        self.started.cancel("Stopped early")
-        if BaseInterface._instance is self:
-            BaseInterface._instance = None
-
     def input_request(self, prompt: str, *, password: bool = False) -> str:
         """Forward an input request to the frontend.
 
@@ -412,38 +477,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
             password: If the prompt should be considered as a password.
         """
         raise NotImplementedError
-
-    def msg(
-        self,
-        msg_type: str | MsgType,
-        *,
-        content: T | None = None,
-        parent: Message | dict[str, Any] | None = None,
-        header: MsgHeader | dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-        channel: Channel = Channel.shell,
-    ) -> Message[T]:
-        """Create a new message."""
-        parent = parent or utils.get_parent_message()
-        if header is None:
-            session = ""
-            if parent and (header := parent.get("header")):
-                session = header.get("session", "")
-            header = MsgHeader(
-                date=datetime.now(UTC),
-                msg_id=str(uuid4()),
-                msg_type=msg_type,
-                session=session,
-                username="",
-                version=async_kernel.kernel_protocol_version,
-            )
-        return Message(  # pyright: ignore[reportCallIssue]
-            channel=channel,
-            header=header,
-            parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
-            content={} if content is None else content,
-            metadata=metadata if metadata is not None else {},
-        )
 
     def iopub_send(
         self,
@@ -457,20 +490,6 @@ class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell
     ) -> None:
         """Send an iopub message."""
         raise NotImplementedError
-
-    @override
-    def print_help(self, classes: bool = False) -> None:
-        from async_kernel.compat.attr_docs import get_attr_docs  # noqa: PLC0415
-
-        # Copy trailing docstrings into trait.help.
-        for cls in self.classes:
-            try:
-                for name, value in get_attr_docs(cls).items():
-                    if value and isinstance(trait := getattr(cls, name), traitlets.TraitType) and not trait.help:
-                        trait.help = value
-            except OSError:
-                continue  # Coverage can cause issues with some files.
-        super().print_help(classes)
 
 
 class HasInterface(Generic[T_interface_co]):
