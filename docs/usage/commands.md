@@ -54,8 +54,8 @@ async-kernel install --name=async-tk --host=<host name>
 There are two supported backends 'asyncio' and 'trio'.
 
 In CPython the [backend][async_kernel.typing.Backend] is started using [anyio.run][].
-The type of backend can be specified at the attribute [interface.backend][async_kernel.interface.BaseInterface.backend].
-The backend_options can be specified at the attribute [interface.backend_options][async_kernel.interface.base.BaseInterface.backend_options].
+The type of backend can be specified at the attribute [interface.backend][async_kernel.interface.BaseMessageApplication.backend].
+The backend_options can be specified at the attribute [interface.backend_options][async_kernel.interface.base.BaseMessageApplication.backend_options].
 Options can be written as a literal python string.
 
 ```console
