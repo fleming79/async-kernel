@@ -216,13 +216,14 @@ class Caller:
     _guest_queues: Fixed[Self, dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]] = Fixed(dict)
     _guest_done_event: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
     _children_countdown: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
-    _stopping = Fixed(Pending[None])
-    "A pending that is set done the first time stop is called."
 
-    started = Fixed(Pending)
+    started = Fixed(Pending[None])
     "A pending that is set once the caller has started."
 
-    stopped = Fixed(Pending)
+    stopping = Fixed(Pending[None])
+    "A pending that is set done the first time stop is called."
+
+    stopped = Fixed(Pending[None])
     "A pending that is done when the caller is stopped."
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
@@ -278,7 +279,7 @@ class Caller:
             - When the parent is stopped, all children are stopped.
             - All children are stopped prior to the parent changing state to stopped.
         """
-        return {c for c in self._children.copy() if not c._stopping.done()}
+        return {c for c in self._children.copy() if not c.stopping.done()}
 
     @property
     def thread(self) -> threading.Thread:
@@ -392,7 +393,7 @@ class Caller:
     async def __aenter__(self) -> Self:
         self._protected = True
         await self.started.wait(result=False)
-        if self._stopping.done():
+        if self.stopping.done():
             if self._enter_count == 0:
                 await self.stopped
             msg = f"The caller is stopping or stopped {self}"
@@ -432,7 +433,7 @@ class Caller:
                     create_task(contextvars.Context(), self._scheduler, self._queue)
                     with self._inst_lock:
                         self._set_state(CallerState.running)
-                    await self._stopping
+                    await self.stopping
                     await self._guest_done_event
                     await self._children_countdown
             except Exception as e:
@@ -474,7 +475,7 @@ class Caller:
                 try:
                     async_kernel.event_loop.run(run_scheduler, (), settings)
                 except Exception as e:
-                    if not self._stopping.done():
+                    if not self.stopping.done():
                         self.started.set_exception(e)
                         self.stop(force=True)
 
@@ -496,7 +497,7 @@ class Caller:
                 self.started.set_result(None)
             case CallerState.stopping:
                 self.started.cancel("Stopping")
-                self._stopping.set_result(None)
+                self.stopping.set_result(None)
                 # Remove from worker pool
                 if (parent := self.parent) and (workers := parent._worker_pool):
                     with contextlib.suppress(ValueError):
@@ -690,7 +691,7 @@ class Caller:
             - If 'backend' or 'zmq_context' are not specified they are copied from the caller.
         """
         with self._inst_lock:
-            if self._stopping.done():
+            if self.stopping.done():
                 msg = f"Caller is stopping or stopped {self}"
                 raise RuntimeError(msg)
             if name := kwargs.get("name"):
@@ -750,7 +751,7 @@ class Caller:
                 if not (queue := self._guest_queues.get(backend)):
                     queue = SingleAsyncQueue(reject=self._reject)
                     self._guest_queues[backend] = queue
-                    self._stopping.add_done_callback(lambda _: queue.stop())
+                    self.stopping.add_done_callback(lambda _: queue.stop())
 
                     def guest_done_callback(value: Any):
                         self._guest_done_event.down()
