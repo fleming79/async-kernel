@@ -391,12 +391,13 @@ class Caller:
 
     async def __aenter__(self) -> Self:
         self._protected = True
-        await self.started
-        with self._inst_lock:
-            if self._stopping.done():
-                msg = f"This caller is stopping or stopped {self}"
-                raise RuntimeError(msg)
-            self._enter_count = self._enter_count + 1
+        await self.started.wait(result=False)
+        if self._stopping.done():
+            if self._enter_count == 0:
+                await self.stopped
+            msg = f"The caller is stopping or stopped {self}"
+            raise RuntimeError(msg)
+        self._enter_count = self._enter_count + 1
         return self
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:

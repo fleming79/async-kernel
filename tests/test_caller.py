@@ -156,7 +156,7 @@ class TestCaller:
     async def test_stopping(self, anyio_backend: Backend):
         caller = Caller("NewThread")
         caller.stop()
-        with pytest.raises(PendingCancelled):
+        with pytest.raises(RuntimeError):
             async with caller:
                 pass
         assert caller.stopped.done()
