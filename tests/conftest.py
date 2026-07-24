@@ -6,7 +6,6 @@ import threading
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
-import anyio
 import pytest
 import traitlets.config
 import zmq
@@ -90,7 +89,7 @@ async def kernel(anyio_backend: Backend, transport: str, request, tmp_path_facto
         assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
         await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
         try:
-            yield interface.kernel 
+            yield interface.kernel
         finally:
             interface.stop()
             thread.join()
