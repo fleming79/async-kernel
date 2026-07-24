@@ -171,7 +171,7 @@ class Caller:
     CALLER_MAIN_THREAD_ID: int = int(threading.main_thread().ident)  # pyright: ignore[reportArgumentType]
 
     _caller_token = contextvars.ContextVar("caller_tokens", default=CALLER_MAIN_THREAD_ID)
-    _instances: ClassVar[dict[int, Self]] = {}
+    _instances: ClassVar[weakref.WeakValueDictionary[int, Self]] = weakref.WeakValueDictionary()
     _lock: ClassVar = BinarySemaphore()
 
     _thread: threading.Thread
@@ -413,7 +413,7 @@ class Caller:
             if not self._set_state(CallerState.start_sync):
                 return
 
-        async def run_caller_in_context() -> None:
+        async def run_scheduler() -> None:
             with self._inst_lock:
                 if not self._set_state(CallerState.starting):
                     return
@@ -422,16 +422,27 @@ class Caller:
             if no_debug:
                 utils.mark_thread_pydev_do_not_trace()
             try:
-                await self._run_scheduler()
+                with self._inst_lock:
+                    if not self._set_state(CallerState.running):
+                        return
+                async with task_factory() as create_task:
+                    create_task(contextvars.Context(), self._scheduler, self._queue)
+                    await self._stopping
+                    await self._guest_done_event
+                    await self._children_countdown
             except Exception as e:
                 self.log.exception("Caller did not exit context nicely!", exc_info=e)
+            finally:
+                with self._inst_lock:
+                    self._set_state(CallerState.stopping)
+                    self._set_state(CallerState.stopped)
 
         if caller_id and thread:
             assert thread is threading.current_thread()
             self._thread, self._caller_id = thread, caller_id
 
             if self.backend == Backend.asyncio:
-                self._tasks.add(asyncio.create_task(run_caller_in_context()))
+                self._tasks.add(asyncio.create_task(run_scheduler()))
             else:
                 # Use another thread to schedule a trio Task
                 trio_token = trio.lowlevel.current_trio_token()
@@ -439,7 +450,7 @@ class Caller:
                 def to_thread() -> None:
                     utils.mark_thread_pydev_do_not_trace()
                     try:
-                        trio.from_thread.run(run_caller_in_context, trio_token=trio_token)
+                        trio.from_thread.run(run_scheduler, trio_token=trio_token)
                     except (BaseExceptionGroup, BaseException) as e:
                         if not "shutdown" not in str(e):
                             raise
@@ -456,7 +467,7 @@ class Caller:
                     host_options=self.host_options,
                 )
                 try:
-                    async_kernel.event_loop.run(run_caller_in_context, (), settings)
+                    async_kernel.event_loop.run(run_scheduler, (), settings)
                 except Exception as e:
                     if not self._stopping.done():
                         self.stop(force=True)
@@ -501,22 +512,6 @@ class Caller:
             case _:
                 pass
         return True
-
-    async def _run_scheduler(self):
-        """Run the scheduler until stopped."""
-        try:
-            with self._inst_lock:
-                if not self._set_state(CallerState.running):
-                    return
-            async with task_factory() as create_task:
-                create_task(contextvars.Context(), self._scheduler, self._queue)
-                await self._stopping
-                await self._guest_done_event
-                await self._children_countdown
-        finally:
-            with self._inst_lock:
-                self._set_state(CallerState.stopping)
-                self._set_state(CallerState.stopped)
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
         """A function that async iterates the queue and executes items as they arrive.
