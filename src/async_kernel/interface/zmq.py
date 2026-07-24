@@ -21,7 +21,7 @@ from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.event_loop.zmq_poll import Poll
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
+from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
@@ -143,7 +143,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         """Create, bind and configure a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
-        assert channel not in self._sockets
+        if channel is not Channel.stdin:
+            assert channel not in self._sockets
 
         match channel:
             case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
@@ -180,7 +181,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             msg = socket.recv()
             if msg[0] == 1:
                 ident = msg[1:]
-                msg = self.msg("iopub_welcome", content={"subscription": ident.decode()})
+                msg = self.msg(MsgType.iopub_welcome, content={"subscription": ident.decode()})
                 self.iopub_send(msg, ident=ident)
 
         with self._open_socket(Channel.iopub) as iopub_sock, self._poll.event_handler(iopub_sock, on_reg_msg):

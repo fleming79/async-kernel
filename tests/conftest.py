@@ -1,5 +1,3 @@
-import asyncio
-import importlib.util
 import logging
 import os
 import subprocess
@@ -13,10 +11,11 @@ import pytest
 import traitlets.config
 import zmq
 from aiologic.lowlevel import current_async_library
-from jupyter_client.asynchronous.client import AsyncKernelClient
 
+# from async_kernel.client.zmq import AsyncKernelClient
 import async_kernel
 from async_kernel import Caller
+from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.kernel import Kernel
 from async_kernel.kernelspec import make_argv
@@ -30,11 +29,6 @@ if TYPE_CHECKING:
 assert "IPython" not in sys.modules
 
 from async_kernel.interface.ip_app import IPApp  # noqa: E402
-
-if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    params = [pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop")]
-else:
-    params = [pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio")]
 
 debug = False
 
@@ -55,23 +49,10 @@ def pytest_configure(config):
 
 def check_anyio_backend(anyio_backend):
     """Checks the running backend is loaded."""
-    assert current_async_library() == anyio_backend[0]
-    if anyio_backend[0] == "asyncio":
-        loop = asyncio.get_running_loop()
-        if anyio_backend[1]["use_uvloop"]:
-            if sys.platform == "win32":
-                import winloop  # noqa: PLC0415
-
-                assert isinstance(loop, winloop.Loop)
-            else:
-                import uvloop  # noqa: PLC0415
-
-                assert isinstance(loop, uvloop.Loop)
-        else:
-            assert isinstance(loop, asyncio.BaseEventLoop)
+    assert current_async_library() == anyio_backend
 
 
-@pytest.fixture(params=params, scope="module")
+@pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
     return request.param
 
@@ -82,14 +63,18 @@ def transport():
 
 
 @pytest.fixture(scope="module", params=["MainThread", "ShellThread"])
-async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
+async def kernel(anyio_backend: Backend, transport: str, request, tmp_path_factory):
     # Set a blank connection_file
     connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
 
     # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
     interface_class = IPApp if anyio_backend[0] == "asyncio" else ZMQInterface
-    interface = (interface_class)(connection_file=connection_file.as_posix(), transport=transport)
+    interface = (interface_class)(
+        connection_file=connection_file.as_posix(),
+        transport=transport,
+        backend=anyio_backend,
+    )
     if debug:
         interface.log_level = 10
     if request.param == "MainThread":
@@ -113,28 +98,12 @@ async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
 
 
 @pytest.fixture(scope="module")
-async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
+async def client(kernel: Kernel, anyio_backend: Backend) -> AsyncGenerator[ZMQKernelClient, Any]:
     assert isinstance(kernel.parent, ZMQInterface)
-    if kernel.parent.backend is Backend.trio:
-        pytest.skip("AsyncKernelClient needs asyncio")
-    client = AsyncKernelClient()
+    client = ZMQKernelClient()
     client.load_connection_info(kernel.parent.get_connection_info())
-    client.start_channels()
-
-    # Wait for socket
-    await client.get_iopub_msg()
-    await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
-    try:
+    async with client:
         yield client
-    finally:
-        await utils.clear_iopub(client, timeout=0.1)
-        client.stop_channels()
-        await anyio.sleep(0)
-
-
-@pytest.fixture(scope="module", params=["async", "async-trio"])
-def name(request):
-    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -143,18 +112,17 @@ def encryption(request):
 
 
 @pytest.fixture(scope="module")
-async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, transport: str, encryption: str):
+async def subprocess_kernels_client(anyio_backend, tmp_path_factory, transport: str, encryption: str):
     """Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it."""
-    assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
-
+    check_anyio_backend(anyio_backend)
     tmpdir: pathlib.Path = tmp_path_factory.mktemp("async_kernel")
     os.chdir(tmpdir)
 
-    backend = Backend.trio if "trio" in name else Backend.asyncio
     curve_publickey, curve_secretkey = zmq.curve_keypair() if encryption == "curve" else (None, None)
+    name = f"async-{anyio_backend}"
 
     # Start the client
-    client = AsyncKernelClient(
+    client = ZMQKernelClient(
         connection_file=str(tmpdir.joinpath(f"kernel-{os.getpid()}.json")),
         curve_publickey=curve_publickey,
         curve_secretkey=curve_secretkey,
@@ -162,24 +130,21 @@ async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, 
         kernel_name=name,
     )
     client.write_connection_file()
-    client.start_channels()
 
     # Start the interface
-    command = make_argv(connection_file=client.connection_file, name=name, backend=backend)
+    command = make_argv(connection_file=client.connection_file, name=name, backend=anyio_backend)
     if debug:
         command.append("--debug")
     process = subprocess.Popen(command)
     try:
-        # The first message indicates it is connected (could be an iopub welcome, or something else)
-        await client.get_iopub_msg()
-        await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
-
-        yield client
-        await utils.get_reply(client, client.shutdown(), channel=Channel.control)
+        async with client:
+            try:
+                yield client
+            finally:
+                await client.shutdown()
         assert process.wait() == 0
     finally:
         process.terminate()
-        client.stop_channels()
 
 
 @pytest.fixture

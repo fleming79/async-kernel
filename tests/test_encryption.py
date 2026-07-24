@@ -4,26 +4,28 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from async_kernel.typing import MsgType
 from tests import utils
 
 if TYPE_CHECKING:
-    from jupyter_client.asynchronous.client import AsyncKernelClient
+    from async_kernel.client.zmq import ZMQKernelClient
 
 
-@pytest.fixture(scope="module", params=["", "curve"])
+@pytest.fixture(scope="module", params=["no encryption", "curve"])
 def encryption(request):
     return request.param
 
 
-async def test_curve_encryption(subprocess_kernels_client: AsyncKernelClient, encryption: str):
+async def test_curve_encryption(subprocess_kernels_client: ZMQKernelClient, encryption: str):
     client = subprocess_kernels_client
-    await utils.clear_iopub(client)
-    if encryption == "curve":
+
+    if encryption.startswith("curve"):
         assert client.curve_publickey
         assert client.curve_secretkey
-    msg_id, reply = await utils.execute(client, "1+1", clear_pub=False)
-    assert reply["status"] == "ok"
-    await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_result")
-    await utils.check_pub_message(client, msg_id, execution_state="idle")
+    async with client.iopub_subscribe() as queue:
+        reader = aiter(queue)
+        await client.execute("1+1")
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_result)
+        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="idle")

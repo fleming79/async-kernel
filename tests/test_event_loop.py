@@ -171,6 +171,7 @@ class TestHost:
         result = async_kernel.event_loop.run(test_func, ("abc",), settings)
         assert result == "abc"
 
+    @pytest.mark.parametrize("anyio_backend", ["asyncio"])
     async def test_start_guest_run(self, anyio_backend) -> None:
         lock = aiologic.Lock()
         results = set()

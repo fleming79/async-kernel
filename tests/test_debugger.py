@@ -4,11 +4,10 @@ from typing import TYPE_CHECKING
 
 import anyio
 
-from async_kernel.typing import MsgType
-from tests import utils
+from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:
-    from jupyter_client.asynchronous.client import AsyncKernelClient
+    from async_kernel.client.zmq import ZMQKernelClient
 
 import async_kernel.utils
 
@@ -35,27 +34,29 @@ initialize_args = {
 }
 
 
-async def send_debug_request(client: AsyncKernelClient, command: str, arguments: dict | None = None):
+async def send_debug_request(client: ZMQKernelClient, command: str, arguments: dict | None = None):
     """Carry out a debug request and return the reply content.
 
     It does not check if the request was successful.
     """
     send_debug_request._seq = seq = getattr(send_debug_request, "_seq", 0) + 1  # pyright: ignore[reportFunctionMemberAccess]
     # DAP Ref: https://microsoft.github.io/debug-adapter-protocol/specification
-    reply = await utils.send_control_message(
-        client,
-        MsgType.debug_request,
-        {
-            "type": "request",
-            "seq": seq,
-            "command": command,
-            "arguments": arguments or {},
-        },
+    reply = await client.send_message(
+        client.msg(
+            MsgType.debug_request,
+            {
+                "type": "request",
+                "seq": seq,
+                "command": command,
+                "arguments": arguments or {},
+            },
+            channel=Channel.control,
+        ),
     )
     return reply["content"]
 
 
-async def test_debugger(subprocess_kernels_client: AsyncKernelClient):
+async def test_debugger(subprocess_kernels_client: ZMQKernelClient):
     client = subprocess_kernels_client
     reply = await send_debug_request(client=client, command="initialize", arguments=initialize_args)
     assert reply["status"] == "ok"

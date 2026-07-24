@@ -14,13 +14,12 @@ from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.interface import HasInterface
 from async_kernel.pending import PendingManager
-from async_kernel.typing import T_interface_co
+from async_kernel.typing import Content, T_interface_co
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Iterable
 
     from async_kernel import Kernel
-    from async_kernel.typing import Content
 
 
 __all__ = ["BaseShell"]
