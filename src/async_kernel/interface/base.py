@@ -14,7 +14,8 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_event, create_async_waiter, current_async_library
+from aiologic import Event
+from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_waiter, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
 from traitlets.config.application import Application, ClassesType
@@ -138,7 +139,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             msg = "Stopped early"
             raise RuntimeError(msg)
         self.backend = Backend(current_async_library())
-        channels_started, stop_channels = create_async_waiter(), create_async_event()
+        channels_started, stop_channels = create_async_waiter(), Event()
         async with Caller(name="Shell") as caller, caller.get(name="Control") as caller_ctrl:
             self.callers[Channel.shell] = caller
             self.callers[Channel.control] = caller_ctrl

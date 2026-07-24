@@ -5,10 +5,10 @@
 
 # Updates 2026 MIT license
 
-from collections.abc import AsyncGenerator, Callable
+from __future__ import annotations
+
 from contextlib import asynccontextmanager
-from types import CoroutineType
-from typing import Any, Generic, Literal, Self
+from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
 import jupyter_client
 import jupyter_client.session
@@ -19,6 +19,10 @@ from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface.base import BaseMessageApplication
 from async_kernel.pending import Pending
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, MsgTypeNoReply, NoValue, T
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Callable
+    from types import CoroutineType
 
 
 class PendingMessage(Pending[Message[T]], Generic[T]):
@@ -50,6 +54,7 @@ class BaseKernelClient(BaseMessageApplication):
         """A handler for incoming messages."""
         # Thread poll
         if (parent := msg.get("parent_header")) and (f := self._pending_messages.pop(parent["msg_id"], None)):
+            self.log.debug("Received reply %s %s", msg["header"]["msg_type"], msg)
             f.set_result(msg)
 
     def _handle_msg(self, job: Job) -> None:
@@ -83,6 +88,7 @@ class BaseKernelClient(BaseMessageApplication):
         if MsgType(msg["header"]["msg_type"]) in MsgTypeNoReply:
             msg_ = f"{msg['header']['msg_type']} does not send a reply! Use `send_message_no_reply` instead."
             raise TypeError(msg_)
+        self.log.debug("Send mssage %s %s", msg["header"]["msg_type"], msg)
         self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage(parent=self._send_msg(msg))
         return pen
 
@@ -117,9 +123,9 @@ class BaseKernelClient(BaseMessageApplication):
         silent: bool = False,
         store_history: bool = True,
         user_expressions: dict[str, str] | None = None,
-        stop_on_error: NoValue | bool = NoValue,
+        stop_on_error: NoValue | bool = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         metadata: dict[str, Any] | None = None,
-        input_handler: Callable[[Content], CoroutineType[Any, Any, str]] | None | NoValue = NoValue,
+        input_handler: Callable[[Content], CoroutineType[Any, Any, str]] | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         channel: Literal[Channel.shell, Channel.control] = Channel.shell,
         subshell_id: str | None = None,
     ) -> PendingMessage:

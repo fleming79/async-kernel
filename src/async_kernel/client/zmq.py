@@ -3,10 +3,11 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 import time
-from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import jupyter_client
 import jupyter_client.session
@@ -14,13 +15,15 @@ import traitlets
 import zmq
 from aiologic.lowlevel import async_sleep, create_async_event, create_async_waiter
 from jupyter_client.connect import ConnectionFileMixin
-from traitlets.traitlets import Instance
 from typing_extensions import override
 
 from async_kernel.client.base import BaseKernelClient
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import Poll
 from async_kernel.typing import Channel, Job, Message, MsgHeader, MsgType, T
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 
 
 class ClientSession(jupyter_client.session.Session):
@@ -32,7 +35,7 @@ class ZMQKernelClient(BaseKernelClient, ConnectionFileMixin):  # pyright: ignore
 
     _sockets: Fixed[Any, dict[Channel, zmq.Socket]] = Fixed(dict)
 
-    session: Instance[ClientSession] = traitlets.Instance(ClientSession, ())
+    session: traitlets.Instance[ClientSession] = traitlets.Instance(ClientSession, ())
     ""
 
     @override
