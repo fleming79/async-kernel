@@ -42,7 +42,7 @@ class BaseKernelClient(BaseMessageApplication):
         None, allow_none=True
     ).tag(config=True)
 
-    _has_heartbeat: str | bool = False
+    _has_heartbeat: str | bool = True
 
     ""
 

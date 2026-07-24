@@ -68,7 +68,6 @@ class ZMQKernelClient(BaseKernelClient, ConnectionFileMixin):  # pyright: ignore
                     else:
                         self._handle_msg(Job(msg=msg, ident=ident, received_time=time.monotonic()))
 
-                self._has_heartbeat = "STARTING"
                 await self._wait_for_ready()
                 with (
                     poll.event_handler(ctrl, handle_msg),
@@ -130,15 +129,8 @@ class ZMQKernelClient(BaseKernelClient, ConnectionFileMixin):  # pyright: ignore
         with self.open_socket(Channel.heartbeat) as sock, self.poll.event_handler(sock, recv):
             while True:
                 count = count + 1
-                try:
-                    sock.send(b"ping")
-                except zmq.ZMQError:
-                    if self.stopping.done():
-                        break
-                try:
-                    await async_sleep(1)
-                except anyio.get_cancelled_exc_class():
-                    return
+                sock.send(b"ping")
+                await async_sleep(1)
                 self._has_heartbeat = count < 5
 
     async def _configure_session_protocol(self) -> None:
@@ -208,6 +200,7 @@ class ZMQKernelClient(BaseKernelClient, ConnectionFileMixin):  # pyright: ignore
         Tip:
             - A sync version of this function can be achieved by using poll directly.
         """
+        assert self._has_heartbeat
 
         def forward_messages(sock: zmq.Socket, event: int) -> None:
             msg: Message = self.session.recv(sock)[1]  # pyright: ignore[reportAssignmentType]
