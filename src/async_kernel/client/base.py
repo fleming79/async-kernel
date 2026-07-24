@@ -18,7 +18,7 @@ from async_kernel import utils
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface.base import BaseMessageApplication
 from async_kernel.pending import Pending
-from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, NoValue, T
+from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, MsgTypeNoReply, NoValue, T
 
 
 class PendingMessage(Pending[Message[T]], Generic[T]):
@@ -78,9 +78,20 @@ class BaseKernelClient(BaseMessageApplication):
         raise RuntimeError(msg_)
 
     def send_message(self, msg: Message) -> PendingMessage:
-        raise NotImplementedError
+        """Sends the message to the kernel and returns a PendingMessage."""
+        assert self._has_heartbeat
+        if MsgType(msg["header"]["msg_type"]) in MsgTypeNoReply:
+            msg_ = f"{msg['header']['msg_type']} does not send a reply! Use `send_message_no_reply` instead."
+            raise TypeError(msg_)
+        self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage(parent=self._send_msg(msg))
+        return pen
 
     def send_message_no_reply(self, msg: Message) -> Message:
+        """Sends a message to the kernel and returns the message that was sent."""
+        assert self._has_heartbeat
+        return self._send_msg(msg)
+
+    def _send_msg(self, msg: Message) -> Message:
         raise NotImplementedError
 
     @asynccontextmanager
