@@ -6,7 +6,7 @@
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, Generic, override
+from typing import Any, override
 
 import anyio
 import jupyter_client
@@ -17,17 +17,10 @@ from aiologic.lowlevel import async_sleep, create_async_event, create_async_wait
 from jupyter_client.connect import ConnectionFileMixin
 from traitlets.traitlets import Instance
 
-from async_kernel.client.base import BaseKernelClient
+from async_kernel.client.base import BaseKernelClient, PendingMessage
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import Poll
-from async_kernel.pending import Pending
-from async_kernel.typing import Channel, Job, Message, MsgHeader, MsgType, T
-
-
-class PendingMessage(Pending[T], Generic[T]):
-    @property
-    def msg_id(self) -> str:
-        return self.metadata["parent"]["header"]["msg_id"]
+from async_kernel.typing import Channel, Job, Message, MsgHeader, MsgType, MsgTypeNoReply, T
 
 
 class ClientSession(jupyter_client.session.Session):
@@ -83,10 +76,10 @@ class ZMQKernelClient(BaseKernelClient, ConnectionFileMixin):  # pyright: ignore
                     poll.event_handler(stdin, handle_msg),
                 ):
                     await self._configure_session_protocol()
-                    async with anyio.create_task_group() as tg:
-                        tg.start_soon(self._heartbeat)
-                        await stop
-                        tg.cancel_scope.cancel("Shutdown")
+                    pen = self.callers[Channel.control].call_soon(self._heartbeat)
+                    ready()
+                    await stop
+                    await pen.cancel_wait()
 
     @contextmanager
     def open_socket(self, channel: Channel, /) -> Generator[zmq.Socket]:
@@ -184,6 +177,22 @@ class ZMQKernelClient(BaseKernelClient, ConnectionFileMixin):  # pyright: ignore
         msg: Message = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
         msg["channel"] = channel
         return msg
+
+    @override
+    def send_message(self, msg: Message) -> PendingMessage:
+        if MsgType(msg["header"]["msg_type"]) in MsgTypeNoReply:
+            msg_ = f"{msg['header']['msg_type']} does not send a reply! Use `send_message_no_reply` instead."
+            raise TypeError(msg_)
+        msg_id, sock = msg["header"]["msg_id"], self._sockets[msg["channel"]]
+        assert not sock.closed
+        self._pending_messages[msg_id] = pen = PendingMessage(parent=self.session.send(sock, msg))  # pyright: ignore[reportArgumentType]
+        return pen
+
+    @override
+    def send_message_no_reply(self, msg: Message) -> Message:
+        sock = self._sockets[msg["channel"]]
+        assert not sock.closed
+        return self.session.send(sock, msg)  # pyright: ignore[reportReturnType, reportArgumentType]
 
     @asynccontextmanager
     async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:

@@ -3,6 +3,8 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
+# Updates 2026 MIT license
+
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
@@ -19,7 +21,7 @@ from async_kernel.pending import Pending
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, NoValue, T
 
 
-class PendingMessage(Pending[T], Generic[T]):
+class PendingMessage(Pending[Message[T]], Generic[T]):
     @property
     def msg_id(self) -> str:
         return self.metadata["parent"]["header"]["msg_id"]
@@ -32,7 +34,7 @@ class ClientSession(jupyter_client.session.Session):
 class BaseKernelClient(BaseMessageApplication):
     """Communicates with a single kernel on any host via zmq channels."""
 
-    _pending_messages: Fixed[Self, dict[str, PendingMessage]] = Fixed(dict)
+    _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
 
     _input_handlers: Fixed[Self, dict[str, Callable[[Content], CoroutineType[Any, Any, str]]]] = Fixed(dict)
 
@@ -75,10 +77,10 @@ class BaseKernelClient(BaseMessageApplication):
         msg_ = "A handler is not available"
         raise RuntimeError(msg_)
 
-    def send_message(self, msg: Message) -> PendingMessage[Message[Content]]:
+    def send_message(self, msg: Message) -> PendingMessage:
         raise NotImplementedError
 
-    def send_message_no_reply(self, msg: Message):
+    def send_message_no_reply(self, msg: Message) -> Message:
         raise NotImplementedError
 
     @asynccontextmanager
@@ -93,9 +95,6 @@ class BaseKernelClient(BaseMessageApplication):
             async for msg in queue:
                 pass
         ```
-
-        Tip:
-            - A sync version of this function can be achieved by using poll directly.
         """
         raise NotImplementedError
         yield  # pyright: ignore[reportUnreachable]
@@ -112,7 +111,7 @@ class BaseKernelClient(BaseMessageApplication):
         input_handler: Callable[[Content], CoroutineType[Any, Any, str]] | None | NoValue = NoValue,
         channel: Literal[Channel.shell, Channel.control] = Channel.shell,
         subshell_id: str | None = None,
-    ) -> PendingMessage[Message[Content]]:
+    ) -> PendingMessage:
         """Execute code in the kernel.
 
         Params:
@@ -137,25 +136,20 @@ class BaseKernelClient(BaseMessageApplication):
             "stop_on_error": (not silent) if stop_on_error is NoValue else stop_on_error,
             "subshell_id": subshell_id,
         }
-        pen: PendingMessage[Message[Content]] = self.send_message(
-            self.msg(MsgType.execute_request, content=content, metadata=metadata, channel=channel)
-        )
+        pen = self.send_message(self.msg(MsgType.execute_request, content=content, metadata=metadata, channel=channel))
         if input_handler:
             self._input_handlers[pen.msg_id] = input_handler
             pen.add_done_callback(lambda _: self._input_handlers.pop(pen.msg_id))
         return pen
 
-    def complete(self, code: str, cursor_pos: int | None = None) -> PendingMessage[Message]:
+    def complete(self, code: str, cursor_pos: int | None = None) -> PendingMessage[Content]:
         """Tab complete text in the kernel's namespace.
 
-        Parameters
-        ----------
-        code : str
-            The context in which completion is requested.
-            Can be anything between a variable name and an entire cell.
-        cursor_pos : int, optional
-            The position of the cursor in the block of code where the completion was requested.
-            Default: ``len(code)``
+        Args:
+            code: The context in which completion is requested.
+                Can be anything between a variable name and an entire cell.
+            cursor_pos: The position of the cursor in the block of code where the completion was requested.
+                Default: `len(code)`.
         """
         if cursor_pos is None:
             cursor_pos = len(code)
@@ -163,7 +157,7 @@ class BaseKernelClient(BaseMessageApplication):
         msg = self.msg(MsgType.complete_request, content=content)
         return self.send_message(msg)
 
-    def inspect(self, code: str, cursor_pos: int | None = None, detail_level: int = 0) -> PendingMessage[Message]:
+    def inspect(self, code: str, cursor_pos: int | None = None, detail_level: int = 0) -> PendingMessage[Content]:
         """Get metadata information about an object in the kernel's namespace.
 
         It is up to the kernel to determine the appropriate object to inspect.
@@ -185,37 +179,23 @@ class BaseKernelClient(BaseMessageApplication):
         output: bool = False,
         hist_access_type: Literal["tail", "range", "search"] = "range",
         **kwargs: Any,
-    ) -> PendingMessage[Message[Content]]:
+    ) -> PendingMessage[Content]:
         """Get entries from the kernel's history list.
 
-        Parameters
-        ----------
-        raw : bool
-            If True, return the raw input.
-        output : bool
-            If True, then return the output as well.
-        hist_access_type : str
-            'range' (fill in session, start and stop params), 'tail' (fill in n)
+        Args:
+        raw: If True, return the raw input.
+        output: If True, then return the output as well.
+        hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)
              or 'search' (fill in pattern param).
+        **kwargs:
+            session: For a range request, the session from which to get lines. Session numbers
+                are positive integers; negative ones count back from the current session.
+            start: The first line number of a history range.
+            stop: The final (excluded) line number of a history range.
+            n: The number of lines of history to get for a tail request.
+            pattern: The glob-syntax pattern for a search request.
 
-        session : int
-            For a range request, the session from which to get lines. Session
-            numbers are positive integers; negative ones count back from the
-            current session.
-        start : int
-            The first line number of a history range.
-        stop : int
-            The final (excluded) line number of a history range.
-
-        n : int
-            The number of lines of history to get for a tail request.
-
-        pattern : str
-            The glob-syntax pattern for a search request.
-
-        Returns:
-        -------
-        The ID of the message sent.
+        Returns: The ID of the message sent.
         """
         if hist_access_type == "range":
             kwargs.setdefault("session", 0)
@@ -223,7 +203,7 @@ class BaseKernelClient(BaseMessageApplication):
         content = dict(raw=raw, output=output, hist_access_type=hist_access_type, **kwargs)
         return self.send_message(self.msg(MsgType.history_request, content=content))
 
-    def kernel_info(self) -> PendingMessage[Message]:
+    def kernel_info(self) -> PendingMessage[Content]:
         """Request kernel info."""
         return self.send_message(self.msg(MsgType.kernel_info_request))
 
