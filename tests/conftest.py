@@ -6,6 +6,7 @@ import threading
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
+import anyio
 import pytest
 import traitlets.config
 import zmq
@@ -91,7 +92,9 @@ async def kernel(anyio_backend: Backend, transport: str, request, tmp_path_facto
         try:
             yield interface.kernel
         finally:
-            interface.stop()
+            with anyio.move_on_after(1):
+                interface.stop()
+                await interface.stopped
             thread.join()
 
 
