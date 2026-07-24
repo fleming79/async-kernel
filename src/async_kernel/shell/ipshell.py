@@ -1000,7 +1000,7 @@ class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
         try:
             import uv  # noqa: PLC0415
 
-            fname = uv.find_uv_bin()
+            fname = uv.find_uv_bin()  # pragma: no cover
         except Exception:
             pass
 
