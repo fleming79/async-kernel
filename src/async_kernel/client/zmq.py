@@ -35,13 +35,6 @@ class ZMQKernelClient(BaseKernelClient, ConnectionFileMixin):  # pyright: ignore
     ""
 
     @override
-    def __del__(self) -> None:
-        """Handle garbage collection."""
-        super().__del__()
-        if stop := getattr(self, "_stop", None):
-            stop.wake()
-
-    @override
     async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
         if not self.shell_port:
             msg = "Connection info has not been set. Tip: Use `load_connection_file` or `load_connection_info`."
