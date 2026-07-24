@@ -6,7 +6,7 @@
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, override
+from typing import Any
 
 import jupyter_client
 import jupyter_client.session
@@ -15,6 +15,7 @@ import zmq
 from aiologic.lowlevel import async_sleep, create_async_event, create_async_waiter
 from jupyter_client.connect import ConnectionFileMixin
 from traitlets.traitlets import Instance
+from typing_extensions import override
 
 from async_kernel.client.base import BaseKernelClient
 from async_kernel.common import Fixed, SingleAsyncQueue
