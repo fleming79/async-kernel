@@ -39,6 +39,7 @@ else:
 debug = False
 
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
+    debug = True
     logging.basicConfig(level=10)
 
 
@@ -49,6 +50,7 @@ def pytest_configure(config):
         debug = True
     if debug:
         traitlets.config.Application.log_level.default_value = 10  # pyright: ignore[reportAttributeAccessIssue]
+        logging.basicConfig(level=10)
 
 
 def check_anyio_backend(anyio_backend):
