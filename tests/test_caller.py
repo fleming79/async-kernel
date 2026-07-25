@@ -14,7 +14,7 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
@@ -60,6 +60,7 @@ class TestCaller:
         async with Caller() as caller:
             # worker thread
             assert await caller.to_thread(lambda: 2 + 1) == 3
+            await async_checkpoint(force=True)
             assert len(caller.children) == 1
             worker = next(iter(caller.children))
             assert worker.id != caller.id
