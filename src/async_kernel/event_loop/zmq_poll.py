@@ -313,8 +313,6 @@ class ZMQPoll:
     async def execute_async(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute func in the thread waiting for the result asynchronously."""
         if hasattr(self, "thread"):
-            if threading.current_thread() is self.thread:
-                return func(*args, **kwargs)
             self._execute.append(pen := Pending[T](func=func, args=args, kwargs=kwargs))
             if not self.stopped.done():
                 self._wake()
