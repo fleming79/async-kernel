@@ -59,6 +59,7 @@ class TestCaller:
     async def test_child_lifecycle(self, anyio_backend: Backend):
         async with Caller() as caller:
             # worker thread
+            assert caller.IDLE_WORKER_SHUTDOWN_DURATION == 0
             assert await caller.to_thread(lambda: 2 + 1) == 3
             await async_checkpoint(force=True)
             assert len(caller.children) == 1
@@ -67,6 +68,7 @@ class TestCaller:
             # Child thread
             async with caller.get(name="c1") as c1:
                 assert c1 in caller.children
+                assert worker._state is CallerState.running
                 assert len(caller.children) == 2
                 assert caller.get(name="c1") is c1
                 wrong_backend = next(b for b in Backend if b != anyio_backend)
