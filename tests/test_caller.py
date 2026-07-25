@@ -14,7 +14,7 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
@@ -59,13 +59,16 @@ class TestCaller:
     async def test_child_lifecycle(self, anyio_backend: Backend):
         async with Caller() as caller:
             # worker thread
+            assert caller.IDLE_WORKER_SHUTDOWN_DURATION == 0
             assert await caller.to_thread(lambda: 2 + 1) == 3
+            await async_checkpoint(force=True)
             assert len(caller.children) == 1
             worker = next(iter(caller.children))
             assert worker.id != caller.id
             # Child thread
             async with caller.get(name="c1") as c1:
                 assert c1 in caller.children
+                assert worker._state is CallerState.running
                 assert len(caller.children) == 2
                 assert caller.get(name="c1") is c1
                 wrong_backend = next(b for b in Backend if b != anyio_backend)

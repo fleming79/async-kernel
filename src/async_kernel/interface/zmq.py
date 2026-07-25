@@ -19,7 +19,7 @@ from zmq import Flag, PollEvent, SocketOption
 
 from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
-from async_kernel.event_loop.zmq_poll import Poll
+from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
 
@@ -121,12 +121,12 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             self.load_connection_file()
         self.write_connection_file()
 
-        with Poll(log=self.log) as poll:
-            self._poll = poll
+        with ZMQPoll(log=self.log) as zmq_poll:
+            self._zmq_poll = zmq_poll
             async with self._iopub():
                 with (
                     self._open_socket(Channel.heartbeat) as hb,
-                    poll.event_handler(hb, heartbeat),
+                    zmq_poll.event_handler(hb, heartbeat),
                     self._open_socket(Channel.stdin),
                     self._message_handler(Channel.control) as ctrl,
                     self._message_handler(Channel.shell) as shell,
@@ -136,10 +136,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                     await self.started
                     with ctrl, shell:
                         await stop
-            del ctrl, shell, self._poll
+            del ctrl, shell, self._zmq_poll
 
     @contextmanager
-    def _open_socket(self, channel: Channel, /) -> Generator[zmq.Socket]:
+    def _open_socket(self, channel: Channel, /) -> Generator[ZMQPollSocket]:
         """Create, bind and configure a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
@@ -147,23 +147,21 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
         match channel:
             case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
-                socket = self._poll.socket(zmq.SocketType.ROUTER)
+                socket = self._zmq_poll.socket(zmq.SocketType.ROUTER)
             case Channel.iopub:
-                socket = self._poll.socket(zmq.SocketType.XPUB)
+                socket = self._zmq_poll.socket(zmq.SocketType.XPUB)
         socket.setsockopt(zmq.SocketOption.LINGER, 500)
 
-        if self.curve_secretkey is not None and self.curve_publickey is not None:
+        if self.curve_secretkey is not None:
             socket.curve_secretkey = self.curve_secretkey
             socket.curve_publickey = self.curve_publickey
             socket.curve_server = True
-
         # Bind the socket.
         addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
-        socket.bind(addr)
         self.log.debug("%s socket on port: %i", channel, port)
         self._sockets[channel] = socket
         try:
-            with socket:
+            with socket, socket.bind(addr):
                 yield socket
         finally:
             self.log.debug("%s socket closed", channel)
@@ -183,7 +181,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 msg = self.msg("iopub_welcome", content={"subscription": ident.decode()})
                 self.iopub_send(msg, ident=ident)
 
-        with self._open_socket(Channel.iopub) as iopub_sock, self._poll.event_handler(iopub_sock, on_reg_msg):
+        with self._open_socket(Channel.iopub) as iopub_sock, self._zmq_poll.event_handler(iopub_sock, on_reg_msg):
             self._iopub_socket = iopub_sock
             yield
             self._iopub_socket = None
@@ -220,7 +218,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 log.debug("Bad message on %s: %s", channel, e)
 
         with self._open_socket(channel) as socket:
-            yield self._poll.event_handler(socket, recv_msg)
+            yield self._zmq_poll.event_handler(socket, recv_msg)
 
     @override
     def input_request(self, prompt: str, *, password=False) -> Any:
@@ -257,7 +255,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | MsgHeader | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
         buffers: list[bytes] | None = None,
     ) -> None:

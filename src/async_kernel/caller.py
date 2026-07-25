@@ -667,11 +667,7 @@ class Caller:
             return
         with self._inst_lock:
             state = self._state
-            if (
-                self._set_state(CallerState.stopping)
-                and state.value < CallerState.running.value
-                and not self.stopped.done()
-            ):
+            if self._set_state(CallerState.stopping) and state.value < CallerState.running.value:
                 self._set_state(CallerState.stopped)
 
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:

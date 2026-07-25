@@ -6,7 +6,7 @@ import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
 
-from async_kernel.event_loop.zmq_poll import Poll
+from async_kernel.event_loop.zmq_poll import ZMQPoll
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
 
@@ -38,7 +38,7 @@ async def test_user_ns(anyio_backend: Backend):
 async def test_iopub_welcome(topic: str, anyio_backend: Backend):
     """Test iopub welcome message. https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
     async with IPApp() as interface:
-        with Poll() as poll:
+        with ZMQPoll() as poll:
             ip, port, transport = interface.ip, interface.iopub_port, interface.transport
             addr = f"tcp://{ip}:{port}" if transport == "tcp" else f"ipc://{ip}-{port}"
             sock = poll.socket(zmq.SocketType.SUB)
