@@ -215,7 +215,7 @@ class ZMQPoll:
                 sock.recv()
 
             def do_execute() -> None:
-                """Execute pending items added by the `execute` method."""
+                """Execute pending items added by the `execute` and `execute_async` methods."""
                 while execute:
                     md = (pen := execute.popleft()).metadata
                     try:
@@ -299,7 +299,7 @@ class ZMQPoll:
         return self._validate_socket(self._zmq_context.socket(socket_type))
 
     def execute(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Execute func in the thread waiting for the result synchronously."""
+        """Execute `func` in the thread waiting for the result synchronously."""
         if hasattr(self, "thread"):
             if threading.current_thread() is self.thread:
                 return func(*args, **kwargs)
@@ -311,7 +311,7 @@ class ZMQPoll:
         raise RuntimeError(msg)
 
     async def execute_async(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Execute func in the thread waiting for the result asynchronously."""
+        """Execute `func` in the thread waiting for the result asynchronously."""
         if hasattr(self, "thread"):
             self._execute.append(pen := Pending[T](func=func, args=args, kwargs=kwargs))
             if not self.stopped.done():
@@ -342,9 +342,8 @@ class ZMQPoll:
             flags: The type of event to listen for.
                 [zmq.PollEvent.POLLIN][]: `sock` is readable.
                 [zmq.PollEvent.POLLOUT][]: `sock` was read from.
-            countdown: A tuple ('n', callback) where the handler is run to completion
-                exactly 'n' times. The callback could be an `event.set` to release
-                the context.
+            countdown: A tuple ('n', callback) where the handler is run to completion exactly 'n' times.
+                The callback could be an `event.set` to release the context.
 
         Tip:
             The handler is called inside a dedicated thread which may have been marked using
