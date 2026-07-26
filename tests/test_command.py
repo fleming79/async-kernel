@@ -13,10 +13,10 @@ from typing import TYPE_CHECKING, Literal, cast
 import anyio
 import pytest
 from aiologic import Event
-from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel
 from async_kernel import Kernel, Pending
+from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.command import command_line, to_flags_and_settings
 from async_kernel.interface.base import BaseInterface
 from async_kernel.interface.ip_app import IPApp
@@ -270,11 +270,9 @@ def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, hos
     assert kernel.parent.backend == backend
 
 
-async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, name, transport):
+async def test_subprocess_kernels_client(subprocess_kernels_client: ZMQKernelClient, transport, anyio_backend: Backend):
     # Start & Stop a kernel
-    backend = Backend.trio if "trio" in name.lower() else Backend.asyncio
-    _, reply = await utils.execute(
-        subprocess_kernels_client,
+    reply = await subprocess_kernels_client.execute(
         "interface = get_ipython().parent",
         user_expressions={
             "name": "interface.name",
@@ -282,9 +280,10 @@ async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelC
             "transport": "interface.transport",
         },
     )
-    assert name in reply["user_expressions"]["name"]["data"]["text/plain"]
-    assert backend in reply["user_expressions"]["backend"]["data"]["text/plain"]
-    assert transport in reply["user_expressions"]["transport"]["data"]["text/plain"]
+    user_expressions = reply["content"].get("user_expressions")
+    assert user_expressions
+    assert anyio_backend in user_expressions["backend"]["data"]["text/plain"]
+    assert transport in user_expressions["transport"]["data"]["text/plain"]
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Can't simulate keyboard interrupt on windows.")
@@ -294,19 +293,17 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyi
     command = make_argv(connection_file=str(connection_file))
 
     process = subprocess.Popen(command)
-    client = AsyncKernelClient()
+    client = ZMQKernelClient()
 
     while not connection_file.exists():
         await anyio.sleep(0.1)
 
     client.load_connection_file(str(connection_file))
-    client.start_channels()
-    await client.get_iopub_msg()
-    await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
-
-    # Simulate a keyboard interrupt from the console.
-    process.send_signal(signal.SIGINT)
-    process.wait(utils.TIMEOUT)
+    async with client:
+        await client.execute("1+1")
+        # Simulate a keyboard interrupt from the console.
+        process.send_signal(signal.SIGINT)
+        process.wait(utils.TIMEOUT)
 
 
 async def test_ZMQInterface_gc(anyio_backend: Backend):
