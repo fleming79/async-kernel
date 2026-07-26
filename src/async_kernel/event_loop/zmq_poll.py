@@ -228,6 +228,8 @@ class ZMQPoll:
             execute=self._execute,
             zmq_poll_sockets: set[ZMQPollSocket] = self.sockets,
             cancellers=self._cancellers,
+            send=send,
+            wake=wake,
             log=self.log,
         ) -> None:
             """Runs the 'event' loop."""
@@ -308,10 +310,10 @@ class ZMQPoll:
                             self.log.exception("Socket close call failed", exc_info=e)
                     log.debug("Stopped zmq_poll event loop")
 
+        self._wake = _wake
         self.thread = threading.Thread(target=zmq_poll_thread)
         self.thread.start()
         started.wait()
-        self._wake = _wake
         ref = weakref.ref(self)
         self.stopped.add_done_callback(lambda _: (self := ref()) and self._on_stopped())
         self.log.debug("ZMQPoll event loop started")
