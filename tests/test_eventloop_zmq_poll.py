@@ -97,7 +97,7 @@ class Test_zmq_Poll:
             n = 0
             for _ in range(N * 2):
                 sock_dealer.send(b"")
-            with zmq_poll.event_handler(sock_router, in_thread, flags=zmq.PollEvent.POLLOUT, countdown=(N, done.wake)):
+            with zmq_poll.event_handler(sock_router, in_thread, flags=zmq.PollEvent.POLLOUT, limit=(N, done.wake)):
                 await done
                 assert n == N
             assert n == N
@@ -115,7 +115,7 @@ class Test_zmq_Poll:
                 sub.subscribe(b"")
                 # Wait for sub to connection
                 ready = create_async_waiter()
-                with zmq_poll.event_handler(pub, lambda _, __: None, countdown=(1, ready.wake)):
+                with zmq_poll.event_handler(pub, lambda _, __: None, limit=(1, ready.wake)):
                     await ready
 
                 barrier = Latch(n - 1)
@@ -189,3 +189,25 @@ class Test_zmq_Poll:
 
             frames = server.recv_multipart()
             assert frames == [b"test"]
+
+    async def test_limit_exit_early(self, caller: Caller):
+        """Stress test interface.iopub_send and the associated socket."""
+        with (
+            ZMQPoll() as zmq_poll,
+            zmq_poll.socket(socket_type=zmq.SocketType.XPUB) as pub,
+            zmq_poll.socket(zmq.SocketType.SUB) as sub,
+            pub.bind(addr := "inproc://socket_proxy_test"),
+            sub.connect(addr),
+        ):
+
+            async def test_exit_early():
+                started.wake()
+                resume = create_async_waiter()
+                with zmq_poll.event_handler(pub, lambda _, __: None, limit=(1, resume.wake)):
+                    await resume
+
+            pen = caller.call_soon(test_exit_early)
+            await (started := create_async_waiter())
+
+        with anyio.fail_after(1):
+            await pen
