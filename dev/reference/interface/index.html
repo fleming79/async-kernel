@@ -9965,7 +9965,7 @@ kernel_interface["stop"](msg, buffer)
             <span class="bp">self</span><span class="o">.</span><span class="n">load_connection_file</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_connection_file</span><span class="p">()</span>
 
-        <span class="k">with</span> <span class="n">ZMQPoll</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">)</span> <span class="k">as</span> <span class="n">zmq_poll</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">ZMQPoll</span><span class="p">()</span> <span class="k">as</span> <span class="n">zmq_poll</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_poll</span> <span class="o">=</span> <span class="n">zmq_poll</span>
             <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iopub</span><span class="p">():</span>
                 <span class="k">with</span> <span class="p">(</span>
