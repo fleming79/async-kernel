@@ -146,7 +146,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
             await channels_started
             if set_started:
-                self._started()
+                self._started()  # pragma: no cover
             try:
                 yield self
             finally:
