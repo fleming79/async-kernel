@@ -14,13 +14,12 @@ from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.interface import HasInterface
 from async_kernel.pending import PendingManager
-from async_kernel.typing import T_interface_co
+from async_kernel.typing import Content, MsgType, T_interface_co
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Iterable
 
     from async_kernel import Kernel
-    from async_kernel.typing import Content
 
 
 __all__ = ["BaseShell"]
@@ -199,7 +198,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
             content["execution_count"] = self.execution_count
             content["data"] = repr(result)
             content["metadata"] = {}
-            self.parent.iopub_send("execute_result", content=content)
+            self.parent.iopub_send(MsgType.iopub_execute_result, content=content)
 
     async def do_execute(
         self,

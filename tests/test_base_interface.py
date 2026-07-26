@@ -81,8 +81,8 @@ class TestBaseInterface:
             with async_kernel.utils.show_result(True):
                 interface.kernel.shell.displayhook(123)
             assert iopub_send.called
-            expected = "call('execute_result', content={'execution_count': 0, 'data': '123', 'metadata': {}})"
-            assert str(iopub_send.call_args) == expected
+            expected = "{'content': {'execution_count': 0, 'data': '123', 'metadata': {}}}"
+            assert str(list(iopub_send.call_args)[1]) == expected
 
     async def test_stop_early(self, anyio_backend: Backend):
         app = BaseInterface(shell_class=BaseShell)

@@ -13,6 +13,8 @@ from packaging.version import Version as PackingVersion
 from traitlets.traitlets import Bool, Dict, Enum, HasTraits, Integer, List, TraitError, Unicode, observe
 from typing_extensions import override
 
+from async_kernel.typing import MsgType
+
 __all__ = ["Reference", "references"]
 
 
@@ -102,7 +104,7 @@ class MimeBundle(Reference):
 
 # shell replies
 class Reply(Reference):
-    status = Enum(("ok", "error"), default_value="ok")
+    status = Enum(("ok", MsgType.iopub_error), default_value="ok")
 
 
 class ExecuteReply(Reply):
@@ -113,7 +115,7 @@ class ExecuteReply(Reply):
         super().check(d)
         if d["status"] == "ok":
             ExecuteReplyOkay().check(d)
-        elif d["status"] == "error":
+        elif d["status"] == MsgType.iopub_error:
             ExecuteReplyError().check(d)
 
 
@@ -123,7 +125,7 @@ class ExecuteReplyOkay(Reply):
 
 
 class ExecuteReplyError(Reply):
-    status = Enum("error")
+    status = Enum(MsgType.iopub_error)
     ename = Unicode()
     evalue = Unicode()
     traceback = List(Unicode())
@@ -254,24 +256,25 @@ class ListSubshellReply(Reply):
 
 
 references = {
-    "execute_reply": ExecuteReply(),
-    "inspect_reply": InspectReply(),
-    "status": Status(),
-    "complete_reply": CompleteReply(),
-    "kernel_info_reply": KernelInfoReply(),
-    "connect_reply": ConnectReply(),
-    "comm_info_reply": CommInfoReply(),
-    "is_complete_reply": IsCompleteReply(),
-    "execute_input": ExecuteInput(),
-    "execute_result": ExecuteResult(),
-    "history_reply": HistoryReply(),
-    "error": Error(),
-    "stream": Stream(),
-    "display_data": DisplayData(),
     "header": RHeader(),
-    "clear_output": ClearOutput(),
-    "create_subshell_reply": CreateSubshellReply(),
-    "delete_subshell_reply": DeleteSubshellReply(),
-    "list_subshell_reply": ListSubshellReply(),
-    "iopub_welcome": Welcome(),
+    "connect_reply": ConnectReply(),
+    MsgType.execute_reply: ExecuteReply(),
+    MsgType.inspect_reply: InspectReply(),
+    MsgType.complete_reply: CompleteReply(),
+    MsgType.kernel_info_reply: KernelInfoReply(),
+    MsgType.comm_info_reply: CommInfoReply(),
+    MsgType.is_complete_reply: IsCompleteReply(),
+    MsgType.history_reply: HistoryReply(),
+    MsgType.create_subshell_reply: CreateSubshellReply(),
+    MsgType.delete_subshell_reply: DeleteSubshellReply(),
+    MsgType.list_subshell_reply: ListSubshellReply(),
+    # iopub
+    MsgType.iopub_status: Status(),
+    MsgType.iopub_welcome: Welcome(),
+    MsgType.iopub_error: Error(),
+    MsgType.iopub_execute_input: ExecuteInput(),
+    MsgType.iopub_execute_result: ExecuteResult(),
+    MsgType.iopub_stream: Stream(),
+    MsgType.iopub_display_data: DisplayData(),
+    MsgType.iopub_clear_output: ClearOutput(),
 }

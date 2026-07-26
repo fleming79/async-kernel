@@ -21,7 +21,7 @@ from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, NoValue, T_shell_co
+from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
@@ -63,8 +63,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     ).tag(config=True)
     "Transport for sockets."
 
-    _sockets: Fixed[Self, dict[Channel, zmq.Socket]] = Fixed(dict)
-    _iopub_socket: zmq.Socket | None = None
+    _sockets: Fixed[Self, dict[Channel, ZMQPollSocket]] = Fixed(dict)
+    _iopub_socket: ZMQPollSocket | None = None
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
@@ -114,7 +114,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
         # Thread: control
 
-        def heartbeat(hb: zmq.Socket, event: int) -> None:
+        def heartbeat(hb: ZMQPollSocket, event: int) -> None:
             hb.send_multipart(hb.recv_multipart())
 
         if os.path.exists(self.connection_file):  # noqa: PTH110
@@ -143,7 +143,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         """Create, bind and configure a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
-        assert channel not in self._sockets
+        if channel is not Channel.stdin:
+            assert channel not in self._sockets
 
         match channel:
             case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
@@ -170,7 +171,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     async def _iopub(self) -> AsyncGenerator[None]:
         """Managages the iopub socket, handles connection welcome messages, and provides internal sockets so that `iopub_send` works everywhere."""
 
-        def on_reg_msg(socket: zmq.Socket, flags: int) -> None:
+        def on_reg_msg(socket: ZMQPollSocket, flags: int) -> None:
             """https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
             # Thread: zmq_poll_thread
             # handle PUB subscribe/unsubscribe messages.
@@ -178,7 +179,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             msg = socket.recv()
             if msg[0] == 1:
                 ident = msg[1:]
-                msg = self.msg("iopub_welcome", content={"subscription": ident.decode()})
+                msg = self.msg(MsgType.iopub_welcome, content={"subscription": ident.decode()})
                 self.iopub_send(msg, ident=ident)
 
         with self._open_socket(Channel.iopub) as iopub_sock, self._zmq_poll.event_handler(iopub_sock, on_reg_msg):
@@ -207,7 +208,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             if msg:
                 log.debug("send_reply %s %s", channel, msg)
 
-        def recv_msg(socket: zmq.Socket, flags: int) -> None:
+        def recv_msg(socket: ZMQPollSocket, flags: int) -> None:
             # Thread: zmq_poll_thread
             try:
                 ident, msg = session.recv(socket, mode=zmq.DONTWAIT)
@@ -229,12 +230,12 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         socket = self._sockets[Channel.stdin]
         # Clear messages on the stdin socket.
         while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
-            socket.recv_multipart(flags=Flag.DONTWAIT)
+            socket.recv_multipart(flags=Flag.DONTWAIT)  # pragma: no cover
         # Send the input request.
         assert self is not None
         self.session.send(
             stream=socket,
-            msg_or_type="input_request",
+            msg_or_type=MsgType.input_request,
             content=Content(prompt=prompt, password=password),
             parent=job["msg"],  # pyright: ignore[reportArgumentType]
             # The client is assumed to have set the 'identity' of the stdin socket to 'session.bsession'.
@@ -251,7 +252,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     @override
     def iopub_send(
         self,
-        msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
+        msg_or_type: MsgType | Message[dict[str, Any]] | dict[str, Any] | str,
         *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,

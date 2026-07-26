@@ -14,6 +14,7 @@ from traitlets import traitlets
 from typing_extensions import TypeVar
 
 import async_kernel.interface
+from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Mapping
@@ -210,7 +211,7 @@ def error_to_content(error: BaseException, /) -> Content:
     ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply
     """
     return {
-        "status": "error",
+        "status": MsgType.iopub_error,
         "ename": type(error).__name__,
         "evalue": str(error),
         "traceback": traceback.format_exception(error),

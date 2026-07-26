@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from async_kernel.typing import MsgType
 from tests import utils
 
 if TYPE_CHECKING:
@@ -24,6 +25,6 @@ async def test_curve_encryption(subprocess_kernels_client: AsyncKernelClient, en
     msg_id, reply = await utils.execute(client, "1+1", clear_pub=False)
     assert reply["status"] == "ok"
     await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_result")
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_input)
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_result)
     await utils.check_pub_message(client, msg_id, execution_state="idle")

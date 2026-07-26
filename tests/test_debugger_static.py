@@ -46,7 +46,7 @@ async def test_debug_not_connected(client: AsyncKernelClient, kernel: Kernel, mo
     reply = await utils.send_control_message(
         client, MsgType.debug_request, {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
     )
-    assert reply["content"]["status"] == "error"
+    assert reply["content"]["status"] == MsgType.iopub_error
     assert reply["content"]["evalue"] == "Debugpy client not connected."
     assert str(mock_method.call_args).startswith("call('Exception in message handler:'")
 

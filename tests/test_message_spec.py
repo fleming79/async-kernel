@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 async def test_execute(client: AsyncKernelClient, kernel: Kernel):
     msg_id = client.execute(code="x=1")
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "execute_reply", msg_id)
+    utils.validate_message(reply, MsgType.execute_reply, msg_id)
     assert reply["content"]["status"] == "ok"
     assert kernel.shell.user_ns["x"] == 1
 
@@ -27,12 +27,14 @@ async def test_execute_suppress(client: AsyncKernelClient, kernel: Kernel):
     for mode in ["normal", "suppress"]:
         msg_id = client.execute(code="123" if mode == "normal" else "123;")
         reply = await utils.get_reply(client, msg_id, clear_pub=False)
-        utils.validate_message(reply, "execute_reply", msg_id)
+        utils.validate_message(reply, MsgType.execute_reply, msg_id)
 
         await utils.check_pub_message(client, msg_id, execution_state="busy")
-        await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+        await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_input)
         if mode == "normal":
-            await utils.check_pub_message(client, msg_id, msg_type="execute_result", data={"text/plain": "123"})
+            await utils.check_pub_message(
+                client, msg_id, msg_type=MsgType.iopub_execute_result, data={"text/plain": "123"}
+            )
         await utils.check_pub_message(client, msg_id, execution_state="idle")
 
 
@@ -69,12 +71,12 @@ async def test_execute_silent(client: AsyncKernelClient):
 async def test_execute_error(client: AsyncKernelClient):
     await utils.clear_iopub(client)
     msg_id, reply = await utils.execute(client, code="1/0", clear_pub=False)
-    assert reply["status"] == "error"
+    assert reply["status"] == MsgType.iopub_error
     assert reply["ename"] == "ZeroDivisionError"
 
     await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="error")
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_input)
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_error)
     await utils.check_pub_message(client, msg_id, execution_state="idle")
 
 
@@ -103,21 +105,21 @@ async def test_execute_stop_on_error(client: AsyncKernelClient):
     msg_id_bad_code = client.execute(bad_code)
     msg_id_1 = client.execute('print("Hello")')
     msg_id_2 = client.execute('print("world")')
-    content = await utils.get_shell_message(client, msg_id_bad_code, "execute_reply")
-    assert content.get("status") == "error"
+    content = await utils.get_shell_message(client, msg_id_bad_code, MsgType.execute_reply)
+    assert content.get("status") == MsgType.iopub_error
     assert content.get("traceback")
 
-    content = await utils.get_shell_message(client, msg_id_1, "execute_reply")
-    assert content["status"] == "error"
+    content = await utils.get_shell_message(client, msg_id_1, MsgType.execute_reply)
+    assert content["status"] == MsgType.iopub_error
 
-    content = await utils.get_shell_message(client, msg_id_2, "execute_reply")
-    assert content["status"] == "error"
+    content = await utils.get_shell_message(client, msg_id_2, MsgType.execute_reply)
+    assert content["status"] == MsgType.iopub_error
 
     #  Test stop_on_error=False
     msg_id_3 = client.execute(bad_code, stop_on_error=False)
     msg_id_4 = client.execute('print("Hello")')
-    content = await utils.get_shell_message(client, msg_id_3, "execute_reply")
-    content = await utils.get_shell_message(client, msg_id_4, "execute_reply")
+    content = await utils.get_shell_message(client, msg_id_3, MsgType.execute_reply)
+    content = await utils.get_shell_message(client, msg_id_4, MsgType.execute_reply)
     assert content["status"] == "ok"
 
 
@@ -135,10 +137,10 @@ async def test_execute_stop_on_error_task(client: AsyncKernelClient):
     msg_id_1 = client.execute("# task\nimport anyio\nawait anyio.sleep_forever()")
     msg_id_bad_code = client.execute(bad_code)
 
-    content = await utils.get_shell_message(client, msg_id_bad_code, "execute_reply")
-    assert content.get("status") == "error"
+    content = await utils.get_shell_message(client, msg_id_bad_code, MsgType.execute_reply)
+    assert content.get("status") == MsgType.iopub_error
     assert "ValueError" in "".join(content["traceback"])
-    content = await utils.get_shell_message(client, msg_id_1, "execute_reply")
+    content = await utils.get_shell_message(client, msg_id_1, MsgType.execute_reply)
     assert "Stop on error cancellation" in "".join(content["traceback"])
 
 
@@ -159,14 +161,14 @@ async def test_user_expressions_fail(client: AsyncKernelClient):
     _, reply = await utils.execute(client, code="x=0", user_expressions={"foo": "nosuchname"})
     user_expressions = reply["user_expressions"]
     foo = user_expressions["foo"]
-    assert foo["status"] == "error"
+    assert foo["status"] == MsgType.iopub_error
     assert foo["ename"] == "NameError"
 
 
 async def test_oinfo(client: AsyncKernelClient):
     msg_id = client.inspect("a")
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "inspect_reply", msg_id)
+    utils.validate_message(reply, MsgType.inspect_reply, msg_id)
 
 
 async def test_oinfo_found(client: AsyncKernelClient):
@@ -174,7 +176,7 @@ async def test_oinfo_found(client: AsyncKernelClient):
 
     msg_id = client.inspect("a")
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "inspect_reply", msg_id)
+    utils.validate_message(reply, MsgType.inspect_reply, msg_id)
     content = reply["content"]
     assert content["found"]
     text = content["data"]["text/plain"]
@@ -187,7 +189,7 @@ async def test_oinfo_detail(client: AsyncKernelClient):
 
     msg_id = client.inspect("ip.object_inspect", cursor_pos=10, detail_level=1)
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "inspect_reply", msg_id)
+    utils.validate_message(reply, MsgType.inspect_reply, msg_id)
     content = reply["content"]
     assert content["found"]
     text = content["data"]["text/plain"]
@@ -198,7 +200,7 @@ async def test_oinfo_detail(client: AsyncKernelClient):
 async def test_oinfo_not_found(client: AsyncKernelClient):
     msg_id = client.inspect("does_not_exist")
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "inspect_reply", msg_id)
+    utils.validate_message(reply, MsgType.inspect_reply, msg_id)
     content = reply["content"]
     assert not content["found"]
 
@@ -208,7 +210,7 @@ async def test_complete(client: AsyncKernelClient):
 
     msg_id = client.complete("al", 2)
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "complete_reply", msg_id)
+    utils.validate_message(reply, MsgType.complete_reply, msg_id)
     matches = reply["content"]["matches"]
     for name in ("alpha", "albert"):
         assert name in matches
@@ -217,7 +219,7 @@ async def test_complete(client: AsyncKernelClient):
 async def test_kernel_info_request(client: AsyncKernelClient):
     msg_id = client.kernel_info()
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "kernel_info_reply", msg_id)
+    utils.validate_message(reply, MsgType.kernel_info_reply, msg_id)
     keys = list(reply["content"])
     assert keys == [
         "protocol_version",
@@ -235,20 +237,20 @@ async def test_kernel_info_request(client: AsyncKernelClient):
 async def test_comm_info_request(client: AsyncKernelClient):
     msg_id = client.comm_info()
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "comm_info_reply", msg_id)
+    utils.validate_message(reply, MsgType.comm_info_reply, msg_id)
 
 
 async def test_is_complete(client: AsyncKernelClient):
     msg_id = client.is_complete("a = 1")
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "is_complete_reply", msg_id)
+    utils.validate_message(reply, MsgType.is_complete_reply, msg_id)
 
 
 async def test_history_range(client: AsyncKernelClient):
     await utils.execute(client, code="x=1", store_history=True)
     msg_id = client.history(hist_access_type="range", raw=True, output=True, start=1, stop=2, session=0)
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "history_reply", msg_id)
+    utils.validate_message(reply, MsgType.history_reply, msg_id)
     content = reply["content"]
     assert len(content["history"]) == 1
 
@@ -257,7 +259,7 @@ async def test_history_tail(client: AsyncKernelClient):
     await utils.execute(client, code="x=1", store_history=True)
     msg_id = client.history(hist_access_type="tail", raw=True, output=True, n=1, session=0)
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "history_reply", msg_id)
+    utils.validate_message(reply, MsgType.history_reply, msg_id)
     content = reply["content"]
     assert len(content["history"]) == 1
 
@@ -266,7 +268,7 @@ async def test_history_search(client: AsyncKernelClient):
     await utils.execute(client, code="x=1", store_history=True)
     msg_id = client.history(hist_access_type="search", raw=True, output=True, n=1, pattern="*", session=0)
     reply = await utils.get_reply(client, msg_id)
-    utils.validate_message(reply, "history_reply", msg_id)
+    utils.validate_message(reply, MsgType.history_reply, msg_id)
     content = reply["content"]
     assert len(content["history"]) == 1
 
@@ -287,10 +289,10 @@ async def test_displayhook(kernel: Kernel, client: AsyncKernelClient, clear: boo
 
     msg_id, _ = await utils.execute(client, f"display(1, clear={clear})", clear_pub=False)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_input)
     if clear:
-        await utils.check_pub_message(client, msg_id, msg_type="clear_output")
-    await utils.check_pub_message(client, msg_id, msg_type="display_data", data={"text/plain": "1"})
+        await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_clear_output)
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_display_data, data={"text/plain": "1"})
     await utils.check_pub_message(client, msg_id, execution_state="idle")
 
 
@@ -298,8 +300,8 @@ async def test_rich_display_data(kernel: Kernel, client: AsyncKernelClient):
     await utils.clear_iopub(client)
     msg_id, _ = await utils.execute(client, "1 + 1", clear_pub=False)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_result", data={"text/plain": "2"})
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_input)
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_result, data={"text/plain": "2"})
     await utils.check_pub_message(client, msg_id, execution_state="idle")
 
 
@@ -309,7 +311,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     client.control_channel.send(msg)
     msg_id = msg["header"]["msg_id"]
     reply = await utils.get_reply(client, msg_id, channel=Channel.control)
-    utils.validate_message(reply, "create_subshell_reply", msg_id)
+    utils.validate_message(reply, MsgType.create_subshell_reply, msg_id)
     assert reply["content"]["status"] == "ok"
     subshell_id = reply["content"]["subshell_id"]
     assert subshell_id in kernel.subshells
@@ -321,7 +323,7 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     client.control_channel.send(msg)
     msg_id = msg["header"]["msg_id"]
     reply = await utils.get_reply(client, msg_id, channel=Channel.control)
-    utils.validate_message(reply, "list_subshell_reply", msg_id)
+    utils.validate_message(reply, MsgType.list_subshell_reply, msg_id)
     assert reply["content"]["status"] == "ok"
     assert reply["content"]["subshell_id"] == [subshell_id]
 
@@ -330,6 +332,6 @@ async def test_subshell(kernel: Kernel, client: AsyncKernelClient):
     client.control_channel.send(msg)
     msg_id = msg["header"]["msg_id"]
     reply = await utils.get_reply(client, msg_id, channel=Channel.control)
-    utils.validate_message(reply, "delete_subshell_reply", msg_id)
+    utils.validate_message(reply, MsgType.delete_subshell_reply, msg_id)
     assert reply["content"]["status"] == "ok"
     assert subshell_id not in kernel.subshells

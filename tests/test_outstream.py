@@ -9,6 +9,7 @@ import pytest
 from async_kernel.interface import BaseInterface
 from async_kernel.outstream import OutStream
 from async_kernel.shell.base import BaseShell
+from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
@@ -40,7 +41,7 @@ async def test_io_api(anyio_backend: Backend, mocker):
             stream.write(b" ")  # pyright: ignore[reportArgumentType]
         stream.writelines(("a", "b"))
         assert iopub_send.call_args[1] == {
-            "msg_or_type": "stream",
+            "msg_or_type": MsgType.iopub_stream,
             "content": {"name": "stdout", "text": "ab"},
             "ident": b"stream.stdout",
         }

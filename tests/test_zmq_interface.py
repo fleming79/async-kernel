@@ -33,7 +33,7 @@ async def test_execute_request_success(client: AsyncKernelClient):
     reply: dict[Any, Any] | Mapping[str, Mapping[str, Any]] = await utils.send_shell_message(
         client, MsgType.execute_request, {"code": "1 + 1", "silent": False}
     )
-    assert reply["header"]["msg_type"] == "execute_reply"
+    assert reply["header"]["msg_type"] == MsgType.execute_reply
     assert reply["content"]["status"] == "ok"
 
 
@@ -73,19 +73,19 @@ async def test_input(
     # allow_stdin=False
     if test_mode == "allow_stdin=False":
         _, reply = await utils.execute(client, code, allow_stdin=False)
-        assert reply["status"] == "error"
+        assert reply["status"] == MsgType.iopub_error
         assert reply["ename"] == "RuntimeError"
         return
     msg_id = client.execute(code, allow_stdin=True, user_expressions={"response": "response"})
     msg = await client.get_stdin_msg()
-    assert msg["header"]["msg_type"] == "input_request"
+    assert msg["header"]["msg_type"] == MsgType.input_request
     content = msg["content"]
     assert content["prompt"] == theprompt
     # interrupt
     if test_mode == "interrupt":
         await utils.send_control_message(client, MsgType.interrupt_request)
         reply = await utils.get_reply(client, msg_id, clear_pub=False)
-        assert reply["content"]["status"] == "error"
+        assert reply["content"]["status"] == MsgType.iopub_error
         return
     # reply
     text = "some text"
@@ -99,7 +99,7 @@ async def test_interrupt_request_not_blocked(client: AsyncKernelClient, kernel: 
     pen: Any = Pending()
     kernel.active_execute_requests.add(pen)
     reply = await utils.send_control_message(client, MsgType.interrupt_request)
-    assert reply["header"]["msg_type"] == "interrupt_reply"
+    assert reply["header"]["msg_type"] == MsgType.interrupt_reply
     assert reply["content"] == {"status": "ok"}
     assert pen.cancelled()
 
@@ -122,11 +122,11 @@ async def test_interrupt_request(
     """
     msg_id = client.execute(code)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    await utils.check_pub_message(client, msg_id, msg_type="stream", text="started\n")
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_input)
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_stream, text="started\n")
     await utils.send_control_message(client, MsgType.interrupt_request)
     reply = await utils.get_reply(client, msg_id)
-    assert reply["content"]["status"] == "error"
+    assert reply["content"]["status"] == MsgType.iopub_error
     assert reply["content"]["ename"] == "KernelInterrupt"
     if mode == "caller":
         code = "assert pen_timeout.done()"
@@ -172,10 +172,10 @@ async def test_magic(client: AsyncKernelClient, code: str, kernel: Kernel, monke
 
 async def test_magic_error(client: AsyncKernelClient):
     _, reply = await utils.execute(client, "%%thread backend=trio\npass")
-    assert reply["status"] == "error"
+    assert reply["status"] == MsgType.iopub_error
     assert "'name' must be specified when providing settings!" in reply["evalue"]
     _, reply = await utils.execute(client, "%%thread name=test not_an_option=True\npass")
-    assert reply["status"] == "error"
+    assert reply["status"] == MsgType.iopub_error
     assert "One or more invalid options found" in reply["evalue"]
 
 

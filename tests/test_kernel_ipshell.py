@@ -40,7 +40,7 @@ async def test_execute_shell_timeout(client: AsyncKernelClient, kernel: Kernel, 
         code = "\n".join(["import anyio", "await anyio.sleep_forever()"])
         _, content = await utils.execute(client, code=code, metadata=metadata, clear_pub=False)
         assert last_stop_time == kernel.shell._stop_on_error_info, "Should not cause cancellation"
-        assert content["status"] == "error"
+        assert content["status"] == MsgType.iopub_error
     finally:
         kernel.shell.timeout = 0.0
 
@@ -126,8 +126,8 @@ async def test_message_order(client: AsyncKernelClient):
 )
 async def test_execute_request_error(client: AsyncKernelClient, code: str, run_mode: RunMode):
     reply = await utils.send_shell_message(client, MsgType.execute_request, {"code": code, "silent": False})
-    assert reply["header"]["msg_type"] == "execute_reply"
-    assert reply["content"]["status"] == "error"
+    assert reply["header"]["msg_type"] == MsgType.execute_reply
+    assert reply["content"]["status"] == MsgType.iopub_error
 
 
 async def test_execute_request_stop_on_error(client: AsyncKernelClient):
@@ -138,13 +138,13 @@ async def test_execute_request_stop_on_error(client: AsyncKernelClient):
 
 async def test_complete_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.complete_request, {"code": "hello", "cursor_pos": 0})
-    assert reply["header"]["msg_type"] == "complete_reply"
+    assert reply["header"]["msg_type"] == MsgType.complete_reply
     assert reply["content"]["status"] == "ok"
 
 
 async def test_inspect_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.inspect_request, {"code": "hello", "cursor_pos": 0})
-    assert reply["header"]["msg_type"] == "inspect_reply"
+    assert reply["header"]["msg_type"] == MsgType.inspect_reply
     assert reply["content"]["status"] == "ok"
 
 
@@ -156,28 +156,28 @@ async def test_history_request(client: AsyncKernelClient, kernel: Kernel):
     reply = await utils.send_shell_message(
         client, MsgType.history_request, {"hist_access_type": "", "output": "", "raw": ""}
     )
-    assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["header"]["msg_type"] == MsgType.history_reply
     assert reply["content"]["status"] == "ok"
     reply = await utils.send_shell_message(
         client, MsgType.history_request, {"hist_access_type": "tail", "output": "", "raw": ""}
     )
-    assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["header"]["msg_type"] == MsgType.history_reply
     assert reply["content"]["status"] == "ok"
     reply = await utils.send_shell_message(
         client, MsgType.history_request, {"hist_access_type": "range", "output": "", "raw": ""}
     )
-    assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["header"]["msg_type"] == MsgType.history_reply
     assert reply["content"]["status"] == "ok"
     reply = await utils.send_shell_message(
         client, MsgType.history_request, {"hist_access_type": "search", "output": "", "raw": ""}
     )
-    assert reply["header"]["msg_type"] == "history_reply"
+    assert reply["header"]["msg_type"] == MsgType.history_reply
     assert reply["content"]["status"] == "ok"
 
 
 async def test_comm_info_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.comm_info_request)
-    assert reply["header"]["msg_type"] == "comm_info_reply"
+    assert reply["header"]["msg_type"] == MsgType.comm_info_reply
     assert reply["content"]["status"] == "ok"
 
 
@@ -196,7 +196,7 @@ async def test_comm_open_msg_close(client: AsyncKernelClient, kernel, mocker):
     )
     comm = await pen
     reply = await utils.send_shell_message(client, MsgType.comm_info_request)
-    assert reply["header"]["msg_type"] == "comm_info_reply"
+    assert reply["header"]["msg_type"] == MsgType.comm_info_reply
     assert reply["content"]["status"] == "ok"
     assert reply["content"]["comms"].get("comm id") == {"target_name": "my target"}
 
@@ -224,7 +224,7 @@ async def test_user_exit(client: AsyncKernelClient, kernel: Kernel, mocker, resp
 
 async def test_is_complete_request(client: AsyncKernelClient):
     reply = await utils.send_shell_message(client, MsgType.is_complete_request, {"code": "hello"})
-    assert reply["header"]["msg_type"] == "is_complete_reply"
+    assert reply["header"]["msg_type"] == MsgType.is_complete_reply
 
 
 async def test_shell_can_set_namespace(kernel: Kernel):
@@ -324,16 +324,18 @@ async def test_tag_raises_exception(client: AsyncKernelClient, mode: Literal["ra
         case "not raised":
             code = "pass"
     _, content = await utils.execute(client, code, metadata={"tags": [Tags.raises_exception]})
-    assert content["status"] == "error"
+    assert content["status"] == MsgType.iopub_error
     assert mode in content["evalue"]
 
 
-@pytest.mark.parametrize(("value", "expected"), [("stop-on-error=True", "error"), ("stop-on-error=False", "ok")])
+@pytest.mark.parametrize(
+    ("value", "expected"), [("stop-on-error=True", MsgType.iopub_error), ("stop-on-error=False", "ok")]
+)
 async def test_tag_stop_on_error(kernel: Kernel, client: AsyncKernelClient, value: str, expected: str):
     try:
         kernel.shell.stop_on_error_time_offset = float(utils.TIMEOUT)
         _, content = await utils.execute(client, "fail", metadata={"tags": [Tags.raises_exception, value]})
-        assert content["status"] == "error"
+        assert content["status"] == MsgType.iopub_error
         _, content = await utils.execute(client, "a=10")
         assert content["status"] == expected
     finally:
@@ -389,13 +391,13 @@ async def test_page(client: AsyncKernelClient, kernel: Kernel):
     await utils.clear_iopub(client)
     msg_id = client.execute("?", allow_stdin=True)
     await utils.check_pub_message(client, msg_id, execution_state="busy")
-    await utils.check_pub_message(client, msg_id, msg_type="execute_input")
-    msg = await utils.check_pub_message(client, msg_id, msg_type="stream")
-    assert msg["header"]["msg_type"] == "stream"
+    await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_execute_input)
+    msg = await utils.check_pub_message(client, msg_id, msg_type=MsgType.iopub_stream)
+    assert msg["header"]["msg_type"] == MsgType.iopub_stream
     assert list(msg["content"]) == ["name", "text"]
     await utils.check_pub_message(client, msg_id, execution_state="idle")
     page.page({"data": {"text/plain": "hello, world"}, "metadata": {}})
-    await utils.check_pub_message(client, "", msg_type="display_data")
+    await utils.check_pub_message(client, "", msg_type=MsgType.iopub_display_data)
 
 
 async def test_do_complete(kernel: Kernel):
@@ -427,7 +429,7 @@ async def test_do_execute(kernel: Kernel):
 
 
 async def test_get_input(kernel: Kernel, mocker):
-    requester = mocker.patch.object(kernel.parent, "input_request")
+    requester = mocker.patch.object(kernel.parent, MsgType.input_request)
     kernel.raw_input()
     kernel.getpass()
     assert requester.call_count == 2
