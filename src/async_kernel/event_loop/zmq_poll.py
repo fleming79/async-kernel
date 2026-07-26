@@ -17,10 +17,10 @@ from aiologic.lowlevel import create_green_waiter
 from typing_extensions import override
 from zmq.backend import zmq_poll
 
-from async_kernel import utils
+from async_kernel import Caller, utils
 from async_kernel.common import Fixed
 from async_kernel.pending import Pending
-from async_kernel.typing import P, T
+from async_kernel.typing import NoValue, P, T
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Sequence
@@ -101,13 +101,16 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
         **kwargs,
     ) -> MessageTracker | None:
         with self.lock:
+            if self.closed:
+                return None
             return super().send_multipart(msg_parts, flags, copy, track)
 
     @override
     def close(self, linger=None) -> None:
-        if not self.closed:
-            self.zmq_poll.execute(super().close, linger)
-            self.zmq_poll.sockets.discard(self)
+        with self.lock:
+            if not self.closed:
+                self.zmq_poll.execute(super().close, linger)
+                self.zmq_poll.sockets.discard(self)
 
     @override
     def bind(self, addr: str) -> _SocketContext[Self]:
@@ -146,16 +149,17 @@ T_key = tuple[Any | ZMQPollSocket, int]
 
 
 class ZMQPoll:
-    """A simple [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.
+    """A [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.
 
     This event loop is synchronous and is intended for quick message dispatch to separate threads
-    for handling.
+    for handling. It provides thread-safe execution and manages its own custom sockets which use
+    the same executor for setting attributes and calling methods.
     """
 
     stopped: Fixed[Self, Pending[None]] = Fixed(Pending)
     sockets: Fixed[Self, set[ZMQPollSocket]] = Fixed(set)
 
-    def __init__(self, *, log: logging.Logger | logging.LoggerAdapter | None = None) -> None:
+    def __init__(self, canceller: Callable[[], Any] | None = None) -> None:
 
         def socket_factory(
             ctx_or_socket: zmq.Context | None = None,
@@ -173,10 +177,14 @@ class ZMQPoll:
         ref = weakref.ref(self)
         self._zmq_context._socket_class = socket_factory  # pyright: ignore[reportPrivateUsage, reportAttributeAccessIssue]
         self._handlers: dict[T_key, Callable[[ZMQPollSocket, int], Any]] = {}
-        self._limit: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
+        self._count: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
         self._execute: deque[Pending] = deque[Pending[Any]]()
         self._not_started = False
-        self.log = log or logging.LoggerAdapter(logging.getLogger())
+        self.log = logging.LoggerAdapter(logging.getLogger())
+        self._canceller = canceller
+        self._cancellers = deque()
+        if canceller:
+            self._cancellers.append(canceller)
 
     def __enter__(self) -> Self:
         try:
@@ -188,30 +196,40 @@ class ZMQPoll:
         return self
 
     def __exit__(self, type, value, traceback) -> Literal[False]:
-        if not self.stopped.done():
-            self._handlers.clear()
-            self._wake()
+        with contextlib.suppress(ValueError):
+            self._cancellers.remove(self._canceller)
+        self.stopped.set_result(None)
         self.thread.join()
         return False
 
     def _wake(self) -> None:
         """Unblock the thread."""
-        if sock := self._ctrl_sock:
-            with sock.lock:
-                sock.send(b"")
 
     def _on_stopped(self) -> None:
-        self._ctrl_sock = None
+        self._wake()
+        del self._wake
 
     def __start(self) -> None:
+
+        self.log.debug("Starting ZMQPoll event loop")
+        started = create_green_waiter()
+        send = self.socket(zmq.SocketType.PAIR)
+        wake = self.socket(zmq.SocketType.PAIR)
+
+        def _wake(sock=send):
+            with sock.lock:
+                sock.send(b"")
 
         def zmq_poll_thread(
             *,
             handlers: dict[T_key, Callable[[ZMQPollSocket, int], Any]] = self._handlers,
             stopped: Pending[None] = self.stopped,
-            limit: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._limit,
+            count: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._count,
             execute=self._execute,
             zmq_poll_sockets: set[ZMQPollSocket] = self.sockets,
+            cancellers=self._cancellers,
+            send=send,
+            wake=wake,
             log=self.log,
         ) -> None:
             """Runs the 'event' loop."""
@@ -236,17 +254,19 @@ class ZMQPoll:
                         pen.set_exception(e)
                     del pen
 
-            with wake.context:
-                sockets = None
+            zmq_poll_sockets.remove(wake)
+            zmq_poll_sockets.remove(send)
+            addr = "inproc://async_kernel_zmq_poller_wake"
+            sockets = None
+            handlers[(wake, zmq.POLLIN)] = on_wake
+
+            with wake.context, wake, send, wake.bind(addr), send.connect(addr):
                 c: tuple[int, Callable] | None
-                wake.bind(addr := "inproc://async_kernel_zmq_poller_wake")
-                send.connect(addr)
-                handlers[(wake, zmq.POLLIN)] = on_wake
                 started.wake()
                 # The main loop polls the handler keys for events in a loop.
                 # It will block until an event occurs.
                 try:
-                    while handlers:
+                    while not stopped.done():
                         if not sockets:
                             sockets = list(handlers)
                         if execute:
@@ -259,15 +279,15 @@ class ZMQPoll:
                                 except KeyError:
                                     sockets = None
                                 except SystemExit:
-                                    handlers.clear()
+                                    stopped.set_result(None)
                                 except BaseException as e:
                                     self.log.exception("Ignoring exception in handler.", exc_info=e)
-                                if limit and (c := limit.get(k)) is not None:
-                                    c = limit[k] = (int(c[0]) - 1, c[1])
+                                if count and (c := count.get(k)) is not None:
+                                    c = count[k] = (int(c[0]) - 1, c[1])
                                     # Auto eject after 'n' events
                                     if c[0] == 0:
                                         handlers.pop(k, None)
-                                        limit[k] = sockets = None
+                                        count[k] = sockets = None
                                         c[1]()
                         except zmq.ZMQError:
                             for k, v in handlers.copy().items():
@@ -277,21 +297,20 @@ class ZMQPoll:
                         except Exception as e:
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:
-                    while limit:
-                        _, exiting = limit.popitem()
-                        if exiting:
-                            exiting[1]()
-                    stopped.set_result(None)
                     do_execute()
+                    while cancellers:
+                        try:
+                            cancellers.popleft()()
+                        except Exception as e:
+                            self.log.exception("A canceller failed", exc_info=e)
                     while zmq_poll_sockets:
-                        with contextlib.suppress(Exception):
+                        try:
                             zmq_poll_sockets.pop().close()
+                        except Exception as e:
+                            self.log.exception("Socket close call failed", exc_info=e)
                     log.debug("Stopped zmq_poll event loop")
 
-        self.log.debug("Starting ZMQPoll event loop")
-        started = create_green_waiter()
-        self._ctrl_sock = send = self.socket(zmq.SocketType.PAIR)
-        wake = self.socket(zmq.SocketType.PAIR)
+        self._wake = _wake
         self.thread = threading.Thread(target=zmq_poll_thread)
         self.thread.start()
         started.wait()
@@ -299,11 +318,10 @@ class ZMQPoll:
         self.stopped.add_done_callback(lambda _: (self := ref()) and self._on_stopped())
         self.log.debug("ZMQPoll event loop started")
 
-    @staticmethod
-    def _validate_socket(sock: ZMQPollSocket | Any) -> ZMQPollSocket:
-        if not isinstance(sock, ZMQPollSocket):
-            msg = f"{sock=} is not valid"
-            raise TypeError(msg)
+    def validate_socket(self, sock: ZMQPollSocket | Any) -> ZMQPollSocket:
+        if sock not in self.sockets:
+            msg = f"Invalid socket detected! {sock=}"
+            raise ValueError(msg)
         return sock
 
     def socket(self, socket_type: zmq.SocketType) -> ZMQPollSocket:
@@ -315,7 +333,7 @@ class ZMQPoll:
         if self.stopped.done():
             msg = f"{self} is stopped!"
             raise RuntimeError(msg)
-        return self._validate_socket(self._zmq_context.socket(socket_type))
+        return self.validate_socket(self._zmq_context.socket(socket_type))
 
     def execute(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute `func` in the thread waiting for the result synchronously."""
@@ -347,11 +365,14 @@ class ZMQPoll:
         /,
         *,
         flags: Literal[zmq.PollEvent.POLLIN, zmq.PollEvent.POLLOUT] = zmq.PollEvent.POLLIN,
-        limit: tuple[int, Callable[[], Any]] | None = None,
+        count: tuple[int, Callable[[], Any]] | None = None,
+        canceller: Callable[[], Any] | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
     ) -> Generator[None, Any, None]:
         """A context manager where `handler` is called with the event number when it occurs for `sock`.
 
-        Only one `handler` is allowed per `(socket, flags)` combination.
+        Only one `handler` is allowed per `(socket, flags)` combination. If this context manager is entered
+        inside a caller managed task (call_soon, etc) and the ZMQPoll is stopped, the associated pending
+        will be cancelled.
 
         Args:
             sock: A zmq socket or a IO style object with a `fileno`.
@@ -361,26 +382,43 @@ class ZMQPoll:
             flags: The type of event to listen for.
                 [zmq.PollEvent.POLLIN][]: `sock` is readable.
                 [zmq.PollEvent.POLLOUT][]: `sock` was read from.
-            limit: A tuple ('n', callback) where the handler is run to completion up to 'n' times.
-                The callback could be an `event.set` to release the context. It will also release if
-                zmq_poll is shutdown before 'n' is reached.
+            count: A tuple ('n', callback) where the handler is run exactly 'n' times.
+                The callback could be an `event.set` to release the context.
+            canceller: A callback to use on the event the poll is stopped. The default cancellation
+                behavior is to cancel the pending returned by [async_kernel.caller.Caller.current_pending][].
+                Set to None to disable cancellation support. This is fine when this context manager is inside
+                the context of this object.
 
         Tip:
             The handler is called inside a dedicated thread which may have been marked using
             [async_kernel.utils.mark_thread_pydev_do_not_trace][] which disables debug breakpoints.
         """
-        sock_ = self._validate_socket(sock)
-        if limit:
-            assert limit[0] > 0
-            assert callable(limit[1])
         assert not self.stopped.done()
+        if canceller is NoValue:
+            if not (pen := Caller.current_pending()):
+                msg = "This context is not cancellable!."
+                raise RuntimeError(msg)
+
+            def default_handler(pen=pen) -> None:
+                pen.cancel("The ZMQPoll event loop has stopped!")
+
+            canceller = default_handler
+
+        sock_ = self.validate_socket(sock)
+        if count:
+            assert count[0] > 0
+            assert callable(count[1])
+        if canceller:
+            self._cancellers.append(canceller)
         if handler is not self._handlers.setdefault(k := (sock_, int(flags)), handler):
             raise BusyResourceError
-        self._limit[k] = limit
+        self._count[k] = count
         self._wake()
         try:
             yield None
         finally:
+            with contextlib.suppress(ValueError):
+                self._cancellers.remove(canceller)
             self._handlers.pop(k, None)
-            self._limit.pop(k, None)
+            self._count.pop(k, None)
             self._wake()
