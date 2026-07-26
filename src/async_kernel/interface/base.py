@@ -344,7 +344,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         shell_class: type[T_shell_co] | None = None,
         **kwargs: Any,
     ) -> None:
-        app = None
+        app = e = None
         if BaseInterface._instance:
             msg = "An interface already exists!"
             raise RuntimeError(msg)
@@ -352,12 +352,16 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
             app = cls(argv, kernel_class=kernel_class, shell_class=shell_class, **kwargs)
             app.start()
             app.exit()
+        except BaseException as e_:
+            e = e_
         finally:
             if app:
                 app.stopped.set_result(None)
                 app.stop()
             del app
             gc.collect()
+            if e:
+                raise e
 
     def __new__(cls, argv: list | None | NoValue = NoValue, /, **kwargs) -> Self:  # noqa: ARG004  # pyright: ignore[reportInvalidTypeForm]
         if BaseInterface._instance:
