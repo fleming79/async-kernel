@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING
 import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
-from jupyter_client.asynchronous.client import AsyncKernelClient
 
+from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
-from async_kernel.typing import Channel
-from tests import utils
+from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
+    from async_kernel import Caller
     from async_kernel.typing import Backend
 
 # pyright: reportPrivateUsage=false
@@ -41,10 +41,10 @@ async def test_user_ns(anyio_backend: Backend):
 async def test_iopub_welcome(topic: str, anyio_backend: Backend):
     """Test iopub welcome message. https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
     async with IPApp() as interface:
-        with ZMQPoll() as poll:
+        with ZMQPoll() as zmq_poll:
             ip, port, transport = interface.ip, interface.iopub_port, interface.transport
             addr = f"tcp://{ip}:{port}" if transport == "tcp" else f"ipc://{ip}-{port}"
-            sock = poll.socket(zmq.SocketType.SUB)
+            sock = zmq_poll.socket(zmq.SocketType.SUB)
             msg, ident = None, None
 
             sock.connect(addr)
@@ -55,7 +55,7 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
                 ident, msg = interface.session.recv(sock)
 
             done = create_async_waiter()
-            with poll.event_handler(sock, read_iopub, count=(1, done.wake), canceller=None):
+            with zmq_poll.event_handler(sock, read_iopub, count=(1, done.wake), canceller=None):
                 await done
 
             assert ident == [topic.encode()]
@@ -64,18 +64,20 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
             assert msg["content"]["subscription"] == topic
 
 
-async def test_force_shutdown(anyio_backend: Backend):
-    try:
-        async with IPApp() as interface:
-            interface.kernel.force_shutdown_delay = 0
-            client = AsyncKernelClient()
-            client.load_connection_info(interface.get_connection_info())
-            client.start_channels()
-            await client.get_iopub_msg()
-            msg_id = client.shutdown()
-            await create_async_waiter()
-        reply = await utils.get_reply(client, msg_id, timeout=utils.TIMEOUT, channel=Channel.control)
-        assert reply["msg_type"] == "shutdown_reply"
-        assert reply["content"] == {"restart": False, "status": "ok"}
-    finally:
-        client.stop_channels()  # pyright: ignore[reportPossiblyUnboundVariable]
+async def test_force_shutdown(caller: Caller) -> None:
+
+    async def shutdown():
+        client = ZMQKernelClient()
+        client.load_connection_info(interface.get_connection_info())
+        async with client:
+            return await client.shutdown()
+
+    async with IPApp() as interface:
+        interface.kernel.force_shutdown_delay = 0
+        pen = caller.call_soon(shutdown)
+        # Require a force shutdown
+        await create_async_waiter()
+
+    reply = await pen
+    assert reply["header"]["msg_type"] == MsgType.shutdown_reply
+    assert reply["content"] == {"restart": False, "status": "ok"}

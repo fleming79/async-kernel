@@ -714,7 +714,7 @@ class Caller:
             force: If the caller is protected the call is a no-op unless force=True.
         """
         if self._protected and not force:
-            self.log.warning("Non-force stop ignored for  %s", self)
+            self.log.debug("Non-force stop ignored for  %s", self)
             return
         self.stopping.set_result(None)
         if (parent := self.parent) and self in parent._worker_pool:

@@ -140,7 +140,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             raise RuntimeError(msg)
         self.backend = Backend(current_async_library())
         channels_started, stop_channels = create_async_waiter(), Event()
-        async with Caller(name="Shell") as caller, caller.get(name="Control") as caller_ctrl:
+        async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
             self.callers[Channel.shell] = caller
             self.callers[Channel.control] = caller_ctrl
             pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
@@ -156,7 +156,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
                 self.stop()
                 self.stopped.set_result(None)
                 stop_channels.set()
-                await pen_channels.wait(timeout=1)
+                await pen_channels.wait(shield=True, timeout=1)
 
     async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
         ready()
