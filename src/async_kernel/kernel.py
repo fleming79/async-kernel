@@ -500,25 +500,26 @@ class Kernel(
     async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle an [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
         # Thread: Control
-        restart = job["msg"]["content"].get("restart", False)
 
-        # The pending `parent.stopped` gets set in the shell thread. We add a callback
-        # To send the reply message before the channels are stopped.
-        def wait_for_stop_to_send(_) -> None:
+        pen: Pending[None] = Caller.current_pending()  # pyright: ignore[reportAssignmentType]
+        send_now = Event()
+
+        def wait_for_stop_before_send(_) -> None:
+            # Thread: shell
             send_now.set()
             assert pen
+            # Wait for task to finish which means the interrupt reply has been sent.
             pen.wait_sync()
 
-        self.parent.stopped.add_done_callback(wait_for_stop_to_send)
-
-        send_now, pen = Event(), Caller.current_pending()
-
+        self.parent.stopped.add_done_callback(wait_for_stop_before_send)
         self.parent.stop()
+        # Wait for pending.stopped callback to set the event.
         with anyio.move_on_after(self.force_shutdown_delay):
             await send_now
         self.parent.stop(force=True)
         await send_now
-        return {"restart": restart}
+        # The shell thread will block in the callback until the reply is sent.
+        return {"restart": job["msg"]["content"].get("restart", False)}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle an [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""
