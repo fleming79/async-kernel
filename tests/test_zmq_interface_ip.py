@@ -52,7 +52,7 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
                 ident, msg = interface.session.recv(sock)
 
             done = create_async_waiter()
-            with poll.event_handler(sock, read_iopub, countdown=(1, done.wake)):
+            with poll.event_handler(sock, read_iopub, limit=(1, done.wake)):
                 await done
 
             assert ident == [topic.encode()]

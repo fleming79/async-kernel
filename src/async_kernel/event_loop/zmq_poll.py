@@ -173,7 +173,7 @@ class ZMQPoll:
         ref = weakref.ref(self)
         self._zmq_context._socket_class = socket_factory  # pyright: ignore[reportPrivateUsage, reportAttributeAccessIssue]
         self._handlers: dict[T_key, Callable[[ZMQPollSocket, int], Any]] = {}
-        self._countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
+        self._limit: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
         self._execute: deque[Pending] = deque[Pending[Any]]()
         self._not_started = False
         self.log = log or logging.LoggerAdapter(logging.getLogger())
@@ -209,7 +209,7 @@ class ZMQPoll:
             *,
             handlers: dict[T_key, Callable[[ZMQPollSocket, int], Any]] = self._handlers,
             stopped: Pending[None] = self.stopped,
-            countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._countdown,
+            limit: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._limit,
             execute=self._execute,
             zmq_poll_sockets: set[ZMQPollSocket] = self.sockets,
             log=self.log,
@@ -262,12 +262,12 @@ class ZMQPoll:
                                     handlers.clear()
                                 except BaseException as e:
                                     self.log.exception("Ignoring exception in handler.", exc_info=e)
-                                if countdown and (c := countdown.get(k)) is not None:
-                                    c = countdown[k] = (int(c[0]) - 1, c[1])
+                                if limit and (c := limit.get(k)) is not None:
+                                    c = limit[k] = (int(c[0]) - 1, c[1])
                                     # Auto eject after 'n' events
                                     if c[0] == 0:
                                         handlers.pop(k, None)
-                                        countdown[k] = sockets = None
+                                        limit[k] = sockets = None
                                         c[1]()
                         except zmq.ZMQError:
                             for k, v in handlers.copy().items():
@@ -277,8 +277,8 @@ class ZMQPoll:
                         except Exception as e:
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:
-                    while countdown:
-                        _, exiting = countdown.popitem()
+                    while limit:
+                        _, exiting = limit.popitem()
                         if exiting:
                             exiting[1]()
                     stopped.set_result(None)
@@ -347,7 +347,7 @@ class ZMQPoll:
         /,
         *,
         flags: Literal[zmq.PollEvent.POLLIN, zmq.PollEvent.POLLOUT] = zmq.PollEvent.POLLIN,
-        countdown: tuple[int, Callable[[], Any]] | None = None,
+        limit: tuple[int, Callable[[], Any]] | None = None,
     ) -> Generator[None, Any, None]:
         """A context manager where `handler` is called with the event number when it occurs for `sock`.
 
@@ -361,26 +361,26 @@ class ZMQPoll:
             flags: The type of event to listen for.
                 [zmq.PollEvent.POLLIN][]: `sock` is readable.
                 [zmq.PollEvent.POLLOUT][]: `sock` was read from.
-            countdown: A tuple ('n', callback) where the handler is run to completion up to 'n' times.
-                The callback could be an `event.set` to release the context. It will release when
-                zmq_poll is shutdown.
+            limit: A tuple ('n', callback) where the handler is run to completion up to 'n' times.
+                The callback could be an `event.set` to release the context. It will also release if
+                zmq_poll is shutdown before 'n' is reached.
 
         Tip:
             The handler is called inside a dedicated thread which may have been marked using
             [async_kernel.utils.mark_thread_pydev_do_not_trace][] which disables debug breakpoints.
         """
         sock_ = self._validate_socket(sock)
-        if countdown:
-            assert countdown[0] > 0
-            assert callable(countdown[1])
+        if limit:
+            assert limit[0] > 0
+            assert callable(limit[1])
         assert not self.stopped.done()
         if handler is not self._handlers.setdefault(k := (sock_, int(flags)), handler):
             raise BusyResourceError
-        self._countdown[k] = countdown
+        self._limit[k] = limit
         self._wake()
         try:
             yield None
         finally:
             self._handlers.pop(k, None)
-            self._countdown.pop(k, None)
+            self._limit.pop(k, None)
             self._wake()
