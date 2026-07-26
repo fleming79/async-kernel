@@ -383,9 +383,9 @@ class ZMQPoll:
             count: A tuple ('n', callback) where the handler is run exactly 'n' times.
                 The callback could be an `event.set` to release the context.
             canceller: A callback to use on the event the poll is stopped. The default cancellation
-                behavior is to cancel the pending returned by [Caller.current_pending][]. Set to None
-                to disable cancellation support. This is fine when this context manager is inside the
-                context of this object.
+                behavior is to cancel the pending returned by [async_kernel.caller.Caller.current_pending][].
+                Set to None to disable cancellation support. This is fine when this context manager is inside
+                the context of this object.
 
         Tip:
             The handler is called inside a dedicated thread which may have been marked using
