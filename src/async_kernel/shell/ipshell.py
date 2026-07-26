@@ -46,7 +46,7 @@ from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.outstream import print_concat
 from async_kernel.shell.base import BaseShell
-from async_kernel.typing import Content, RunMode, Tags
+from async_kernel.typing import Content, MsgType, RunMode, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -87,7 +87,7 @@ class NullContext:
 class IPDisplayHook(HasInterface, DisplayHook):
     """Called by the kernel whenever the interpreter needs to display results.
 
-    The output is always published with `msg_type="execute_result"`.
+    The output is always published with `msg_type=MsgType.iopub_execute_result`.
     """
 
     cache_size = traitlets.Int(1000, min=3).tag(config=True)
@@ -153,7 +153,7 @@ class IPDisplayHook(HasInterface, DisplayHook):
                 content["data"] = format_dict
                 content["metadata"] = md_dict
                 self.log_output(format_dict)
-                self.parent.iopub_send("execute_result", content=content)
+                self.parent.iopub_send(MsgType.iopub_execute_result, content=content, ident=b"display_data")
 
 
 class IPDisplayPublisher(HasInterface, DisplayPublisher):
@@ -184,7 +184,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
         [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)
         """
         content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
-        msg_type = "update_display_data" if update else "display_data"
+        msg_type = "update_display_data" if update else MsgType.iopub_display_data
         msg = self.parent.msg(msg_type, content=content, parent=utils.get_parent_message())
         for hook in self._hooks:
             try:
@@ -193,7 +193,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
                 pass
             if msg is None:
                 return
-        self.parent.iopub_send(msg)
+        self.parent.iopub_send(msg, ident=b"display_data")
 
     @override
     def clear_output(self, wait: bool = False) -> None:
@@ -204,7 +204,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
                 instead waiting for the next display before clearing.
                 This reduces bounce during repeated clear & display loops.
         """
-        self.parent.iopub_send(msg_or_type="clear_output", content={"wait": wait}, ident=b"display_data")
+        self.parent.iopub_send(msg_or_type=MsgType.iopub_clear_output, content={"wait": wait}, ident=b"display_data")
 
     def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
         """Register a hook for when publish is called.
@@ -521,9 +521,9 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         def _show_in_pager(self, data: str | dict, start=0, screen_lines=0, pager_cmd=None) -> None:
             """Handle IPython page calls."""
             if isinstance(data, dict):
-                self.parent.iopub_send("display_data", content=data)
+                self.parent.iopub_send(MsgType.iopub_display_data, content=data)
             else:
-                self.parent.iopub_send("stream", content={"name": "stdout", "text": data})
+                self.parent.iopub_send(MsgType.iopub_stream, content={"name": "stdout", "text": data})
 
         self.set_hook("show_in_pager", _show_in_pager, 99)
 
@@ -700,7 +700,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         else:
             execution_count = self._execution_count = self._execution_count + 1
             self.parent.iopub_send(
-                msg_or_type="execute_input",
+                msg_or_type=MsgType.iopub_execute_input,
                 content={"code": code, "execution_count": execution_count},
                 ident=b"kernel.execute_input",
             )
@@ -731,7 +731,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 err = RuntimeError(msg)
 
         content = {
-            "status": "error" if err else "ok",
+            "status": MsgType.iopub_error if err else "ok",
             "execution_count": execution_count,
             "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
         }
@@ -831,7 +831,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         if isinstance(evalue, KernelInterrupt):
             stb = []
         self.parent.iopub_send(
-            msg_or_type="error",
+            msg_or_type=MsgType.iopub_error,
             content={"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)},
         )
 

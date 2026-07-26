@@ -6,7 +6,7 @@ import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
 
-from async_kernel.event_loop.zmq_poll import ZMQPoll
+from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
 
@@ -47,7 +47,7 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
             sock.connect(addr)
             sock.subscribe(topic)
 
-            def read_iopub(sock: zmq.Socket, event: int) -> None:
+            def read_iopub(sock: ZMQPollSocket, event: int) -> None:
                 nonlocal ident, msg
                 ident, msg = interface.session.recv(sock)
 

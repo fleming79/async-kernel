@@ -20,6 +20,7 @@ from async_kernel.common import Fixed
 from async_kernel.compat.json import pack_json_bytes, unpack_json
 from async_kernel.interface import HasInterface
 from async_kernel.pending import Pending
+from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -380,7 +381,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             # to get the rich representation of the variable
             if isinstance((shell := self.parent.kernel.main_shell), async_kernel.shell.IPShell):
                 result = shell.user_expressions({"var": variable_name})["var"]
-                if result.get("status", "error") == "ok":
+                if result.get("status", MsgType.iopub_error) == "ok":
                     repr_data = result.get("data", {})
                     repr_metadata = result.get("metadata", {})
         else:

@@ -100,7 +100,7 @@ async def execute(
 
     with anyio.fail_after(TIMEOUT):
         reply = await get_reply(client, msg_id, clear_pub=clear_pub)
-        validate_message(reply, "execute_reply", msg_id)
+        validate_message(reply, MsgType.execute_reply, msg_id)
     return msg_id, reply["content"]
 
 
@@ -128,7 +128,7 @@ async def assemble_output(client: AsyncKernelClient, timeout: float | None = TIM
                 if done and (stdout or stderr):
                     # idle message signals end of output
                     break
-            if msg["msg_type"] == "stream":
+            if msg["msg_type"] == MsgType.iopub_stream:
                 if content["name"] == "stdout":
                     stdout += content["text"]
                 elif content["name"] == "stderr":

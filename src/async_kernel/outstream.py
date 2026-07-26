@@ -9,6 +9,7 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel.interface import HasInterface
+from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -69,7 +70,9 @@ class OutStream(HasInterface, io.TextIOBase):
             out.write(string)
         else:
             interface = self.parent
-            interface.iopub_send(msg_or_type="stream", content={"name": self.name, "text": string}, ident=self.ident)
+            interface.iopub_send(
+                msg_or_type=MsgType.iopub_stream, content={"name": self.name, "text": string}, ident=self.ident
+            )
             if self._origin and not self.parent.quiet:
                 self._origin.write(string)  # pragma: no cover
                 self._origin.flush()  # pragma: no cover

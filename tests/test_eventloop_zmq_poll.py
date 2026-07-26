@@ -55,7 +55,7 @@ class Test_zmq_Poll:
 
     async def test_zmq_poll(self, anyio_backend: Backend, caller: Caller) -> None:
 
-        def handler(socket: zmq.Socket, flags: int):
+        def handler(socket: ZMQPollSocket, flags: int):
             queue.append(socket.recv_multipart())
 
         with (
@@ -102,7 +102,7 @@ class Test_zmq_Poll:
 
             N = 3
 
-            def in_thread(sock: zmq.Socket, event: int) -> None:
+            def in_thread(sock: ZMQPollSocket, event: int) -> None:
                 nonlocal n
                 n = n + 1
                 assert threading.current_thread() is zmq_poll.thread
@@ -140,7 +140,7 @@ class Test_zmq_Poll:
                 target = sum(range(1, n))
                 assert target
 
-                def accumulate_pub(sock: zmq.Socket, event: int, target=target, done=done):
+                def accumulate_pub(sock: ZMQPollSocket, event: int, target=target, done=done):
                     nonlocal total
                     msg = sock.recv_multipart()
                     total = total + int(msg[1])

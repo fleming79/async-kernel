@@ -12,7 +12,7 @@ from typing_extensions import override
 import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import BaseInterface
-from async_kernel.typing import Channel, Content, Hosts, Job, Message, MsgHeader, NoValue, T_shell_co
+from async_kernel.typing import Channel, Content, Hosts, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -123,7 +123,7 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
     @override
     def iopub_send(
         self,
-        msg_or_type: Message[dict[str, Any]] | dict[str, Any] | str,
+        msg_or_type: MsgType | Message[dict[str, Any]] | dict[str, Any] | str,
         *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
@@ -143,7 +143,7 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise RuntimeError(msg)
-        msg = self.msg("input_request", content={"prompt": prompt, "password": password})
+        msg = self.msg(MsgType.input_request, content={"prompt": prompt, "password": password})
         reply = self._send_to_frontend(msg, channel=Channel.stdin, requires_reply=True)
         assert reply
         return reply["content"]["value"]

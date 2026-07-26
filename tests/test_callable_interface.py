@@ -11,6 +11,7 @@ import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import start_kernel_callable_interface
 from async_kernel.interface.callable import CallableInterface
+from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
     from async_kernel.typing import Message
@@ -30,7 +31,7 @@ async def interface(anyio_backend):
         assert isinstance(msg_string, str)
         if requires_reply:
             parent = unpack_json(msg_string)
-            msg = interface.msg("input_reply", parent=parent, content={"value": "reply"})
+            msg = interface.msg(MsgType.input_reply, parent=parent, content={"value": "reply"})
             return pack_json_str(msg)
         return None
 
@@ -62,18 +63,18 @@ class TestCallableInterface:
         while sender.call_count != 4:
             await anyio.sleep(0.01)
         reply: Message = unpack_json(sender.call_args_list[2][0][0])
-        assert reply["header"]["msg_type"] == "execute_reply"
+        assert reply["header"]["msg_type"] == MsgType.execute_reply
         assert reply["content"]["status"] == "ok"
 
     async def test_kernel_info(self, interface: CallableInterface, mocker):
         sender = mocker.patch.object(interface, "_send")
-        msg = interface.msg("kernel_info_request")
+        msg = interface.msg(MsgType.kernel_info_request)
         msg["header"]["session"] = "test session"
         interface._handle_msg(pack_json_str(msg))  # pyright: ignore[reportPrivateUsage]
         while sender.call_count != 3:
             await anyio.sleep(0.1)
         reply: Message = unpack_json(sender.call_args_list[1][0][0])
-        assert reply["header"]["msg_type"] == "kernel_info_reply"
+        assert reply["header"]["msg_type"] == MsgType.kernel_info_reply
         assert reply["content"]["status"] == "ok"
 
     async def test_input(self, interface: CallableInterface, job):
