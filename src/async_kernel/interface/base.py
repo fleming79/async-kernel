@@ -134,7 +134,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
-
+        # Thread: shell
         if self.stopped.done():
             msg = "Stopped early"
             raise RuntimeError(msg)
@@ -145,14 +145,18 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             self.callers[Channel.control] = caller_ctrl
             pen_channels = caller_ctrl.call_soon(self._open_channels, channels_started.wake, stop_channels)
             await channels_started
-            if set_started:
-                self._started()  # pragma: no cover
             try:
-                yield self
+                with anyio.CancelScope() as scope:
+                    self._force_stop = lambda: caller.call_direct(scope.cancel, "Force stop")
+                    if set_started:
+                        self._started()  # pragma: no cover
+                    yield self
             finally:
+                del self._force_stop
+                self.stop()
+                self.stopped.set_result(None)
                 stop_channels.set()
-                await pen_channels.wait(shield=True)
-            self.stopped.set_result(None)
+                await pen_channels.wait(timeout=1)
 
     async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
         ready()
@@ -165,11 +169,16 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     def _on_stopped(self, _) -> None:
         self.log.info("%s, stopped", self)
 
-    def stop(self) -> None:
+    def _force_stop(self) -> None:
+        pass
+
+    def stop(self, force=False) -> None:
         """Stop the kernel and this interface."""
         self.stopping.set_result(None)
         if not self.callers:
             self.stopped.set_result(None)
+        self._force_stop()
+        self.log.info("%s, stopping", self)
 
     def msg(
         self,
@@ -343,12 +352,12 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
             app = cls(argv, kernel_class=kernel_class, shell_class=shell_class, **kwargs)
             app.start()
             app.exit()
-        except BaseException:
+        finally:
             if app:
+                app.stopped.set_result(None)
                 app.stop()
             del app
             gc.collect()
-            raise
 
     def __new__(cls, argv: list | None | NoValue = NoValue, /, **kwargs) -> Self:  # noqa: ARG004  # pyright: ignore[reportInvalidTypeForm]
         if BaseInterface._instance:
@@ -438,21 +447,13 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
             # Cache iopub messages, send when started or discard if stopped early.
             self.started.add_done_callback(lambda _: not self.stopping.done() and __send__(*args, **kwargs))
 
-        def stop() -> None:
-            del self.stop
-            self.stopping.set_result(None)
-            self.log.info("Stopping kernel")
-            self.callers[Channel.control].call_later(0.5, scope.cancel, "Stopping kernel")
-
         self.log.info("Starting base interface")
         self.iopub_send = cache_iopub_send
         self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
         async with super().__asynccontextmanager__(set_started=False), self.kernel:
-            with anyio.CancelScope() as scope:
-                self.stop = stop
-                if set_started:
-                    self._started()
-                yield self
+            if set_started:
+                self._started()
+            yield self
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """Run the kernel.

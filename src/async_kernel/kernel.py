@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
 import anyio
 import traitlets
+from aiologic import Event
 from aiologic.lowlevel import enable_signal_safety
 from traitlets.config import LoggingConfigurable
 
@@ -69,6 +70,9 @@ class Kernel(
     """
     A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_).
     """
+
+    force_shutdown_delay = traitlets.Float(0.5 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
+    "Between receiving a shutdown request and when parent is 'forced' to shutdown."
 
     handle_in_thread = traitlets.Dict(key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Unicode())
     """
@@ -386,11 +390,13 @@ class Kernel(
 
         elif msg_type in self.handle_in_shell_thread:
             caller = self.callers[Channel.shell]
+        elif msg_type is MsgType.shutdown_request:
+            caller = self.callers[Channel.control]
+            run_mode = RunMode.task
         else:
             caller = self.callers[Channel.control]
             if thread_name := self.handle_in_thread.get(msg_type):
                 caller = caller.get(name=thread_name, no_debug=True)
-
         match run_mode:
             case RunMode.queue | None:
                 caller.queue_call(handler, job)
@@ -493,9 +499,26 @@ class Kernel(
 
     async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle an [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
-        self._restart = job["msg"]["content"].get("restart", False)
+        # Thread: Control
+        restart = job["msg"]["content"].get("restart", False)
+
+        # The pending `parent.stopped` gets set in the shell thread. We add a callback
+        # To send the reply message before the channels are stopped.
+        def wait_for_stop_to_send(_) -> None:
+            send_now.set()
+            assert pen
+            pen.wait_sync()
+
+        self.parent.stopped.add_done_callback(wait_for_stop_to_send)
+
+        send_now, pen = Event(), Caller.current_pending()
+
         self.parent.stop()
-        return {"restart": self._restart}
+        with anyio.move_on_after(self.force_shutdown_delay):
+            await send_now
+        self.parent.stop(force=True)
+        await send_now
+        return {"restart": restart}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle an [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""

@@ -5,10 +5,13 @@ from typing import TYPE_CHECKING
 import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
+from jupyter_client.asynchronous.client import AsyncKernelClient
 
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
+from async_kernel.typing import Channel
+from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
@@ -59,3 +62,20 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
             assert msg
             assert msg["msg_type"] == "iopub_welcome"
             assert msg["content"]["subscription"] == topic
+
+
+async def test_force_shutdown(anyio_backend: Backend):
+    try:
+        async with IPApp() as interface:
+            interface.kernel.force_shutdown_delay = 0
+            client = AsyncKernelClient()
+            client.load_connection_info(interface.get_connection_info())
+            client.start_channels()
+            await client.get_iopub_msg()
+            msg_id = client.shutdown()
+            await create_async_waiter()
+        reply = await utils.get_reply(client, msg_id, timeout=utils.TIMEOUT, channel=Channel.control)
+        assert reply["msg_type"] == "shutdown_reply"
+        assert reply["content"] == {"restart": False, "status": "ok"}
+    finally:
+        client.stop_channels()  # pyright: ignore[reportPossiblyUnboundVariable]
