@@ -196,8 +196,12 @@ class ZMQPoll:
 
     def _wake(self) -> None:
         """Unblock the thread."""
-        with self._ctrl_sock.lock:
-            self._ctrl_sock.send(b"")
+        if sock := self._ctrl_sock:
+            with sock.lock:
+                sock.send(b"")
+
+    def _on_stopped(self) -> None:
+        self._ctrl_sock = None
 
     def __start(self) -> None:
 
@@ -291,6 +295,8 @@ class ZMQPoll:
         self.thread = threading.Thread(target=zmq_poll_thread)
         self.thread.start()
         started.wait()
+        ref = weakref.ref(self)
+        self.stopped.add_done_callback(lambda _: (self := ref()) and self._on_stopped())
         self.log.debug("ZMQPoll event loop started")
 
     @staticmethod
