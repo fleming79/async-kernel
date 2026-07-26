@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import threading
 import weakref
@@ -34,15 +35,12 @@ __all__ = ["ZMQPoll", "ZMQPollSocket"]
 class ZMQPollSocket(zmq.sugar.Socket[bytes]):
     """A zmq socket which uses a [ZMQPoll][] thread to perform sensitive operation.
 
-    For best reliability, sensitive operations are performed in the poll's thread.
+    For best reliability, sensitive operations are performed in the zmq_poll's thread.
     This socket will close automatically when Poll is stopped. It is still better to
     close the  socket when it is no longer required. The socket must be bound/connected
     in the context of the [ZMQPoll][] to which it is associated.
     """
 
-    __slots__ = ["__poll", "_close_cb", "lock"]
-
-    _close_cb: Callable
     _zmq_poll_ref: weakref.ref[ZMQPoll]
     lock: BinarySemaphore
 
@@ -82,8 +80,7 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
             socket_type=int(socket_type),
             copy_threshold=copy_threshold,
         )
-        zmq_poll.stopped.add_done_callback(cb := lambda _: self.close())
-        self._close_cb = cb
+        zmq_poll.sockets.add(self)
 
     @property
     def zmq_poll(self) -> ZMQPoll:
@@ -91,7 +88,8 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
 
     @override
     def set(self, option: int, value: int | bytes | str) -> None:
-        return self.zmq_poll.execute(super().set, option, value)
+        assert not self.closed
+        self.zmq_poll.execute(super().set, option, value)
 
     @override
     def send_multipart(
@@ -107,34 +105,41 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
 
     @override
     def close(self, linger=None) -> None:
-        self.zmq_poll.stopped.remove_done_callback(self._close_cb)
-        self.zmq_poll.execute(super().close, linger)
+        if not self.closed:
+            self.zmq_poll.execute(super().close, linger)
+            self.zmq_poll.sockets.discard(self)
 
     @override
     def bind(self, addr: str) -> _SocketContext[Self]:
+        assert not self.closed
         return self.zmq_poll.execute(super().bind, addr)
 
     @override
     def unbind(self, url: str) -> None:
-        return self.zmq_poll.execute(super().unbind, url)
+        if not self.closed:
+            self.zmq_poll.execute(super().unbind, url)
 
     @override
     def connect(self, addr: str) -> _SocketContext[Self]:
+        assert not self.closed
         return self.zmq_poll.execute(super().connect, addr)
 
     @override
     def disconnect(self, url: str) -> None:
-        return self.zmq_poll.execute(super().disconnect, url)
+        if not self.closed:
+            self.zmq_poll.execute(super().disconnect, url)
 
     @override
     def subscribe(self, topic: str | bytes) -> None:
+        assert not self.closed
         topic = topic.encode("utf8") if isinstance(topic, str) else topic
         return self.zmq_poll.execute(super().subscribe, topic)
 
     @override
     def unsubscribe(self, topic: str | bytes) -> None:
-        topic = topic.encode("utf8") if isinstance(topic, str) else topic
-        return self.zmq_poll.execute(super().unsubscribe, topic)
+        if not self.closed:
+            topic = topic.encode("utf8") if isinstance(topic, str) else topic
+            self.zmq_poll.execute(super().unsubscribe, topic)
 
 
 T_key = tuple[Any | ZMQPollSocket, int]
@@ -147,7 +152,8 @@ class ZMQPoll:
     for handling.
     """
 
-    stopped: Fixed[Any, Pending[None]] = Fixed(Pending)
+    stopped: Fixed[Self, Pending[None]] = Fixed(Pending)
+    sockets: Fixed[Self, set[ZMQPollSocket]] = Fixed(set)
 
     def __init__(self, *, log: logging.Logger | logging.LoggerAdapter | None = None) -> None:
 
@@ -183,7 +189,8 @@ class ZMQPoll:
 
     def __exit__(self, type, value, traceback) -> Literal[False]:
         if not self.stopped.done():
-            self.execute(self.stopped.set_result, None)
+            self._handlers.clear()
+            self._wake()
         self.thread.join()
         return False
 
@@ -200,6 +207,7 @@ class ZMQPoll:
             stopped: Pending[None] = self.stopped,
             countdown: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._countdown,
             execute=self._execute,
+            zmq_poll_sockets: set[ZMQPollSocket] = self.sockets,
             log=self.log,
         ) -> None:
             """Runs the 'event' loop."""
@@ -229,13 +237,12 @@ class ZMQPoll:
                 c: tuple[int, Callable] | None
                 wake.bind(addr := "inproc://async_kernel_zmq_poller_wake")
                 send.connect(addr)
+                handlers[(wake, zmq.POLLIN)] = on_wake
                 started.wake()
                 # The main loop polls the handler keys for events in a loop.
                 # It will block until an event occurs.
                 try:
-                    while not stopped.done():
-                        if not handlers:
-                            handlers[(wake, zmq.POLLIN)] = on_wake
+                    while handlers:
                         if not sockets:
                             sockets = list(handlers)
                         if execute:
@@ -248,7 +255,7 @@ class ZMQPoll:
                                 except KeyError:
                                     sockets = None
                                 except SystemExit:
-                                    stopped.set_result(None)
+                                    handlers.clear()
                                 except BaseException as e:
                                     self.log.exception("Ignoring exception in handler.", exc_info=e)
                                 if countdown and (c := countdown.get(k)) is not None:
@@ -266,10 +273,16 @@ class ZMQPoll:
                         except Exception as e:
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:
+                    while countdown:
+                        _, exiting = countdown.popitem()
+                        if exiting:
+                            exiting[1]()
                     stopped.set_result(None)
                     do_execute()
-                    handlers.clear()
-                    log.debug("Stopped poll event loop")
+                    while zmq_poll_sockets:
+                        with contextlib.suppress(Exception):
+                            zmq_poll_sockets.pop().close()
+                    log.debug("Stopped zmq_poll event loop")
 
         self.log.debug("Starting ZMQPoll event loop")
         started = create_green_waiter()
@@ -337,13 +350,14 @@ class ZMQPoll:
         Args:
             sock: A zmq socket or a IO style object with a `fileno`.
             handler: A handler to handle the event. The handler is called inside the
-                poll thread. Thread-safe primitives must be used by the handler such
+                zmq_poll thread. Thread-safe primitives must be used by the handler such
                 as [async_kernel.caller.Caller.call_soon][],[async_kernel.caller.Caller.queue_call][], etc.
             flags: The type of event to listen for.
                 [zmq.PollEvent.POLLIN][]: `sock` is readable.
                 [zmq.PollEvent.POLLOUT][]: `sock` was read from.
-            countdown: A tuple ('n', callback) where the handler is run to completion exactly 'n' times.
-                The callback could be an `event.set` to release the context.
+            countdown: A tuple ('n', callback) where the handler is run to completion up to 'n' times.
+                The callback could be an `event.set` to release the context. It will release when
+                zmq_poll is shutdown.
 
         Tip:
             The handler is called inside a dedicated thread which may have been marked using
