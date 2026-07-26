@@ -14,6 +14,7 @@ from aiologic.lowlevel import create_async_event, create_async_waiter
 import tests.utils
 from async_kernel.common import SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
+from async_kernel.pending import PendingCancelled
 
 if TYPE_CHECKING:
     from async_kernel import Caller
@@ -23,23 +24,36 @@ if TYPE_CHECKING:
 
 
 class Test_zmq_Poll:
-    async def test_busy_event(self, caller: Caller) -> None:
+    async def test_event_handler_busy_resource(self, caller: Caller) -> None:
         with ZMQPoll() as zmq_poll:
             sock = zmq_poll.socket(zmq.SocketType.PAIR)
             with (
                 anyio.fail_after(tests.utils.TIMEOUT),
-                zmq_poll.event_handler(sock, lambda _, __: None),
+                zmq_poll.event_handler(sock, lambda _, __: None, canceller=None),
                 pytest.raises(BusyResourceError),
-                zmq_poll.event_handler(sock, lambda _, __: None),
+                zmq_poll.event_handler(sock, lambda _, __: None, canceller=None),
             ):
-                await anyio.sleep(0.1)
+                raise RuntimeError
 
-    def test_validate_sock(self):
+    async def test_event_handler_no_pending(self, caller: Caller) -> None:
+        with (
+            ZMQPoll() as zmq_poll,
+            pytest.raises(RuntimeError, match="is not cancellable"),
+            zmq_poll.event_handler(zmq_poll.socket(zmq.SocketType.PAIR), lambda _, __: None),
+        ):
+            raise RuntimeError
 
-        with pytest.raises(TypeError, match="is not valid"):
-            ZMQPoll._validate_socket(None)
+    def test_validate_sock(self) -> None:
 
-    async def test_zmq_poll(self, anyio_backend: Backend, caller: Caller):
+        with ZMQPoll() as zmq_poll:
+            sock = zmq_poll.socket(zmq.SocketType.REP)
+            assert zmq_poll.validate_socket(sock) is sock
+        assert sock.closed
+        with pytest.raises(ValueError, match="Invalid socket detected!"):
+            zmq_poll.validate_socket(sock)
+        sock.send_multipart([])  # Check this does nothing.
+
+    async def test_zmq_poll(self, anyio_backend: Backend, caller: Caller) -> None:
 
         def handler(socket: zmq.Socket, flags: int):
             queue.append(socket.recv_multipart())
@@ -50,7 +64,7 @@ class Test_zmq_Poll:
             zmq_poll.socket(zmq.SocketType.DEALER) as sock_dealer,
             sock_router.bind(addr := f"inproc://test_messaging_{id(self)}"),
             sock_dealer.connect(addr),
-            zmq_poll.event_handler(sock_router, handler),
+            zmq_poll.event_handler(sock_router, handler, canceller=None),
         ):
             queue: SingleAsyncQueue[list[bytes]] = SingleAsyncQueue()
             sock_dealer.send(b"hello")
@@ -75,7 +89,7 @@ class Test_zmq_Poll:
             referrers = gc.get_referrers(obj)
             assert not referrers
 
-    async def test_poll_limit(self, caller: Caller):
+    async def test_poll_count(self, caller: Caller):
 
         with ZMQPoll() as zmq_poll:
             sock_router = zmq_poll.socket(zmq.SocketType.ROUTER)
@@ -97,12 +111,14 @@ class Test_zmq_Poll:
             n = 0
             for _ in range(N * 2):
                 sock_dealer.send(b"")
-            with zmq_poll.event_handler(sock_router, in_thread, flags=zmq.PollEvent.POLLOUT, limit=(N, done.wake)):
+            with zmq_poll.event_handler(
+                sock_router, in_thread, flags=zmq.PollEvent.POLLOUT, count=(N, done.wake), canceller=None
+            ):
                 await done
                 assert n == N
             assert n == N
 
-    async def test_stress_socket_threadsafe(self, caller: Caller):
+    async def test_stress_socket_threadsafe(self, caller: Caller) -> None:
         """Stress test interface.iopub_send and the associated socket."""
         for n in range(2, 20, 4):
             with (
@@ -115,7 +131,7 @@ class Test_zmq_Poll:
                 sub.subscribe(b"")
                 # Wait for sub to connection
                 ready = create_async_waiter()
-                with zmq_poll.event_handler(pub, lambda _, __: None, limit=(1, ready.wake)):
+                with zmq_poll.event_handler(pub, lambda _, __: None, count=(1, ready.wake), canceller=None):
                     await ready
 
                 barrier = Latch(n - 1)
@@ -135,7 +151,7 @@ class Test_zmq_Poll:
                     await barrier
                     pub.send_multipart([b"stream.stdout", str(i).encode()])
 
-                with anyio.fail_after(tests.utils.TIMEOUT), zmq_poll.event_handler(sub, accumulate_pub):
+                with zmq_poll.event_handler(sub, accumulate_pub, canceller=None):
                     for i in range(1, n):
                         caller.to_thread(f, i)
                     await done
@@ -190,24 +206,60 @@ class Test_zmq_Poll:
             frames = server.recv_multipart()
             assert frames == [b"test"]
 
-    async def test_limit_exit_early(self, caller: Caller):
-        """Stress test interface.iopub_send and the associated socket."""
-        with (
-            ZMQPoll() as zmq_poll,
-            zmq_poll.socket(socket_type=zmq.SocketType.XPUB) as pub,
-            zmq_poll.socket(zmq.SocketType.SUB) as sub,
-            pub.bind(addr := "inproc://socket_proxy_test"),
-            sub.connect(addr),
-        ):
+    async def test_event_handler_default_canceller(self, caller: Caller):
+        """Test the handler cancels the pending."""
+        with ZMQPoll() as zmq_poll:
 
-            async def test_exit_early():
-                started.wake()
-                resume = create_async_waiter()
-                with zmq_poll.event_handler(pub, lambda _, __: None, limit=(1, resume.wake)):
-                    await resume
+            async def f():
+                with zmq_poll.event_handler(zmq_poll.socket(zmq.SocketType.REP), lambda _, __: None):
+                    await barrier
+                    await create_async_waiter()
 
-            pen = caller.call_soon(test_exit_early)
-            await (started := create_async_waiter())
+            barrier = Latch(4)
+            caller.queue_call(f)
+            pen = caller.queue_get(f)
+            assert pen
+            pending = [caller.call_soon(f), caller.to_thread(f), pen]
+            await barrier
+        await pen.wait(result=False)
 
-        with anyio.fail_after(1):
-            await pen
+        assert all(p.cancelled() for p in pending)
+
+    async def test_cancel(self, caller: Caller):
+        async def f():
+            pen = caller.current_pending()
+            assert pen
+            with ZMQPoll(canceller=lambda: pen.cancel("stop")) as zmq_poll:
+                zmq_poll.stopped.set_result(None)
+                await create_async_waiter()
+
+        with pytest.raises(PendingCancelled, match="stop"):
+            await caller.call_soon(f)
+
+    async def test_catches_cancel(self, caller: Caller):
+        count = 0
+
+        def bad_canceller():
+            nonlocal count
+            count = count + 1
+            if count == 2:
+                resume.wake()
+            raise TypeError
+
+        resume, done = create_async_waiter(), create_async_waiter()
+        with ZMQPoll(canceller=bad_canceller) as zmq_poll:
+            assert bad_canceller in zmq_poll._cancellers
+
+            async def f():
+                sock = zmq_poll.socket(zmq.SocketType.REP)
+                with zmq_poll.event_handler(sock, lambda _, __: None, canceller=bad_canceller):
+                    # Initial cancellation (should not normally be invoked externally)
+                    zmq_poll.stopped.set_result(None)
+                    await done
+
+            pen = caller.call_soon(f)
+            await resume
+
+        done.wake()
+        await pen.wait(result=False)
+        assert count == 2

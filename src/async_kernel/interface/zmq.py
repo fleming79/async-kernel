@@ -121,7 +121,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             self.load_connection_file()
         self.write_connection_file()
 
-        with ZMQPoll(log=self.log) as zmq_poll:
+        with ZMQPoll() as zmq_poll:
             self._zmq_poll = zmq_poll
             async with self._iopub():
                 with (
