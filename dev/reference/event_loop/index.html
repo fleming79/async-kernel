@@ -3544,7 +3544,7 @@ show_root_heading: true</p>
 
 
         <p>A zmq socket which uses a <a class="autorefs autorefs-internal" title="            ZMQPoll" href="#async_kernel.event_loop.zmq_poll.ZMQPoll">ZMQPoll</a> thread to perform sensitive operation.</p>
-<p>For best reliability, sensitive operations are performed in the poll's thread.
+<p>For best reliability, sensitive operations are performed in the zmq_poll's thread.
 This socket will close automatically when Poll is stopped. It is still better to
 close the  socket when it is no longer required. The socket must be bound/connected
 in the context of the <a class="autorefs autorefs-internal" title="            ZMQPoll" href="#async_kernel.event_loop.zmq_poll.ZMQPoll">ZMQPoll</a> to which it is associated.</p>
@@ -3564,12 +3564,8 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
       <a href="#">event_loop</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQPoll</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll.socket"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;socket</a>
+      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQPoll</a>
   </span>
 
       </li>
@@ -3705,8 +3701,7 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 34</span>
-<span class="normal"> 35</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 35</span>
 <span class="normal"> 36</span>
 <span class="normal"> 37</span>
 <span class="normal"> 38</span>
@@ -3808,18 +3803,20 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
 <span class="normal">134</span>
 <span class="normal">135</span>
 <span class="normal">136</span>
-<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPollSocket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">sugar</span><span class="o">.</span><span class="n">Socket</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]):</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPollSocket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">sugar</span><span class="o">.</span><span class="n">Socket</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A zmq socket which uses a [ZMQPoll][] thread to perform sensitive operation.</span>
 
-<span class="sd">    For best reliability, sensitive operations are performed in the poll&#39;s thread.</span>
+<span class="sd">    For best reliability, sensitive operations are performed in the zmq_poll&#39;s thread.</span>
 <span class="sd">    This socket will close automatically when Poll is stopped. It is still better to</span>
 <span class="sd">    close the  socket when it is no longer required. The socket must be bound/connected</span>
 <span class="sd">    in the context of the [ZMQPoll][] to which it is associated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;__poll&quot;</span><span class="p">,</span> <span class="s2">&quot;_close_cb&quot;</span><span class="p">,</span> <span class="s2">&quot;lock&quot;</span><span class="p">]</span>
-
-    <span class="n">_close_cb</span><span class="p">:</span> <span class="n">Callable</span>
     <span class="n">_zmq_poll_ref</span><span class="p">:</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">[</span><span class="n">ZMQPoll</span><span class="p">]</span>
     <span class="n">lock</span><span class="p">:</span> <span class="n">BinarySemaphore</span>
 
@@ -3859,8 +3856,7 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
             <span class="n">socket_type</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">socket_type</span><span class="p">),</span>
             <span class="n">copy_threshold</span><span class="o">=</span><span class="n">copy_threshold</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">zmq_poll</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">cb</span> <span class="o">:=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_close_cb</span> <span class="o">=</span> <span class="n">cb</span>
+        <span class="n">zmq_poll</span><span class="o">.</span><span class="n">sockets</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">zmq_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPoll</span><span class="p">:</span>
@@ -3868,7 +3864,8 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">send_multipart</span><span class="p">(</span>
@@ -3884,34 +3881,41 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linger</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">remove_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_close_cb</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">,</span> <span class="n">linger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">,</span> <span class="n">linger</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">sockets</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SocketContext</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">unbind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">unbind</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">unbind</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SocketContext</span><span class="p">[</span><span class="n">Self</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">disconnect</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">disconnect</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span>
         <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">topic</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">topic</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">topic</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4167,12 +4171,7 @@ for handling.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
@@ -4390,14 +4389,35 @@ for handling.</p>
 <span class="normal">363</span>
 <span class="normal">364</span>
 <span class="normal">365</span>
-<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPoll</span><span class="p">:</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPoll</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.</span>
 
 <span class="sd">    This event loop is synchronous and is intended for quick message dispatch to separate threads</span>
 <span class="sd">    for handling.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">stopped</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">)</span>
+    <span class="n">stopped</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">)</span>
+    <span class="n">sockets</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">ZMQPollSocket</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">log</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">|</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
@@ -4417,7 +4437,7 @@ for handling.</p>
         <span class="n">ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">_socket_class</span> <span class="o">=</span> <span class="n">socket_factory</span>  <span class="c1"># pyright: ignore[reportPrivateUsage, reportAttributeAccessIssue]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T_key</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ZMQPollSocket</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_countdown</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T_key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T_key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="n">Pending</span><span class="p">]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">[</span><span class="n">Pending</span><span class="p">[</span><span class="n">Any</span><span class="p">]]()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_not_started</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">())</span>
@@ -4433,14 +4453,19 @@ for handling.</p>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">]:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">set_result</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_wake</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Unblock the thread.&quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctrl_sock</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ctrl_sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sock</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctrl_sock</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">sock</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctrl_sock</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
@@ -4448,8 +4473,9 @@ for handling.</p>
             <span class="o">*</span><span class="p">,</span>
             <span class="n">handlers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T_key</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ZMQPollSocket</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="p">,</span>
             <span class="n">stopped</span><span class="p">:</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="p">,</span>
-            <span class="n">countdown</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T_key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_countdown</span><span class="p">,</span>
+            <span class="n">limit</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T_key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="p">,</span>
             <span class="n">execute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="p">,</span>
+            <span class="n">zmq_poll_sockets</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">ZMQPollSocket</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sockets</span><span class="p">,</span>
             <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Runs the &#39;event&#39; loop.&quot;&quot;&quot;</span>
@@ -4479,13 +4505,12 @@ for handling.</p>
                 <span class="n">c</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
                 <span class="n">wake</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">addr</span> <span class="o">:=</span> <span class="s2">&quot;inproc://async_kernel_zmq_poller_wake&quot;</span><span class="p">)</span>
                 <span class="n">send</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+                <span class="n">handlers</span><span class="p">[(</span><span class="n">wake</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)]</span> <span class="o">=</span> <span class="n">on_wake</span>
                 <span class="n">started</span><span class="o">.</span><span class="n">wake</span><span class="p">()</span>
                 <span class="c1"># The main loop polls the handler keys for events in a loop.</span>
                 <span class="c1"># It will block until an event occurs.</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="k">while</span> <span class="ow">not</span> <span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">handlers</span><span class="p">:</span>
-                            <span class="n">handlers</span><span class="p">[(</span><span class="n">wake</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)]</span> <span class="o">=</span> <span class="n">on_wake</span>
+                    <span class="k">while</span> <span class="n">handlers</span><span class="p">:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">sockets</span><span class="p">:</span>
                             <span class="n">sockets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">handlers</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">execute</span><span class="p">:</span>
@@ -4498,15 +4523,15 @@ for handling.</p>
                                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                                     <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
                                 <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
-                                    <span class="n">stopped</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                                    <span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                                 <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                                     <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Ignoring exception in handler.&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
-                                <span class="k">if</span> <span class="n">countdown</span> <span class="ow">and</span> <span class="p">(</span><span class="n">c</span> <span class="o">:=</span> <span class="n">countdown</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                                    <span class="n">c</span> <span class="o">=</span> <span class="n">countdown</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                                <span class="k">if</span> <span class="n">limit</span> <span class="ow">and</span> <span class="p">(</span><span class="n">c</span> <span class="o">:=</span> <span class="n">limit</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="n">c</span> <span class="o">=</span> <span class="n">limit</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
                                     <span class="c1"># Auto eject after &#39;n&#39; events</span>
                                     <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                                         <span class="n">handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                                        <span class="n">countdown</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
+                                        <span class="n">limit</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
                                         <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]()</span>
                         <span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ZMQError</span><span class="p">:</span>
                             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">handlers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -4516,10 +4541,16 @@ for handling.</p>
                         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Ignoring exception in zmq_poll_thread.&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
                 <span class="k">finally</span><span class="p">:</span>
+                    <span class="k">while</span> <span class="n">limit</span><span class="p">:</span>
+                        <span class="n">_</span><span class="p">,</span> <span class="n">exiting</span> <span class="o">=</span> <span class="n">limit</span><span class="o">.</span><span class="n">popitem</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">exiting</span><span class="p">:</span>
+                            <span class="n">exiting</span><span class="p">[</span><span class="mi">1</span><span class="p">]()</span>
                     <span class="n">stopped</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
                     <span class="n">do_execute</span><span class="p">()</span>
-                    <span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stopped poll event loop&quot;</span><span class="p">)</span>
+                    <span class="k">while</span> <span class="n">zmq_poll_sockets</span><span class="p">:</span>
+                        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+                            <span class="n">zmq_poll_sockets</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stopped zmq_poll event loop&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Starting ZMQPoll event loop&quot;</span><span class="p">)</span>
         <span class="n">started</span> <span class="o">=</span> <span class="n">create_green_waiter</span><span class="p">()</span>
@@ -4528,6 +4559,8 @@ for handling.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">zmq_poll_thread</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="n">started</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span> <span class="o">:=</span> <span class="n">ref</span><span class="p">())</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_stopped</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ZMQPoll event loop started&quot;</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
@@ -4578,7 +4611,7 @@ for handling.</p>
         <span class="o">/</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">flags</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLOUT</span><span class="p">]</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">,</span>
-        <span class="n">countdown</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A context manager where `handler` is called with the event number when it occurs for `sock`.</span>
 
@@ -4587,32 +4620,33 @@ for handling.</p>
 <span class="sd">        Args:</span>
 <span class="sd">            sock: A zmq socket or a IO style object with a `fileno`.</span>
 <span class="sd">            handler: A handler to handle the event. The handler is called inside the</span>
-<span class="sd">                poll thread. Thread-safe primitives must be used by the handler such</span>
+<span class="sd">                zmq_poll thread. Thread-safe primitives must be used by the handler such</span>
 <span class="sd">                as [async_kernel.caller.Caller.call_soon][],[async_kernel.caller.Caller.queue_call][], etc.</span>
 <span class="sd">            flags: The type of event to listen for.</span>
 <span class="sd">                [zmq.PollEvent.POLLIN][]: `sock` is readable.</span>
 <span class="sd">                [zmq.PollEvent.POLLOUT][]: `sock` was read from.</span>
-<span class="sd">            countdown: A tuple (&#39;n&#39;, callback) where the handler is run to completion exactly &#39;n&#39; times.</span>
-<span class="sd">                The callback could be an `event.set` to release the context.</span>
+<span class="sd">            limit: A tuple (&#39;n&#39;, callback) where the handler is run to completion up to &#39;n&#39; times.</span>
+<span class="sd">                The callback could be an `event.set` to release the context. It will also release if</span>
+<span class="sd">                zmq_poll is shutdown before &#39;n&#39; is reached.</span>
 
 <span class="sd">        Tip:</span>
 <span class="sd">            The handler is called inside a dedicated thread which may have been marked using</span>
 <span class="sd">            [async_kernel.utils.mark_thread_pydev_do_not_trace][] which disables debug breakpoints.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sock_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_socket</span><span class="p">(</span><span class="n">sock</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">countdown</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">countdown</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
-            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">countdown</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">limit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">limit</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span> <span class="o">:=</span> <span class="p">(</span><span class="n">sock_</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">flags</span><span class="p">)),</span> <span class="n">handler</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">BusyResourceError</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_countdown</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">countdown</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">limit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">yield</span> <span class="kc">None</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_countdown</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -4662,16 +4696,16 @@ for handling.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new [ZMQPollSocket][].</span>
 
 <span class="sd">    Args:</span>
@@ -4706,17 +4740,17 @@ for handling.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute `func` in the thread waiting for the result synchronously.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;thread&quot;</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
@@ -4756,15 +4790,15 @@ for handling.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute `func` in the thread waiting for the result asynchronously.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;thread&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">))</span>
@@ -4793,7 +4827,7 @@ for handling.</p>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="flags (async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(flags))" href="#async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(flags)">flags</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="zmq.PollEvent.POLLIN" href="https://pyzmq.readthedocs.io/en/stable/api/zmq.html#zmq.PollEvent.POLLIN">POLLIN</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="zmq.PollEvent.POLLOUT" href="https://pyzmq.readthedocs.io/en/stable/api/zmq.html#zmq.PollEvent.POLLOUT">POLLOUT</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="zmq.PollEvent.POLLIN" href="https://pyzmq.readthedocs.io/en/stable/api/zmq.html#zmq.PollEvent.POLLIN">POLLIN</a></span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="countdown (async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(countdown))" href="#async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(countdown)">countdown</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="limit (async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(limit))" href="#async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(limit)">limit</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Generator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator">Generator</a></span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 </code></pre></div>
 
@@ -4819,7 +4853,7 @@ for handling.</p>
           –
           <div class="doc-md-description">
             <p>A handler to handle the event. The handler is called inside the
-poll thread. Thread-safe primitives must be used by the handler such
+zmq_poll thread. Thread-safe primitives must be used by the handler such
 as <a class="autorefs autorefs-internal" title="            call_soon" href="../caller/#async_kernel.caller.Caller.call_soon">async_kernel.caller.Caller.call_soon</a>,<a class="autorefs autorefs-internal" title="            queue_call" href="../caller/#async_kernel.caller.Caller.queue_call">async_kernel.caller.Caller.queue_call</a>, etc.</p>
           </div>
         </li>
@@ -4836,14 +4870,15 @@ as <a class="autorefs autorefs-internal" title="            call_soon" href="../
           </div>
         </li>
         <li class="doc-section-item field-body">
-<h4 id="async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(countdown)" class="doc doc-heading doc-heading-parameter">              <b><code>countdown</code></b>
-<a href="#async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(countdown)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]] | None</code>, default:
+<h4 id="async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(limit)" class="doc doc-heading doc-heading-parameter">              <b><code>limit</code></b>
+<a href="#async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(limit)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]] | None</code>, default:
                   <code>None</code>
 )
           –
           <div class="doc-md-description">
-            <p>A tuple ('n', callback) where the handler is run to completion exactly 'n' times.
-The callback could be an <code>event.set</code> to release the context.</p>
+            <p>A tuple ('n', callback) where the handler is run to completion up to 'n' times.
+The callback could be an <code>event.set</code> to release the context. It will also release if
+zmq_poll is shutdown before 'n' is reached.</p>
           </div>
         </li>
     </ul>
@@ -4858,26 +4893,7 @@ The callback could be an <code>event.set</code> to release the context.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">342</span>
 <span class="normal">343</span>
 <span class="normal">344</span>
 <span class="normal">345</span>
@@ -4901,7 +4917,27 @@ The callback could be an <code>event.set</code> to release the context.</p>
 <span class="normal">363</span>
 <span class="normal">364</span>
 <span class="normal">365</span>
-<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">event_handler</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">sock</span><span class="p">:</span> <span class="n">ZMQPollSocket</span><span class="p">,</span>
@@ -4909,7 +4945,7 @@ The callback could be an <code>event.set</code> to release the context.</p>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">flags</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLOUT</span><span class="p">]</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">PollEvent</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">,</span>
-    <span class="n">countdown</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A context manager where `handler` is called with the event number when it occurs for `sock`.</span>
 
@@ -4918,32 +4954,33 @@ The callback could be an <code>event.set</code> to release the context.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        sock: A zmq socket or a IO style object with a `fileno`.</span>
 <span class="sd">        handler: A handler to handle the event. The handler is called inside the</span>
-<span class="sd">            poll thread. Thread-safe primitives must be used by the handler such</span>
+<span class="sd">            zmq_poll thread. Thread-safe primitives must be used by the handler such</span>
 <span class="sd">            as [async_kernel.caller.Caller.call_soon][],[async_kernel.caller.Caller.queue_call][], etc.</span>
 <span class="sd">        flags: The type of event to listen for.</span>
 <span class="sd">            [zmq.PollEvent.POLLIN][]: `sock` is readable.</span>
 <span class="sd">            [zmq.PollEvent.POLLOUT][]: `sock` was read from.</span>
-<span class="sd">        countdown: A tuple (&#39;n&#39;, callback) where the handler is run to completion exactly &#39;n&#39; times.</span>
-<span class="sd">            The callback could be an `event.set` to release the context.</span>
+<span class="sd">        limit: A tuple (&#39;n&#39;, callback) where the handler is run to completion up to &#39;n&#39; times.</span>
+<span class="sd">            The callback could be an `event.set` to release the context. It will also release if</span>
+<span class="sd">            zmq_poll is shutdown before &#39;n&#39; is reached.</span>
 
 <span class="sd">    Tip:</span>
 <span class="sd">        The handler is called inside a dedicated thread which may have been marked using</span>
 <span class="sd">        [async_kernel.utils.mark_thread_pydev_do_not_trace][] which disables debug breakpoints.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sock_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_socket</span><span class="p">(</span><span class="n">sock</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">countdown</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">countdown</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
-        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">countdown</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">limit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">limit</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span> <span class="o">:=</span> <span class="p">(</span><span class="n">sock_</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">flags</span><span class="p">)),</span> <span class="n">handler</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">BusyResourceError</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_countdown</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">countdown</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">limit</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span> <span class="kc">None</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_countdown</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
