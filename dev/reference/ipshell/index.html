@@ -2648,7 +2648,7 @@ viewing the latest version.
 
 
         <p>Called by the kernel whenever the interpreter needs to display results.</p>
-<p>The output is always published with <code>msg_type="execute_result"</code>.</p>
+<p>The output is always published with <code>msg_type=MsgType.iopub_execute_result</code>.</p>
 
           
 
@@ -2798,7 +2798,7 @@ viewing the latest version.
 <span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPDisplayHook</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">DisplayHook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Called by the kernel whenever the interpreter needs to display results.</span>
 
-<span class="sd">    The output is always published with `msg_type=&quot;execute_result&quot;`.</span>
+<span class="sd">    The output is always published with `msg_type=MsgType.iopub_execute_result`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">cache_size</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Int</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -2864,7 +2864,7 @@ viewing the latest version.
                 <span class="n">content</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_dict</span>
                 <span class="n">content</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">md_dict</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log_output</span><span class="p">(</span><span class="n">format_dict</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="s2">&quot;execute_result&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_result</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2934,7 +2934,7 @@ activated by setting the variable sys.displayhook to it.</p>
             <span class="n">content</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_dict</span>
             <span class="n">content</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">md_dict</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_output</span><span class="p">(</span><span class="n">format_dict</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="s2">&quot;execute_result&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_result</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3146,7 +3146,7 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="sd">        [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{},</span> <span class="s2">&quot;transient&quot;</span><span class="p">:</span> <span class="n">transient</span> <span class="ow">or</span> <span class="p">{}}</span> <span class="o">|</span> <span class="n">kwargs</span>
-        <span class="n">msg_type</span> <span class="o">=</span> <span class="s2">&quot;update_display_data&quot;</span> <span class="k">if</span> <span class="n">update</span> <span class="k">else</span> <span class="s2">&quot;display_data&quot;</span>
+        <span class="n">msg_type</span> <span class="o">=</span> <span class="s2">&quot;update_display_data&quot;</span> <span class="k">if</span> <span class="n">update</span> <span class="k">else</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_display_data</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_parent_message</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hooks</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -3155,7 +3155,7 @@ activated by setting the variable sys.displayhook to it.</p>
                 <span class="k">pass</span>
             <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -3166,7 +3166,7 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="sd">                instead waiting for the next display before clearing.</span>
 <span class="sd">                This reduces bounce during repeated clear &amp; display loops.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;clear_output&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_clear_output</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a hook for when publish is called.</span>
@@ -3331,7 +3331,7 @@ Transient data should not be persisted to documents.</p>
 <span class="sd">    [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{},</span> <span class="s2">&quot;transient&quot;</span><span class="p">:</span> <span class="n">transient</span> <span class="ow">or</span> <span class="p">{}}</span> <span class="o">|</span> <span class="n">kwargs</span>
-    <span class="n">msg_type</span> <span class="o">=</span> <span class="s2">&quot;update_display_data&quot;</span> <span class="k">if</span> <span class="n">update</span> <span class="k">else</span> <span class="s2">&quot;display_data&quot;</span>
+    <span class="n">msg_type</span> <span class="o">=</span> <span class="s2">&quot;update_display_data&quot;</span> <span class="k">if</span> <span class="n">update</span> <span class="k">else</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_display_data</span>
     <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_parent_message</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hooks</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
@@ -3340,7 +3340,7 @@ Transient data should not be persisted to documents.</p>
             <span class="k">pass</span>
         <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3401,7 +3401,7 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 <span class="sd">            instead waiting for the next display before clearing.</span>
 <span class="sd">            This reduces bounce during repeated clear &amp; display loops.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;clear_output&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">msg_or_type</span><span class="o">=</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_clear_output</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;display_data&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5058,9 +5058,9 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="k">def</span><span class="w"> </span><span class="nf">_show_in_pager</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">screen_lines</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pager_cmd</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Handle IPython page calls.&quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="s2">&quot;display_data&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_display_data</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="s2">&quot;stream&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_stream</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_hook</span><span class="p">(</span><span class="s2">&quot;show_in_pager&quot;</span><span class="p">,</span> <span class="n">_show_in_pager</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span>
 
@@ -5237,7 +5237,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-                <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;execute_input&quot;</span><span class="p">,</span>
+                <span class="n">msg_or_type</span><span class="o">=</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_input</span><span class="p">,</span>
                 <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
                 <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;kernel.execute_input&quot;</span><span class="p">,</span>
             <span class="p">)</span>
@@ -5268,7 +5268,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
                 <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
             <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
             <span class="s2">&quot;user_expressions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
         <span class="p">}</span>
@@ -5368,7 +5368,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">evalue</span><span class="p">,</span> <span class="n">KernelInterrupt</span><span class="p">):</span>
             <span class="n">stb</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-            <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+            <span class="n">msg_or_type</span><span class="o">=</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span><span class="p">,</span>
             <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;traceback&quot;</span><span class="p">:</span> <span class="n">stb</span><span class="p">,</span> <span class="s2">&quot;ename&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">etype</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span> <span class="s2">&quot;evalue&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">evalue</span><span class="p">)},</span>
         <span class="p">)</span>
 
@@ -6029,9 +6029,9 @@ the shell whose context the execution result occurred.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">_show_in_pager</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">screen_lines</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pager_cmd</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle IPython page calls.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="s2">&quot;display_data&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_display_data</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="s2">&quot;stream&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_stream</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">set_hook</span><span class="p">(</span><span class="s2">&quot;show_in_pager&quot;</span><span class="p">,</span> <span class="n">_show_in_pager</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -6586,7 +6586,7 @@ the shell whose context the execution result occurred.</p>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-            <span class="n">msg_or_type</span><span class="o">=</span><span class="s2">&quot;execute_input&quot;</span><span class="p">,</span>
+            <span class="n">msg_or_type</span><span class="o">=</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_input</span><span class="p">,</span>
             <span class="n">content</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
             <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;kernel.execute_input&quot;</span><span class="p">,</span>
         <span class="p">)</span>
@@ -6617,7 +6617,7 @@ the shell whose context the execution result occurred.</p>
             <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
         <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
         <span class="s2">&quot;user_expressions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
     <span class="p">}</span>
