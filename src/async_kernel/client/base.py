@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import weakref
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
@@ -18,7 +19,18 @@ from async_kernel import utils
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface.base import BaseMessageApplication
 from async_kernel.pending import Pending
-from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, MsgTypeNoReply, NoValue, T
+from async_kernel.typing import (
+    Channel,
+    Content,
+    ExecuteContent,
+    Job,
+    Message,
+    MsgType,
+    MsgTypeNoReply,
+    NoValue,
+    T,
+    T_interface_co,
+)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
@@ -35,7 +47,7 @@ class ClientSession(jupyter_client.session.Session):
     check_pid = traitlets.Bool(False).tag(config=True)
 
 
-class BaseKernelClient(BaseMessageApplication):
+class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
     """Communicates with a single kernel on any host via zmq channels."""
 
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
@@ -48,7 +60,24 @@ class BaseKernelClient(BaseMessageApplication):
 
     _has_heartbeat: str | bool = True
 
-    ""
+    interface_class: traitlets.Type[type[T_interface_co], type[T_interface_co] | str] = traitlets.Type(
+        "async_kernel.interface.base.BaseInterface"
+    ).tag(  # pyright: ignore[reportAssignmentType]
+        config=True
+    )
+
+    def set_interface(self, interface: T_interface_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
+        assert isinstance(interface, self.interface_class)
+        assert not interface.stopping.done()
+        assert not self.started.done()
+        self._interface = weakref.ref(interface)
+
+    def _interface(self) -> T_interface_co | None:
+        return None
+
+    @property
+    def interface(self) -> T_interface_co | None:
+        return self._interface()
 
     def _handle_shell_control_msg(self, msg: Message) -> None:
         """A handler for incoming messages."""
@@ -82,7 +111,7 @@ class BaseKernelClient(BaseMessageApplication):
         msg_ = "A handler is not available"
         raise RuntimeError(msg_)
 
-    def send_message(self, msg: Message) -> PendingMessage:
+    def send_message(self, msg: Message, buffers: list[bytearray] | list[bytes] | None = None) -> PendingMessage:
         """Sends the message to the kernel and returns a PendingMessage."""
         assert self._has_heartbeat
         if MsgType(msg["header"]["msg_type"]) in MsgTypeNoReply:
@@ -92,7 +121,7 @@ class BaseKernelClient(BaseMessageApplication):
         self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage(parent=self._send_msg(msg))
         return pen
 
-    def send_message_no_reply(self, msg: Message) -> Message:
+    def send_message_no_reply(self, msg: Message, buffers: list[bytearray] | list[bytes] | None = None) -> Message:
         """Sends a message to the kernel and returns the message that was sent."""
         assert self._has_heartbeat
         return self._send_msg(msg)
@@ -234,14 +263,15 @@ class BaseKernelClient(BaseMessageApplication):
         return self.send_message(self.msg(MsgType.is_complete_request, content={"code": code}))
 
     def shutdown(self, restart: bool = False) -> PendingMessage[Any]:
-        """Request an immediate kernel shutdown on the control channel.
+        """Request an immediate kernel shutdown.
 
         Upon receipt of the (empty) reply, client code can safely assume that
         the kernel has shut down and it's safe to forcefully terminate it if
         it's still alive.
         """
-        # Send quit message to kernel. Once we implement kernel-side setattr,
-        # this should probably be done that way, but for now this will do.
+        if self.interface:
+            msg = "Local shutdown is prohibited. Use `interface.stop` instead."
+            raise RuntimeError(msg)
         return self.send_message(
             self.msg(MsgType.shutdown_request, content={"restart": restart}, channel=Channel.control)
         )

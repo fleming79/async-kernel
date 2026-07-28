@@ -28,6 +28,8 @@ if TYPE_CHECKING:
 
     from jupyter_client import KernelConnectionInfo
 
+    from async_kernel.client.zmq import ZMQKernelClient
+
 
 __all__ = ["ZMQInterface"]
 
@@ -62,6 +64,10 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
     ).tag(config=True)
     "Transport for sockets."
+
+    client_class: traitlets.Type[type[ZMQKernelClient[Self]], type[ZMQKernelClient[Self]] | str] = traitlets.Type(  # pyright: ignore[reportAssignmentType, reportIncompatibleVariableOverride]
+        "async_kernel.client.zmq.ZMQKernelClient"
+    ).tag(config=True)
 
     _sockets: Fixed[Self, dict[Channel, ZMQPollSocket]] = Fixed(dict)
     _iopub_socket: ZMQPollSocket | None = None
