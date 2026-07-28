@@ -14,7 +14,6 @@ from aiologic.lowlevel import create_async_event, create_async_waiter
 import tests.utils
 from async_kernel.common import SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
-from async_kernel.pending import PendingCancelled
 
 if TYPE_CHECKING:
     from async_kernel import Caller
@@ -169,6 +168,8 @@ class Test_zmq_Poll:
         with zmq_poll:
             assert (await zmq_poll.execute_async(lambda: 1 + 1)) == 2
             assert (zmq_poll.execute(lambda: 1 + 1)) == 2
+        with pytest.raises(RuntimeError, match="stopped"), zmq_poll:
+            raise ValueError
         # Stopped
         with pytest.raises(RuntimeError, match=match):
             assert zmq_poll.execute(threading.current_thread) is zmq_poll.thread
@@ -225,30 +226,14 @@ class Test_zmq_Poll:
 
         assert all(p.cancelled() for p in pending)
 
-    async def test_cancel(self, caller: Caller):
-        async def f():
-            pen = caller.current_pending()
-            assert pen
-            with ZMQPoll(canceller=lambda: pen.cancel("stop")) as zmq_poll:
-                zmq_poll.stopped.set_result(None)
-                await create_async_waiter()
-
-        with pytest.raises(PendingCancelled, match="stop"):
-            await caller.call_soon(f)
-
     async def test_catches_cancel(self, caller: Caller):
-        count = 0
 
         def bad_canceller():
-            nonlocal count
-            count = count + 1
-            if count == 2:
-                resume.wake()
+            resume.wake()
             raise TypeError
 
         resume, done = create_async_waiter(), create_async_waiter()
-        with ZMQPoll(canceller=bad_canceller) as zmq_poll:
-            assert bad_canceller in zmq_poll._cancellers
+        with ZMQPoll() as zmq_poll:
 
             async def f():
                 sock = zmq_poll.socket(zmq.SocketType.REP)
@@ -262,4 +247,3 @@ class Test_zmq_Poll:
 
         done.wake()
         await pen.wait(result=False)
-        assert count == 2
