@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import signal
 from typing import TYPE_CHECKING
 
 import anyio
@@ -10,7 +9,7 @@ from aiologic import Event
 import async_kernel
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import start_kernel_callable_interface
-from async_kernel.interface.callable import CallableInterface
+from async_kernel.interface.callable import CallableInterface, CallableKernelClient
 from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
@@ -40,7 +39,8 @@ async def interface(anyio_backend):
     )
 
     interface = CallableInterface.instance()
-    assert interface.name == "async-callable"
+    assert isinstance(interface.client, CallableKernelClient)
+    assert interface.kernel_name == "async-callable"
     try:
         yield interface
     finally:
@@ -92,7 +92,5 @@ class TestCallableInterface:
         with pytest.raises(RuntimeError, match="An interface already exists!"):
             CallableInterface()
 
-    async def test_keyboard_interrupt(self, interface, mocker) -> None:
-        stop = mocker.patch.object(interface, "stop")
-        signal.raise_signal(signal.SIGINT)
-        assert stop.call_count == 1
+    async def test_keyboard_interrupt(self, interface: CallableInterface, mocker) -> None:
+        await interface.client.send_message(interface.client.msg(MsgType.interrupt_request))

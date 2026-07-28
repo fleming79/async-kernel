@@ -10,10 +10,9 @@ from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
-from async_kernel.typing import MsgType
+from tests import utils
 
 if TYPE_CHECKING:
-    from async_kernel import Caller
     from async_kernel.typing import Backend
 
 # pyright: reportPrivateUsage=false
@@ -64,20 +63,16 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
             assert msg["content"]["subscription"] == topic
 
 
-async def test_force_shutdown(caller: Caller) -> None:
-
-    async def shutdown():
-        client = ZMQKernelClient()
-        client.load_connection_info(interface.get_connection_info())
-        async with client:
-            return await client.shutdown()
+async def test_force_shutdown(anyio_backend: Backend) -> None:
 
     async with IPApp() as interface:
+        assert interface.client.interface is interface
+        with pytest.raises(RuntimeError, match="Local shutdown is prohibited"):
+            interface.client.shutdown()
+        assert isinstance(interface.client, ZMQKernelClient)
         interface.kernel.force_shutdown_delay = 0
-        pen = caller.call_soon(shutdown)
+        # Bypass the safety
+        interface.client._interface = lambda: None
+        interface.client.shutdown()
         # Require a force shutdown
-        await create_async_waiter()
-
-    reply = await pen
-    assert reply["header"]["msg_type"] == MsgType.shutdown_reply
-    assert reply["content"] == {"restart": False, "status": "ok"}
+        assert not await create_async_waiter().with_(timeout=utils.TIMEOUT)

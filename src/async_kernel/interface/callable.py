@@ -4,15 +4,30 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import TYPE_CHECKING, Any, Generic, TypedDict
+from typing import TYPE_CHECKING, Any, Generic, Self, TypedDict
+from uuid import uuid4
 
+import traitlets
 from traitlets.traitlets import TraitType
 from typing_extensions import override
 
 import async_kernel
+from async_kernel.client.base import BaseKernelClient
+from async_kernel.common import Fixed
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import BaseInterface
-from async_kernel.typing import Channel, Content, Hosts, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
+from async_kernel.typing import (
+    Channel,
+    Content,
+    Hosts,
+    Job,
+    Message,
+    MsgHeader,
+    MsgType,
+    NoValue,
+    T_interface_co,
+    T_shell_co,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -62,6 +77,10 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
 
     host: TraitType[Hosts | None, Hosts | None] = TraitType(None)
     "Not yet supported"
+    client_class = (  # pyright: ignore[reportAssignmentType]
+        traitlets.Type("async_kernel.interface.callable.CallableKernelClient").tag(config=True)
+    )
+    client: Fixed[Self, CallableKernelClient[Self]]  # pyright: ignore[reportIncompatibleVariableOverride]
 
     _send: Callable[[str, list | None, bool], None | str]
 
@@ -147,3 +166,26 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         reply = self._send_to_frontend(msg, channel=Channel.stdin, requires_reply=True)
         assert reply
         return reply["content"]["value"]
+
+
+class CallableKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface_co]):
+    bsession = Fixed(lambda _: uuid4().bytes)
+    interface: Fixed[Self, CallableInterface]  # pyright: ignore[reportIncompatibleMethodOverride]
+
+    @override
+    def _send_msg(
+        self,
+        msg: Message,
+        buffers: list[bytearray] | list[bytes] | None = None,
+    ) -> Message:
+        kernel = (interface := self.interface).kernel
+        job = Job(received_time=time.monotonic(), msg=msg, ident=self.bsession)
+        kernel.message_handler(job, self._send_reply, interface.iopub_send)
+        return msg
+
+    async def _send_reply(self, job: Job, content: dict, /) -> None:
+        if "status" not in content:
+            content["status"] = "ok"
+        msg_type = job["msg"]["header"]["msg_type"].replace("request", "reply")
+        msg = self.msg(msg_type, content=content, parent=job["msg"])
+        self._handle_shell_control_msg(msg)

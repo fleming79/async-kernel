@@ -44,6 +44,7 @@ from async_kernel.typing import (
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable
 
+    from async_kernel.client.base import BaseKernelClient
     from async_kernel.kernel import Kernel
     from async_kernel.typing import Content
 
@@ -85,19 +86,8 @@ class DictValueLiteralEval(traitlets.Dict):
 class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     """The base application for kernel interfaces and clients."""
 
-    host: traitlets.TraitType[Hosts | None, Hosts | None] = traitlets.UseEnum(
-        Hosts, default_value=None, allow_none=True
-    ).tag(config=True)
-    "The name of a (gui) event loop (if one is used)."
-
-    host_options = DictValueLiteralEval(allow_none=True).tag(config=True)
-    "Options for starting the loop."
-
-    backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend).tag(config=True)
-    "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
-
-    backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
-    "Options for starting the backend."
+    kernel_name = traitlets.Unicode("async").tag(config=True)
+    "The kernels name."
 
     started = Fixed(ProtectedPending)
     "A Pending that is set when the application has started."
@@ -115,22 +105,14 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
     "The callers used by the messaging application."
 
+    aliases: dict[str | tuple[str, ...], str] = Application.aliases | {  # pyright: ignore[reportIncompatibleVariableOverride]
+        ("name", "n"): "BaseMessageApplication.kernel_name"
+    }
+    ""
+
     @property
     def summary(self) -> str:
-        return f"name={self.name!r} backend={str(self.backend)!r}"
-
-    @traitlets.default("backend")
-    def _default_backend(self) -> Backend:
-        try:
-            return Backend(current_async_library())
-        except AsyncLibraryNotFoundError:
-            if (
-                not self.host
-                and not self.trait_has_value("backend_options")
-                and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
-            ):
-                self.backend_options["use_uvloop"] = True
-            return Backend.asyncio
+        return f"name={self.kernel_name!r}"
 
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
@@ -138,7 +120,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
         if self.stopped.done():
             msg = "Stopped early"
             raise RuntimeError(msg)
-        self.backend = Backend(current_async_library())
+
         channels_started, stop_channels = create_async_waiter(), Event()
         async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
             self.callers[Channel.shell] = caller
@@ -251,8 +233,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     classes: ClassesType = final([])
     "The classes registered with the interface."
 
-    aliases: dict[str | tuple[str, ...], str] = {  # pyright: ignore[reportIncompatibleVariableOverride]
-        ("name", "n"): "BaseInterface.name",
+    aliases = {
         "launcher": "BaseInterface.launcher",
         "timeout": "BaseShell.timeout",
         "kernel_class": "BaseInterface.kernel_class",
@@ -260,16 +241,27 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         "help_links": "Kernel.help_links",
         "supported_features": "Kernel.supported_features",
         "interface_class": "BaseInterface.interface_class",
-    } | Application.aliases
+    } | BaseMessageApplication.aliases
     ""
     flags = {
         "quiet": ({"BaseInterface": {"quiet": True}}, "Only send stdout/stderr to output stream."),
         "no-quiet": ({"BaseInterface": {"quiet": False}}, "Only send stdout/stderr to output stream."),
-    } | Application.flags
+    } | BaseMessageApplication.flags
     ""
 
-    name = traitlets.Unicode("async").tag(config=True)
-    "The name of the kernel used in the kernelspec."
+    host: traitlets.TraitType[Hosts | None, Hosts | None] = traitlets.UseEnum(
+        Hosts, default_value=None, allow_none=True
+    ).tag(config=True)
+    "The name of a (gui) event loop (if one is used)."
+
+    host_options = DictValueLiteralEval(allow_none=True).tag(config=True)
+    "Options for starting the loop."
+
+    backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend).tag(config=True)
+    "The type of asynchronous backend used. Options are 'asyncio' or 'trio'."
+
+    backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
+    "Options for starting the backend."
 
     interface_class: traitlets.Type[type[Self], type[Self] | str] = traitlets.Type(
         "async_kernel.interface.base.BaseInterface"
@@ -292,6 +284,12 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     )
     "The class to use for shells and subshells."
 
+    client_class: traitlets.Type[type[BaseKernelClient[Self]], type[BaseKernelClient[Self]] | str] = traitlets.Type(
+        klass="async_kernel.client.base.BaseKernelClient"
+    ).tag(  # pyright: ignore[reportAssignmentType]
+        config=True
+    )
+
     quiet = traitlets.Bool(True).tag(config=True)
     "Only send stdout/stderr to output stream."
 
@@ -301,9 +299,33 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     kernel: Fixed[Self, Kernel[Self, T_shell_co]] = Fixed(
         lambda c: c["owner"].kernel_class(c["owner"], c["owner"].shell_class)
     )
-    "The kernel."
+    """The kernel."""
+
+    client: Fixed[Self, BaseKernelClient[Self]] = Fixed(
+        lambda c: c["owner"].client_class(),
+        created=lambda c: c["obj"].set_interface(c["owner"]),  # Touch interface to lock it in.
+    )
+    """A client that is started with this interface."""
 
     _instance: Self | None = None
+
+    @property
+    @override
+    def summary(self) -> str:
+        return f"name={self.kernel_name!r} backend={str(self.backend)!r}"
+
+    @traitlets.default("backend")
+    def _default_backend(self) -> Backend:
+        try:
+            return Backend(current_async_library())
+        except AsyncLibraryNotFoundError:
+            if (
+                not self.host
+                and not self.trait_has_value("backend_options")
+                and (importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"))
+            ):
+                self.backend_options["use_uvloop"] = True
+            return Backend.asyncio
 
     @traitlets.default("shell_class")
     def _default_shell_class(self):
@@ -320,7 +342,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
 
     @classmethod
     @override
-    def instance(cls) -> Self:
+    def instance(cls) -> T_interface_co:
         """Get the singleton instance that was created using `launch_instance`."""
         if not cls._instance:
             msg = "An instance does not exist!"
@@ -328,7 +350,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         if not isinstance(cls._instance, cls):
             msg = f"An instance exists but it is not an instance of {cls}!"
             raise TypeError(msg)
-        return cls._instance
+        return cls._instance  # pyright: ignore[reportReturnType]
 
     @classmethod
     @override
@@ -451,10 +473,11 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
             # Cache iopub messages, send when started or discard if stopped early.
             self.started.add_done_callback(lambda _: not self.stopping.done() and __send__(*args, **kwargs))
 
-        self.log.info("Starting base interface")
+        self.backend = Backend(current_async_library())
+        self.log.info("Starting kernel interface")
         self.iopub_send = cache_iopub_send
         self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
-        async with super().__asynccontextmanager__(set_started=False), self.kernel:
+        async with super().__asynccontextmanager__(set_started=False), self.kernel, self.client:
             if set_started:
                 self._started()
             yield self

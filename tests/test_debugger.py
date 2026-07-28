@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import anyio
-
-from async_kernel.typing import Channel, MsgType
-
-if TYPE_CHECKING:
-    from async_kernel.client.zmq import ZMQKernelClient
+import pytest
 
 import async_kernel.utils
+from async_kernel.client.zmq import ZMQKernelClient
+from async_kernel.typing import Backend, Channel, MsgType
 
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
     import debugpy.server.api
@@ -51,8 +47,14 @@ async def send_debug_request(client: ZMQKernelClient, command: str, arguments: d
     return reply["content"]
 
 
-async def test_debugger(subprocess_kernels_client: ZMQKernelClient):
-    client = subprocess_kernels_client
+@pytest.fixture
+async def client(anyio_backend: Backend):
+    client = ZMQKernelClient()
+    async with client.subprocess_kernel(backend=anyio_backend):
+        yield client
+
+
+async def test_debugger(client: ZMQKernelClient):
     reply = await send_debug_request(client=client, command="initialize", arguments=initialize_args)
     assert reply["status"] == "ok"
     await send_debug_request(client, "disconnect")

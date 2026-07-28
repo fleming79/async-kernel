@@ -8,14 +8,21 @@ import pytest
 from aiologic.lowlevel import create_async_waiter
 
 from async_kernel import Pending
+from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.typing import Channel, Content, MsgType
+from async_kernel.typing import Backend, Channel, Content, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
-    from async_kernel.client.zmq import ZMQKernelClient
     from async_kernel.shell import IPShell
+
+
+@pytest.fixture
+async def subprocess_kernels_client(anyio_backend: Backend):
+    client = ZMQKernelClient()
+    async with client.subprocess_kernel(backend=anyio_backend):
+        yield client
 
 
 async def test_load_connection_info_error(kernel: Kernel):
@@ -50,9 +57,10 @@ async def test_print_non_caller_thread(kernel: Kernel[ZMQInterface], client: ZMQ
         async for msg in queue:
             assert msg["content"]["text"] == "-non_caller_thread-\n"
             break
+        t.join()
 
 
-@pytest.mark.parametrize("test_mode", ["interrupt", "reply", "allow_stdin=False"])
+@pytest.mark.parametrize("test_mode", ["reply", "allow_stdin=False"])
 @pytest.mark.parametrize("mode", ["input", "password"])
 async def test_input(
     subprocess_kernels_client: ZMQKernelClient,

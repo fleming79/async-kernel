@@ -1,6 +1,5 @@
 import asyncio
 import gc
-import importlib.util
 import re
 import sys
 import threading
@@ -21,15 +20,6 @@ from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, CallerState, Hosts
 
 # pyright: reportPrivateUsage=false
-
-anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
-if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    anyio_backends.append(("asyncio", {"use_uvloop": True}))
-
-
-@pytest.fixture(params=Backend, scope="module")
-def anyio_backend(request):
-    return request.param
 
 
 @pytest.mark.anyio
@@ -740,7 +730,6 @@ class TestCaller:
         caller2.stop()
         await caller2.stopped
 
-    @pytest.mark.parametrize("anyio_backend", anyio_backends)
     @pytest.mark.parametrize("mode", ["sync", "async"])
     async def test_balanced(self, caller: Caller, mode: Literal["sync", "async"], anyio_backend):
         def sync_func(pen: Pending, value):
