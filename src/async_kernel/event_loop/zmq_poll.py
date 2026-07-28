@@ -159,7 +159,7 @@ class ZMQPoll:
     stopped: Fixed[Self, Pending[None]] = Fixed(Pending)
     sockets: Fixed[Self, set[ZMQPollSocket]] = Fixed(set)
 
-    def __init__(self, canceller: Callable[[], Any] | None = None) -> None:
+    def __init__(self) -> None:
 
         def socket_factory(
             ctx_or_socket: zmq.Context | None = None,
@@ -181,25 +181,26 @@ class ZMQPoll:
         self._execute: deque[Pending] = deque[Pending[Any]]()
         self._not_started = False
         self.log = logging.LoggerAdapter(logging.getLogger())
-        self._canceller = canceller
         self._cancellers = deque()
-        if canceller:
-            self._cancellers.append(canceller)
+        self._ctx_count = 0
+        self._lock = BinarySemaphore()
 
     def __enter__(self) -> Self:
-        try:
-            del self._not_started
-        except AttributeError:
-            msg = "Context re-entry is not supported!"
-            raise RuntimeError(msg) from None
-        self.__start()
+        with self._lock:
+            if self.stopped.done():
+                msg = "This zmq_poll event loop is stopped!"
+                raise RuntimeError(msg)
+            if self._ctx_count == 0:
+                self.__start()
+            self._ctx_count = self._ctx_count + 1
         return self
 
     def __exit__(self, type, value, traceback) -> Literal[False]:
-        with contextlib.suppress(ValueError):
-            self._cancellers.remove(self._canceller)
-        self.stopped.set_result(None)
-        self.thread.join()
+        with self._lock:
+            self._ctx_count = self._ctx_count - 1
+            if self._ctx_count == 0:
+                self.stopped.set_result(None)
+                self.thread.join()
         return False
 
     def _wake(self) -> None:
