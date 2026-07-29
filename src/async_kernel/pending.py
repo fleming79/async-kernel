@@ -7,7 +7,7 @@ import reprlib
 import uuid
 import weakref
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, final, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, final, overload
 
 import anyio
 from aiologic.lowlevel import create_async_event, create_async_waiter, create_green_event
@@ -493,7 +493,7 @@ class Pending(Awaitable[T]):
         except anyio.get_cancelled_exc_class() as exc:
             e = exc
         if e:
-            if not protect:
+            if not protect and not isinstance(self, ProtectedPending):
                 self.cancel(f"Cancelled due to cancellation or timeout: {e}.")
             raise e
         return self.result() if result else None
@@ -551,7 +551,7 @@ class Pending(Awaitable[T]):
             event.wait(timeout)
             if not self._done:
                 msg = f"Timeout waiting for {self}"
-                if not protect:
+                if not protect and not isinstance(self, ProtectedPending):
                     self.cancel(msg)
                 raise TimeoutError(msg)
         return self.result() if result else None
@@ -721,3 +721,7 @@ class Pending(Awaitable[T]):
         if not self._done:
             raise PendingNotDone
         return getattr(self, "_exception", None)
+
+
+class ProtectedPending(Pending[T], Generic[T]):
+    """A Pending that is protected from cancellation of a waiting waiter."""
