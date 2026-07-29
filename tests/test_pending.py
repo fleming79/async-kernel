@@ -593,13 +593,16 @@ class TestProtectedPending:
     async def test_wait_shield(self, caller: Caller):
         pen = ProtectedPending()
         v = 0
-        caller.call_soon(pen.set_result, None)
         with anyio.move_on_after(0):
             await pen
             v = 1
         assert not pen.cancelled()
         assert v == 0
 
+    async def test_wat_sync_shield(self, caller: Caller):
+        pen = ProtectedPending()
+        caller.call_soon(pen.set_result, None)
+        v = 0
         with anyio.move_on_after(0):
             await pen.wait(shield=True)
             v = 1
