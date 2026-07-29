@@ -5904,7 +5904,7 @@ including aliases and flags are accepted. <em>flags</em> should be passed as <co
       class-attribute
       instance-attribute
    (async_kernel.interface.base.BaseMessageApplication.stopped)" href="#async_kernel.interface.base.BaseMessageApplication.stopped">stopped</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</code>)
+              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <span title="async_kernel.pending.ProtectedPending">ProtectedPending</span>]</code>)
           –
           <div class="doc-md-description">
             <p>A Pending that is set once the application is stopped.</p>
@@ -6099,15 +6099,15 @@ including aliases and flags are accepted. <em>flags</em> should be passed as <co
     <span class="n">backend_options</span> <span class="o">=</span> <span class="n">DictValueLiteralEval</span><span class="p">(</span><span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="s2">&quot;Options for starting the backend.&quot;</span>
 
-    <span class="n">started</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">)</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ProtectedPending</span><span class="p">)</span>
     <span class="s2">&quot;A Pending that is set when the application has started.&quot;</span>
 
-    <span class="n">stopping</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">)</span>
+    <span class="n">stopping</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ProtectedPending</span><span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A Pending that is set when stop is called.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">stopped</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Pending</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
-        <span class="n">Pending</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">_on_stopped</span><span class="p">)</span>
+    <span class="n">stopped</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">ProtectedPending</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
+        <span class="n">ProtectedPending</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">_on_stopped</span><span class="p">)</span>
     <span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A Pending that is set once the application is stopped.</span>
@@ -6358,7 +6358,7 @@ including aliases and flags are accepted. <em>flags</em> should be passed as <co
   </span>
 
 <a href="#async_kernel.interface.base.BaseMessageApplication.started" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">started</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">started</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6384,7 +6384,7 @@ including aliases and flags are accepted. <em>flags</em> should be passed as <co
   </span>
 
 <a href="#async_kernel.interface.base.BaseMessageApplication.stopping" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopping</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopping</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6410,8 +6410,9 @@ including aliases and flags are accepted. <em>flags</em> should be passed as <co
   </span>
 
 <a href="#async_kernel.interface.base.BaseMessageApplication.stopped" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopped</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="created (async_kernel.common.Fixed(created))" href="../common/#async_kernel.common.Fixed(created)">created</a></span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="add_done_callback">add_done_callback</span></span><span class="p">(</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="_on_stopped">_on_stopped</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopped</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
+    <span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="created (async_kernel.common.Fixed(created))" href="../common/#async_kernel.common.Fixed(created)">created</a></span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="add_done_callback">add_done_callback</span></span><span class="p">(</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="_on_stopped">_on_stopped</span></span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
 

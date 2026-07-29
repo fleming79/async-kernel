@@ -3564,8 +3564,12 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
       <a href="#">event_loop</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQPoll</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll.socket"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;socket</a>
   </span>
 
       </li>
@@ -4460,7 +4464,7 @@ the same executor for setting attributes and calling methods.</p>
 <span class="sd">    the same executor for setting attributes and calling methods.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">stopped</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">)</span>
+    <span class="n">stopped</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">ProtectedPending</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ProtectedPending</span><span class="p">)</span>
     <span class="n">sockets</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">ZMQPollSocket</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

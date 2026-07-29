@@ -4164,13 +4164,13 @@ A caller is marked as 'protected' once a context has been entered.</p>
     <span class="n">_guest_done_event</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">CountdownEvent</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">CountdownEvent</span><span class="p">)</span>
     <span class="n">_children_countdown</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">CountdownEvent</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">CountdownEvent</span><span class="p">)</span>
 
-    <span class="n">started</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ProtectedPending</span><span class="p">)</span>
     <span class="s2">&quot;A pending that is set once the caller has started.&quot;</span>
 
-    <span class="n">stopping</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+    <span class="n">stopping</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ProtectedPending</span><span class="p">)</span>
     <span class="s2">&quot;A pending that is set done the first time stop is called.&quot;</span>
 
-    <span class="n">stopped</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+    <span class="n">stopped</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ProtectedPending</span><span class="p">)</span>
     <span class="s2">&quot;A pending that is done when the caller is stopped.&quot;</span>
 
     <span class="n">_pending_var</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="n">Pending</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span><span class="s2">&quot;_pending_var&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -5169,7 +5169,7 @@ A caller is marked as 'protected' once a context has been entered.</p>
   </span>
 
 <a href="#async_kernel.caller.Caller.started" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">started</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">started</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5195,7 +5195,7 @@ A caller is marked as 'protected' once a context has been entered.</p>
   </span>
 
 <a href="#async_kernel.caller.Caller.stopping" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopping</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopping</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5221,7 +5221,7 @@ A caller is marked as 'protected' once a context has been entered.</p>
   </span>
 
 <a href="#async_kernel.caller.Caller.stopped" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopped</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            Pending (async_kernel.pending.Pending)" href="../pending/#async_kernel.pending.Pending">Pending</a></span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stopped</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span><span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6268,20 +6268,9 @@ A caller is marked as 'protected' once a context has been entered.</p>
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
   </span>
-
-      </li>
-  </ul>
 
       </li>
   </ul>
@@ -6901,8 +6890,12 @@ A caller is marked as 'protected' once a context has been entered.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
   </span>
 
       </li>
@@ -7332,12 +7325,8 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -7346,12 +7335,8 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -7600,12 +7585,8 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.queue_close"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_close</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -7642,8 +7623,12 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
   </span>
 
       </li>
@@ -7829,12 +7814,8 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.queue_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_call</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -8436,12 +8417,8 @@ async with Caller().create_pending_group() as pg:
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.to_thread"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_thread</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
