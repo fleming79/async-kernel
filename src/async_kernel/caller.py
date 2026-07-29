@@ -28,7 +28,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, SingleAsyncQueue
 from async_kernel.event_loop.run import Host, get_start_guest_run
-from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker
+from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker, ProtectedPending
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, RunSettings, T
 
 with contextlib.suppress(ImportError):
@@ -217,13 +217,13 @@ class Caller:
     _guest_done_event: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
     _children_countdown: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
 
-    started = Fixed(Pending[None])
+    started = Fixed(ProtectedPending)
     "A pending that is set once the caller has started."
 
-    stopping = Fixed(Pending[None])
+    stopping = Fixed(ProtectedPending)
     "A pending that is set done the first time stop is called."
 
-    stopped = Fixed(Pending[None])
+    stopped = Fixed(ProtectedPending)
     "A pending that is done when the caller is stopped."
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)

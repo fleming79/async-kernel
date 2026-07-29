@@ -19,7 +19,7 @@ from zmq.backend import zmq_poll
 
 from async_kernel import Caller, utils
 from async_kernel.common import Fixed
-from async_kernel.pending import Pending
+from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.typing import NoValue, P, T
 
 if TYPE_CHECKING:
@@ -156,7 +156,7 @@ class ZMQPoll:
     the same executor for setting attributes and calling methods.
     """
 
-    stopped: Fixed[Self, Pending[None]] = Fixed(Pending)
+    stopped: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
     sockets: Fixed[Self, set[ZMQPollSocket]] = Fixed(set)
 
     def __init__(self) -> None:

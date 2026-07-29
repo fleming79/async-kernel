@@ -26,7 +26,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
-from async_kernel.pending import Pending
+from async_kernel.pending import ProtectedPending
 from async_kernel.typing import (
     Backend,
     Channel,
@@ -99,15 +99,15 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
     "Options for starting the backend."
 
-    started = Fixed(Pending)
+    started = Fixed(ProtectedPending)
     "A Pending that is set when the application has started."
 
-    stopping = Fixed(Pending)
+    stopping = Fixed(ProtectedPending)
     """
     A Pending that is set when stop is called.
     """
-    stopped: Fixed[Self, Pending[Any]] = Fixed(
-        Pending, created=lambda c: c["obj"].add_done_callback(c["owner"]._on_stopped)
+    stopped: Fixed[Self, ProtectedPending] = Fixed(
+        ProtectedPending, created=lambda c: c["obj"].add_done_callback(c["owner"]._on_stopped)
     )
     """
     A Pending that is set once the application is stopped.

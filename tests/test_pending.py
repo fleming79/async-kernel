@@ -19,6 +19,7 @@ from async_kernel.pending import (
     PendingManager,
     PendingNotDone,
     PendingTracker,
+    ProtectedPending,
 )
 from async_kernel.typing import Backend
 
@@ -566,3 +567,40 @@ class TestPendingGroup:
             pg.caller.call_soon(anyio.sleep, 0)
             match = f"<PendingGroup at {id(pg)} | 1 pending | mode:0>"
             assert repr(pg) == match
+
+
+class TestProtectedPending:
+    async def test_set_exception(self, anyio_backend: Backend):
+        pen = ProtectedPending()
+        pen.set_exception(RuntimeError())
+        assert pen
+
+        with pytest.raises(RuntimeError):
+            await pen
+
+    async def test_cancel_protected(self, anyio_backend):
+
+        pen = ProtectedPending()
+        with anyio.move_on_after(0):
+            await pen
+
+        with anyio.move_on_after(0):
+            await pen
+
+        pen.set_result(123)
+        assert pen.wait_sync() == 123
+
+    async def test_wait_shield(self, caller: Caller):
+        pen = ProtectedPending()
+        v = 0
+        caller.call_soon(pen.set_result, None)
+        with anyio.move_on_after(0):
+            await pen
+            v = 1
+        assert not pen.cancelled()
+        assert v == 0
+
+        with anyio.move_on_after(0):
+            await pen.wait(shield=True)
+            v = 1
+        assert v == 1
