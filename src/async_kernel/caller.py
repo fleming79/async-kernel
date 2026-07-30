@@ -889,6 +889,7 @@ class Caller:
                     self.queue_call(self._idle_worker_cleanup)
             else:
                 caller.stop(force=True)
+
         try:
             while (caller := self._worker_pool.popleft()) and caller.stopping.done():
                 pass
