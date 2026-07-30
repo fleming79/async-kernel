@@ -14,7 +14,7 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
@@ -30,14 +30,6 @@ if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
 @pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
     return request.param
-
-
-@pytest.fixture(autouse=True)
-async def stop_caller_post_test():
-    yield
-    if caller := Caller.get_existing():
-        caller.stop(force=True)
-        await caller.stopped
 
 
 @pytest.mark.anyio
@@ -61,7 +53,6 @@ class TestCaller:
             # worker thread
             assert caller.IDLE_WORKER_SHUTDOWN_DURATION == 0
             assert await caller.to_thread(lambda: 2 + 1) == 3
-            await async_checkpoint(force=True)
             assert len(caller.children) == 1
             worker = next(iter(caller.children))
             assert worker.id != caller.id
@@ -162,6 +153,17 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             async with caller:
                 pass
+        assert caller.stopped.done()
+
+    async def test_cancelled_async_context(self, anyio_backend: Backend):
+        caller = None
+        with anyio.CancelScope() as scope:
+            async with Caller("NewThread") as caller:
+                scope.cancel("Force cancellation")
+                await anyio.sleep_forever()
+        assert caller
+        assert caller.started.done()
+        assert caller.stopping.done()
         assert caller.stopped.done()
 
     async def test_protected(self, anyio_backend: Backend):
@@ -642,18 +644,21 @@ class TestCaller:
         assert not pending
         assert {pen.result() for pen in done} == {1, 2}
 
-    async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
+    async def test_worker_in_pool_shutdown(self, caller: Caller):
         pen1 = caller.to_thread(threading.get_ident)
         w1 = Caller.get_existing(await pen1)
         assert w1
         assert w1 in caller._worker_pool
         w1.stop()
-        pen2 = caller.to_thread(threading.get_ident)
         await w1.stopped
         assert w1 not in caller._worker_pool
-        w2 = Caller.get_existing(await pen2)
+
+    async def test_worker_returned_to_pool(self, caller: Caller):
+        caller_id = await caller.to_thread(threading.get_ident)
+        w2 = Caller.get_existing(caller_id)
         assert w2
         assert not w2.stopped.done()
+        assert w2 in caller._worker_pool
         w2.stop()
         await w2.stopped
         assert not caller._worker_pool
@@ -759,3 +764,26 @@ class TestCaller:
         assert await caller.call_soon(lambda: 1 + 1) == 2
         caller.stop()
         await caller.stopped
+
+
+@pytest.mark.parametrize("backend", Backend)
+def test_unmanged_shutdown(backend: Backend):
+    assert not Caller._instances
+
+    async def f():
+        await Caller().to_thread(lambda: 1 + 1)
+        Caller().to_thread(lambda: 1 + 1)
+
+    anyio.run(f, backend=str(backend))
+    assert not Caller._instances
+
+
+@pytest.mark.parametrize("backend", Backend)
+def test_guest_non_protected(backend: Backend):
+    opposite = next(b for b in Backend if b is not backend)
+
+    async def f():
+        with pytest.raises(RuntimeError, match="Async context must be acquired prior to using a guest backend!"):
+            await Caller().call_using_backend(opposite, lambda: 1 + 1)
+
+    anyio.run(f, backend=str(backend))
