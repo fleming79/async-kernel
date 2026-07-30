@@ -506,15 +506,14 @@ class Caller:
                     case CallerState.running:
                         self.started.set_result(None)
                     case CallerState.stopping:
-                        self.stopping.set_result(None)
                         self.started.cancel("Stopping")
                         for child in self._children.copy():
                             child.stop(force=True)
-                    case CallerState.stopped:
-                        self._children_countdown.wait()
                         # Shutdown queue_call
                         for func in self._queue_map.copy():
                             self.queue_close(func)
+                    case CallerState.stopped:
+                        self._children_countdown.wait()
                         self._instances.pop(self._caller_id)
                         self._scheduler_queue.stop()
                         self.stopped.set_result(None)
@@ -602,30 +601,13 @@ class Caller:
         if isinstance(item, Pending):
             item.cancel("The caller has been closed")
 
-    @classmethod
-    def _start_idle_worker_cleanup_thead(cls) -> None:
-        """A single thread to shutdown idle workers that have not been used for an extended duration."""
-        if cls.IDLE_WORKER_SHUTDOWN_DURATION > 0 and not hasattr(cls, "_thread_cleanup_idle_workers"):
-
-            def _cleanup_workers():
-                utils.mark_thread_pydev_do_not_trace()
-                n = 0
-                cutoff = time.monotonic()
-                time.sleep(cls.IDLE_WORKER_SHUTDOWN_DURATION)
-                for caller in tuple(cls._instances.values()):
-                    for worker in frozenset(caller._worker_pool):
-                        n += 1
-                        if worker._idle_time < cutoff:
-                            with contextlib.suppress(IndexError):
-                                caller._worker_pool.remove(worker)
-                                worker.stop(force=True)
-                if n:
-                    _cleanup_workers()
-                else:
-                    del cls._thread_cleanup_idle_workers
-
-            cls._thread_cleanup_idle_workers = threading.Thread(target=_cleanup_workers, daemon=False)
-            cls._thread_cleanup_idle_workers.start()
+    async def _idle_worker_cleanup(self) -> None:
+        """Shutsdown idle thread workers."""
+        while (t := self.IDLE_WORKER_SHUTDOWN_DURATION) and self._worker_pool:
+            await anyio.sleep(t)
+            for worker in self._worker_pool.copy():
+                if (time.monotonic() - worker._idle_time) > t:
+                    worker.stop(force=True)
 
     @classmethod
     def id_current(cls) -> int:
@@ -666,6 +648,10 @@ class Caller:
         if self._protected and not force:
             self.log.warning("Non-force stop ignored for  %s", self)
             return
+        self.stopping.set_result(None)
+        if (parent := self.parent) and self in parent._worker_pool:
+            with contextlib.suppress(IndexError):
+                parent._worker_pool.remove(self)
         if (old_state := self._set_state(CallerState.stopping)) and old_state.value < CallerState.starting.value:
             self._set_state(CallerState.stopped)
 
@@ -892,25 +878,22 @@ class Caller:
         """
 
         def _to_thread_on_done(_) -> None:
-            if not caller.stopping.done() and self.running:
-                with self._inst_lock:
-                    if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
-                        caller._idle_time = time.monotonic()
-                        self._worker_pool.append(caller)
-                        self._start_idle_worker_cleanup_thead()
-                    else:
-                        caller.stop(force=True)
-
-        def _caller_stopping(_):
-            if parent := caller.parent:
-                with contextlib.suppress(IndexError):
-                    parent._worker_pool.remove(caller)
-
+            if (
+                not self.stopping.done()
+                and not caller.stopping.done()
+                and len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES
+            ):
+                caller._idle_time = time.monotonic()
+                self._worker_pool.append(caller)
+                if self.IDLE_WORKER_SHUTDOWN_DURATION > 0 and not self.queue_get(self._idle_worker_cleanup):
+                    self.queue_call(self._idle_worker_cleanup)
+            else:
+                caller.stop(force=True)
         try:
-            caller = self._worker_pool.popleft()
+            while (caller := self._worker_pool.popleft()) and caller.stopping.done():
+                pass
         except IndexError:
             caller = self.get()
-            caller.stopping.add_done_callback(_caller_stopping)
         pen = caller.call_soon(func, *args, **kwargs)
         pen.add_done_callback(_to_thread_on_done)
         return pen

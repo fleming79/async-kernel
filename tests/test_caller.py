@@ -52,21 +52,14 @@ class TestCaller:
         async with Caller() as caller:
             # worker thread
             assert caller.IDLE_WORKER_SHUTDOWN_DURATION == 0
-            assert await caller.to_thread(lambda: 2 + 1) == 3
-            assert len(caller.children) == 1
-            worker = next(iter(caller.children))
-            assert worker.id != caller.id
+            worker = await caller.to_thread(caller.get_existing)
+            assert worker in caller.children
             # Child thread
             async with caller.get(name="c1") as c1:
                 assert c1 in caller.children
                 assert worker._state is CallerState.running
-                assert len(caller.children) == 2
+                assert caller._children == {worker, c1}
                 assert caller.get(name="c1") is c1
-                wrong_backend = next(b for b in Backend if b != anyio_backend)
-                with pytest.raises(RuntimeError, match="Backend mismatch!"):
-                    caller.get(name="c1", backend=wrong_backend)
-                with pytest.raises(RuntimeError, match="Host mismatch!"):
-                    caller.get(name="c1", host=Hosts.tk)
                 # A child's child
                 c2 = c1.get(name="c2")
                 assert c2 in c1.children
@@ -74,13 +67,10 @@ class TestCaller:
                 assert c1.get(name="c2") is c2
                 assert Caller("MainThread") is caller
             assert c1.stopped.done()
-
-        assert not caller.children
-        assert c1.stopped.done()
-        assert c2.stopped.done()
-        c3 = Caller()
-        c3.stop()
-        assert c3.stopped.done()
+            assert c2.stopped.done()
+            assert not c1._children
+            assert worker._state is CallerState.running
+        assert worker.stopped.done()
 
     async def test_already_exists(self, caller: Caller):
         assert Caller.get_existing(caller.id)
@@ -125,9 +115,19 @@ class TestCaller:
                     return
             assert dt >= 0.1  # pyright: ignore[reportPossiblyUnboundVariable]
 
+    async def test_wrong_backend(self, anyio_backend: Backend):
+        wrong_backend = next(b for b in Backend if b != anyio_backend)
+        async with Caller() as caller:
+            caller.get(name="c1")
+            with pytest.raises(RuntimeError, match="Backend mismatch!"):
+                caller.get(name="c1", backend=wrong_backend)
+            with pytest.raises(RuntimeError, match="Host mismatch!"):
+                caller.get(name="c1", host=Hosts.tk)
+
     async def test_manual_stop(self):
         async with Caller() as caller:
             caller.stop()
+        assert caller.stopped.done()
 
     async def test_call_returns_result(self, caller: Caller) -> None:
         pen = Pending()
@@ -665,14 +665,21 @@ class TestCaller:
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
-        pen1 = caller.to_thread(threading.get_ident)
-        w1 = Caller.get_existing(await pen1)
-        pen2 = caller.to_thread(threading.get_ident)
-        w2 = Caller.get_existing(await pen2)
-        assert w1
-        assert w2
+        pen1 = caller.to_thread(Caller.get_existing)
+        pen2 = caller.to_thread(Caller.get_existing)
+        w1 = await pen1
+        w2 = await pen2
+        assert w1 is not w2
+        assert w1 in caller._worker_pool
+        assert w2 in caller._worker_pool
         await w1.stopped
         await w2.stopped
+
+    async def test_worker_in_pool_stopping(self, caller: Caller):
+        worker = await caller.to_thread(caller.get_existing)
+        assert worker
+        worker.stopping.set_result(None)
+        assert await caller.to_thread(lambda: 1 + 1) == 2
 
     async def test_pending_group(self, caller: Caller):
         async with caller.create_pending_group() as pg:
