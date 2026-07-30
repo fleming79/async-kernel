@@ -205,17 +205,17 @@ class Caller:
     }
 
     # Fixed
-    _inst_lock = Fixed(BinarySemaphore)
-    _children: Fixed[Self, set[Self]] = Fixed(set)
-    _tasks: Fixed[Self, set[asyncio.Task]] = Fixed(set)
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
-    _queue_map: Fixed[Self, dict[int, Pending]] = Fixed(dict)
-    _queue: Fixed[Self, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]] = Fixed(
-        lambda c: SingleAsyncQueue(reject=c["owner"]._reject)
-    )
-    _guest_queues: Fixed[Self, dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]] = Fixed(dict)
-    _guest_done_event: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
-    _children_countdown: Fixed[Any, CountdownEvent] = Fixed(CountdownEvent)
+
+    # Private
+    _inst_lock: BinarySemaphore
+    _children: set[Self]
+    _tasks: set[asyncio.Task]
+    _queue_map: dict[int, Pending]
+    _scheduler_queue: SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]
+    _guest_queues: dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]
+    _guest_done_event: CountdownEvent
+    _children_countdown: CountdownEvent
 
     started = Fixed(ProtectedPending)
     "A pending that is set once the caller has started."
@@ -374,6 +374,16 @@ class Caller:
             if (sys.platform == "emscripten") and (caller_id is None):
                 caller_id = id(inst)
 
+            # Add private objects
+            inst._inst_lock = BinarySemaphore()
+            inst._children = set()
+            inst._tasks = set()
+            inst._queue_map = {}
+            inst._scheduler_queue = SingleAsyncQueue(reject=inst._reject)
+            inst._guest_queues = {}
+            inst._guest_done_event = CountdownEvent()
+            inst._children_countdown = CountdownEvent()
+
             # Apply settings
             inst._name = name
             inst._backend = backend
@@ -393,12 +403,13 @@ class Caller:
     async def __aenter__(self) -> Self:
         self._protected = True
         await self.started.wait(result=False)
-        if self.stopping.done():
-            if self._enter_count == 0:
-                await self.stopped
-            msg = f"The caller is stopping or stopped {self}"
+        with self._inst_lock:
+            if not (stopping := self.stopping.done()):
+                self._enter_count = self._enter_count + 1
+        if stopping:
+            await self.stopped
+            msg = f"The caller is stopped {self}"
             raise RuntimeError(msg)
-        self._enter_count = self._enter_count + 1
         return self
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:
@@ -417,31 +428,30 @@ class Caller:
             thread: The thread where the caller is running.
             no_debug: If debugpy should be disabled in the thread.
         """
-        with self._inst_lock:
-            self._set_state(CallerState.start_sync)
+        self._set_state(CallerState.start_sync)
 
         async def run_scheduler() -> None:
-            with self._inst_lock:
-                if not self._set_state(CallerState.starting):
-                    return
+            if self._set_state(CallerState.starting) is not CallerState.start_sync:
+                return
             if not self._name:
                 self._name = self._thread.name
             if no_debug:
                 utils.mark_thread_pydev_do_not_trace()
             try:
                 async with task_factory() as create_task:
-                    create_task(contextvars.Context(), self._scheduler, self._queue)
-                    with self._inst_lock:
-                        self._set_state(CallerState.running)
+                    create_task(contextvars.Context(), self._scheduler, self._scheduler_queue)
+                    self._set_state(CallerState.running)
                     await self.stopping
                     await self._guest_done_event
                     await self._children_countdown
+            except anyio.get_cancelled_exc_class():
+                # This may happen when the async event loop is shutting down.
+                pass
             except Exception as e:
                 self.log.exception("Caller did not exit context nicely!", exc_info=e)
             finally:
-                with self._inst_lock:
-                    self._set_state(CallerState.stopping)
-                    self._set_state(CallerState.stopped)
+                self._set_state(CallerState.stopping)
+                self._set_state(CallerState.stopped)
 
         if caller_id and thread:
             assert thread is threading.current_thread()
@@ -486,39 +496,33 @@ class Caller:
             assert thread.ident
             self._thread, self._caller_id = thread, thread.ident
 
-    def _set_state(self, state: CallerState) -> bool:
-        assert self._inst_lock.value == 0, "Must be locked to set the state!"
-        if state.value <= self._state.value:
-            return False
-        self._state = state
-        self.log.debug("%s %s", state.name.capitalize(), self)
-        match state:
-            case CallerState.running:
-                self.started.set_result(None)
-            case CallerState.stopping:
-                self.started.cancel("Stopping")
-                self.stopping.set_result(None)
-                # Remove from worker pool
-                if (parent := self.parent) and (workers := parent._worker_pool):
-                    with contextlib.suppress(ValueError):
-                        workers.remove(self)
-                # Invoke stop callbacks
-                for child in self._children.copy():
-                    child.stop(force=True)
-                # Shutdown queue_call
-                for func in self._queue_map.copy():
-                    self.queue_close(func)
-            case CallerState.stopped:
-                self._children_countdown.wait()
-                self._instances.pop(self._caller_id)
-                self._queue.stop()
-                self.stopped.set_result(None)
-                if parent := self.parent:
-                    parent._children.discard(self)
-                    parent._children_countdown.down()
-            case _:
-                pass
-        return True
+    def _set_state(self, state: CallerState) -> CallerState:
+        with self._inst_lock:
+            old_state = self._state
+            if state.value > old_state.value:
+                self._state = state
+                self.log.debug("%s %s", state.name.capitalize(), self)
+                match state:
+                    case CallerState.running:
+                        self.started.set_result(None)
+                    case CallerState.stopping:
+                        self.started.cancel("Stopping")
+                        for child in self._children.copy():
+                            child.stop(force=True)
+                        # Shutdown queue_call
+                        for func in self._queue_map.copy():
+                            self.queue_close(func)
+                    case CallerState.stopped:
+                        self._children_countdown.wait()
+                        self._instances.pop(self._caller_id)
+                        self._scheduler_queue.stop()
+                        self.stopped.set_result(None)
+                        if parent := self.parent:
+                            parent._children.discard(self)
+                            parent._children_countdown.down()
+                    case _:
+                        pass
+        return old_state
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
         """A function that async iterates the queue and executes items as they arrive.
@@ -597,30 +601,13 @@ class Caller:
         if isinstance(item, Pending):
             item.cancel("The caller has been closed")
 
-    @classmethod
-    def _start_idle_worker_cleanup_thead(cls) -> None:
-        """A single thread to shutdown idle workers that have not been used for an extended duration."""
-        if cls.IDLE_WORKER_SHUTDOWN_DURATION > 0 and not hasattr(cls, "_thread_cleanup_idle_workers"):
-
-            def _cleanup_workers():
-                utils.mark_thread_pydev_do_not_trace()
-                n = 0
-                cutoff = time.monotonic()
-                time.sleep(cls.IDLE_WORKER_SHUTDOWN_DURATION)
-                for caller in tuple(cls._instances.values()):
-                    for worker in frozenset(caller._worker_pool):
-                        n += 1
-                        if worker._idle_time < cutoff:
-                            with contextlib.suppress(IndexError):
-                                caller._worker_pool.remove(worker)
-                                worker.stop(force=True)
-                if n:
-                    _cleanup_workers()
-                else:
-                    del cls._thread_cleanup_idle_workers
-
-            cls._thread_cleanup_idle_workers = threading.Thread(target=_cleanup_workers, daemon=False)
-            cls._thread_cleanup_idle_workers.start()
+    async def _idle_worker_cleanup(self) -> None:
+        """Shutsdown idle thread workers."""
+        while (t := self.IDLE_WORKER_SHUTDOWN_DURATION) and self._worker_pool:
+            await anyio.sleep(t)
+            for worker in self._worker_pool.copy():
+                if (time.monotonic() - worker._idle_time) > t:
+                    worker.stop(force=True)
 
     @classmethod
     def id_current(cls) -> int:
@@ -657,18 +644,16 @@ class Caller:
 
         Args:
             force: If the caller is protected the call is a no-op unless force=True.
-
-        Returns:
-            Event: If stopping is initiated or complete.
-            None: If stop is ignored when the caller is protected.
         """
         if self._protected and not force:
             self.log.warning("Non-force stop ignored for  %s", self)
             return
-        with self._inst_lock:
-            state = self._state
-            if self._set_state(CallerState.stopping) and state.value < CallerState.running.value:
-                self._set_state(CallerState.stopped)
+        self.stopping.set_result(None)
+        if (parent := self.parent) and self in parent._worker_pool:
+            with contextlib.suppress(IndexError):
+                parent._worker_pool.remove(self)
+        if (old_state := self._set_state(CallerState.stopping)) and old_state.value < CallerState.starting.value:
+            self._set_state(CallerState.stopped)
 
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.
@@ -739,9 +724,13 @@ class Caller:
             pen.cancel(f"The caller has been stopped: {self}")
             return pen
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
-            queue = self._queue
+            queue = self._scheduler_queue
         elif not (queue := self._guest_queues.get(backend)):
             with self._inst_lock:
+                if not self._protected:
+                    # For guest backends we need a managed shutdown.
+                    msg = "Async context must be acquired prior to using a guest backend!"
+                    raise RuntimeError(msg)
                 if backend is Backend.trio:
                     trio.sleep  # noqa: B018 # Check trio is available.
                 if not (queue := self._guest_queues.get(backend)):
@@ -864,7 +853,7 @@ class Caller:
         Warning:
             **Use this method for lightweight calls only!**
         """
-        self._queue.append((func, args, kwargs))
+        self._scheduler_queue.append((func, args, kwargs))
 
     def to_thread(
         self,
@@ -889,17 +878,21 @@ class Caller:
         """
 
         def _to_thread_on_done(_) -> None:
-            if not caller.stopped.done() and self.running:
-                with self._inst_lock:
-                    if len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES:
-                        caller._idle_time = time.monotonic()
-                        self._worker_pool.append(caller)
-                        self._start_idle_worker_cleanup_thead()
-                    else:
-                        caller.stop(force=True)
+            if (
+                not self.stopping.done()
+                and not caller.stopping.done()
+                and len(self._worker_pool) < self.MAX_IDLE_POOL_INSTANCES
+            ):
+                caller._idle_time = time.monotonic()
+                self._worker_pool.append(caller)
+                if self.IDLE_WORKER_SHUTDOWN_DURATION > 0 and not self.queue_get(self._idle_worker_cleanup):
+                    self.queue_call(self._idle_worker_cleanup)
+            else:
+                caller.stop(force=True)
 
         try:
-            caller = self._worker_pool.popleft()
+            while (caller := self._worker_pool.popleft()) and caller.stopping.done():
+                pass
         except IndexError:
             caller = self.get()
         pen = caller.call_soon(func, *args, **kwargs)

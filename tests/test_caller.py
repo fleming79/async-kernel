@@ -14,7 +14,7 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event
-from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
+from aiologic.lowlevel import create_async_event, current_async_library
 
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
@@ -30,14 +30,6 @@ if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
 @pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
     return request.param
-
-
-@pytest.fixture(autouse=True)
-async def stop_caller_post_test():
-    yield
-    if caller := Caller.get_existing():
-        caller.stop(force=True)
-        await caller.stopped
 
 
 @pytest.mark.anyio
@@ -60,22 +52,14 @@ class TestCaller:
         async with Caller() as caller:
             # worker thread
             assert caller.IDLE_WORKER_SHUTDOWN_DURATION == 0
-            assert await caller.to_thread(lambda: 2 + 1) == 3
-            await async_checkpoint(force=True)
-            assert len(caller.children) == 1
-            worker = next(iter(caller.children))
-            assert worker.id != caller.id
+            worker = await caller.to_thread(caller.get_existing)
+            assert worker in caller.children
             # Child thread
             async with caller.get(name="c1") as c1:
                 assert c1 in caller.children
                 assert worker._state is CallerState.running
-                assert len(caller.children) == 2
+                assert caller._children == {worker, c1}
                 assert caller.get(name="c1") is c1
-                wrong_backend = next(b for b in Backend if b != anyio_backend)
-                with pytest.raises(RuntimeError, match="Backend mismatch!"):
-                    caller.get(name="c1", backend=wrong_backend)
-                with pytest.raises(RuntimeError, match="Host mismatch!"):
-                    caller.get(name="c1", host=Hosts.tk)
                 # A child's child
                 c2 = c1.get(name="c2")
                 assert c2 in c1.children
@@ -83,13 +67,10 @@ class TestCaller:
                 assert c1.get(name="c2") is c2
                 assert Caller("MainThread") is caller
             assert c1.stopped.done()
-
-        assert not caller.children
-        assert c1.stopped.done()
-        assert c2.stopped.done()
-        c3 = Caller()
-        c3.stop()
-        assert c3.stopped.done()
+            assert c2.stopped.done()
+            assert not c1._children
+            assert worker._state is CallerState.running
+        assert worker.stopped.done()
 
     async def test_already_exists(self, caller: Caller):
         assert Caller.get_existing(caller.id)
@@ -134,9 +115,19 @@ class TestCaller:
                     return
             assert dt >= 0.1  # pyright: ignore[reportPossiblyUnboundVariable]
 
+    async def test_wrong_backend(self, anyio_backend: Backend):
+        wrong_backend = next(b for b in Backend if b != anyio_backend)
+        async with Caller() as caller:
+            caller.get(name="c1")
+            with pytest.raises(RuntimeError, match="Backend mismatch!"):
+                caller.get(name="c1", backend=wrong_backend)
+            with pytest.raises(RuntimeError, match="Host mismatch!"):
+                caller.get(name="c1", host=Hosts.tk)
+
     async def test_manual_stop(self):
         async with Caller() as caller:
             caller.stop()
+        assert caller.stopped.done()
 
     async def test_call_returns_result(self, caller: Caller) -> None:
         pen = Pending()
@@ -162,6 +153,17 @@ class TestCaller:
         with pytest.raises(RuntimeError):
             async with caller:
                 pass
+        assert caller.stopped.done()
+
+    async def test_cancelled_async_context(self, anyio_backend: Backend):
+        caller = None
+        with anyio.CancelScope() as scope:
+            async with Caller("NewThread") as caller:
+                scope.cancel("Force cancellation")
+                await anyio.sleep_forever()
+        assert caller
+        assert caller.started.done()
+        assert caller.stopping.done()
         assert caller.stopped.done()
 
     async def test_protected(self, anyio_backend: Backend):
@@ -642,32 +644,42 @@ class TestCaller:
         assert not pending
         assert {pen.result() for pen in done} == {1, 2}
 
-    async def test_worker_in_pool_shutdown(self, caller: Caller, mocker):
+    async def test_worker_in_pool_shutdown(self, caller: Caller):
         pen1 = caller.to_thread(threading.get_ident)
         w1 = Caller.get_existing(await pen1)
         assert w1
         assert w1 in caller._worker_pool
         w1.stop()
-        pen2 = caller.to_thread(threading.get_ident)
         await w1.stopped
         assert w1 not in caller._worker_pool
-        w2 = Caller.get_existing(await pen2)
+
+    async def test_worker_returned_to_pool(self, caller: Caller):
+        caller_id = await caller.to_thread(threading.get_ident)
+        w2 = Caller.get_existing(caller_id)
         assert w2
         assert not w2.stopped.done()
+        assert w2 in caller._worker_pool
         w2.stop()
         await w2.stopped
         assert not caller._worker_pool
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
-        pen1 = caller.to_thread(threading.get_ident)
-        w1 = Caller.get_existing(await pen1)
-        pen2 = caller.to_thread(threading.get_ident)
-        w2 = Caller.get_existing(await pen2)
-        assert w1
-        assert w2
+        pen1 = caller.to_thread(Caller.get_existing)
+        pen2 = caller.to_thread(Caller.get_existing)
+        w1 = await pen1
+        w2 = await pen2
+        assert w1 is not w2
+        assert w1 in caller._worker_pool
+        assert w2 in caller._worker_pool
         await w1.stopped
         await w2.stopped
+
+    async def test_worker_in_pool_stopping(self, caller: Caller):
+        worker = await caller.to_thread(caller.get_existing)
+        assert worker
+        worker.stopping.set_result(None)
+        assert await caller.to_thread(lambda: 1 + 1) == 2
 
     async def test_pending_group(self, caller: Caller):
         async with caller.create_pending_group() as pg:
@@ -759,3 +771,26 @@ class TestCaller:
         assert await caller.call_soon(lambda: 1 + 1) == 2
         caller.stop()
         await caller.stopped
+
+
+@pytest.mark.parametrize("backend", Backend)
+def test_unmanged_shutdown(backend: Backend):
+    assert not Caller._instances
+
+    async def f():
+        await Caller().to_thread(lambda: 1 + 1)
+        Caller().to_thread(lambda: 1 + 1)
+
+    anyio.run(f, backend=str(backend))
+    assert not Caller._instances
+
+
+@pytest.mark.parametrize("backend", Backend)
+def test_guest_non_protected(backend: Backend):
+    opposite = next(b for b in Backend if b is not backend)
+
+    async def f():
+        with pytest.raises(RuntimeError, match="Async context must be acquired prior to using a guest backend!"):
+            await Caller().call_using_backend(opposite, lambda: 1 + 1)
+
+    anyio.run(f, backend=str(backend))
