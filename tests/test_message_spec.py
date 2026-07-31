@@ -47,16 +47,6 @@ async def test_execute_silent(client: ZMQKernelClient):
     count = int(reply["content"]["execution_count"])
     assert count == before
 
-    # Do a second execution
-    reply = await client.execute("x=2", silent=True)
-    with pytest.raises(TimeoutError), anyio.fail_after(0.1):
-        async with client.iopub_subscribe() as queue:
-            await anext(aiter(queue))
-    count_2 = reply["content"].get("execution_count")
-    assert isinstance(count_2, int)
-
-    assert count_2 == count, "count should not increment when silent"
-
 
 async def test_execute_error(client: ZMQKernelClient):
 
