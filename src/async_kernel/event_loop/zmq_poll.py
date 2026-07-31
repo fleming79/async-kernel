@@ -252,7 +252,7 @@ class ZMQPoll:
 
             with context, wake, send, wake.bind(addr), send.connect(addr):
                 c: tuple[int, Callable] | None
-                started.set_result(send)
+                started.set_result(send)  # pyright: ignore[reportArgumentType]
                 # The main loop polls the handler keys for events in a loop.
                 # It will block until an event occurs.
                 try:
@@ -307,8 +307,8 @@ class ZMQPoll:
         self.thread.start()
         send = started.wait_sync()
 
-        def _wake(sock=send):
-            with sock.lock:
+        def _wake(sock=send, lock=send.lock) -> None:
+            with lock:
                 sock.send(b"")
 
         self._wake = _wake
