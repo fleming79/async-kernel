@@ -167,6 +167,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
                 self.stopped.set_result(None)
                 stop_channels.set()
                 await pen_channels.wait(shield=True)
+                del pen_channels
 
     async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
         ready()
@@ -382,6 +383,9 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         created=lambda c: c["obj"].set_interface(c["owner"]),  # Touch interface to lock it in.
     )
     """A client that is started with this interface."""
+
+    shell: Fixed[Self, T_shell_co] = Fixed(lambda c: c["owner"].kernel.main_shell)
+    "The main shell."
 
     _instance: Self | None = None
 
