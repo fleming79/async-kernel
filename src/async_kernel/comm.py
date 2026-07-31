@@ -6,13 +6,15 @@ from typing import TYPE_CHECKING, Self
 
 import comm
 from aiologic.meta import import_module
-from comm.base_comm import BaseComm, BuffersType, MaybeDict
+from comm.base_comm import BaseComm
 from typing_extensions import override
 
 from async_kernel.interface import HasInterface
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from async_kernel.typing import BuffersType
 
 
 __all__ = ["Comm"]
@@ -22,11 +24,11 @@ class Comm(HasInterface, BaseComm):
     """An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/))."""
 
     @override
-    def publish_msg(
+    def publish_msg(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         msg_type: str,
-        data: MaybeDict = None,
-        metadata: MaybeDict = None,
+        data: dict | None = None,
+        metadata: dict | None = None,
         buffers: BuffersType = None,
         **keys,
     ) -> None:

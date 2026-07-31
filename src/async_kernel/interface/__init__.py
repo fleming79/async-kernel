@@ -9,14 +9,14 @@ from async_kernel.kernelspec import make_argv
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from async_kernel.interface.callable import CallableInterface, Handlers
+    from async_kernel.interface.callable import CallableInterface
 
 __all__ = ["BaseInterface", "HasInterface", "launch_interface", "start_kernel_callable_interface"]
 
 
 async def start_kernel_callable_interface(
-    *, send: Callable[[str, list | None, bool], None | str], stopped: Callable[[], None], settings: dict | None = None
-) -> Handlers:
+    *, send: Callable[[str, list | None, bool], str | None], stopped: Callable[[], None], settings: dict | None = None
+):
     """Start the global interface as an instance of [CallableInterface][async_kernel.interface.callable.CallableInterface].
 
     Args:

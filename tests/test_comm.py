@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from async_kernel.comm import Comm, CommManager
+from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
@@ -19,7 +20,7 @@ async def test_comm(kernel: Kernel) -> None:
     def on_message(msg):
         msgs.append(msg)
 
-    c.publish_msg("foo")
+    c.publish_msg(MsgType.comm_msg, content={})
     c.open({})
     c.on_msg(on_message)
     c.on_close(on_close)

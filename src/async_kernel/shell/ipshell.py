@@ -46,7 +46,7 @@ from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.outstream import print_concat
 from async_kernel.shell.base import BaseShell
-from async_kernel.typing import Content, MsgType, RunMode, Tags
+from async_kernel.typing import Channel, Content, MsgType, RunMode, Tags
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -184,13 +184,13 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
         [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)
         """
         content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
-        msg_type = "update_display_data" if update else MsgType.iopub_display_data
-        msg = self.parent.msg(msg_type, content=content, parent=utils.get_parent_message())
+        msg_type = MsgType.iopub_update_display_data if update else MsgType.iopub_display_data
+        msg = self.parent.msg(msg_type, content=content, parent=utils.get_parent_message(), channel=Channel.iopub)
         for hook in self._hooks:
             try:
                 msg = hook(msg)
-            except Exception:
-                pass
+            except Exception as e:
+                self.parent.log.exception("Failed to execute hook:%r for msg:%r", hook, msg, exc_info=e)
             if msg is None:
                 return
         self.parent.iopub_send(msg, ident=b"display_data")
@@ -808,6 +808,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         n: int = 10,
         pattern: str = "*",
         unique: bool = False,
+        include_latest=False,
         **_ignored,
     ) -> Content:
         ""
@@ -815,7 +816,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         assert history_manager
         match hist_access_type:
             case "tail":
-                hist = history_manager.get_tail(n=n, raw=raw, output=output, include_latest=False)
+                hist = history_manager.get_tail(n=n, raw=raw, output=output, include_latest=include_latest)
             case "range":
                 hist = history_manager.get_range(session, start, stop, raw, output)
             case "search":

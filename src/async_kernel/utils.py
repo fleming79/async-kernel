@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import threading
 import traceback
@@ -27,7 +28,6 @@ if TYPE_CHECKING:
 __all__ = [
     "apply_settings",
     "error_to_content",
-    "error_to_content",
     "get_job",
     "get_kernel",
     "get_metadata",
@@ -46,6 +46,8 @@ LAUNCHED_BY_PYTEST = "pytest" in sys.modules
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 LAUNCHED_BY_DEBUGPY_PYTEST = LAUNCHED_BY_DEBUGPY and LAUNCHED_BY_PYTEST
 "Useful to allow exceptiosn to be raised with the debugger launched with pytest and debugger."
+PYTEST_LOG_CLI_DEBUG = bool(os.environ.get("PYTEST_LOG_CLI_DEBUG"))
+"Gets set in pytest_configure if the pytest config 'log_cli_level' is DEBUG."
 
 
 _job_var: ContextVar[Job[Any]] = ContextVar("async-kernel job")

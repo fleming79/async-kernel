@@ -11,17 +11,15 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import jupyter_client.session
 import zmq
-from aiologic.lowlevel import enable_signal_safety
 from jupyter_client.connect import ConnectionFileMixin
 from traitlets import traitlets
 from typing_extensions import override
-from zmq import Flag, PollEvent, SocketOption
 
 from async_kernel import utils
-from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
+from async_kernel.common import Fixed, MethodNotSupported
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.typing import Channel, Content, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
+from async_kernel.typing import BuffersType, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
@@ -133,14 +131,14 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 with (
                     self._open_socket(Channel.heartbeat) as hb,
                     zmq_poll.event_handler(hb, heartbeat),
-                    self._open_socket(Channel.stdin),
                     self._message_handler(Channel.control) as ctrl,
                     self._message_handler(Channel.shell) as shell,
+                    self._reply_handler(Channel.stdin) as stdin,
                 ):
                     assert len(self._sockets) == 5
                     ready()
                     await self.started
-                    with ctrl, shell:
+                    with ctrl, shell, stdin:
                         await stop
             del ctrl, shell, self._zmq_poll
 
@@ -185,7 +183,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             msg = socket.recv()
             if msg[0] == 1:
                 ident = msg[1:]
-                msg = self.msg(MsgType.iopub_welcome, content={"subscription": ident.decode()})
+                msg = self.msg(MsgType.iopub_welcome, channel=Channel.iopub, content={"subscription": ident.decode()})
                 self.iopub_send(msg, ident=ident)
 
         with self._open_socket(Channel.iopub) as iopub_sock, self._zmq_poll.event_handler(iopub_sock, on_reg_msg):
@@ -217,7 +215,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         def recv_msg(socket: ZMQPollSocket, flags: int) -> None:
             # Thread: zmq_poll_thread
             try:
-                ident, msg = session.recv(socket, mode=zmq.DONTWAIT)
+                ident, msg = session.recv(socket)
                 msg["channel"] = channel  # pyright: ignore[reportOptionalSubscript]
                 job = Job(received_time=time.monotonic(), msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
                 message_handler(job, send_reply, self.iopub_send)
@@ -228,32 +226,24 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             yield self._zmq_poll.event_handler(socket, recv_msg)
 
     @override
-    def input_request(self, prompt: str, *, password=False) -> Any:
-        job = utils.get_job()
-        if not job["msg"].get("content", {}).get("allow_stdin", False):
-            msg = "Stdin is not allowed in this context!"
-            raise RuntimeError(msg)
-        socket = self._sockets[Channel.stdin]
-        # Clear messages on the stdin socket.
-        while socket.get(SocketOption.EVENTS) & PollEvent.POLLIN:  # pyright: ignore[reportOperatorIssue]
-            socket.recv_multipart(flags=Flag.DONTWAIT)  # pragma: no cover
-        # Send the input request.
-        assert self is not None
-        self.session.send(
-            stream=socket,
-            msg_or_type=MsgType.input_request,
-            content=Content(prompt=prompt, password=password),
-            parent=job["msg"],  # pyright: ignore[reportArgumentType]
-            # The client is assumed to have set the 'identity' of the stdin socket to 'session.bsession'.
-            ident=job["msg"]["header"]["session"].encode(),
-        )
-        # Poll for a reply.
-        while not (socket.poll(100) & PollEvent.POLLIN):
-            if pen := self.kernel._interrupt_requested:  # pyright: ignore[reportPrivateUsage]
-                with enable_signal_safety():
-                    pen.set_result(None)
-                raise KernelInterrupt
-        return self.session.recv(socket)[1]["content"]["value"]  # pyright: ignore[reportOptionalSubscript]
+    def _send_msg(
+        self,
+        msg: Message,
+        buffers: BuffersType = None,
+        ident: bytes | list[bytes] | None = None,
+    ) -> Message:
+        return self.session.send(self._sockets[msg["channel"]], msg, buffers=buffers, ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
+
+    @contextmanager
+    def _reply_handler(self, channel: Literal[Channel.stdin]):
+        def _stdin_handler(sock: ZMQPollSocket, event: int) -> None:
+            msg: Message
+            _, msg = self.session.recv(sock)  # pyright: ignore[reportAssignmentType]
+            msg["channel"] = channel
+            self._handle_reply(msg)
+
+        with self._open_socket(channel) as sock:
+            yield self._zmq_poll.event_handler(sock, _stdin_handler)
 
     @override
     def iopub_send(
@@ -264,7 +254,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         metadata: dict[str, Any] | None = None,
         parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
-        buffers: list[bytes] | None = None,
+        buffers: BuffersType = None,
     ) -> None:
         """Send a message on the zmq iopub socket."""
         if (sock := self._iopub_socket) and (

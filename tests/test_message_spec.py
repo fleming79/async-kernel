@@ -238,7 +238,7 @@ async def test_history_range(client: ZMQKernelClient):
 
 async def test_history_tail(client: ZMQKernelClient):
     await client.execute("x=1", store_history=True)
-    reply = await client.history(hist_access_type="tail", raw=True, output=True, n=1, session=0)
+    reply = await client.history(hist_access_type="tail", raw=True, output=True, n=1, session=0, include_latest=True)
     utils.validate_message(reply, MsgType.history_reply)
     content = reply["content"]
     assert len(content["history"]) == 1

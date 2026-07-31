@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import gc
 import importlib.util
+import logging
 import os
 import sys
 import weakref
@@ -26,14 +27,18 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
-from async_kernel.pending import ProtectedPending
+from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.typing import (
     Backend,
+    BuffersType,
     Channel,
+    Content,
     Hosts,
+    Job,
     Message,
     MsgHeader,
     MsgType,
+    MsgTypeNoReply,
     NoValue,
     RunSettings,
     T,
@@ -46,9 +51,8 @@ if TYPE_CHECKING:
 
     from async_kernel.client.base import BaseKernelClient
     from async_kernel.kernel import Kernel
-    from async_kernel.typing import Content
 
-__all__ = ["BaseInterface", "BaseMessageApplication", "HasInterface"]
+__all__ = ["BaseInterface", "BaseMessageApplication", "HasInterface", "PendingMessage"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -83,6 +87,12 @@ class DictValueLiteralEval(traitlets.Dict):
         return d
 
 
+class PendingMessage(Pending[Message[T]], Generic[T]):
+    @property
+    def msg_id(self) -> str:
+        return self.metadata["parent"]["header"]["msg_id"]
+
+
 class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     """The base application for kernel interfaces and clients."""
 
@@ -108,7 +118,14 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     aliases: dict[str | tuple[str, ...], str] = Application.aliases | {  # pyright: ignore[reportIncompatibleVariableOverride]
         ("name", "n"): "BaseMessageApplication.kernel_name"
     }
+
+    session_id = Fixed(lambda _: str(uuid4()))
+    "Used to identify this object in messages."
+
     ""
+    log: logging.Logger
+
+    _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
 
     @property
     def summary(self) -> str:
@@ -117,6 +134,17 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
         # Thread: shell
+        if async_kernel.utils.PYTEST_LOG_CLI_DEBUG:
+            # We apply some patches when pytest logging / debugging pytest so that log messages
+            # aren't sent to stdout, but do get sent to to the cli.
+            self.log_level = 10
+            self.log.setLevel(logging.DEBUG)
+            for handler in self.log.handlers:
+                handler.setLevel(logging.WARNING if handler.name == "console" else logging.DEBUG)
+            for handler in logging.getLogger().handlers:
+                if handler.__class__ is logging.StreamHandler:
+                    self.log.addHandler(handler)
+
         if self.stopped.done():
             msg = "Stopped early"
             raise RuntimeError(msg)
@@ -138,7 +166,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
                 self.stop()
                 self.stopped.set_result(None)
                 stop_channels.set()
-                await pen_channels.wait(shield=True, timeout=1)
+                await pen_channels.wait(shield=True)
 
     async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
         ready()
@@ -154,44 +182,55 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     def _force_stop(self) -> None:
         pass
 
+    def _handle_reply(self, msg: Message) -> None:
+        """A handler for incoming messages."""
+        # Thread: undefined
+        if (parent := msg.get("parent_header")) and (f := self._pending_messages.pop(parent["msg_id"], None)):
+            self.log.debug("Received %s %s", msg["header"]["msg_type"], msg)
+            f.set_result(msg)
+
+    def _handle_request(self, job: Job) -> None:
+        raise NotImplementedError
+
     def stop(self, force=False) -> None:
         """Stop the kernel and this interface."""
-        self.stopping.set_result(None)
-        if not self.callers:
-            self.stopped.set_result(None)
-        self._force_stop()
-        self.log.info("%s, stopping", self)
+        if not self.stopped.done():
+            self.stopping.set_result(None)
+            if not self.callers:
+                self.stopped.set_result(None)
+            if force:
+                self._force_stop()
+            self.log.info("%s, stopping", self)
 
     def msg(
         self,
         msg_type: str | MsgType,
         content: T | None = None,
         *,
+        channel: Channel,
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
-        channel: Channel = Channel.shell,
     ) -> Message[T]:
         """Create a new message."""
         parent = parent or utils.get_parent_message()
         if header is None:
-            session = ""
-            if parent and (header := parent.get("header")):
-                session = header.get("session", "")
             header = MsgHeader(
                 date=datetime.now(UTC),
                 msg_id=str(uuid4()),
                 msg_type=msg_type,
-                session=session,
+                session=self.session_id,
                 username="",
                 version=async_kernel.kernel_protocol_version,
             )
-        return Message(  # pyright: ignore[reportCallIssue]
+        buffers = content.pop("buffers", None) if content else None  # pyright: ignore[reportAttributeAccessIssue]
+        return Message(
             channel=channel,
-            header=header,
+            header=header,  # pyright: ignore[reportArgumentType]
             parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
             content={} if content is None else content,
             metadata=metadata if metadata is not None else {},
+            buffers=buffers,
         )
 
     @override
@@ -207,6 +246,43 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             except OSError:
                 continue  # Coverage can cause issues with some files.
         super().print_help(classes)
+
+    def send_message(
+        self,
+        msg: Message,
+        buffers: BuffersType = None,
+        ident: bytes | list[bytes] | None = None,
+    ) -> PendingMessage[Content]:
+        """Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""
+        if MsgType(msg["header"]["msg_type"]) in MsgTypeNoReply:
+            msg_ = f"{msg['header']['msg_type']} does not send a reply! Use `send_message_no_reply` instead."
+            raise TypeError(msg_)
+        self.log.debug("Send mssage %s %s", msg["header"]["msg_type"], msg)
+        self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage()
+        pen.metadata.update(parent=self._send_msg(msg, buffers, ident))
+        return pen
+
+    def send_message_no_reply(
+        self,
+        msg: Message,
+        buffers: BuffersType = None,
+        ident: bytes | list[bytes] | None = None,
+    ) -> Message:
+        """Sends a message without expecting a reply.
+
+        This could be of two categories:
+            1. The reply to a request.
+            2. A message of a type that does not have a reply such as comm_open, comm_close, comm_msg.
+        """
+        return self._send_msg(msg, buffers, ident)
+
+    def _send_msg(
+        self,
+        msg: Message,
+        buffers: BuffersType = None,
+        ident: bytes | list[bytes] | None = None,
+    ) -> Message:
+        raise NotImplementedError
 
 
 class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
@@ -385,7 +461,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
             if e:
                 raise e
 
-    def __new__(cls, argv: list | None | NoValue = NoValue, /, **kwargs) -> Self:  # noqa: ARG004  # pyright: ignore[reportInvalidTypeForm]
+    def __new__(cls, argv: list | NoValue | None = NoValue, /, **kwargs) -> Self:  # noqa: ARG004  # pyright: ignore[reportInvalidTypeForm]
         if BaseInterface._instance:
             msg = "An interface already exists!"
             raise RuntimeError(msg)
@@ -394,7 +470,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
 
     def __init__(
         self,
-        argv: list | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        argv: list | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         /,
         *,
         kernel_class: type[Kernel[Self, T_shell_co]] | str | None = None,
@@ -415,7 +491,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         super()._on_stopped(_)
 
     @override
-    def initialize(self, argv: None | list | NoValue = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
+    def initialize(self, argv: list | NoValue | None = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
         """Initialize the interface **DO NOT CALL DIRECTLY**."""
         assert self._instance is self
 
@@ -477,10 +553,14 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         self.log.info("Starting kernel interface")
         self.iopub_send = cache_iopub_send
         self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
-        async with super().__asynccontextmanager__(set_started=False), self.kernel, self.client:
-            if set_started:
-                self._started()
-            yield self
+        try:
+            async with super().__asynccontextmanager__(set_started=False), self.kernel, self.client:
+                if set_started:
+                    self._started()
+                yield self
+        finally:
+            if BaseInterface._instance is self:
+                BaseInterface._instance = None
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """Run the kernel.
@@ -497,14 +577,24 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
             if stopped:
                 stopped()
 
-    def input_request(self, prompt: str, *, password: bool = False) -> str:
-        """Forward an input request to the frontend.
-
-        Args:
-            prompt: The user prompt.
-            password: If the prompt should be considered as a password.
-        """
-        raise NotImplementedError
+    def input_request(self, prompt: str, *, password=False) -> PendingMessage[Content]:
+        job = utils.get_job()
+        if not job["msg"].get("content", {}).get("allow_stdin", False):
+            msg = "Stdin is not allowed in this context!"
+            raise RuntimeError(msg)
+        pen_reply = self.send_message(
+            self.msg(
+                MsgType.input_request,
+                content=Content(prompt=prompt, password=password),
+                parent=job["msg"],
+                channel=Channel.stdin,
+                # The client is assumed to have set the 'identity' of the stdin socket to 'session.bsession'.
+            ),
+            ident=job["msg"]["header"]["session"].encode(),
+        )
+        if current_pen := self.callers[Channel.shell].current_pending():
+            current_pen.add_done_callback(lambda _: pen_reply.cancel(""))
+        return pen_reply
 
     def iopub_send(
         self,
@@ -512,12 +602,23 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | MsgHeader | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
-        buffers: list[bytes] | None = None,
+        buffers: BuffersType = None,
     ) -> None:
-        """Send an iopub message."""
-        raise NotImplementedError
+        if parent is NoValue:
+            parent = async_kernel.utils.get_parent_message()
+        if isinstance(msg_or_type, dict):
+            assert MsgType(msg_or_type["header"]["msg_type"])
+        else:
+            msg_or_type = self.msg(
+                msg_type=MsgType(msg_or_type),
+                content=content,
+                parent=parent,  # pyright: ignore[reportArgumentType]
+                metadata=metadata,
+                channel=Channel.iopub,
+            )
+        self.send_message_no_reply(msg_or_type, buffers=buffers, ident=ident)  # pyright: ignore[reportArgumentType]
 
 
 class HasInterface(Generic[T_interface_co]):

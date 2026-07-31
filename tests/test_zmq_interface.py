@@ -4,6 +4,7 @@ import pathlib
 import threading
 from typing import TYPE_CHECKING, Any, Literal
 
+import anyio
 import pytest
 from aiologic.lowlevel import create_async_waiter
 
@@ -18,11 +19,16 @@ if TYPE_CHECKING:
     from async_kernel.shell import IPShell
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def subprocess_kernels_client(anyio_backend: Backend):
     client = ZMQKernelClient()
     async with client.subprocess_kernel(backend=anyio_backend):
         yield client
+
+
+@pytest.fixture(params=["zmq interface"], scope="module")
+def interface_name(request):
+    return request.param
 
 
 async def test_load_connection_info_error(kernel: Kernel):
@@ -60,7 +66,7 @@ async def test_print_non_caller_thread(kernel: Kernel[ZMQInterface], client: ZMQ
         t.join()
 
 
-@pytest.mark.parametrize("test_mode", ["reply", "allow_stdin=False"])
+@pytest.mark.parametrize("test_mode", ["reply", "interrupt", "allow_stdin=False"])
 @pytest.mark.parametrize("mode", ["input", "password"])
 async def test_input(
     subprocess_kernels_client: ZMQKernelClient,
@@ -89,25 +95,29 @@ async def test_input(
         assert reply["content"].get("ename") == "RuntimeError"
         return
 
+    await anyio.sleep(0.1)
     pen = client.execute(code, input_handler=input_handler, user_expressions={"response": "response"})
     await ready
 
     if test_mode == "interrupt":
         await client.send_message(client.msg(msg_type=MsgType.interrupt_request, channel=Channel.control))
         reply = await pen
-        assert reply["content"]
+        assert reply["content"]["status"] == "error"
+        assert reply["content"]["traceback"][0] == "async_kernel.common.KernelInterrupt\n"
+        # Check the interface is still working
+        assert (await client.execute("1+1"))["content"]["status"] == "ok"
     else:
         reply = await pen
         assert reply["content"]["status"] == "ok"
         val = reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
-        val_ = eval(val)
-        assert val_
+        val_ = eval(eval(val))
+        assert val_ == {"prompt": theprompt, "password": mode == "password"}
 
 
 async def test_interrupt_request_not_blocked(client: ZMQKernelClient, kernel: Kernel):
     pen: Any = Pending()
     kernel.active_execute_requests.add(pen)
-    reply = await client.send_message(client.msg(MsgType.interrupt_request))
+    reply = await client.send_message(client.msg(MsgType.interrupt_request, channel=Channel.control))
     assert reply["header"]["msg_type"] == MsgType.interrupt_reply
     assert reply["content"] == {"status": "ok"}
     assert pen.cancelled()
@@ -135,7 +145,7 @@ async def test_interrupt_request(
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_stream, text="started\n")
-        client.send_message(client.msg(MsgType.interrupt_request))
+        client.send_message(client.msg(MsgType.interrupt_request, channel=Channel.control))
         reply = await pen
 
         assert reply["content"]["status"] == "error"

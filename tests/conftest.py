@@ -1,14 +1,14 @@
 import logging
 import os
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import pytest
 
-# from async_kernel.client.zmq import AsyncKernelClient
 import async_kernel
 from async_kernel import Caller, Kernel
 from async_kernel.client.base import BaseKernelClient
+from async_kernel.interface.callable import CallableInterface
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
 
 if TYPE_CHECKING:
@@ -19,19 +19,18 @@ assert "IPython" not in sys.modules
 
 from async_kernel.interface.ip_app import IPApp  # noqa: E402
 
-debug = False
-
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
-    debug = True
+    async_kernel.utils.PYTEST_LOG_CLI_DEBUG = True
+    os.environ.setdefault("PYTEST_LOG_CLI_DEBUG", "1")
     logging.basicConfig(level=10)
 
 
 @pytest.hookimpl
 def pytest_configure(config):
-    global debug  # noqa: PLW0603
+
     if config.getini("log_cli_level") == "DEBUG":
-        debug = True
-    if debug:
+        async_kernel.utils.PYTEST_LOG_CLI_DEBUG = True
+        os.environ.setdefault("PYTEST_LOG_CLI_DEBUG", "1")
         logging.basicConfig(level=10)
 
 
@@ -45,20 +44,35 @@ def anyio_backend(request):
     return request.param
 
 
+@pytest.fixture(params=["zmq interface", "callable interface"], scope="module")
+def interface_name(request):
+    return request.param
+
+
 @pytest.fixture(scope="module")
-async def kernel(anyio_backend: Backend, tmp_path_factory):
+async def kernel(
+    anyio_backend: Backend, interface_name: Literal["zmq interface", "callable interface"], tmp_path_factory
+):
     # Set a blank connection_file
     connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
 
-    # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
-    interface = IPApp(
-        connection_file=connection_file.as_posix(),
-        transport="ipc" if sys.platform == "linux" else "tcp",
-        backend=anyio_backend,
-    )
-    async with interface:
-        yield interface.kernel
+    if interface_name == "zmq interface":
+        # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
+        interface = IPApp(
+            connection_file=connection_file.as_posix(),
+            transport="ipc" if sys.platform == "linux" else "tcp",
+            backend=anyio_backend,
+        )
+        async with interface:
+            yield interface.kernel
+    if interface_name == "callable interface":
+
+        def from_interface(msg_str, buffers, ident, /) -> None:
+            ""
+
+        async with (callable_interface := CallableInterface()).start_async_context(send=from_interface):
+            yield callable_interface.kernel
 
 
 @pytest.fixture(scope="module")
