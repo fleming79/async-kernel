@@ -263,6 +263,9 @@ class MsgType(enum.StrEnum):
     iopub_display_data = "display_data"
     "An iopub message with display output data."
 
+    iopub_update_display_data = "iopub_update_display_data"
+    "An iopub message to update display data."
+
     iopub_clear_output = "clear_output"
     "An iopub display message instructing the associated display to clear."
 
@@ -387,6 +390,9 @@ class CallerState(enum.Enum):
     stopped = enum.auto()
 
 
+BuffersType = list[bytes | memoryview] | None
+
+
 class MsgHeader(TypedDict):
     """A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."""
 
@@ -427,7 +433,7 @@ class Message(TypedDict, Generic[T]):
     See also:
         - [ExecuteContent][]
     """
-    buffers: list[bytearray | bytes]
+    buffers: BuffersType
     ""
 
 
@@ -498,7 +504,7 @@ class RunSettings(TypedDict):
         or importable path like `'asyncio.new_event_loop'`.
     """
 
-    host: NotRequired[Hosts | None | Literal["tk", "qt"]]
+    host: NotRequired[Hosts | Literal["tk", "qt"] | None]
     "The type of host where the backend will run."
 
     "Options to use when starting the host."

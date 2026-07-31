@@ -8,7 +8,7 @@ from __future__ import annotations
 import time
 from collections.abc import Generator
 from contextlib import asynccontextmanager, contextmanager, nullcontext
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, Self
 
 import anyio
 import jupyter_client
@@ -19,11 +19,12 @@ from aiologic.lowlevel import async_sleep, create_async_event, create_async_wait
 from jupyter_client.connect import ConnectionFileMixin
 from typing_extensions import override
 
+from async_kernel import utils
 from async_kernel.client.base import BaseKernelClient
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Channel, Job, Message, MsgHeader, MsgType, T, T_zmq_interface_co
+from async_kernel.typing import BuffersType, Channel, Job, Message, MsgHeader, MsgType, T, T_zmq_interface_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
@@ -42,11 +43,11 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
 
     session: traitlets.Instance[jupyter_client.session.Session] = traitlets.Instance(jupyter_client.session.Session, ())
     ""
+    session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].session.session)
 
     @override
     def set_interface(self, interface: T_zmq_interface_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
         super().set_interface(interface)
-        self.session = interface.session
         self.load_connection_info(interface.get_connection_info())
         self.connection_file = interface.connection_file
         # We  don't 'own' the connection  file so mark it written to avoid it being overwritten.
@@ -80,9 +81,9 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                     ident, msg = self.session.recv(sock, zmq.BLOCKY)  # pyright: ignore[reportAssignmentType]
                     msg["channel"] = channels[sock]
                     if sock is shell or sock is ctrl:
-                        self._handle_shell_control_msg(msg)
+                        self._handle_reply(msg)
                     else:
-                        self._handle_msg(Job(msg=msg, ident=ident, received_time=time.monotonic()))
+                        self._handle_request(Job(msg=msg, ident=ident, received_time=time.monotonic()))
 
                 with (
                     zmq_poll.event_handler(ctrl, handle_msg),
@@ -90,11 +91,11 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                     zmq_poll.event_handler(stdin, handle_msg),
                 ):
                     # Only check for heartbeat for a non-local interface.
-                    # pen = None if interface else self.callers[Channel.control].call_soon(self._heartbeat)
+                    pen = None if self.interface else self.callers[Channel.control].call_soon(self._heartbeat)
                     ready()
                     await stop
-                    # if pen:
-                    #     await pen.cancel_wait()
+                    if pen:
+                        await pen.cancel_wait()
 
     @contextmanager
     def open_socket(self, channel: Channel, /) -> Generator[ZMQPollSocket]:
@@ -129,8 +130,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         try:
             yield socket
         finally:
-            # Temp fix for socket not closing properly which prevents interpreter shutdown.
-            self.callers[Channel.control].call_direct(socket.close)
+            socket.close()
             self._sockets.pop(channel, None)
             self.log.debug("%s socket closed", channel)
 
@@ -151,25 +151,29 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 self._has_heartbeat = count < 5
 
     @asynccontextmanager
-    async def subprocess_kernel(self, **kwargs) -> AsyncGenerator[Process]:
+    async def subprocess_kernel(self, key="", **kwargs) -> AsyncGenerator[Process]:
         self.write_connection_file()
         try:
-            command = make_argv(connection_file=self.connection_file, name=self.kernel_name, **kwargs)
-            async with await anyio.open_process(command) as process, self:
-                await self._wait_ready()
-                await self._configure_session()
-                try:
-                    yield process
-                finally:
-                    await self.shutdown(False)
+            command = make_argv(connection_file=self.connection_file, name=self.kernel_name, key=key, **kwargs)
+            async with await anyio.open_process(command) as process:
+                async with self:
+                    await self._wait_for_welcome()
+                    await self._configure_session()
+                    try:
+                        yield process
+                    finally:
+                        pen = self.shutdown(False)
+                        await pen.wait(shield=True, timeout=1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
+                process.terminate()
         finally:
             self.cleanup_connection_file()
             self.cleanup_ipc_files()
 
-    async def _wait_ready(self) -> None:
+    async def _wait_for_welcome(self) -> None:
         """Wait for non-local interface to publish a welcome message."""
         if not self.interface:
             resume = create_async_waiter()
+            self.log.debug("Waiting for welcome message")
             with (
                 self.open_socket(Channel.iopub) as iopub,
                 self._zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.wake), canceller=None),
@@ -177,12 +181,23 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 # Wait for iopub welcome message
                 iopub.subscribe(b"")
                 await resume
+                self.log.debug("Welcome message received")
 
     async def _configure_session(self) -> None:
-        msg = await self.kernel_info()
-        adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
-        if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
-            self.session.adapt_version = adapt_version
+        self.log.debug("Getting kernel info to configure session")
+        # Delay 200ms for sockets to establish until connection is more reliable.
+        await anyio.sleep(0.2)
+        for i in range(1, 10):
+            with anyio.move_on_after(0.1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6):
+                msg = await self.kernel_info()
+                adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
+                if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
+                    self.session.adapt_version = adapt_version
+                self.log.debug("Session config complete")
+                return
+            self.log.warning("Kernel did not respond to kernel info request. attempt %d Retrying ...", i)
+        msg = "Not responding to kernel info request!"
+        raise RuntimeError(msg)
 
     @override
     def msg(
@@ -190,10 +205,10 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         msg_type: str | MsgType,
         content: T | None = None,
         *,
+        channel: Channel,
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
-        channel: Channel = Channel.shell,
     ) -> Message[T]:
         """Create a message suitable for sending."""
         msg: Message = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
@@ -201,8 +216,13 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         return msg
 
     @override
-    def _send_msg(self, msg: Message) -> Message:
-        return self.session.send(self._sockets[msg["channel"]], msg)  # pyright: ignore[reportReturnType, reportArgumentType]
+    def _send_msg(
+        self,
+        msg: Message,
+        buffers: BuffersType = None,
+        ident: bytes | list[bytes] | None = None,
+    ) -> Message:
+        return self.session.send(self._sockets[msg["channel"]], msg, buffers=buffers, ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
     @asynccontextmanager
     async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:

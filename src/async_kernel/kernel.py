@@ -216,7 +216,7 @@ class Kernel(
         elif signum == signal.SIGINT:
             self.log.info("Keyboard interrupt")
             with enable_signal_safety():
-                self.parent.stop()
+                self.parent.stop(force=True)
 
     async def do_interrupt(self) -> None:
         """Interrupt/cancel non-silent active execute requests."""
@@ -516,7 +516,7 @@ class Kernel(
         # Wait for pending.stopped callback to set the event.
         with anyio.move_on_after(self.force_shutdown_delay):
             await send_now
-        self.parent.stop(force=True)
+        self.parent.stop(force=True)  # noop when already stopped.
         await send_now
         # The shell thread will block in the callback until the reply is sent.
         return {"restart": job["msg"]["content"].get("restart", False)}
@@ -610,8 +610,12 @@ class Kernel(
 
     def getpass(self, prompt="", stream=None) -> str:
         """Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."""
-        return self.parent.input_request(str(prompt), password=True)
+        pen = self.parent.input_request(str(prompt), password=True)
+        pen.wait_sync()
+        return pen.result()["content"]["value"]
 
     def raw_input(self, prompt="") -> str:
-        """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][]."""
-        return self.parent.input_request(str(prompt), password=False)
+        """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][], also used for builtin 'input'."""
+        pen = self.parent.input_request(str(prompt), password=False)
+        pen.wait_sync()
+        return pen.result()["content"]["value"]
