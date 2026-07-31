@@ -5,8 +5,7 @@ from __future__ import annotations
 import os
 import sys
 import time
-from collections.abc import Generator
-from contextlib import AbstractContextManager, asynccontextmanager, contextmanager
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self
 
 import jupyter_client.session
@@ -22,7 +21,7 @@ from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.typing import BuffersType, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
+    from collections.abc import AsyncGenerator, Awaitable, Callable
 
     from jupyter_client import KernelConnectionInfo
 
@@ -127,14 +126,12 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
         with ZMQPoll() as zmq_poll:
             self._zmq_poll = zmq_poll
+            hb = await zmq_poll.execute_async(self._open_socket, Channel.heartbeat)
+            ctrl = await self._get_message_handler(Channel.control)
+            shell = await self._get_message_handler(Channel.shell)
+            stdin = await self._reply_handler(Channel.stdin)
             async with self._iopub():
-                with (
-                    self._open_socket(Channel.heartbeat) as hb,
-                    zmq_poll.event_handler(hb, heartbeat),
-                    self._message_handler(Channel.control) as ctrl,
-                    self._message_handler(Channel.shell) as shell,
-                    self._reply_handler(Channel.stdin) as stdin,
-                ):
+                with zmq_poll.event_handler(hb, heartbeat):
                     assert len(self._sockets) == 5
                     ready()
                     await self.started
@@ -142,8 +139,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                         await stop
             del ctrl, shell, self._zmq_poll
 
-    @contextmanager
-    def _open_socket(self, channel: Channel, /) -> Generator[ZMQPollSocket]:
+    def _open_socket(self, channel: Channel, /):
         """Create, bind and configure a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
@@ -165,11 +161,8 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
         self.log.debug("%s socket on port: %i", channel, port)
         self._sockets[channel] = socket
-        try:
-            with socket, socket.bind(addr):
-                yield socket
-        finally:
-            self.log.debug("%s socket closed", channel)
+        socket.bind(addr)
+        return socket
 
     @asynccontextmanager
     async def _iopub(self) -> AsyncGenerator[None]:
@@ -186,44 +179,42 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 msg = self.msg(MsgType.iopub_welcome, channel=Channel.iopub, content={"subscription": ident.decode()})
                 self.iopub_send(msg, ident=ident)
 
-        with self._open_socket(Channel.iopub) as iopub_sock, self._zmq_poll.event_handler(iopub_sock, on_reg_msg):
+        iopub_sock = await self._zmq_poll.execute_async(self._open_socket, Channel.iopub)
+        with self._zmq_poll.event_handler(iopub_sock, on_reg_msg):
             self._iopub_socket = iopub_sock
             yield
             self._iopub_socket = None
 
-    @contextmanager
-    def _message_handler(
-        self, channel: Literal[Channel.control, Channel.shell], /
-    ) -> Generator[AbstractContextManager[None]]:
+    async def _get_message_handler(self, channel: Literal[Channel.control, Channel.shell], /):
         """Opens a zmq socket for the channel, receives messages and calls the message handler."""
-        session, log, message_handler = self.session, self.log, self.kernel.message_handler
+        message_handler = self.kernel.message_handler
 
-        async def send_reply(job: Job, content: dict, /) -> None:
+        async def send_reply(job: Job, content: dict, /, send=self.session.send, log=self.log) -> None:
             if "status" not in content:
                 content["status"] = "ok"
-            msg = session.send(
+            msg = send(
                 stream=socket,
                 msg_or_type=job["msg"]["header"]["msg_type"].replace("request", "reply"),
                 content=content,
-                parent=job["msg"],  # pyright: ignore[reportArgumentType]
+                parent=job["msg"],
                 ident=job["ident"],
                 buffers=content.pop("buffers", None),
             )
             if msg:
                 log.debug("send_reply %s %s", channel, msg)
 
-        def recv_msg(socket: ZMQPollSocket, flags: int) -> None:
+        def recv_msg(socket: ZMQPollSocket, flags: int, recv=self.session.recv, log=self.log) -> None:
             # Thread: zmq_poll_thread
             try:
-                ident, msg = session.recv(socket)
-                msg["channel"] = channel  # pyright: ignore[reportOptionalSubscript]
-                job = Job(received_time=time.monotonic(), msg=msg, ident=ident)  # pyright: ignore[reportArgumentType]
+                ident, msg = recv(socket)
+                msg["channel"] = channel
+                job = Job(received_time=time.monotonic(), msg=msg, ident=ident)
                 message_handler(job, send_reply, self.iopub_send)
             except Exception as e:
                 log.debug("Bad message on %s: %s", channel, e)
 
-        with self._open_socket(channel) as socket:
-            yield self._zmq_poll.event_handler(socket, recv_msg)
+        socket = await self._zmq_poll.execute_async(self._open_socket, channel)
+        return self._zmq_poll.event_handler(socket, recv_msg)
 
     @override
     def _send_msg(
@@ -234,16 +225,15 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     ) -> Message:
         return self.session.send(self._sockets[msg["channel"]], msg, buffers=buffers, ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
-    @contextmanager
-    def _reply_handler(self, channel: Literal[Channel.stdin]):
-        def _stdin_handler(sock: ZMQPollSocket, event: int) -> None:
+    async def _reply_handler(self, channel: Literal[Channel.stdin]):
+        def _stdin_handler(sock: ZMQPollSocket, event: int, recv=self.session.recv) -> None:
             msg: Message
-            _, msg = self.session.recv(sock)  # pyright: ignore[reportAssignmentType]
+            _, msg = recv(sock)
             msg["channel"] = channel
             self._handle_reply(msg)
 
-        with self._open_socket(channel) as sock:
-            yield self._zmq_poll.event_handler(sock, _stdin_handler)
+        sock = await self._zmq_poll.execute_async(self._open_socket, channel)
+        return self._zmq_poll.event_handler(sock, _stdin_handler)
 
     @override
     def iopub_send(
