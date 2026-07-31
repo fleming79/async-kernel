@@ -96,10 +96,15 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                     await stop
                     if pen:
                         await pen.cancel_wait()
+                    await stop
+                    del self._zmq_poll
+                    return
 
     @contextmanager
     def open_socket(self, channel: Channel, /) -> Generator[ZMQPollSocket]:
         """Create, bind and configure a socket."""
+        # yield
+        # return
         port = int(getattr(self, f"{channel}_port"))
         assert port
         if channel is not Channel.iopub:

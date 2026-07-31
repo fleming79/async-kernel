@@ -169,7 +169,7 @@ class Test_zmq_Poll:
             assert (await zmq_poll.execute_async(lambda: 1 + 1)) == 2
             assert (zmq_poll.execute(lambda: 1 + 1)) == 2
         with pytest.raises(RuntimeError, match="stopped"), zmq_poll:
-            raise ValueError
+            None  # noqa: B018  # pyright: ignore[reportUnusedExpression]
         # Stopped
         with pytest.raises(RuntimeError, match=match):
             assert zmq_poll.execute(threading.current_thread) is zmq_poll.thread
@@ -180,11 +180,12 @@ class Test_zmq_Poll:
         zmq_poll = ZMQPoll()
         match = "Execution is only support while in context"
         # Pre-running
-        sock = zmq_poll.socket(zmq.SocketType.DEALER)
         with pytest.raises(RuntimeError, match=match):
-            sock.bind("inproc://local")
+            zmq_poll.socket(zmq.SocketType.DEALER)
         # Running
-        with zmq_poll, sock.bind("inproc://local"):
+        with zmq_poll:
+            sock = zmq_poll.socket(zmq.SocketType.DEALER)
+
             assert not sock.closed
         assert sock.closed
         # Stopped

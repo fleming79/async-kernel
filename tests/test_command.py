@@ -282,7 +282,7 @@ async def test_ZMQInterface_gc(anyio_backend: Backend):
     async with ZMQInterface() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
-        del interface
+    del interface
 
     with anyio.move_on_after(2):
         while not collected:
