@@ -9,12 +9,17 @@ from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel.client.zmq import ZMQKernelClient
+    from async_kernel.interface import BaseInterface
+    from async_kernel.interface.callable import CallableKernelClient
+    from async_kernel.interface.zmq import ZMQInterface
     from async_kernel.kernel import Kernel
+    from async_kernel.shell import IPShell
 
+    ClientType = ZMQKernelClient[ZMQInterface[IPShell]] | CallableKernelClient[BaseInterface[IPShell]]
 # pyright: reportGeneralTypeIssues=false, reportOptionalMemberAccess=false
 
 
-async def test_execute(client: ZMQKernelClient, kernel: Kernel):
+async def test_execute(client: ClientType, kernel: Kernel):
     reply = await client.execute(code="x=1")
     utils.validate_message(reply, MsgType.execute_reply)
     assert reply["content"]["status"] == "ok"
@@ -22,45 +27,45 @@ async def test_execute(client: ZMQKernelClient, kernel: Kernel):
 
 
 @pytest.mark.parametrize("mode", ["normal", "suppress"])
-async def test_execute_suppress(client: ZMQKernelClient, kernel: Kernel, mode: Literal["normal", "suppress"]):
+async def test_execute_suppress(client: ClientType, kernel: Kernel, mode: Literal["normal", "suppress"]):
 
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute("123" if mode == "normal" else "123;")
-        utils.check_pub_message(await anext(reader), execution_state="busy")
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
+        while (msg := await anext(reader))["header"]["msg_type"] != MsgType.iopub_execute_input:
+            continue
+        utils.check_pub_message(msg, msg_type=MsgType.iopub_execute_input)
         if mode == "normal":
             data = {"text/plain": "123"}
             utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_result, data=data)
         utils.check_pub_message(await anext(reader), execution_state="idle")
 
 
-async def test_execute_control(client: ZMQKernelClient, kernel: Kernel) -> None:
+async def test_execute_control(client: ClientType, kernel: Kernel) -> None:
     await client.execute("y=10", channel=Channel.control)
     assert kernel.shell.user_ns["y"] == 10
 
 
-async def test_execute_silent(client: ZMQKernelClient):
+async def test_execute_silent(client: ClientType):
     before = client.interface.shell.execution_count
     reply = await client.execute("x=1", silent=True)
     count = int(reply["content"]["execution_count"])
     assert count == before
 
 
-async def test_execute_error(client: ZMQKernelClient):
+async def test_execute_error(client: ClientType):
 
     async with client.iopub_subscribe() as queue:
         reply = await client.execute("1/0")
         assert reply["content"]["status"] == "error"
         assert reply["content"].get("ename") == "ZeroDivisionError"
-
         reader = aiter(queue)
-        utils.check_pub_message(await anext(reader), execution_state="busy")
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_error)
+        while (msg := await anext(reader))["header"]["msg_type"] != MsgType.iopub_error:
+            continue
+        utils.check_pub_message(msg, msg_type=MsgType.iopub_error)
 
 
-async def test_execute_inc(client: ZMQKernelClient):
+async def test_execute_inc(client: ClientType):
     """Execute request should increment execution_count."""
     reply = await client.execute("x=1")
     count = reply["content"].get("execution_count")
@@ -71,7 +76,7 @@ async def test_execute_inc(client: ZMQKernelClient):
     assert count_2 == count + 1
 
 
-async def test_execute_stop_on_error(client: ZMQKernelClient):
+async def test_execute_stop_on_error(client: ClientType):
     """Execute request should not abort execution queue with stop_on_error False."""
     bad_code = "\n".join(
         [
@@ -101,7 +106,7 @@ async def test_execute_stop_on_error(client: ZMQKernelClient):
     assert (await pen_4)["content"]["status"] == "ok"
 
 
-async def test_execute_stop_on_error_task(client: ZMQKernelClient):
+async def test_execute_stop_on_error_task(client: ClientType):
     """Execute request should not abort execution queue with stop_on_error False."""
     bad_code = "\n".join(
         [
@@ -118,7 +123,7 @@ async def test_execute_stop_on_error_task(client: ZMQKernelClient):
     assert "Stop on error cancellation" in "".join(reply["content"].get("traceback", ()))
 
 
-async def test_user_expressions(client: ZMQKernelClient):
+async def test_user_expressions(client: ClientType):
     reply = await client.execute(code="x=1", user_expressions={"foo": "x+1"})
     user_expressions = reply["content"].get("user_expressions")
     assert user_expressions == {
@@ -130,7 +135,7 @@ async def test_user_expressions(client: ZMQKernelClient):
     }
 
 
-async def test_user_expressions_fail(client: ZMQKernelClient):
+async def test_user_expressions_fail(client: ClientType):
     reply = await client.execute("x=0", user_expressions={"foo": "nosuchname"})
     user_expressions = reply["content"].get("user_expressions")
     assert user_expressions
@@ -139,13 +144,13 @@ async def test_user_expressions_fail(client: ZMQKernelClient):
     assert foo["ename"] == "NameError"
 
 
-async def test_oinfo(client: ZMQKernelClient):
+async def test_oinfo(client: ClientType):
     reply = await client.inspect("a")
     assert reply["content"] == {"data": {}, "metadata": {}, "found": False, "status": "ok"}
     utils.validate_message(reply, MsgType.inspect_reply)
 
 
-async def test_oinfo_found(client: ZMQKernelClient) -> None:
+async def test_oinfo_found(client: ClientType) -> None:
     reply = await client.execute("a=5")
 
     reply = await client.inspect("a")
@@ -157,7 +162,7 @@ async def test_oinfo_found(client: ZMQKernelClient) -> None:
     assert "Docstring:" in text
 
 
-async def test_oinfo_detail(client: ZMQKernelClient):
+async def test_oinfo_detail(client: ClientType):
     reply = await client.execute("ip=get_ipython()")
 
     reply = await client.inspect("ip.object_inspect", cursor_pos=10, detail_level=1)
@@ -169,7 +174,7 @@ async def test_oinfo_detail(client: ZMQKernelClient):
     assert "Source:" in text
 
 
-async def test_oinfo_not_found(client: ZMQKernelClient):
+async def test_oinfo_not_found(client: ClientType):
     reply = await client.inspect("does_not_exist")
 
     utils.validate_message(reply, MsgType.inspect_reply)
@@ -177,7 +182,7 @@ async def test_oinfo_not_found(client: ZMQKernelClient):
     assert not content["found"]
 
 
-async def test_complete(client: ZMQKernelClient):
+async def test_complete(client: ClientType):
     await client.execute("alpha = albert = 5")
     reply = await client.complete("al", 2)
     utils.validate_message(reply, MsgType.complete_reply)
@@ -186,7 +191,7 @@ async def test_complete(client: ZMQKernelClient):
         assert name in matches
 
 
-async def test_kernel_info_request(client: ZMQKernelClient):
+async def test_kernel_info_request(client: ClientType):
     reply = await client.kernel_info()
     utils.validate_message(reply, MsgType.kernel_info_reply)
     keys = list(reply["content"])
@@ -203,18 +208,18 @@ async def test_kernel_info_request(client: ZMQKernelClient):
     ]
 
 
-async def test_comm_info_request(client: ZMQKernelClient):
+async def test_comm_info_request(client: ClientType):
     reply = await client.comm_info()
 
     utils.validate_message(reply, MsgType.comm_info_reply)
 
 
-async def test_is_complete(client: ZMQKernelClient):
+async def test_is_complete(client: ClientType):
     reply = await client.is_complete("a = 1")
     utils.validate_message(reply, MsgType.is_complete_reply)
 
 
-async def test_history_range(client: ZMQKernelClient):
+async def test_history_range(client: ClientType):
     await client.execute("x=1", store_history=True)
     reply = await client.history(hist_access_type="range", raw=True, output=True, start=1, stop=2, session=0)
 
@@ -223,7 +228,7 @@ async def test_history_range(client: ZMQKernelClient):
     assert len(content["history"]) == 1
 
 
-async def test_history_tail(client: ZMQKernelClient):
+async def test_history_tail(client: ClientType):
     await client.execute("x=1", store_history=True)
     reply = await client.history(hist_access_type="tail", raw=True, output=True, n=1, session=0, include_latest=True)
     utils.validate_message(reply, MsgType.history_reply)
@@ -231,7 +236,7 @@ async def test_history_tail(client: ZMQKernelClient):
     assert len(content["history"]) == 1
 
 
-async def test_history_search(client: ZMQKernelClient):
+async def test_history_search(client: ClientType):
     await client.execute("x=1", store_history=True)
     reply = await client.history(hist_access_type="search", raw=True, output=True, n=1, pattern="*", session=0)
     utils.validate_message(reply, MsgType.history_reply)
@@ -239,43 +244,42 @@ async def test_history_search(client: ZMQKernelClient):
     assert len(content["history"]) == 1
 
 
-async def test_stream(client: ZMQKernelClient):
+async def test_stream(client: ClientType):
     async with client.iopub_subscribe() as queue:
         await client.execute("print('hi')")
-        msgs = []
-        async for msg in queue:
-            msgs.append(msg)
-            if len(msgs) == 4:
-                break
-        assert msgs[2]["header"]["msg_type"] == MsgType.iopub_stream
-        assert msgs[2]["content"]["text"] == "hi\n"
+        reader = aiter(queue)
+        while (msg := await anext(reader))["header"]["msg_type"] != MsgType.iopub_stream:
+            continue
+        assert msg["content"]["text"] == "hi\n"
 
 
 @pytest.mark.parametrize("clear", [True, False])
-async def test_displayhook(kernel: Kernel, client: ZMQKernelClient, clear: bool):
+async def test_displayhook(kernel: Kernel, client: ClientType, clear: bool):
 
     #  Test the displayhook is set builtin_mod.__dict__["display"] = display
     async with client.iopub_subscribe() as queue:
         await client.execute(f"display(1, clear={clear})")
         reader = aiter(queue)
-        utils.check_pub_message(await anext(reader), execution_state="busy")
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
+        while (await anext(reader))["header"]["msg_type"] != MsgType.iopub_execute_input:
+            continue
         if clear:
             utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_clear_output)
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_display_data, data={"text/plain": "1"})
+        utils.check_pub_message(await anext(reader), execution_state="idle")
 
 
-async def test_rich_display_data(kernel: Kernel, client: ZMQKernelClient):
+async def test_rich_display_data(kernel: Kernel, client: ClientType):
 
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute("1 + 1")
-        utils.check_pub_message(await anext(reader), execution_state="busy")
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
+        while (await anext(reader))["header"]["msg_type"] != MsgType.iopub_execute_input:
+            continue
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_result, data={"text/plain": "2"})
+        utils.check_pub_message(await anext(reader), execution_state="idle")
 
 
-async def test_subshell(kernel: Kernel, client: ZMQKernelClient):
+async def test_subshell(kernel: Kernel, client: ClientType):
     # Create
     reply = await client.send_message(client.msg(MsgType.create_subshell_request, {}, channel=Channel.control))
     utils.validate_message(reply, MsgType.comm_info_reply.create_subshell_reply)
