@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
-import anyio
 import pytest
 
 from async_kernel.typing import Channel, MsgType
