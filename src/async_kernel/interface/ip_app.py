@@ -11,7 +11,6 @@ from IPython.core.shellapp import InteractiveShellApp, shell_aliases, shell_flag
 from traitlets import traitlets
 from typing_extensions import override
 
-from async_kernel.common import Fixed
 from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.typing import Hosts, NoValue, T_ipshell_co
 
@@ -62,9 +61,6 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
         | shell_flags
     )
     ""
-
-    shell: Fixed[Self, T_ipshell_co] = Fixed(lambda c: c["owner"].kernel.main_shell)
-    "A ref to the main shell."
 
     @property
     @override

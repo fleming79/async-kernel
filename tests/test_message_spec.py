@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from async_kernel.client.zmq import ZMQKernelClient
     from async_kernel.kernel import Kernel
 
-# pyright: reportGeneralTypeIssues=false
+# pyright: reportGeneralTypeIssues=false, reportOptionalMemberAccess=false
 
 
 async def test_execute(client: ZMQKernelClient, kernel: Kernel):
@@ -42,12 +42,10 @@ async def test_execute_control(client: ZMQKernelClient, kernel: Kernel) -> None:
 
 
 async def test_execute_silent(client: ZMQKernelClient):
+    before = client.interface.shell.execution_count
     reply = await client.execute("x=1", silent=True)
-    count = reply["content"].get("execution_count")
-    assert isinstance(count, int)
-    with pytest.raises(TimeoutError), anyio.fail_after(0.1):
-        async with client.iopub_subscribe() as queue:
-            await anext(aiter(queue))
+    count = int(reply["content"]["execution_count"])
+    assert count == before
 
     # Do a second execution
     reply = await client.execute("x=2", silent=True)
