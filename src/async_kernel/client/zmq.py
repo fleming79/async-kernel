@@ -198,8 +198,10 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             with iopub, self._zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.wake), canceller=None):
                 # Wait for iopub welcome message
                 iopub.subscribe(b"")
-                await resume
-                self.log.debug("Welcome message received")
+                if await resume.wait(0.2):
+                    self.log.debug("Welcome message received")
+                else:
+                    self.log.warning("Welcome message not received in time!")
 
     async def _configure_session(self) -> None:
         self.log.debug("Getting kernel info to configure session")
@@ -278,7 +280,9 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             try:
                 with scope:
                     iopub.subscribe(topic)
-                    await ready
+                    self.log.debug("waiting for welcome")
+                    if not await ready.with_(timeout=0.2):
+                        self.log.warning("Welcome message not received in time!")
                     yield queue
             finally:
                 iopub.unsubscribe(b"")
