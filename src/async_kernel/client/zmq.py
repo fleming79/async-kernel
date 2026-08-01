@@ -26,9 +26,8 @@ from async_kernel.kernelspec import make_argv
 from async_kernel.typing import BuffersType, Channel, Job, Message, MsgHeader, MsgType, T, T_zmq_interface_co
 
 if TYPE_CHECKING:
+    import subprocess
     from collections.abc import AsyncGenerator, Awaitable, Callable
-
-    from anyio.abc._subprocesses import Process
 
 
 class ClientSession(jupyter_client.session.Session):
@@ -43,6 +42,17 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
     session: traitlets.Instance[jupyter_client.session.Session] = traitlets.Instance(jupyter_client.session.Session, ())
     ""
     session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].session.session)
+
+    encryption = traitlets.Enum(["curve"], default_value=None, allow_none=True)
+    "The type of encryption to use."
+
+    @override
+    def write_connection_file(self, **kwargs: Any) -> None:
+        if self.encryption == "curve" and not self.curve_publickey:
+            self.curve_publickey, self.curve_secretkey = zmq.curve_keypair()
+        if self.curve_publickey:
+            self.encryption = "curve"
+        return super().write_connection_file(**kwargs)
 
     @override
     def set_interface(self, interface: T_zmq_interface_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
@@ -155,21 +165,27 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 self._has_heartbeat = count < 5
 
     @asynccontextmanager
-    async def subprocess_kernel(self, key="", **kwargs) -> AsyncGenerator[Process]:
+    async def subprocess_kernel(self, **kwargs) -> AsyncGenerator[subprocess.Popen[bytes]]:
+        import subprocess  # noqa: PLC0415
+
         self.write_connection_file()
+        process = None
         try:
-            command = make_argv(connection_file=self.connection_file, name=self.kernel_name, key=key, **kwargs)
-            async with await anyio.open_process(command) as process:
-                async with self:
-                    await self._wait_for_welcome()
-                    await self._configure_session()
-                    try:
-                        yield process
-                    finally:
-                        pen = self.shutdown(False)
-                        await pen.wait(shield=True, timeout=1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
-                process.terminate()
+            command = make_argv(connection_file=self.connection_file, name=self.kernel_name, **kwargs)
+            # We use subprocess instead of the async version for better coverage support and debugging reliability.
+            process = subprocess.Popen(command)  # noqa: ASYNC220
+            async with self:
+                await self._wait_for_welcome()
+                await self._configure_session()
+                try:
+                    yield process
+                finally:
+                    pen = self.shutdown(False)
+                    await pen.wait(shield=True, timeout=1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
+                    process.wait(timeout=1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
         finally:
+            if process:
+                process.terminate()  # pragma: no cover
             self.cleanup_connection_file()
             self.cleanup_ipc_files()
 

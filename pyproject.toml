@@ -140,8 +140,7 @@ exclude_lines = [
 [tool.coverage.run]
 patch = ['subprocess']
 parallel = true
-relative_files = true
-source = ["async_kernel"]
+source = ["src/async_kernel"]
 omit = [
   "tests/*",
   "hatch_build.py",

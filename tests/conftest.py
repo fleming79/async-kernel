@@ -4,10 +4,12 @@ import sys
 from typing import TYPE_CHECKING, Literal
 
 import pytest
+import zmq
 
 import async_kernel
 from async_kernel import Caller, Kernel
 from async_kernel.client.base import BaseKernelClient
+from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.interface.callable import CallableInterface
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
 
@@ -78,6 +80,15 @@ async def kernel(
 @pytest.fixture(scope="module")
 async def client(kernel: Kernel) -> BaseKernelClient:
     return kernel.parent.client
+
+
+@pytest.fixture(scope="module")
+async def subprocess_kernel_client(anyio_backend: Backend):
+    # Launching the subprocess from a fixture enables coverage to be patched correctly by pytest coverage.
+
+    client = ZMQKernelClient(encryption="curve")
+    async with client.subprocess_kernel(backend=anyio_backend):
+        yield client
 
 
 @pytest.fixture
