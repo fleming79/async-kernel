@@ -14,7 +14,7 @@ from async_kernel.interface import BaseInterface, HasInterface
 from async_kernel.shell import BaseShell
 
 if TYPE_CHECKING:
-    from async_kernel.typing import Backend
+    from async_kernel.typing import Backend, Job
 
 # pyright: reportPrivateUsage=false
 
@@ -54,6 +54,17 @@ class TestBaseInterface:
             async with BaseInterface() as interface:
                 with pytest.raises(RuntimeError, match="Already initialized!"):
                     interface.initialize()
+
+    async def test_input_request_no_handler(self, anyio_backend: Backend, job: Job):
+
+        async with BaseInterface(shell_class=BaseShell) as interface:
+            with pytest.raises(RuntimeError, match="A handler is not available"):
+                await interface.client.input_request(job)
+
+    async def test_stop(self, anyio_backend: Backend):
+
+        async with BaseInterface(shell_class=BaseShell) as interface:
+            interface.stop(force=True)
 
     async def test_base_shell(self, anyio_backend: Backend):
 

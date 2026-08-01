@@ -134,7 +134,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
         # Thread: shell
-        if async_kernel.utils.PYTEST_LOG_CLI_DEBUG:
+        if async_kernel.utils.PYTEST_LOG_CLI_DEBUG:  # pragma: no cover
             # We apply some patches when pytest logging / debugging pytest so that log messages
             # aren't sent to stdout, but do get sent to to the cli.
             self.log_level = 10
@@ -201,7 +201,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
                 self.stopped.set_result(None)
             if force:
                 self._force_stop()
-            self.log.info("%s, stopping", self)
+            self.log.info("%r, stopping force=%r", self, force)
 
     def msg(
         self,
@@ -613,7 +613,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         if parent is NoValue:
             parent = async_kernel.utils.get_parent_message()
         if isinstance(msg_or_type, dict):
-            assert MsgType(msg_or_type["header"]["msg_type"])
+            msg_or_type["channel"] = Channel.iopub
         else:
             msg_or_type = self.msg(
                 msg_type=MsgType(msg_or_type),
