@@ -71,8 +71,7 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
         reply_msg_type = MsgType(job["msg"]["header"]["msg_type"].replace("request", "reply"))
         try:
             content = await func(job)
-            if "status" not in content:
-                content["status"] = "ok"
+            assert content["status"] in ["error", "ok"]
         except Exception as e:
             content = utils.error_to_content(e)
         buffers = content.pop("buffer", None)

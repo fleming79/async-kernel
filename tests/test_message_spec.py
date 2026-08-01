@@ -189,6 +189,8 @@ async def test_complete(client: ClientType):
     matches = reply["content"]["matches"]
     for name in ("alpha", "albert"):
         assert name in matches
+    reply = await client.complete("al", None)
+    utils.validate_message(reply, MsgType.complete_reply)
 
 
 async def test_kernel_info_request(client: ClientType):

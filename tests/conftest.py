@@ -4,7 +4,6 @@ import sys
 from typing import TYPE_CHECKING, Literal
 
 import pytest
-import zmq
 
 import async_kernel
 from async_kernel import Caller, Kernel

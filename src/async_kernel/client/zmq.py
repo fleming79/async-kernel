@@ -173,7 +173,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         try:
             command = make_argv(connection_file=self.connection_file, name=self.kernel_name, **kwargs)
             # We use subprocess instead of the async version for better coverage support and debugging reliability.
-            process = subprocess.Popen(command)  # noqa: ASYNC220
+            process = subprocess.Popen(command)
             async with self:
                 await self._wait_for_welcome()
                 await self._configure_session()
