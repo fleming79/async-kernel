@@ -9,21 +9,14 @@ import pytest
 from aiologic.lowlevel import create_async_waiter
 
 from async_kernel import Pending
-from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.typing import Backend, Channel, Content, MsgType
+from async_kernel.typing import Channel, Content, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
+    from async_kernel.client.zmq import ZMQKernelClient
     from async_kernel.shell import IPShell
-
-
-@pytest.fixture(scope="module")
-async def subprocess_kernels_client(anyio_backend: Backend):
-    client = ZMQKernelClient()
-    async with client.subprocess_kernel(backend=anyio_backend):
-        yield client
 
 
 @pytest.fixture(params=["zmq interface"], scope="module")
@@ -69,7 +62,7 @@ async def test_print_non_caller_thread(kernel: Kernel[ZMQInterface], client: ZMQ
 @pytest.mark.parametrize("test_mode", ["reply", "interrupt", "allow_stdin=False"])
 @pytest.mark.parametrize("mode", ["input", "password"])
 async def test_input(
-    subprocess_kernels_client: ZMQKernelClient,
+    subprocess_kernel_client: ZMQKernelClient,
     mode: Literal["input", "password"],
     test_mode: Literal["interrupt", "reply", "allow_stdin=False"],
 ):
@@ -80,9 +73,7 @@ async def test_input(
             await create_async_waiter()
         return str(content)
 
-    ready = create_async_waiter()
-    client = subprocess_kernels_client
-    theprompt = "Enter a value >"
+    ready, client, theprompt = create_async_waiter(), subprocess_kernel_client, "Enter a value >"
     match mode:
         case "input":
             code = f"response = input('{theprompt}')"
@@ -125,10 +116,10 @@ async def test_interrupt_request_not_blocked(client: ZMQKernelClient, kernel: Ke
 
 @pytest.mark.parametrize("mode", ["exec_request_sync", "caller", "exec_request_async"])
 async def test_interrupt_request(
-    subprocess_kernels_client: ZMQKernelClient, mode: Literal["exec_request_sync", "exec_request_async", "caller"]
+    subprocess_kernel_client: ZMQKernelClient, mode: Literal["exec_request_sync", "exec_request_async", "caller"]
 ):
 
-    client = subprocess_kernels_client
+    client = subprocess_kernel_client
     if mode == "exec_request_async":
         code = f"import anyio\nprint('started')\nawait anyio.sleep({utils.TIMEOUT * 4})"
     elif mode == "exec_request_sync":

@@ -47,14 +47,9 @@ async def send_debug_request(client: ZMQKernelClient, command: str, arguments: d
     return reply["content"]
 
 
-@pytest.fixture
-async def client(anyio_backend: Backend):
-    client = ZMQKernelClient()
-    async with client.subprocess_kernel(backend=anyio_backend):
-        yield client
 
-
-async def test_debugger(client: ZMQKernelClient):
+async def test_debugger(subprocess_kernel_client: ZMQKernelClient):
+    client = subprocess_kernel_client
     reply = await send_debug_request(client=client, command="initialize", arguments=initialize_args)
     assert reply["status"] == "ok"
     await send_debug_request(client, "disconnect")
