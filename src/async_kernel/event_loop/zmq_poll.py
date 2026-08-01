@@ -418,8 +418,9 @@ class ZMQPoll:
         try:
             yield None
         finally:
-            with contextlib.suppress(ValueError):
-                self._cancellers.remove(canceller)
+            if canceller:
+                with contextlib.suppress(ValueError):
+                    self._cancellers.remove(canceller)
             self._handlers.pop(k, None)
             self._count.pop(k, None)
             self._wake()
