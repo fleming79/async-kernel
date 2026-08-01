@@ -7,6 +7,7 @@ import getpass
 import os
 import signal
 import sys
+import time
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
@@ -220,7 +221,6 @@ class Kernel(
 
     async def do_interrupt(self) -> None:
         """Interrupt/cancel non-silent active execute requests."""
-        assert Caller() is self.callers[Channel.control], "Must be called from the control thread."
         for pen in self.active_execute_requests.copy():
             if not pen.metadata.get("kwargs", {}).get("silent", False):
                 pen.cancel(self._interrupt_message)
@@ -610,11 +610,21 @@ class Kernel(
     def getpass(self, prompt="", stream=None) -> str:
         """Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."""
         pen = self.parent.input_request(str(prompt), password=True)
-        pen.wait_sync()
+        if sys.platform == "win32" and sys.version_info < (3, 14):
+            # https://github.com/python/cpython/issues/80116
+            while not pen.done():
+                time.sleep(0.01)
+        else:
+            pen.wait_sync()
         return pen.result()["content"]["value"]
 
     def raw_input(self, prompt="") -> str:
         """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][], also used for builtin 'input'."""
         pen = self.parent.input_request(str(prompt), password=False)
-        pen.wait_sync()
+        if sys.platform == "win32" and sys.version_info < (3, 14):
+            # https://github.com/python/cpython/issues/80116
+            while not pen.done():
+                time.sleep(0.01)
+        else:
+            pen.wait_sync()
         return pen.result()["content"]["value"]
