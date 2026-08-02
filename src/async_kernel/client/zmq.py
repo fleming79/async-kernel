@@ -64,6 +64,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
 
     @override
     async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
+        # Thread: control
         if self.interface:
             zmq_poll = self.interface._zmq_poll  # pyright: ignore[reportPrivateUsage]
             assert zmq_poll.thread.is_alive()
@@ -157,7 +158,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
     #         assert sock.recv() == b"ping"
     #         count = 0
 
-    #     hb = await self._zmq_poll.execute_async(lambda:self.open_socket(Channel.heartbeat))
+    #     hb = self._sockets[Channel.heartbeat]
     #     with  hb, self._zmq_poll.event_handler(hb, recv):
     #         while True:
     #             count = count + 1
@@ -167,7 +168,6 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
     #                 with contextlib.suppress(zmq.ZMQError):
     #                     hb.recv()
     #             await async_sleep(1)
-    #             self._has_heartbeat = count < 5
 
     @asynccontextmanager
     async def subprocess_kernel(self, **kwargs) -> AsyncGenerator[subprocess.Popen[bytes]]:
@@ -268,7 +268,6 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         Tip:
             - A sync version of this async context can be achieved by using zmq_poll directly.
         """
-        assert self._has_heartbeat
 
         def forward_messages(sock: ZMQPollSocket, event: int) -> None:
             msg: Message = self.session.recv(sock)[1]  # pyright: ignore[reportAssignmentType]
