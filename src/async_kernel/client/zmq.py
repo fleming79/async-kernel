@@ -170,7 +170,9 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
     #             await async_sleep(1)
 
     @asynccontextmanager
-    async def subprocess_kernel(self, **kwargs) -> AsyncGenerator[subprocess.Popen[bytes]]:
+    async def subprocess_kernel(
+        self, startup_delay=0.5, start_timeout=None, **kwargs
+    ) -> AsyncGenerator[subprocess.Popen[bytes]]:
         import subprocess  # noqa: PLC0415
 
         self.write_connection_file()
@@ -180,10 +182,11 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             # We use subprocess instead of the async version for better coverage support and debugging reliability.
             process = subprocess.Popen(command)
             # Adding  a delay (especially on windows) before opening the connection gives better startup reliability.
-            await anyio.sleep(0.5)
+            await anyio.sleep(startup_delay)
             async with self:
-                await self._wait_for_welcome()
-                await self._configure_session()
+                with anyio.fail_after(start_timeout):
+                    await self._wait_for_welcome()
+                    await self._configure_session()
                 try:
                     yield process
                 finally:
