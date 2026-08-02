@@ -11,6 +11,7 @@ from async_kernel.client.base import BaseKernelClient
 from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.interface.callable import CallableInterface
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
+from tests import utils
 
 if TYPE_CHECKING:
     import pathlib
@@ -90,7 +91,7 @@ async def subprocess_kernel_client(anyio_backend: Backend):
         # On occasion the client fails to connect for no obvious reason.
         client = ZMQKernelClient(encryption="curve")
         try:
-            async with client.subprocess_kernel(startup_delay=0.5, start_timeout=10, backend=anyio_backend):
+            async with client.subprocess_kernel(startup_delay=0.5, start_timeout=utils.TIMEOUT, backend=anyio_backend):
                 started = True
                 yield client
         except TimeoutError:
