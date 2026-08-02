@@ -188,9 +188,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 It is called inside the zmq poll thread.
         """
         reply = "starting"
-
-        def noop() -> None:
-            pass
+        noop = lambda: None  # noqa: E731
 
         def recv(sock: ZMQPollSocket, event: int):
             # Thread: zmq_poll
@@ -222,7 +220,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                     if await resume.with_(timeout=2):
                         self.log.debug("Welcome message received")
                         return
-                    self.log.warning("Welcome message not received after 2s!")
+                    self.log.warning("Welcome message not received after 2s!")  # pragma: no cover
 
     async def _configure_session(self) -> None:
         self.log.debug("Getting kernel info to configure session")
@@ -232,7 +230,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 msg = await self.kernel_info().wait(timeout=1)
                 adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
                 if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
-                    self.session.adapt_version = adapt_version
+                    self.session.adapt_version = adapt_version  # pragma: no cover
                 self.log.debug("Session config complete")
                 break
             except TimeoutError:
@@ -289,7 +287,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         queue, ready, scope = SingleAsyncQueue(), create_async_event(), anyio.CancelScope()
 
         def canceller():
-            scope.cancel("ZMQ poll eventloop is stopped!")
+            scope.cancel("ZMQ poll eventloop is stopped!")  # pragma: no cover
 
         iopub = self.open_socket(Channel.iopub)
         with self._zmq_poll.event_handler(iopub, forward_messages, canceller=canceller):
@@ -298,7 +296,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                     iopub.subscribe(topic)
                     self.log.debug("waiting for welcome")
                     if not await ready.with_(timeout=1):
-                        self.log.warning("Welcome message not received in time!")
+                        self.log.warning("Welcome message not received in time!")  # pragma: no cover
                     yield queue
             finally:
                 iopub.unsubscribe(b"")
