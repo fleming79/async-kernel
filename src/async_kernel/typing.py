@@ -290,6 +290,8 @@ class MsgType(enum.StrEnum):
 
     debug_reply = "debug_reply"
 
+    debug_event = "debug_event"
+
     create_subshell_reply = "create_subshell_reply"
 
     delete_subshell_reply = "delete_subshell_reply"

@@ -256,7 +256,7 @@ class Debugger(HasInterface, LoggingConfigurable):
 
     def _publish_event(self, event: dict) -> None:
         self.kernel.parent.iopub_send(
-            msg_or_type="debug_event",
+            msg_or_type=MsgType.debug_event,
             content=event,
             ident=b"kernel.debug_event",
             parent=None,

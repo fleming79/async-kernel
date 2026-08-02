@@ -622,19 +622,18 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         ident: bytes | list[bytes] | None = None,
         buffers: BuffersType = None,
     ) -> None:
-        if parent is NoValue:
-            parent = async_kernel.utils.get_parent_message()
         if isinstance(msg_or_type, dict):
             msg_or_type["channel"] = Channel.iopub
         else:
             msg_or_type = self.msg(
                 msg_type=MsgType(msg_or_type),
                 content=content,
-                parent=parent,  # pyright: ignore[reportArgumentType]
+                parent=parent if parent is not NoValue else async_kernel.utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
                 metadata=metadata,
                 channel=Channel.iopub,
             )
         self.send_message_no_reply(msg_or_type, buffers=buffers, ident=ident)  # pyright: ignore[reportArgumentType]
+        self.log.debug("iopub_send: msg_type:%r %s", msg_or_type, msg_or_type)
 
 
 class HasInterface(Generic[T_interface_co]):
