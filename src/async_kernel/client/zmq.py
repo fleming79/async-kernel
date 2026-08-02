@@ -27,7 +27,9 @@ from async_kernel.typing import BuffersType, Channel, Job, Message, MsgHeader, M
 
 if TYPE_CHECKING:
     import subprocess
-    from collections.abc import AsyncGenerator, Awaitable, Callable
+    from collections.abc import AsyncGenerator, Callable
+
+    from async_kernel.pending import ProtectedPending
 
 
 class ClientSession(jupyter_client.session.Session):
@@ -63,7 +65,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         self._connection_file_written = True
 
     @override
-    async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
+    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
         # Thread: control
         if self.interface:
             zmq_poll = self.interface._zmq_poll  # pyright: ignore[reportPrivateUsage]
@@ -105,12 +107,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 zmq_poll.event_handler(shell, handle_msg),
                 zmq_poll.event_handler(stdin, handle_msg),
             ):
-                # Only check for heartbeat for a non-local interface.
-                # pen = None if self.interface else self.callers[Channel.control].call_soon(self._heartbeat)
                 ready()
-                await stop
-                # if pen:
-                #     await pen.cancel_wait()
                 await stop
                 self._sockets.clear()
                 del self._zmq_poll
