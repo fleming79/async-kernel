@@ -39,8 +39,6 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
         None, allow_none=True
     ).tag(config=True)
 
-    _has_heartbeat: str | bool = True
-
     interface_class: traitlets.Type[type[T_interface_co], type[T_interface_co] | str] = traitlets.Type(
         "async_kernel.interface.base.BaseInterface"
     ).tag(  # pyright: ignore[reportAssignmentType]

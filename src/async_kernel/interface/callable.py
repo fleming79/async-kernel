@@ -183,7 +183,6 @@ class CallableKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface
                 pass
         ```
         """
-        assert self._has_heartbeat
         queue = SingleAsyncQueue()
         self._iopub_queues.append((topic, queue))
         try:
