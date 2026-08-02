@@ -549,22 +549,34 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
 
-        def cache_iopub_send(*args, __send__=self.iopub_send, **kwargs) -> None:  # pragma: no cover
+        iopub_cache = []
+
+        def cache_iopub_send(*args, **kwargs) -> None:  # pragma: no cover
             # Cache iopub messages, send when started or discard if stopped early.
-            self.started.add_done_callback(lambda _: not self.stopping.done() and __send__(*args, **kwargs))
+            iopub_cache.append((args, kwargs))
 
         self.backend = Backend(current_async_library())
         self.log.info("Starting kernel interface")
         self.iopub_send = cache_iopub_send
-        self.started.add_done_callback(lambda _: delattr(self, "iopub_send"))
+        self._iopub_cache = iopub_cache
         try:
             async with super().__asynccontextmanager__(set_started=False), self.kernel, self.client:
                 if set_started:
                     self._started()
                 yield self
         finally:
+            del self._iopub_cache
             if BaseInterface._instance is self:
                 BaseInterface._instance = None
+
+    @override
+    def _started(self) -> None:
+        super()._started()
+        del self.iopub_send
+        while self._iopub_cache:
+            self._iopub_cache.reverse()
+            args, kwargs = self._iopub_cache.pop()
+            self.iopub_send(*args, **kwargs)
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """Run the kernel.
