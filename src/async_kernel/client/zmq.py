@@ -122,7 +122,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         # return
         port = int(getattr(self, f"{channel}_port"))
         assert port
-        if channel is not Channel.iopub:
+        if channel not in [Channel.iopub, Channel.heartbeat]:
             assert channel not in self._sockets
 
         match channel:
@@ -145,29 +145,9 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
         socket.connect(addr)
         self.log.debug("%s socket on port: %i", channel, port)
-        if channel is not Channel.iopub:
+        if channel not in [Channel.iopub, Channel.heartbeat]:
             self._sockets[channel] = socket
         return socket
-
-    # async def _heartbeat(self) -> None:
-    #     """Ping the kernel every 1s."""
-    #     count = 0
-
-    #     def recv(sock: ZMQPollSocket, event: int):
-    #         nonlocal count
-    #         assert sock.recv() == b"ping"
-    #         count = 0
-
-    #     hb = self._sockets[Channel.heartbeat]
-    #     with  hb, self._zmq_poll.event_handler(hb, recv):
-    #         while True:
-    #             count = count + 1
-    #             try:
-    #                 hb.send(b"ping")
-    #             except zmq.ZMQError:
-    #                 with contextlib.suppress(zmq.ZMQError):
-    #                     hb.recv()
-    #             await async_sleep(1)
 
     @asynccontextmanager
     async def subprocess_kernel(
@@ -198,6 +178,32 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 process.terminate()  # pragma: no cover
             self.cleanup_connection_file()
             self.cleanup_ipc_files()
+
+    async def monitor_heartbeat(self, interval=10.0, started=lambda: None) -> None:
+        """Monitor the heartbeat of the interface returning when the heartbeat is lost.
+
+        Args:
+            interval: The duration to sleep between sending requests.
+            started: A callable that is called on the first successful heartbeat reply.
+                It is called inside the zmq poll thread.
+        """
+        reply = "starting"
+
+        def noop() -> None:
+            pass
+
+        def recv(sock: ZMQPollSocket, event: int):
+            # Thread: zmq_poll
+            nonlocal reply, started
+            reply = sock.recv() == b"ping"
+            started()
+            started = noop
+
+        with self.open_socket(Channel.heartbeat) as hb, self._zmq_poll.event_handler(hb, recv):
+            while reply:
+                reply = ""
+                hb.send(b"ping")
+                await anyio.sleep(interval)
 
     async def _wait_for_welcome(self) -> None:
         """Wait for non-local interface to publish a welcome message."""
