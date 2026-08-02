@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import functools
 import time
 from contextlib import asynccontextmanager, nullcontext
 from typing import TYPE_CHECKING, Any, Generic, Self
@@ -78,73 +79,74 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             ctx = zmq_poll = ZMQPoll()
         with ctx:
             self._zmq_poll = zmq_poll
-            ctrl, shell, stdin = await self._zmq_poll.execute_async(
-                lambda: (
-                    self.open_socket(Channel.control),
-                    self.open_socket(Channel.shell),
-                    self.open_socket(Channel.stdin),
-                )
-            )
+            ctrl = await self.open_socket(Channel.control)
+            shell = await self.open_socket(Channel.shell)
+            stdin = await self.open_socket(Channel.stdin)
             assert len(self._sockets) == 3
-            channels = {ctrl: Channel.control, shell: Channel.shell, stdin: Channel.stdin}
-
-            def handle_msg(sock: ZMQPollSocket, event: int) -> None:
-                msg: Message
-                ident: list[bytes]
-
-                ident, msg = self.session.recv(sock)  # pyright: ignore[reportAssignmentType]
-                msg["channel"] = channels[sock]
-                if sock is shell or sock is ctrl:
-                    self._handle_reply(msg)
-                else:
-                    self._handle_request(Job(msg=msg, ident=ident, received_time=time.monotonic()))
-
             with (
-                ctrl,
-                shell,
-                stdin,
-                zmq_poll.event_handler(ctrl, handle_msg),
-                zmq_poll.event_handler(shell, handle_msg),
-                zmq_poll.event_handler(stdin, handle_msg),
+                zmq_poll.event_handler(ctrl, functools.partial(self._msg_handler, channel=Channel.control)),
+                zmq_poll.event_handler(shell, functools.partial(self._msg_handler, channel=Channel.shell)),
+                zmq_poll.event_handler(stdin, functools.partial(self._msg_handler, channel=Channel.stdin)),
             ):
                 ready()
                 await stop
                 self._sockets.clear()
                 del self._zmq_poll
-                return
 
-    def open_socket(self, channel: Channel, /) -> ZMQPollSocket:
-        """Create, bind and configure a socket."""
-        # yield
-        # return
+    def _msg_handler(self, sock: ZMQPollSocket, event: int, channel: Channel) -> None:
+        msg: Message
+        ident: list[bytes]
+
+        ident, msg = self.session.recv(sock)  # pyright: ignore[reportAssignmentType]
+        msg["channel"] = channel
+        match channel:
+            case Channel.control | Channel.shell:
+                self._handle_reply(msg)
+            # case Channel.iopub:
+            #     self._handle_iopub(job)
+            case Channel.stdin:
+                self._handle_request(Job(msg=msg, ident=ident, received_time=time.monotonic()))
+            case _:
+                self.log.debug("Unhandled message")
+
+    async def open_socket(self, channel: Channel, /) -> ZMQPollSocket:
+        """Create, configure and connect a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
         if channel not in [Channel.iopub, Channel.heartbeat]:
             assert channel not in self._sockets
 
-        match channel:
-            case Channel.heartbeat:
-                socket = self._zmq_poll.socket(zmq.SocketType.REQ)
-                socket.identity = self.session.bsession
-            case Channel.shell | Channel.control | Channel.stdin:
-                socket = self._zmq_poll.socket(zmq.SocketType.DEALER)
-                socket.identity = self.session.bsession
-            case Channel.iopub:
-                socket = self._zmq_poll.socket(zmq.SocketType.SUB)
-        socket.setsockopt(zmq.SocketOption.LINGER, 500)
+        def open_socket() -> ZMQPollSocket:
+            # Thread: zmq_poll
+            port = int(getattr(self, f"{channel}_port"))
+            assert port
+            if channel is not Channel.iopub:
+                assert channel not in self._sockets
+            # Open the socket.
+            match channel:
+                case Channel.heartbeat:
+                    socket = self._zmq_poll.socket(zmq.SocketType.REQ)
+                    socket.identity = self.session.bsession
+                case Channel.shell | Channel.control | Channel.stdin:
+                    socket = self._zmq_poll.socket(zmq.SocketType.DEALER)
+                    socket.identity = self.session.bsession
+                case Channel.iopub:
+                    socket = self._zmq_poll.socket(zmq.SocketType.SUB)
+            socket.setsockopt(zmq.SocketOption.LINGER, 500)
+            # Encryption.
+            if self.curve_secretkey is not None and self.curve_publickey is not None:
+                socket.curve_secretkey = self.curve_secretkey
+                socket.curve_publickey = self.curve_publickey
+                socket.curve_serverkey = self.curve_publickey
+            # Bind the socket.
+            addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
+            socket.connect(addr)
+            self.log.debug("%s socket connected to %s", channel, addr)
+            if channel not in [Channel.iopub, Channel.heartbeat]:
+                self._sockets[channel] = socket
+            return socket
 
-        if self.curve_secretkey is not None and self.curve_publickey is not None:
-            socket.curve_secretkey = self.curve_secretkey
-            socket.curve_publickey = self.curve_publickey
-            socket.curve_serverkey = self.curve_publickey
-
-        # Bind the socket.
-        addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
-        socket.connect(addr)
-        self.log.debug("%s socket on port: %i", channel, port)
-        if channel not in [Channel.iopub, Channel.heartbeat]:
-            self._sockets[channel] = socket
-        return socket
+        return await self._zmq_poll.execute_async(open_socket)
 
     @asynccontextmanager
     async def subprocess_kernel(
@@ -194,7 +196,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             started()
             started = noop
 
-        with self.open_socket(Channel.heartbeat) as hb, self._zmq_poll.event_handler(hb, recv):
+        with await self.open_socket(Channel.heartbeat) as hb, self._zmq_poll.event_handler(hb, recv):
             while reply:
                 reply = ""
                 hb.send(b"ping")
@@ -206,7 +208,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             self.log.debug("Waiting interface to be ready")
             while True:
                 resume = create_async_event()
-                iopub = await self._zmq_poll.execute_async(self.open_socket, Channel.iopub)
+                iopub = await self.open_socket(Channel.iopub)
                 self.log.debug("Waiting for welcome message")
                 with (
                     iopub,
@@ -286,14 +288,10 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         def canceller():
             scope.cancel("ZMQ poll eventloop is stopped!")  # pragma: no cover
 
-        iopub = self.open_socket(Channel.iopub)
-        with self._zmq_poll.event_handler(iopub, forward_messages, canceller=canceller):
-            try:
-                with scope:
-                    iopub.subscribe(topic)
-                    self.log.debug("waiting for welcome")
-                    if not await ready.with_(timeout=1):
-                        self.log.warning("Welcome message not received in time!")  # pragma: no cover
-                    yield queue
-            finally:
-                iopub.unsubscribe(b"")
+        iopub = await self.open_socket(Channel.iopub)
+        with iopub, self._zmq_poll.event_handler(iopub, forward_messages, canceller=canceller), scope:
+            iopub.subscribe(topic)
+            self.log.debug("waiting for welcome")
+            if not await ready.with_(timeout=1):
+                self.log.warning("Welcome message not received in time!")
+            yield queue
