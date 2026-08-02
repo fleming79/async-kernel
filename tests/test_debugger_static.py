@@ -37,7 +37,7 @@ async def test_debug_raises_no_socket(kernel: Kernel):
 
 
 async def test_debug_not_connected(client: ZMQKernelClient, kernel: Kernel, mocker):
-    mock_method = mocker.patch.object(kernel.parent.log, "exception")
+    mock_method = mocker.patch.object(kernel.log, "exception")
     content = {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
     reply = await client.send_message(
         client.msg(MsgType.debug_request, content=content, channel=Channel.control),

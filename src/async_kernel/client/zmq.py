@@ -14,7 +14,7 @@ import jupyter_client
 import jupyter_client.session
 import traitlets
 import zmq
-from aiologic.lowlevel import async_sleep, create_async_event, create_async_waiter
+from aiologic.lowlevel import create_async_event
 from jupyter_client.connect import ConnectionFileMixin
 from typing_extensions import override
 
@@ -179,7 +179,10 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             command = make_argv(connection_file=self.connection_file, name=self.kernel_name, **kwargs)
             # We use subprocess instead of the async version for better coverage support and debugging reliability.
             process = subprocess.Popen(command)
+            # Adding  a delay (especially on windows) before opening the connection gives better startup reliability.
+            await anyio.sleep(0.2)
             async with self:
+                await anyio.sleep(0.2)
                 await self._wait_for_welcome()
                 await self._configure_session()
                 try:
@@ -197,32 +200,31 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
     async def _wait_for_welcome(self) -> None:
         """Wait for non-local interface to publish a welcome message."""
         if not self.interface:
-            resume = create_async_waiter()
+            resume = create_async_event()
             self.log.debug("Waiting for welcome message")
             iopub = await self._zmq_poll.execute_async(self.open_socket, Channel.iopub)
-            with iopub, self._zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.wake), canceller=None):
+            with iopub, self._zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.set), canceller=None):
                 # Wait for iopub welcome message
                 iopub.subscribe(b"")
-                if await resume.wait(0.2):
+                if await resume.with_(timeout=1):
                     self.log.debug("Welcome message received")
                 else:
                     self.log.warning("Welcome message not received in time!")
 
     async def _configure_session(self) -> None:
         self.log.debug("Getting kernel info to configure session")
-        # Delay 200ms for sockets to establish until connection is more reliable.
-        await anyio.sleep(0.2)
-        for i in range(1, 10):
-            with anyio.move_on_after(0.1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6):
-                msg = await self.kernel_info()
+        while True:
+            attempt = 1
+            try:
+                msg = await self.kernel_info().wait(timeout=0.2)
                 adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
                 if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
                     self.session.adapt_version = adapt_version
                 self.log.debug("Session config complete")
-                return
-            self.log.warning("Kernel did not respond to kernel info request. attempt %d Retrying ...", i)
-        msg = "Not responding to kernel info request!"
-        raise RuntimeError(msg)
+                break
+            except TimeoutError:
+                self.log.warning("Kernel did not respond to kernel info request. attempt %d Retrying ...", attempt)
+            return
 
     @override
     def msg(
@@ -278,15 +280,13 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         def canceller():
             scope.cancel("ZMQ poll eventloop is stopped!")
 
-        with (
-            self.open_socket(Channel.iopub) as iopub,
-            self._zmq_poll.event_handler(iopub, forward_messages, canceller=canceller),
-        ):
+        iopub = self.open_socket(Channel.iopub)
+        with self._zmq_poll.event_handler(iopub, forward_messages, canceller=canceller):
             try:
                 with scope:
                     iopub.subscribe(topic)
                     self.log.debug("waiting for welcome")
-                    if not await ready.with_(timeout=0.2):
+                    if not await ready.with_(timeout=1):
                         self.log.warning("Welcome message not received in time!")
                     yield queue
             finally:
