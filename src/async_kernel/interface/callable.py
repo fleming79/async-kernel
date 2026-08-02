@@ -20,7 +20,9 @@ from async_kernel.interface.base import BaseInterface
 from async_kernel.typing import BuffersType, Channel, Hosts, Job, Message, T_interface_co, T_shell_co
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Awaitable, Callable
+    from collections.abc import AsyncGenerator, Callable
+
+    from async_kernel.pending import ProtectedPending
 
 
 __all__ = ["CallableInterface"]
@@ -129,7 +131,7 @@ class CallableKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface
     _iopub_queues: Fixed[Self, deque[tuple[bytes, SingleAsyncQueue]]] = Fixed(deque)
 
     @override
-    async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
+    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
         self.interface.clients.append(self)
         ready()
         await stop

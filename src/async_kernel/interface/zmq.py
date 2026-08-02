@@ -21,11 +21,12 @@ from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.typing import BuffersType, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Awaitable, Callable
+    from collections.abc import AsyncGenerator, Callable
 
     from jupyter_client import KernelConnectionInfo
 
     from async_kernel.client.zmq import ZMQKernelClient
+    from async_kernel.pending import ProtectedPending
 
 
 __all__ = ["ZMQInterface"]
@@ -114,7 +115,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         raise MethodNotSupported  # pragma: no cover
 
     @override
-    async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
+    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
         # Thread: control
 
         def heartbeat(hb: ZMQPollSocket, event: int) -> None:

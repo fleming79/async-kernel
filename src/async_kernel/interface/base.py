@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic import Event
 from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_waiter, current_async_library
 from traitlets import traitlets
 from traitlets.config import Config, Configurable
@@ -47,7 +46,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Awaitable, Callable
+    from collections.abc import AsyncGenerator, Callable
 
     from async_kernel.client.base import BaseKernelClient
     from async_kernel.kernel import Kernel
@@ -149,7 +148,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             msg = "Stopped early"
             raise RuntimeError(msg)
 
-        channels_started, stop_channels = create_async_waiter(), Event()
+        channels_started, stop_channels = create_async_waiter(), ProtectedPending()
         async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
             self.callers[Channel.shell] = caller
             self.callers[Channel.control] = caller_ctrl
@@ -165,11 +164,12 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
                 del self._force_stop
                 self.stop()
                 self.stopped.set_result(None)
-                stop_channels.set()
+                # Set stopped first which may rely on channels being open such as sending a shutdown_reply.
+                stop_channels.set_result(None)
                 await pen_channels.wait(shield=True)
                 del pen_channels
 
-    async def _open_channels(self, ready: Callable[[], Any], stop: Awaitable, /) -> None:
+    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
         ready()
         await stop
 
