@@ -284,6 +284,7 @@ class ZMQPoll:
                                 if k[0].closed:
                                     handlers.pop(k, None)
                                     log.debug("Closed sockets detected %s -> %s", k[0], v)
+                                sockets = None
                         except Exception as e:
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:

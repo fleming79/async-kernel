@@ -237,6 +237,6 @@ async def test_subprocess_kernel_monitor_heartbeat(anyio_backend, mocker):
         await started
         result = await client.execute("get_ipython().parent._sockets['hb'].close()")
         assert result["content"]["status"] == "ok"
-        await pen
+        await pen.wait(timeout=utils.TIMEOUT)
 
     assert log_error
