@@ -105,11 +105,11 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 zmq_poll.event_handler(stdin, handle_msg),
             ):
                 # Only check for heartbeat for a non-local interface.
-                pen = None if self.interface else self.callers[Channel.control].call_soon(self._heartbeat)
+                # pen = None if self.interface else self.callers[Channel.control].call_soon(self._heartbeat)
                 ready()
                 await stop
-                if pen:
-                    await pen.cancel_wait()
+                # if pen:
+                #     await pen.cancel_wait()
                 await stop
                 self._sockets.clear()
                 del self._zmq_poll
@@ -148,21 +148,26 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             self._sockets[channel] = socket
         return socket
 
-    async def _heartbeat(self) -> None:
-        """Ping the kernel every 1s."""
-        count = 0
+    # async def _heartbeat(self) -> None:
+    #     """Ping the kernel every 1s."""
+    #     count = 0
 
-        def recv(sock: ZMQPollSocket, event: int):
-            nonlocal count
-            assert sock.recv() == b"ping"
-            count = 0
+    #     def recv(sock: ZMQPollSocket, event: int):
+    #         nonlocal count
+    #         assert sock.recv() == b"ping"
+    #         count = 0
 
-        with self.open_socket(Channel.heartbeat) as sock, self._zmq_poll.event_handler(sock, recv):
-            while True:
-                count = count + 1
-                sock.send(b"ping")
-                await async_sleep(1)
-                self._has_heartbeat = count < 5
+    #     hb = await self._zmq_poll.execute_async(lambda:self.open_socket(Channel.heartbeat))
+    #     with  hb, self._zmq_poll.event_handler(hb, recv):
+    #         while True:
+    #             count = count + 1
+    #             try:
+    #                 hb.send(b"ping")
+    #             except zmq.ZMQError:
+    #                 with contextlib.suppress(zmq.ZMQError):
+    #                     hb.recv()
+    #             await async_sleep(1)
+    #             self._has_heartbeat = count < 5
 
     @asynccontextmanager
     async def subprocess_kernel(self, **kwargs) -> AsyncGenerator[subprocess.Popen[bytes]]:
