@@ -14,11 +14,10 @@ from jupyter_client.connect import ConnectionFileMixin
 from traitlets import traitlets
 from typing_extensions import override
 
-from async_kernel import utils
 from async_kernel.common import Fixed, MethodNotSupported
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.typing import BuffersType, Channel, Content, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
+from async_kernel.typing import BuffersType, Channel, Job, Message, MsgType, T_shell_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
@@ -235,28 +234,3 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
 
         sock = await self._zmq_poll.execute_async(self._open_socket, channel)
         return self._zmq_poll.event_handler(sock, _stdin_handler)
-
-    @override
-    def iopub_send(
-        self,
-        msg_or_type: MsgType | Message[dict[str, Any]] | dict[str, Any] | str,
-        *,
-        content: Content | None = None,
-        metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        ident: bytes | list[bytes] | None = None,
-        buffers: BuffersType = None,
-    ) -> None:
-        """Send a message on the zmq iopub socket."""
-        if (sock := self._iopub_socket) and (
-            msg := self.session.send(
-                stream=sock,
-                msg_or_type=msg_or_type,  # pyright: ignore[reportArgumentType]
-                content=content,
-                metadata=metadata,
-                parent=parent if parent is not NoValue else utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
-                ident=ident,
-                buffers=buffers,  # pyright: ignore[reportArgumentType]
-            )
-        ):
-            self.log.debug("iopub_send: msg_type:%r %s", msg_or_type, msg)
