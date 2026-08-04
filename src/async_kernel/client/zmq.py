@@ -6,8 +6,7 @@
 from __future__ import annotations
 
 import functools
-import time
-from contextlib import asynccontextmanager, nullcontext
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Self
 
 import anyio
@@ -24,7 +23,7 @@ from async_kernel.client.base import BaseKernelClient
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import BuffersType, Channel, Job, Message, MsgHeader, MsgType, T, T_zmq_interface_co
+from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_zmq_interface_co
 
 if TYPE_CHECKING:
     import subprocess
@@ -58,58 +57,35 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         return super().write_connection_file(**kwargs)
 
     @override
-    def set_interface(self, interface: T_zmq_interface_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
-        super().set_interface(interface)
-        self.load_connection_info(interface.get_connection_info())
-        self.connection_file = interface.connection_file
-        # We  don't 'own' the connection  file so mark it written to avoid it being overwritten.
-        self._connection_file_written = True
-
-    @override
     async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
         # Thread: control
-        if self.interface:
-            zmq_poll = self.interface._zmq_poll  # pyright: ignore[reportPrivateUsage]
-            assert zmq_poll.thread.is_alive()
-            ctx = nullcontext()
-        else:
-            if not self.shell_port:
-                msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel`."
-                raise RuntimeError(msg)
-            ctx = zmq_poll = ZMQPoll()
-        with ctx:
+        def msg_handler(
+            sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg
+        ) -> None:
+            ident, msg = recv(sock)
+            msg["channel"] = channel
+            handle_msg(msg, ident)
+
+        if not self.shell_port:
+            msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
+            raise RuntimeError(msg)
+        with ZMQPoll() as zmq_poll:
             self._zmq_poll = zmq_poll
-            ctrl = await self.open_socket(Channel.control)
-            shell = await self.open_socket(Channel.shell)
-            stdin = await self.open_socket(Channel.stdin)
+            ctrl = await self._open_socket(Channel.control)
+            shell = await self._open_socket(Channel.shell)
+            stdin = await self._open_socket(Channel.stdin)
             assert len(self._sockets) == 3
             with (
-                zmq_poll.event_handler(ctrl, functools.partial(self._msg_handler, channel=Channel.control)),
-                zmq_poll.event_handler(shell, functools.partial(self._msg_handler, channel=Channel.shell)),
-                zmq_poll.event_handler(stdin, functools.partial(self._msg_handler, channel=Channel.stdin)),
+                zmq_poll.event_handler(ctrl, functools.partial(msg_handler, channel=Channel.control)),
+                zmq_poll.event_handler(shell, functools.partial(msg_handler, channel=Channel.shell)),
+                zmq_poll.event_handler(stdin, functools.partial(msg_handler, channel=Channel.stdin)),
             ):
                 ready()
                 await stop
                 self._sockets.clear()
                 del self._zmq_poll
 
-    def _msg_handler(self, sock: ZMQPollSocket, event: int, channel: Channel) -> None:
-        msg: Message
-        ident: list[bytes]
-
-        ident, msg = self.session.recv(sock)  # pyright: ignore[reportAssignmentType]
-        msg["channel"] = channel
-        match channel:
-            case Channel.control | Channel.shell:
-                self._handle_reply(msg)
-            # case Channel.iopub:
-            #     self._handle_iopub(job)
-            case Channel.stdin:
-                self._handle_request(Job(msg=msg, ident=ident, received_time=time.monotonic()))
-            case _:
-                self.log.debug("Unhandled message")
-
-    async def open_socket(self, channel: Channel, /) -> ZMQPollSocket:
+    async def _open_socket(self, channel: Channel, /) -> ZMQPollSocket:
         """Create, configure and connect a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
@@ -196,7 +172,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
             started()
             started = noop
 
-        with await self.open_socket(Channel.heartbeat) as hb, self._zmq_poll.event_handler(hb, recv):
+        with await self._open_socket(Channel.heartbeat) as hb, self._zmq_poll.event_handler(hb, recv):
             while reply:
                 reply = ""
                 hb.send(b"ping")
@@ -204,22 +180,20 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
 
     async def _wait_for_welcome(self) -> None:
         """Wait for non-local interface to publish a welcome message."""
-        if not self.interface:
-            self.log.debug("Waiting interface to be ready")
-            while True:
-                resume = create_async_event()
-                iopub = await self.open_socket(Channel.iopub)
-                self.log.debug("Waiting for welcome message")
-                with (
-                    iopub,
-                    self._zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.set), canceller=None),
-                ):
-                    # Wait for iopub welcome message
-                    iopub.subscribe(b"")
-                    if await resume.with_(timeout=2):
-                        self.log.debug("Welcome message received")
-                        return
-                    self.log.warning("Welcome message not received after 2s!")  # pragma: no cover
+        while True:
+            resume = create_async_event()
+            iopub = await self._open_socket(Channel.iopub)
+            self.log.debug("Waiting for welcome message")
+            with (
+                iopub,
+                self._zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.set), canceller=None),
+            ):
+                # Wait for iopub welcome message
+                iopub.subscribe(b"")
+                if await resume.with_(timeout=2):
+                    self.log.debug("Welcome message received")
+                    return
+                self.log.warning("Welcome message not received after 2s!")  # pragma: no cover
 
     async def _configure_session(self) -> None:
         self.log.debug("Getting kernel info to configure session")
@@ -254,8 +228,8 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         return msg
 
     @override
-    def _send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
-        return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
+    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
+        self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportArgumentType]
 
     @asynccontextmanager
     async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:
@@ -285,7 +259,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         def canceller():
             scope.cancel("ZMQ poll eventloop is stopped!")  # pragma: no cover
 
-        iopub = await self.open_socket(Channel.iopub)
+        iopub = await self._open_socket(Channel.iopub)
         with iopub, self._zmq_poll.event_handler(iopub, forward_messages, canceller=canceller), scope:
             iopub.subscribe(topic)
             self.log.debug("waiting for welcome")

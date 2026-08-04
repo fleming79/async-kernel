@@ -1,45 +1,66 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
+import async_kernel
 from async_kernel.common import import_item
+from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import BaseInterface, HasInterface
 from async_kernel.kernelspec import make_argv
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from async_kernel.interface.callable import CallableInterface
+    from async_kernel.typing import BuffersType, Message, T
+
 
 __all__ = ["BaseInterface", "HasInterface", "launch_interface", "start_kernel_callable_interface"]
 
 
 async def start_kernel_callable_interface(
-    *, send: Callable[[str, list | None, bool], str | None], stopped: Callable[[], None], settings: dict | None = None
-):
-    """Start the global interface as an instance of [CallableInterface][async_kernel.interface.callable.CallableInterface].
+    *,
+    transmit: Callable[[T, list[bytes], BuffersType], Any],
+    stopped: Callable[[], Any],
+    settings: dict | None = None,
+    pack_unpack: tuple[Callable[[Message], T], Callable[[T], Message]] = (pack_json_str, unpack_json),
+) -> Callable[[T, list[bytes], BuffersType], None]:
+    """Start the interface using functions for passing serialised messages.
 
     Args:
-        send: A callback responsible for sending messages from the kernel on all channels.
-        stopped: A callback that is called once the kernel has stopped.
+        transmit: A function for the interface to call to transmit messages.
+        stopped: A callback that is called when the interface has stopped.
         settings: Additional settings to configure the interface/kernel/shell etc using traitlets config conventions.
             The settings are converted to argv using [async_kernel.kernelspec.make_argv][]. All settings,
             including aliases and flags are accepted. _flags_ should be passed as `'flags': [<flag1>, <flag2>, ...]`.
+        pack_unpack: A pair of methods to serialize and unserialize messages.
 
-    Tip:
-        - To list all config options available for a `CallableInterface` use the command:
-            ```shell
-            async-kernel --help-all --interface_class=async_kernel.interface.callable.CallableInterface
-            ```
+    Returns: The function to send serialised messages to the interface.
     """
     settings = settings or {}
-    interface_class = settings.get("interface_class") or "async_kernel.interface.callable.CallableInterface"
-    cls: type[CallableInterface] = import_item(interface_class)
+    interface_class = settings.get("interface_class") or "async_kernel.interface.BaseInterface"
+    cls: type[BaseInterface] = import_item(interface_class)
 
     argv = make_argv(command=(), connection_file="", **settings)[1:]
     app = cls(argv)
     assert issubclass(cls, BaseInterface)
-    return await app.start_async(send=send, stopped=stopped)
+
+    def send_msg(msg: Message, ident: list[bytes], transmit=transmit, pack=pack_unpack[0]) -> None:
+        """Send a message using `transmit`."""
+        buffers: BuffersType = msg.pop("buffers", None)  # pyright: ignore[reportAssignmentType]
+        transmit(pack(msg), ident, buffers)
+
+    def receive_message(encoded_msg: T, ident: list[bytes], buffers: BuffersType, app=app, unpack=pack_unpack[1]):
+        """Receive an external message."""
+        msg: Message = unpack(encoded_msg)
+        msg["buffers"] = buffers
+        app.handle_incoming_msg(msg, ident)
+
+    app.send_msg = send_msg
+    async_kernel.Caller().call_soon(app.run, stopped=stopped)
+    await app.started
+
+    return receive_message
 
 
 def launch_interface(settings: dict) -> None:
