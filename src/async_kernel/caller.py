@@ -417,7 +417,8 @@ class Caller:
             self._enter_count = self._enter_count - 1
         if self._enter_count == 0:
             self.stop(force=True)
-            await self.stopped.wait(shield=True)
+            if (self.current_pending() is None) or self.get_existing() is not self:
+                await self.stopped.wait(shield=True)
         return False
 
     def _start_sync(self, caller_id: int | None, thread: threading.Thread | None, no_debug: bool = False) -> None:
