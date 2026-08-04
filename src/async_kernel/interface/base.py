@@ -8,6 +8,7 @@ import importlib.util
 import logging
 import os
 import sys
+import time
 import weakref
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -26,6 +27,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
+from async_kernel.compat.json import unpack_json
 from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.typing import (
     Backend,
@@ -119,9 +121,8 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     }
 
     session_id = Fixed(lambda _: str(uuid4()))
-    "Used to identify this object in messages."
+    "Used to identify this object as the `session` in a message header."
 
-    ""
     log: logging.Logger
 
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
@@ -183,15 +184,22 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     def _force_stop(self) -> None:
         pass
 
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The method where incoming messages are handled."""
+        raise NotImplementedError
+
+    def handle_incoming_msg_str(self, msg_str: str, ident: list[bytes], buffers: BuffersType = None) -> None:
+        """Handle in incoming messaged serialized as a json string."""
+        msg = unpack_json(msg_str)
+        msg["buffers"] = buffers
+        self.handle_incoming_msg(msg, ident)
+
     def _handle_reply(self, msg: Message) -> None:
         """A handler for incoming messages."""
         # Thread: undefined
         if (parent := msg.get("parent_header")) and (f := self._pending_messages.pop(parent["msg_id"], None)):
             self.log.debug("Received %s %s", msg["header"]["msg_type"], msg)
             f.set_result(msg)
-
-    def _handle_request(self, job: Job) -> None:
-        raise NotImplementedError
 
     def stop(self, force=False) -> None:
         """Stop the kernel and this interface."""
@@ -212,6 +220,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
+        buffers: BuffersType = None,
     ) -> Message[T]:
         """Create a new message."""
         parent = parent or utils.get_parent_message()
@@ -224,7 +233,6 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
                 username="",
                 version=async_kernel.kernel_protocol_version,
             )
-        buffers = content.pop("buffers", None) if content else None  # pyright: ignore[reportAttributeAccessIssue]
         return Message(
             channel=channel,
             header=header,  # pyright: ignore[reportArgumentType]
@@ -251,7 +259,6 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     def send_message(
         self,
         msg: Message,
-        buffers: BuffersType = None,
         ident: bytes | list[bytes] | None = None,
     ) -> PendingMessage[Content]:
         """Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""
@@ -260,29 +267,33 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             raise TypeError(msg_)
         self.log.debug("Send mssage %s %s", msg["header"]["msg_type"], msg)
         self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage()
-        pen.metadata.update(parent=self._send_msg(msg, buffers, ident))
+        pen.metadata.update(parent=self._send_msg(msg, ident))
         return pen
 
-    def send_message_no_reply(
-        self,
-        msg: Message,
-        buffers: BuffersType = None,
-        ident: bytes | list[bytes] | None = None,
-    ) -> Message:
+    def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
         """Sends a message without expecting a reply.
 
         This could be of two categories:
             1. The reply to a request.
             2. A message of a type that does not have a reply such as comm_open, comm_close, comm_msg.
         """
-        return self._send_msg(msg, buffers, ident)
+        return self._send_msg(msg, ident)
 
-    def _send_msg(
-        self,
-        msg: Message,
-        buffers: BuffersType = None,
-        ident: bytes | list[bytes] | None = None,
-    ) -> Message:
+    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
+        """Send a reply to a job (a message of msg_type ending in '_request')."""
+        if "status" not in content:
+            content["status"] = "ok"
+        msg = self.msg(
+            job["msg"]["header"]["msg_type"].replace("request", "reply"),
+            content=content,
+            parent=job["msg"],
+            channel=job["msg"]["channel"],
+        )
+        self.send_message_no_reply(msg, job["ident"])
+        if msg:
+            self.log.debug("send_reply %s", msg)
+
+    def _send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
         raise NotImplementedError
 
 
@@ -593,6 +604,17 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
             if stopped:
                 stopped()
 
+    @override
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """Handle an incoming message."""
+        match msg["channel"]:
+            case Channel.control | Channel.shell:
+                self.kernel.message_handler(Job(msg=msg, ident=ident, received_time=time.monotonic()))
+            case Channel.stdin:
+                self._handle_reply(msg)
+            case _:
+                self.log.debug("Unhandled message %r %r", msg, ident)
+
     def input_request(self, prompt: str, *, password=False) -> PendingMessage[Content]:
         job = utils.get_job()
         if not job["msg"].get("content", {}).get("allow_stdin", False):
@@ -624,6 +646,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     ) -> None:
         if isinstance(msg_or_type, dict):
             msg_or_type["channel"] = Channel.iopub
+            msg_or_type["buffers"] = buffers
         else:
             msg_or_type = self.msg(
                 msg_type=MsgType(msg_or_type),
@@ -631,8 +654,9 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
                 parent=parent if parent is not NoValue else async_kernel.utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
                 metadata=metadata,
                 channel=Channel.iopub,
+                buffers=buffers,
             )
-        self.send_message_no_reply(msg_or_type, buffers=buffers, ident=ident)  # pyright: ignore[reportArgumentType]
+        self.send_message_no_reply(msg_or_type, ident)  # pyright: ignore[reportArgumentType]
         self.log.debug("iopub_send: msg_type:%r %s", msg_or_type, msg_or_type)
 
 
