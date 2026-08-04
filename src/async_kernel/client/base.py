@@ -7,7 +7,9 @@
 
 from __future__ import annotations
 
+import time
 import weakref
+from collections import deque
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
@@ -45,6 +47,8 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
         config=True
     )
 
+    _iopub_queues: Fixed[Self, deque[tuple[bytes, SingleAsyncQueue]]] = Fixed(deque)
+
     def set_interface(self, interface: T_interface_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
         assert isinstance(interface, self.interface_class)
         assert not interface.stopping.done()
@@ -59,6 +63,19 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
         return self._interface()
 
     @override
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        match msg["channel"]:
+            case Channel.control | Channel.shell:
+                self._handle_reply(msg)
+            case Channel.stdin:
+                self._handle_request(Job(msg=msg, ident=ident, received_time=time.monotonic()))
+            case Channel.iopub:
+                for topic, queue in self._iopub_queues:
+                    if not topic or topic in ident:
+                        queue.append(msg)
+            case _:
+                self.log.debug("Unhandled message")
+
     def _handle_request(self, job: Job) -> None:
         # Thread: undefined
         handler = getattr(self, job["msg"]["header"]["msg_type"])
@@ -72,26 +89,22 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
             assert content["status"] in ["error", "ok"]
         except Exception as e:
             content = utils.error_to_content(e)
-        buffers = content.pop("buffer", None)
         self.send_message_no_reply(
             self.msg(reply_msg_type, content=content, channel=job["msg"]["channel"], parent=job["msg"]),
-            buffers=buffers,
-            ident=job["msg"]["header"]["session"].encode(),
+            job["msg"]["header"]["session"].encode(),
         )
 
     async def input_request(self, job: Job[Content]) -> Content:
-        """Handle an input_request raised by the connected kernel."""
+        """Handle an `input_request` raised by the connected kernel."""
         if (parent := job["msg"]["parent_header"]) and (handler := self._input_handlers.get(parent["msg_id"])):
             result = await handler(job["msg"]["content"])
             return Content(status="ok", value=result)
-        msg_ = "A handler is not available"
+        msg_ = "A handler is not available!"
         raise RuntimeError(msg_)
 
     @asynccontextmanager
     async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:
-        """Subscribe to a iopub messages given a particular topic.
-
-        Default is to subscribe to all iopub messages.
+        """Open a new iopub socket and subscribe to a particular topic.
 
         Usaage:
         ```python
@@ -100,8 +113,13 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
                 pass
         ```
         """
-        raise NotImplementedError
-        yield  # pyright: ignore[reportUnreachable]
+        queue = SingleAsyncQueue()
+        self._iopub_queues.append((topic, queue))
+        try:
+            yield queue
+        finally:
+            self._iopub_queues.remove((topic, queue))
+            queue.stop()
 
     # Methods to send specific messages on channels (only relevant to execute). All other message types are decided by the kernel.
     def execute(

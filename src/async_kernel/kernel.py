@@ -43,7 +43,7 @@ from async_kernel.typing import (
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
-    from types import CoroutineType, FrameType
+    from types import FrameType
 
     from async_kernel.typing import Content, Message
 
@@ -98,7 +98,7 @@ class Kernel(
     _interrupt_message = "Kernel interrupted"
 
     _restart = False
-    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
+    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Channel], HandlerType]] = {}
     _subshells: dict[str, T_shell_co]
     _interrupt_requested: Pending | None = None
 
@@ -289,12 +289,7 @@ class Kernel(
             if key[0] == subshell_id:
                 self._handler_cache.pop(key, None)
 
-    def _get_handler(
-        self,
-        job: Job,
-        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
-        iopub_send: Callable,
-    ) -> HandlerType:
+    def _get_handler(self, job: Job) -> HandlerType:
         try:
             subshell_id = job["msg"]["content"]["subshell_id"]
         except KeyError:
@@ -305,16 +300,18 @@ class Kernel(
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
 
         if msg_type is MsgType.execute_request:
-            key = (subshell_id, msg_type, send_reply)
+            key = (subshell_id, msg_type, job["msg"]["channel"])
         else:
-            key = (None, msg_type, send_reply)
+            key = (None, msg_type, job["msg"]["channel"])
         try:
             return self._handler_cache[key]
         except KeyError:
             handler: HandlerType = getattr(self, msg_type)
 
             @functools.wraps(handler)
-            async def run_handler(job: Job) -> None:
+            async def run_handler(
+                job: Job, iopub_send=self.parent.iopub_send, send_reply=self.parent.send_reply
+            ) -> None:
                 job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
                 subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
 
@@ -326,9 +323,9 @@ class Kernel(
                         ident=b"kernel.status",
                     )
                     if (content := await handler(job)) is not None:
-                        await send_reply(job, content)
+                        send_reply(job, content)
                 except Exception as e:
-                    await send_reply(job, utils.error_to_content(e))
+                    send_reply(job, utils.error_to_content(e))
                     self.log.exception("Exception in message handler:", exc_info=e)
                 finally:
                     utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
@@ -344,13 +341,7 @@ class Kernel(
             self._handler_cache[key] = run_handler
             return run_handler
 
-    def message_handler(
-        self,
-        job: Job,
-        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
-        iopub_send: Callable,
-        /,
-    ) -> None:
+    def message_handler(self, job: Job) -> None:
         """Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
 
         Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
@@ -370,7 +361,7 @@ class Kernel(
             send_reply: The function for the handler to use to send the reply to the message.
             iopub_send: A function responsible for sending iopub messages.
         """
-        handler = self._get_handler(job, send_reply, iopub_send)
+        handler = self._get_handler(job)
 
         run_mode: RunMode | CallerCreateOptions | None = None
         msg_type = MsgType(job["msg"]["header"]["msg_type"])

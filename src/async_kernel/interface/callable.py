@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import time
 from collections import deque
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Self
-from uuid import uuid4
 
 import traitlets
 from traitlets.traitlets import TraitType
@@ -14,13 +12,13 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel.client.base import BaseKernelClient
-from async_kernel.common import Fixed, SingleAsyncQueue
-from async_kernel.compat.json import pack_json_str, unpack_json
+from async_kernel.common import Fixed
+from async_kernel.compat.json import pack_json_str
 from async_kernel.interface.base import BaseInterface
-from async_kernel.typing import BuffersType, Channel, Hosts, Job, Message, T_interface_co, T_shell_co
+from async_kernel.typing import BuffersType, Channel, Hosts, Message, T_interface_co, T_shell_co
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
+    from collections.abc import Callable
 
     from async_kernel.pending import ProtectedPending
 
@@ -56,6 +54,8 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
     )
     client: Fixed[Self, CallableKernelClient[Self]]  # pyright: ignore[reportIncompatibleVariableOverride]
     clients: Fixed[Self, deque[CallableKernelClient]] = Fixed(deque)
+    bsession: Fixed[Self, bytes] = Fixed(lambda c: c["owner"].session_id.encode())
+    "Used to identfiy this object as the origin of a message."
 
     @asynccontextmanager
     async def start_async_context(self, *, send: Callable, stopped: Callable[[], None] | None = None):
@@ -63,7 +63,7 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         self._transmit = send
         async with self:
             try:
-                yield self.receive
+                yield self.handle_incoming_msg_str
             finally:
                 if stopped:
                     stopped()
@@ -72,9 +72,9 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         """Start the kernel.
 
         Args:
-            send: The function to send kernel messages to the client. It must accept
+            send: The function to send messages to the client. It must accept:
 
-                1. A json string of the message.
+                1. The message dict.
                 2. A list of buffers, or None if there are no buffers.
                 3. A boolean value that indicates a response is required for the stdio channel.
 
@@ -87,48 +87,26 @@ class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
         self._transmit = send
         async_kernel.Caller().call_soon(self.run, stopped=stopped)
         await self.started
-        return self.receive
+        return self.handle_incoming_msg_str
 
     @override
-    def _send_msg(
-        self,
-        msg: Message,
-        buffers: BuffersType = None,
-        ident: bytes | list[bytes] | None = None,
-    ) -> Message:
-        self._transmit(msg_str := pack_json_str(msg), buffers, ident)
+    def _send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
+
+        buffers: BuffersType = msg.pop("buffers", None)  # pyright: ignore[reportAssignmentType]
+        msg_str = pack_json_str(msg)
+        ident = [self.bsession] if ident is None else ident if isinstance(ident, list) else [ident]
+        channel = msg["channel"]
+        self._transmit(msg_str, buffers, ident)
         for client in self.clients:
-            # We serialize data as a safe way to copy the message.
-            client.handle_msg(unpack_json(msg_str), buffers, ident)
+            if channel is Channel.iopub or not ident or client.bsession in ident:
+                client.handle_incoming_msg_str(msg_str, ident, buffers)
         return msg
-
-    async def _send_reply(self, job: Job, content: dict, /) -> None:
-        if "status" not in content:
-            content["status"] = "ok"
-        msg_type = job["msg"]["header"]["msg_type"].replace("request", "reply")
-        msg = self.msg(msg_type, content=content, parent=job["msg"], channel=job["msg"]["channel"])
-        self.send_message_no_reply(msg, content.pop("buffers", None), msg["header"]["session"].encode())
-
-    def receive(self, msg_json: str, buffers: BuffersType = None, /):
-        """This is where the fronted passes messages to the interface."""
-        msg: Message[dict[str, Any]] = unpack_json(msg_json)
-        # Copy the buffer
-        msg["buffers"] = [b[:] for b in buffers] if buffers else []
-        msg["channel"] = Channel(msg["channel"])
-        match msg["channel"]:
-            case Channel.shell | Channel.control:
-                job = Job(received_time=time.monotonic(), msg=msg, ident=b"")
-                self.kernel.message_handler(job, self._send_reply, self.iopub_send)
-            case Channel.stdin:
-                self._handle_reply(msg)
-            case _:
-                raise NotImplementedError
 
 
 class CallableKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface_co]):
-    bsession = Fixed(lambda _: uuid4().bytes)
     interface: Fixed[Self, CallableInterface]  # pyright: ignore[reportIncompatibleMethodOverride]
-    _iopub_queues: Fixed[Self, deque[tuple[bytes, SingleAsyncQueue]]] = Fixed(deque)
+    bsession: Fixed[Self, bytes] = Fixed(lambda c: c["owner"].session_id.encode())
+    "Used to identfiy this object as the origin of a message."
 
     @override
     async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
@@ -137,58 +115,8 @@ class CallableKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface
         await stop
         self.interface.clients.remove(self)
 
-    def handle_msg(
-        self,
-        msg: Message,
-        buffers: BuffersType = None,
-        ident: bytes | list[bytes] | None = None,
-    ):
-        if buffers:
-            msg["buffers"] = buffers
-        match Channel(msg["channel"]):
-            case Channel.iopub:
-                ident = ident or []
-                ident = [ident] if not isinstance(ident, list) else ident
-                for topic, queue in self._iopub_queues:
-                    if not topic or topic in ident:
-                        queue.append(msg)
-            case _:
-                pass
-
     @override
-    def _send_msg(
-        self,
-        msg: Message,
-        buffers: BuffersType = None,
-        ident: bytes | list[bytes] | None = None,
-    ) -> Message:
-        kernel = (interface := self.interface).kernel
-        job = Job(received_time=time.monotonic(), msg=msg, ident=self.bsession)
-        kernel.message_handler(job, self._send_reply, interface.iopub_send)
+    def _send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
+        ident = [self.bsession] if ident is None else ident if isinstance(ident, list) else [ident]
+        self.interface.handle_incoming_msg(msg, ident)
         return msg
-
-    async def _send_reply(self, job: Job, content: dict, /) -> None:
-        if "status" not in content:
-            content["status"] = "ok"
-        msg_type = job["msg"]["header"]["msg_type"].replace("request", "reply")
-        msg = self.msg(msg_type, channel=job["msg"]["channel"], content=content, parent=job["msg"])
-        self._handle_reply(msg)
-
-    @asynccontextmanager
-    async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:
-        """Open a new iopub socket and subscribe to a particular topic.
-
-        Usaage:
-        ```python
-        async with client.iopub_subscribe() as queue:
-            async for msg in queue:
-                pass
-        ```
-        """
-        queue = SingleAsyncQueue()
-        self._iopub_queues.append((topic, queue))
-        try:
-            yield queue
-        finally:
-            self._iopub_queues.remove((topic, queue))
-            queue.stop()

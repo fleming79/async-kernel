@@ -245,20 +245,17 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
+        buffers: BuffersType = None,
     ) -> Message[T]:
         """Create a message suitable for sending."""
         msg: Message = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
         msg["channel"] = channel
+        msg["buffers"] = buffers
         return msg
 
     @override
-    def _send_msg(
-        self,
-        msg: Message,
-        buffers: BuffersType = None,
-        ident: bytes | list[bytes] | None = None,
-    ) -> Message:
-        return self.session.send(self._sockets[msg["channel"]], msg, buffers=buffers, ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
+    def _send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
+        return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
     @asynccontextmanager
     async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:

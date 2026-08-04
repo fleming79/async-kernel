@@ -18,10 +18,10 @@ class TestCallableInterface:
         def from_interface(msg_string, buffers, ident, /):
             messages.append(unpack_json(msg_string))
 
-        async with (interface := CallableInterface()).start_async_context(send=from_interface) as send_to_interface:
-            msg_json = pack_json_str(interface.client.msg(MsgType.kernel_info_request, channel=Channel.shell))
+        async with (interface := CallableInterface()).start_async_context(send=from_interface) as handle_msg_str:
             async with interface.client.iopub_subscribe() as queue:
-                send_to_interface(msg_json)
+                msg = pack_json_str(interface.client.msg(MsgType.kernel_info_request, channel=Channel.shell))
+                handle_msg_str(msg, [interface.client.bsession])
                 async for msg in queue:
                     if msg["content"]["execution_state"] == "idle":
                         break

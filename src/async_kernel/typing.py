@@ -445,7 +445,7 @@ class Job(TypedDict, Generic[T]):
     msg: Message[T]
     "The message received over the socket."
 
-    ident: bytes | list[bytes]
+    ident: list[bytes]
     "The ident associated with the message and its origin."
 
     received_time: float
