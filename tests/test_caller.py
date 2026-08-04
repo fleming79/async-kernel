@@ -14,7 +14,7 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
 
 from async_kernel.caller import Caller
 from async_kernel.pending import Pending, PendingCancelled
@@ -47,6 +47,20 @@ class TestCaller:
         thread.start()
         thread.join()
         assert okay
+
+    async def test_caller_main_thread_stopped(self, anyio_backend: Backend):
+        ready = create_async_waiter()
+
+        async def acquire_main_thread():
+            async with caller:
+                ready.wake()
+                await caller.stopped
+
+        caller = Caller()
+        caller.call_soon(acquire_main_thread)
+        await ready
+        caller.stop(force=True)
+        await caller.stopped
 
     async def test_child_lifecycle(self, anyio_backend: Backend):
         async with Caller() as caller:
