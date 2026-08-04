@@ -1,15 +1,17 @@
 import logging
 import os
 import sys
+from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Literal
 
 import pytest
 
 import async_kernel
 from async_kernel import Caller, Kernel
-from async_kernel.client.base import BaseKernelClient
+from async_kernel.client.base import LocalKernelClient
 from async_kernel.client.zmq import ZMQKernelClient
-from async_kernel.interface.callable import CallableInterface
+from async_kernel.interface import BaseInterface
+from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
 from tests import utils
 
@@ -46,20 +48,18 @@ def anyio_backend(request):
     return request.param
 
 
-@pytest.fixture(params=["zmq interface", "callable interface"], scope="module")
+@pytest.fixture(params=["base interface", "zmq interface"], scope="module")
 def interface_name(request):
     return request.param
 
 
 @pytest.fixture(scope="module")
-async def kernel(
-    anyio_backend: Backend, interface_name: Literal["zmq interface", "callable interface"], tmp_path_factory
-):
+async def kernel(anyio_backend: Backend, interface_name: Literal["base interface", "zmq interface"], tmp_path_factory):
     # Set a blank connection_file
-    connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-    os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
 
     if interface_name == "zmq interface":
+        connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
+        os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
         # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
         interface = IPApp(
             connection_file=connection_file.as_posix(),
@@ -68,18 +68,21 @@ async def kernel(
         )
         async with interface:
             yield interface.kernel
-    if interface_name == "callable interface":
-
-        def from_interface(msg_str, buffers, ident, /) -> None:
-            ""
-
-        async with (callable_interface := CallableInterface()).start_async_context(send=from_interface):
-            yield callable_interface.kernel
+    if interface_name == "base interface":
+        async with BaseInterface() as interface:
+            yield interface.kernel
 
 
 @pytest.fixture(scope="module")
-async def client(kernel: Kernel) -> BaseKernelClient:
-    return kernel.parent.client
+async def client(kernel: Kernel) -> AsyncGenerator[LocalKernelClient | ZMQKernelClient]:
+    if isinstance(kernel.parent, ZMQInterface):
+        client = ZMQKernelClient()
+        client.load_connection_info(kernel.parent.get_connection_info())
+        async with client:
+            yield client
+    else:
+        async with LocalKernelClient(kernel.parent) as client:
+            yield client
 
 
 @pytest.fixture(scope="module")

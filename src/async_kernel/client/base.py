@@ -8,18 +8,16 @@
 from __future__ import annotations
 
 import time
-import weakref
 from collections import deque
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self
 
-import jupyter_client
-import jupyter_client.session
 import traitlets
 from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.common import Fixed, SingleAsyncQueue
+from async_kernel.interface import BaseInterface
 from async_kernel.interface.base import BaseMessageApplication, PendingMessage
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, NoValue, T_interface_co
 
@@ -27,9 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
 
-
-class ClientSession(jupyter_client.session.Session):
-    check_pid = traitlets.Bool(False).tag(config=True)
+    from async_kernel.pending import ProtectedPending
 
 
 class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
@@ -48,19 +44,6 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
     )
 
     _iopub_queues: Fixed[Self, deque[tuple[bytes, SingleAsyncQueue]]] = Fixed(deque)
-
-    def set_interface(self, interface: T_interface_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
-        assert isinstance(interface, self.interface_class)
-        assert not interface.stopping.done()
-        assert not self.started.done()
-        self._interface = weakref.ref(interface)
-
-    def _interface(self) -> T_interface_co | None:
-        return None
-
-    @property
-    def interface(self) -> T_interface_co | None:
-        return self._interface()
 
     @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
@@ -247,9 +230,36 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
         the kernel has shut down and it's safe to forcefully terminate it if
         it's still alive.
         """
-        if self.interface:
-            msg = "Local shutdown is prohibited. Use `interface.stop` instead."
-            raise RuntimeError(msg)
         return self.send_message(
             self.msg(MsgType.shutdown_request, content={"restart": restart}, channel=Channel.control)
         )
+
+
+class LocalKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface_co]):
+    """A Kernel Client for an interface running in the current process.
+
+    Usage:
+        ```python
+        async with LocalKernelClient() as client:
+            await client.kernel_info()
+        ```
+    """
+
+    @property
+    def interface(self) -> T_interface_co:
+        return self._interface
+
+    def __init__(self, interface: T_interface_co | None = None, /) -> None:
+        super().__init__()
+        self._interface: T_interface_co = interface or BaseInterface.instance()
+
+    @override
+    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
+        self._interface._local_clients.append(self)  # pyright: ignore[reportPrivateUsage]
+        ready()
+        await stop
+        self._interface._local_clients.remove(self)  # pyright: ignore[reportPrivateUsage]
+
+    @override
+    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
+        self._interface.handle_incoming_msg(msg, ident)

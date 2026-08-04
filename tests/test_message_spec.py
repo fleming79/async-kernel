@@ -11,13 +11,11 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
     from async_kernel.client.zmq import ZMQKernelClient
-    from async_kernel.interface import BaseInterface
-    from async_kernel.interface.callable import CallableKernelClient
     from async_kernel.interface.zmq import ZMQInterface
     from async_kernel.kernel import Kernel
     from async_kernel.shell import IPShell
 
-    ClientType = ZMQKernelClient[ZMQInterface[IPShell]] | CallableKernelClient[BaseInterface[IPShell]]
+    ClientType = ZMQKernelClient[ZMQInterface[IPShell]]
 # pyright: reportGeneralTypeIssues=false, reportOptionalMemberAccess=false
 
 
@@ -52,8 +50,8 @@ async def test_execute_control(client: ClientType, kernel: Kernel) -> None:
     assert kernel.shell.user_ns["y"] == 10
 
 
-async def test_execute_silent(client: ClientType):
-    before = client.interface.shell.execution_count
+async def test_execute_silent(client: ClientType, kernel: Kernel):
+    before = kernel.shell.execution_count
     reply = await client.execute("x=1", silent=True)
     count = int(reply["content"]["execution_count"])
     assert count == before

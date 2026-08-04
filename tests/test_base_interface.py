@@ -10,6 +10,7 @@ from aiologic import Event
 from traitlets.config.configurable import Configurable
 
 import async_kernel
+from async_kernel.client.base import LocalKernelClient
 from async_kernel.interface import BaseInterface, HasInterface
 from async_kernel.shell import BaseShell
 
@@ -57,9 +58,9 @@ class TestBaseInterface:
 
     async def test_input_request_no_handler(self, anyio_backend: Backend, job: Job):
 
-        async with BaseInterface(shell_class=BaseShell) as interface:
+        async with BaseInterface(shell_class=BaseShell) as interface, LocalKernelClient(interface) as client:
             with pytest.raises(RuntimeError, match="A handler is not available"):
-                await interface.client.input_request(job)
+                await client.input_request(job)
 
     async def test_stop(self, anyio_backend: Backend):
 

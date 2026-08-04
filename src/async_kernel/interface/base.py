@@ -10,6 +10,7 @@ import os
 import sys
 import time
 import weakref
+from collections import deque
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
@@ -27,7 +28,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
-from async_kernel.compat.json import unpack_json
+from async_kernel.compat.json import pack_json_bytes, unpack_json
 from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.typing import (
     Backend,
@@ -50,7 +51,7 @@ from async_kernel.typing import (
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
 
-    from async_kernel.client.base import BaseKernelClient
+    from async_kernel.client.base import LocalKernelClient
     from async_kernel.kernel import Kernel
 
 __all__ = ["BaseInterface", "BaseMessageApplication", "HasInterface", "PendingMessage"]
@@ -123,6 +124,9 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
     session_id = Fixed(lambda _: str(uuid4()))
     "Used to identify this object as the `session` in a message header."
 
+    bsession: Fixed[Self, bytes] = Fixed(lambda c: c["owner"].session_id.encode())
+    "Used to identfiy this object as the origin of a message."
+
     log: logging.Logger
 
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
@@ -188,12 +192,6 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
         """The method where incoming messages are handled."""
         raise NotImplementedError
 
-    def handle_incoming_msg_str(self, msg_str: str, ident: list[bytes], buffers: BuffersType = None) -> None:
-        """Handle in incoming messaged serialized as a json string."""
-        msg = unpack_json(msg_str)
-        msg["buffers"] = buffers
-        self.handle_incoming_msg(msg, ident)
-
     def _handle_reply(self, msg: Message) -> None:
         """A handler for incoming messages."""
         # Thread: undefined
@@ -256,6 +254,10 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
                 continue  # Coverage can cause issues with some files.
         super().print_help(classes)
 
+    def _base_send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
+        self.send_msg(msg, [self.bsession] if ident is None else ident if isinstance(ident, list) else [ident])
+        return msg
+
     def send_message(
         self,
         msg: Message,
@@ -267,7 +269,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             raise TypeError(msg_)
         self.log.debug("Send mssage %s %s", msg["header"]["msg_type"], msg)
         self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage()
-        pen.metadata.update(parent=self._send_msg(msg, ident))
+        pen.metadata.update(parent=self._base_send_msg(msg, ident))
         return pen
 
     def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
@@ -277,7 +279,7 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
             1. The reply to a request.
             2. A message of a type that does not have a reply such as comm_open, comm_close, comm_msg.
         """
-        return self._send_msg(msg, ident)
+        return self._base_send_msg(msg, ident)
 
     def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
         """Send a reply to a job (a message of msg_type ending in '_request')."""
@@ -293,8 +295,8 @@ class BaseMessageApplication(Application, anyio.AsyncContextManagerMixin):
         if msg:
             self.log.debug("send_reply %s", msg)
 
-    def _send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
-        raise NotImplementedError
+    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The main entry point for sending messages in subclasses, not normally called directly."""
 
 
 class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
@@ -372,12 +374,6 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     )
     "The class to use for shells and subshells."
 
-    client_class: traitlets.Type[type[BaseKernelClient[Self]], type[BaseKernelClient[Self]] | str] = traitlets.Type(
-        klass="async_kernel.client.base.BaseKernelClient"
-    ).tag(  # pyright: ignore[reportAssignmentType]
-        config=True
-    )
-
     quiet = traitlets.Bool(True).tag(config=True)
     "Only send stdout/stderr to output stream."
 
@@ -389,11 +385,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
     )
     """The kernel."""
 
-    client: Fixed[Self, BaseKernelClient[Self]] = Fixed(
-        lambda c: c["owner"].client_class(),
-        created=lambda c: c["obj"].set_interface(c["owner"]),  # Touch interface to lock it in.
-    )
-    """A client that is started with this interface."""
+    _local_clients: deque[LocalKernelClient]
 
     shell: Fixed[Self, T_shell_co] = Fixed(lambda c: c["owner"].kernel.main_shell)
     "The main shell."
@@ -492,12 +484,30 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         shell_class: type[T_shell_co] | str | None = None,
         **kwargs,
     ) -> None:
+        self._local_clients = deque()
         super().__init__(**kwargs)
 
         for name, value in [("kernel_class", kernel_class), ("shell_class", shell_class)]:
             if value:
                 self.set_trait(name, value)
         self.initialize(argv)
+
+    @override
+    def _base_send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
+        # Send a message to clients and the primary
+        ident = [self.bsession] if ident is None else ident if isinstance(ident, list) else [ident]
+        if self._local_clients:
+            buffers: BuffersType = msg.pop("buffers", None)  # pyright: ignore[reportAssignmentType]
+            msg_bytes = pack_json_bytes(msg)
+            channel = msg["channel"]
+            for client in tuple(self._local_clients):
+                if channel is Channel.iopub or not ident or client.bsession in ident:
+                    msg_ = unpack_json(msg_bytes)
+                    msg_["buffers"] = buffers
+                    client.handle_incoming_msg(msg_, ident)
+            msg["buffers"] = buffers
+        self.send_msg(msg, ident)
+        return msg
 
     @override
     def _on_stopped(self, _) -> None:
@@ -571,7 +581,7 @@ class BaseInterface(BaseMessageApplication, Generic[T_shell_co]):
         self.iopub_send = cache_iopub_send
         self._iopub_cache = iopub_cache
         try:
-            async with super().__asynccontextmanager__(set_started=False), self.kernel, self.client:
+            async with super().__asynccontextmanager__(set_started=False), self.kernel:
                 if set_started:
                     self._started()
                 yield self

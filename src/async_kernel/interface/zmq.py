@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 
     from jupyter_client import KernelConnectionInfo
 
-    from async_kernel.client.zmq import ZMQKernelClient
     from async_kernel.pending import ProtectedPending
 
 
@@ -60,10 +59,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
     ).tag(config=True)
     "Transport for sockets."
-
-    client_class: traitlets.Type[type[ZMQKernelClient[Self]], type[ZMQKernelClient[Self]] | str] = traitlets.Type(  # pyright: ignore[reportAssignmentType, reportIncompatibleVariableOverride]
-        "async_kernel.client.zmq.ZMQKernelClient"
-    ).tag(config=True)
 
     _sockets: Fixed[Self, dict[Channel, ZMQPollSocket]] = Fixed(dict)
     _iopub_socket: ZMQPollSocket | None = None
@@ -191,5 +186,5 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         return await self._zmq_poll.execute_async(open_socket)
 
     @override
-    def _send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
+    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
         return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]

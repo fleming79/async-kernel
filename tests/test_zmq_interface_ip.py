@@ -6,7 +6,7 @@ import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
 
-from async_kernel.client.zmq import ZMQKernelClient
+from async_kernel.client.base import LocalKernelClient
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import BaseInterface
 from async_kernel.interface.ip_app import IPApp
@@ -64,15 +64,12 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
 
 
 async def test_force_shutdown(anyio_backend: Backend) -> None:
-
-    async with IPApp() as interface:
-        assert interface.client.interface is interface
-        with pytest.raises(RuntimeError, match="Local shutdown is prohibited"):
-            interface.client.shutdown()
-        assert isinstance(interface.client, ZMQKernelClient)
-        interface.kernel.force_shutdown_delay = 0
-        # Bypass the safety
-        interface.client._interface = lambda: None
-        interface.client.shutdown()
-        # Require a force shutdown
-        assert not await create_async_waiter().with_(timeout=utils.TIMEOUT)
+    interface = IPApp()
+    interface.kernel.force_shutdown_delay = 0
+    client = LocalKernelClient()
+    async with client:
+        async with interface:
+            assert client.interface is interface
+            pen = client.shutdown()
+            await pen.wait(timeout=utils.TIMEOUT, protect=True)
+        await pen
