@@ -81,7 +81,7 @@ async def client(kernel: Kernel) -> AsyncGenerator[LocalKernelClient | ZMQKernel
         async with client:
             yield client
     else:
-        async with LocalKernelClient(kernel.parent) as client:
+        async with LocalKernelClient() as client:
             yield client
 
 

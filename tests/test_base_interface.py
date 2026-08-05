@@ -58,7 +58,7 @@ class TestBaseInterface:
 
     async def test_input_request_no_handler(self, anyio_backend: Backend, job: Job):
 
-        async with BaseInterface(shell_class=BaseShell) as interface, LocalKernelClient(interface) as client:
+        async with BaseInterface(shell_class=BaseShell), LocalKernelClient() as client:
             with pytest.raises(RuntimeError, match="A handler is not available"):
                 await client.input_request(job)
 

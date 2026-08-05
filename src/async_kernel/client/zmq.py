@@ -36,7 +36,7 @@ class ClientSession(jupyter_client.session.Session):
     check_pid = traitlets.Bool(False).tag(config=True)
 
 
-class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin, Generic[T_zmq_interface_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin, Generic[T_zmq_interface_co]):
     """Communicates with a single kernel on any host via zmq channels."""
 
     _sockets: Fixed[Any, dict[Channel, ZMQPollSocket]] = Fixed(dict)
@@ -57,7 +57,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         return super().write_connection_file(**kwargs)
 
     @override
-    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
+    async def open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
         # Thread: control
         def msg_handler(
             sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg
