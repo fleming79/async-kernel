@@ -66,8 +66,7 @@ async def test_iopub_welcome(topic: str, anyio_backend: Backend):
 async def test_force_shutdown(anyio_backend: Backend) -> None:
     interface = IPApp()
     interface.kernel.force_shutdown_delay = 0
-    client = LocalKernelClient()
-    async with client:
+    async with LocalKernelClient() as client:
         async with interface:
             assert client.interface is interface
             pen = client.shutdown()

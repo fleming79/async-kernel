@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import time
+import weakref
 from collections import deque
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self
@@ -18,7 +19,7 @@ from typing_extensions import override
 from async_kernel import utils
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface import BaseInterface
-from async_kernel.interface.base import BaseMessageApplication, PendingMessage
+from async_kernel.interface.base import BaseMessage, PendingMessage
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, NoValue, T_interface_co
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
     from async_kernel.pending import ProtectedPending
 
 
-class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
+class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
     """Communicates with a single kernel on any host via zmq channels."""
 
     _input_handlers: Fixed[Self, dict[str, Callable[[Content], CoroutineType[Any, Any, str]]]] = Fixed(dict)
@@ -66,7 +67,7 @@ class BaseKernelClient(BaseMessageApplication, Generic[T_interface_co]):
 
     async def _wrap_request_handler(self, func: Callable[[Job], CoroutineType[Any, Any, Content]], job: Job) -> None:
         """Handle messages from the kernel (interface), currently only `input_request` is implemented."""
-        reply_msg_type = MsgType(job["msg"]["header"]["msg_type"].replace("request", "reply"))
+        reply_msg_type: MsgType = MsgType(job["msg"]["header"]["msg_type"].replace("request", "reply"))
         try:
             content = await func(job)
             assert content["status"] in ["error", "ok"]
@@ -247,19 +248,16 @@ class LocalKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface_co
 
     @property
     def interface(self) -> T_interface_co:
-        return self._interface
-
-    def __init__(self, interface: T_interface_co | None = None, /) -> None:
-        super().__init__()
-        self._interface: T_interface_co = interface or BaseInterface.instance()
+        return self._ref()  # pyright: ignore[reportReturnType]
 
     @override
-    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
-        self._interface._local_clients.append(self)  # pyright: ignore[reportPrivateUsage]
+    async def open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
+        self._ref = weakref.ref(BaseInterface.instance())
+        self.interface._local_clients.append(self)  # pyright: ignore[reportPrivateUsage]
         ready()
         await stop
-        self._interface._local_clients.remove(self)  # pyright: ignore[reportPrivateUsage]
+        self.interface._local_clients.remove(self)  # pyright: ignore[reportPrivateUsage]
 
     @override
     def send_msg(self, msg: Message, ident: list[bytes]) -> None:
-        self._interface.handle_incoming_msg(msg, ident)
+        self.interface.handle_incoming_msg(msg, ident)

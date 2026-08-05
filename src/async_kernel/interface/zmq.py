@@ -108,7 +108,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         raise MethodNotSupported  # pragma: no cover
 
     @override
-    async def _open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
+    async def open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
         # Thread: control
 
         def heartbeat(hb: ZMQPollSocket, event: int) -> None:
