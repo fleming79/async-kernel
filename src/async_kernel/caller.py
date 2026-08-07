@@ -646,6 +646,27 @@ class Caller:
                 if (time.monotonic() - worker._idle_time) > t:
                     worker.stop(force=True)
 
+    def _start_guest(self, backend: Backend, queue: SingleAsyncQueue) -> None:
+        """Start a guest event loop."""
+
+        def guest_done_callback(value: Any):
+            self._guest_done_event.down()
+            self._guest_queues.pop(backend)
+
+        with self._inst_lock:
+            if self._state is CallerState.running:
+                host: Host[Any] | None = Host.current(self.thread)
+                get_start_guest_run(backend)(
+                    self._scheduler,
+                    queue,
+                    done_callback=guest_done_callback,
+                    run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
+                    run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
+                    host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
+                )
+                self._guest_done_event.up()
+                self.stopping.add_done_callback(lambda _: queue.stop())
+
     @classmethod
     def id_current(cls) -> int:
         """The immutable id of a caller for the current thread in CPython or context in Pyodide."""
@@ -771,29 +792,8 @@ class Caller:
                 if backend is Backend.trio:
                     trio.sleep  # noqa: B018 # Check trio is available.
                 if not (queue := self._guest_queues.get(backend)):
-                    queue = SingleAsyncQueue(reject=self._reject)
+                    self.call_direct(self._start_guest, backend, queue := SingleAsyncQueue(reject=self._reject))
                     self._guest_queues[backend] = queue
-                    self.stopping.add_done_callback(lambda _: queue.stop())
-
-                    def guest_done_callback(value: Any):
-                        self._guest_done_event.down()
-                        self._guest_queues.pop(backend)
-
-                    def _start_guest() -> None:
-                        """Start a guest event loop."""
-                        if self._state is CallerState.running:
-                            host: Host[Any] | None = Host.current(self.thread)
-                            get_start_guest_run(backend)(
-                                self._scheduler,
-                                queue,
-                                done_callback=guest_done_callback,
-                                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
-                                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
-                                host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
-                            )
-                            self._guest_done_event.up()
-
-                    self.call_direct(_start_guest)
         queue.append(pen)
         return pen
 
