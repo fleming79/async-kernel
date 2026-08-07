@@ -192,7 +192,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         ```
     """
 
-    _parent_id: None | str = None
+    _parent_id: str | None = None
     _cancel_scope: anyio.CancelScope
     _cancelled: str | None = None
     _leaving_context: bool = False

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.interface import BaseInterface
+from async_kernel.interface import Interface
 from async_kernel.outstream import OutStream
 from async_kernel.shell.base import BaseShell
 from async_kernel.typing import MsgType
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 async def test_io_api(anyio_backend: Backend, mocker):
     """Test that wrapped stdout has the same API as a normal TextIO object."""
     mock_stdout = mocker.patch.object(sys, "stdout")
-    async with BaseInterface(shell_class=BaseShell) as interface:
+    async with Interface(shell_class=BaseShell) as interface:
         iopub_send = mocker.patch.object(interface, "iopub_send")
         stream = sys.stdout
         assert isinstance(stream, OutStream)

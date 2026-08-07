@@ -9,13 +9,14 @@ import weakref
 from typing import TYPE_CHECKING, Literal, cast
 
 import anyio
+import anyio.lowlevel
 import pytest
 from aiologic import Event
 
 import async_kernel
 from async_kernel import Kernel, Pending
 from async_kernel.command import command_line, to_flags_and_settings
-from async_kernel.interface.base import BaseInterface
+from async_kernel.interface.base import Interface
 from async_kernel.interface.ip_app import IPApp
 from async_kernel.typing import Backend, Hosts
 from tests import utils
@@ -70,7 +71,7 @@ def test_prints_help_when_no_args(monkeypatch, capsys):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert "usage:" in out
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
 
 
 def test_prints_version_info(monkeypatch, capsys):
@@ -80,7 +81,7 @@ def test_prints_version_info(monkeypatch, capsys):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert f"async-kernel {async_kernel.__version__}" in out
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
 
 
 @pytest.mark.parametrize("extra", [()])
@@ -91,7 +92,7 @@ def test_prints_help_all(monkeypatch, capsys, extra: tuple):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert "aliases" in out
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
 
 
 def test_show_config(monkeypatch, capsys):
@@ -102,7 +103,7 @@ def test_show_config(monkeypatch, capsys):
         assert e.value.code == 0
         out = capsys.readouterr().out
         assert "IPApp" in out
-        assert BaseInterface._instance is None
+        assert Interface._instance is None
 
 
 def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
@@ -115,12 +116,12 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
             "--name=async-trio",
             "--display_name='my kernel'",
             "--BaseShell.timeout=0.01",
-            "--interface_class=async_kernel.interface.BaseInterface",
+            "--interface_class=async_kernel.interface.Interface",
         ],
     )
     with pytest.raises(SystemExit) as e:
         command_line()
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
     assert e.value.code == 0
     kernel_dir = fake_kernel_dir.joinpath("async-trio")
     assert (kernel_dir).exists()
@@ -137,7 +138,7 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
             "--connection_file={connection_file}",
             "--name=async-trio",
             "--BaseShell.timeout=0.01",
-            "--interface_class=async_kernel.interface.BaseInterface",
+            "--interface_class=async_kernel.interface.Interface",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -193,7 +194,7 @@ def test_list(monkeypatch, config: str, capsys):
 def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
 
     def on_started(pen):
-        kernel: Kernel[BaseInterface[IPShell], IPShell] = async_kernel.utils.get_kernel()  # pyright: ignore[reportAssignmentType]
+        kernel: Kernel[Interface[IPShell], IPShell] = async_kernel.utils.get_kernel()  # pyright: ignore[reportAssignmentType]
         assert kernel.parent.backend_options == {"use_uv": False}
         assert kernel.shell.timeout == 0.123
         assert kernel.shell.automagic is False
@@ -210,7 +211,7 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
     ]
     pen = Pending()
     pen.add_done_callback(on_started)
-    monkeypatch.setattr(BaseInterface, "started", pen)
+    monkeypatch.setattr(Interface, "started", pen)
     monkeypatch.setattr(sys, "argv", cmd)
     with pytest.raises(SystemExit) as e:
         command_line()
@@ -238,7 +239,7 @@ def test_command_launch_with_host(mocker, monkeypatch, backend, host):
         f"--backend={backend}",
         f"--host={host}",
         "--interface_class",
-        "async_kernel.interface.BaseInterface",
+        "async_kernel.interface.Interface",
     ]
     monkeypatch.setattr(sys, "argv", cmd)
     kernel = cast("Kernel", None)  # pyright: ignore[reportInvalidCast]
@@ -250,19 +251,19 @@ def test_command_launch_with_host(mocker, monkeypatch, backend, host):
 
     pen = Pending()
     pen.add_done_callback(on_started)
-    monkeypatch.setattr(BaseInterface, "started", pen)
+    monkeypatch.setattr(Interface, "started", pen)
 
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
-    assert isinstance(kernel.parent, BaseInterface)
+    assert isinstance(kernel.parent, Interface)
     assert kernel.parent.host == host
     assert kernel.parent.backend == backend
 
 
 async def test_BaseInterface_gc(anyio_backend: Backend):
     collected = Event()
-    async with BaseInterface() as interface:
+    async with Interface() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
     del interface
@@ -286,7 +287,7 @@ async def test_IPShellApp_gc(anyio_backend: Backend):
     with anyio.move_on_after(2):
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
     if obj := ref():
         referrers = gc.get_referrers(obj)
         assert not referrers

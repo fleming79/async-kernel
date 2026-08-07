@@ -23,7 +23,7 @@ from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, ove
 if TYPE_CHECKING:
     import datetime
 
-    from async_kernel.interface import BaseInterface
+    from async_kernel.interface import Interface
     from async_kernel.pending import PendingMessage
     from async_kernel.shell import BaseShell
     from async_kernel.shell.ipshell import IPShell
@@ -62,7 +62,7 @@ P = ParamSpec("P")
 
 T_shell_co = TypeVar("T_shell_co", covariant=True, bound="BaseShell", default="BaseShell")
 T_ipshell_co = TypeVar("T_ipshell_co", covariant=True, bound="IPShell", default="IPShell")
-T_interface_co = TypeVar("T_interface_co", covariant=True, bound="BaseInterface", default="BaseInterface")
+T_interface_co = TypeVar("T_interface_co", covariant=True, bound="Interface", default="Interface")
 
 
 class Backend(enum.StrEnum):

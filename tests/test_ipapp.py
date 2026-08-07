@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.client.base import LocalClient
-from async_kernel.interface import BaseInterface
+from async_kernel.connection.base import LocalClient
+from async_kernel.interface import Interface
 from async_kernel.interface.ip_app import IPApp
 from tests import utils
 
@@ -23,7 +23,7 @@ def test_gui_sets_host(gui):
         assert interface.host == gui
         interface.host = None
     finally:
-        BaseInterface._instance = None
+        Interface._instance = None
 
 
 async def test_user_ns(anyio_backend: Backend):

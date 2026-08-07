@@ -67,10 +67,10 @@ def get_kernel() -> Kernel:
     """Get the current kernel."""
     import async_kernel.interface  # noqa: PLC0415
 
-    if not async_kernel.interface.BaseInterface.initialized():
+    if not async_kernel.interface.Interface.initialized():
         msg = "A kernel interface is not started!"
         raise RuntimeError(msg)
-    return async_kernel.interface.BaseInterface.instance().kernel
+    return async_kernel.interface.Interface.instance().kernel
 
 
 def get_ipython() -> BaseShell:

@@ -7,6 +7,7 @@ import weakref
 from concurrent.futures import ThreadPoolExecutor
 
 import anyio
+import anyio.lowlevel
 import pytest
 from aiologic import Event, Latch
 from aiologic.meta import await_for
@@ -246,7 +247,7 @@ class TestPending:
         assert id_ in Pending._metadata_mappings  # pyright: ignore[reportPrivateUsage]
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         assert r() is None, f"References found {gc.get_referrers(r())}"
         assert ok
         assert id_ not in Pending._metadata_mappings  # pyright: ignore[reportPrivateUsage]

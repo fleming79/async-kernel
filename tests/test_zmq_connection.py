@@ -8,9 +8,9 @@ import zmq
 from aiologic.lowlevel import create_async_waiter
 
 from async_kernel import Caller, Pending
-from async_kernel.client.zmq import ZMQKernelClient
+from async_kernel.connection.zmq import ZMQKernelClient
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
-from async_kernel.interface import BaseInterface
+from async_kernel.interface import Interface
 from async_kernel.typing import Channel, MsgType
 from tests import utils
 from tests.test_message_spec import read_until_msg_type
@@ -152,12 +152,12 @@ async def test_magic_error(client: ZMQKernelClient) -> None:
 
 
 @pytest.mark.parametrize("code", argvalues=["%connect_info"])
-async def test_magic_sync(client: ZMQKernelClient, code: str, kernel: Kernel[BaseInterface, IPShell], monkeypatch):
+async def test_magic_sync(client: ZMQKernelClient, code: str, kernel: Kernel[Interface, IPShell], monkeypatch):
     result = kernel.main_shell.run_cell(code)
     assert result.success
 
 
-async def test_shell_enable_gui(kernel: Kernel[BaseInterface, IPShell]):
+async def test_shell_enable_gui(kernel: Kernel[Interface, IPShell]):
     # used by ipython AutoMagicChecker via is_shadowed (requires 'builitin')
     assert set(kernel.shell.ns_table) == {"user_global", "user_local", "builtin"}
     # U
@@ -168,7 +168,7 @@ async def test_shell_enable_gui(kernel: Kernel[BaseInterface, IPShell]):
 
 async def test_launch_too_late(kernel: Kernel):
     with pytest.raises(RuntimeError, match="An interface already exists!"):
-        BaseInterface.launch_instance()
+        Interface.launch_instance()
 
 
 async def test_already_entered(kernel: Kernel):
