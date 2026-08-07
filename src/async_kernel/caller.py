@@ -141,7 +141,12 @@ class Caller:
     it will wait until all other contexts have exited. When the count returns to zero the
     caller will stop, after which, the caller can not be restarted.
 
-    It is only necessary to use the async context for the main caller or non-child callers.
+    If the first entry of the async context is obtained inside a pending (a coroutine manage
+    by the caller), the caller will also be force stopped.
+
+
+    Children callers (obtained using `caller.get(...)`) are always force stopped when the
+    parent caller is stopped.
 
 
     **High level methods**
@@ -411,12 +416,18 @@ class Caller:
         self._protected = True
         await self.started.wait(result=False)
         with self._inst_lock:
-            if self._enter_count == 0:
-                self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
-            elif (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
-                self._first_ctx_and_count = c[0], c[1] + 1
-
             if not (stopping := self.stopping.done()):
+                if self._enter_count == 0:
+                    # Identify the first context.
+                    self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
+                    # Special handling if the context is run inside a caller managed task.
+                    self._first_ctx_stop = bool(self.current_pending())
+                    self._ctx_pen: set[Pending] = set()
+                else:
+                    if (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
+                        self._first_ctx_and_count = c[0], c[1] + 1
+                    if (pen := self.current_pending()) is not None:
+                        self._ctx_pen.add(pen)
                 self._enter_count = self._enter_count + 1
         if stopping:
             await self.stopped
@@ -426,20 +437,24 @@ class Caller:
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:
         ctx_id = id(sys._getframe(1))  # pyright: ignore[reportPrivateUsage]
+        self._ctx_pen.discard(self.current_pending())
         with self._inst_lock:
             self._enter_count = self._enter_count - 1
             if (c := self._first_ctx_and_count)[0] == ctx_id:
                 self._first_ctx_and_count = c[0], c[1] - 1
             wait_exit = c == (ctx_id, 0)
-
         if self._enter_count == 0:
             self.stop(force=True)
         if wait_exit:
             self._wait_exit = True
-            self.log.debug("Waiting for %r", self)
-            with anyio.CancelScope(shield=True):
-                if (self.current_pending() is None) or self.get_existing() is not self:
-                    await self.stopped
+            if self._first_ctx_stop:
+                for pen in self._ctx_pen:
+                    pen.cancel("At exit force shutdown")
+                await self.wait(self._ctx_pen, return_when="ALL_COMPLETED")
+                self.stop(force=True)
+            if (self.current_pending() is None) or self.get_existing() is not self:
+                self.log.debug("Waiting for %r", self)
+                await self.stopped.wait(shield=True)
         return False
 
     def _start_sync(self, caller_id: int | None, thread: threading.Thread | None, no_debug: bool = False) -> None:
