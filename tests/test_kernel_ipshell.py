@@ -17,11 +17,11 @@ from async_kernel.typing import Channel, Content, Message, MsgType, RunMode, Tag
 from tests import utils
 
 if TYPE_CHECKING:
-    from async_kernel.client.base import BaseKernelClient
-    from async_kernel.interface import BaseInterface
+    from async_kernel.connection.base import BaseKernelClient
+    from async_kernel.interface import Interface
     from async_kernel.shell import IPShell
 
-    ClientType = BaseKernelClient[BaseInterface[IPShell]]
+    ClientType = BaseKernelClient[Interface[IPShell]]
 
 
 # pyright: reportPrivateUsage=false
@@ -88,7 +88,7 @@ async def test_is_complete_2(client: ClientType, code: str, status: str):
     assert reply["content"]["status"] == status
 
 
-async def test_noop(kernel: Kernel[BaseInterface, IPShell]):
+async def test_noop(kernel: Kernel[Interface, IPShell]):
     with pytest.raises(MethodNotSupported):
         kernel.shell.init_prefilter()
 
@@ -216,7 +216,7 @@ async def test_shell_can_set_namespace(kernel: Kernel):
     assert set(kernel.shell.user_ns) == expected
 
 
-async def test_shell_display_hook_reg(kernel: Kernel[BaseInterface, IPShell], client):
+async def test_shell_display_hook_reg(kernel: Kernel[Interface, IPShell], client):
     val = []
 
     def my_hook(msg) -> None:
@@ -421,7 +421,7 @@ async def test_redirect_stderr(kernel: Kernel):
     assert f.getvalue() == "hello"
 
 
-async def test_extension_manager(kernel: Kernel[BaseInterface, IPShell]):
+async def test_extension_manager(kernel: Kernel[Interface, IPShell]):
     subshell = kernel.create_subshell()
     assert kernel.main_shell.extension_manager is not subshell.extension_manager
 

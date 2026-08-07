@@ -9,6 +9,7 @@ from random import random
 from typing import Literal
 
 import anyio
+import anyio.lowlevel
 import anyio.to_thread
 import pytest
 import trio
@@ -378,7 +379,7 @@ class TestCaller:
 
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
 
     async def test_queue_cancel(self, caller: Caller):
         started = Event()
@@ -409,7 +410,7 @@ class TestCaller:
         del obj
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         assert not any(caller._queue_map)
 
     async def test_call_early(self, anyio_backend: Backend) -> None:
@@ -562,7 +563,7 @@ class TestCaller:
                 assert not pending
 
     async def test_wait_awaitable(self, caller):
-        done, pending = await caller.wait((anyio.sleep(0),))
+        done, pending = await caller.wait((anyio.lowlevel.checkpoint(),))
         assert not pending
         assert len(done) == 1
         assert isinstance(next(iter(done)), Pending)
@@ -576,7 +577,7 @@ class TestCaller:
         del a
         while not pen.done():
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         await pen_was_cancelled
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
@@ -736,7 +737,7 @@ class TestCaller:
             pen.set_result(value)
 
         async def async_func(pen: Pending, value):
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
             pen.set_result(value)
 
         func = sync_func if mode == "sync" else async_func

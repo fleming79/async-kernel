@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 import async_kernel
 from async_kernel.common import import_item
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.interface.base import BaseInterface, Connection, HasInterface
+from async_kernel.interface.base import HasInterface, Interface
 from async_kernel.kernelspec import make_argv
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from async_kernel.typing import BuffersType, Message, T
 
 
-__all__ = ["BaseInterface", "Connection", "HasInterface", "launch_interface", "start_kernel_callable_interface"]
+__all__ = ["HasInterface", "Interface", "launch_interface", "start_kernel_callable_interface"]
 
 
 async def start_kernel_callable_interface(
@@ -37,13 +37,15 @@ async def start_kernel_callable_interface(
 
     Returns: The function to send serialised messages to the interface.
     """
+    from async_kernel.connection.base import Connection  # noqa: PLC0415
+
     settings = settings or {}
-    interface_class = settings.get("interface_class") or "async_kernel.interface.BaseInterface"
-    cls: type[BaseInterface] = import_item(interface_class)
+    interface_class = settings.get("interface_class") or "async_kernel.interface.Interface"
+    cls: type[Interface] = import_item(interface_class)
 
     argv = make_argv(command=(), connection_file="", **settings)[1:]
     app = cls(argv)
-    assert issubclass(cls, BaseInterface)
+    assert issubclass(cls, Interface)
 
     def transmit_msg(msg: Message, ident: list[bytes], transmit=transmit, pack=pack_unpack[0]) -> None:
         """Send a message using `transmit`."""
@@ -69,14 +71,14 @@ def launch_interface(settings: dict) -> None:
 
     Notes:
         - Available in CPython.
-        - 'interface_class' can be specified in settings as a subclass of [BaseInterface][async_kernel.interface.base.BaseInterface]
+        - 'interface_class' can be specified in settings as a subclass of [Interface][async_kernel.interface.base.Interface]
             or as an importable string.
         - `settings` are NOT loaded.
         - `sys.argv` is used for configuration. Use `async-kernel --help-all` to see all configuration options.
         - [traitlets configuration documentation](https://traitlets.readthedocs.io/en/stable/config.html#module-traitlets.config).
     """
-    val = settings.get("interface_class") or settings.get("BaseInterface.interface_class")
+    val = settings.get("interface_class") or settings.get("Interface.interface_class")
     val = val or "async_kernel.interface.ip_app.IPApp"
     cls = import_item(val) if isinstance(val, str) else val
-    assert issubclass(cls, BaseInterface)
+    assert issubclass(cls, Interface)
     cls.launch_instance()

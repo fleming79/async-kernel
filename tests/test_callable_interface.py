@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 from aiologic.lowlevel import create_async_event
 
-from async_kernel.client.base import LocalClient
 from async_kernel.common import SingleAsyncQueue
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.interface import BaseInterface, start_kernel_callable_interface
+from async_kernel.connection.base import LocalClient
+from async_kernel.interface import Interface, start_kernel_callable_interface
 from async_kernel.typing import Backend, Channel, MsgType
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
         messages.append(unpack_json(packed_msg))
 
     send_to_inteface = await start_kernel_callable_interface(transmit=from_interface, stopped=stopped.set)
-    interface = BaseInterface.instance()
+    interface = Interface.instance()
     async with LocalClient() as client:
         await client.kernel_info()
         send_to_inteface(pack_json_str(client.msg(MsgType.kernel_info_request, channel=Channel.shell)), [], None)

@@ -8,10 +8,9 @@ import pytest
 
 import async_kernel
 from async_kernel import Caller, Kernel
-from async_kernel.client.base import LocalClient
-from async_kernel.client.zmq import ZMQKernelClient
-from async_kernel.interface import BaseInterface
-from async_kernel.interface.zmq import ZMQConnection
+from async_kernel.connection.base import LocalClient
+from async_kernel.connection.zmq import ZMQConnection, ZMQKernelClient
+from async_kernel.interface import Interface
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
 from tests import utils
 
@@ -57,12 +56,12 @@ async def kernel(anyio_backend: Backend, connection_name: Literal["local", "zmq"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
     if connection_name == "zmq":
         connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-        async with BaseInterface([f"--connection_file={connection_file}"]) as interface:
+        async with Interface([f"--connection_file={connection_file}"]) as interface:
             assert interface.connections
             assert isinstance(interface.connections[0], ZMQConnection)
             yield interface.kernel
     else:
-        async with BaseInterface(autostart_connections=[]) as interface:
+        async with Interface(autostart_connections=[]) as interface:
             yield interface.kernel
 
 

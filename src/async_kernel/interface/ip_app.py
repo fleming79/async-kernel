@@ -11,7 +11,7 @@ from IPython.core.shellapp import InteractiveShellApp, shell_aliases, shell_flag
 from traitlets import traitlets
 from typing_extensions import override
 
-from async_kernel.interface.base import BaseInterface
+from async_kernel.interface.base import Interface
 from async_kernel.typing import Hosts, NoValue, T_ipshell_co
 
 if TYPE_CHECKING:
@@ -21,11 +21,11 @@ if TYPE_CHECKING:
 __all__ = ["IPApp"]
 
 
-BaseInterface.classes.append(ProfileDir)
+Interface.classes.append(ProfileDir)
 
 
 class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
-    BaseInterface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]
+    Interface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]
 ):
     """An IPython application with a zmq interface."""
 
@@ -35,7 +35,7 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
     "A description to use for the command line interface."
 
     aliases = (
-        BaseInterface.aliases
+        Interface.aliases
         | {
             "profile-dir": "ProfileDir.location",
             "profile": "BaseIPythonApplication.profile",
@@ -47,7 +47,7 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
     ""
 
     flags = (
-        BaseInterface.flags
+        Interface.flags
         | {
             "automagic": (
                 {"InteractiveShell": {"automagic": True}},

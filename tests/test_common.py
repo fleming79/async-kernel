@@ -8,6 +8,7 @@ from collections import deque as deque_ref
 from typing import TYPE_CHECKING, Any
 
 import anyio
+import anyio.lowlevel
 import anyio.to_thread
 import pytest
 from aiologic import Event
@@ -78,7 +79,7 @@ class TestFixed:
         del m
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         assert len(MyClass.fixed_dict.instances) == 0  # pyright: ignore[reportAttributeAccessIssue]
 
     def test_with_class(self):

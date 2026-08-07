@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 if "PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING" not in os.environ:
     os.environ["PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING"] = "1"
 
-_host_port: None | tuple[str, int] = None
+_host_port: tuple[str, int] | None = None
 
 
 class _FakeCode:

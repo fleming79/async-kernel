@@ -10,12 +10,12 @@ from tests import utils
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from async_kernel.client.base import LocalClient
-    from async_kernel.interface import BaseInterface
+    from async_kernel.connection.base import LocalClient
+    from async_kernel.interface import Interface
     from async_kernel.kernel import Kernel
     from async_kernel.shell import IPShell
 
-    ClientType = LocalClient[BaseInterface[IPShell]]
+    ClientType = LocalClient[Interface[IPShell]]
 # pyright: reportGeneralTypeIssues=false, reportOptionalMemberAccess=false
 
 
@@ -82,15 +82,9 @@ async def test_execute_inc(client: ClientType):
 
 async def test_execute_stop_on_error(client: ClientType):
     """Execute request should not abort execution queue with stop_on_error False."""
-    bad_code = "\n".join(
-        [
-            # sleep to ensure subsequent message is waiting in the queue to be aborted
-            # async sleep to ensure coroutines are processing while this happens
-            "import anyio",
-            "await anyio.sleep(0.1)",
-            "raise ValueError()",
-        ]
-    )
+    # sleep to ensure subsequent message is waiting in the queue to be aborted
+    # async sleep to ensure coroutines are processing while this happens
+    bad_code = "import anyio\nawait anyio.sleep(0.1)\nraise ValueError()"
 
     pen_bad_code = client.execute(bad_code)
     pen_1 = client.execute('print("Hello")')
@@ -112,15 +106,9 @@ async def test_execute_stop_on_error(client: ClientType):
 
 async def test_execute_stop_on_error_task(client: ClientType):
     """Execute request should not abort execution queue with stop_on_error False."""
-    bad_code = "\n".join(
-        [
-            # sleep to ensure subsequent message is waiting in the queue to be aborted
-            # async sleep to ensure coroutines are processing while this happens
-            "import anyio",
-            "await anyio.sleep(0.1)",
-            "raise ValueError()",
-        ]
-    )
+    # sleep to ensure subsequent message is waiting in the queue to be aborted
+    # async sleep to ensure coroutines are processing while this happens
+    bad_code = "import anyio\nawait anyio.sleep(0.1)\nraise ValueError()"
     pen_1 = client.execute("# task\nimport anyio\nawait anyio.sleep_forever()")
     assert (await client.execute(bad_code))["content"]["status"] == "error"
     reply = await pen_1

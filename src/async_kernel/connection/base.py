@@ -1,45 +1,279 @@
-"""Base class to manage the interaction with a running kernel."""
-
-# Copyright (c) Jupyter Development Team.
-# Distributed under the terms of the Modified BSD License.
-
-# Updates 2026 MIT license
+"""The base class definition to interface with the kernel."""
 
 from __future__ import annotations
 
 import time
 from collections import deque
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Generic, Literal, Self
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self, final
+from uuid import uuid4
 
-import traitlets
+import anyio
+from traitlets import traitlets
+from traitlets.config import LoggingConfigurable
 from typing_extensions import override
 
+import async_kernel
 from async_kernel import utils
+from async_kernel.caller import Caller
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface import HasInterface
-from async_kernel.interface.base import BaseMessage, Connection, PendingMessage
-from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, NoValue, T_interface_co
+from async_kernel.pending import Pending, PendingMessage, ProtectedPending
+from async_kernel.typing import (
+    BuffersType,
+    Channel,
+    Content,
+    ExecuteContent,
+    Job,
+    Message,
+    MessageProtocol,
+    MsgHeader,
+    MsgType,
+    MsgTypeNoReply,
+    NoValue,
+    T,
+    T_interface_co,
+)
 
 if TYPE_CHECKING:
+    import logging
     from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
 
 
+__all__ = ["BaseKernelClient", "BaseMessage", "Connection", "LocalClient", "PendingMessage"]
+
+
+def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
+    """Given a message or header, return the header."""
+    if not msg_or_header:
+        return {}
+    try:
+        # See if msg_or_header is the entire message.
+        h = msg_or_header["header"]
+    except KeyError:
+        try:
+            # See if msg_or_header is just the header
+            h = msg_or_header["msg_id"]
+        except KeyError:  # noqa: TRY203
+            raise
+        else:
+            h = msg_or_header
+    return h
+
+
+class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin, MessageProtocol):
+    """The base for messaging between kernel interfaces and clients."""
+
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed[
+        Self, dict[Literal[Channel.shell, Channel.control], Caller]
+    ](dict)
+    """The callers used by the messaging application."""
+
+    started: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
+    ""
+    stopped: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
+    ""
+
+    session_id = Fixed(lambda _: str(uuid4()))
+    "Used to identify this object as the `session` in a message header."
+
+    bsession: Fixed[Self, bytes] = Fixed[Self, bytes](lambda c: c["owner"].session_id.encode())
+    "Used to identfiy this object as the origin of a message."
+
+    log: logging.Logger
+
+    _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
+
+    @asynccontextmanager
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        """A context manager to open the channels in a caller named 'Control'."""
+        async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
+            self.callers[Channel.shell] = caller
+            self.callers[Channel.control] = caller_ctrl
+            # Open channels
+            pen_channels: Pending[None] = caller_ctrl.call_soon(self.open_channels)
+            await self.started
+            try:
+                yield self
+            finally:
+                self.stopped.set_result(None)
+                await pen_channels.wait(shield=True)
+                del pen_channels
+
+    async def open_channels(self) -> None:
+        """Open the channels, set ready when ready block until stopped."""
+        self.started.set_result(None)
+        await self.stopped
+
+    @override
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        raise NotImplementedError
+
+    @override
+    def handle_reply(self, msg: Message) -> None:
+        # Thread: undefined
+        if (parent := msg.get("parent_header")) and (f := self._pending_messages.pop(parent["msg_id"], None)):
+            self.log.debug("Received %s %s", msg["header"]["msg_type"], msg)
+            f.set_result(msg)
+
+    @property
+    def as_owner(self) -> Callable[[], Self]:
+        """Provides a callable with reference to self."""
+        return lambda: self
+
+    @override
+    def msg(
+        self,
+        msg_type: str | MsgType,
+        content: T | None = None,
+        *,
+        channel: Channel,
+        parent: Message | dict[str, Any] | None = None,
+        header: MsgHeader | dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        buffers: BuffersType = None,
+    ) -> Message[T]:
+        parent = parent or utils.get_parent_message()
+        if header is None:
+            header = MsgHeader(
+                date=datetime.now(UTC),
+                msg_id=str(uuid4()),
+                msg_type=msg_type,
+                session=self.session_id,
+                username="",
+                version=async_kernel.kernel_protocol_version,
+            )
+        return Message(
+            channel=channel,
+            header=header,  # pyright: ignore[reportArgumentType]
+            parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
+            content={} if content is None else content,
+            metadata=metadata if metadata is not None else {},
+            buffers=buffers,
+        )
+
+    @final
+    def _base_send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
+        self.transmit_msg(msg, [] if ident is None else ident if isinstance(ident, list) else [ident])
+        return msg
+
+    @override
+    @final
+    def send_message(
+        self,
+        msg: Message,
+        ident: bytes | list[bytes] | None = None,
+    ) -> PendingMessage[Content]:
+        """Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""
+        if MsgType(msg["header"]["msg_type"]) in MsgTypeNoReply:
+            msg_ = f"{msg['header']['msg_type']} does not send a reply! Use `send_message_no_reply` instead."
+            raise TypeError(msg_)
+        self.log.debug("Send mssage %s %s", msg["header"]["msg_type"], msg)
+        self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage()
+        pen.metadata.update(parent=self._base_send_msg(msg, ident))
+        return pen
+
+    @override
+    @final
+    def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> None:
+        self._base_send_msg(msg, ident)
+
+    @override
+    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
+        if "status" not in content:
+            content["status"] = "ok"
+        msg = self.msg(
+            job["msg"]["header"]["msg_type"].replace("request", "reply"),
+            content=content,
+            parent=job["msg"],
+            channel=job["msg"]["channel"],
+        )
+        self.send_message_no_reply(msg, job["ident"])
+        if msg:
+            self.log.debug("send_reply %s", msg)
+
+    @override
+    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
+        raise NotImplementedError
+
+
+class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_co]):
+    """Provides a connection to the interface for messaging."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        ctx = super().__asynccontextmanager__()
+
+        def start() -> ProtectedPending[Any]:
+            # Nesting inside __init__ means this is only called once for normal usage.
+            async def run(stopped=self.stopped) -> None:
+                async with ctx:
+                    await stopped
+
+            del self.start
+            try:
+                interface = self.parent
+                assert not interface.stopping.done()
+
+                interface.started.add_done_callback(lambda _: interface.callers[Channel.shell].call_soon(run))
+                interface.stopped.add_done_callback(self.stop)
+            except Exception as e:
+                self.started.set_exception(e)
+                self.stop()
+            return self.started
+
+        self.start = start
+
+    @override
+    def __asynccontextmanager__(self) -> Never:
+        msg = f"Directly using async context of {self} is not allowed!"
+        raise RuntimeError(msg)
+
+    @override
+    async def open_channels(self) -> None:
+        """Open the channels, set ready when ready block until stopped."""
+        self.parent.refresh_connections(self)
+        self.started.set_result(None)
+        await self.stopped
+        self.parent.refresh_connections()
+
+    def start(self) -> ProtectedPending[Any]:
+        """Required to start the connection."""
+        return self.started
+
+    @override
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+
+        match msg["channel"]:
+            case Channel.control | Channel.shell:
+                self.parent.kernel.handle_request(
+                    Job(msg=msg, ident=ident, received_time=time.monotonic(), owner=self.as_owner)
+                )
+            case Channel.stdin:
+                self.handle_reply(msg)
+            case _:
+                self.log.debug("Unhandled message %r %r", msg, ident)
+
+    def stop(self, _=None, /) -> ProtectedPending[Any]:
+        """Stop the connection."""
+        self.stopped.set_result(None)
+        self.parent.stopped.remove_done_callback(self.stop)
+        return self.stopped
+
+    def connection_info(self) -> str:
+        return ""
+
+
 class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
-    """Communicates with a single kernel on any host via zmq channels."""
+    """Communicates with a single connection."""
 
     _input_handlers: Fixed[Self, dict[str, Callable[[Content], CoroutineType[Any, Any, str]]]] = Fixed(dict)
 
     default_input_hander: Callable[[Content], CoroutineType[Any, Any, str]] | None = traitlets.Callable(  # pyright: ignore[reportAssignmentType]
         None, allow_none=True
     ).tag(config=True)
-
-    interface_class: traitlets.Type[type[T_interface_co], type[T_interface_co] | str] = traitlets.Type(
-        "async_kernel.interface.base.BaseInterface"
-    ).tag(  # pyright: ignore[reportAssignmentType]
-        config=True
-    )
 
     _iopub_queues: Fixed[Self, deque[tuple[bytes, SingleAsyncQueue]]] = Fixed(deque)
 

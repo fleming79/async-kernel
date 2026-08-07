@@ -9,7 +9,7 @@ import anyio
 import pytest
 from aiologic.lowlevel import create_async_event, create_async_waiter
 
-from async_kernel.client.zmq import ZMQKernelClient
+from async_kernel.connection.zmq import ZMQKernelClient
 from async_kernel.typing import Channel, Content, MsgType
 from tests import utils
 
@@ -48,7 +48,7 @@ async def test_input(
 
     pen = client.execute(code, input_handler=input_handler, user_expressions={"response": "response"})
     await ready
-    await anyio.sleep(0.1)
+    await anyio.sleep(0.5)
 
     if test_mode == "interrupt":
         await client.send_message(client.msg(msg_type=MsgType.interrupt_request, channel=Channel.control))

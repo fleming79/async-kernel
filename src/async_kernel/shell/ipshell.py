@@ -41,7 +41,7 @@ from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
 from async_kernel.compiler import XCachingCompiler
 from async_kernel.event_loop.run import get_runtime_matplotlib_guis
-from async_kernel.interface.base import BaseInterface, HasInterface
+from async_kernel.interface.base import HasInterface, Interface
 from async_kernel.outstream import print_concat
 from async_kernel.shell.base import BaseShell
 from async_kernel.typing import Channel, Content, MsgType, RunMode, Tags
@@ -222,7 +222,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
             self._hooks.remove(hook)
 
 
-class IPHistoryManager(HasInterface[BaseInterface["IPShell"]], HistoryManager):
+class IPHistoryManager(HasInterface[Interface["IPShell"]], HistoryManager):
     """A class to organize history-related functionality in one place."""
 
     @property
@@ -909,7 +909,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
 
 @magics_class
-class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
+class KernelMagics(HasInterface[Interface[IPShell]], Magics):
     """Extra magics for async-kernel."""
 
     @line_magic
