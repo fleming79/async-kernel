@@ -136,9 +136,13 @@ class Caller:
     be called from any thread.
 
     An async context is provided for lifecycle management. The async-context of a caller
-    can be entered multiple times from any thread.  Once entered, a count of contexts
-    is maintained. When the count returns to zero `caller.stop(force=True)` is called.
-    A caller is marked as 'protected' once a context has been entered.
+    can be entered multiple times from any thread.  Once entered, the caller is marked as
+    'protected' and a count of re-entry is maintained. When the first entered context exits
+    it will wait until all other contexts have exited. When the count returns to zero the
+    caller will stop, after which, the caller can not be restarted.
+
+    It is only necessary to use the async context for the main caller or non-child callers.
+
 
     **High level methods**
 
@@ -195,6 +199,7 @@ class Caller:
     _use_safe_checkpoint = False
     _state: CallerState = CallerState.initial
     _enter_count = 0
+    _wait_exit = False
     _state_reprs: ClassVar[dict] = {
         CallerState.initial: "❗ not running",
         CallerState.start_sync: "pre-start",
@@ -312,6 +317,8 @@ class Caller:
         protected = "🔐 " if self.protected else " "
         n = len(self._children)
         children = "" if not n else (" 1 child" if n == 1 else f" {n} children")
+        if self._wait_exit and self._enter_count:
+            info = f"{info} waiting context {self._enter_count} remain"
         return f"<Caller {current}{self._state_reprs[self._state]}{protected}{info}{children}>"
 
     def __new__(
@@ -404,6 +411,11 @@ class Caller:
         self._protected = True
         await self.started.wait(result=False)
         with self._inst_lock:
+            if self._enter_count == 0:
+                self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
+            elif (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
+                self._first_ctx_and_count = c[0], c[1] + 1
+
             if not (stopping := self.stopping.done()):
                 self._enter_count = self._enter_count + 1
         if stopping:
@@ -413,12 +425,21 @@ class Caller:
         return self
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:
+        ctx_id = id(sys._getframe(1))  # pyright: ignore[reportPrivateUsage]
         with self._inst_lock:
             self._enter_count = self._enter_count - 1
+            if (c := self._first_ctx_and_count)[0] == ctx_id:
+                self._first_ctx_and_count = c[0], c[1] - 1
+            wait_exit = c == (ctx_id, 0)
+
         if self._enter_count == 0:
             self.stop(force=True)
-            if (self.current_pending() is None) or self.get_existing() is not self:
-                await self.stopped.wait(shield=True)
+        if wait_exit:
+            self._wait_exit = True
+            self.log.debug("Waiting for %r", self)
+            with anyio.CancelScope(shield=True):
+                if (self.current_pending() is None) or self.get_existing() is not self:
+                    await self.stopped
         return False
 
     def _start_sync(self, caller_id: int | None, thread: threading.Thread | None, no_debug: bool = False) -> None:
