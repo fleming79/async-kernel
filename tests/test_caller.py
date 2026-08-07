@@ -420,11 +420,24 @@ class TestCaller:
             Caller(backend=wrong_backend)
 
     async def test_multi_entry(self, anyio_backend: Backend):
+        ready, resume = create_async_waiter(), create_async_waiter()
+
+        async def f():
+            async with caller:
+                ready.wake()
+                await resume
+                assert "waiting context 1 remain" in repr(caller)
+
         async with Caller() as caller:
             assert caller is Caller()
             async with caller:
                 pass
+            pen = caller.call_soon(f)
+            await ready
+            resume.wake()
         assert caller.stopped.done()
+        assert pen.done()
+        await pen
         await caller.stopped
         with pytest.raises(RuntimeError):
             async with caller:
