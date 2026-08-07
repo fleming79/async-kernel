@@ -8058,6 +8058,9 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <h3 id="features"><!-- 1 --> 🚀 Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
+<p>Change caller async context manager to be first in last out, intermediate contexts are not managed. <a href="https://github.com/fleming79/async-kernel/pull/549">#549</a></p>
+</li>
+<li>
 <p>Add ProtectedPending to prevent accidental propagation of cancellation of a cancelled waiter. <a href="https://github.com/fleming79/async-kernel/pull/546">#546</a></p>
 </li>
 <li>
