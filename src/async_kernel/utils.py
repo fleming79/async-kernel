@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Any
 from traitlets import traitlets
 from typing_extensions import TypeVar
 
-import async_kernel.interface
 from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
@@ -66,6 +65,8 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
 
 def get_kernel() -> Kernel:
     """Get the current kernel."""
+    import async_kernel.interface  # noqa: PLC0415
+
     if not async_kernel.interface.BaseInterface.initialized():
         msg = "A kernel interface is not started!"
         raise RuntimeError(msg)

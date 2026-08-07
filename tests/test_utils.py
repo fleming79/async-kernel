@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 import pytest
 from traitlets import traitlets
 
 from async_kernel import utils as ak_utils
-from async_kernel.typing import Tags
-
-if TYPE_CHECKING:
-    from async_kernel.typing import ExecuteContent, Job
+from async_kernel.typing import ExecuteContent, Job, Tags
 
 
 @pytest.mark.anyio

@@ -10,15 +10,14 @@ import os
 import sys
 import time
 import weakref
-from collections import deque
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
+from typing import TYPE_CHECKING, Any, Generic, Literal, Never, Self, final
 from uuid import uuid4
 
 import anyio
-from aiologic.lowlevel import AsyncLibraryNotFoundError, create_async_waiter, current_async_library
-from traitlets import traitlets
+from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
+from traitlets import import_item, traitlets
 from traitlets.config import Config, Configurable, LoggingConfigurable
 from traitlets.config.application import Application, ClassesType
 from typing_extensions import override
@@ -28,8 +27,7 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed
-from async_kernel.compat.json import pack_json_bytes, unpack_json
-from async_kernel.pending import Pending, ProtectedPending
+from async_kernel.pending import Pending, PendingMessage, ProtectedPending
 from async_kernel.typing import (
     Backend,
     BuffersType,
@@ -38,6 +36,7 @@ from async_kernel.typing import (
     Hosts,
     Job,
     Message,
+    MessageProtocol,
     MsgHeader,
     MsgType,
     MsgTypeNoReply,
@@ -51,10 +50,9 @@ from async_kernel.typing import (
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
 
-    from async_kernel.client.base import LocalKernelClient
     from async_kernel.kernel import Kernel
 
-__all__ = ["BaseInterface", "BaseMessage", "HasInterface", "PendingMessage"]
+__all__ = ["BaseInterface", "BaseMessage", "Connection", "HasInterface", "PendingMessage"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -89,28 +87,23 @@ class DictValueLiteralEval(traitlets.Dict):
         return d
 
 
-class PendingMessage(Pending[Message[T]], Generic[T]):
-    @property
-    def msg_id(self) -> str:
-        return self.metadata["parent"]["header"]["msg_id"]
-
-
-class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin):
+class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin, MessageProtocol):
     """The base for messaging between kernel interfaces and clients."""
 
-    kernel_name = traitlets.Unicode("async").tag(config=True)
-    "The kernel's name."
-
-    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed[
+        Self, dict[Literal[Channel.shell, Channel.control], Caller]
+    ](dict)
     """The callers used by the messaging application."""
 
-    stop_messaging: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
+    started: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
+    ""
+    stopped: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
     ""
 
     session_id = Fixed(lambda _: str(uuid4()))
     "Used to identify this object as the `session` in a message header."
 
-    bsession: Fixed[Self, bytes] = Fixed(lambda c: c["owner"].session_id.encode())
+    bsession: Fixed[Self, bytes] = Fixed[Self, bytes](lambda c: c["owner"].session_id.encode())
     "Used to identfiy this object as the origin of a message."
 
     log: logging.Logger
@@ -120,36 +113,41 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin):
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """A context manager to open the channels in a caller named 'Control'."""
-        channels_started = create_async_waiter()
-
         async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
             self.callers[Channel.shell] = caller
             self.callers[Channel.control] = caller_ctrl
             # Open channels
-            pen_channels = caller_ctrl.call_soon(self.open_channels, channels_started.wake, self.stop_messaging)
-            await channels_started
+            pen_channels: Pending[None] = caller_ctrl.call_soon(self.open_channels)
+            await self.started
             try:
                 yield self
             finally:
-                self.stop_messaging.set_result(None)
+                self.stopped.set_result(None)
                 await pen_channels.wait(shield=True)
                 del pen_channels
 
-    async def open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
-        ready()
-        await stop
+    async def open_channels(self) -> None:
+        """Open the channels, set ready when ready block until stopped."""
+        self.started.set_result(None)
+        await self.stopped
 
+    @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
-        """The method where incoming messages are handled."""
         raise NotImplementedError
 
-    def _handle_reply(self, msg: Message) -> None:
-        """A handler for incoming messages."""
+    @override
+    def handle_reply(self, msg: Message) -> None:
         # Thread: undefined
         if (parent := msg.get("parent_header")) and (f := self._pending_messages.pop(parent["msg_id"], None)):
             self.log.debug("Received %s %s", msg["header"]["msg_type"], msg)
             f.set_result(msg)
 
+    @property
+    def as_owner(self) -> Callable[[], Self]:
+        """Provides a callable with reference to self."""
+        return lambda: self
+
+    @override
     def msg(
         self,
         msg_type: str | MsgType,
@@ -161,7 +159,6 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin):
         metadata: dict[str, Any] | None = None,
         buffers: BuffersType = None,
     ) -> Message[T]:
-        """Create a new message."""
         parent = parent or utils.get_parent_message()
         if header is None:
             header = MsgHeader(
@@ -181,10 +178,13 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin):
             buffers=buffers,
         )
 
+    @final
     def _base_send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
-        self.send_msg(msg, [self.bsession] if ident is None else ident if isinstance(ident, list) else [ident])
+        self.transmit_msg(msg, [] if ident is None else ident if isinstance(ident, list) else [ident])
         return msg
 
+    @override
+    @final
     def send_message(
         self,
         msg: Message,
@@ -199,17 +199,13 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin):
         pen.metadata.update(parent=self._base_send_msg(msg, ident))
         return pen
 
-    def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
-        """Sends a message without expecting a reply.
+    @override
+    @final
+    def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> None:
+        self._base_send_msg(msg, ident)
 
-        This could be of two categories:
-            1. The reply to a request.
-            2. A message of a type that does not have a reply such as comm_open, comm_close, comm_msg.
-        """
-        return self._base_send_msg(msg, ident)
-
+    @override
     def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
-        """Send a reply to a job (a message of msg_type ending in '_request')."""
         if "status" not in content:
             content["status"] = "ok"
         msg = self.msg(
@@ -222,11 +218,12 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin):
         if msg:
             self.log.debug("send_reply %s", msg)
 
-    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
-        """The main entry point for sending messages in subclasses, not normally called directly."""
+    @override
+    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
+        raise NotImplementedError
 
 
-class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class BaseInterface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]):
     """The base class for kernel interface (singleton).
 
     The interface creates the kernel and provides external communication. It is also
@@ -247,6 +244,9 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
             ```
     """
 
+    kernel_name = traitlets.Unicode("async").tag(config=True)
+    "The kernel's name."
+
     classes: ClassesType = final([])
     "The classes registered with the interface."
 
@@ -254,6 +254,7 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
         Application.aliases
         | {
             ("name", "n"): "BaseInterface.kernel_name",
+            ("f", "connection_file"): "ZMQConnection.connection_file",
             "launcher": "BaseInterface.launcher",
             "timeout": "BaseShell.timeout",
             "kernel_class": "BaseInterface.kernel_class",
@@ -261,6 +262,10 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
             "help_links": "Kernel.help_links",
             "supported_features": "Kernel.supported_features",
             "interface_class": "BaseInterface.interface_class",
+            "host": "BaseInterface.host",
+            "host_options": "BaseInterface.host_options",
+            "backend_options": "BaseInterface.backend_options",
+            "backend": "BaseInterface.backend",
         }
         | Application.aliases
     )
@@ -312,6 +317,12 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
     launcher = traitlets.Unicode("").tag(config=True)
     """The value used to import the interface using [async_kernel.kernelspec.import_launcher][]."""
 
+    force_shutdown_delay = traitlets.Float(0.5 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
+    "The time in seconds to wait after stop is called before stop with force enabled is called."
+
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
+    """The callers used by the messaging application."""
+
     started = Fixed(ProtectedPending)
     """A Pending that is set when the application has started."""
 
@@ -328,7 +339,11 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
     )
     """The kernel."""
 
-    _local_clients: deque[LocalKernelClient]
+    autostart_connections = traitlets.List().tag(config=True)
+    "A list of connections to start with the app."
+
+    _connections: tuple[Connection[Self], ...] = ()
+    "The connections to the interface for messaging."
 
     shell: Fixed[Self, T_shell_co] = Fixed(lambda c: c["owner"].kernel.main_shell)
     "The main shell."
@@ -338,6 +353,10 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
     @property
     def summary(self) -> str:
         return f"name={self.kernel_name!r} backend={str(self.backend)!r}"
+
+    @property
+    def connections(self) -> tuple[Connection[Self], ...]:
+        return self._connections
 
     @traitlets.default("backend")
     def _default_backend(self) -> Backend:
@@ -351,6 +370,10 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
             ):
                 self.backend_options["use_uvloop"] = True
             return Backend.asyncio
+
+    @traitlets.default("autostart_connections")
+    def _default_autostart_connections(self) -> list[str]:
+        return ["async_kernel.interface.zmq.ZMQConnection"] if sys.platform != "emscripten" else []
 
     @traitlets.default("shell_class")
     def _default_shell_class(self):
@@ -426,7 +449,6 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
         shell_class: type[T_shell_co] | str | None = None,
         **kwargs,
     ) -> None:
-        self._local_clients = deque()
         super().__init__(**kwargs)
 
         # Cache iopub until started.
@@ -452,26 +474,6 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
             for handler in logging.getLogger().handlers:
                 if handler.__class__ is logging.StreamHandler and handler not in self.log.handlers:
                     self.log.addHandler(handler)
-
-    @override
-    def _base_send_msg(self, msg: Message, ident: bytes | list[bytes] | None = None) -> Message:
-        # Send a message to clients and the primary
-        ident = [self.bsession] if ident is None else ident if isinstance(ident, list) else [ident]
-        if self._local_clients:
-            buffers: BuffersType = msg.pop("buffers", None)  # pyright: ignore[reportAssignmentType]
-            msg_bytes = pack_json_bytes(msg)
-            channel = msg["channel"]
-            for client in tuple(self._local_clients):
-                if channel is Channel.iopub or not ident or client.bsession in ident:
-                    msg_ = unpack_json(msg_bytes)
-                    msg_["buffers"] = buffers
-                    client.handle_incoming_msg(msg_, ident)
-            msg["buffers"] = buffers
-        self.send_msg(msg, ident)
-        return msg
-
-    def _force_stop(self) -> None:
-        pass
 
     def _on_stopped(self, _) -> None:
         if BaseInterface._instance is self:
@@ -522,23 +524,33 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
         try:
             async_kernel.event_loop.run(self.run, (), settings)
         finally:
-            if BaseInterface._instance is self:
-                BaseInterface._instance = None
+            self.stopped.set_result(None)
 
-    def stop(self, force=False) -> None:
+    def stop(self) -> None:
         """Stop the kernel and this interface."""
         if not self.stopped.done():
             self.stopping.set_result(None)
             if not self.callers:
                 self.stopped.set_result(None)
-                self.stop_messaging.set_result(None)
-            if force:
-                self._force_stop()
-            self.log.info("%r, stopping force=%r", self, force)
+
+    def refresh_connections(self, *new: Connection[Self]) -> None:
+        """Refresh the list of connections.
+
+        This method must be called from the control thread.
+
+        Args:
+            new: new connections to add.
+        """
+        assert self.callers[Channel.control].get_existing() is self.callers[Channel.control]
+        connections = []
+        for c in (*self._connections, *new):
+            if c.parent is self and not c.stopped.done() and c not in connections:
+                connections.append(c)
+        self._connections = tuple(connections)
 
     @override
     def exit(self, exit_status: int | str | None = 0) -> None:
-        self.stop(force=True)
+        self.stop()
         return super().exit(exit_status)
 
     @override
@@ -557,28 +569,53 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
 
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
+        try:
+            if self.stopped.done():
+                msg = "Stopped early"
+                raise RuntimeError(msg)
+            self.log.info("Starting kernel interface")
+            self.backend = Backend(current_async_library())
+            async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
+                self.callers[Channel.shell] = caller
+                self.callers[Channel.control] = caller_ctrl
+                try:
+                    with anyio.CancelScope() as scope:
 
-        if self.stopped.done():
-            msg = "Stopped early"
-            raise RuntimeError(msg)
-        self.log.info("Starting kernel interface")
-        self.backend = Backend(current_async_library())
-        async with super().__asynccontextmanager__():
-            try:
-                with anyio.CancelScope() as scope:
-                    call_direct = Caller().call_direct
-                    self._force_stop = lambda: call_direct(scope.cancel, "Force stop")
-                    async with self.kernel:
-                        if set_started:
-                            self._started()  # pragma: no cover
-                        yield self
-            finally:
-                self.stopped.set_result(None)
+                        async def stopping(
+                            stopped=self.stopped, log=self.log, timeout=self.force_shutdown_delay
+                        ) -> None:
+                            while not stopped.done():
+                                try:
+                                    await stopped.wait(timeout=timeout)
+                                except TimeoutError:
+                                    log.info("Attempting to initiate force stop")
+                                    await caller.call_soon(scope.cancel, "Force stop")
+                                    log.info("Cancel scope call succeeded.")
 
-    def _started(self) -> None:
+                        self.stopping.add_done_callback(lambda _: caller_ctrl.call_soon(stopping))
+                        async with self.kernel:
+                            if set_started:
+                                await self._started()
+                            yield self
+                finally:
+                    self.stopped.set_result(None)
+                    await caller.wait([c.stop() for c in self.connections], shield=True)
+        finally:
+            self.stopped.set_result(None)
+
+    async def _started(self) -> None:
         self.log.info("Interface started: %s", self.summary)
         self.started.set_result(None)
         del self.iopub_send
+        for pth in self.autostart_connections:
+            try:
+                if issubclass(cls := import_item(pth), Connection):
+                    self.log.info("Starting connection for %s", pth)
+                    connection = cls()
+                    await connection.start()
+                    self.log.info("Connection started %s", connection.connection_info())
+            except Exception as e:
+                self.log.exception("Failed to start connection %s", pth, exc_info=e)
         while self._iopub_cache:
             self._iopub_cache.reverse()
             args, kwargs = self._iopub_cache.pop()
@@ -599,24 +636,14 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
             if stopped:
                 stopped()
 
-    @override
-    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
-        """Handle an incoming message."""
-        match msg["channel"]:
-            case Channel.control | Channel.shell:
-                self.kernel.message_handler(Job(msg=msg, ident=ident, received_time=time.monotonic()))
-            case Channel.stdin:
-                self._handle_reply(msg)
-            case _:
-                self.log.debug("Unhandled message %r %r", msg, ident)
-
     def input_request(self, prompt: str, *, password=False) -> PendingMessage[Content]:
         job = utils.get_job()
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise RuntimeError(msg)
-        pen_reply = self.send_message(
-            self.msg(
+        connection = job["owner"]()
+        pen_reply = connection.send_message(
+            connection.msg(
                 MsgType.input_request,
                 content=Content(prompt=prompt, password=password),
                 parent=job["msg"],
@@ -631,7 +658,7 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
 
     def iopub_send(
         self,
-        msg_or_type: MsgType | Message[dict[str, Any]] | dict[str, Any] | str,
+        msg_or_type: MsgType | Message[Content] | dict[str, Any] | str,
         *,
         content: Content | None = None,
         metadata: dict[str, Any] | None = None,
@@ -639,20 +666,29 @@ class BaseInterface(BaseMessage, Application, anyio.AsyncContextManagerMixin, Ge
         ident: bytes | list[bytes] | None = None,
         buffers: BuffersType = None,
     ) -> None:
-        if isinstance(msg_or_type, dict):
-            msg_or_type["channel"] = Channel.iopub
-            msg_or_type["buffers"] = buffers
-        else:
-            msg_or_type = self.msg(
-                msg_type=MsgType(msg_or_type),
-                content=content,
-                parent=parent if parent is not NoValue else async_kernel.utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
-                metadata=metadata,
-                channel=Channel.iopub,
-                buffers=buffers,
-            )
-        self.send_message_no_reply(msg_or_type, ident)  # pyright: ignore[reportArgumentType]
-        self.log.debug("iopub_send: msg_type:%r %s", msg_or_type, msg_or_type)
+        """Send an iopub message to each connection."""
+        for c in self._connections:
+            try:
+                if isinstance(msg_or_type, dict):
+                    content = content or msg_or_type.get("content")
+                    buffers = buffers or msg_or_type.get("buffers")
+                    msg_or_type = msg_or_type["header"]["msg_type"]
+                msg = c.msg(
+                    msg_type=MsgType(msg_or_type),
+                    content=content,
+                    parent=parent if parent is not NoValue else async_kernel.utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
+                    metadata=metadata,
+                    channel=Channel.iopub,
+                    buffers=buffers,
+                )
+                c.send_message_no_reply(msg, ident)
+                self.log.debug("iopub_send: msg_type:%r %s", msg_or_type, msg_or_type)
+            except Exception as e:
+                self.log.exception("iopub_send failed for connection %r", c, exc_info=e)
+
+    def get_connection_info(self) -> list[str]:
+        """Ruturns a list of strings for connection details of each active connection which provides it."""
+        return [info for connection in self.connections if (info := connection.connection_info())]
 
 
 class HasInterface(Generic[T_interface_co]):
@@ -711,3 +747,70 @@ class HasInterface(Generic[T_interface_co]):
         inst = new_(cls) if (new_ := super().__new__) is object.__new__ else new_(cls, *args, **kwargs)
         inst._interface = weakref.ref(interface)
         return inst
+
+
+class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_co]):
+    """Provides a connection to the interface for messaging."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        ctx = super().__asynccontextmanager__()
+
+        def start() -> ProtectedPending[Any]:
+            # Nesting inside __init__ means this is only called once for normal usage.
+            async def run(stopped=self.stopped) -> None:
+                async with ctx:
+                    await stopped
+
+            del self.start
+            try:
+                interface = self.parent
+                assert not interface.stopping.done()
+
+                interface.started.add_done_callback(lambda _: interface.callers[Channel.shell].call_soon(run))
+                interface.stopped.add_done_callback(self.stop)
+            except Exception as e:
+                self.started.set_exception(e)
+                self.stop()
+            return self.started
+
+        self.start = start
+
+    @override
+    def __asynccontextmanager__(self) -> Never:
+        msg = f"Directly using async context of {self} is not allowed!"
+        raise RuntimeError(msg)
+
+    @override
+    async def open_channels(self) -> None:
+        """Open the channels, set ready when ready block until stopped."""
+        self.parent.refresh_connections(self)
+        self.started.set_result(None)
+        await self.stopped
+        self.parent.refresh_connections()
+
+    def start(self) -> ProtectedPending[Any]:
+        """Required to start the connection."""
+        return self.started
+
+    @override
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+
+        match msg["channel"]:
+            case Channel.control | Channel.shell:
+                self.parent.kernel.handle_request(
+                    Job(msg=msg, ident=ident, received_time=time.monotonic(), owner=self.as_owner)
+                )
+            case Channel.stdin:
+                self.handle_reply(msg)
+            case _:
+                self.log.debug("Unhandled message %r %r", msg, ident)
+
+    def stop(self, _=None, /) -> ProtectedPending[Any]:
+        """Stop the connection."""
+        self.stopped.set_result(None)
+        self.parent.stopped.remove_done_callback(self.stop)
+        return self.stopped
+
+    def connection_info(self) -> str:
+        return ""

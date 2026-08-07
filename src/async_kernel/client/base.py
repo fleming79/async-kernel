@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import time
-import weakref
 from collections import deque
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self
@@ -18,15 +17,13 @@ from typing_extensions import override
 
 from async_kernel import utils
 from async_kernel.common import Fixed, SingleAsyncQueue
-from async_kernel.interface import BaseInterface
-from async_kernel.interface.base import BaseMessage, PendingMessage
+from async_kernel.interface import HasInterface
+from async_kernel.interface.base import BaseMessage, Connection, PendingMessage
 from async_kernel.typing import Channel, Content, ExecuteContent, Job, Message, MsgType, NoValue, T_interface_co
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
-
-    from async_kernel.pending import ProtectedPending
 
 
 class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
@@ -50,9 +47,9 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
         match msg["channel"]:
             case Channel.control | Channel.shell:
-                self._handle_reply(msg)
+                self.handle_reply(msg)
             case Channel.stdin:
-                self._handle_request(Job(msg=msg, ident=ident, received_time=time.monotonic()))
+                self._handle_request(Job(owner=self.as_owner, msg=msg, ident=ident, received_time=time.monotonic()))
             case Channel.iopub:
                 for topic, queue in self._iopub_queues:
                     if not topic or topic in ident:
@@ -236,28 +233,19 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
         )
 
 
-class LocalKernelClient(BaseKernelClient[T_interface_co], Generic[T_interface_co]):
-    """A Kernel Client for an interface running in the current process.
+class LocalClient(HasInterface[T_interface_co], BaseKernelClient[T_interface_co], Generic[T_interface_co]):
+    """A connection for an interface running in the current process."""
 
-    Usage:
-        ```python
-        async with LocalKernelClient() as client:
-            await client.kernel_info()
-        ```
-    """
-
-    @property
-    def interface(self) -> T_interface_co:
-        return self._ref()  # pyright: ignore[reportReturnType]
+    connection: Fixed[Self, Connection[T_interface_co]] = Fixed(Connection)
+    session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].connection.session_id)
 
     @override
-    async def open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
-        self._ref = weakref.ref(BaseInterface.instance())
-        self.interface._local_clients.append(self)  # pyright: ignore[reportPrivateUsage]
-        ready()
-        await stop
-        self.interface._local_clients.remove(self)  # pyright: ignore[reportPrivateUsage]
+    async def open_channels(self) -> None:
+        # Cross-connect
+        self.connection.transmit_msg = self.handle_incoming_msg
+        self.transmit_msg = self.connection.handle_incoming_msg
 
-    @override
-    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
-        self.interface.handle_incoming_msg(msg, ident)
+        await self.connection.start()
+        self.connection.stopped.add_done_callback(lambda _: self.stopped.set_result(None))
+        await super().open_channels()
+        self.connection.stop()

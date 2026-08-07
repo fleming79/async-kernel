@@ -11,7 +11,7 @@ from IPython.core.shellapp import InteractiveShellApp, shell_aliases, shell_flag
 from traitlets import traitlets
 from typing_extensions import override
 
-from async_kernel.interface.zmq import ZMQInterface
+from async_kernel.interface.base import BaseInterface
 from async_kernel.typing import Hosts, NoValue, T_ipshell_co
 
 if TYPE_CHECKING:
@@ -21,11 +21,11 @@ if TYPE_CHECKING:
 __all__ = ["IPApp"]
 
 
-ZMQInterface.classes.append(ProfileDir)
+BaseInterface.classes.append(ProfileDir)
 
 
 class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
-    ZMQInterface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]
+    BaseInterface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]
 ):
     """An IPython application with a zmq interface."""
 
@@ -35,7 +35,7 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
     "A description to use for the command line interface."
 
     aliases = (
-        ZMQInterface.aliases
+        BaseInterface.aliases
         | {
             "profile-dir": "ProfileDir.location",
             "profile": "BaseIPythonApplication.profile",
@@ -47,7 +47,7 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
     ""
 
     flags = (
-        ZMQInterface.flags
+        BaseInterface.flags
         | {
             "automagic": (
                 {"InteractiveShell": {"automagic": True}},
@@ -85,5 +85,5 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
             self.init_code()
             self.init_extensions()
             if set_started:
-                self._started()
+                await self._started()
             yield self

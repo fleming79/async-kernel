@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, Any, Generic, Self
 import anyio
 import jupyter_client
 import jupyter_client.session
-import traitlets
 import zmq
 from aiologic.lowlevel import create_async_event
 from jupyter_client.connect import ConnectionFileMixin
+from traitlets import traitlets
 from typing_extensions import override
 
 from async_kernel import utils
@@ -23,25 +23,26 @@ from async_kernel.client.base import BaseKernelClient
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.kernelspec import make_argv
-from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_zmq_interface_co
+from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_interface_co
 
 if TYPE_CHECKING:
     import subprocess
-    from collections.abc import AsyncGenerator, Callable
+    from collections.abc import AsyncGenerator
 
-    from async_kernel.pending import ProtectedPending
+
+__all__ = ["ZMQKernelClient"]
 
 
 class ClientSession(jupyter_client.session.Session):
     check_pid = traitlets.Bool(False).tag(config=True)
 
 
-class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin, Generic[T_zmq_interface_co]):
+class ZMQKernelClient(BaseKernelClient[T_interface_co], ConnectionFileMixin, Generic[T_interface_co]):
     """Communicates with a single kernel on any host via zmq channels."""
 
     _sockets: Fixed[Any, dict[Channel, ZMQPollSocket]] = Fixed(dict)
 
-    session: traitlets.Instance[jupyter_client.session.Session] = traitlets.Instance(jupyter_client.session.Session, ())
+    session = traitlets.Instance(ClientSession, ())
     ""
     session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].session.session)
 
@@ -57,7 +58,7 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         return super().write_connection_file(**kwargs)
 
     @override
-    async def open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
+    async def open_channels(self) -> None:
         # Thread: control
         def msg_handler(
             sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg
@@ -80,8 +81,9 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 zmq_poll.event_handler(shell, functools.partial(msg_handler, channel=Channel.shell)),
                 zmq_poll.event_handler(stdin, functools.partial(msg_handler, channel=Channel.stdin)),
             ):
-                ready()
-                await stop
+                await self._wait_for_welcome()
+                await self._configure_session()
+                await super().open_channels()
                 self._sockets.clear()
                 del self._zmq_poll
 
@@ -126,14 +128,14 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
 
     @asynccontextmanager
     async def subprocess_kernel(
-        self, startup_delay=0.5, start_timeout=None, **kwargs
+        self, startup_delay=0.5, start_timeout=None, kernel_name="async", **kwargs
     ) -> AsyncGenerator[subprocess.Popen[bytes]]:
         import subprocess  # noqa: PLC0415
 
         self.write_connection_file()
         process = None
         try:
-            command = make_argv(connection_file=self.connection_file, name=self.kernel_name, **kwargs)
+            command = make_argv(connection_file=self.connection_file, name=kernel_name, **kwargs)
             # We use subprocess instead of the async version for better coverage support and debugging reliability.
             process = subprocess.Popen(command)
             # Adding  a delay (especially on windows) before opening the connection gives better startup reliability.
@@ -145,9 +147,8 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
                 try:
                     yield process
                 finally:
-                    pen = self.shutdown(False)
-                    await pen.wait(shield=True, timeout=1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
-                    process.wait(timeout=1 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
+                    await self.shutdown(False).wait(timeout=10 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
+            assert process.wait(timeout=10 if not utils.LAUNCHED_BY_DEBUGPY else 1e6) == 0
         finally:
             if process:
                 process.terminate()  # pragma: no cover
@@ -228,8 +229,8 @@ class ZMQKernelClient(BaseKernelClient[T_zmq_interface_co], ConnectionFileMixin,
         return msg
 
     @override
-    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
-        self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportArgumentType]
+    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
+        return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
     @asynccontextmanager
     async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:

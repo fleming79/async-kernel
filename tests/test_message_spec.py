@@ -10,12 +10,12 @@ from tests import utils
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from async_kernel.client.zmq import ZMQKernelClient
-    from async_kernel.interface.zmq import ZMQInterface
+    from async_kernel.client.base import LocalClient
+    from async_kernel.interface import BaseInterface
     from async_kernel.kernel import Kernel
     from async_kernel.shell import IPShell
 
-    ClientType = ZMQKernelClient[ZMQInterface[IPShell]]
+    ClientType = LocalClient[BaseInterface[IPShell]]
 # pyright: reportGeneralTypeIssues=false, reportOptionalMemberAccess=false
 
 

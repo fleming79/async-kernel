@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import builtins
-import json
 import math
-import pathlib
 import shlex
 import shutil
 import sys
@@ -183,17 +181,19 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
 
         [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)
         """
-        content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
-        msg_type = MsgType.iopub_update_display_data if update else MsgType.iopub_display_data
-        msg = self.parent.msg(msg_type, content=content, parent=utils.get_parent_message(), channel=Channel.iopub)
-        for hook in self._hooks:
-            try:
-                msg = hook(msg)
-            except Exception as e:
-                self.parent.log.exception("Failed to execute hook:%r for msg:%r", hook, msg, exc_info=e)
-            if msg is None:
-                return
-        self.parent.iopub_send(msg, ident=b"display_data")
+        if job := utils.get_job():
+            owner = job["owner"]()
+            content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
+            msg_type = MsgType.iopub_update_display_data if update else MsgType.iopub_display_data
+            msg = owner.msg(msg_type, content=content, parent=utils.get_parent_message(), channel=Channel.iopub)
+            for hook in self._hooks:
+                try:
+                    msg = hook(msg)
+                except Exception as e:
+                    self.parent.log.exception("Failed to execute hook:%r for msg:%r", hook, msg, exc_info=e)
+                if msg is None:
+                    return
+            owner.send_message_no_reply(msg, ident=b"display_data")
 
     @override
     def clear_output(self, wait: bool = False) -> None:
@@ -204,7 +204,10 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
                 instead waiting for the next display before clearing.
                 This reduces bounce during repeated clear & display loops.
         """
-        self.parent.iopub_send(msg_or_type=MsgType.iopub_clear_output, content={"wait": wait}, ident=b"display_data")
+        if job := utils.get_job():
+            owner = job["owner"]()
+            msg = owner.msg(MsgType.iopub_clear_output, {"wait": wait}, channel=Channel.iopub)
+            owner.send_message(msg, ident=b"display_data")
 
     def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
         """Register a hook for when publish is called.
@@ -415,6 +418,9 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     def init_payload(self) -> Never:
         raise MethodNotSupported  # pragma: no cover
 
+    def ask_exit(self) -> None:
+        raise MethodNotSupported  # pragma: no cover
+
     input_transformer_manager: traitlets.Instance[TransformerManager]
 
     @override
@@ -497,11 +503,6 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         """Stop eventloop when `exit_now` fires."""
         if self.exit_now:
             self.parent.stop()
-
-    def ask_exit(self) -> None:
-        """Open a dialog in the client asking if the kernel should be stopped."""
-        if self.kernel.raw_input("Are you sure you want to stop the kernel?\ny/[n]\n") == "y":
-            self.exit_now = True
 
     @override
     def init_builtins(self) -> None:
@@ -916,20 +917,8 @@ class KernelMagics(HasInterface[BaseInterface[IPShell]], Magics):
     @line_magic
     def connect_info(self, _) -> None:
         """Print information for connecting other clients to this kernel."""
-        if (f := getattr(self.parent, "connection_file", None)) and (p := pathlib.Path(f)).exists():
-            info = json.loads(p.read_bytes())
-            print(
-                json.dumps(info, indent=2),
-                "Paste the above JSON into a file, and connect with:\n"
-                + "    $> jupyter <app> --existing <file>\n"
-                + "or, if you are local, you can connect with just:\n"
-                + f"    $> jupyter <app> --existing {f}\n"
-                + "or even just:\n"
-                + "    $> jupyter <app> --existing\n"
-                + "if this is the most recent Jupyter kernel you have started.",
-            )
-        else:
-            print("No connection info")  # pragma: no cover
+        for info in self.parent.get_connection_info():
+            print(info)
 
     @line_magic
     def callers(self, _) -> None:
