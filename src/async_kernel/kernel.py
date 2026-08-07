@@ -14,19 +14,17 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
 import anyio
 import traitlets
-from aiologic import Event
-from aiologic.lowlevel import enable_signal_safety
+from aiologic.lowlevel import create_async_event, create_green_event, enable_signal_safety
 from traitlets.config import LoggingConfigurable
 
 import async_kernel
 from async_kernel import utils
-from async_kernel.caller import Caller
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
 from async_kernel.interface import HasInterface
 from async_kernel.outstream import OutStream
-from async_kernel.pending import Pending
+from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.shell.base import ShellPendingManager
 from async_kernel.typing import (
     CallerCreateOptions,
@@ -45,6 +43,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import FrameType
 
+    from async_kernel.caller import Caller
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
@@ -72,9 +71,6 @@ class Kernel(
     A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_).
     """
 
-    force_shutdown_delay = traitlets.Float(0.5 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
-    "Between receiving a shutdown request and when parent is 'forced' to shutdown."
-
     handle_in_thread = traitlets.Dict(key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Unicode())
     """
     A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler.
@@ -91,6 +87,9 @@ class Kernel(
 
     comm_manager = Fixed(CommManager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
+
+    stopped = Fixed(ProtectedPending)
+    "A pending that is set once the kernel has stopped."
 
     active_execute_requests: Fixed[Self, set[Pending[Any]]] = Fixed(set)
     "A set of active execute requests that gets updated by the shell."
@@ -205,6 +204,7 @@ class Kernel(
                 comm.close(deleting=True)
             remove_patch()
             self._handler_cache.clear()
+            self.stopped.set_result(None)
 
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
         """Handle interrupt signals."""
@@ -217,7 +217,7 @@ class Kernel(
         elif signum == signal.SIGINT:
             self.log.info("Keyboard interrupt")
             with enable_signal_safety():
-                self.parent.stop(force=True)
+                self.parent.stop()
 
     async def do_interrupt(self) -> None:
         """Interrupt/cancel non-silent active execute requests."""
@@ -309,29 +309,27 @@ class Kernel(
             handler: HandlerType = getattr(self, msg_type)
 
             @functools.wraps(handler)
-            async def run_handler(
-                job: Job, iopub_send=self.parent.iopub_send, send_reply=self.parent.send_reply
-            ) -> None:
+            async def run_handler(job: Job, iopub_send=self.parent.iopub_send) -> None:
                 job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
                 subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
 
                 try:
                     iopub_send(
-                        msg_or_type="status",
+                        msg_or_type=MsgType.iopub_status,
                         parent=job["msg"],
                         content={"execution_state": "busy"},
                         ident=b"kernel.status",
                     )
                     if (content := await handler(job)) is not None:
-                        send_reply(job, content)
+                        job["owner"]().send_reply(job, content)
                 except Exception as e:
-                    send_reply(job, utils.error_to_content(e))
+                    job["owner"]().send_reply(job, utils.error_to_content(e))
                     self.log.exception("Exception in message handler:", exc_info=e)
                 finally:
                     utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
                     ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
                     iopub_send(
-                        msg_or_type="status",
+                        msg_or_type=MsgType.iopub_status,
                         parent=job["msg"],
                         content={"execution_state": "idle"},
                         ident=b"kernel.status",
@@ -341,7 +339,7 @@ class Kernel(
             self._handler_cache[key] = run_handler
             return run_handler
 
-    def message_handler(self, job: Job) -> None:
+    def handle_request(self, job: Job) -> None:
         """Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
 
         Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
@@ -488,29 +486,18 @@ class Kernel(
         await self.do_interrupt()
         return {}
 
-    async def shutdown_request(self, job: Job[Content], /) -> Content:
+    async def shutdown_request(self, job: Job[Content], /) -> None:
         """Handle an [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
         # Thread: Control
-
-        pen: Pending[None] = Caller.current_pending()  # pyright: ignore[reportAssignmentType]
-        send_now = Event()
-
-        def wait_for_stop_before_send(_) -> None:
-            # Thread: shell
-            send_now.set()
-            assert pen
-            # Wait for task to finish which means the interrupt reply has been sent.
-            pen.wait_sync()
-
-        self.parent.stopped.add_done_callback(wait_for_stop_before_send)
+        resume, done = create_async_event(), create_green_event()
+        # wait until the kernel is stopped prior to sending the message.
+        self.stopped.add_done_callback(lambda _: (resume.set(), done.wait()))
         self.parent.stop()
-        # Wait for pending.stopped callback to set the event.
-        with anyio.move_on_after(self.force_shutdown_delay):
-            await send_now
-        self.parent.stop(force=True)  # noop when already stopped.
-        await send_now
-        # The shell thread will block in the callback until the reply is sent.
-        return {"restart": job["msg"]["content"].get("restart", False)}
+        try:
+            await resume
+        finally:
+            job["owner"]().send_reply(job, {"restart": job["msg"]["content"].get("restart", False)})
+            done.set()
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle an [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""

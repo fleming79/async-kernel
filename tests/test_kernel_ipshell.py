@@ -19,7 +19,6 @@ from tests import utils
 if TYPE_CHECKING:
     from async_kernel.client.base import BaseKernelClient
     from async_kernel.interface import BaseInterface
-    from async_kernel.interface.zmq import ZMQInterface
     from async_kernel.shell import IPShell
 
     ClientType = BaseKernelClient[BaseInterface[IPShell]]
@@ -38,7 +37,7 @@ async def test_execute_shell_timeout(client: ClientType, kernel: Kernel, mode: s
         metadata = {"tags": ["timeout=0.1"]}
     last_stop_time = kernel.shell._stop_on_error_info
     try:
-        code = "\n".join(["import anyio", "await anyio.sleep_forever()"])
+        code = "import anyio\nawait anyio.sleep_forever()"
         reply = await client.execute(code, metadata=metadata)
         assert last_stop_time == kernel.shell._stop_on_error_info, "Should not cause cancellation"
         assert reply["content"]["status"] == "error"
@@ -89,7 +88,7 @@ async def test_is_complete_2(client: ClientType, code: str, status: str):
     assert reply["content"]["status"] == status
 
 
-async def test_noop(kernel: Kernel[ZMQInterface, IPShell]):
+async def test_noop(kernel: Kernel[BaseInterface, IPShell]):
     with pytest.raises(MethodNotSupported):
         kernel.shell.init_prefilter()
 
@@ -205,15 +204,6 @@ async def test_comm_open_msg_close(client: ClientType, kernel: Kernel, mocker):
     kernel.comm_manager.unregister_target("my target", cb)
 
 
-@pytest.mark.parametrize("response", ["y", ""])
-async def test_user_exit(client: ClientType, kernel: Kernel, mocker, response: Literal["y", ""]):
-    stop = mocker.patch.object(kernel.parent, "stop")
-    raw_input = mocker.patch.object(kernel, "raw_input", return_value=response)
-    await client.execute("quit()")
-    assert raw_input.call_count == 1
-    assert stop.call_count == (1 if response == "y" else 0)
-
-
 async def test_is_complete_request(client: ClientType):
     reply = await client.is_complete("hello")
     assert reply["header"]["msg_type"] == "is_complete_reply"
@@ -226,19 +216,18 @@ async def test_shell_can_set_namespace(kernel: Kernel):
     assert set(kernel.shell.user_ns) == expected
 
 
-async def test_shell_display_hook_reg(kernel: Kernel[ZMQInterface, IPShell]):
-    val: None | dict = None
+async def test_shell_display_hook_reg(kernel: Kernel[BaseInterface, IPShell], client):
+    val = []
 
-    def my_hook(msg):
-        nonlocal val
-        val = msg
+    def my_hook(msg) -> None:
+        val.append(msg)
 
     kernel.shell.display_pub.register_hook(my_hook)
     assert my_hook in kernel.shell.display_pub._hooks
-    kernel.shell.display_pub.publish({"test": True})
+    await client.execute("display('test')")
+    assert val
     kernel.shell.display_pub.unregister_hook(my_hook)
     assert my_hook not in kernel.shell.display_pub._hooks
-    assert val
 
 
 @pytest.mark.parametrize("mode", RunMode)

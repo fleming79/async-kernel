@@ -3,9 +3,7 @@ from __future__ import annotations
 import gc
 import importlib.util
 import json
-import os
 import platform
-import signal
 import sys
 import weakref
 from typing import TYPE_CHECKING, Literal, cast
@@ -16,11 +14,9 @@ from aiologic import Event
 
 import async_kernel
 from async_kernel import Kernel, Pending
-from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.command import command_line, to_flags_and_settings
 from async_kernel.interface.base import BaseInterface
 from async_kernel.interface.ip_app import IPApp
-from async_kernel.interface.zmq import ZMQInterface
 from async_kernel.typing import Backend, Hosts
 from tests import utils
 
@@ -119,7 +115,7 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
             "--name=async-trio",
             "--display_name='my kernel'",
             "--BaseShell.timeout=0.01",
-            "--interface_class=async_kernel.interface.zmq.ZMQInterface",
+            "--interface_class=async_kernel.interface.BaseInterface",
         ],
     )
     with pytest.raises(SystemExit) as e:
@@ -141,7 +137,7 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
             "--connection_file={connection_file}",
             "--name=async-trio",
             "--BaseShell.timeout=0.01",
-            "--interface_class=async_kernel.interface.zmq.ZMQInterface",
+            "--interface_class=async_kernel.interface.BaseInterface",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -214,7 +210,7 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
     ]
     pen = Pending()
     pen.add_done_callback(on_started)
-    monkeypatch.setattr(ZMQInterface, "started", pen)
+    monkeypatch.setattr(BaseInterface, "started", pen)
     monkeypatch.setattr(sys, "argv", cmd)
     with pytest.raises(SystemExit) as e:
         command_line()
@@ -226,7 +222,7 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
 @utils.skip_if_missing("jupyterlab", "Gui tests fail on CI")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("host", [Hosts.tk, Hosts.qt, None])
-def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, host):
+def test_command_launch_with_host(mocker, monkeypatch, backend, host):
     if host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
     if host is Hosts.tk and not importlib.util.find_spec("_tkinter"):
@@ -242,7 +238,7 @@ def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, hos
         f"--backend={backend}",
         f"--host={host}",
         "--interface_class",
-        "async_kernel.interface.zmq.ZMQInterface",
+        "async_kernel.interface.BaseInterface",
     ]
     monkeypatch.setattr(sys, "argv", cmd)
     kernel = cast("Kernel", None)  # pyright: ignore[reportInvalidCast]
@@ -254,32 +250,19 @@ def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, hos
 
     pen = Pending()
     pen.add_done_callback(on_started)
-    monkeypatch.setattr(ZMQInterface, "started", pen)
+    monkeypatch.setattr(BaseInterface, "started", pen)
 
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
-    assert isinstance(kernel.parent, ZMQInterface)
+    assert isinstance(kernel.parent, BaseInterface)
     assert kernel.parent.host == host
     assert kernel.parent.backend == backend
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="Can't simulate keyboard interrupt on windows.")
-async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyio_backend):
-    # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
-    client = ZMQKernelClient()
-    async with client.subprocess_kernel() as process:
-        # Simulate a keyboard interrupt from the console.
-        result = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
-        pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])
-        assert pid == process.pid
-        assert os.getpid() != process.pid
-        os.kill(process.pid, signal.SIGINT)
-
-
-async def test_ZMQInterface_gc(anyio_backend: Backend):
+async def test_BaseInterface_gc(anyio_backend: Backend):
     collected = Event()
-    async with ZMQInterface() as interface:
+    async with BaseInterface() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
     del interface

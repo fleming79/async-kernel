@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 import async_kernel
 from async_kernel.common import import_item
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.interface.base import BaseInterface, HasInterface
+from async_kernel.interface.base import BaseInterface, Connection, HasInterface
 from async_kernel.kernelspec import make_argv
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from async_kernel.typing import BuffersType, Message, T
 
 
-__all__ = ["BaseInterface", "HasInterface", "launch_interface", "start_kernel_callable_interface"]
+__all__ = ["BaseInterface", "Connection", "HasInterface", "launch_interface", "start_kernel_callable_interface"]
 
 
 async def start_kernel_callable_interface(
@@ -45,7 +45,7 @@ async def start_kernel_callable_interface(
     app = cls(argv)
     assert issubclass(cls, BaseInterface)
 
-    def send_msg(msg: Message, ident: list[bytes], transmit=transmit, pack=pack_unpack[0]) -> None:
+    def transmit_msg(msg: Message, ident: list[bytes], transmit=transmit, pack=pack_unpack[0]) -> None:
         """Send a message using `transmit`."""
         buffers: BuffersType = msg.pop("buffers", None)  # pyright: ignore[reportAssignmentType]
         transmit(pack(msg), ident, buffers)
@@ -54,12 +54,13 @@ async def start_kernel_callable_interface(
         """Receive an external message."""
         msg: Message = unpack(encoded_msg)
         msg["buffers"] = buffers
-        app.handle_incoming_msg(msg, ident)
+        connection.handle_incoming_msg(msg, ident)
 
-    app.send_msg = send_msg
+    connection = Connection()
+    connection.transmit_msg = transmit_msg
     async_kernel.Caller().call_soon(app.run, stopped=stopped)
     await app.started
-
+    connection.start()
     return receive_message
 
 

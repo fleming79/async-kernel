@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import gc
+import time
 import weakref
 from typing import TYPE_CHECKING
 
@@ -10,12 +11,13 @@ from aiologic import Event
 from traitlets.config.configurable import Configurable
 
 import async_kernel
-from async_kernel.client.base import LocalKernelClient
+from async_kernel.client.base import LocalClient
 from async_kernel.interface import BaseInterface, HasInterface
-from async_kernel.shell import BaseShell
+from async_kernel.shell.base import BaseShell
+from async_kernel.typing import Channel, Job, MsgType
 
 if TYPE_CHECKING:
-    from async_kernel.typing import Backend, Job
+    from async_kernel.typing import Backend
 
 # pyright: reportPrivateUsage=false
 
@@ -56,16 +58,18 @@ class TestBaseInterface:
                 with pytest.raises(RuntimeError, match="Already initialized!"):
                     interface.initialize()
 
-    async def test_input_request_no_handler(self, anyio_backend: Backend, job: Job):
+    async def test_input_request_no_handler(self, anyio_backend: Backend):
 
-        async with BaseInterface(shell_class=BaseShell), LocalKernelClient() as client:
+        async with BaseInterface(shell_class=BaseShell), LocalClient() as client:
+            msg = client.msg(MsgType.input_request, channel=Channel.stdin)
+            job = Job(msg=msg, owner=client.as_owner, ident=[], received_time=time.monotonic())
             with pytest.raises(RuntimeError, match="A handler is not available"):
                 await client.input_request(job)
 
-    async def test_stop(self, anyio_backend: Backend):
+    async def test_stop(self, anyio_backend: Backend) -> None:
 
         async with BaseInterface(shell_class=BaseShell) as interface:
-            interface.stop(force=True)
+            interface.stop()
 
     async def test_base_shell(self, anyio_backend: Backend):
 

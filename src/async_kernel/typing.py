@@ -3,16 +3,28 @@
 from __future__ import annotations
 
 import enum
+import typing
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, final
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    Literal,
+    NotRequired,
+    ParamSpec,
+    Self,
+    final,
+    runtime_checkable,
+)
 
+import traitlets
 from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, override
 
 if TYPE_CHECKING:
     import datetime
 
     from async_kernel.interface import BaseInterface
-    from async_kernel.interface.zmq import ZMQInterface
+    from async_kernel.pending import PendingMessage
     from async_kernel.shell import BaseShell
     from async_kernel.shell.ipshell import IPShell
 
@@ -51,7 +63,6 @@ P = ParamSpec("P")
 T_shell_co = TypeVar("T_shell_co", covariant=True, bound="BaseShell", default="BaseShell")
 T_ipshell_co = TypeVar("T_ipshell_co", covariant=True, bound="IPShell", default="IPShell")
 T_interface_co = TypeVar("T_interface_co", covariant=True, bound="BaseInterface", default="BaseInterface")
-T_zmq_interface_co = TypeVar("T_zmq_interface_co", covariant=True, bound="ZMQInterface", default="ZMQInterface")
 
 
 class Backend(enum.StrEnum):
@@ -395,6 +406,59 @@ class CallerState(enum.Enum):
 BuffersType = list[bytes | memoryview] | None
 
 
+class MessageMeta(typing._ProtocolMeta, traitlets.MetaHasTraits):  # pyright: ignore[reportUnsafeMultipleInheritance, reportPrivateUsage]
+    # Protocol has a metaclass so we need to merge it with traitlets to make it compatible.
+    pass
+
+
+@runtime_checkable
+class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
+    """The protocol used by a connection on the interface and clients."""
+
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The method where incoming messages are handled."""
+
+    def handle_reply(self, msg: Message) -> None:
+        """A handler for relies to requests that originated from this object."""
+
+    def send_message(
+        self,
+        msg: Message,
+        ident: bytes | list[bytes] | None = None,
+    ) -> PendingMessage[Content]:
+        """Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""
+        ...
+
+    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
+        """Send a reply to a job (a message of msg_type ending in '_request')."""
+
+    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The main entry point for sending messages in subclasses, not normally called directly."""
+
+    def msg(
+        self,
+        msg_type: str | MsgType,
+        content: T | None = None,
+        *,
+        channel: Channel,
+        parent: Message | dict[str, Any] | None = None,
+        header: MsgHeader | dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        buffers: BuffersType = None,
+    ) -> Message[T]:
+        """Create a new message."""
+        ...
+
+    def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> None:
+        """Sends a message without expecting a reply.
+
+        This could be of two categories:
+            1. The reply to a request.
+            2. A message of a type that does not have a reply such as comm_open, comm_close, comm_msg.
+        """
+        ...
+
+
 class MsgHeader(TypedDict):
     """A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."""
 
@@ -440,13 +504,16 @@ class Message(TypedDict, Generic[T]):
 
 
 class Job(TypedDict, Generic[T]):
-    """A `Message` bundle."""
+    """A `Message` request bundle."""
 
     msg: Message[T]
     "The message received over the socket."
 
     ident: list[bytes]
     "The ident associated with the message and its origin."
+
+    owner: Callable[[], MessageProtocol]
+    "A callable that returns the object from which a message originated."
 
     received_time: float
     "The time the message was received."

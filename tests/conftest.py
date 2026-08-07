@@ -8,11 +8,11 @@ import pytest
 
 import async_kernel
 from async_kernel import Caller, Kernel
-from async_kernel.client.base import LocalKernelClient
+from async_kernel.client.base import LocalClient
 from async_kernel.client.zmq import ZMQKernelClient
 from async_kernel.interface import BaseInterface
-from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
+from async_kernel.interface.zmq import ZMQConnection
+from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
@@ -21,7 +21,6 @@ if TYPE_CHECKING:
 
 assert "IPython" not in sys.modules
 
-from async_kernel.interface.ip_app import IPApp  # noqa: E402
 
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
     async_kernel.utils.PYTEST_LOG_CLI_DEBUG = True
@@ -48,40 +47,38 @@ def anyio_backend(request):
     return request.param
 
 
-@pytest.fixture(params=["base interface", "zmq interface"], scope="module")
-def interface_name(request):
+@pytest.fixture(params=["local", "zmq"], scope="module")
+def connection_name(request):
     return request.param
 
 
 @pytest.fixture(scope="module")
-async def kernel(anyio_backend: Backend, interface_name: Literal["base interface", "zmq interface"], tmp_path_factory):
-    # Set a blank connection_file
-
-    if interface_name == "zmq interface":
+async def kernel(anyio_backend: Backend, connection_name: Literal["local", "zmq"], tmp_path_factory):
+    os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
+    if connection_name == "zmq":
         connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-        os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
-        # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
-        interface = IPApp(
-            connection_file=connection_file.as_posix(),
-            transport="ipc" if sys.platform == "linux" else "tcp",
-            backend=anyio_backend,
-        )
-        async with interface:
+        async with BaseInterface([f"--connection_file={connection_file}"]) as interface:
+            assert interface.connections
+            assert isinstance(interface.connections[0], ZMQConnection)
             yield interface.kernel
-    if interface_name == "base interface":
-        async with BaseInterface() as interface:
+    else:
+        async with BaseInterface(autostart_connections=[]) as interface:
             yield interface.kernel
 
 
 @pytest.fixture(scope="module")
-async def client(kernel: Kernel) -> AsyncGenerator[LocalKernelClient | ZMQKernelClient]:
-    if isinstance(kernel.parent, ZMQInterface):
+async def client(
+    kernel: Kernel, connection_name: Literal["local", "zmq"]
+) -> AsyncGenerator[LocalClient | ZMQKernelClient]:
+    if connection_name == "zmq":
+        connection = kernel.parent.connections[0]
+        assert isinstance(connection, ZMQConnection)
         client = ZMQKernelClient()
-        client.load_connection_info(kernel.parent.get_connection_info())
+        client.load_connection_info(connection.get_connection_info())
         async with client:
             yield client
     else:
-        async with LocalKernelClient() as client:
+        async with LocalClient() as client:
             yield client
 
 
@@ -102,14 +99,14 @@ async def subprocess_kernel_client(anyio_backend: Backend):
 
 
 @pytest.fixture
-def job() -> Job[ExecuteContent]:
+def job() -> Job:
     """An execute dummy job."""
     content = ExecuteContent(
         code="", silent=True, store_history=True, user_expressions={}, allow_stdin=False, stop_on_error=True
     )
     header = MsgHeader(msg_id="", session="", username="", date="", msg_type=MsgType.execute_request, version="1")
     msg = Message(header=header, parent_header=header, metadata={}, buffers=[], content=content, channel=Channel.shell)
-    return Job(msg=msg, ident=[b""], received_time=0.0)
+    return Job(msg=msg, ident=[b""], received_time=0.0, owner=MessageProtocol)
 
 
 @pytest.fixture

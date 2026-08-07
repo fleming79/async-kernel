@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import functools
+import json
 import os
+import pathlib
 import sys
 from typing import TYPE_CHECKING, Any, Generic, Never, Self
 
@@ -15,42 +17,22 @@ from typing_extensions import override
 
 from async_kernel.common import Fixed, MethodNotSupported
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
-from async_kernel.interface.base import BaseInterface, HasInterface
-from async_kernel.typing import Channel, Message, MsgType, T_shell_co
+from async_kernel.interface.base import Connection, HasInterface
+from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_interface_co
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from jupyter_client import KernelConnectionInfo
 
-    from async_kernel.pending import ProtectedPending
 
-
-__all__ = ["ZMQInterface"]
+__all__ = ["ZMQConnection"]
 
 
 class Session(HasInterface, jupyter_client.session.Session):
     check_pid = traitlets.Bool(False).tag(config=True)
 
 
-class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_shell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
-    """The base kernel interface using ZMQ sockets."""
-
-    aliases = BaseInterface.aliases | {
-        ("f", "connection_file"): "ZMQInterface.connection_file",
-        "host": "ZMQInterface.host",
-        "host_options": "ZMQInterface.host_options",
-        "backend_options": "ZMQInterface.backend_options",
-        "backend": "ZMQInterface.backend",
-        "ip": "ZMQInterface.ip",
-        "hb": "ZMQInterface.hb_port",
-        "shell": "ZMQInterface.shell_port",
-        "iopub": "ZMQInterface.iopub_port",
-        "stdin": "ZMQInterface.stdin_port",
-        "control": "ZMQInterface.control_port",
-        "transport": "ZMQInterface.transport",
-    }
-    ""
+class ZMQConnection(Connection[T_interface_co], ConnectionFileMixin, Generic[T_interface_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+    """Provides the ZMQ sockets for clients to connect and communicate with the interface."""
 
     session = traitlets.Instance(Session, ())
     "Provides messaging utilities."
@@ -60,8 +42,16 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
     ).tag(config=True)
     "Transport for sockets."
 
+    session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].session.session)
+    ""
+
     _sockets: Fixed[Self, dict[Channel, ZMQPollSocket]] = Fixed(dict)
     _iopub_socket: ZMQPollSocket | None = None
+
+    @property
+    @override
+    def kernel_name(self) -> str:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return self.parent.kernel_name
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
@@ -70,11 +60,6 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             msg = "It is too late to set the connection file!"
             raise RuntimeError(msg)
         return proposal["value"]
-
-    @property
-    @override
-    def summary(self) -> str:
-        return f"{super().summary} connection_file={str(self.connection_file)!r}"
 
     @override
     def load_connection_info(self, info: KernelConnectionInfo) -> None:
@@ -108,7 +93,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         raise MethodNotSupported  # pragma: no cover
 
     @override
-    async def open_channels(self, ready: Callable[[], Any], stop: ProtectedPending, /) -> None:
+    async def open_channels(self) -> None:
         # Thread: control
 
         def heartbeat(hb: ZMQPollSocket, event: int) -> None:
@@ -123,7 +108,7 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
             if msg[0] == 1:
                 ident = msg[1:]
                 msg = self.msg(MsgType.iopub_welcome, channel=Channel.iopub, content={"subscription": ident.decode()})
-                self.iopub_send(msg, ident=ident)
+                self.session.send(socket, msg, ident=ident)  # pyright: ignore[reportArgumentType]
 
         def msg_handler(
             sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg
@@ -146,14 +131,15 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
                 shell = await self._open_socket(Channel.shell)
                 stdin = await self._open_socket(Channel.stdin)
                 assert len(self._sockets) == 5
-                ready()
-                await self.started
+                if not self.parent.started.done():
+                    self.log.debug("Waiting until the interface is ready.")
+                    await self.parent.started
                 with (
                     zmq_poll.event_handler(ctrl, functools.partial(msg_handler, channel=Channel.control)),
                     zmq_poll.event_handler(shell, functools.partial(msg_handler, channel=Channel.shell)),
                     zmq_poll.event_handler(stdin, functools.partial(msg_handler, channel=Channel.stdin)),
                 ):
-                    await stop
+                    await super().open_channels()
             del ctrl, shell, self._zmq_poll
 
     async def _open_socket(self, channel: Channel, /):
@@ -186,5 +172,29 @@ class ZMQInterface(BaseInterface[T_shell_co], ConnectionFileMixin, Generic[T_she
         return await self._zmq_poll.execute_async(open_socket)
 
     @override
-    def send_msg(self, msg: Message, ident: list[bytes]) -> None:
+    def msg(
+        self,
+        msg_type: str | MsgType,
+        content: T | None = None,
+        *,
+        channel: Channel,
+        parent: Message | dict[str, Any] | None = None,
+        header: MsgHeader | dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        buffers: BuffersType = None,
+    ) -> Message[T]:
+        """Create a message suitable for sending."""
+        msg: Message = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
+        msg["channel"] = channel
+        msg["buffers"] = buffers
+        return msg
+
+    @override
+    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
         return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
+
+    @override
+    def connection_info(self) -> str:
+        if (f := pathlib.Path(self.connection_file)).exists():
+            return f"connection_file: {f}\nInfo: {json.dumps(json.loads(f.read_bytes()), indent=2)}"
+        return ""
