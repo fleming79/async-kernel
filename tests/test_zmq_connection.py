@@ -54,52 +54,6 @@ async def test_print_non_caller_thread(kernel: Kernel, client: ZMQKernelClient):
         t.join()
 
 
-# @pytest.mark.parametrize("test_mode", ["reply", "interrupt", "allow_stdin=False"])
-# @pytest.mark.parametrize("mode", ["input", "password"])
-# async def test_input(
-#     subprocess_kernel_client: ZMQKernelClient,
-#     mode: Literal["input", "password"],
-#     test_mode: Literal["interrupt", "reply", "allow_stdin=False"],
-# ):
-
-#     async def input_handler(content: Content) -> str:
-#         ready.wake()
-#         if test_mode == "interrupt":
-#             await create_async_waiter()
-#         return str(content)
-
-#     ready, client, theprompt = create_async_waiter(), subprocess_kernel_client, "Enter a value >"
-#     match mode:
-#         case "input":
-#             code = f"response = input('{theprompt}')"
-#         case "password":
-#             code = f"import getpass;response = getpass.getpass('{theprompt}')"
-
-#     if test_mode == "allow_stdin=False":
-#         reply = await client.execute(code)
-#         assert reply["content"]["status"] == "error"
-#         assert reply["content"].get("ename") == "RuntimeError"
-#         return
-
-#     await anyio.sleep(0.1)
-#     pen = client.execute(code, input_handler=input_handler, user_expressions={"response": "response"})
-#     await ready
-
-#     if test_mode == "interrupt":
-#         await client.send_message(client.msg(msg_type=MsgType.interrupt_request, channel=Channel.control))
-#         reply = await pen
-#         assert reply["content"]["status"] == "error"
-#         assert reply["content"]["traceback"][0] == "async_kernel.common.KernelInterrupt\n"
-#         # Check the interface is still working
-#         assert (await client.execute("1+1"))["content"]["status"] == "ok"
-#     else:
-#         reply = await pen
-#         assert reply["content"]["status"] == "ok"
-#         val = reply["content"]["user_expressions"]["response"]["data"]["text/plain"]
-#         val_ = eval(eval(val))
-#         assert val_ == {"prompt": theprompt, "password": mode == "password"}
-
-
 async def test_interrupt_request_not_blocked(client: ZMQKernelClient, kernel: Kernel):
     pen: Any = Pending()
     kernel.active_execute_requests.add(pen)
@@ -117,14 +71,35 @@ async def test_interrupt_request_not_blocked(client: ZMQKernelClient, kernel: Ke
         "%subshell",
         "%pip -V",
         "%uv -V",
-        # "%thread\nprint('okay')",
-        # """%%thread name="Trio executor" backend=trio\nfrom async_kernel import Caller; assert Caller().name == "Trio executor";print('okay')""",
-        # "import asyncio\n%asyncio await asyncio.sleep(0)\nprint('okay')",
-        # "import trio\n%trio await trio.sleep(0)\nprint('okay')",
         "%mkdir test\n%rmdir test\n%ls",
     ],
 )
 async def test_magic(client: ZMQKernelClient, code: str, kernel: Kernel, monkeypatch):
+
+    assert code
+    async with client.iopub_subscribe() as queue:
+        reader = aiter(queue)
+        await client.execute(code)
+        await read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
+        msg = await read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
+    text = msg["content"]["text"]
+    assert text
+    match code:
+        case "%uv -V":
+            assert "uv" in text
+        case _:
+            pass
+
+
+@pytest.mark.parametrize(
+    "code",
+    argvalues=[
+        """%%thread name="Trio executor" backend=trio\nfrom async_kernel import Caller; assert Caller().name == "Trio executor";print('okay')""",
+        "import asyncio\n%asyncio await asyncio.sleep(0)\nprint('okay')",
+        "import trio\n%trio await trio.sleep(0)\nprint('okay')",
+    ],
+)
+async def test_magic_async(client: ZMQKernelClient, code: str, kernel: Kernel, monkeypatch):
 
     assert code
     async with client.iopub_subscribe() as queue:

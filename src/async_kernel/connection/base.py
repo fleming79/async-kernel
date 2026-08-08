@@ -73,6 +73,7 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin, MessagePr
 
     started: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
     ""
+
     stopped: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
     ""
 
@@ -202,15 +203,18 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin, MessagePr
 class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_co]):
     """Provides a connection to the interface for messaging."""
 
+    _stopping: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
+
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         ctx = super().__asynccontextmanager__()
 
         def start() -> ProtectedPending[Any]:
             # Nesting inside __init__ means this is only called once for normal usage.
-            async def run(stopped=self.stopped) -> None:
+            async def run(stopping=self._stopping, stopped=self.stopped) -> None:
                 async with ctx:
-                    await stopped
+                    await stopping
+                stopped.set_result(None)
 
             del self.start
             try:
@@ -258,7 +262,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 
     def stop(self, _=None, /) -> ProtectedPending[Any]:
         """Stop the connection."""
-        self.stopped.set_result(None)
+        self._stopping.set_result(None)
         self.parent.stopped.remove_done_callback(self.stop)
         return self.stopped
 
