@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
 
 import anyio
 from aiologic import BinarySemaphore, CountdownEvent
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for, iscoroutinelike
 from typing_extensions import override
 from wrapt import lazy_import
@@ -225,6 +225,7 @@ class Caller:
     _scheduler_queue: SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]
     _guest_queues: dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]
     _children_countdown: CountdownEvent
+    _pen_stop: list[Pending]
 
     started = Fixed(ProtectedPending)
     "A pending that is set once the caller has started."
@@ -393,6 +394,7 @@ class Caller:
             inst._scheduler_queue = SingleAsyncQueue(reject=inst._reject)
             inst._guest_queues = {}
             inst._children_countdown = CountdownEvent()
+            inst._pen_stop = []
 
             # Apply settings
             inst._name = name
@@ -420,12 +422,12 @@ class Caller:
                     self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
                     # Special handling if the context is run inside a caller managed task.
                     self._first_ctx_stop = bool(self.current_pending())
-                    self._pen_stop: set[Pending] = set()
-                else:
-                    if (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
-                        self._first_ctx_and_count = c[0], c[1] + 1
-                    if (pen := self.current_pending()) is not None:
-                        self._pen_stop.add(pen)
+                elif (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
+                    # The same context, re-entry
+                    self._first_ctx_and_count = c[0], c[1] + 1
+                elif (pen := self.current_pending()) is not None:
+                    # A different context
+                    self._pen_stop.append(pen)
                 self._enter_count = self._enter_count + 1
         if stopping:
             await self.stopped
@@ -435,11 +437,12 @@ class Caller:
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:
         ctx_id = id(sys._getframe(1))  # pyright: ignore[reportPrivateUsage]
-        self._pen_stop.discard(self.current_pending())
         with self._inst_lock:
             self._enter_count = self._enter_count - 1
             if (c := self._first_ctx_and_count)[0] == ctx_id:
                 self._first_ctx_and_count = c[0], c[1] - 1
+            elif (pen := self.current_pending()) and pen in self._pen_stop:
+                self._pen_stop.remove(pen)
             wait_exit = c == (ctx_id, 0)
         if self._enter_count == 0:
             self.stop(force=True)
@@ -479,6 +482,9 @@ class Caller:
                     await self.stopping
                     await self.wait(self._pen_stop, return_when="ALL_COMPLETED")
                     await self._children_countdown
+                    await async_checkpoint(force=True)
+                    self._scheduler_queue.stop()
+                    await async_checkpoint(force=True)
             except anyio.get_cancelled_exc_class():
                 # This may happen when the async event loop is shutting down.
                 pass
@@ -650,13 +656,14 @@ class Caller:
         # Thread: caller
 
         def guest_done_callback(value: Any):
-            self._guest_queues.pop(backend)
-            self._pen_stop.discard(pen)
+            with self._inst_lock:
+                self._guest_queues.pop(backend)
+                self._pen_stop.remove(pen)
             pen.set_result(None)
 
         with self._inst_lock:
             if self._state is CallerState.running:
-                self._pen_stop.add(pen := Pending())
+                self._pen_stop.append(pen := Pending())
                 pen.set_canceller(lambda _: queue.stop())
                 self.stopping.add_done_callback(lambda _: queue.stop())
                 host: Host[Any] | None = Host.current(self.thread)

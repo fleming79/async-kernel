@@ -95,6 +95,8 @@ class TestCaller:
         async def f():
             async with caller:
                 await caller.call_soon(lambda: 1 + 2)
+                async with caller:
+                    pass
 
         async def ff():
             async with caller:
