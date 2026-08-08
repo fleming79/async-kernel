@@ -559,18 +559,18 @@ class Pending(Awaitable[T]):
     def _set_done(self, result: bool, value, /) -> None:
         if self._done:
             return
-        self._done = True
-        self._canceller = None
-        e = None
         try:
             callbacks = self._done_callbacks
             del self._done_callbacks
+            if result:
+                self._result = value
+            else:
+                self._exception = value
+            self._done = True
+            self._canceller = None
         except AttributeError:
             return
-        if result:
-            self._result = value
-        else:
-            self._exception = value
+        e = None
         # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2
         callbacks.reverse()
         while callbacks:
