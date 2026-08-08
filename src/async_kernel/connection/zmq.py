@@ -20,13 +20,13 @@ from traitlets import traitlets
 from traitlets.config import Config
 from typing_extensions import override
 
+from async_kernel import utils
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
 from async_kernel.connection.base import BaseKernelClient, BaseMessage, Connection
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
 from async_kernel.kernelspec import make_argv
 from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_interface_co
-from tests import utils
 
 if TYPE_CHECKING:
     import subprocess
@@ -142,10 +142,10 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
     async def open_channels(self) -> None:
         # Thread: control
 
-        def heartbeat(hb: ZMQPollSocket, event: int) -> None:
+        def heartbeat_handler(hb: ZMQPollSocket, event: int) -> None:
             hb.send_multipart(hb.recv_multipart())
 
-        def on_reg_msg(socket: ZMQPollSocket, flags: int) -> None:
+        def iopub_reg_handler(socket: ZMQPollSocket, flags: int) -> None:
             """https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
             # Thread: zmq_poll_thread
             # handle PUB subscribe/unsubscribe messages.
@@ -153,56 +153,57 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
             msg = socket.recv()
             if msg[0] == 1:
                 ident = msg[1:]
-                msg = self.msg(MsgType.iopub_welcome, channel=Channel.iopub, content={"subscription": ident.decode()})
-                self.session.send(socket, msg, ident=ident)  # pyright: ignore[reportArgumentType]
+                msg_ = self.msg(MsgType.iopub_welcome, channel=Channel.iopub, content={"subscription": ident.decode()})
+                self.session.send(socket, msg_, ident=ident)  # pyright: ignore[reportArgumentType]
 
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             ident, msg = recv(sock)
             msg["channel"] = channel
             handle_msg(msg, ident)
 
-        if os.path.exists(self.connection_file):  # noqa: PTH110
-            self.load_connection_file()
-        self.write_connection_file()
-        bind = self._bind_socket
-        with (
-            self.zmq_poll as zpoll,
-            zpoll.event_handler(await bind(Channel.iopub), on_reg_msg),
-            zpoll.event_handler(await bind(Channel.heartbeat), heartbeat),
-            zpoll.event_handler(await bind(Channel.control), partial(handler, channel=Channel.control)),
-            zpoll.event_handler(await bind(Channel.shell), functools.partial(handler, channel=Channel.shell)),
-            zpoll.event_handler(await bind(Channel.stdin), functools.partial(handler, channel=Channel.stdin)),
-        ):
-            await super().open_channels()
+        with self.zmq_poll as zpoll:
+            await self._bind_sockets()
+            with (
+                zpoll.event_handler(self._sockets[Channel.control], partial(handler, channel=Channel.control)),
+                zpoll.event_handler(self._sockets[Channel.shell], functools.partial(handler, channel=Channel.shell)),
+                zpoll.event_handler(self._sockets[Channel.stdin], functools.partial(handler, channel=Channel.stdin)),
+                zpoll.event_handler(self._sockets[Channel.heartbeat], heartbeat_handler),
+                zpoll.event_handler(self._sockets[Channel.iopub], iopub_reg_handler),
+            ):
+                await super().open_channels()
 
-    async def _bind_socket(self, channel: Channel, /):
-        """Create, bind and configure a socket."""
+    async def _bind_sockets(self):
+        """Create, configure and bind all sockets."""
 
-        def open_socket():
-            port = int(getattr(self, f"{channel}_port"))
-            assert port
-            if channel is not Channel.stdin:
-                assert channel not in self._sockets
+        def bind_sockets() -> None:
+            if os.path.exists(self.connection_file):  # noqa: PTH110
+                self.load_connection_file()
+            self.write_connection_file()
 
-            match channel:
-                case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
-                    socket = self.zmq_poll.socket(zmq.SocketType.ROUTER)
-                case Channel.iopub:
-                    socket = self.zmq_poll.socket(zmq.SocketType.XPUB)
-            socket.setsockopt(zmq.SocketOption.LINGER, 500)
+            for channel in Channel:
+                port = int(getattr(self, f"{channel}_port"))
+                assert port
+                if channel is not Channel.stdin:
+                    assert channel not in self._sockets
 
-            if self.curve_secretkey is not None:
-                socket.curve_secretkey = self.curve_secretkey
-                socket.curve_publickey = self.curve_publickey
-                socket.curve_server = True
-            # Bind the socket.
-            addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
-            self.log.debug("%s socket on port: %i", channel, port)
-            self._sockets[channel] = socket
-            socket.bind(addr)
-            return socket
+                match channel:
+                    case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
+                        socket = self.zmq_poll.socket(zmq.SocketType.ROUTER)
+                    case Channel.iopub:
+                        socket = self.zmq_poll.socket(zmq.SocketType.XPUB)
+                socket.setsockopt(zmq.SocketOption.LINGER, 500)
+                socket.identity = self.session.bsession
+                if self.curve_secretkey is not None:
+                    socket.curve_secretkey = self.curve_secretkey
+                    socket.curve_publickey = self.curve_publickey
+                    socket.curve_server = True
+                # Bind the socket.
+                addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
+                self.log.debug("%s socket on port: %i", channel, port)
+                self._sockets[channel] = socket
+                socket.bind(addr)
 
-        return await self.zmq_poll.execute_async(open_socket)
+        await self.zmq_poll.execute_async(bind_sockets)
 
     @override
     def connection_info(self) -> str:
@@ -265,12 +266,11 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             match channel:
                 case Channel.heartbeat:
                     socket = self.zmq_poll.socket(zmq.SocketType.REQ)
-                    socket.identity = self.session.bsession
                 case Channel.shell | Channel.control | Channel.stdin:
                     socket = self.zmq_poll.socket(zmq.SocketType.DEALER)
-                    socket.identity = self.session.bsession
                 case Channel.iopub:
                     socket = self.zmq_poll.socket(zmq.SocketType.SUB)
+            socket.identity = self.session.bsession
             socket.setsockopt(zmq.SocketOption.LINGER, 500)
             # Encryption.
             if self.curve_secretkey is not None and self.curve_publickey is not None:
