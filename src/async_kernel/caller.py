@@ -422,12 +422,12 @@ class Caller:
                     self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
                     # Special handling if the context is run inside a caller managed task.
                     self._first_ctx_stop = bool(self.current_pending())
-                    self._ctx_pen: set[Pending] = set()
+                    self._pen_stop: set[Pending] = set()
                 else:
                     if (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
                         self._first_ctx_and_count = c[0], c[1] + 1
                     if (pen := self.current_pending()) is not None:
-                        self._ctx_pen.add(pen)
+                        self._pen_stop.add(pen)
                 self._enter_count = self._enter_count + 1
         if stopping:
             await self.stopped
@@ -437,7 +437,7 @@ class Caller:
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:
         ctx_id = id(sys._getframe(1))  # pyright: ignore[reportPrivateUsage]
-        self._ctx_pen.discard(self.current_pending())
+        self._pen_stop.discard(self.current_pending())
         with self._inst_lock:
             self._enter_count = self._enter_count - 1
             if (c := self._first_ctx_and_count)[0] == ctx_id:
@@ -448,9 +448,9 @@ class Caller:
         if wait_exit:
             self._wait_exit = True
             if self._first_ctx_stop:
-                for pen in self._ctx_pen:
+                for pen in self._pen_stop:
                     pen.cancel("At exit force shutdown")
-                await self.wait(self._ctx_pen, return_when="ALL_COMPLETED")
+                await self.wait(self._pen_stop, return_when="ALL_COMPLETED")
                 self.stop(force=True)
             if (self.current_pending() is None) or self.get_existing() is not self:
                 self.log.debug("Waiting for %r", self)
@@ -479,6 +479,7 @@ class Caller:
                     create_task(contextvars.Context(), self._scheduler, self._scheduler_queue)
                     self._set_state(CallerState.running)
                     await self.stopping
+                    await self.wait(self._pen_stop, return_when="ALL_COMPLETED")
                     await self._guest_done_event
                     await self._children_countdown
             except anyio.get_cancelled_exc_class():
@@ -654,14 +655,14 @@ class Caller:
             self._guest_queues.pop(backend)
 
         async def run_guest_loop():
-            self._ctx_pen.add(pen := Pending())
+            self._pen_stop.add(pen := Pending())
             try:
                 with anyio.CancelScope() as scope:
                     pen.set_canceller(lambda msg: queue.append((scope.cancel, (msg,), {})))
                     if self._state is CallerState.running:
                         await self._scheduler(queue)
             finally:
-                self._ctx_pen.discard(pen)
+                self._pen_stop.discard(pen)
                 pen.set_result(None)
 
         assert self._guest_queues[backend] is queue
@@ -789,7 +790,7 @@ class Caller:
             Pending: A pending that can be awaited to obtain the result of func.
         """
         pen = Pending(context, trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        if self._state in [CallerState.stopping, CallerState.stopped]:
+        if self._state is CallerState.stopped:
             pen.cancel(f"The caller has been stopped: {self}")
             return pen
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
@@ -1081,6 +1082,7 @@ class Caller:
                 done.stop()
 
         pen_ = self.call_soon(scheduler)
+        pen_.add_done_callback(lambda pen: pen.cancelled() and done.stop())
         try:
             async for pen in done:
                 unfinished.discard(pen)
