@@ -226,29 +226,6 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             self.encryption = "curve"
         return super().write_connection_file(**kwargs)
 
-    @override
-    async def open_channels(self) -> None:
-        # Thread: control
-        def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
-            ident, msg = recv(sock)
-            msg["channel"] = channel
-            handle_msg(msg, ident)
-
-        if not self.shell_port:
-            msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
-            raise RuntimeError(msg)
-        connect = self._connect_socket
-        with (
-            self.zmq_poll as zpoll,
-            zpoll.event_handler(await connect(Channel.control), partial(handler, channel=Channel.control)),
-            zpoll.event_handler(await connect(Channel.shell), partial(handler, channel=Channel.shell)),
-            zpoll.event_handler(await connect(Channel.stdin), partial(handler, channel=Channel.stdin)),
-        ):
-            await self._wait_for_welcome()
-            await self._configure_session()
-            await super().open_channels()
-            self._sockets.clear()
-
     async def _connect_socket(self, channel: Channel, /) -> ZMQPollSocket:
         """Create, configure and connect a socket."""
         port = int(getattr(self, f"{channel}_port"))
@@ -287,6 +264,61 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
 
         return await self.zmq_poll.execute_async(open_socket)
 
+    async def _wait_for_welcome(self) -> None:
+        """Wait for non-local interface to publish a welcome message."""
+        while True:
+            resume = create_async_event()
+            iopub = await self._connect_socket(Channel.iopub)
+            self.log.debug("Waiting for welcome message")
+            with (
+                iopub,
+                self.zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.set), canceller=None),
+            ):
+                # Wait for iopub welcome message
+                iopub.subscribe(b"")
+                if await resume.with_(timeout=2):
+                    self.log.debug("Welcome message received")
+                    return
+                self.log.warning("Welcome message not received after 2s!")  # pragma: no cover
+
+    async def _configure_session(self) -> None:
+
+        self.log.debug("Getting kernel info to configure session")
+        while True:
+            attempt = 1
+            try:
+                msg = await self.kernel_info()
+                adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
+                if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
+                    self.session.adapt_version = adapt_version  # pragma: no cover
+                self.log.debug("Session config complete")
+                break
+            except TimeoutError:
+                self.log.warning("Kernel did not respond to kernel info request. attempt %d Retrying ...", attempt)
+
+    @override
+    async def open_channels(self) -> None:
+        # Thread: control
+        def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
+            ident, msg = recv(sock)
+            msg["channel"] = channel
+            handle_msg(msg, ident)
+
+        if not self.shell_port:
+            msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
+            raise RuntimeError(msg)
+        connect = self._connect_socket
+        with (
+            self.zmq_poll as zpoll,
+            zpoll.event_handler(await connect(Channel.control), partial(handler, channel=Channel.control)),
+            zpoll.event_handler(await connect(Channel.shell), partial(handler, channel=Channel.shell)),
+            zpoll.event_handler(await connect(Channel.stdin), partial(handler, channel=Channel.stdin)),
+        ):
+            await self._wait_for_welcome()
+            await self._configure_session()
+            await super().open_channels()
+            self._sockets.clear()
+
     @asynccontextmanager
     async def subprocess_kernel(
         self, startup_delay=0.0, start_timeout=None, kernel_name="async", **kwargs
@@ -302,9 +334,6 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             # Adding  a delay (especially on windows) before opening the connection gives better startup reliability.
             await anyio.sleep(startup_delay)
             async with self:
-                with anyio.fail_after(start_timeout):
-                    await self._wait_for_welcome()
-                    await self._configure_session()
                 try:
                     yield process
                 finally:
@@ -339,37 +368,6 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
                 reply = ""
                 hb.send(b"ping")
                 await anyio.sleep(interval)
-
-    async def _wait_for_welcome(self) -> None:
-        """Wait for non-local interface to publish a welcome message."""
-        while True:
-            resume = create_async_event()
-            iopub = await self._connect_socket(Channel.iopub)
-            self.log.debug("Waiting for welcome message")
-            with (
-                iopub,
-                self.zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.set), canceller=None),
-            ):
-                # Wait for iopub welcome message
-                iopub.subscribe(b"")
-                if await resume.with_(timeout=2):
-                    self.log.debug("Welcome message received")
-                    return
-                self.log.warning("Welcome message not received after 2s!")  # pragma: no cover
-
-    async def _configure_session(self) -> None:
-        self.log.debug("Getting kernel info to configure session")
-        while True:
-            attempt = 1
-            try:
-                msg = await self.kernel_info().wait(timeout=1)
-                adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
-                if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
-                    self.session.adapt_version = adapt_version  # pragma: no cover
-                self.log.debug("Session config complete")
-                break
-            except TimeoutError:
-                self.log.warning("Kernel did not respond to kernel info request. attempt %d Retrying ...", attempt)
 
     @override
     def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
