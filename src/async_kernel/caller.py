@@ -646,6 +646,7 @@ class Caller:
 
     def _start_guest(self, backend: Backend, queue: SingleAsyncQueue) -> None:
         """Start a guest event loop."""
+        assert self.get_existing() is self
         # Thread: caller
 
         def guest_done_callback(value: Any):
@@ -653,25 +654,20 @@ class Caller:
             self._pen_stop.discard(pen)
             pen.set_result(None)
 
-        async def run_guest_loop() -> None:
-            self._pen_stop.add(pen)
-            with anyio.CancelScope() as scope:
-                pen.set_canceller(lambda msg: queue.append((scope.cancel, (msg,), {})))
-                if self._state is CallerState.running:
-                    await self._scheduler(queue)
-
-        pen = Pending()
         with self._inst_lock:
             if self._state is CallerState.running:
+                self._pen_stop.add(pen := Pending())
+                pen.set_canceller(lambda _: queue.stop())
+                self.stopping.add_done_callback(lambda _: queue.stop())
                 host: Host[Any] | None = Host.current(self.thread)
                 get_start_guest_run(backend)(
-                    run_guest_loop,
+                    self._scheduler,
+                    queue,
                     done_callback=guest_done_callback,
                     run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
                     run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
                     host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
                 )
-                self.stopping.add_done_callback(lambda _: queue.stop())
 
     @classmethod
     def id_current(cls) -> int:
