@@ -4356,8 +4356,12 @@ finally:
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.pending.PendingManager"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingManager</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.pending.PendingManager.activate"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;activate</a>
   </span>
 
       </li>
@@ -4368,12 +4372,8 @@ finally:
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.pending.PendingTracker"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingTracker</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.pending.PendingTracker.add"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add</a>
+      <a href="#async_kernel.pending.PendingTracker"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingTracker</a>
   </span>
 
       </li>
@@ -5375,18 +5375,18 @@ finally:
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_canceller</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">callbacks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done_callbacks</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done_callbacks</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_exception</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_canceller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_exception</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2</span>
         <span class="n">callbacks</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
         <span class="k">while</span> <span class="n">callbacks</span><span class="p">:</span>
