@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
 
 import anyio
 from aiologic import BinarySemaphore, CountdownEvent
-from aiologic.lowlevel import create_async_event, current_async_library
+from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for, iscoroutinelike
 from typing_extensions import override
 from wrapt import lazy_import
@@ -141,7 +141,12 @@ class Caller:
     it will wait until all other contexts have exited. When the count returns to zero the
     caller will stop, after which, the caller can not be restarted.
 
-    It is only necessary to use the async context for the main caller or non-child callers.
+    If the first entry of the async context is obtained inside a pending (a coroutine manage
+    by the caller), the caller will also be force stopped.
+
+
+    Children callers (obtained using `caller.get(...)`) are always force stopped when the
+    parent caller is stopped.
 
 
     **High level methods**
@@ -219,8 +224,8 @@ class Caller:
     _queue_map: dict[int, Pending]
     _scheduler_queue: SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]
     _guest_queues: dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]
-    _guest_done_event: CountdownEvent
     _children_countdown: CountdownEvent
+    _pen_stop: list[Pending]
 
     started = Fixed(ProtectedPending)
     "A pending that is set once the caller has started."
@@ -388,8 +393,8 @@ class Caller:
             inst._queue_map = {}
             inst._scheduler_queue = SingleAsyncQueue(reject=inst._reject)
             inst._guest_queues = {}
-            inst._guest_done_event = CountdownEvent()
             inst._children_countdown = CountdownEvent()
+            inst._pen_stop = []
 
             # Apply settings
             inst._name = name
@@ -411,12 +416,18 @@ class Caller:
         self._protected = True
         await self.started.wait(result=False)
         with self._inst_lock:
-            if self._enter_count == 0:
-                self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
-            elif (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
-                self._first_ctx_and_count = c[0], c[1] + 1
-
             if not (stopping := self.stopping.done()):
+                if self._enter_count == 0:
+                    # Identify the first context.
+                    self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
+                    # Special handling if the context is run inside a caller managed task.
+                    self._first_ctx_stop = bool(self.current_pending())
+                elif (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
+                    # The same context, re-entry
+                    self._first_ctx_and_count = c[0], c[1] + 1
+                elif (pen := self.current_pending()) is not None:
+                    # A different context
+                    self._pen_stop.append(pen)
                 self._enter_count = self._enter_count + 1
         if stopping:
             await self.stopped
@@ -430,16 +441,21 @@ class Caller:
             self._enter_count = self._enter_count - 1
             if (c := self._first_ctx_and_count)[0] == ctx_id:
                 self._first_ctx_and_count = c[0], c[1] - 1
+            elif (pen := self.current_pending()) and pen in self._pen_stop:
+                self._pen_stop.remove(pen)
             wait_exit = c == (ctx_id, 0)
-
         if self._enter_count == 0:
             self.stop(force=True)
         if wait_exit:
             self._wait_exit = True
-            self.log.debug("Waiting for %r", self)
-            with anyio.CancelScope(shield=True):
-                if (self.current_pending() is None) or self.get_existing() is not self:
-                    await self.stopped
+            if self._first_ctx_stop:
+                for pen in self._pen_stop:
+                    pen.cancel("At exit force shutdown")
+                await self.wait(self._pen_stop, return_when="ALL_COMPLETED")
+                self.stop(force=True)
+            if (self.current_pending() is None) or self.get_existing() is not self:
+                self.log.debug("Waiting for %r", self)
+                await self.stopped.wait(shield=True)
         return False
 
     def _start_sync(self, caller_id: int | None, thread: threading.Thread | None, no_debug: bool = False) -> None:
@@ -464,8 +480,11 @@ class Caller:
                     create_task(contextvars.Context(), self._scheduler, self._scheduler_queue)
                     self._set_state(CallerState.running)
                     await self.stopping
-                    await self._guest_done_event
+                    await self.wait(self._pen_stop, return_when="ALL_COMPLETED")
                     await self._children_countdown
+                    await async_checkpoint(force=True)
+                    self._scheduler_queue.stop()
+                    await async_checkpoint(force=True)
             except anyio.get_cancelled_exc_class():
                 # This may happen when the async event loop is shutting down.
                 pass
@@ -631,6 +650,32 @@ class Caller:
                 if (time.monotonic() - worker._idle_time) > t:
                     worker.stop(force=True)
 
+    def _start_guest(self, backend: Backend, queue: SingleAsyncQueue) -> None:
+        """Start a guest event loop."""
+        assert self.get_existing() is self
+        # Thread: caller
+
+        def guest_done_callback(value: Any):
+            with self._inst_lock:
+                self._guest_queues.pop(backend)
+                self._pen_stop.remove(pen)
+            pen.set_result(None)
+
+        with self._inst_lock:
+            if self._state is CallerState.running:
+                self._pen_stop.append(pen := Pending())
+                pen.set_canceller(lambda _: queue.stop())
+                self.stopping.add_done_callback(lambda _: queue.stop())
+                host: Host[Any] | None = Host.current(self.thread)
+                get_start_guest_run(backend)(
+                    self._scheduler,
+                    queue,
+                    done_callback=guest_done_callback,
+                    run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
+                    run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
+                    host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
+                )
+
     @classmethod
     def id_current(cls) -> int:
         """The immutable id of a caller for the current thread in CPython or context in Pyodide."""
@@ -742,7 +787,7 @@ class Caller:
             Pending: A pending that can be awaited to obtain the result of func.
         """
         pen = Pending(context, trackers, func=func, args=args, kwargs=kwargs, caller=self, **metadata)
-        if self._state in [CallerState.stopping, CallerState.stopped]:
+        if self._state is CallerState.stopped:
             pen.cancel(f"The caller has been stopped: {self}")
             return pen
         if backend is NoValue or (backend := Backend(backend)) is self.backend:
@@ -756,29 +801,8 @@ class Caller:
                 if backend is Backend.trio:
                     trio.sleep  # noqa: B018 # Check trio is available.
                 if not (queue := self._guest_queues.get(backend)):
-                    queue = SingleAsyncQueue(reject=self._reject)
+                    self.call_direct(self._start_guest, backend, queue := SingleAsyncQueue(reject=self._reject))
                     self._guest_queues[backend] = queue
-                    self.stopping.add_done_callback(lambda _: queue.stop())
-
-                    def guest_done_callback(value: Any):
-                        self._guest_done_event.down()
-                        self._guest_queues.pop(backend)
-
-                    def _start_guest() -> None:
-                        """Start a guest event loop."""
-                        if self._state is CallerState.running:
-                            host: Host[Any] | None = Host.current(self.thread)
-                            get_start_guest_run(backend)(
-                                self._scheduler,
-                                queue,
-                                done_callback=guest_done_callback,
-                                run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
-                                run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
-                                host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
-                            )
-                            self._guest_done_event.up()
-
-                    self.call_direct(_start_guest)
         queue.append(pen)
         return pen
 
@@ -1055,6 +1079,7 @@ class Caller:
                 done.stop()
 
         pen_ = self.call_soon(scheduler)
+        pen_.add_done_callback(lambda pen: pen.cancelled() and done.stop())
         try:
             async for pen in done:
                 unfinished.discard(pen)

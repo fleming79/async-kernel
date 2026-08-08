@@ -91,6 +91,25 @@ class TestCaller:
         assert Caller("MainThread") is caller
         assert caller.thread is threading.main_thread()
 
+    async def test_caller_autostop(self, anyio_backend: Backend):
+        async def f():
+            async with caller:
+                await caller.call_soon(lambda: 1 + 2)
+                async with caller:
+                    pass
+
+        async def ff():
+            async with caller:
+                await create_async_waiter()
+
+        caller = Caller()
+        pen = caller.call_soon(f)
+        pen2 = caller.call_soon(ff)
+        await pen
+        assert caller.stopping.done()
+        assert pen2.cancelled()
+        await caller.stopped
+
     async def test_start_after(self, anyio_backend: Backend):
         caller = Caller()
         assert not caller.running
