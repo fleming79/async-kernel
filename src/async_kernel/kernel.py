@@ -356,8 +356,6 @@ class Kernel(
 
         Args:
             job: A dict with the msg and supporting details.
-            send_reply: The function for the handler to use to send the reply to the message.
-            iopub_send: A function responsible for sending iopub messages.
         """
         handler = self._get_handler(job)
 

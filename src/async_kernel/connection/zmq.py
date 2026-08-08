@@ -289,7 +289,7 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
 
     @asynccontextmanager
     async def subprocess_kernel(
-        self, startup_delay=0.5, start_timeout=None, kernel_name="async", **kwargs
+        self, startup_delay=0.0, start_timeout=None, kernel_name="async", **kwargs
     ) -> AsyncGenerator[subprocess.Popen[bytes]]:
         import subprocess  # noqa: PLC0415
 

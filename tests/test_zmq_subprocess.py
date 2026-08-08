@@ -103,7 +103,7 @@ async def test_interrupt_request(
 async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyio_backend):
     # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
     client = ZMQKernelClient()
-    async with client.subprocess_kernel(0.5) as process:
+    async with client.subprocess_kernel(start_timeout=utils.TIMEOUT) as process:
         # Simulate a keyboard interrupt from the console.
         result = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
         pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])
