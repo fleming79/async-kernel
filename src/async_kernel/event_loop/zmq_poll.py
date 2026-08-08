@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 
 import zmq
 from aiologic import BinarySemaphore, BusyResourceError
-from aiologic.lowlevel import create_green_waiter
 from typing_extensions import override
 from zmq.backend import zmq_poll
 
@@ -212,25 +211,15 @@ class ZMQPoll:
 
     def __start(self) -> None:
 
-        self.log.debug("Starting ZMQPoll event loop")
-        started = create_green_waiter()
-        send = self.socket(zmq.SocketType.PAIR)
-        wake = self.socket(zmq.SocketType.PAIR)
-
-        def _wake(sock=send):
-            with sock.lock:
-                sock.send(b"")
-
         def zmq_poll_thread(
             *,
+            context=self._zmq_context,
             handlers: dict[T_key, Callable[[ZMQPollSocket, int], Any]] = self._handlers,
             stopped: Pending[None] = self.stopped,
             count: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._count,
             execute=self._execute,
             zmq_poll_sockets: set[ZMQPollSocket] = self.sockets,
             cancellers=self._cancellers,
-            send=send,
-            wake=wake,
             log=self.log,
         ) -> None:
             """Runs the 'event' loop."""
@@ -255,15 +244,15 @@ class ZMQPoll:
                         pen.set_exception(e)
                     del pen
 
-            zmq_poll_sockets.remove(wake)
-            zmq_poll_sockets.remove(send)
+            send = context.socket(zmq.SocketType.PAIR)
+            wake = context.socket(zmq.SocketType.PAIR)
             addr = "inproc://async_kernel_zmq_poller_wake"
             sockets = None
             handlers[(wake, zmq.POLLIN)] = on_wake
 
-            with wake.context, wake, send, wake.bind(addr), send.connect(addr):
+            with context, wake, send, wake.bind(addr), send.connect(addr):
                 c: tuple[int, Callable] | None
-                started.wake()
+                started.set_result(send)  # pyright: ignore[reportArgumentType]
                 # The main loop polls the handler keys for events in a loop.
                 # It will block until an event occurs.
                 try:
@@ -295,6 +284,7 @@ class ZMQPoll:
                                 if k[0].closed:
                                     handlers.pop(k, None)
                                     log.debug("Closed sockets detected %s -> %s", k[0], v)
+                                sockets = None
                         except Exception as e:
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:
@@ -311,11 +301,18 @@ class ZMQPoll:
                             self.log.exception("Socket close call failed", exc_info=e)
                     log.debug("Stopped zmq_poll event loop")
 
-        self._wake = _wake
+        self.log.debug("Starting ZMQPoll event loop")
+        started = Pending[ZMQPollSocket]()
+        ref = weakref.ref(self)
         self.thread = threading.Thread(target=zmq_poll_thread)
         self.thread.start()
-        started.wait()
-        ref = weakref.ref(self)
+        send = started.wait_sync()
+
+        def _wake(sock=send, lock=send.lock) -> None:
+            with lock:
+                sock.send(b"")
+
+        self._wake = _wake
         self.stopped.add_done_callback(lambda _: (self := ref()) and self._on_stopped())
         self.log.debug("ZMQPoll event loop started")
 
@@ -334,7 +331,7 @@ class ZMQPoll:
         if self.stopped.done():
             msg = f"{self} is stopped!"
             raise RuntimeError(msg)
-        return self.validate_socket(self._zmq_context.socket(socket_type))
+        return self.validate_socket(self.execute(self._zmq_context.socket, socket_type))
 
     def execute(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute `func` in the thread waiting for the result synchronously."""
@@ -344,7 +341,11 @@ class ZMQPoll:
             self._execute.append(pen := Pending[T](func=func, args=args, kwargs=kwargs))
             if not self.stopped.done():
                 self._wake()
-                return pen.wait_sync()
+                try:
+                    return pen.wait_sync()
+                finally:
+                    pen.metadata.clear()
+                    del pen
         msg = f"Unable to execute {func=} in {self}. Execution is only support while in context."
         raise RuntimeError(msg)
 
@@ -418,8 +419,9 @@ class ZMQPoll:
         try:
             yield None
         finally:
-            with contextlib.suppress(ValueError):
-                self._cancellers.remove(canceller)
+            if canceller:
+                with contextlib.suppress(ValueError):
+                    self._cancellers.remove(canceller)
             self._handlers.pop(k, None)
             self._count.pop(k, None)
             self._wake()

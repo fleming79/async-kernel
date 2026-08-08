@@ -1,98 +1,36 @@
 from __future__ import annotations
 
-import signal
 from typing import TYPE_CHECKING
 
-import anyio
-import pytest
-from aiologic import Event
+from aiologic.lowlevel import create_async_event
 
-import async_kernel
+from async_kernel.common import SingleAsyncQueue
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.interface import start_kernel_callable_interface
-from async_kernel.interface.callable import CallableInterface
-from async_kernel.typing import MsgType
+from async_kernel.connection.base import LocalClient
+from async_kernel.interface import Interface, start_kernel_callable_interface
+from async_kernel.typing import Backend, Channel, MsgType
 
 if TYPE_CHECKING:
     from async_kernel.typing import Message
 
 
-@pytest.fixture
-def anyio_backend():
-    return "asyncio"
+async def test_start_kernel_callable_interface(anyio_backend: Backend):
 
+    messages: SingleAsyncQueue[Message] = SingleAsyncQueue()
+    stopped = create_async_event()
 
-@pytest.fixture
-async def interface(anyio_backend):
-    # These are the functions that should be provided externally
-    stopped = Event()
+    def from_interface(packed_msg, ident, buffers, /) -> None:
+        messages.append(unpack_json(packed_msg))
 
-    def send(msg_string, buffers, requires_reply, /):
-        assert isinstance(msg_string, str)
-        if requires_reply:
-            parent = unpack_json(msg_string)
-            msg = interface.msg(MsgType.input_reply, parent=parent, content={"value": "reply"})
-            return pack_json_str(msg)
-        return None
-
-    callbacks = await start_kernel_callable_interface(
-        send=send, stopped=stopped.set, settings={"name": "async-callable"}
-    )
-
-    interface = CallableInterface.instance()
-    assert interface.name == "async-callable"
-    try:
-        yield interface
-    finally:
-        callbacks["stop"]()
+    send_to_inteface = await start_kernel_callable_interface(transmit=from_interface, stopped=stopped.set)
+    interface = Interface.instance()
+    async with LocalClient() as client:
+        await client.kernel_info()
+        send_to_inteface(pack_json_str(client.msg(MsgType.kernel_info_request, channel=Channel.shell)), [], None)
+        async for msg in messages:
+            if msg["header"]["msg_type"] == MsgType.kernel_info_reply:
+                assert msg["content"]["status"] == "ok"
+                break
+        interface.stop()
         await stopped
-
-
-class TestCallableInterface:
-    async def test_start(self, interface: CallableInterface):
-        assert interface.started
-
-    async def test_msg(self, interface: CallableInterface, mocker):
-        sender = mocker.patch.object(interface, "_send")
-        code = "import async_kernel\nassert async_kernel.utils.get_job()['msg']['buffers'] == [b'123']"
-        msg = interface.msg("execute_request", content={"code": code})
-        msg["header"]["session"] = "test session"
-        buffers = [b"123"]
-        interface._handle_msg(pack_json_str(msg), buffers)  # pyright: ignore[reportPrivateUsage]
-
-        while sender.call_count != 4:
-            await anyio.sleep(0.01)
-        reply: Message = unpack_json(sender.call_args_list[2][0][0])
-        assert reply["header"]["msg_type"] == MsgType.execute_reply
-        assert reply["content"]["status"] == "ok"
-
-    async def test_kernel_info(self, interface: CallableInterface, mocker):
-        sender = mocker.patch.object(interface, "_send")
-        msg = interface.msg(MsgType.kernel_info_request)
-        msg["header"]["session"] = "test session"
-        interface._handle_msg(pack_json_str(msg))  # pyright: ignore[reportPrivateUsage]
-        while sender.call_count != 3:
-            await anyio.sleep(0.1)
-        reply: Message = unpack_json(sender.call_args_list[1][0][0])
-        assert reply["header"]["msg_type"] == MsgType.kernel_info_reply
-        assert reply["content"]["status"] == "ok"
-
-    async def test_input(self, interface: CallableInterface, job):
-        token = async_kernel.utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
-        try:
-            with pytest.raises(RuntimeError):
-                interface.input_request("test")
-            job["msg"]["content"]["allow_stdin"] = True
-            assert interface.input_request("test") == "reply"
-        finally:
-            async_kernel.utils._job_var.reset(token)  # pyright: ignore[reportPrivateUsage]
-
-    async def test_prevent_multiple_instances(self, interface):
-
-        with pytest.raises(RuntimeError, match="An interface already exists!"):
-            CallableInterface()
-
-    async def test_keyboard_interrupt(self, interface, mocker) -> None:
-        stop = mocker.patch.object(interface, "stop")
-        signal.raise_signal(signal.SIGINT)
-        assert stop.call_count == 1
+        await interface.stopped

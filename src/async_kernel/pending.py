@@ -15,14 +15,22 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel.common import Fixed
-from async_kernel.typing import T
+from async_kernel.typing import Message, T
 
 if TYPE_CHECKING:
     from _contextvars import Token
 
     from async_kernel.caller import Caller
 
-__all__ = ["Pending", "PendingCancelled", "PendingGroup", "PendingManager", "PendingNotDone", "PendingTracker"]
+__all__ = [
+    "Pending",
+    "PendingCancelled",
+    "PendingGroup",
+    "PendingManager",
+    "PendingMessage",
+    "PendingNotDone",
+    "PendingTracker",
+]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -184,7 +192,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         ```
     """
 
-    _parent_id: None | str = None
+    _parent_id: str | None = None
     _cancel_scope: anyio.CancelScope
     _cancelled: str | None = None
     _leaving_context: bool = False
@@ -725,3 +733,9 @@ class Pending(Awaitable[T]):
 
 class ProtectedPending(Pending[T], Generic[T]):
     """A Pending that is protected from cancellation of a waiting waiter."""
+
+
+class PendingMessage(Pending[Message[T]], Generic[T]):
+    @property
+    def msg_id(self) -> str:
+        return self.metadata["parent"]["header"]["msg_id"]

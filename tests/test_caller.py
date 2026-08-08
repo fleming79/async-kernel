@@ -1,6 +1,5 @@
 import asyncio
 import gc
-import importlib.util
 import re
 import sys
 import threading
@@ -10,6 +9,7 @@ from random import random
 from typing import Literal
 
 import anyio
+import anyio.lowlevel
 import anyio.to_thread
 import pytest
 import trio
@@ -21,15 +21,6 @@ from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, CallerState, Hosts
 
 # pyright: reportPrivateUsage=false
-
-anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
-if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    anyio_backends.append(("asyncio", {"use_uvloop": True}))
-
-
-@pytest.fixture(params=Backend, scope="module")
-def anyio_backend(request):
-    return request.param
 
 
 @pytest.mark.anyio
@@ -388,7 +379,7 @@ class TestCaller:
 
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
 
     async def test_queue_cancel(self, caller: Caller):
         started = Event()
@@ -419,7 +410,7 @@ class TestCaller:
         del obj
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         assert not any(caller._queue_map)
 
     async def test_call_early(self, anyio_backend: Backend) -> None:
@@ -572,7 +563,7 @@ class TestCaller:
                 assert not pending
 
     async def test_wait_awaitable(self, caller):
-        done, pending = await caller.wait((anyio.sleep(0),))
+        done, pending = await caller.wait((anyio.lowlevel.checkpoint(),))
         assert not pending
         assert len(done) == 1
         assert isinstance(next(iter(done)), Pending)
@@ -586,7 +577,7 @@ class TestCaller:
         del a
         while not pen.done():
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         await pen_was_cancelled
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
@@ -740,14 +731,13 @@ class TestCaller:
         caller2.stop()
         await caller2.stopped
 
-    @pytest.mark.parametrize("anyio_backend", anyio_backends)
     @pytest.mark.parametrize("mode", ["sync", "async"])
     async def test_balanced(self, caller: Caller, mode: Literal["sync", "async"], anyio_backend):
         def sync_func(pen: Pending, value):
             pen.set_result(value)
 
         async def async_func(pen: Pending, value):
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
             pen.set_result(value)
 
         func = sync_func if mode == "sync" else async_func

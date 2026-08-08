@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import threading
 import traceback
@@ -13,7 +14,6 @@ from typing import TYPE_CHECKING, Any
 from traitlets import traitlets
 from typing_extensions import TypeVar
 
-import async_kernel.interface
 from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
@@ -26,7 +26,6 @@ if TYPE_CHECKING:
 
 __all__ = [
     "apply_settings",
-    "error_to_content",
     "error_to_content",
     "get_job",
     "get_kernel",
@@ -46,6 +45,8 @@ LAUNCHED_BY_PYTEST = "pytest" in sys.modules
 LAUNCHED_BY_DEBUGPY = "debugpy" in sys.modules
 LAUNCHED_BY_DEBUGPY_PYTEST = LAUNCHED_BY_DEBUGPY and LAUNCHED_BY_PYTEST
 "Useful to allow exceptiosn to be raised with the debugger launched with pytest and debugger."
+PYTEST_LOG_CLI_DEBUG = bool(os.environ.get("PYTEST_LOG_CLI_DEBUG"))
+"Gets set in pytest_configure if the pytest config 'log_cli_level' is DEBUG."
 
 
 _job_var: ContextVar[Job[Any]] = ContextVar("async-kernel job")
@@ -64,10 +65,12 @@ def mark_thread_pydev_do_not_trace(thread: threading.Thread | None = None, *, re
 
 def get_kernel() -> Kernel:
     """Get the current kernel."""
-    if not async_kernel.interface.BaseInterface.initialized():
+    import async_kernel.interface  # noqa: PLC0415
+
+    if not async_kernel.interface.Interface.initialized():
         msg = "A kernel interface is not started!"
         raise RuntimeError(msg)
-    return async_kernel.interface.BaseInterface.instance().kernel
+    return async_kernel.interface.Interface.instance().kernel
 
 
 def get_ipython() -> BaseShell:

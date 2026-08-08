@@ -4,24 +4,20 @@ import gc
 import importlib.util
 import json
 import platform
-import signal
-import subprocess
 import sys
 import weakref
 from typing import TYPE_CHECKING, Literal, cast
 
 import anyio
+import anyio.lowlevel
 import pytest
 from aiologic import Event
-from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel
 from async_kernel import Kernel, Pending
 from async_kernel.command import command_line, to_flags_and_settings
-from async_kernel.interface.base import BaseInterface
+from async_kernel.interface.base import Interface
 from async_kernel.interface.ip_app import IPApp
-from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.kernelspec import make_argv
 from async_kernel.typing import Backend, Hosts
 from tests import utils
 
@@ -32,11 +28,6 @@ if TYPE_CHECKING:
     from async_kernel.shell import IPShell
 
 # pyright: reportPrivateUsage=false
-
-
-@pytest.fixture(scope="module", params=["tcp", "ipc"] if sys.platform == "linux" else ["tcp"])
-def transport(request):
-    return request.param
 
 
 @pytest.fixture
@@ -80,7 +71,7 @@ def test_prints_help_when_no_args(monkeypatch, capsys):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert "usage:" in out
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
 
 
 def test_prints_version_info(monkeypatch, capsys):
@@ -90,10 +81,10 @@ def test_prints_version_info(monkeypatch, capsys):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert f"async-kernel {async_kernel.__version__}" in out
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
 
 
-@pytest.mark.parametrize("extra", [(), ("--interface_class=async_kernel.interface.callable.CallableInterface",)])
+@pytest.mark.parametrize("extra", [()])
 def test_prints_help_all(monkeypatch, capsys, extra: tuple):
     monkeypatch.setattr(sys, "argv", ["prog", "--help-all", *extra])
     with pytest.raises(SystemExit) as e:
@@ -101,7 +92,7 @@ def test_prints_help_all(monkeypatch, capsys, extra: tuple):
     assert e.value.code == 0
     out = capsys.readouterr().out
     assert "aliases" in out
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
 
 
 def test_show_config(monkeypatch, capsys):
@@ -112,7 +103,7 @@ def test_show_config(monkeypatch, capsys):
         assert e.value.code == 0
         out = capsys.readouterr().out
         assert "IPApp" in out
-        assert BaseInterface._instance is None
+        assert Interface._instance is None
 
 
 def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathlib.Path, capsys):
@@ -125,12 +116,12 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
             "--name=async-trio",
             "--display_name='my kernel'",
             "--BaseShell.timeout=0.01",
-            "--interface_class=async_kernel.interface.zmq.ZMQInterface",
+            "--interface_class=async_kernel.interface.Interface",
         ],
     )
     with pytest.raises(SystemExit) as e:
         command_line()
-    assert BaseInterface._instance is None
+    assert Interface._instance is None
     assert e.value.code == 0
     kernel_dir = fake_kernel_dir.joinpath("async-trio")
     assert (kernel_dir).exists()
@@ -147,7 +138,7 @@ def test_install_kernel_start_zmq_interface(monkeypatch, fake_kernel_dir: pathli
             "--connection_file={connection_file}",
             "--name=async-trio",
             "--BaseShell.timeout=0.01",
-            "--interface_class=async_kernel.interface.zmq.ZMQInterface",
+            "--interface_class=async_kernel.interface.Interface",
         ],
         "env": {},
         "display_name": "my kernel",
@@ -203,7 +194,7 @@ def test_list(monkeypatch, config: str, capsys):
 def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
 
     def on_started(pen):
-        kernel: Kernel[BaseInterface[IPShell], IPShell] = async_kernel.utils.get_kernel()  # pyright: ignore[reportAssignmentType]
+        kernel: Kernel[Interface[IPShell], IPShell] = async_kernel.utils.get_kernel()  # pyright: ignore[reportAssignmentType]
         assert kernel.parent.backend_options == {"use_uv": False}
         assert kernel.shell.timeout == 0.123
         assert kernel.shell.automagic is False
@@ -220,7 +211,7 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
     ]
     pen = Pending()
     pen.add_done_callback(on_started)
-    monkeypatch.setattr(ZMQInterface, "started", pen)
+    monkeypatch.setattr(Interface, "started", pen)
     monkeypatch.setattr(sys, "argv", cmd)
     with pytest.raises(SystemExit) as e:
         command_line()
@@ -232,7 +223,7 @@ def test_command_launch_interface(monkeypatch, fake_kernel_dir: pathlib.Path):
 @utils.skip_if_missing("jupyterlab", "Gui tests fail on CI")
 @pytest.mark.parametrize("backend", Backend)
 @pytest.mark.parametrize("host", [Hosts.tk, Hosts.qt, None])
-def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, host):
+def test_command_launch_with_host(mocker, monkeypatch, backend, host):
     if host is Hosts.qt and not importlib.util.find_spec("PySide6"):
         pytest.skip("PySide6 not installed")
     if host is Hosts.tk and not importlib.util.find_spec("_tkinter"):
@@ -248,7 +239,7 @@ def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, hos
         f"--backend={backend}",
         f"--host={host}",
         "--interface_class",
-        "async_kernel.interface.zmq.ZMQInterface",
+        "async_kernel.interface.Interface",
     ]
     monkeypatch.setattr(sys, "argv", cmd)
     kernel = cast("Kernel", None)  # pyright: ignore[reportInvalidCast]
@@ -260,61 +251,22 @@ def test_command_launch_ZMQInterface_with_host(mocker, monkeypatch, backend, hos
 
     pen = Pending()
     pen.add_done_callback(on_started)
-    monkeypatch.setattr(ZMQInterface, "started", pen)
+    monkeypatch.setattr(Interface, "started", pen)
 
     with pytest.raises(SystemExit) as e:
         command_line()
     assert e.value.code == 0
-    assert isinstance(kernel.parent, ZMQInterface)
+    assert isinstance(kernel.parent, Interface)
     assert kernel.parent.host == host
     assert kernel.parent.backend == backend
 
 
-async def test_subprocess_kernels_client(subprocess_kernels_client: AsyncKernelClient, name, transport):
-    # Start & Stop a kernel
-    backend = Backend.trio if "trio" in name.lower() else Backend.asyncio
-    _, reply = await utils.execute(
-        subprocess_kernels_client,
-        "interface = get_ipython().parent",
-        user_expressions={
-            "name": "interface.name",
-            "backend": "interface.backend",
-            "transport": "interface.transport",
-        },
-    )
-    assert name in reply["user_expressions"]["name"]["data"]["text/plain"]
-    assert backend in reply["user_expressions"]["backend"]["data"]["text/plain"]
-    assert transport in reply["user_expressions"]["transport"]["data"]["text/plain"]
-
-
-@pytest.mark.skipif(sys.platform == "win32", reason="Can't simulate keyboard interrupt on windows.")
-async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyio_backend):
-    # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
-    connection_file = tmp_path / "connection_file.json"
-    command = make_argv(connection_file=str(connection_file))
-
-    process = subprocess.Popen(command)
-    client = AsyncKernelClient()
-
-    while not connection_file.exists():
-        await anyio.sleep(0.1)
-
-    client.load_connection_file(str(connection_file))
-    client.start_channels()
-    await client.get_iopub_msg()
-    await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
-
-    # Simulate a keyboard interrupt from the console.
-    process.send_signal(signal.SIGINT)
-    process.wait(utils.TIMEOUT)
-
-
-async def test_ZMQInterface_gc(anyio_backend: Backend):
+async def test_BaseInterface_gc(anyio_backend: Backend):
     collected = Event()
-    async with ZMQInterface() as interface:
+    async with Interface() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
-        del interface
+    del interface
 
     with anyio.move_on_after(2):
         while not collected:
@@ -335,7 +287,7 @@ async def test_IPShellApp_gc(anyio_backend: Backend):
     with anyio.move_on_after(2):
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
     if obj := ref():
         referrers = gc.get_referrers(obj)
         assert not referrers
