@@ -224,7 +224,6 @@ class Caller:
     _queue_map: dict[int, Pending]
     _scheduler_queue: SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]
     _guest_queues: dict[Backend, SingleAsyncQueue[Pending | tuple[Callable, tuple, dict]]]
-    _guest_done_event: CountdownEvent
     _children_countdown: CountdownEvent
 
     started = Fixed(ProtectedPending)
@@ -393,7 +392,6 @@ class Caller:
             inst._queue_map = {}
             inst._scheduler_queue = SingleAsyncQueue(reject=inst._reject)
             inst._guest_queues = {}
-            inst._guest_done_event = CountdownEvent()
             inst._children_countdown = CountdownEvent()
 
             # Apply settings
@@ -480,7 +478,6 @@ class Caller:
                     self._set_state(CallerState.running)
                     await self.stopping
                     await self.wait(self._pen_stop, return_when="ALL_COMPLETED")
-                    await self._guest_done_event
                     await self._children_countdown
             except anyio.get_cancelled_exc_class():
                 # This may happen when the async event loop is shutting down.
@@ -649,23 +646,21 @@ class Caller:
 
     def _start_guest(self, backend: Backend, queue: SingleAsyncQueue) -> None:
         """Start a guest event loop."""
+        # Thread: caller
 
         def guest_done_callback(value: Any):
-            self._guest_done_event.down()
             self._guest_queues.pop(backend)
+            self._pen_stop.discard(pen)
+            pen.set_result(None)
 
-        async def run_guest_loop():
-            self._pen_stop.add(pen := Pending())
-            try:
-                with anyio.CancelScope() as scope:
-                    pen.set_canceller(lambda msg: queue.append((scope.cancel, (msg,), {})))
-                    if self._state is CallerState.running:
-                        await self._scheduler(queue)
-            finally:
-                self._pen_stop.discard(pen)
-                pen.set_result(None)
+        async def run_guest_loop() -> None:
+            self._pen_stop.add(pen)
+            with anyio.CancelScope() as scope:
+                pen.set_canceller(lambda msg: queue.append((scope.cancel, (msg,), {})))
+                if self._state is CallerState.running:
+                    await self._scheduler(queue)
 
-        assert self._guest_queues[backend] is queue
+        pen = Pending()
         with self._inst_lock:
             if self._state is CallerState.running:
                 host: Host[Any] | None = Host.current(self.thread)
@@ -676,7 +671,6 @@ class Caller:
                     run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
                     host_uses_signal_set_wakeup_fd=host.host_uses_signal_set_wakeup_fd if host else True,
                 )
-                self._guest_done_event.up()
                 self.stopping.add_done_callback(lambda _: queue.stop())
 
     @classmethod
