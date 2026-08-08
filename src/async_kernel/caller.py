@@ -653,12 +653,23 @@ class Caller:
             self._guest_done_event.down()
             self._guest_queues.pop(backend)
 
+        async def run_guest_loop():
+            self._ctx_pen.add(pen := Pending())
+            try:
+                with anyio.CancelScope() as scope:
+                    pen.set_canceller(lambda msg: queue.append((scope.cancel, (msg,), {})))
+                    if self._state is CallerState.running:
+                        await self._scheduler(queue)
+            finally:
+                self._ctx_pen.discard(pen)
+                pen.set_result(None)
+
+        assert self._guest_queues[backend] is queue
         with self._inst_lock:
             if self._state is CallerState.running:
                 host: Host[Any] | None = Host.current(self.thread)
                 get_start_guest_run(backend)(
-                    self._scheduler,
-                    queue,
+                    run_guest_loop,
                     done_callback=guest_done_callback,
                     run_sync_soon_threadsafe=host.run_sync_soon_threadsafe if host else self.call_direct,
                     run_sync_soon_not_threadsafe=host.run_sync_soon_not_threadsafe if host else None,
