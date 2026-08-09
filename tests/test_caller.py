@@ -840,3 +840,40 @@ def test_guest_non_protected(backend: Backend):
             await Caller().call_using_backend(opposite, lambda: 1 + 1)
 
     anyio.run(f, backend=str(backend))
+
+
+class TestShieldedTask:
+    async def test_sync(self, anyio_backend: Backend) -> None:
+
+        caller = Caller()
+        resume = create_async_event()
+
+        async def f(started, stop):
+            started()
+            await stop
+            await resume
+            return "ok"
+
+        st = await caller.create_shielded_task(f).start().started
+        caller.stop(force=True)
+        assert st.stopping.done()
+        resume.set()
+        assert await st.stopped == "ok"
+
+        with pytest.raises(PendingCancelled, match="Stopped early!"):
+            await caller.create_shielded_task(f).stop()
+
+    async def test_asyncontext(self, caller: Caller) -> None:
+
+        async def f(started, stop):
+            started()
+            await stop
+            return "ok"
+
+        st = caller.create_shielded_task(f)
+        with pytest.raises(RuntimeError, match="must be called before entering the context"):
+            async with st:
+                pass
+        async with st.start() as st:
+            assert st.started.done()
+        assert st.stopped.result() == "ok"
