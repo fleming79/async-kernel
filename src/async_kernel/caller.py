@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     import trio  # noqa: TC004
 
 
-__all__ = ["Caller"]
+__all__ = ["Caller", "ShieldedTask"]
 
 globals()["trio"] = lazy_import("trio")
 

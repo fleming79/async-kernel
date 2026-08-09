@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 
 import anyio
+from aiologic import BinarySemaphore
 from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
 from traitlets import import_item, traitlets
 from traitlets.config import Config, Configurable
@@ -202,6 +203,8 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
 
     _connections: tuple[Connection[Self], ...] = ()
     "The connections to the interface for messaging."
+
+    _connections_lock = Fixed(BinarySemaphore)
 
     shell: Fixed[Self, T_shell_co] = Fixed(lambda c: c["owner"].kernel.main_shell)
     "The main shell."
@@ -399,12 +402,12 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
         Args:
             new: new connections to add.
         """
-        assert self.callers[Channel.control].get_existing() is self.callers[Channel.control]
-        connections = []
-        for c in (*self._connections, *new):
-            if c.parent is self and not c.stopped.done() and c not in connections:
-                connections.append(c)
-        self._connections = tuple(connections)
+        with self._connections_lock:
+            connections = []
+            for c in (*self._connections, *new):
+                if c.parent is self and not c.stopped.done() and c not in connections:
+                    connections.append(c)
+            self._connections = tuple(connections)
 
     @override
     def exit(self, exit_status: int | str | None = 0) -> None:
@@ -459,24 +462,20 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
             self.stopped.set_result(None)
 
     async def _started(self) -> None:
-        self.log.info("Interface started: %s", self.summary)
-        self.started.set_result(None)
-        del self.iopub_send
-        from async_kernel.connection.base import Connection  # noqa: PLC0415
-
         for pth in self.autostart_connections:
             try:
-                if issubclass(cls := import_item(pth), Connection):
-                    self.log.info("Starting connection for %s", pth)
-                    connection = cls()
-                    await connection.start()
-                    self.log.info("Connection started %s", connection.connection_info())
+                cls: type[Connection[Self]] = import_item(pth)
+                self.log.info("Starting connection for %s", pth)
+                assert await cls().start().started in self._connections
             except Exception as e:
                 self.log.exception("Failed to start connection %s", pth, exc_info=e)
+        del self.iopub_send
         while self._iopub_cache:
             self._iopub_cache.reverse()
             args, kwargs = self._iopub_cache.pop()
             self.iopub_send(*args, **kwargs)
+        self.log.info("Interface started: %s", self.summary)
+        self.started.set_result(None)
 
     async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
         """Run the kernel.

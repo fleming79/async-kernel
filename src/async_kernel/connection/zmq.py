@@ -35,6 +35,8 @@ if TYPE_CHECKING:
     from anyio.abc._subprocesses import Process
     from jupyter_client import KernelConnectionInfo
 
+    from async_kernel.pending import ProtectedPending
+
 
 __all__ = ["ZMQConnection"]
 
@@ -53,7 +55,7 @@ class Session(jupyter_client.session.Session):
 Interface.classes.append(Session)
 
 
-class ZMQMessage(BaseMessage, ConnectionFileMixin):
+class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUnsafeMultipleInheritance]
     session = traitlets.Instance(Session, ())
     "Provides messaging utilities."
 
@@ -131,7 +133,7 @@ class ZMQMessage(BaseMessage, ConnectionFileMixin):
         return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
 
-class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_co]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_co]):
     """Provides the ZMQ sockets for clients to connect and communicate with the interface."""
 
     @property
@@ -140,10 +142,10 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
         return self.parent.kernel_name
 
     @override
-    async def open_channels(self) -> None:
-        # Thread: control
+    async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
 
         def heartbeat_handler(hb: ZMQPollSocket, event: int) -> None:
+            # Thread: zmq_poll_thread
             hb.send_multipart(hb.recv_multipart())
 
         def iopub_reg_handler(socket: ZMQPollSocket, flags: int) -> None:
@@ -154,10 +156,11 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
             msg = socket.recv()
             if msg[0] == 1:
                 ident = msg[1:]
-                msg_ = self.msg(MsgType.iopub_welcome, channel=Channel.iopub, content={"subscription": ident.decode()})
-                self.session.send(socket, msg_, ident=ident)  # pyright: ignore[reportArgumentType]
+                # Note: The welcome message is cached until parent._started is called.
+                self.parent.iopub_send(MsgType.iopub_welcome, content={"subscription": ident.decode()}, ident=ident)
 
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
+            # Thread: zmq_poll_thread
             ident, msg = recv(sock)
             msg["channel"] = channel
             handle_msg(msg, ident)
@@ -171,7 +174,7 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
                 zpoll.event_handler(self._sockets[Channel.heartbeat], heartbeat_handler),
                 zpoll.event_handler(self._sockets[Channel.iopub], iopub_reg_handler),
             ):
-                await super().open_channels()
+                await super().connection_task(started, stop)
 
     async def _bind_sockets(self):
         """Create, configure and bind all sockets."""
@@ -298,8 +301,7 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
                 self.log.warning("Kernel did not respond to kernel info request. attempt %d Retrying ...", attempt)
 
     @override
-    async def open_channels(self) -> None:
-        # Thread: control
+    async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             ident, msg = recv(sock)
             msg["channel"] = channel
@@ -317,18 +319,25 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
         ):
             await self._wait_for_welcome()
             await self._configure_session()
-            await super().open_channels()
+            await super().connection_task(started, stop)
             self._sockets.clear()
 
     @asynccontextmanager
-    async def subprocess_kernel(self, *, heartbeat_interval=10.0, **kwargs) -> AsyncGenerator[Process]:
+    async def subprocess_kernel(
+        self,
+        *,
+        startup_delay: float = 0.5,
+        start_timeout: float | None = None,
+        heartbeat_interval=10.0,
+        **kwargs,
+    ) -> AsyncGenerator[Process]:
         """Start a kernel interface as a subprocess."""
         self.write_connection_file()
         process = None
         try:
             command = make_argv(connection_file=self.connection_file, **kwargs)
             hb_started = create_async_waiter()
-            async with Caller() as caller, await anyio.open_process(command) as process, self:
+            async with Caller() as caller, await anyio.open_process(command) as process, self.start():
                 pen = caller.call_soon(self.monitor_heartbeat, heartbeat_interval, hb_started.wake)
                 await hb_started
                 try:

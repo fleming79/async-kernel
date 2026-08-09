@@ -74,10 +74,10 @@ async def client(
         assert isinstance(connection, ZMQConnection)
         client = ZMQKernelClient()
         client.load_connection_info(connection.get_connection_info())
-        async with client:
+        async with client.start():
             yield client
     else:
-        async with LocalClient() as client:
+        async with LocalClient().start() as client:
             yield client
 
 

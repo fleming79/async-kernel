@@ -36,6 +36,6 @@ async def test_user_ns(anyio_backend: Backend):
 async def test_force_shutdown(anyio_backend: Backend) -> None:
     interface = IPApp()
     interface.force_shutdown_delay = 0
-    async with interface, LocalClient() as client:
+    async with interface, LocalClient().start() as client:
         pen = client.shutdown()
         await pen.wait(timeout=utils.TIMEOUT, protect=True)

@@ -61,7 +61,7 @@ class TestInterface:
 
     async def test_input_request_no_handler(self, anyio_backend: Backend):
 
-        async with Interface(shell_class=BaseShell), LocalClient() as client:
+        async with Interface(shell_class=BaseShell), LocalClient().start() as client:
             msg = client.msg(MsgType.input_request, channel=Channel.stdin)
             job = Job(msg=msg, owner=client.as_owner, ident=[], received_time=time.monotonic())
             with pytest.raises(RuntimeError, match="A handler is not available"):

@@ -24,7 +24,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
 
     send_to_inteface = await start_kernel_callable_interface(transmit=from_interface, stopped=stopped.set)
     interface = Interface.instance()
-    async with LocalClient() as client:
+    async with LocalClient().start() as client:
         await client.kernel_info()
         send_to_inteface(pack_json_str(client.msg(MsgType.kernel_info_request, channel=Channel.shell)), [], None)
         async for msg in messages:
