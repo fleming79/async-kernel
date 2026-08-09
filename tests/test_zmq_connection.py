@@ -7,16 +7,15 @@ import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
 
-from async_kernel import Caller, Pending
-from async_kernel.connection.zmq import ZMQKernelClient
+from async_kernel import Pending
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
 from async_kernel.typing import Channel, MsgType
-from tests import utils
 from tests.test_message_spec import read_until_msg_type
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
+    from async_kernel.connection.zmq import ZMQKernelClient
     from async_kernel.shell import IPShell
 
 
@@ -150,21 +149,6 @@ async def test_already_entered(kernel: Kernel):
     with pytest.raises(RuntimeError, match="has already been entered"):
         async with kernel.parent:
             pass
-
-
-async def test_subprocess_kernel_monitor_heartbeat(anyio_backend, mocker):
-    # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
-    client = ZMQKernelClient()
-    log_error = mocker.patch.object(client.log, "error")
-    started = create_async_waiter()
-    async with client.subprocess_kernel():
-        pen = Caller().call_soon(client.monitor_heartbeat, 0.1, started=started.wake)
-        await started
-        result = await client.execute("get_ipython().parent.connections[0]._sockets['hb'].close()")
-        assert result["content"]["status"] == "ok"
-        await pen.wait(timeout=utils.TIMEOUT)
-
-    assert log_error
 
 
 @pytest.mark.parametrize("topic", ["zmq", "kernel"])

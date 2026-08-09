@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import signal
 import sys
 from typing import TYPE_CHECKING, Literal
 
@@ -33,6 +32,7 @@ async def test_input(
         return str(content)
 
     ready, client, theprompt = create_async_event(), subprocess_kernel_client, "Enter a value >"
+    await client.kernel_info()
 
     match mode:
         case "input":
@@ -99,15 +99,34 @@ async def test_interrupt_request(
             assert "KernelInterrupt" in reply["content"]["user_expressions"]["result"]["data"]["text/plain"]
 
 
+async def test_subprocess_kernel_monitor_heartbeat(anyio_backend, mocker):
+    # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
+    client = ZMQKernelClient()
+    log_error = mocker.patch.object(client.log, "error")
+    with pytest.raises(RuntimeError, match="Heartbeat not detected"):  # noqa: PT012
+        async with client.subprocess_kernel(heartbeat_interval=0.1):
+            result = await client.execute("get_ipython().parent.connections[0]._sockets['hb'].close()")
+            assert result["content"]["status"] == "ok"
+            await create_async_waiter().with_(timeout=utils.TIMEOUT)
+    assert log_error
+
+
 @pytest.mark.skipif(sys.platform == "win32", reason="Can't simulate keyboard interrupt on windows.")
 async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyio_backend):
     # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
     client = ZMQKernelClient()
-    async with client.subprocess_kernel(start_timeout=utils.TIMEOUT) as process:
-        # Simulate a keyboard interrupt from the console.
-        result = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
-        pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])
-        assert pid == process.pid
-        assert os.getpid() != process.pid
-        os.kill(process.pid, signal.SIGINT)
-    assert process.wait(1) == 0
+    okay = False
+    with pytest.raises(RuntimeError, match="Heartbeat not detected"):  # noqa: PT012
+        async with client.subprocess_kernel(heartbeat_interval=0.1) as process:
+            # Simulate a keyboard interrupt from the console.
+            result = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
+            pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])
+            assert pid == process.pid
+            assert os.getpid() != process.pid
+            # os.kill(process.pid, signal.SIGINT)
+            process.kill()
+            okay = True
+            # await process.wait()
+            await create_async_waiter().with_(timeout=utils.TIMEOUT)
+        # assert process.wait(1) == 0
+    assert okay, "Code did not reach interrupted before heartbeat error."

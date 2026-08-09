@@ -175,7 +175,7 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
     launcher = traitlets.Unicode("").tag(config=True)
     """The value used to import the interface using [async_kernel.kernelspec.import_launcher][]."""
 
-    force_shutdown_delay = traitlets.Float(0.5 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
+    force_shutdown_delay = traitlets.Float(2 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
     "The time in seconds to wait after stop is called before stop with force enabled is called."
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
@@ -427,29 +427,26 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
 
     @asynccontextmanager
     async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
+        async def stopping(stopped=self.stopped, log=self.log, timeout=self.force_shutdown_delay) -> None:
+            while not stopped.done():
+                try:
+                    await stopped.wait(timeout=timeout)
+                except TimeoutError:
+                    log.info("Attempting to initiate force stop")
+                    await caller.call_soon(scope.cancel, "Force stop")
+                    log.info("Cancel scope call succeeded.")
+
         try:
             if self.stopped.done():
                 msg = "Stopped early"
                 raise RuntimeError(msg)
             self.log.info("Starting kernel interface")
             self.backend = Backend(current_async_library())
-            async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
+            async with Caller() as caller:
                 self.callers[Channel.shell] = caller
-                self.callers[Channel.control] = caller_ctrl
+                self.callers[Channel.control] = caller_ctrl = caller.get(name="Control")
                 try:
                     with anyio.CancelScope() as scope:
-
-                        async def stopping(
-                            stopped=self.stopped, log=self.log, timeout=self.force_shutdown_delay
-                        ) -> None:
-                            while not stopped.done():
-                                try:
-                                    await stopped.wait(timeout=timeout)
-                                except TimeoutError:
-                                    log.info("Attempting to initiate force stop")
-                                    await caller.call_soon(scope.cancel, "Force stop")
-                                    log.info("Cancel scope call succeeded.")
-
                         self.stopping.add_done_callback(lambda _: caller_ctrl.call_soon(stopping))
                         async with self.kernel:
                             if set_started:

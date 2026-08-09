@@ -14,11 +14,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
 import anyio
 import traitlets
-from aiologic.lowlevel import create_async_event, create_green_event, enable_signal_safety
+from aiologic.lowlevel import create_async_waiter, enable_signal_safety
 from traitlets.config import LoggingConfigurable
 
 import async_kernel
 from async_kernel import utils
+from async_kernel.caller import Caller
 from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
@@ -43,7 +44,6 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import FrameType
 
-    from async_kernel.caller import Caller
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
@@ -484,18 +484,16 @@ class Kernel(
         await self.do_interrupt()
         return {}
 
-    async def shutdown_request(self, job: Job[Content], /) -> None:
+    async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle an [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
         # Thread: Control
-        resume, done = create_async_event(), create_green_event()
-        # wait until the kernel is stopped prior to sending the message.
-        self.stopped.add_done_callback(lambda _: (resume.set(), done.wait()))
+        resume = create_async_waiter()
+        pen = Caller.current_pending()
+        assert pen
+        self.stopped.add_done_callback(lambda _: (resume.wake(), pen.wait_sync(timeout=1)))  # Thread: shell
         self.parent.stop()
-        try:
-            await resume
-        finally:
-            job["owner"]().send_reply(job, {"restart": job["msg"]["content"].get("restart", False)})
-            done.set()
+        await resume
+        return {"restart": job["msg"]["content"].get("restart", False)}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
         """Handle an [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""

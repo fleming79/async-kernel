@@ -90,9 +90,9 @@ class BaseMessage(LoggingConfigurable, anyio.AsyncContextManagerMixin, MessagePr
     @asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         """A context manager to open the channels in a caller named 'Control'."""
-        async with Caller() as caller, caller.get(name="Control") as caller_ctrl:
+        async with Caller() as caller:
             self.callers[Channel.shell] = caller
-            self.callers[Channel.control] = caller_ctrl
+            self.callers[Channel.control] = caller_ctrl = caller.get(name="Control")
             # Open channels
             pen_channels: Pending[None] = caller_ctrl.call_soon(self.open_channels)
             await self.started

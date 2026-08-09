@@ -261,7 +261,7 @@ def test_command_launch_with_host(mocker, monkeypatch, backend, host):
     assert kernel.parent.backend == backend
 
 
-async def test_BaseInterface_gc(anyio_backend: Backend):
+async def test_Interface_gc(anyio_backend: Backend):
     collected = Event()
     async with Interface() as interface:
         weakref.finalize(interface, collected.set)

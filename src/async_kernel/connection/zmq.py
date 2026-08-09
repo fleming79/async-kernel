@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import functools
 import json
 import os
@@ -14,13 +15,13 @@ from typing import TYPE_CHECKING, Any, Generic, Never, Self
 import anyio
 import jupyter_client.session
 import zmq
-from aiologic.lowlevel import create_async_event
+from aiologic.lowlevel import create_async_event, create_async_waiter
 from jupyter_client.connect import ConnectionFileMixin
 from traitlets import traitlets
 from traitlets.config import Config
 from typing_extensions import override
 
-from async_kernel import utils
+from async_kernel import Caller
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
 from async_kernel.connection.base import BaseKernelClient, BaseMessage, Connection
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
@@ -29,9 +30,9 @@ from async_kernel.kernelspec import make_argv
 from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_interface_co
 
 if TYPE_CHECKING:
-    import subprocess
-    from collections.abc import AsyncGenerator
+    from collections.abc import AsyncGenerator, Callable
 
+    from anyio.abc._subprocesses import Process
     from jupyter_client import KernelConnectionInfo
 
 
@@ -320,32 +321,30 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             self._sockets.clear()
 
     @asynccontextmanager
-    async def subprocess_kernel(
-        self, startup_delay=0.0, start_timeout=None, kernel_name="async", **kwargs
-    ) -> AsyncGenerator[subprocess.Popen[bytes]]:
-        import subprocess  # noqa: PLC0415
-
+    async def subprocess_kernel(self, *, heartbeat_interval=10.0, **kwargs) -> AsyncGenerator[Process]:
+        """Start a kernel interface as a subprocess."""
         self.write_connection_file()
         process = None
         try:
-            command = make_argv(connection_file=self.connection_file, name=kernel_name, **kwargs)
-            # We use subprocess instead of the async version for better coverage support and debugging reliability.
-            process = subprocess.Popen(command)
-            # Adding  a delay (especially on windows) before opening the connection gives better startup reliability.
-            await anyio.sleep(startup_delay)
-            async with self:
+            command = make_argv(connection_file=self.connection_file, **kwargs)
+            hb_started = create_async_waiter()
+            async with Caller() as caller, await anyio.open_process(command) as process, self:
+                pen = caller.call_soon(self.monitor_heartbeat, heartbeat_interval, hb_started.wake)
+                await hb_started
                 try:
-                    yield process
+                    with anyio.CancelScope() as scope:
+                        pen.add_done_callback(lambda _: not self.stopped.done() and scope.cancel("Lost heartbeat"))
+                        yield process
+                    if pen.done() and (e := pen.exception()):
+                        raise e
                 finally:
-                    await self.shutdown(False).wait(timeout=10 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
-            assert process.wait(timeout=10 if not utils.LAUNCHED_BY_DEBUGPY else 1e6) == 0
+                    if process.returncode is None:
+                        await self.shutdown(False).wait(timeout=5)
         finally:
-            if process:
-                process.terminate()  # pragma: no cover
             self.cleanup_connection_file()
             self.cleanup_ipc_files()
 
-    async def monitor_heartbeat(self, interval=10.0, started=lambda: None) -> None:
+    async def monitor_heartbeat(self, interval: float = 10.0, started: Callable[[], Any] = lambda: None) -> None:
         """Monitor the heartbeat of the interface returning when the heartbeat is lost.
 
         Args:
@@ -360,14 +359,21 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             # Thread: zmq_poll
             nonlocal reply, started
             reply = sock.recv() == b"ping"
-            started()
-            started = noop
+            if started is not noop:
+                self.log.debug("Heartbeat monitor started (interval=%0.1fs)", interval)
+                started()
+                started = noop
 
         with await self._connect_socket(Channel.heartbeat) as hb, self.zmq_poll.event_handler(hb, recv):
-            while reply:
+            while not self.stopped.done() and reply:
                 reply = ""
                 hb.send(b"ping")
-                await anyio.sleep(interval)
+                with contextlib.suppress(TimeoutError):
+                    await self.stopped.wait(timeout=interval)
+            if not self.stopped.done():
+                started()
+                msg = f"Heartbeat not detected for {interval=}s!"
+                raise RuntimeError(msg)
 
     @override
     def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:

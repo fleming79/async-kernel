@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 # pyright: reportPrivateUsage=false
 
 
-class TestBaseInterface:
+class TestInterface:
     async def test_instance_does_not_exist(self, anyio_backend: Backend):
 
         with pytest.raises(RuntimeError, match="An instance does not exist"):
@@ -31,12 +31,12 @@ class TestBaseInterface:
 
     async def test_instance_not_a_subclass(self, anyio_backend: Backend):
 
-        class BaseInterfaceSub(Interface):
+        class InterfaceSub(Interface):
             pass
 
         async with Interface():
             with pytest.raises(TypeError, match="An instance exists but it is not an instance of"):
-                BaseInterfaceSub.instance()
+                InterfaceSub.instance()
 
     async def test_gc(self, anyio_backend: Backend):
         collected = Event()
