@@ -15,7 +15,7 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, Unpack, final
+from typing import TYPE_CHECKING, Any, ClassVar, Concatenate, Generic, Literal, Self, Unpack, final
 
 import anyio
 from aiologic import BinarySemaphore, CountdownEvent
@@ -29,7 +29,7 @@ from async_kernel import utils
 from async_kernel.common import Fixed, KernelInterrupt, SingleAsyncQueue
 from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker, ProtectedPending
-from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, RunSettings, T
+from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, P, RunSettings, T
 
 with contextlib.suppress(ImportError):
     # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
@@ -43,7 +43,6 @@ if TYPE_CHECKING:
 
     import trio  # noqa: TC004
 
-    from async_kernel.typing import P
 
 __all__ = ["Caller"]
 
@@ -167,6 +166,7 @@ class Caller:
     - [Caller.queue_call][]: Execute a function in the caller's thread using a queue (sequential).
     - [Caller.queue_get][]: Get the pending associated with the queue call.
     - [Caller.queue_close][]: Close the queue associated with the function.
+    - [Caller.create_shielded_task][]: Run a coroutine function in a shielded task.
 
     **Class methods**
 
@@ -1019,6 +1019,40 @@ class Caller:
             pen.metadata["queue"].stop()
             pen.cancel()
 
+    def create_shielded_task(
+        self,
+        func: Callable[Concatenate[Callable[[], None], ProtectedPending[None], P], CoroutineType[Any, Any, T]],
+        /,
+    ) -> ShieldedTask[P, T]:
+        """Wrap the coroutine function `func` with a `ShieldedTask`.
+
+        The returned `ShieldedTask` will only be schedule after `start` method is called,
+        and can only be started once, though it is safe to call `start` multiple times;
+        subsequent calls are `noop`.
+
+        When used as an async context, the method 'stop' will be called when the context
+        exits and will wait for the protected task to  complete prior to stopping. `func`
+        is expected to accept two positional arguments:
+        1. started: A callable to indicate the task is started.
+        2. stop: A protected pending, that should be awaited, or otherwise used to shutdown
+            the task.
+
+        Usage:
+            ```python
+            async def func(started, stopped):
+                started()
+                await stopped
+
+
+            task = caller.create_shielded_task(func).start()
+            await task.stop()
+            # or
+            async with caller.create_shielded_task(func).start():
+                pass
+            ```
+        """
+        return ShieldedTask(self, func)
+
     async def as_completed(
         self,
         items: Iterable[Awaitable[T]] | AsyncGenerator[Awaitable[T]],
@@ -1182,3 +1216,108 @@ class Caller:
             ```
         """
         return PendingGroup(shield=shield, mode=mode, timeout=timeout)
+
+
+class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
+    """Wrap the coroutine function `func` with a `ShieldedTask`.
+
+    The returned `ShieldedTask` will only be schedule after `start` method is called,
+    and can only be started once, though it is safe to call multiple times. Subsequent
+    calls are `noop`.
+
+    When used as an async context, the method 'stop' will be called when the context
+    exits and will wait for the protected task to  complete prior to stopping.
+
+    Usage:
+        ```python
+        async def func(started, stopped):
+            started()
+            await stopped
+
+
+        task = ShieldedTask(Caller(), func).start()
+        await task.stop()
+        # or
+        async with ShieldedTask(Caller(), func).start():
+            pass
+        ```
+    """
+
+    __slots__ = ["_caller_ref", "_func", "_start_token"]
+
+    started: Fixed[Self, ProtectedPending[Self]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
+    "A `ProtectedPending` that is set once `func` indicates it is started."
+
+    stopping: Fixed[Self, ProtectedPending[None]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
+    "A `ProtectedPending` that is set when the method `stop` is called."
+
+    stopped: Fixed[Self, ProtectedPending[T]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
+    "A `ProtectedPending` that is set when the shielded call of `func` is finished."
+
+    @property
+    def caller(self) -> Caller:
+        return self._caller_ref()  # pyright: ignore[reportReturnType]
+
+    def __init__(
+        self,
+        caller: Caller,
+        func: Callable[Concatenate[Callable[[], None], ProtectedPending[None], P], T | CoroutineType[Any, Any, T]],
+        /,
+    ) -> None:
+        super().__init__()
+        self._caller_ref = weakref.ref(caller)
+        caller.stopping.add_done_callback(self._caller_stopping)
+        self._start_token = ""
+        self._func = func
+
+    def _info(self, name: str) -> str:
+        return f"{self.__class__}.{name}"
+
+    def _caller_stopping(self, _) -> None:
+        self.stop()
+
+    @contextlib.asynccontextmanager
+    async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
+        if hasattr(self, "_start_token"):
+            msg = "`start` must be called before entering the context!"
+            raise RuntimeError(msg)
+        caller = Caller.get_existing()
+        assert caller
+        assert not self.stopping.done()
+        try:
+            with anyio.CancelScope() as scope:
+                self.stopped.add_done_callback(lambda _: caller.call_direct(scope.cancel, "Stopped"))
+                await self.started
+                yield self
+        finally:
+            await self.stop()
+
+    def start(self, *args: P.args, **kwargs: P.kwargs) -> Self:
+        ""
+        with contextlib.suppress(AttributeError):
+            del self._start_token
+
+            def started() -> None:
+                self.caller.log.debug("Started %s", self._func)
+                self.started.set_result(self)
+
+            def on_stopped(pen: Pending, stopped=self.stopped, caller=self.caller, func=self._func) -> None:
+                caller.log.debug("Stopped %s", func)
+                stopped.set_exception(e) if (e := pen.exception()) else stopped.set_result(pen.result())
+                del self._func
+
+            async def run_shielded(func=self._func, stop=self.stopping):
+                with anyio.CancelScope(shield=True):
+                    return await func(started, stop, *args, **kwargs)
+
+            self.caller.call_soon(run_shielded).add_done_callback(on_stopped)
+        return self
+
+    def stop(self, _=None) -> ProtectedPending[T]:
+        ""
+        self.started.cancel("Stopped early!")
+        self.stopping.set_result(None)
+        with contextlib.suppress(AttributeError):
+            del self._start_token
+            self.stopped.cancel("Stopped early!")
+        return self.stopped
