@@ -13,7 +13,7 @@ import anyio.lowlevel
 import anyio.to_thread
 import pytest
 import trio
-from aiologic import CountdownEvent, Event
+from aiologic import Event, Latch
 from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
 
 from async_kernel.caller import Caller, StartStopTask
@@ -629,25 +629,24 @@ class TestCaller:
     async def test_as_completed_cancelled(self, anyio_backend: Backend):
         async with Caller() as caller:
             n = 6
-            ready = CountdownEvent(n - 2)
+            barrier = Latch(n + 1)
 
-            async def test_func():
-                if ready.value:
-                    ready.down()
-                    await anyio.sleep_forever()
-                return ready
+            async def f(i):
+                await barrier
+                if i > n - 2:
+                    await create_async_waiter()
+                return "ok"
 
-            items = {caller.to_thread(test_func) for _ in range(n)}
+            items = {caller.to_thread(f, i) for i in range(n)}
             with anyio.CancelScope() as scope:
+                await barrier
                 async for _ in caller.as_completed(items):
-                    await ready
                     scope.cancel()
             for item in items:
                 if not item.cancelled():
-                    assert item.result() is ready
+                    assert item.result() == "ok"
                 else:
                     assert item.cancelled()
-            await caller.wait(items, return_when="ALL_COMPLETED")
 
     async def test_as_completed_awaitables(self, caller: Caller):
         async def f(i: int):
