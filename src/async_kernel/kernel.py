@@ -605,6 +605,7 @@ class Kernel(
             user_expressions=user_expressions,
             allow_stdin=allow_stdin,
             cell_id=cell_id,
+            cell_meta=cell_meta,
         )
 
     def getpass(self, prompt="", stream=None) -> str:
