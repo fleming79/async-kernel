@@ -81,7 +81,7 @@ async def client(
             yield client
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def subprocess_kernel_client(anyio_backend: Backend):
     # Launching the subprocess from a fixture enables coverage to be patched correctly by pytest coverage.
     client = ZMQKernelClient(encryption="curve")
