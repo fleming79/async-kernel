@@ -350,10 +350,12 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
                         else:
                             await pen_hb.cancel_wait()
                             await self.shutdown(False).wait(timeout=shutdown_timeout)
+                            process.wait(timeout=shutdown_timeout)
             finally:
                 self.cleanup_connection_file()
                 self.cleanup_ipc_files()
                 if process and process.returncode is None:
+                    # Terminate will prevent coverage from writing the necessary files.
                     process.terminate()
 
     async def _monitor_heartbeat(self, interval: float = 10.0, started: Callable[[], Any] = lambda: None) -> None:
