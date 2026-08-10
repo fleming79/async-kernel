@@ -41,7 +41,7 @@ def pytest_configure(config):
 #     anyio_backends.append(("asyncio", {"use_uvloop": True}))
 
 
-@pytest.fixture(params=[Backend.asyncio], scope="module")
+@pytest.fixture(params=[Backend.asyncio, Backend.trio], scope="module")
 def anyio_backend(request):
     return request.param
 
