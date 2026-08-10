@@ -41,7 +41,7 @@ dependencies = [
   "aiologic>=0.17.0",
   "orjson>=3.10.16; sys_platform == 'emscripten'",
   "comm>=0.2",
-  "ipython>=9.0",
+  "ipython>=9.16.1",
   "traitlets>=5.14",
   "matplotlib-inline>0.1",
   "wrapt>=2.0.1",

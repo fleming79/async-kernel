@@ -647,6 +647,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         transformed_cell: str | None = None,
         preprocessing_exc_tuple: Any = None,
         cell_id=None,
+        cell_meta=None,
     ) -> ExecutionResult:
         token = utils._cell_id_var.set(cell_id)  # pyright: ignore[reportPrivateUsage]
         result = None
@@ -659,6 +660,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 transformed_cell=transformed_cell,
                 preprocessing_exc_tuple=preprocessing_exc_tuple,
                 cell_id=cell_id,
+                cell_meta=cell_meta,
             )
             return result  # noqa: RET504
         finally:
