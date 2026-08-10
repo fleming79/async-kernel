@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import signal
 import sys
 from typing import TYPE_CHECKING, Literal
 
@@ -123,10 +124,7 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyi
             pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])
             assert pid == process.pid
             assert os.getpid() != process.pid
-            # os.kill(process.pid, signal.SIGINT)
-            process.kill()
+            os.kill(process.pid, signal.SIGINT)
             okay = True
-            # await process.wait()
             await create_async_waiter().with_(timeout=utils.TIMEOUT)
-        # assert process.wait(1) == 0
     assert okay, "Code did not reach interrupted before heartbeat error."

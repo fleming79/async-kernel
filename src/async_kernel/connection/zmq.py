@@ -7,6 +7,7 @@ import functools
 import json
 import os
 import pathlib
+import subprocess
 import sys
 from contextlib import asynccontextmanager
 from functools import partial
@@ -21,6 +22,7 @@ from traitlets import traitlets
 from traitlets.config import Config
 from typing_extensions import override
 
+from async_kernel import Caller
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
 from async_kernel.connection.base import BaseKernelClient, BaseMessage, Connection
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
@@ -31,7 +33,6 @@ from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgTyp
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
 
-    from anyio.abc._subprocesses import Process
     from jupyter_client import KernelConnectionInfo
 
     from async_kernel import Pending
@@ -282,23 +283,17 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
     if TYPE_CHECKING:
         # The signature should match the keyword arguments of `self.connection_task`.
         @override
-        def start(self, *, startup_delay: float = 0.5, start_timeout: float | None = None) -> Self: ...
+        def start(self, *, start_timeout: float | None = None) -> Self: ...
 
         """Connect this client to the interface.
 
         Args:
-            startup_delay: A duration for the time to sleep after connecting the sockets prior to waiting for a welcome message.
             start_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.
             """
 
     @override
     async def connection_task(
-        self,
-        started: Callable[[], Any],
-        stop: ProtectedPending,
-        *,
-        startup_delay: float = 0.5,
-        start_timeout: float | None = None,
+        self, started: Callable[[], Any], stop: ProtectedPending, *, start_timeout: float | None = None
     ) -> None:
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             ident, msg = recv(sock)
@@ -315,7 +310,6 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             zpoll.event_handler(await connect(Channel.shell), partial(handler, channel=Channel.shell)),
             zpoll.event_handler(await connect(Channel.stdin), partial(handler, channel=Channel.stdin)),
         ):
-            await anyio.sleep(startup_delay)
             with anyio.fail_after(start_timeout):
                 await self._establish_connection()
             await super().connection_task(started, stop)
@@ -330,37 +324,37 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
         heartbeat_interval: float | None = 10.0,
         shutdown_timeout: float | None = 1.0,
         **kwargs,
-    ) -> AsyncGenerator[Process]:
+    ) -> AsyncGenerator[subprocess.Popen]:
         """Start a kernel interface as a subprocess."""
         self.write_connection_file()
-        process = None
+        process: subprocess.Popen | None = None
         pen_hb: None | Pending = None
-        try:
-            command = make_argv(connection_file=self.connection_file, **kwargs)
-            async with await anyio.open_process(command) as process:
-                await self.start(startup_delay=startup_delay, start_timeout=start_timeout).started
-                try:
+        async with Caller() as caller:
+            try:
+                # We deliberately use subprocess directly because it is safer in pytest and debugpy.
+                command = make_argv(connection_file=self.connection_file, **kwargs)
+                process = subprocess.Popen(command)
+                # Delay for process to start
+                await anyio.sleep(startup_delay)
+                async with self.start(start_timeout=start_timeout):
                     with anyio.CancelScope() as scope:
                         if heartbeat_interval is not None:
                             hb_started = create_async_waiter()
                             pen_hb = self.caller.call_soon(self._monitor_heartbeat, heartbeat_interval, hb_started.wake)
-                            pen_hb.add_done_callback(lambda _: scope.cancel("Lost heartbeat"))
+                            pen_hb.add_done_callback(lambda _: caller.call_direct(scope.cancel, "Lost heartbeat"))
                             await hb_started
                         yield process
                     if pen_hb:
                         if pen_hb.done() and (e := pen_hb.exception()):
-                            raise e from None
+                            raise e
                         else:
                             await pen_hb.cancel_wait()
-                finally:
-                    if process.returncode is None and not await self.shutdown(False).wait(timeout=shutdown_timeout):
-                        msg = "Shutdown reply not received in time"
-                        process.terminate()
-                        raise TimeoutError(msg)
-        finally:
-            await self.stop()
-            self.cleanup_connection_file()
-            self.cleanup_ipc_files()
+                            await self.shutdown(False).wait(timeout=shutdown_timeout)
+            finally:
+                self.cleanup_connection_file()
+                self.cleanup_ipc_files()
+                if process and process.returncode is None:
+                    process.terminate()
 
     async def _monitor_heartbeat(self, interval: float = 10.0, started: Callable[[], Any] = lambda: None) -> None:
         """Monitor the heartbeat of the interface returning when the heartbeat is lost.
