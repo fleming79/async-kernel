@@ -860,29 +860,74 @@ class TestShieldedTask:
             await resume
             return "ok"
 
-        st = await caller.create_shielded_task(f).start().started
+        st = caller.create_shielded_task(f).start()
+        await st.started
         caller.stop(force=True)
         assert st.stopping.done()
         resume.set()
         assert await st.stopped == "ok"
+        assert await st == "ok"
 
         with pytest.raises(PendingCancelled, match="Stopped early!"):
             await caller.create_shielded_task(f).stop()
+        with pytest.raises(RuntimeError, match="can only be set once"):
+            st.set_task_function(f)
 
     async def test_asyncontext(self, caller: Caller) -> None:
 
         async def f(started, stop):
             started()
             await stop
+            await anyio.sleep(0)
             return "ok"
 
         st = caller.create_shielded_task(f)
         with pytest.raises(RuntimeError, match="must be called before entering the context"):
             async with st:
                 pass
+        assert not st.started.done()
         async with st.start() as st:
             assert st.started.done()
+            # Exiting the context should initial shutdown.
         assert st.stopped.result() == "ok"
         assert await st == "ok"
-        async with st:
+        with pytest.raises(RuntimeError, match="The async context can only be used once"):
+            async with st:
+                await create_async_event()
+
+    async def test_asyncontext_stop_early(self, caller: Caller) -> None:
+
+        async def f(started, stop):
+            started()
+
+        st = caller.create_shielded_task(f)
+        with pytest.raises(RuntimeError, match="Shielded task stopped early"):
+            async with st.start():
+                await create_async_waiter()
+
+    async def test_gc(self, caller: Caller):
+
+        class MyClass:
+            async def f(self, started, stop):
+                started()
+                await stop
+
+        cleaned = CountdownEvent(2)
+        c = MyClass()
+        st = caller.create_shielded_task(c.f)
+        ref = weakref.ref(c)
+        ref2 = weakref.ref(st)
+        weakref.finalize(c, cleaned.down)
+        weakref.finalize(st, cleaned.down)
+        async with st.start():
             pass
+        del c, st
+        with anyio.move_on_after(2):
+            await cleaned
+
+        if ref():
+            referrers = gc.get_referrers(ref())
+            assert not referrers
+        if ref2():
+            referrers = gc.get_referrers(ref2())
+            assert not referrers
