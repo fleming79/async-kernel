@@ -818,7 +818,7 @@ def test_unmanged_shutdown(backend: Backend):
         Caller().to_thread(lambda: 1 + 1)
 
     anyio.run(f, backend=str(backend))
-    assert not Caller._instances
+    assert not list(Caller._instances)
 
 
 @pytest.mark.parametrize("backend", Backend)
