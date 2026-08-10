@@ -16,7 +16,7 @@ import trio
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
 
-from async_kernel.caller import Caller
+from async_kernel.caller import Caller, ShieldedTask
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, CallerState, Hosts
 
@@ -843,6 +843,12 @@ def test_guest_non_protected(backend: Backend):
 
 
 class TestShieldedTask:
+    async def test_NotSet(self, anyio_backend: Backend):
+        st = ShieldedTask()
+        with pytest.raises(RuntimeError, match="The task function has not been set"):
+            async with st:
+                pass
+
     async def test_sync(self, anyio_backend: Backend) -> None:
 
         caller = Caller()
@@ -877,3 +883,6 @@ class TestShieldedTask:
         async with st.start() as st:
             assert st.started.done()
         assert st.stopped.result() == "ok"
+        assert await st == "ok"
+        async with st:
+            pass
