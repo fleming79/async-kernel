@@ -117,7 +117,7 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyi
     client = ZMQKernelClient()
     okay = False
     with pytest.raises(RuntimeError, match="Heartbeat not detected"):  # noqa: PT012
-        async with client.subprocess_kernel(heartbeat_interval=0.1) as process:
+        async with client.subprocess_kernel(heartbeat_interval=0.1, start_timeout=utils.TIMEOUT) as process:
             # Simulate a keyboard interrupt from the console.
             result = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
             pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])

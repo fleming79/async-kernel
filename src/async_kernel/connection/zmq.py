@@ -21,7 +21,6 @@ from traitlets import traitlets
 from traitlets.config import Config
 from typing_extensions import override
 
-from async_kernel import Caller
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
 from async_kernel.connection.base import BaseKernelClient, BaseMessage, Connection
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
@@ -35,6 +34,7 @@ if TYPE_CHECKING:
     from anyio.abc._subprocesses import Process
     from jupyter_client import KernelConnectionInfo
 
+    from async_kernel import Pending
     from async_kernel.pending import ProtectedPending
 
 
@@ -268,40 +268,38 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
 
         return await self.zmq_poll.execute_async(open_socket)
 
-    async def _wait_for_welcome(self) -> None:
-        """Wait for non-local interface to publish a welcome message."""
-        while True:
-            resume = create_async_event()
-            iopub = await self._connect_socket(Channel.iopub)
-            self.log.debug("Waiting for welcome message")
-            with (
-                iopub,
-                self.zmq_poll.event_handler(iopub, lambda _, __: None, count=(1, resume.set), canceller=None),
-            ):
-                # Wait for iopub welcome message
-                iopub.subscribe(b"")
-                if await resume.with_(timeout=2):
-                    self.log.debug("Welcome message received")
-                    return
-                self.log.warning("Welcome message not received after 2s!")  # pragma: no cover
-
-    async def _configure_session(self) -> None:
-
+    async def _establish_connection(self) -> None:
+        # Wait for welcome
+        async with self.iopub_subscribe():
+            pass
         self.log.debug("Getting kernel info to configure session")
-        while True:
-            attempt = 1
-            try:
-                msg = await self.kernel_info()
-                adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
-                if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
-                    self.session.adapt_version = adapt_version  # pragma: no cover
-                self.log.debug("Session config complete")
-                break
-            except TimeoutError:
-                self.log.warning("Kernel did not respond to kernel info request. attempt %d Retrying ...", attempt)
+        msg = await self.kernel_info()
+        adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
+        if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
+            self.session.adapt_version = adapt_version  # pragma: no cover
+        self.log.debug("Session config complete")
+
+    if TYPE_CHECKING:
+        # The signature should match the keyword arguments of `self.connection_task`.
+        @override
+        def start(self, *, startup_delay: float = 0.5, start_timeout: float | None = None) -> Self: ...
+
+        """Connect this client to the interface.
+
+        Args:
+            startup_delay: A duration for the time to sleep after connecting the sockets prior to waiting for a welcome message.
+            start_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.
+            """
 
     @override
-    async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
+    async def connection_task(
+        self,
+        started: Callable[[], Any],
+        stop: ProtectedPending,
+        *,
+        startup_delay: float = 0.5,
+        start_timeout: float | None = None,
+    ) -> None:
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             ident, msg = recv(sock)
             msg["channel"] = channel
@@ -317,8 +315,9 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             zpoll.event_handler(await connect(Channel.shell), partial(handler, channel=Channel.shell)),
             zpoll.event_handler(await connect(Channel.stdin), partial(handler, channel=Channel.stdin)),
         ):
-            await self._wait_for_welcome()
-            await self._configure_session()
+            await anyio.sleep(startup_delay)
+            with anyio.fail_after(start_timeout):
+                await self._establish_connection()
             await super().connection_task(started, stop)
             self._sockets.clear()
 
@@ -328,32 +327,42 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
         *,
         startup_delay: float = 0.5,
         start_timeout: float | None = None,
-        heartbeat_interval=10.0,
+        heartbeat_interval: float | None = 10.0,
+        shutdown_timeout: float | None = 1.0,
         **kwargs,
     ) -> AsyncGenerator[Process]:
         """Start a kernel interface as a subprocess."""
         self.write_connection_file()
         process = None
+        pen_hb: None | Pending = None
         try:
             command = make_argv(connection_file=self.connection_file, **kwargs)
-            hb_started = create_async_waiter()
-            async with Caller() as caller, await anyio.open_process(command) as process, self.start():
-                pen = caller.call_soon(self.monitor_heartbeat, heartbeat_interval, hb_started.wake)
-                await hb_started
+            async with await anyio.open_process(command) as process:
+                await self.start(startup_delay=startup_delay, start_timeout=start_timeout).started
                 try:
                     with anyio.CancelScope() as scope:
-                        pen.add_done_callback(lambda _: not self.stopped.done() and scope.cancel("Lost heartbeat"))
+                        if heartbeat_interval is not None:
+                            hb_started = create_async_waiter()
+                            pen_hb = self.caller.call_soon(self._monitor_heartbeat, heartbeat_interval, hb_started.wake)
+                            pen_hb.add_done_callback(lambda _: scope.cancel("Lost heartbeat"))
+                            await hb_started
                         yield process
-                    if pen.done() and (e := pen.exception()):
-                        raise e
+                    if pen_hb:
+                        if pen_hb.done() and (e := pen_hb.exception()):
+                            raise e from None
+                        else:
+                            await pen_hb.cancel_wait()
                 finally:
-                    if process.returncode is None:
-                        await self.shutdown(False).wait(timeout=5)
+                    if process.returncode is None and not await self.shutdown(False).wait(timeout=shutdown_timeout):
+                        msg = "Shutdown reply not received in time"
+                        process.terminate()
+                        raise TimeoutError(msg)
         finally:
+            await self.stop()
             self.cleanup_connection_file()
             self.cleanup_ipc_files()
 
-    async def monitor_heartbeat(self, interval: float = 10.0, started: Callable[[], Any] = lambda: None) -> None:
+    async def _monitor_heartbeat(self, interval: float = 10.0, started: Callable[[], Any] = lambda: None) -> None:
         """Monitor the heartbeat of the interface returning when the heartbeat is lost.
 
         Args:
@@ -389,8 +398,17 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
         return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
     @asynccontextmanager
-    async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:
+    async def iopub_subscribe(
+        self, topic=b"", *, timeout: float | None = None
+    ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
         """Open a new iopub socket and subscribe to a particular topic.
+
+        Args:
+            topic: The topics to subscribe to.
+            timeout: The maximum time to wait for a welcome message.
+
+        Raise:
+            TimeoutError: If a welcome message is not received in time.
 
         Usaage:
         ```python
@@ -419,7 +437,10 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
         iopub = await self._connect_socket(Channel.iopub)
         with iopub, self.zmq_poll.event_handler(iopub, forward_messages, canceller=canceller), scope:
             iopub.subscribe(topic)
-            self.log.debug("waiting for welcome")
-            if not await ready.with_(timeout=1):
-                self.log.warning("Welcome message not received in time!")
+            self.log.debug("Waiting for welcome message.")
+            if await ready.with_(timeout=timeout):
+                self.log.debug("Welcome message received.")
+            else:
+                msg = f"Welcome message not received after {timeout}!"
+                raise TimeoutError(msg)
             yield queue
