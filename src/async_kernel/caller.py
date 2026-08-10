@@ -12,10 +12,11 @@ import threading
 import time
 import weakref
 from collections import deque
-from collections.abc import AsyncGenerator, Awaitable, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from contextlib import asynccontextmanager
 from types import CoroutineType
 from typing import TYPE_CHECKING, Any, ClassVar, Concatenate, Generic, Literal, Self, Unpack, final
+from weakref import ReferenceType
 
 import anyio
 from aiologic import BinarySemaphore, CountdownEvent
@@ -1051,7 +1052,7 @@ class Caller:
                 pass
             ```
         """
-        return ShieldedTask(self, func)
+        return ShieldedTask().set_task_function(func, caller=self)
 
     async def as_completed(
         self,
@@ -1219,14 +1220,18 @@ class Caller:
 
 
 class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
-    """Wrap the coroutine function `func` with a `ShieldedTask`.
+    """A class which provides start/stop functionality to run a coroutine in a shielded context.
 
-    The returned `ShieldedTask` will only be schedule after `start` method is called,
-    and can only be started once, though it is safe to call multiple times. Subsequent
-    calls are `noop`.
+    The stages are:
 
-    When used as an async context, the method 'stop' will be called when the context
-    exits and will wait for the protected task to  complete prior to stopping.
+    1. set_task_function: Set the task function and caller to associate it with.
+    2. start: Start the task.
+    3. started: The task indicates it is started at a position where it is considered to be running.
+    4. stopping: `stop` has been called which signals to the task that it should commence it's shutdown.
+    5. stopped: The task is finished.
+
+    For convenience, this class is awaitable and provides an async context manager.
+    Both of which are only available after `start` has been called.
 
     Usage:
         ```python
@@ -1235,15 +1240,13 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
             await stopped
 
 
-        task = ShieldedTask(Caller(), func).start()
+        task = ShieldedTask().set_task_function(func).start()
         await task.stop()
         # or
-        async with ShieldedTask(Caller(), func).start():
+        async with ShieldedTask().set_task_function(func).start():
             pass
         ```
     """
-
-    __slots__ = ["_caller_ref", "_func", "_start_token"]
 
     started: Fixed[Self, ProtectedPending[Self]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
     "A `ProtectedPending` that is set once `func` indicates it is started."
@@ -1256,19 +1259,26 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
 
     @property
     def caller(self) -> Caller:
-        return self._caller_ref()  # pyright: ignore[reportReturnType]
+        # requires `self.set_function`.
+        try:
+            return self._caller_ref()  # pyright: ignore[reportReturnType]
+        except AttributeError:
+            msg = "The caller has not been set. Call `set_task_function` first!"
+            raise RuntimeError(msg) from None
 
-    def __init__(
+    def set_task_function(
         self,
-        caller: Caller,
         func: Callable[Concatenate[Callable[[], None], ProtectedPending[None], P], T | CoroutineType[Any, Any, T]],
         /,
-    ) -> None:
-        super().__init__()
-        self._caller_ref = weakref.ref(caller)
-        caller.stopping.add_done_callback(self._caller_stopping)
+        *,
+        caller: Caller | None = None,
+    ) -> Self:
+        assert not hasattr(self, "_caller_ref")
+        self._caller_ref: ReferenceType[Caller] = weakref.ref(caller or Caller())
+        self.caller.stopping.add_done_callback(self._caller_stopping)
         self._start_token = ""
         self._func = func
+        return self
 
     def _info(self, name: str) -> str:
         return f"{self.__class__}.{name}"
@@ -1276,19 +1286,28 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     def _caller_stopping(self, _) -> None:
         self.stop()
 
+    def _wait_checks(self):
+        if not self.stopping.done():
+            if not hasattr(self, "_func"):
+                msg = "The task function has not been set. Tip: Use the method `set_task_function`."
+                raise RuntimeError(msg)
+            if hasattr(self, "_start_token"):
+                msg = "`start` must be called before entering the context! Tip: just add `.start()`."
+                raise RuntimeError(msg)
+
+    def __await__(self) -> Generator[Any, None, T]:
+        self._wait_checks()
+        return self.stopped.__await__()
+
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
-        if hasattr(self, "_start_token"):
-            msg = "`start` must be called before entering the context!"
-            raise RuntimeError(msg)
-        caller = Caller.get_existing()
-        assert caller
-        assert not self.stopping.done()
+        self._wait_checks()
         try:
-            with anyio.CancelScope() as scope:
-                self.stopped.add_done_callback(lambda _: caller.call_direct(scope.cancel, "Stopped"))
-                await self.started
-                yield self
+            async with self.caller as caller:
+                with anyio.CancelScope() as scope:
+                    self.stopped.add_done_callback(lambda _: caller.call_direct(scope.cancel, "Stopped"))
+                    await self.started.wait(result=False)
+                    yield self
         finally:
             await self.stop()
 
@@ -1310,7 +1329,8 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 with anyio.CancelScope(shield=True):
                     return await func(started, stop, *args, **kwargs)
 
-            self.caller.call_soon(run_shielded).add_done_callback(on_stopped)
+            if not self.stopping.done():
+                self.caller.call_soon(run_shielded).add_done_callback(on_stopped)
         return self
 
     def stop(self, _=None) -> ProtectedPending[T]:
@@ -1318,6 +1338,7 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         self.started.cancel("Stopped early!")
         self.stopping.set_result(None)
         with contextlib.suppress(AttributeError):
-            del self._start_token
+            if hasattr(self, "_caller_ref"):
+                del self._start_token
             self.stopped.cancel("Stopped early!")
         return self.stopped
