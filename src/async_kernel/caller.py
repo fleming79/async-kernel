@@ -1231,7 +1231,8 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     5. stopped: The task is finished.
 
     For convenience, this class is awaitable and provides an async context manager.
-    Both of which are only available after `start` has been called.
+    Both of which are only available after `start` has been called. The async context can only
+    be entered once, and will initiate stop the protected task when the context exits.
 
     Usage:
         ```python
@@ -1244,11 +1245,12 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         await task.stop()
         # or
         async with ShieldedTask().set_task_function(func).start():
-            pass
+            do_something
+            # When the context is exited, stop will be called.
         ```
     """
 
-    started: Fixed[Self, ProtectedPending[Self]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
+    started: Fixed[Self, ProtectedPending[None]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
     "A `ProtectedPending` that is set once `func` indicates it is started."
 
     stopping: Fixed[Self, ProtectedPending[None]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
@@ -1273,7 +1275,9 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         *,
         caller: Caller | None = None,
     ) -> Self:
-        assert not hasattr(self, "_caller_ref")
+        if hasattr(self, "_caller_ref"):
+            msg = "`func` can only be set once!"
+            raise RuntimeError(msg)
         self._caller_ref: ReferenceType[Caller] = weakref.ref(caller or Caller())
         self.caller.stopping.add_done_callback(self._caller_stopping)
         self._start_token = ""
@@ -1302,28 +1306,50 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     @contextlib.asynccontextmanager
     async def __asynccontextmanager__(self) -> AsyncGenerator[Self]:
         self._wait_checks()
+        if hasattr(self, "_context_token"):
+            msg = "The async context can only be used once!"
+            raise RuntimeError(msg)
+        self._context_token = ""
+
+        def stop(_):
+            caller.call_direct(scope.cancel, "The shielded task has stopped!")
+
+        caller = self.caller
+        assert caller is Caller.get_existing(), "Must be used in the same caller thread."
+
         try:
-            async with self.caller as caller:
-                with anyio.CancelScope() as scope:
-                    self.stopped.add_done_callback(lambda _: caller.call_direct(scope.cancel, "Stopped"))
-                    await self.started.wait(result=False)
-                    yield self
+            with anyio.CancelScope() as scope:
+                self.stopped.add_done_callback(stop)
+                await self.started.wait(result=False)
+                yield self
+            if scope.cancel_called and not self.stopping.done():
+                msg = f"Shielded task stopped early {self._func!r}"
+                raise RuntimeError(msg)
         finally:
-            await self.stop()
+            self.stopped.remove_done_callback(stop)
+            await self.stop().wait(shield=True)
 
     def start(self, *args: P.args, **kwargs: P.kwargs) -> Self:
         ""
         with contextlib.suppress(AttributeError):
             del self._start_token
+            ref = weakref.ref(self)
 
             def started() -> None:
-                self.caller.log.debug("Started %s", self._func)
-                self.started.set_result(self)
+                if self := ref():
+                    self.caller.log.debug("Shielded task started %r", self._func)
+                    self.started.set_result(None)
 
-            def on_stopped(pen: Pending, stopped=self.stopped, caller=self.caller, func=self._func) -> None:
-                caller.log.debug("Stopped %s", func)
-                stopped.set_exception(e) if (e := pen.exception()) else stopped.set_result(pen.result())
-                del self._func
+            def on_stopped(pen: Pending) -> None:
+                self = ref()
+                assert self
+                self.caller.log.debug("Shielded task stopped %r", self._func)
+                self.caller.stopping.remove_done_callback(self._caller_stopping)
+                try:
+                    self.stopped.set_exception(e) if (e := pen.exception()) else self.stopped.set_result(pen.result())
+                except Exception as e:
+                    self.stopped.set_exception(e)
+                del self
 
             async def run_shielded(func=self._func, stop=self.stopping):
                 with anyio.CancelScope(shield=True):
@@ -1334,7 +1360,7 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         return self
 
     def stop(self, _=None) -> ProtectedPending[T]:
-        ""
+        """Stop the shielded task."""
         self.started.cancel("Stopped early!")
         self.stopping.set_result(None)
         with contextlib.suppress(AttributeError):
