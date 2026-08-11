@@ -42,6 +42,7 @@ from async_kernel.typing import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from async_kernel.comm import CommManager
     from async_kernel.connection.base import Connection
     from async_kernel.kernel import Kernel
 
@@ -173,6 +174,9 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         lambda c: c["owner"].kernel_class(c["owner"], c["owner"].shell_class)
     )
     """The kernel."""
+
+    comm_manager: Fixed[Self, CommManager] = Fixed("async_kernel.comm.CommManager")
+    """The global comm manager."""
 
     autostart_connections = traitlets.List().tag(config=True)
     "A list of connections to start with the app."
@@ -316,6 +320,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     def _on_stopped(self, _) -> None:
         if Interface._instance is self:
             Interface._instance = None
+            self._restore_comm()
         self.log.info("%s, stopped", self)
 
     @override
@@ -336,6 +341,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
             os.environ["UV_PROJECT_ENVIRONMENT"] = sys.prefix
         self.parse_command_line([] if argv is NoValue else argv)
         self.interface_class = self.__class__
+        self._restore_comm = self.comm_manager.patch_comm()
 
     @override
     def start(self) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]

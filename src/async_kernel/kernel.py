@@ -20,7 +20,6 @@ from traitlets.config import LoggingConfigurable
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
 from async_kernel.interface import HasInterface
@@ -44,6 +43,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import FrameType
 
+    from async_kernel.comm import CommManager
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
@@ -85,7 +85,7 @@ class Kernel(
     debugger = Fixed(Debugger)
     "The debugger for handling debug requests."
 
-    comm_manager = Fixed(CommManager)
+    comm_manager: Fixed[Self, CommManager] = Fixed(lambda c: c["owner"].parent.comm_manager)
     "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
 
     stopped = Fixed(ProtectedPending)
@@ -258,7 +258,6 @@ class Kernel(
         """Apply patches returning a callable to reverse the patches."""
         original = sys.displayhook, builtins.input, getpass.getpass
         builtins.input, sys.displayhook, getpass.getpass = self.raw_input, self.displayhook, self.getpass
-        restore_comm = self.comm_manager.patch_comm()
         restore_stdout = OutStream("stdout").patch()
         restore_stderr = OutStream("stderr").patch()
         restore_signal = self._patch_signal()
@@ -267,7 +266,6 @@ class Kernel(
             sys.displayhook, builtins.input, getpass.getpass = original
             restore_stdout()
             restore_stderr()
-            restore_comm()
             restore_signal()
 
         return restore

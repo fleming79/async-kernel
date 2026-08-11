@@ -414,7 +414,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         mods = []
         for i in range(startModule, moduleCount):
             module = modules[i]
-            filename = getattr(getattr(module, "__spec__", None), "owner", None)
+            filename = getattr(getattr(module, "__spec__", None), "origin", None)
             if filename and filename.endswith(".py"):
                 mods.append({"id": i, "name": module.__name__, "path": filename})
         return {"body": {"modules": mods, "totalModules": len(modules)}}

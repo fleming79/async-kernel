@@ -18,6 +18,7 @@ from async_kernel.connection.base import LocalClient
 from async_kernel.interface import HasInterface, Interface
 from async_kernel.shell.base import BaseShell
 from async_kernel.typing import Channel, Job, MsgType
+from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel.typing import Backend
@@ -70,8 +71,9 @@ class TestInterface:
             async with interface, LocalClient().start() as client:
                 msg = client.msg(MsgType.comm_close, {"comm_id": comm.comm_id}, channel=Channel.shell)
                 client.send_message_no_reply(msg)
-                await async_checkpoint(force=True)
-                assert comm.comm_id not in interface.kernel.comm_manager.comms
+                with anyio.fail_after(utils.TIMEOUT):
+                    while comm.comm_id in interface.kernel.comm_manager.comms:
+                        await async_checkpoint(force=True)
         finally:
             await interface.stop()
 
