@@ -433,3 +433,10 @@ async def test_extension_manager(kernel: Kernel[Interface, IPShell]):
         # a
         result = await kernel.do_execute("a = 1+1", silent=False)
         assert subshell.user_ns["a"] == 2
+
+
+async def test_atexit(kernel: Kernel[Interface, IPShell], mocker):
+    stop = mocker.patch.object(kernel.parent, "stop")
+    kernel.shell.exit_now = True
+    kernel.shell.exit_now = False
+    assert stop.call_count == 1

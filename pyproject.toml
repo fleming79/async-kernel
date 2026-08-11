@@ -135,6 +135,7 @@ exclude_lines = [
   "raise NotImplementedError",
   '.*sys.platform == "emscripten".*',
   '.*# pragma: no cover',
+  "\\.\\.\\."
 ]
 
 [tool.coverage.run]

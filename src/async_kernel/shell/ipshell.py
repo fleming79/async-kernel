@@ -418,9 +418,6 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
     def init_payload(self) -> Never:
         raise MethodNotSupported  # pragma: no cover
 
-    def ask_exit(self) -> None:
-        raise MethodNotSupported  # pragma: no cover
-
     input_transformer_manager: traitlets.Instance[TransformerManager]
 
     @override

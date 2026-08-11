@@ -93,6 +93,7 @@ async def test_magic(client: ZMQKernelClient, code: str, kernel: Kernel, monkeyp
 @pytest.mark.parametrize(
     "code",
     argvalues=[
+        "%thread\nprint('okay')",
         """%%thread name="Trio executor" backend=trio\nfrom async_kernel import Caller; assert Caller().name == "Trio executor";print('okay')""",
         "import asyncio\n%asyncio await asyncio.sleep(0)\nprint('okay')",
         "import trio\n%trio await trio.sleep(0)\nprint('okay')",
