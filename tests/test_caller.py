@@ -16,7 +16,7 @@ import trio
 from aiologic import CountdownEvent, Event
 from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
 
-from async_kernel.caller import Caller, ShieldedTask
+from async_kernel.caller import Caller, StartStopTask
 from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, CallerState, Hosts
 
@@ -842,11 +842,11 @@ def test_guest_non_protected(backend: Backend):
     anyio.run(f, backend=str(backend))
 
 
-class TestShieldedTask:
+class TestStartStopTask:
     async def test_NotSet(self, anyio_backend: Backend):
-        st = ShieldedTask()
+        task = StartStopTask()
         with pytest.raises(RuntimeError, match="The task function has not been set"):
-            async with st:
+            async with task:
                 pass
 
     async def test_sync(self, anyio_backend: Backend) -> None:
@@ -860,18 +860,18 @@ class TestShieldedTask:
             await resume
             return "ok"
 
-        st = caller.create_shielded_task(f).start()
-        await st.started
+        task = caller.create_start_stop_task(f).start()
+        await task.started
         caller.stop(force=True)
-        assert st.stopping.done()
+        assert task.stopping.done()
         resume.set()
-        assert await st.stopped == "ok"
-        assert await st == "ok"
+        assert await task.stopped == "ok"
+        assert await task == "ok"
 
         with pytest.raises(PendingCancelled, match="Stopped early!"):
-            await caller.create_shielded_task(f).stop()
+            await caller.create_start_stop_task(f).stop()
         with pytest.raises(RuntimeError, match="can only be set once"):
-            st.set_task_function(f)
+            task.set_task_function(f)
 
     async def test_asyncontext(self, caller: Caller) -> None:
 
@@ -881,18 +881,18 @@ class TestShieldedTask:
             await anyio.sleep(0)
             return "ok"
 
-        st = caller.create_shielded_task(f)
+        task = caller.create_start_stop_task(f)
         with pytest.raises(RuntimeError, match="must be called before entering the context"):
-            async with st:
+            async with task:
                 pass
-        assert not st.started.done()
-        async with st.start() as st:
-            assert st.started.done()
+        assert not task.started.done()
+        async with task.start() as task:
+            assert task.started.done()
             # Exiting the context should initial shutdown.
-        assert st.stopped.result() == "ok"
-        assert await st == "ok"
+        assert task.stopped.result() == "ok"
+        assert await task == "ok"
         with pytest.raises(RuntimeError, match="The async context can only be used once"):
-            async with st:
+            async with task:
                 await create_async_event()
 
     async def test_asyncontext_stop_early(self, caller: Caller) -> None:
@@ -900,9 +900,9 @@ class TestShieldedTask:
         async def f(started, stop):
             started()
 
-        st = caller.create_shielded_task(f)
-        with pytest.raises(RuntimeError, match="Shielded task stopped early"):
-            async with st.start():
+        task = caller.create_start_stop_task(f)
+        with pytest.raises(RuntimeError, match="stopped early"):
+            async with task.start():
                 await create_async_waiter()
 
     async def test_gc(self, caller: Caller):
@@ -914,14 +914,14 @@ class TestShieldedTask:
 
         cleaned = CountdownEvent(2)
         c = MyClass()
-        st = caller.create_shielded_task(c.f)
+        task = caller.create_start_stop_task(c.f)
         ref = weakref.ref(c)
-        ref2 = weakref.ref(st)
+        ref2 = weakref.ref(task)
         weakref.finalize(c, cleaned.down)
-        weakref.finalize(st, cleaned.down)
-        async with st.start():
+        weakref.finalize(task, cleaned.down)
+        async with task.start():
             pass
-        del c, st
+        del c, task
         with anyio.move_on_after(2):
             await cleaned
 
@@ -931,3 +931,22 @@ class TestShieldedTask:
         if ref2():
             referrers = gc.get_referrers(ref2())
             assert not referrers
+
+    async def test_task_cancelled(self, caller: Caller):
+        async def f(started, stop):
+            pen = Caller.current_pending()
+            assert pen
+            pen.cancel("Stop")
+
+        task = caller.create_start_stop_task(f)
+        with pytest.raises(PendingCancelled, match="cancelled"):
+            await task.start()
+
+    async def test_task_error(self, caller: Caller):
+        async def f(started, stop):
+            msg = "This failed"
+            raise RuntimeError(msg)
+
+        task = caller.create_start_stop_task(f)
+        with pytest.raises(RuntimeError, match="This failed"):
+            await task.start()

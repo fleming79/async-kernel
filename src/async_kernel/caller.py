@@ -167,7 +167,7 @@ class Caller:
     - [Caller.queue_call][]: Execute a function in the caller's thread using a queue (sequential).
     - [Caller.queue_get][]: Get the pending associated with the queue call.
     - [Caller.queue_close][]: Close the queue associated with the function.
-    - [Caller.create_shielded_task][]: Run a coroutine function in a shielded task.
+    - [Caller.create_start_stop_task][]: Run a coroutine function in a Task.
 
     **Class methods**
 
@@ -1020,14 +1020,14 @@ class Caller:
             pen.metadata["queue"].stop()
             pen.cancel()
 
-    def create_shielded_task(
+    def create_start_stop_task(
         self,
         func: Callable[Concatenate[Callable[[], None], ProtectedPending[None], P], CoroutineType[Any, Any, T]],
         /,
-    ) -> ShieldedTask[P, T]:
-        """Wrap the coroutine function `func` with a `ShieldedTask`.
+    ) -> StartStopTask[P, T]:
+        """Wrap the coroutine function `func` with a `StartStopTask`.
 
-        The returned `ShieldedTask` will only be schedule after `start` method is called,
+        The returned `StartStopTask` will only be schedule after `start` method is called,
         and can only be started once, though it is safe to call `start` multiple times;
         subsequent calls are `noop`.
 
@@ -1045,14 +1045,14 @@ class Caller:
                 await stopped
 
 
-            task = caller.create_shielded_task(func).start()
+            task = caller.create_start_stop_task(func).start()
             await task.stop()
             # or
-            async with caller.create_shielded_task(func).start():
+            async with caller.create_start_stop_task(func).start():
                 pass
             ```
         """
-        return ShieldedTask().set_task_function(func, caller=self)
+        return StartStopTask().set_task_function(func, caller=self)
 
     async def as_completed(
         self,
@@ -1219,7 +1219,7 @@ class Caller:
         return PendingGroup(shield=shield, mode=mode, timeout=timeout)
 
 
-class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
+class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     """A class which provides start/stop functionality to run a coroutine in a shielded context.
 
     The stages are:
@@ -1241,10 +1241,10 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
             await stopped
 
 
-        task = ShieldedTask().set_task_function(func).start()
+        task = StartStopTask().set_task_function(func).start()
         await task.stop()
         # or
-        async with ShieldedTask().set_task_function(func).start():
+        async with StartStopTask().set_task_function(func).start():
             do_something
             # When the context is exited, stop will be called.
         ```
@@ -1312,7 +1312,7 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         self._context_token = ""
 
         def stop(_):
-            caller.call_direct(scope.cancel, "The shielded task has stopped!")
+            caller.call_direct(scope.cancel, "The Task has stopped!")
 
         caller = self.caller
         assert caller is Caller.get_existing(), "Must be used in the same caller thread."
@@ -1323,7 +1323,7 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 await self.started.wait(result=False)
                 yield self
             if scope.cancel_called and not self.stopping.done():
-                msg = f"Shielded task stopped early {self._func!r}"
+                msg = f"Task stopped early {self._func!r}"
                 raise RuntimeError(msg)
         finally:
             self.stopped.remove_done_callback(stop)
@@ -1337,30 +1337,34 @@ class ShieldedTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
 
             def started() -> None:
                 if self := ref():
-                    self.caller.log.debug("Shielded task started %r", self._func)
+                    self.caller.log.debug("Task started %r", self._func)
                     self.started.set_result(None)
 
-            def on_stopped(pen: Pending) -> None:
+            def done(pen: Pending) -> None:
                 self = ref()
                 assert self
-                self.caller.log.debug("Shielded task stopped %r", self._func)
+                self.caller.log.debug("Task stopped %r", self._func)
                 self.caller.stopping.remove_done_callback(self._caller_stopping)
+
+                if pen.cancelled():
+                    self.stopped.cancel(f"The Task {self._func} was cancelled!")
+                elif e := pen.exception():
+                    self.stopped.set_exception(e)
+                else:
+                    self.stopped.set_result(pen.result())
+
                 try:
                     self.stopped.set_exception(e) if (e := pen.exception()) else self.stopped.set_result(pen.result())
                 except Exception as e:
                     self.stopped.set_exception(e)
                 del self
 
-            async def run_shielded(func=self._func, stop=self.stopping):
-                with anyio.CancelScope(shield=True):
-                    return await func(started, stop, *args, **kwargs)
-
             if not self.stopping.done():
-                self.caller.call_soon(run_shielded).add_done_callback(on_stopped)
+                self.caller.call_soon(self._func, started, self.stopping, *args, **kwargs).add_done_callback(done)
         return self
 
     def stop(self, _=None) -> ProtectedPending[T]:
-        """Stop the shielded task."""
+        """Stop the Task."""
         self.started.cancel("Stopped early!")
         self.stopping.set_result(None)
         with contextlib.suppress(AttributeError):
