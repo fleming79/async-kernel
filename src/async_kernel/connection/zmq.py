@@ -209,7 +209,7 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
 
     @override
     def connection_info(self) -> str:
-        if (f := pathlib.Path(self.connection_file)).exists():
+        if self.connection_file and (f := pathlib.Path(self.connection_file)).exists():
             return f"connection_file: {f}\nInfo: {json.dumps(json.loads(f.read_bytes()), indent=2)}"
         return ""
 
@@ -277,16 +277,17 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             self.session.adapt_version = adapt_version  # pragma: no cover
         self.log.debug("Session config complete")
 
-    if TYPE_CHECKING:
-        # The signature should match the keyword arguments of `self.connection_task`.
-        @override
-        def start(self, *, start_timeout: float | None = None) -> Self: ...
-
+    @override
+    def start(self, *, start_timeout: float | None = None) -> Self:
         """Connect this client to the interface.
 
         Args:
             start_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.
-            """
+        """
+        if not self.shell_port:
+            msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
+            raise RuntimeError(msg)
+        return super().start(start_timeout=start_timeout)
 
     @override
     async def connection_task(
@@ -297,9 +298,6 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             msg["channel"] = channel
             handle_msg(msg, ident)
 
-        if not self.shell_port:
-            msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
-            raise RuntimeError(msg)
         connect = self._connect_socket
         with (
             self.zmq_poll as zpoll,
@@ -422,6 +420,6 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
             if await ready.with_(timeout=timeout):
                 self.log.debug("Welcome message received.")
             else:
-                msg = f"Welcome message not received after {timeout}!"
+                msg = f"Welcome message not received after {timeout:0.1f}s!"
                 raise TimeoutError(msg)
             yield queue

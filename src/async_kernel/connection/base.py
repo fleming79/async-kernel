@@ -406,6 +406,7 @@ class LocalClient(HasInterface[T_interface_co], BaseKernelClient[T_interface_co]
 
     @override
     async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
+        await self.parent.started
         # Cross-connect
         self.connection.transmit_msg = self.handle_incoming_msg
         self.transmit_msg = self.connection.handle_incoming_msg

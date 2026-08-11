@@ -9,9 +9,11 @@ import anyio
 import anyio.lowlevel
 import pytest
 from aiologic import Event
+from aiologic.lowlevel import async_checkpoint
 from traitlets.config.configurable import Configurable
 
 import async_kernel
+from async_kernel.comm import Comm
 from async_kernel.connection.base import LocalClient
 from async_kernel.interface import HasInterface, Interface
 from async_kernel.shell.base import BaseShell
@@ -58,6 +60,20 @@ class TestInterface:
             async with Interface().start() as interface:
                 with pytest.raises(RuntimeError, match="Already initialized!"):
                     interface.initialize()
+
+    async def test_early_comm(self, anyio_backend: Backend):
+        interface = Interface().start()
+        try:
+            comm = Comm()
+            comm.open()
+            assert comm.comm_id in interface.kernel.comm_manager.comms
+            async with interface, LocalClient().start() as client:
+                msg = client.msg(MsgType.comm_close, {"comm_id": comm.comm_id}, channel=Channel.shell)
+                client.send_message_no_reply(msg)
+                await async_checkpoint(force=True)
+                assert comm.comm_id not in interface.kernel.comm_manager.comms
+        finally:
+            await interface.stop()
 
     async def test_input_request_no_handler(self, anyio_backend: Backend):
 
