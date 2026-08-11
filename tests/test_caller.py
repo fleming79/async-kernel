@@ -941,3 +941,14 @@ class TestStartStopTask:
         task = caller.create_start_stop_task(f)
         with pytest.raises(RuntimeError, match="This failed"):
             await task.start()
+
+        async def check_non_caller():
+            with pytest.raises(RuntimeError, match="can only be used by the same caller"):
+                async with task:
+                    raise RuntimeError
+
+        await caller.to_thread(check_non_caller)
+
+    def test_no_func(self):
+        with pytest.raises(RuntimeError, match="task function has not been set"):
+            StartStopTask().start()
