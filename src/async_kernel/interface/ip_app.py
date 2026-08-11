@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Generic, Self
+from typing import Any, Generic
 
 from IPython.core.application import BaseIPythonApplication
 from IPython.core.profiledir import ProfileDir
@@ -14,19 +13,13 @@ from typing_extensions import override
 from async_kernel.interface.base import Interface
 from async_kernel.typing import Hosts, NoValue, T_ipshell_co
 
-if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-
-
 __all__ = ["IPApp"]
 
 
 Interface.classes.append(ProfileDir)
 
 
-class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
-    Interface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]
-):
+class IPApp(Interface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp, Generic[T_ipshell_co]):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]
     """An IPython application with a zmq interface."""
 
     description = traitlets.Unicode(
@@ -77,13 +70,9 @@ class IPApp(  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompati
                     break
 
     @override
-    @asynccontextmanager
-    async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
-        async with super().__asynccontextmanager__(set_started=False):
-            self.init_path()
-            self.init_gui_pylab()
-            self.init_code()
-            self.init_extensions()
-            if set_started:
-                await self._started()
-            yield self
+    async def _pre_start(self) -> None:
+        self.init_path()
+        self.init_gui_pylab()
+        self.init_code()
+        self.init_extensions()
+        await super()._pre_start()

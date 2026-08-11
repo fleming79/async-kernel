@@ -27,7 +27,7 @@ def test_gui_sets_host(gui):
 
 
 async def test_user_ns(anyio_backend: Backend):
-    async with IPApp() as interface:
+    async with IPApp().start() as interface:
         assert interface.user_ns is interface.shell.user_ns
         with pytest.raises(AttributeError):
             interface.user_ns = {}  # pyright: ignore[reportAttributeAccessIssue]
@@ -36,6 +36,6 @@ async def test_user_ns(anyio_backend: Backend):
 async def test_force_shutdown(anyio_backend: Backend) -> None:
     interface = IPApp()
     interface.force_shutdown_delay = 0
-    async with interface, LocalClient().start() as client:
+    async with interface.start(), LocalClient().start() as client:
         pen = client.shutdown()
         await pen.wait(timeout=utils.TIMEOUT, protect=True)

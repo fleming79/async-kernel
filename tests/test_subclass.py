@@ -21,7 +21,7 @@ async def test_subclass(anyio_backend: Backend):
     class MyKernel(Kernel[MyInterface, IPShell]):
         pass
 
-    async with MyInterface(kernel_class=MyKernel, shell_class=ShellSubclass) as interface:
+    async with MyInterface(kernel_class=MyKernel, shell_class=ShellSubclass).start() as interface:
         assert isinstance(interface, MyInterface)
         assert isinstance(interface.kernel, MyKernel)
         assert isinstance(interface.kernel.shell, ShellSubclass)

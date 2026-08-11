@@ -13,7 +13,7 @@ import anyio.lowlevel
 import anyio.to_thread
 import pytest
 import trio
-from aiologic import Event, Latch
+from aiologic import CountdownEvent, Event, Latch
 from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
 
 from async_kernel.caller import Caller, StartStopTask
@@ -834,9 +834,11 @@ def test_guest_non_protected(backend: Backend):
 class TestStartStopTask:
     async def test_NotSet(self, anyio_backend: Backend):
         task = StartStopTask()
-        with pytest.raises(RuntimeError, match="The task function has not been set"):
+        with pytest.raises(RuntimeError, match="`start` must be called before entering the context!"):
             async with task:
                 pass
+        with pytest.raises(RuntimeError, match="`start` must be called before entering the context!"):
+            await task
 
     async def test_sync(self, anyio_backend: Backend) -> None:
 

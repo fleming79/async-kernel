@@ -34,13 +34,13 @@ class TestInterface:
         class InterfaceSub(Interface):
             pass
 
-        async with Interface():
+        async with Interface().start():
             with pytest.raises(TypeError, match="An instance exists but it is not an instance of"):
                 InterfaceSub.instance()
 
     async def test_gc(self, anyio_backend: Backend):
         collected = Event()
-        async with Interface() as interface:
+        async with Interface().start() as interface:
             weakref.finalize(interface, collected.set)
             ref = weakref.ref(interface)
             del interface
@@ -55,13 +55,13 @@ class TestInterface:
 
     async def test_already_initialized(self, anyio_backend: Backend):
         for _ in range(3):
-            async with Interface() as interface:
+            async with Interface().start() as interface:
                 with pytest.raises(RuntimeError, match="Already initialized!"):
                     interface.initialize()
 
     async def test_input_request_no_handler(self, anyio_backend: Backend):
 
-        async with Interface(shell_class=BaseShell), LocalClient().start() as client:
+        async with Interface(shell_class=BaseShell).start(), LocalClient().start() as client:
             msg = client.msg(MsgType.input_request, channel=Channel.stdin)
             job = Job(msg=msg, owner=client.as_owner, ident=[], received_time=time.monotonic())
             with pytest.raises(RuntimeError, match="A handler is not available"):
@@ -69,12 +69,12 @@ class TestInterface:
 
     async def test_stop(self, anyio_backend: Backend) -> None:
 
-        async with Interface(shell_class=BaseShell) as interface:
+        async with Interface(shell_class=BaseShell).start() as interface:
             interface.stop()
 
     async def test_base_shell(self, anyio_backend: Backend):
 
-        async with Interface(shell_class=BaseShell) as interface:
+        async with Interface(shell_class=BaseShell).start() as interface:
             assert isinstance(interface.kernel.shell, BaseShell)
             assert "name:" in interface.kernel.shell.banner
             assert isinstance(interface.kernel.shell.user_ns, dict)
@@ -93,7 +93,7 @@ class TestInterface:
 
     async def test_base_shell_displayhook(self, anyio_backend: Backend, mocker):
 
-        async with Interface(shell_class=BaseShell) as interface:
+        async with Interface(shell_class=BaseShell).start() as interface:
             iopub_send = mocker.patch.object(interface, "iopub_send")
             with async_kernel.utils.show_result(True):
                 interface.kernel.shell.displayhook(123)
@@ -108,8 +108,8 @@ class TestInterface:
             app.start()
         with pytest.raises(RuntimeError, match="An instance does not exist"):
             Interface.instance()
-        with pytest.raises(RuntimeError, match="Stopped early"):
-            async with app:
+        with pytest.raises(RuntimeError, match="This interface is not the global instance!"):
+            async with app.start():
                 pass
 
     def test_start_bad_settings(self):

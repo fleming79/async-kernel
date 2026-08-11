@@ -32,5 +32,4 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
                 assert msg["content"]["status"] == "ok"
                 break
         interface.stop()
-        await stopped
-        await interface.stopped
+    await stopped

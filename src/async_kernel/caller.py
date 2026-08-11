@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     import trio  # noqa: TC004
 
 
-__all__ = ["Caller", "ShieldedTask"]
+__all__ = ["Caller", "StartStopTask"]
 
 globals()["trio"] = lazy_import("trio")
 
@@ -1221,7 +1221,7 @@ class Caller:
 
 
 class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
-    """A class which provides start/stop functionality to run a coroutine in a shielded context.
+    """A class which provides start/stop functionality to run a coroutine function.
 
     The stages are:
 
@@ -1292,13 +1292,9 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         self.stop()
 
     def _wait_checks(self):
-        if not self.stopping.done():
-            if not hasattr(self, "_func"):
-                msg = "The task function has not been set. Tip: Use the method `set_task_function`."
-                raise RuntimeError(msg)
-            if hasattr(self, "_start_token"):
-                msg = "`start` must be called before entering the context! Tip: just add `.start()`."
-                raise RuntimeError(msg)
+        if not self.stopping.done() and (hasattr(self, "_start_token") or not hasattr(self, "_caller_ref")):
+            msg = "`start` must be called before entering the context! Tip: just add `.start()`."
+            raise RuntimeError(msg)
 
     def __await__(self) -> Generator[Any, None, T]:
         self._wait_checks()
@@ -1310,36 +1306,42 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         if hasattr(self, "_context_token"):
             msg = "The async context can only be used once!"
             raise RuntimeError(msg)
+        if Caller.get_existing() is not self.caller:
+            msg = "Async context can only be used by the same caller."
+            raise RuntimeError(msg)
         self._context_token = ""
 
         def stop(_):
             caller.call_direct(scope.cancel, "The Task has stopped!")
 
-        caller = self.caller
-        assert caller is Caller.get_existing(), "Must be used in the same caller thread."
-
-        try:
-            with anyio.CancelScope() as scope:
-                self.stopped.add_done_callback(stop)
-                await self.started.wait(result=False)
-                yield self
-            if scope.cancel_called and not self.stopping.done():
-                msg = f"Task stopped early {self._func!r}"
-                raise RuntimeError(msg)
-        finally:
-            self.stopped.remove_done_callback(stop)
-            await self.stop().wait(shield=True)
+        async with self.caller as caller:
+            try:
+                with anyio.CancelScope() as scope:
+                    self.stopped.add_done_callback(stop)
+                    await self.started.wait(result=False)
+                    yield self
+                if scope.cancel_called and not self.stopping.done():
+                    msg = f"Task stopped early {self._func!r}"
+                    raise RuntimeError(msg)
+            finally:
+                self.stopped.remove_done_callback(stop)
+                await self.stop().wait(shield=True)
 
     def start(self, *args: P.args, **kwargs: P.kwargs) -> Self:
         ""
+        if not hasattr(self, "_func"):
+            msg = "The task function has not been set. Tip: Use the method `set_task_function`."
+            raise RuntimeError(msg)
         with contextlib.suppress(AttributeError):
             del self._start_token
             ref = weakref.ref(self)
 
             def started() -> None:
                 if self := ref():
-                    self.caller.log.debug("Task started %r", self._func)
-                    self.started.set_result(None)
+                    if not self.started.done():
+                        self.caller.log.debug("Task started %r", self._func)
+                        self.started.set_result(None)
+                    del self
 
             def done(pen: Pending) -> None:
                 self = ref()
@@ -1358,7 +1360,8 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                     self.stopped.set_exception(e) if (e := pen.exception()) else self.stopped.set_result(pen.result())
                 except Exception as e:
                     self.stopped.set_exception(e)
-                del self
+                pen.metadata.clear()
+                del pen, self
 
             if not self.stopping.done():
                 self.caller.call_soon(self._func, started, self.stopping, *args, **kwargs).add_done_callback(done)

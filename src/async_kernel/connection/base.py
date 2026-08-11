@@ -15,7 +15,7 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel import utils
-from async_kernel.caller import Caller, ShieldedTask
+from async_kernel.caller import Caller, StartStopTask
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface import HasInterface
 from async_kernel.pending import PendingMessage, ProtectedPending
@@ -61,7 +61,7 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
     return h
 
 
-class BaseMessage(ShieldedTask, LoggingConfigurable, MessageProtocol):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     """The base for messaging between kernel interfaces and clients."""
 
     session_id = Fixed(lambda _: str(uuid4()))
@@ -175,10 +175,10 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
     @override
     async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
         """Open the channels, set ready when ready block until stopped, Don't call directly."""
-        self.parent.refresh_connections(self)
+        self.parent.update_connections(self)
         started()
         await stop
-        self.parent.refresh_connections()
+        self.parent.update_connections()
 
     @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
@@ -410,7 +410,5 @@ class LocalClient(HasInterface[T_interface_co], BaseKernelClient[T_interface_co]
         self.connection.transmit_msg = self.handle_incoming_msg
         self.transmit_msg = self.connection.handle_incoming_msg
 
-        await self.connection.start().started
-        self.connection.stopped.add_done_callback(lambda _: self.stopped.set_result(None))
-        await super().connection_task(started, stop)
-        await self.connection.stop()
+        async with self.connection.start():
+            await super().connection_task(started, stop)

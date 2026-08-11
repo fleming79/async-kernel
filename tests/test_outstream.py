@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 async def test_io_api(anyio_backend: Backend, mocker):
     """Test that wrapped stdout has the same API as a normal TextIO object."""
     mock_stdout = mocker.patch.object(sys, "stdout")
-    async with Interface(shell_class=BaseShell) as interface:
+    async with Interface(shell_class=BaseShell).start() as interface:
         iopub_send = mocker.patch.object(interface, "iopub_send")
         stream = sys.stdout
         assert isinstance(stream, OutStream)

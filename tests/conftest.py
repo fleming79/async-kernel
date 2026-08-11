@@ -56,12 +56,12 @@ async def kernel(anyio_backend: Backend, connection_name: Literal["local", "zmq"
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
     if connection_name == "zmq":
         connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-        async with Interface([f"--connection_file={connection_file}"]) as interface:
+        async with Interface([f"--connection_file={connection_file}"]).start() as interface:
             assert interface.connections
             assert isinstance(interface.connections[0], ZMQConnection)
             yield interface.kernel
     else:
-        async with Interface(autostart_connections=[]) as interface:
+        async with Interface(autostart_connections=[]).start() as interface:
             yield interface.kernel
 
 

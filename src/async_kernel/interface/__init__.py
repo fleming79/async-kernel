@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import async_kernel
 from async_kernel.common import import_item
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface.base import HasInterface, Interface
@@ -60,7 +59,8 @@ async def start_kernel_callable_interface(
 
     connection = Connection()
     connection.transmit_msg = transmit_msg
-    async_kernel.Caller().call_soon(app.run, stopped=stopped)
+    app.stopped.add_done_callback(lambda _: stopped())
+    app.start()
     await app.started
     connection.start()
     return receive_message

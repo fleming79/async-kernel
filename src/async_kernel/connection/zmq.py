@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import functools
 import json
 import os
@@ -22,7 +21,6 @@ from traitlets import traitlets
 from traitlets.config import Config
 from typing_extensions import override
 
-from async_kernel import Caller
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
 from async_kernel.connection.base import BaseKernelClient, BaseMessage, Connection
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
@@ -35,7 +33,6 @@ if TYPE_CHECKING:
 
     from jupyter_client import KernelConnectionInfo
 
-    from async_kernel import Pending
     from async_kernel.pending import ProtectedPending
 
 
@@ -322,72 +319,60 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
         startup_delay: float = 0.5,
         start_timeout: float | None = None,
         heartbeat_interval: float | None = 10.0,
-        shutdown_timeout: float | None = 1.0,
+        shutdown_timeout: float | None = 10.0,
         **kwargs,
     ) -> AsyncGenerator[subprocess.Popen]:
         """Start a kernel interface as a subprocess."""
         self.write_connection_file()
         process: subprocess.Popen | None = None
-        pen_hb: None | Pending = None
-        async with Caller() as caller:
-            try:
-                # We deliberately use subprocess directly because it is safer in pytest and debugpy.
-                command = make_argv(connection_file=self.connection_file, **kwargs)
-                process = subprocess.Popen(command)
-                # Delay for process to start
-                await anyio.sleep(startup_delay)
-                async with self.start(start_timeout=start_timeout):
-                    with anyio.CancelScope() as scope:
-                        if heartbeat_interval is not None:
-                            hb_started = create_async_waiter()
-                            pen_hb = self.caller.call_soon(self._monitor_heartbeat, heartbeat_interval, hb_started.wake)
-                            pen_hb.add_done_callback(lambda _: caller.call_direct(scope.cancel, "Lost heartbeat"))
-                            await hb_started
+        try:
+            # We deliberately use subprocess directly because it is safer in pytest and debugpy.
+            command = make_argv(connection_file=self.connection_file, **kwargs)
+            process = subprocess.Popen(command)
+            # Delay for process to start
+            await anyio.sleep(startup_delay)
+            async with self.start(start_timeout=start_timeout):
+                if heartbeat_interval is not None:
+                    hb = self.caller.create_start_stop_task(self._monitor_heartbeat)
+                    async with hb.start(interval=heartbeat_interval):
                         yield process
-                    if pen_hb:
-                        if pen_hb.done() and (e := pen_hb.exception()):
-                            raise e
-                        else:
-                            await pen_hb.cancel_wait()
-                            await self.shutdown(False).wait(timeout=shutdown_timeout)
-                            process.wait(timeout=shutdown_timeout)
-            finally:
-                self.cleanup_connection_file()
-                self.cleanup_ipc_files()
-                if process and process.returncode is None:
-                    # Terminate will prevent coverage from writing the necessary files.
-                    process.terminate()
+                else:
+                    yield process
+                await self.shutdown(False).wait(timeout=shutdown_timeout)
+                process.wait(timeout=shutdown_timeout)
+        finally:
+            self.cleanup_connection_file()
+            self.cleanup_ipc_files()
+            if process and process.returncode is None:
+                # Terminate will prevent coverage from writing the necessary files.
+                process.terminate()
 
-    async def _monitor_heartbeat(self, interval: float = 10.0, started: Callable[[], Any] = lambda: None) -> None:
-        """Monitor the heartbeat of the interface returning when the heartbeat is lost.
-
-        Args:
-            interval: The duration to sleep between sending requests.
-            started: A callable that is called on the first successful heartbeat reply.
-                It is called inside the zmq poll thread.
-        """
+    async def _monitor_heartbeat(
+        self, started: Callable[[], None], stop: ProtectedPending, interval: float = 10.0
+    ) -> None:
         reply = "starting"
-        noop = lambda: None  # noqa: E731
 
         def recv(sock: ZMQPollSocket, event: int):
             # Thread: zmq_poll
             nonlocal reply, started
             reply = sock.recv() == b"ping"
-            if started is not noop:
-                self.log.debug("Heartbeat monitor started (interval=%0.1fs)", interval)
-                started()
-                started = noop
 
-        with await self._connect_socket(Channel.heartbeat) as hb, self.zmq_poll.event_handler(hb, recv):
-            while not self.stopped.done() and reply:
-                reply = ""
+        with await self._connect_socket(Channel.heartbeat) as hb:
+            ready = create_async_waiter()
+            with self.zmq_poll.event_handler(hb, recv, count=(1, ready.wake)):
                 hb.send(b"ping")
-                with contextlib.suppress(TimeoutError):
-                    await self.stopped.wait(timeout=interval)
-            if not self.stopped.done():
+                await ready
                 started()
-                msg = f"Heartbeat not detected for {interval=}s!"
-                raise RuntimeError(msg)
+            with self.zmq_poll.event_handler(hb, recv):
+                while not stop.done():
+                    reply = ""
+                    hb.send(b"ping")
+                    try:
+                        await stop.wait(timeout=interval)
+                    except TimeoutError:
+                        if not reply:
+                            msg = f"Heartbeat not detected after {interval}s!"
+                            raise RuntimeError(msg) from None
 
     @override
     def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:

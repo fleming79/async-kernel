@@ -9,10 +9,8 @@ import logging
 import os
 import sys
 import weakref
-from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 
-import anyio
 from aiologic import BinarySemaphore
 from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
 from traitlets import import_item, traitlets
@@ -23,7 +21,7 @@ from typing_extensions import override
 import async_kernel
 import async_kernel.event_loop
 from async_kernel import utils
-from async_kernel.caller import Caller
+from async_kernel.caller import Caller, StartStopTask
 from async_kernel.common import Fixed
 from async_kernel.pending import PendingMessage, ProtectedPending
 from async_kernel.typing import (
@@ -42,7 +40,7 @@ from async_kernel.typing import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
+    from collections.abc import Callable
 
     from async_kernel.connection.base import Connection
     from async_kernel.kernel import Kernel
@@ -82,7 +80,7 @@ class DictValueLiteralEval(traitlets.Dict):
         return d
 
 
-class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]):
+class Interface(StartStopTask, Application, Generic[T_shell_co]):
     """The base class for kernel interface (singleton).
 
     The interface creates the kernel and provides external communication. It is also
@@ -97,10 +95,15 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
             ```
         async context:
             ```python
-            async with Interface() as interface:
+            async with Interface().start() as interface:
                 interface.kernel
                 ...
             ```
+        In a thread with a running loop:
+            ```python
+            app = Interface().start()
+            ```
+
     """
 
     kernel_name = traitlets.Unicode("async").tag(config=True)
@@ -179,19 +182,10 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
     force_shutdown_delay = traitlets.Float(2 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
     "The time in seconds to wait after stop is called before stop with force enabled is called."
 
-    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(dict)
-    """The callers used by the messaging application."""
-
-    started = Fixed(ProtectedPending)
-    """A Pending that is set when the application has started."""
-
-    stopping = Fixed(ProtectedPending)
-    """A Pending that is set when stop is called."""
-
-    stopped: Fixed[Self, ProtectedPending] = Fixed(
-        ProtectedPending, created=lambda c: c["obj"].add_done_callback(c["owner"]._on_stopped)
+    callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(
+        lambda c: {Channel.shell: c["owner"].caller, Channel.control: c["owner"].caller.get(name="Control")}
     )
-    """A Pending that is set once the application is stopped."""
+    """The callers used by the messaging application."""
 
     kernel: Fixed[Self, Kernel[Self, T_shell_co]] = Fixed(
         lambda c: c["owner"].kernel_class(c["owner"], c["owner"].shell_class)
@@ -320,6 +314,7 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
             iopub_cache.append((args, kwargs))
 
         self.iopub_send, self._iopub_cache = cache_iopub_send, iopub_cache
+        self.stopped.add_done_callback(self._on_stopped)
 
         for name, value in [("kernel_class", kernel_class), ("shell_class", shell_class)]:
             if value:
@@ -361,8 +356,11 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
         self.interface_class = self.__class__
 
     @override
-    def start(self) -> None:
-        """Start the interface blocking until it stops.
+    def start(self) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Start the interface in one of two modes depending if there is a running event loop.
+
+        - Non-blocking: If there is a running event loop (asyncio or trio) this will schedule the interface to start.
+        - Blocking: If there is no running event loop.
 
         Warning:
             - Running in a thread other than the 'MainThread' is permitted, but discouraged.
@@ -375,6 +373,18 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
         if Interface._instance is not self:
             msg = "This interface is not the global instance!"
             raise RuntimeError(msg)
+        if current_async_library(failsafe=True):
+            # Non blocking mode
+            self.set_task_function(self.interface_task)
+            return super().start()
+
+        # Blocking mode
+        start = super().start
+
+        async def run(start=start):
+            self.set_task_function(self.interface_task)
+            async with start():
+                await self.stopping
 
         settings = RunSettings(
             backend=self.backend,
@@ -383,21 +393,35 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
             host_options=self.host_options,
         )
         try:
-            async_kernel.event_loop.run(self.run, (), settings)
+            async_kernel.event_loop.run(run, (), settings)
+            return self
         finally:
             self.stopped.set_result(None)
 
-    def stop(self) -> None:
-        """Stop the kernel and this interface."""
-        if not self.stopped.done():
-            self.stopping.set_result(None)
-            if not self.callers:
-                self.stopped.set_result(None)
+    async def interface_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
+        """The main task to run the kernel and open connections."""
+        self.log.info("Starting kernel interface")
+        self.backend = Backend(current_async_library())
+        async with self.kernel:
+            await self._pre_start()
+            self.log.info("Interface started: %s", self.summary)
+            started()
+            del started
+            await stop
 
-    def refresh_connections(self, *new: Connection[Self]) -> None:
-        """Refresh the list of connections.
+    async def _pre_start(self) -> None:
+        """Opens the kernel, starts autostart connections and releases iopub messages."""
+        if pending := [import_item(pth)().start().started for pth in self.autostart_connections]:
+            self.log.info("Waiting for connections to establish %d", len(pending))
+        await self.caller.wait(pending)
+        del self.iopub_send
+        while self._iopub_cache:
+            self._iopub_cache.reverse()
+            args, kwargs = self._iopub_cache.pop()
+            self.iopub_send(*args, **kwargs)
 
-        This method must be called from the control thread.
+    def update_connections(self, *new: Connection[Self]) -> None:
+        """Update the list of connections.
 
         Args:
             new: new connections to add.
@@ -428,71 +452,16 @@ class Interface(Application, anyio.AsyncContextManagerMixin, Generic[T_shell_co]
                 continue  # Coverage can cause issues with some files.
         super().print_help(classes)
 
-    @asynccontextmanager
-    async def __asynccontextmanager__(self, *, set_started=True) -> AsyncGenerator[Self]:
-        async def stopping(stopped=self.stopped, log=self.log, timeout=self.force_shutdown_delay) -> None:
-            while not stopped.done():
-                try:
-                    await stopped.wait(timeout=timeout)
-                except TimeoutError:
-                    log.info("Attempting to initiate force stop")
-                    await caller.call_soon(scope.cancel, "Force stop")
-                    log.info("Cancel scope call succeeded.")
-
-        try:
-            if self.stopped.done():
-                msg = "Stopped early"
-                raise RuntimeError(msg)
-            self.log.info("Starting kernel interface")
-            self.backend = Backend(current_async_library())
-            async with Caller() as caller:
-                self.callers[Channel.shell] = caller
-                self.callers[Channel.control] = caller_ctrl = caller.get(name="Control")
-                try:
-                    with anyio.CancelScope() as scope:
-                        self.stopping.add_done_callback(lambda _: caller_ctrl.call_soon(stopping))
-                        async with self.kernel:
-                            if set_started:
-                                await self._started()
-                            yield self
-                finally:
-                    self.stopped.set_result(None)
-                    await caller.wait([c.stop() for c in self.connections], shield=True)
-        finally:
-            self.stopped.set_result(None)
-
-    async def _started(self) -> None:
-        for pth in self.autostart_connections:
-            try:
-                cls: type[Connection[Self]] = import_item(pth)
-                self.log.info("Starting connection for %s", pth)
-                assert await cls().start().started in self._connections
-            except Exception as e:
-                self.log.exception("Failed to start connection %s", pth, exc_info=e)
-        del self.iopub_send
-        while self._iopub_cache:
-            self._iopub_cache.reverse()
-            args, kwargs = self._iopub_cache.pop()
-            self.iopub_send(*args, **kwargs)
-        self.log.info("Interface started: %s", self.summary)
-        self.started.set_result(None)
-
-    async def run(self, *, stopped: Callable[[], Any] | None = None) -> None:
-        """Run the kernel.
+    def input_request(self, prompt: str, *, password: bool = False) -> PendingMessage[Content]:
+        """Request input from the client given the current context.
 
         Args:
-            stopped: An optional callback that is called when the kernel has stopped.
+            prompt: The prompt to display.
+            password: If the prompt should be treated visually as a password.
 
-        This method requires that a [Caller][async_kernel.caller.Caller] instance does not already exist in the current thread.
+        Raises:
+            RuntimeError: If there is no active job in the current context.
         """
-        try:
-            async with self:
-                await self.stopping
-        finally:
-            if stopped:
-                stopped()
-
-    def input_request(self, prompt: str, *, password=False) -> PendingMessage[Content]:
         job = utils.get_job()
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"

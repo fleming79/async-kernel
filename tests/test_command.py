@@ -263,7 +263,7 @@ def test_command_launch_with_host(mocker, monkeypatch, backend, host):
 
 async def test_Interface_gc(anyio_backend: Backend):
     collected = Event()
-    async with Interface() as interface:
+    async with Interface().start() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
     del interface
@@ -272,14 +272,14 @@ async def test_Interface_gc(anyio_backend: Backend):
         while not collected:
             gc.collect()
             await anyio.sleep(0.1)
-    if obj := ref():
-        referrers = gc.get_referrers(obj)
+    if ref():
+        referrers = gc.get_referrers(ref())
         assert not referrers
 
 
 async def test_IPShellApp_gc(anyio_backend: Backend):
     collected = Event()
-    async with IPApp() as interface:
+    async with IPApp().start() as interface:
         weakref.finalize(interface, collected.set)
         ref = weakref.ref(interface)
         del interface
