@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 import async_kernel.utils
-from async_kernel.typing import Message, MsgType, T
+from async_kernel.typing import IOPubMsgTypeAlias, Message, MsgType, T
 from tests.references import (
     RMessage,
     references,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import AsyncGenerator, Callable
 
 LAUNCHED_BY_DEBUGPY = async_kernel.utils.LAUNCHED_BY_DEBUGPY
 TIMEOUT = 10 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
@@ -57,6 +57,18 @@ def check_pub_message(msg: Message, *, msg_type=MsgType.iopub_status, **content_
         if content[k] != v:
             msg_ = f"Failed content check for {msg_type=}  expected: {content.get(k)!r} got: {v!r}"
             raise ValueError(msg_)
+    return msg
+
+
+async def read_until_msg_type(reader: AsyncGenerator, msg_type: IOPubMsgTypeAlias, **content_checks) -> Message:
+    """read messages until msg_type arrives and check the published message.
+
+    Args:
+        reader: An async iterator for a queue returned from iopub subscribe.
+        msg_type: The type of iopub message to wait for."""
+    while (msg := await anext(reader))["header"]["msg_type"] != msg_type:
+        continue
+    check_pub_message(msg, msg_type=msg_type, **content_checks)
     return msg
 
 

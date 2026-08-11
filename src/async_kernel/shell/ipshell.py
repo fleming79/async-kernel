@@ -151,7 +151,7 @@ class IPDisplayHook(HasInterface, DisplayHook):
                 content["data"] = format_dict
                 content["metadata"] = md_dict
                 self.log_output(format_dict)
-                self.parent.iopub_send(MsgType.iopub_execute_result, content=content, ident=b"display_data")
+                self.parent.iopub_send(MsgType.iopub_execute_result, content, ident=b"display_data")
 
 
 class IPDisplayPublisher(HasInterface, DisplayPublisher):
@@ -700,8 +700,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         else:
             execution_count = self._execution_count = self._execution_count + 1
             self.parent.iopub_send(
-                msg_or_type=MsgType.iopub_execute_input,
-                content={"code": code, "execution_count": execution_count},
+                MsgType.iopub_execute_input,
+                {"code": code, "execution_count": execution_count},
                 ident=b"kernel.execute_input",
             )
 
@@ -832,8 +832,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         if isinstance(evalue, KernelInterrupt):
             stb = []
         self.parent.iopub_send(
-            msg_or_type=MsgType.iopub_error,
-            content={"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)},
+            MsgType.iopub_error, {"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)}
         )
 
     @override

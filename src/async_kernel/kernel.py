@@ -288,6 +288,19 @@ class Kernel(
                 self._handler_cache.pop(key, None)
 
     def _get_handler(self, job: Job) -> HandlerType:
+        """Create or retrieve a handler from the cache.
+
+        Each handler consists of a method from the kernel whose name matches the MsgType such as 'execute_request'.
+        The handler is wrapped in a coroutine `run_job` which performs the steps to publish 'busy' and 'idle' status,
+        execute the handler, and send the reply to the request.
+
+        Args:
+            job: The message request bundle.
+
+        The cache key is:
+            - (subshell id, Msgtype, Channel): When the MsgType is an Execute request.
+            - (None, Msgtype, Channel): For all other requests.
+        """
         try:
             subshell_id = job["msg"]["content"]["subshell_id"]
         except KeyError:
@@ -302,40 +315,43 @@ class Kernel(
         else:
             key = (None, msg_type, job["msg"]["channel"])
         try:
+            # Return an existing handler from the cache.
             return self._handler_cache[key]
         except KeyError:
             handler: HandlerType = getattr(self, msg_type)
+            busy, idle = {"execution_state": "busy"}, {"execution_state": "idle"}
 
             @functools.wraps(handler)
-            async def run_handler(job: Job, iopub_send=self.parent.iopub_send) -> None:
+            async def run_job(job: Job, iopub_send=self.parent.iopub_send, busy=busy, idle=idle) -> None:
+                """Run the handler for the message request."""
+                # 1. Set the context of the job and subshell.
                 job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
                 subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
-
+                # 2. Publish busy status.
+                iopub_send(MsgType.iopub_status, busy, parent=job["msg"], ident=b"kernel.status")
                 try:
-                    iopub_send(
-                        msg_or_type=MsgType.iopub_status,
-                        parent=job["msg"],
-                        content={"execution_state": "busy"},
-                        ident=b"kernel.status",
-                    )
-                    if (content := await handler(job)) is not None:
-                        job["owner"]().send_reply(job, content)
+                    # 3. Run the handler.
+                    content = await handler(job)
                 except Exception as e:
+                    # 4a. Send a reply that the request failed.
                     job["owner"]().send_reply(job, utils.error_to_content(e))
                     self.log.exception("Exception in message handler:", exc_info=e)
+                else:
+                    # 4b. Send a reply if the content is not None.
+                    if content is not None:
+                        job["owner"]().send_reply(job, content)
+                        del content
                 finally:
+                    # 5. Publish idle status.
+                    iopub_send(MsgType.iopub_status, idle, parent=job["msg"], ident=b"kernel.status")
+                    # 6. Set the context of the job and subshell.
                     utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
                     ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
-                    iopub_send(
-                        msg_or_type=MsgType.iopub_status,
-                        parent=job["msg"],
-                        content={"execution_state": "idle"},
-                        ident=b"kernel.status",
-                    )
                     del job
 
-            self._handler_cache[key] = run_handler
-            return run_handler
+            # Cache and return the new handler.
+            self._handler_cache[key] = run_job
+            return run_job
 
     def handle_request(self, job: Job) -> None:
         """Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.

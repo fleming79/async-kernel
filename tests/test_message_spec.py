@@ -8,8 +8,6 @@ from async_kernel.typing import Channel, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-
     from async_kernel.connection.base import LocalClient
     from async_kernel.interface import Interface
     from async_kernel.kernel import Kernel
@@ -17,13 +15,6 @@ if TYPE_CHECKING:
 
     ClientType = LocalClient[Interface[IPShell]]
 # pyright: reportGeneralTypeIssues=false, reportOptionalMemberAccess=false
-
-
-async def read_until_msg_type(reader: AsyncGenerator, msg_type: MsgType, **content_checks):
-    while (msg := await anext(reader))["header"]["msg_type"] != msg_type:
-        continue
-    utils.check_pub_message(msg, msg_type=msg_type, **content_checks)
-    return msg
 
 
 async def test_execute(client: ClientType, kernel: Kernel):
@@ -39,10 +30,10 @@ async def test_execute_suppress(client: ClientType, kernel: Kernel, mode: Litera
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute("123" if mode == "normal" else "123;")
-        await read_until_msg_type(reader, MsgType.iopub_execute_input)
+        await utils.read_until_msg_type(reader, MsgType.iopub_execute_input)
         if mode == "normal":
             data = {"text/plain": "123"}
-            await read_until_msg_type(reader, msg_type=MsgType.iopub_execute_result, data=data)
+            await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_execute_result, data=data)
 
 
 async def test_execute_control(client: ClientType, kernel: Kernel) -> None:
@@ -242,7 +233,7 @@ async def test_stream(client: ClientType):
     async with client.iopub_subscribe() as queue:
         await client.execute("print('hi')")
         reader = aiter(queue)
-        await read_until_msg_type(reader, MsgType.iopub_stream, text="hi\n")
+        await utils.read_until_msg_type(reader, MsgType.iopub_stream, text="hi\n")
 
 
 @pytest.mark.parametrize("clear", [True, False])
@@ -252,10 +243,10 @@ async def test_displayhook(kernel: Kernel, client: ClientType, clear: bool):
     async with client.iopub_subscribe() as queue:
         await client.execute(f"display(1, clear={clear})")
         reader = aiter(queue)
-        await read_until_msg_type(reader, MsgType.iopub_execute_input)
+        await utils.read_until_msg_type(reader, MsgType.iopub_execute_input)
         if clear:
-            await read_until_msg_type(reader, MsgType.iopub_clear_output)
-        await read_until_msg_type(reader, MsgType.iopub_display_data, data={"text/plain": "1"})
+            await utils.read_until_msg_type(reader, MsgType.iopub_clear_output)
+        await utils.read_until_msg_type(reader, MsgType.iopub_display_data, data={"text/plain": "1"})
 
 
 async def test_rich_display_data(kernel: Kernel, client: ClientType):
@@ -263,8 +254,8 @@ async def test_rich_display_data(kernel: Kernel, client: ClientType):
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute("1 + 1")
-        await read_until_msg_type(reader, MsgType.iopub_execute_input)
-        await read_until_msg_type(reader, msg_type=MsgType.iopub_execute_result, data={"text/plain": "2"})
+        await utils.read_until_msg_type(reader, MsgType.iopub_execute_input)
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_execute_result, data={"text/plain": "2"})
 
 
 async def test_subshell(kernel: Kernel, client: ClientType):

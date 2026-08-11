@@ -280,6 +280,9 @@ class MsgType(enum.StrEnum):
     iopub_clear_output = "clear_output"
     "An iopub display message instructing the associated display to clear."
 
+    debug_event = "debug_event"
+    "An event published by an attached debug adapter."
+
     # Reply messages (kernel -> client)
     kernel_info_reply = "kernel_info_reply"
 
@@ -301,8 +304,6 @@ class MsgType(enum.StrEnum):
 
     debug_reply = "debug_reply"
 
-    debug_event = "debug_event"
-
     create_subshell_reply = "create_subshell_reply"
 
     delete_subshell_reply = "delete_subshell_reply"
@@ -316,6 +317,21 @@ class MsgType(enum.StrEnum):
 
 MsgTypeNoReply = (MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close)
 
+IOPubMsgTypeAlias = Literal[
+    MsgType.iopub_welcome,
+    MsgType.iopub_status,
+    MsgType.iopub_execute_input,
+    MsgType.iopub_execute_result,
+    MsgType.iopub_error,
+    MsgType.iopub_stream,
+    MsgType.iopub_display_data,
+    MsgType.iopub_clear_output,
+    MsgType.debug_event,
+    MsgType.comm_open,
+    MsgType.comm_close,
+    MsgType.comm_msg,
+]
+"An alias of the literal MsgTypes that can be published on the iopub channel."
 
 T_fsb = TypeVar("T_fsb", int, float, str, bool)
 

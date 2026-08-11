@@ -14,7 +14,7 @@ from async_kernel.interface import HasInterface
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from async_kernel.typing import BuffersType, MsgType
+    from async_kernel.typing import BuffersType, IOPubMsgTypeAlias
 
 
 __all__ = ["Comm"]
@@ -26,7 +26,7 @@ class Comm(HasInterface, BaseComm):
     @override
     def publish_msg(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
-        msg_type: str | MsgType,
+        msg_type: IOPubMsgTypeAlias | str,
         data: dict | None = None,
         metadata: dict | None = None,
         buffers: BuffersType = None,
@@ -36,7 +36,7 @@ class Comm(HasInterface, BaseComm):
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
         if parent := self.parent:
             parent.iopub_send(
-                msg_or_type=msg_type,
+                msg_type=msg_type,
                 content=content,
                 metadata=metadata,
                 parent=None,

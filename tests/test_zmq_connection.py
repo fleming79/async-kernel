@@ -11,7 +11,7 @@ from async_kernel import Pending
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
 from async_kernel.typing import Channel, MsgType
-from tests.test_message_spec import read_until_msg_type
+from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
@@ -79,8 +79,8 @@ async def test_magic(client: ZMQKernelClient, code: str, kernel: Kernel, monkeyp
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute(code)
-        await read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
-        msg = await read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
+        msg = await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
     text = msg["content"]["text"]
     assert text
     match code:
@@ -105,8 +105,8 @@ async def test_magic_async(client: ZMQKernelClient, code: str, kernel: Kernel, m
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute(code)
-        await read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
-        msg = await read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
+        msg = await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
     text = msg["content"]["text"]
     assert text
     match code:

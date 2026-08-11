@@ -63,12 +63,12 @@ class TestInterface:
                     interface.initialize()
 
     async def test_early_comm(self, anyio_backend: Backend):
-        interface = Interface().start()
+        interface = Interface()
         try:
             comm = Comm()
             comm.open()
             assert comm.comm_id in interface.kernel.comm_manager.comms
-            async with interface, LocalClient().start() as client:
+            async with interface.start(), LocalClient().start() as client:
                 msg = client.msg(MsgType.comm_close, {"comm_id": comm.comm_id}, channel=Channel.shell)
                 client.send_message_no_reply(msg)
                 with anyio.fail_after(utils.TIMEOUT):

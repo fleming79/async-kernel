@@ -30,7 +30,7 @@ from async_kernel.typing import (
     Channel,
     Content,
     Hosts,
-    Message,
+    IOPubMsgTypeAlias,
     MsgHeader,
     MsgType,
     NoValue,
@@ -472,23 +472,19 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
 
     def iopub_send(
         self,
-        msg_or_type: MsgType | Message[Content] | dict[str, Any] | str,
-        *,
+        msg_type: IOPubMsgTypeAlias | str,
         content: Content | None = None,
+        *,
         metadata: dict[str, Any] | None = None,
         parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
         buffers: BuffersType = None,
     ) -> None:
-        """Send an iopub message to each connection."""
+        """Publish an iopub message on all connections."""
         for c in self._connections:
             try:
-                if isinstance(msg_or_type, dict):
-                    content = content or msg_or_type.get("content")
-                    buffers = buffers or msg_or_type.get("buffers")
-                    msg_or_type = msg_or_type["header"]["msg_type"]
                 msg = c.msg(
-                    msg_type=MsgType(msg_or_type),
+                    msg_type=MsgType(msg_type),
                     content=content,
                     parent=parent if parent is not NoValue else async_kernel.utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
                     metadata=metadata,
@@ -496,7 +492,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
                     buffers=buffers,
                 )
                 c.send_message_no_reply(msg, ident)
-                self.log.debug("iopub_send: msg_type:%r %s", msg_or_type, msg_or_type)
+                self.log.debug("iopub_send: msg_type:%r %s", msg_type, msg_type)
             except Exception as e:
                 self.log.exception("iopub_send failed for connection %r", c, exc_info=e)
 
