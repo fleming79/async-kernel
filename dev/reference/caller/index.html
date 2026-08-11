@@ -1184,10 +1184,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.Caller.create_shielded_task" class="md-nav__link">
+  <a href="#async_kernel.caller.Caller.create_start_stop_task" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_shielded_task
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_start_stop_task
       
     </span>
   </a>
@@ -2212,10 +2212,10 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.caller.Caller.create_shielded_task" class="md-nav__link">
+  <a href="#async_kernel.caller.Caller.create_start_stop_task" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_shielded_task
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_start_stop_task
       
     </span>
   </a>
@@ -2440,7 +2440,7 @@ parent caller is stopped.</p>
 <li><a class="autorefs autorefs-internal" title="            queue_call" href="#async_kernel.caller.Caller.queue_call">Caller.queue_call</a>: Execute a function in the caller's thread using a queue (sequential).</li>
 <li><a class="autorefs autorefs-internal" title="            queue_get" href="#async_kernel.caller.Caller.queue_get">Caller.queue_get</a>: Get the pending associated with the queue call.</li>
 <li><a class="autorefs autorefs-internal" title="            queue_close" href="#async_kernel.caller.Caller.queue_close">Caller.queue_close</a>: Close the queue associated with the function.</li>
-<li><a class="autorefs autorefs-internal" title="            create_shielded_task" href="#async_kernel.caller.Caller.create_shielded_task">Caller.create_shielded_task</a>: Run a coroutine function in a shielded task.</li>
+<li><a class="autorefs autorefs-internal" title="            create_start_stop_task" href="#async_kernel.caller.Caller.create_start_stop_task">Caller.create_start_stop_task</a>: Run a coroutine function in a Task.</li>
 </ul>
 <p><strong>Class methods</strong></p>
 <ul>
@@ -2806,10 +2806,10 @@ parent caller is stopped.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            create_shielded_task (async_kernel.caller.Caller.create_shielded_task)" href="#async_kernel.caller.Caller.create_shielded_task">create_shielded_task</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="            create_start_stop_task (async_kernel.caller.Caller.create_start_stop_task)" href="#async_kernel.caller.Caller.create_start_stop_task">create_start_stop_task</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Wrap the coroutine function <code>func</code> with a <code>ShieldedTask</code>.</p>
+              <p>Wrap the coroutine function <code>func</code> with a <code>StartStopTask</code>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -4224,7 +4224,7 @@ parent caller is stopped.</p>
 <span class="sd">    - [Caller.queue_call][]: Execute a function in the caller&#39;s thread using a queue (sequential).</span>
 <span class="sd">    - [Caller.queue_get][]: Get the pending associated with the queue call.</span>
 <span class="sd">    - [Caller.queue_close][]: Close the queue associated with the function.</span>
-<span class="sd">    - [Caller.create_shielded_task][]: Run a coroutine function in a shielded task.</span>
+<span class="sd">    - [Caller.create_start_stop_task][]: Run a coroutine function in a Task.</span>
 
 <span class="sd">    **Class methods**</span>
 
@@ -5077,14 +5077,14 @@ parent caller is stopped.</p>
             <span class="n">pen</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;queue&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_shielded_task</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_start_stop_task</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">Concatenate</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">],</span> <span class="n">ProtectedPending</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">P</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
         <span class="o">/</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShieldedTask</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap the coroutine function `func` with a `ShieldedTask`.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StartStopTask</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap the coroutine function `func` with a `StartStopTask`.</span>
 
-<span class="sd">        The returned `ShieldedTask` will only be schedule after `start` method is called,</span>
+<span class="sd">        The returned `StartStopTask` will only be schedule after `start` method is called,</span>
 <span class="sd">        and can only be started once, though it is safe to call `start` multiple times;</span>
 <span class="sd">        subsequent calls are `noop`.</span>
 
@@ -5102,14 +5102,14 @@ parent caller is stopped.</p>
 <span class="sd">                await stopped</span>
 
 
-<span class="sd">            task = caller.create_shielded_task(func).start()</span>
+<span class="sd">            task = caller.create_start_stop_task(func).start()</span>
 <span class="sd">            await task.stop()</span>
 <span class="sd">            # or</span>
-<span class="sd">            async with caller.create_shielded_task(func).start():</span>
+<span class="sd">            async with caller.create_start_stop_task(func).start():</span>
 <span class="sd">                pass</span>
 <span class="sd">            ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ShieldedTask</span><span class="p">()</span><span class="o">.</span><span class="n">set_task_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">StartStopTask</span><span class="p">()</span><span class="o">.</span><span class="n">set_task_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">as_completed</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -6446,8 +6446,12 @@ parent caller is stopped.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
   </span>
 
       </li>
@@ -7473,20 +7477,9 @@ of the callers backend.</p>
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
   </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7752,8 +7745,12 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_close"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_close</a>
   </span>
 
       </li>
@@ -7790,8 +7787,12 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
   </span>
 
       </li>
@@ -8015,23 +8016,23 @@ of the callers backend.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="async_kernel.caller.Caller.create_shielded_task" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">create_shielded_task</span>
+<h3 id="async_kernel.caller.Caller.create_start_stop_task" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">create_start_stop_task</span>
 
 
-<a href="#async_kernel.caller.Caller.create_shielded_task" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_shielded_task</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.caller.Caller.create_shielded_task(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span>
+<a href="#async_kernel.caller.Caller.create_start_stop_task" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_start_stop_task</span><span class="p">(</span>
+    <span class="n"><span title="async_kernel.caller.Caller.create_start_stop_task(func)">func</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[</span>
         <span class="n"><a class="autorefs autorefs-external" title="typing.Concatenate" href="https://docs.python.org/3/library/typing.html#typing.Concatenate">Concatenate</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="kc">None</span><span class="p">],</span> <span class="n"><span title="async_kernel.pending.ProtectedPending">ProtectedPending</span></span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">],</span>
         <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">],</span>
     <span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.caller.ShieldedTask">ShieldedTask</span></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.caller.StartStopTask">StartStopTask</span></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.P">P</span></span><span class="p">,</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Wrap the coroutine function <code>func</code> with a <code>ShieldedTask</code>.</p>
-<p>The returned <code>ShieldedTask</code> will only be schedule after <code>start</code> method is called,
+        <p>Wrap the coroutine function <code>func</code> with a <code>StartStopTask</code>.</p>
+<p>The returned <code>StartStopTask</code> will only be schedule after <code>start</code> method is called,
 and can only be started once, though it is safe to call <code>start</code> multiple times;
 subsequent calls are <code>noop</code>.</p>
 <p>When used as an async context, the method 'stop' will be called when the context
@@ -8049,10 +8050,10 @@ is expected to accept two positional arguments:
     <span class="k">await</span> <span class="n">stopped</span>
 
 
-<span class="n">task</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">create_shielded_task</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">create_start_stop_task</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="k">await</span> <span class="n">task</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 <span class="c1"># or</span>
-<span class="k">async</span> <span class="k">with</span> <span class="n">caller</span><span class="o">.</span><span class="n">create_shielded_task</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">():</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">caller</span><span class="o">.</span><span class="n">create_start_stop_task</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">():</span>
     <span class="k">pass</span>
 </code></pre></div>
 </details>
@@ -8115,14 +8116,14 @@ is expected to accept two positional arguments:
 <span class="normal">1052</span>
 <span class="normal">1053</span>
 <span class="normal">1054</span>
-<span class="normal">1055</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_shielded_task</span><span class="p">(</span>
+<span class="normal">1055</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_start_stop_task</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">Concatenate</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">],</span> <span class="n">ProtectedPending</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">P</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span>
     <span class="o">/</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShieldedTask</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap the coroutine function `func` with a `ShieldedTask`.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StartStopTask</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap the coroutine function `func` with a `StartStopTask`.</span>
 
-<span class="sd">    The returned `ShieldedTask` will only be schedule after `start` method is called,</span>
+<span class="sd">    The returned `StartStopTask` will only be schedule after `start` method is called,</span>
 <span class="sd">    and can only be started once, though it is safe to call `start` multiple times;</span>
 <span class="sd">    subsequent calls are `noop`.</span>
 
@@ -8140,14 +8141,14 @@ is expected to accept two positional arguments:
 <span class="sd">            await stopped</span>
 
 
-<span class="sd">        task = caller.create_shielded_task(func).start()</span>
+<span class="sd">        task = caller.create_start_stop_task(func).start()</span>
 <span class="sd">        await task.stop()</span>
 <span class="sd">        # or</span>
-<span class="sd">        async with caller.create_shielded_task(func).start():</span>
+<span class="sd">        async with caller.create_start_stop_task(func).start():</span>
 <span class="sd">            pass</span>
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">ShieldedTask</span><span class="p">()</span><span class="o">.</span><span class="n">set_task_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">StartStopTask</span><span class="p">()</span><span class="o">.</span><span class="n">set_task_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -8724,12 +8725,8 @@ async with Caller().create_pending_group() as pg:
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.to_thread"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_thread</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
