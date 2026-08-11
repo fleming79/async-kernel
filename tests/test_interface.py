@@ -62,6 +62,14 @@ class TestInterface:
                 with pytest.raises(RuntimeError, match="Already initialized!"):
                     interface.initialize()
 
+    async def test_already_exists(self, anyio_backend: Backend):
+        interface = Interface()
+        try:
+            with pytest.raises(RuntimeError, match="An interface already exists!"):
+                Interface()
+        finally:
+            await interface.stop().wait(result=False)
+
     async def test_early_comm(self, anyio_backend: Backend):
         interface = Interface()
         try:
