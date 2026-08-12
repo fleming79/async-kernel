@@ -185,7 +185,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
             owner = job["owner"]()
             content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
             msg_type = MsgType.iopub_update_display_data if update else MsgType.iopub_display_data
-            msg = owner.msg(msg_type, content=content, parent=utils.get_parent_message(), channel=Channel.iopub)
+            msg = owner.msg(msg_type, content, Channel.iopub, parent=utils.get_parent_message())
             for hook in self._hooks:
                 try:
                     msg = hook(msg)
@@ -206,7 +206,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
         """
         if job := utils.get_job():
             owner = job["owner"]()
-            msg = owner.msg(MsgType.iopub_clear_output, {"wait": wait}, channel=Channel.iopub)
+            msg = owner.msg(MsgType.iopub_clear_output, {"wait": wait}, Channel.iopub)
             owner.send_message(msg, ident=b"display_data")
 
     def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:

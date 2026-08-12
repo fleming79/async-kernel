@@ -21,12 +21,12 @@ async def test_debug_static(client: ZMQKernelClient, command: str, mocker, kerne
     if command == "debugInfo":
         assert async_kernel.utils.LAUNCHED_BY_DEBUGPY
     content = {"type": "request", "seq": 1, "command": command, "arguments": {"code": code}}
-    reply = await client.send_message(client.msg(MsgType.debug_request, content=content, channel=Channel.control))
+    reply = await client.send_message(client.msg(MsgType.debug_request, content, Channel.control))
     assert reply["content"]["status"] == "ok"
     if command == "dumpCell":
         path = reply["content"]["body"]["sourcePath"]
         content = {"type": "request", "seq": 1, "command": "source", "arguments": {"source": {"path": path}}}
-        reply = await client.send_message(client.msg(MsgType.debug_request, content=content, channel=Channel.control))
+        reply = await client.send_message(client.msg(MsgType.debug_request, content, Channel.control))
         assert reply["content"]["status"] == "ok"
         assert reply["content"]["body"] == {"content": code}
 
@@ -40,7 +40,7 @@ async def test_debug_not_connected(client: ZMQKernelClient, kernel: Kernel, mock
     mocker.patch.object(kernel.log, "exception")
     content = {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
     reply = await client.send_message(
-        client.msg(MsgType.debug_request, content=content, channel=Channel.control),
+        client.msg(MsgType.debug_request, content, Channel.control),
     )
     assert reply["content"]["status"] == MsgType.iopub_error
     assert reply["content"]["evalue"] == "Debugpy client not connected."
@@ -55,5 +55,5 @@ async def test_debug_static_richInspectVariables(client: ZMQKernelClient, variab
         "command": "richInspectVariables",
         "arguments": {"code": "my_variable=123", "variableName": variable_name},
     }
-    reply = await client.send_message(client.msg(MsgType.debug_request, content=content, channel=Channel.control))
+    reply = await client.send_message(client.msg(MsgType.debug_request, content, Channel.control))
     assert reply["content"]["status"] == "ok"

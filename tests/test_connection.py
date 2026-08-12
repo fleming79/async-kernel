@@ -39,7 +39,7 @@ class TestConnection:
             assert debug.call_count == 1
             assert debug.call_args.args[0].startswith("Unhandled message")
 
-            msg = client.msg(MsgType.comm_open, channel=Channel.shell)
+            msg = client.msg(MsgType.comm_open, None, Channel.shell)
             with pytest.raises(TypeError, match="does not send a reply"):
                 client.send_message(msg)
 

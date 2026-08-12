@@ -52,7 +52,7 @@ async def test_input(
     await anyio.sleep(0.5)
 
     if test_mode == "interrupt":
-        await client.send_message(client.msg(msg_type=MsgType.interrupt_request, channel=Channel.control))
+        await client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
         reply = await pen
         assert reply["content"]["status"] == "error"
         assert reply["content"]["traceback"][0] == "async_kernel.common.KernelInterrupt\n"
@@ -88,7 +88,7 @@ async def test_interrupt_request(
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
         utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_stream, text="started\n")
-        client.send_message(client.msg(MsgType.interrupt_request, channel=Channel.control))
+        client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
         reply = await pen
 
         assert reply["content"]["status"] == "error"

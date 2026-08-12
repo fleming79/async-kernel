@@ -454,9 +454,9 @@ class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
     def msg(
         self,
         msg_type: str | MsgType,
-        content: T | None = None,
-        *,
+        content: T | None,
         channel: Channel,
+        *,
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,

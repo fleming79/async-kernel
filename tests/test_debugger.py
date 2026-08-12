@@ -46,7 +46,7 @@ async def send_debug_request(client: ZMQKernelClient, command: str, arguments: d
         "command": command,
         "arguments": arguments or {},
     }
-    reply = await client.send_message(client.msg(MsgType.debug_request, content=content, channel=Channel.control))
+    reply = await client.send_message(client.msg(MsgType.debug_request, content, Channel.control))
     return reply["content"]
 
 

@@ -26,7 +26,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
     interface = Interface.instance()
     async with LocalClient().start() as client:
         await client.kernel_info()
-        send_to_inteface(pack_json_str(client.msg(MsgType.kernel_info_request, channel=Channel.shell)), [], None)
+        send_to_inteface(pack_json_str(client.msg(MsgType.kernel_info_request, None, Channel.shell)), [], None)
         async for msg in messages:
             if msg["header"]["msg_type"] == MsgType.kernel_info_reply:
                 assert msg["content"]["status"] == "ok"

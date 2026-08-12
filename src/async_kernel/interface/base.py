@@ -455,17 +455,10 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
             msg = "Stdin is not allowed in this context!"
             raise RuntimeError(msg)
         connection = job["owner"]()
-        pen_reply = connection.send_message(
-            connection.msg(
-                MsgType.input_request,
-                content=Content(prompt=prompt, password=password),
-                parent=job["msg"],
-                channel=Channel.stdin,
-                # The client is assumed to have set the 'identity' of the stdin socket to 'session.bsession'.
-            ),
-            # ident=job["msg"]["header"]["session"].encode(),
-            ident=job["ident"],
+        msg = connection.msg(
+            MsgType.input_request, Content(prompt=prompt, password=password), Channel.stdin, parent=job["msg"]
         )
+        pen_reply = connection.send_message(msg, ident=job["ident"])
         if current_pen := self.callers[Channel.shell].current_pending():
             current_pen.add_done_callback(lambda _: pen_reply.cancel(""))
         return pen_reply
@@ -484,11 +477,11 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         for c in self._connections:
             try:
                 msg = c.msg(
-                    msg_type=MsgType(msg_type),
-                    content=content,
+                    MsgType(msg_type),
+                    content,
+                    Channel.iopub,
                     parent=parent if parent is not NoValue else async_kernel.utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
                     metadata=metadata,
-                    channel=Channel.iopub,
                     buffers=buffers,
                 )
                 c.send_message_no_reply(msg, ident)

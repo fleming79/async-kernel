@@ -97,9 +97,9 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     def msg(
         self,
         msg_type: str | MsgType,
-        content: T | None = None,
-        *,
+        content: T | None,
         channel: Channel,
+        *,
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
@@ -108,7 +108,7 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
         parent = parent or utils.get_parent_message()
         if header is None:
             header = MsgHeader(
-                date=datetime.now(UTC),
+                date=datetime.now(tz=UTC),
                 msg_id=str(uuid4()),
                 msg_type=msg_type,
                 session=self.session_id,
@@ -156,9 +156,9 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
             content["status"] = "ok"
         msg = self.msg(
             job["msg"]["header"]["msg_type"].replace("request", "reply"),
-            content=content,
+            content,
+            job["msg"]["channel"],
             parent=job["msg"],
-            channel=job["msg"]["channel"],
         )
         self.send_message_no_reply(msg, job["ident"])
         if msg:
@@ -235,14 +235,12 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
             assert content["status"] in ["error", "ok"]
         except Exception as e:
             content = utils.error_to_content(e)
-        self.send_message_no_reply(
-            self.msg(reply_msg_type, content=content, channel=job["msg"]["channel"], parent=job["msg"]),
-            job["msg"]["header"]["session"].encode(),
-        )
+        msg = self.msg(reply_msg_type, content, job["msg"]["channel"], parent=job["msg"])
+        self.send_message_no_reply(msg, job["ident"])
 
     async def input_request(self, job: Job[Content]) -> Content:
         """Handle an `input_request` raised by the connected kernel."""
-        if (parent := job["msg"]["parent_header"]) and (handler := self._input_handlers.get(parent["msg_id"])):
+        if (parent := job["msg"]["parent_header"]) and (handler := self._input_handlers.pop(parent["msg_id"], None)):
             result = await handler(job["msg"]["content"])
             return Content(status="ok", value=result)
         msg_ = "A handler is not available!"
@@ -305,11 +303,11 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
             "stop_on_error": (not silent) if stop_on_error is NoValue else stop_on_error,
             "subshell_id": subshell_id,
         }
-        msg = self.msg(MsgType.execute_request, content=content, metadata=metadata, channel=channel)
+        msg = self.msg(MsgType.execute_request, content, channel, metadata=metadata)
         if input_handler:
             self._input_handlers[msg["header"]["msg_id"]] = input_handler
         pen = self.send_message(msg)
-        pen.add_done_callback(lambda _: self._input_handlers.pop(pen.msg_id))
+        pen.add_done_callback(lambda _: self._input_handlers.pop(pen.msg_id, None))
         return pen
 
     def complete(self, code: str, cursor_pos: int | None = None) -> PendingMessage[Content]:
@@ -324,7 +322,7 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
         if cursor_pos is None:
             cursor_pos = len(code)
         content = {"code": code, "cursor_pos": cursor_pos}
-        msg = self.msg(MsgType.complete_request, channel=Channel.shell, content=content)
+        msg = self.msg(MsgType.complete_request, content, Channel.shell)
         return self.send_message(msg)
 
     def inspect(self, code: str, cursor_pos: int | None = None, detail_level: int = 0) -> PendingMessage[Content]:
@@ -341,7 +339,7 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
         if cursor_pos is None:
             cursor_pos = len(code)
         content = {"code": code, "cursor_pos": cursor_pos, "detail_level": detail_level}
-        return self.send_message(self.msg(MsgType.inspect_request, channel=Channel.shell, content=content))
+        return self.send_message(self.msg(MsgType.inspect_request, content, Channel.shell))
 
     def history(
         self,
@@ -371,20 +369,20 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
             kwargs.setdefault("session", 0)
             kwargs.setdefault("start", 0)
         content = dict(raw=raw, output=output, hist_access_type=hist_access_type, **kwargs)
-        return self.send_message(self.msg(MsgType.history_request, channel=Channel.shell, content=content))
+        return self.send_message(self.msg(MsgType.history_request, content, Channel.shell))
 
     def kernel_info(self) -> PendingMessage[Content]:
         """Request kernel info."""
-        return self.send_message(self.msg(MsgType.kernel_info_request, channel=Channel.shell))
+        return self.send_message(self.msg(MsgType.kernel_info_request, None, Channel.shell))
 
     def comm_info(self, target_name: str | None = None) -> PendingMessage[Content]:
         """Request comm info."""
         content = {} if target_name is None else {"target_name": target_name}
-        return self.send_message(self.msg(MsgType.comm_info_request, channel=Channel.shell, content=content))
+        return self.send_message(self.msg(MsgType.comm_info_request, content, Channel.shell))
 
     def is_complete(self, code: str) -> PendingMessage[Content]:
         """Ask the kernel whether some code is complete and ready to execute."""
-        return self.send_message(self.msg(MsgType.is_complete_request, channel=Channel.shell, content={"code": code}))
+        return self.send_message(self.msg(MsgType.is_complete_request, {"code": code}, Channel.shell))
 
     def shutdown(self, restart: bool = False) -> PendingMessage[Content]:
         """Request an immediate kernel shutdown.
@@ -393,9 +391,7 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
         the kernel has shut down and it's safe to forcefully terminate it if
         it's still alive.
         """
-        return self.send_message(
-            self.msg(MsgType.shutdown_request, content={"restart": restart}, channel=Channel.control)
-        )
+        return self.send_message(self.msg(MsgType.shutdown_request, {"restart": restart}, Channel.control))
 
 
 class LocalClient(HasInterface[T_interface_co], BaseKernelClient[T_interface_co], Generic[T_interface_co]):

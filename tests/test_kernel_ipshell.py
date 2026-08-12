@@ -46,8 +46,8 @@ async def test_execute_shell_timeout(client: ClientType, kernel: Kernel, mode: s
 
 
 async def test_bad_message(client: ClientType):
-    await client.send_message(client.msg(MsgType.execute_request, channel=Channel.shell))
-    await client.send_message(client.msg(MsgType.execute_request, channel=Channel.control))
+    await client.send_message(client.msg(MsgType.execute_request, None, Channel.shell))
+    await client.send_message(client.msg(MsgType.execute_request, None, Channel.control))
     await client.execute("")
 
 

@@ -77,7 +77,7 @@ class TestInterface:
             comm.open()
             assert comm.comm_id in interface.kernel.comm_manager.comms
             async with interface.start(), LocalClient().start() as client:
-                msg = client.msg(MsgType.comm_close, {"comm_id": comm.comm_id}, channel=Channel.shell)
+                msg = client.msg(MsgType.comm_close, {"comm_id": comm.comm_id}, Channel.shell)
                 client.send_message_no_reply(msg)
                 with anyio.fail_after(utils.TIMEOUT):
                     while comm.comm_id in interface.kernel.comm_manager.comms:
@@ -88,7 +88,7 @@ class TestInterface:
     async def test_input_request_no_handler(self, anyio_backend: Backend):
 
         async with Interface(shell_class=BaseShell).start(), LocalClient().start() as client:
-            msg = client.msg(MsgType.input_request, channel=Channel.stdin)
+            msg = client.msg(MsgType.input_request, None, Channel.stdin)
             job = Job(msg=msg, owner=client.as_owner, ident=[], received_time=time.monotonic())
             with pytest.raises(RuntimeError, match="A handler is not available"):
                 await client.input_request(job)
