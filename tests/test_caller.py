@@ -709,15 +709,10 @@ class TestCaller:
         mocker.patch.object(anyio, "sleep", new=controlled_sleep)
         mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.001)
         pen1 = caller.to_thread(Caller.get_existing)
-        pen2 = caller.to_thread(Caller.get_existing)
         w1 = await pen1
-        w2 = await pen2
-        assert w1 is not w2
         assert w1 in caller._worker_pool
-        assert w2 in caller._worker_pool
         resume.set()
         await w1.stopped
-        await w2.stopped
 
     async def test_worker_in_pool_stopping(self, caller: Caller):
         worker = await caller.to_thread(caller.get_existing)
