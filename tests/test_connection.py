@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.connection.base import BaseKernelClient, Connection
-from async_kernel.connection.zmq import ZMQConnection, ZMQKernelClient
+from async_kernel.connection.base import BaseClient, Connection
+from async_kernel.connection.zmq import ZMQClient, ZMQConnection
 from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ class TestConnection:
         await connection.stop()
 
     async def test_base_client(self, kernel: Kernel, mocker):
-        async with BaseKernelClient().start() as client:
+        async with BaseClient().start() as client:
             # Check unhandled messages
             debug = mocker.patch.object(client.log, "debug")
             client.handle_incoming_msg({"channel": Channel.heartbeat}, [])  # pyright: ignore[reportArgumentType]
@@ -51,7 +51,7 @@ class TestZMQConnection:
         connection = ZMQConnection()
         assert connection.connection_info() == ""
 
-        client = ZMQKernelClient()
+        client = ZMQClient()
         with pytest.raises(RuntimeError, match="Connection info has not been set"):
             client.start()
 
@@ -63,7 +63,7 @@ class TestZMQConnection:
 
     async def test_iopub(self, kernel):
         async with ZMQConnection().start() as connection:
-            client = ZMQKernelClient()
+            client = ZMQClient()
             client.load_connection_info(connection.get_connection_info())
             async with client.start():
                 async with client.iopub_subscribe():

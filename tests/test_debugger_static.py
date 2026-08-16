@@ -9,11 +9,11 @@ from async_kernel import Kernel
 from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:
-    from async_kernel.connection.zmq import ZMQKernelClient
+    from async_kernel.connection.zmq import ZMQClient
 
 
 @pytest.mark.parametrize("command", ["debugInfo", "inspectVariables", "modules", "dumpCell", "source"])
-async def test_debug_static(client: ZMQKernelClient, command: str, mocker, kernel: Kernel):
+async def test_debug_static(client: ZMQClient, command: str, mocker, kernel: Kernel):
     # These are tests on the debugger that don't required the debugger to be connected.
     mocker.patch.object(async_kernel.utils, "LAUNCHED_BY_DEBUGPY", new=True)
 
@@ -36,7 +36,7 @@ async def test_debug_raises_no_socket(kernel: Kernel):
         await kernel.debugger.debugpy_client.send_request({})
 
 
-async def test_debug_not_connected(client: ZMQKernelClient, kernel: Kernel, mocker):
+async def test_debug_not_connected(client: ZMQClient, kernel: Kernel, mocker):
     mocker.patch.object(kernel.log, "exception")
     content = {"type": "request", "seq": 1, "command": "disconnect", "arguments": {}}
     reply = await client.send_message(
@@ -47,7 +47,7 @@ async def test_debug_not_connected(client: ZMQKernelClient, kernel: Kernel, mock
 
 
 @pytest.mark.parametrize("variable_name", ["my_variable", "invalid variable name", "special variables"])
-async def test_debug_static_richInspectVariables(client: ZMQKernelClient, variable_name: str):
+async def test_debug_static_richInspectVariables(client: ZMQClient, variable_name: str):
     # These are tests on the debugger that don't required the debugger to be connected.
     content = {
         "type": "request",

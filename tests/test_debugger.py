@@ -8,7 +8,7 @@ import async_kernel.utils
 from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:
-    from async_kernel.connection.zmq import ZMQKernelClient
+    from async_kernel.connection.zmq import ZMQClient
 
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
     import debugpy.server.api
@@ -33,7 +33,7 @@ initialize_args = {
 }
 
 
-async def send_debug_request(client: ZMQKernelClient, command: str, arguments: dict | None = None):
+async def send_debug_request(client: ZMQClient, command: str, arguments: dict | None = None):
     """Carry out a debug request and return the reply content.
 
     It does not check if the request was successful.
@@ -50,7 +50,7 @@ async def send_debug_request(client: ZMQKernelClient, command: str, arguments: d
     return reply["content"]
 
 
-async def test_debugger(subprocess_kernel_client: ZMQKernelClient):
+async def test_debugger(subprocess_kernel_client: ZMQClient):
     client = subprocess_kernel_client
     reply = await send_debug_request(client=client, command="initialize", arguments=initialize_args)
     assert reply["status"] == "ok"

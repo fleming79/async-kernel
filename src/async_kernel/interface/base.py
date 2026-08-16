@@ -23,7 +23,6 @@ import async_kernel.event_loop
 from async_kernel import utils
 from async_kernel.caller import Caller, StartStopTask
 from async_kernel.common import Fixed
-from async_kernel.pending import PendingMessage, ProtectedPending
 from async_kernel.typing import (
     Backend,
     BuffersType,
@@ -43,10 +42,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from async_kernel.comm import CommManager
-    from async_kernel.connection.base import Connection
+    from async_kernel.connection.base import Connection, PendingMessage
     from async_kernel.kernel import Kernel
+    from async_kernel.pending import ProtectedPending
 
-__all__ = ["HasInterface", "Interface", "PendingMessage"]
+__all__ = ["HasInterface", "Interface"]
 
 
 class DictValueLiteralEval(traitlets.Dict):

@@ -18,7 +18,7 @@ from async_kernel import utils
 from async_kernel.caller import Caller, StartStopTask
 from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface import HasInterface
-from async_kernel.pending import PendingMessage, ProtectedPending
+from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.typing import (
     BuffersType,
     Channel,
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
 
-__all__ = ["BaseKernelClient", "BaseMessage", "Connection", "LocalClient", "PendingMessage"]
+__all__ = ["BaseClient", "BaseMessage", "Connection", "LocalClient", "PendingMessage"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
@@ -62,16 +62,23 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
     return h
 
 
+class PendingMessage(Pending[Message[T]], Generic[T]):
+    @property
+    def msg_id(self) -> str:
+        return self.metadata["parent"]["header"]["msg_id"]
+
+
 class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     """The base for messaging between kernel interfaces and clients."""
 
     session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"]._session_id)
-    "Used to identify this object as the `session` in a message header."
+    """Used to identify this object as the `session` in a message header."""
 
     bsession: Fixed[Self, bytes] = Fixed[Self, bytes](lambda c: c["owner"].session_id.encode())
-    "Used to identfiy this object as the origin of a message."
+    """Used to identfiy this object as the origin of a message."""
 
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
+    """A mapping of the `msg_id` of message requests to the pending that is resolved with a reply."""
 
     def __init__(self, caller: Caller | None = None, /, session_id: str | NoValue = NoValue, **kwargs) -> None:  # pyright: ignore[reportInvalidTypeForm]
         """Initialize the instance.
@@ -234,7 +241,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
         self.log.debug("iopub_send: msg_type:%r %s", msg_type, msg_type)
 
 
-class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
+class BaseClient(BaseMessage, Generic[T_interface_co]):
     """Communicates with a single connection."""
 
     _input_handlers: Fixed[Self, dict[str, Callable[[Content], CoroutineType[Any, Any, str]]]] = Fixed(dict)
@@ -284,8 +291,17 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
         raise RuntimeError(msg_)
 
     @asynccontextmanager
-    async def iopub_subscribe(self, topic=b"") -> AsyncGenerator[SingleAsyncQueue[Message]]:
+    async def iopub_subscribe(
+        self, topic=b"", *, timeout: float | None = None
+    ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
         """Open a new iopub socket and subscribe to a particular topic.
+
+        Args:
+            topic: The topics to subscribe to.
+            timeout: The maximum time to wait for a welcome message.
+
+        Raise:
+            TimeoutError: If a welcome message is not received in time.
 
         Usaage:
         ```python
@@ -431,8 +447,8 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
         return self.send_message(self.msg(MsgType.shutdown_request, {"restart": restart}, Channel.control))
 
 
-class LocalClient(HasInterface[T_interface_co], BaseKernelClient[T_interface_co], Generic[T_interface_co]):
-    """A connection for an interface running in the current process."""
+class LocalClient(HasInterface[T_interface_co], BaseClient[T_interface_co], Generic[T_interface_co]):
+    """A client for an interface running in the current process."""
 
     connection: Fixed[Self, Connection[T_interface_co]] = Fixed(lambda c: Connection(session_id=c["owner"].session_id))
 

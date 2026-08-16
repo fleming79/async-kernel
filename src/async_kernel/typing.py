@@ -23,8 +23,8 @@ from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, ove
 if TYPE_CHECKING:
     import datetime
 
+    from async_kernel.connection.base import PendingMessage
     from async_kernel.interface import Interface
-    from async_kernel.pending import PendingMessage
     from async_kernel.shell import BaseShell
     from async_kernel.shell.ipshell import IPShell
 
@@ -429,27 +429,13 @@ class MessageMeta(typing._ProtocolMeta, traitlets.MetaHasTraits):  # pyright: ig
 
 @runtime_checkable
 class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
-    """The protocol used by a connection on the interface and clients."""
+    """The protocol used by a connection and client to send data to the opposite side.
 
-    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
-        """The method where incoming messages are handled."""
+    The data transmission is designed to be symmetric.
 
-    def handle_reply(self, msg: Message) -> None:
-        """A handler for relies to requests that originated from this object."""
-
-    def send_message(
-        self,
-        msg: Message,
-        ident: bytes | list[bytes] | None = None,
-    ) -> PendingMessage[Content]:
-        """Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""
-        ...
-
-    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
-        """Send a reply to a job (a message of msg_type ending in '_request')."""
-
-    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
-        """The main entry point for sending messages in subclasses, not normally called directly."""
+    `ident` (a list of bytes) is provided for routing the message, in normal usage this
+    is the `session_id`. `ident` is also used for iopub messages to provide one or more `topics`.
+    """
 
     def msg(
         self,
@@ -464,6 +450,26 @@ class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
     ) -> Message[T]:
         """Create a new message."""
         ...
+
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The method where incoming messages are handled."""
+
+    def handle_reply(self, msg: Message) -> None:
+        """A handler for relies to requests that originated from this object."""
+
+    def send_message(
+        self,
+        msg: Message,
+        ident: bytes | list[bytes] | None = None,
+    ) -> PendingMessage[Content]:
+        """Sends the message to the opposite side and return a PendingMessage."""
+        ...
+
+    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
+        """Send a reply to a job (a message of msg_type ending in '_request')."""
+
+    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The method that does the actual data transmission to the opposite side."""
 
     def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> None:
         """Sends a message without expecting a reply.

@@ -9,7 +9,7 @@ import pytest
 import async_kernel
 from async_kernel import Caller, Kernel
 from async_kernel.connection.base import LocalClient
-from async_kernel.connection.zmq import ZMQConnection, ZMQKernelClient
+from async_kernel.connection.zmq import ZMQClient, ZMQConnection
 from async_kernel.interface import Interface
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
 from tests import utils
@@ -54,7 +54,7 @@ def connection_name(request):
 @pytest.fixture(scope="module")
 async def client(
     anyio_backend: Backend, connection_name: Literal["local", "zmq"], tmp_path_factory
-) -> AsyncGenerator[LocalClient | ZMQKernelClient]:
+) -> AsyncGenerator[LocalClient | ZMQClient]:
 
     os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
     if connection_name == "zmq":
@@ -63,7 +63,7 @@ async def client(
             assert interface.connections
             connection = interface.connections[0]
             assert isinstance(connection, ZMQConnection)
-            client = ZMQKernelClient()
+            client = ZMQClient()
             client.load_connection_info(connection.get_connection_info())
             async with client.start():
                 yield client
@@ -73,14 +73,14 @@ async def client(
 
 
 @pytest.fixture(scope="module")
-async def kernel(client: ZMQKernelClient | LocalClient) -> Kernel:
+async def kernel(client: ZMQClient | LocalClient) -> Kernel:
     return async_kernel.utils.get_kernel()
 
 
 @pytest.fixture(scope="module")
 async def subprocess_kernel_client(anyio_backend: Backend):
     # Launching the subprocess from a fixture enables coverage to be patched correctly by pytest coverage.
-    client = ZMQKernelClient(encryption="curve")
+    client = ZMQClient(encryption="curve")
     async with client.subprocess_kernel(
         startup_delay=1, heartbeat_interval=None, start_timeout=utils.TIMEOUT, backend=anyio_backend
     ):

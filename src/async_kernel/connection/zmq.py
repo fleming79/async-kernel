@@ -22,7 +22,7 @@ from traitlets.config import Config
 from typing_extensions import override
 
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
-from async_kernel.connection.base import BaseKernelClient, BaseMessage, Connection
+from async_kernel.connection.base import BaseClient, BaseMessage, Connection
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
 from async_kernel.kernelspec import make_argv
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from async_kernel.pending import ProtectedPending
 
 
-__all__ = ["ZMQConnection"]
+__all__ = ["ZMQClient", "ZMQConnection"]
 
 
 class Session(jupyter_client.session.Session):
@@ -211,8 +211,12 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
         return ""
 
 
-class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_interface_co]):
-    """Communicates with a single kernel on any host via zmq channels."""
+class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co]):
+    """A client for an interface that provides a [ZMQConnection][].
+
+    The client can be connected to an existing interface's connection (with ZMQClient.load_connection_info[]).
+    or [ZMQClient.load_connection_file][]), or a new interface/kernel can be started with [ZMQClient.subprocess_kernel][].
+    """
 
     encryption = traitlets.Enum(["curve"], default_value=None, allow_none=True)
     "The type of encryption to use."
@@ -374,28 +378,10 @@ class ZMQKernelClient(BaseKernelClient[T_interface_co], ZMQMessage, Generic[T_in
         return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
     @asynccontextmanager
+    @override
     async def iopub_subscribe(
         self, topic=b"", *, timeout: float | None = None
     ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
-        """Open a new iopub socket and subscribe to a particular topic.
-
-        Args:
-            topic: The topics to subscribe to.
-            timeout: The maximum time to wait for a welcome message.
-
-        Raise:
-            TimeoutError: If a welcome message is not received in time.
-
-        Usaage:
-        ```python
-        async with client.iopub_subscribe() as queue:
-            async for msg in queue:
-                pass
-        ```
-
-        Tip:
-            - A sync version of this async context can be achieved by using zmq_poll directly.
-        """
 
         def forward_messages(sock: ZMQPollSocket, event: int) -> None:
             msg: Message = self.session.recv(sock)[1]  # pyright: ignore[reportAssignmentType]

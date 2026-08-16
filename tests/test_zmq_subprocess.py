@@ -9,7 +9,7 @@ import anyio
 import pytest
 from aiologic.lowlevel import create_async_event, create_async_waiter
 
-from async_kernel.connection.zmq import ZMQKernelClient
+from async_kernel.connection.zmq import ZMQClient
 from async_kernel.typing import Channel, Content, MsgType
 from tests import utils
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 @pytest.mark.parametrize("test_mode", ["reply", "allow_stdin=False"])
 @pytest.mark.parametrize("mode", ["input", "password"])
 async def test_input(
-    subprocess_kernel_client: ZMQKernelClient,
+    subprocess_kernel_client: ZMQClient,
     mode: Literal["input", "password"],
     test_mode: Literal["interrupt", "reply", "allow_stdin=False"],
 ):
@@ -68,7 +68,7 @@ async def test_input(
 
 @pytest.mark.parametrize("mode", ["exec_request_sync", "caller", "exec_request_async"])
 async def test_interrupt_request(
-    subprocess_kernel_client: ZMQKernelClient, mode: Literal["exec_request_sync", "exec_request_async", "caller"]
+    subprocess_kernel_client: ZMQClient, mode: Literal["exec_request_sync", "exec_request_async", "caller"]
 ):
 
     client = subprocess_kernel_client
@@ -102,7 +102,7 @@ async def test_interrupt_request(
 
 async def test_subprocess_kernel_monitor_heartbeat(anyio_backend, mocker):
     # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
-    client = ZMQKernelClient()
+    client = ZMQClient()
     log_error = mocker.patch.object(client.log, "error")
     with pytest.raises(RuntimeError, match="Heartbeat not detected"):  # noqa: PT012
         async with client.subprocess_kernel(heartbeat_interval=0.1):
@@ -115,7 +115,7 @@ async def test_subprocess_kernel_monitor_heartbeat(anyio_backend, mocker):
 @pytest.mark.skipif(sys.platform == "win32", reason="Can't simulate keyboard interrupt on windows.")
 async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyio_backend):
     # This is the keyboard interrupt from a console app, not to be confused with 'interrupt_request'.
-    client = ZMQKernelClient()
+    client = ZMQClient()
     okay = False
     with pytest.raises(RuntimeError, match="Heartbeat not detected"):  # noqa: PT012
         async with client.subprocess_kernel(heartbeat_interval=0.1, start_timeout=utils.TIMEOUT) as process:

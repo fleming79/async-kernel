@@ -15,7 +15,7 @@ from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
-    from async_kernel.connection.zmq import ZMQKernelClient
+    from async_kernel.connection.zmq import ZMQClient
     from async_kernel.shell import IPShell
 
 
@@ -24,13 +24,13 @@ def connection_name(request):
     return request.param
 
 
-async def test_execute_request_success(client: ZMQKernelClient):
+async def test_execute_request_success(client: ZMQClient):
     reply = await client.execute("1 + 1")
     assert reply["header"]["msg_type"] == MsgType.execute_reply
     assert reply["content"]["status"] == "ok"
 
 
-async def test_simple_print(kernel: Kernel, client: ZMQKernelClient):
+async def test_simple_print(kernel: Kernel, client: ZMQClient):
     """Simple print statement in kernel."""
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
@@ -42,7 +42,7 @@ async def test_simple_print(kernel: Kernel, client: ZMQKernelClient):
         assert msg["header"]["msg_type"] == MsgType.iopub_stream
 
 
-async def test_print_non_caller_thread(kernel: Kernel, client: ZMQKernelClient):
+async def test_print_non_caller_thread(kernel: Kernel, client: ZMQClient):
 
     async with client.iopub_subscribe() as queue:
         t = threading.Thread(target=print, args=["-non_caller_thread-"])
@@ -53,7 +53,7 @@ async def test_print_non_caller_thread(kernel: Kernel, client: ZMQKernelClient):
         t.join()
 
 
-async def test_interrupt_request_not_blocked(client: ZMQKernelClient, kernel: Kernel):
+async def test_interrupt_request_not_blocked(client: ZMQClient, kernel: Kernel):
     pen: Any = Pending()
     kernel.active_execute_requests.add(pen)
     reply = await client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
@@ -73,7 +73,7 @@ async def test_interrupt_request_not_blocked(client: ZMQKernelClient, kernel: Ke
         "%mkdir test\n%rmdir test\n%ls",
     ],
 )
-async def test_magic(client: ZMQKernelClient, code: str, kernel: Kernel, monkeypatch):
+async def test_magic(client: ZMQClient, code: str, kernel: Kernel, monkeypatch):
 
     assert code
     async with client.iopub_subscribe() as queue:
@@ -99,7 +99,7 @@ async def test_magic(client: ZMQKernelClient, code: str, kernel: Kernel, monkeyp
         "import trio\n%trio await trio.sleep(0)\nprint('okay')",
     ],
 )
-async def test_magic_async(client: ZMQKernelClient, code: str, kernel: Kernel, monkeypatch):
+async def test_magic_async(client: ZMQClient, code: str, kernel: Kernel, monkeypatch):
 
     assert code
     async with client.iopub_subscribe() as queue:
@@ -116,7 +116,7 @@ async def test_magic_async(client: ZMQKernelClient, code: str, kernel: Kernel, m
             pass
 
 
-async def test_magic_error(client: ZMQKernelClient) -> None:
+async def test_magic_error(client: ZMQClient) -> None:
 
     reply = await client.execute("%%thread backend=trio\npass")
     assert reply["content"]["status"] == "error"
@@ -127,7 +127,7 @@ async def test_magic_error(client: ZMQKernelClient) -> None:
 
 
 @pytest.mark.parametrize("code", argvalues=["%connect_info"])
-async def test_magic_sync(client: ZMQKernelClient, code: str, kernel: Kernel[Interface, IPShell], monkeypatch):
+async def test_magic_sync(client: ZMQClient, code: str, kernel: Kernel[Interface, IPShell], monkeypatch):
     result = kernel.main_shell.run_cell(code)
     assert result.success
 
@@ -153,7 +153,7 @@ async def test_already_entered(kernel: Kernel):
 
 
 @pytest.mark.parametrize("topic", ["zmq", "kernel"])
-async def test_iopub_welcome(topic: str, client: ZMQKernelClient, connection_name: str):
+async def test_iopub_welcome(topic: str, client: ZMQClient, connection_name: str):
     """Test iopub welcome message. https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
 
     with ZMQPoll() as zmq_poll:
