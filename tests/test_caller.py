@@ -700,7 +700,14 @@ class TestCaller:
         assert not caller._worker_pool
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
-        mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
+        resume = create_async_event()
+
+        async def controlled_sleep(*args, sleep=anyio.sleep):
+            await resume
+            await sleep(*args)
+
+        mocker.patch.object(anyio, "sleep", new=controlled_sleep)
+        mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.001)
         pen1 = caller.to_thread(Caller.get_existing)
         pen2 = caller.to_thread(Caller.get_existing)
         w1 = await pen1
@@ -708,6 +715,7 @@ class TestCaller:
         assert w1 is not w2
         assert w1 in caller._worker_pool
         assert w2 in caller._worker_pool
+        resume.set()
         await w1.stopped
         await w2.stopped
 
