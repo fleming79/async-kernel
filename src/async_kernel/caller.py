@@ -384,8 +384,10 @@ class Caller:
 
             # create a new instance
             inst = super().__new__(cls)
-            if (sys.platform == "emscripten") and (caller_id is None):
-                caller_id = id(inst)
+            if sys.platform == "emscripten":
+                if caller_id is None:
+                    caller_id = id(inst)
+                thread = threading.current_thread()
 
             # Add private objects
             inst._inst_lock = BinarySemaphore()
