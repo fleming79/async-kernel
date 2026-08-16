@@ -390,7 +390,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         """The main task to run the kernel and open connections."""
         self.log.info("Starting kernel interface")
         self.backend = Backend(current_async_library())
-        async with self.kernel:
+        async with self.caller, self.callers[Channel.control], self.kernel:
             await self._pre_start()
             self.log.info("Interface started: %s", self.summary)
             started()
