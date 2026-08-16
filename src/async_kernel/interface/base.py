@@ -99,7 +99,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         Application.aliases
         | {
             ("name", "n"): "Interface.kernel_name",
-            ("f", "connection_file"): "ZMQConnection.connection_file",
+            ("f", "connection_file"): "ZMQMessage.connection_file",
             "launcher": "Interface.launcher",
             "timeout": "BaseShell.timeout",
             "kernel_class": "Interface.kernel_class",
@@ -429,6 +429,11 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     @override
     def print_help(self, classes: bool = False) -> None:
         from async_kernel.compat.attr_docs import get_attr_docs  # noqa: PLC0415
+
+        if sys.platform != "emscripten":
+            from async_kernel.connection.zmq import ZMQMessage  # noqa: PLC0415
+
+            self.classes.append(ZMQMessage)
 
         # Copy trailing docstrings into trait.help.
         for cls in self.classes:
