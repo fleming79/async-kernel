@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Generic, TypedDict
 
@@ -62,13 +61,10 @@ async def start_kernel_callable_interface(
     settings = settings or {}
     interface_class = settings.get("interface_class") or "async_kernel.interface.Interface"
     cls: type[Interface] = import_item(interface_class)
-    iopub_first_connection_only = settings.pop("iopub_first_connection_only", sys.platform == "emscripten")
     # A patch to avoid duplicate cell output when using LiteKernelClient which already sends iopub messages to all clients.
 
     argv = make_argv(command=(), connection_file="", **settings)[1:]
     app = cls(argv)
-    if iopub_first_connection_only:
-        app._publish_to_first_connection_only = True  # pyright: ignore[reportAttributeAccessIssue]
     assert issubclass(cls, Interface)
     app.start()
     await app.started

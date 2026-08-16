@@ -24,6 +24,7 @@ from async_kernel.typing import (
     Channel,
     Content,
     ExecuteContent,
+    IOPubMsgTypeAlias,
     Job,
     Message,
     MessageProtocol,
@@ -207,6 +208,30 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 
     def connection_info(self) -> str:
         return ""
+
+    def iopub_send(
+        self,
+        msg_type: IOPubMsgTypeAlias | str,
+        content: Content | None = None,
+        *,
+        metadata: dict[str, Any] | None = None,
+        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        ident: bytes | list[bytes] | None = None,
+        buffers: BuffersType = None,
+    ) -> None:
+        """Publish an iopub message."""
+        self._base_send_msg(
+            self.msg(
+                MsgType(msg_type),
+                content,
+                Channel.iopub,
+                parent=parent if parent is not NoValue else async_kernel.utils.get_parent_message(),  # pyright: ignore[reportArgumentType]
+                metadata=metadata,
+                buffers=buffers,
+            ),
+            ident,
+        )
+        self.log.debug("iopub_send: msg_type:%r %s", msg_type, msg_type)
 
 
 class BaseKernelClient(BaseMessage, Generic[T_interface_co]):

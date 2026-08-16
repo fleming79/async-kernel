@@ -36,7 +36,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
         return None
 
     callable_interface = await start_kernel_callable_interface(
-        send=from_interface, stopped=stopped.set, settings={"iopub_first_connection_only": True}
+        send=from_interface, stopped=stopped.set, settings={"Interface.iopub_send_first_connection_only": True}
     )
     interface = Interface.instance()
     async with LocalClient().start() as client:
