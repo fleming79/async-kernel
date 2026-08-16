@@ -54,16 +54,13 @@ Interface.classes.append(Session)
 
 
 class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUnsafeMultipleInheritance]
-    session = traitlets.Instance(Session, ())
+    session: Fixed[Self, Session] = Fixed(lambda c: Session(session=c["owner"].session_id))
     "Provides messaging utilities."
 
     transport: traitlets.CaselessStrEnum[str] = traitlets.CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
     ).tag(config=True)
     "Transport for sockets."
-
-    session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].session.session)
-    ""
 
     _sockets: Fixed[Self, dict[Channel, ZMQPollSocket]] = Fixed(dict)
 

@@ -486,6 +486,8 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
                 )
                 c.send_message_no_reply(msg, ident)
                 self.log.debug("iopub_send: msg_type:%r %s", msg_type, msg_type)
+                if getattr(self, "_publish_to_first_connection_only", False):
+                    break
             except Exception as e:
                 self.log.exception("iopub_send failed for connection %r", c, exc_info=e)
 

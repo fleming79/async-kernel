@@ -64,7 +64,7 @@ def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
 class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     """The base for messaging between kernel interfaces and clients."""
 
-    session_id = Fixed(lambda _: str(uuid4()))
+    session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"]._session_id)
     "Used to identify this object as the `session` in a message header."
 
     bsession: Fixed[Self, bytes] = Fixed[Self, bytes](lambda c: c["owner"].session_id.encode())
@@ -72,8 +72,20 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
 
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
 
-    def __init__(self, caller: Caller | None = None, /, **kwargs) -> None:
+    def __init__(self, caller: Caller | None = None, /, session_id: str | NoValue = NoValue, **kwargs) -> None:  # pyright: ignore[reportInvalidTypeForm]
+        """Initialize the instance.
+
+        Args:
+            caller: The caller to use to run the interface.
+            send: The callback to send a serialized message.
+            session_id: The id to use for to identify the instance in `msg["header"]["session"]`, if a blank string is passed, the
+            **kwargs: Additional arguments to configure the instance.
+        """
         super().__init__(**kwargs)
+        # Set session using a temporary variable.
+        self._session_id = str(uuid4()) if session_id is NoValue else session_id
+        self.session_id  # noqa: B018
+        del self._session_id
         self.set_task_function(self.connection_task, caller=caller or Caller())
 
     async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
@@ -397,8 +409,7 @@ class BaseKernelClient(BaseMessage, Generic[T_interface_co]):
 class LocalClient(HasInterface[T_interface_co], BaseKernelClient[T_interface_co], Generic[T_interface_co]):
     """A connection for an interface running in the current process."""
 
-    connection: Fixed[Self, Connection[T_interface_co]] = Fixed(Connection)
-    session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"].connection.session_id)
+    connection: Fixed[Self, Connection[T_interface_co]] = Fixed(lambda c: Connection(session_id=c["owner"].session_id))
 
     @override
     async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
