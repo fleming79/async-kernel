@@ -158,15 +158,15 @@ class Test_zmq_Poll:
 
     async def test_poll_execute_states(self, caller: Caller):
         zmq_poll = ZMQPoll()
-        match = "Execution is only support while in context"
+        match = "Unable to execute"
         # Pre-running
         with pytest.raises(RuntimeError, match=match):
             zmq_poll.execute(lambda: 1 + 1)
         with pytest.raises(RuntimeError, match=match):
-            await zmq_poll.execute_async(lambda: 1 + 1)
+            await zmq_poll.aexecute(lambda: 1 + 1)
         # Running
         with zmq_poll:
-            assert (await zmq_poll.execute_async(lambda: 1 + 1)) == 2
+            assert (await zmq_poll.aexecute(lambda: 1 + 1)) == 2
             assert (zmq_poll.execute(lambda: 1 + 1)) == 2
         with pytest.raises(RuntimeError, match="stopped"), zmq_poll:
             None  # noqa: B018  # pyright: ignore[reportUnusedExpression]
@@ -174,11 +174,11 @@ class Test_zmq_Poll:
         with pytest.raises(RuntimeError, match=match):
             assert zmq_poll.execute(threading.current_thread) is zmq_poll.thread
         with pytest.raises(RuntimeError, match=match):
-            assert await zmq_poll.execute_async(threading.current_thread) is zmq_poll.thread
+            assert await zmq_poll.aexecute(threading.current_thread) is zmq_poll.thread
 
     async def test_poll_socket_states(self, caller: Caller):
         zmq_poll = ZMQPoll()
-        match = "Execution is only support while in context"
+        match = "Unable to execute"
         # Pre-running
         with pytest.raises(RuntimeError, match=match):
             zmq_poll.socket(zmq.SocketType.DEALER)
