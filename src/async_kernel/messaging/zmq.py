@@ -284,14 +284,17 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         async with self.iopub_subscribe(timeout=timeout):
             pass
         self.log.debug("Getting kernel info to configure session")
-        # The stdin socket is used to send the request to ensure the connection is established.
-        # This should help prevent input request messages from being silently discarded before
-        # the socket is connected. This primarily occurs when running tests that execute code
-        # requesting input. This can make the tests appear flaky for no apparent reason.
-        msg = await self.send_message(self.msg(MsgType.kernel_info_request, None, Channel.stdin))
+        msg = await self.kernel_info()
         adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
         if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
             self.session.adapt_version = adapt_version  # pragma: no cover
+        # Send a message on the stdin to ensure the connection is established.
+        # This should help prevent input request messages from being silently
+        # discarded before the DEALER is properly connected to the SERVER which
+        # was observed when running tests that execute code requesting input.
+        # An async kernel connection will send a reply to the message.
+        with anyio.move_on_after(timeout or 1.0):
+            await self.send_message(self.msg(MsgType.kernel_info_request, None, Channel.stdin))
         self.log.debug("Session config complete")
 
     @override
