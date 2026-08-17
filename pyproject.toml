@@ -76,7 +76,7 @@ docs = [
   "jupyterlab",
   "ipywidgets",
   "pandas",
-  "ruff>=0.15.17",
+  "ruff>=0.16.3",
 ]
 test = ["pytest-cov>=7.0.0", "pytest-mock", "pytest>=9,<10", "trio>=0.31.0"]
 uvloop = [
@@ -153,7 +153,7 @@ omit = [
 ]
 
 [tool.ruff]
-required-version = ">=0.15.16"
+required-version = ">=0.16.3"
 line-length = 120
 extend-exclude = ["_version.py", "**/asyncio_guest.py"]
 
@@ -204,7 +204,11 @@ ignore = [
   "D104", # Missing docstring in public package
   "D105", # Missing docstring in magic method
   "D107", # undocumented-public-init
-  "D419", #Docstring is empty
+  "D419", # Docstring is empty
+  "BLE001", # Do not catch blind exception
+  "S102", # Use of `exec` detected
+  "T100", # Use of debugger
+  "PLR0917", # Too many positional arguments
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -237,6 +241,7 @@ PC140 = "doesn't detect basedpyright as a typechecker" # Use a type checker
 MY = "Not using mypy yet"                              # Skip all MyPy
 RTD100 = "Using mkdocs not read the docs"
 PY007 = "Task runner - just use CI instead."
+SEC001 = 'zizmor'
 
 [tool.hatch.metadata]
 allow-direct-references = true

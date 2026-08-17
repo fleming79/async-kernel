@@ -478,7 +478,7 @@ class TestCaller:
         async def direct_func():
             ready.set()
             await proceed
-            time.sleep(0.1)
+            time.sleep(0.1)  # noqa: ASYNC251
 
         async def non_direct_func():
             ready.set()
@@ -588,7 +588,7 @@ class TestCaller:
             assert current_async_library() == anyio_backend
             n = random()
             if n < 0.2:
-                time.sleep(n / 10)
+                time.sleep(n / 10)  # noqa: ASYNC251
             elif n < 0.6:
                 await anyio.sleep(n / 10)
             return threading.current_thread()
@@ -872,7 +872,7 @@ class TestStartStopTask:
         async def f(started, stop):
             started()
             await stop
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
             return "ok"
 
         task = caller.create_start_stop_task(f)

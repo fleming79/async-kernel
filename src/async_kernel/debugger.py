@@ -482,9 +482,8 @@ class Debugger(HasInterface, LoggingConfigurable):
         """Handle an source message."""
         reply = {"type": "response", "request_seq": msg["seq"], "command": msg["command"]}
         if (path := Path(msg["arguments"].get("source", {}).get("path", "missing"))).is_file():
-            with path.open("r", encoding="utf-8") as f:
-                reply["success"] = True
-                reply["body"] = {"content": f.read()}
+            reply["success"] = True
+            reply["body"] = {"content": path.read_text()}
         else:
             reply["success"] = False
             reply["message"] = "source unavailable"

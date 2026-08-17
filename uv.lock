@@ -231,7 +231,7 @@ docs = [
     { name = "mkdocs-open-in-new-tab" },
     { name = "mkdocstrings", extras = ["python"] },
     { name = "pandas" },
-    { name = "ruff", specifier = ">=0.15.17" },
+    { name = "ruff", specifier = ">=0.16.3" },
 ]
 gui = [
     { name = "ipywidgets" },
@@ -245,7 +245,7 @@ gui = [
     { name = "mkdocstrings", extras = ["python"] },
     { name = "pandas" },
     { name = "pyside6-essentials", specifier = ">=6.10.2" },
-    { name = "ruff", specifier = ">=0.15.17" },
+    { name = "ruff", specifier = ">=0.16.3" },
 ]
 test = [
     { name = "pytest", specifier = ">=9,<10" },
