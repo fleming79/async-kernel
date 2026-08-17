@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 import zmq
 from aiologic import BinarySemaphore, BusyResourceError
 from typing_extensions import override
-from zmq.backend import zmq_poll
+from zmq.backend import zmq_poll as _zmq_poll
 
 from async_kernel import Caller, utils
 from async_kernel.common import Fixed
@@ -150,13 +150,24 @@ T_key = tuple[Any | ZMQPollSocket, int]
 class ZMQPoll:
     """A [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.
 
-    This event loop is synchronous and is intended for quick message dispatch to separate threads
-    for handling. It provides thread-safe execution and manages its own custom sockets which use
-    the same executor for setting attributes and calling methods.
+    When a `(socket, flags) -> handler` mapping context manager is used [ZMQPoll.event_handler][]
+    `handler` is called with the socket and event when the event occurs on the socket. The
+    callback occurs in the zmq poll thread. [async_kernel.caller.Caller][] is recommended to
+    to scheduling code execution in different threads.
+
+    Only [ZMQPollSocket][] sockets created using the [ZMQPoll.socket][] factory function are
+    allowed.
+
+    The methods [ZMQPoll.execute][] and the async version [ZMQPoll.aexecute][] are provided
+    to executed code in the zmq_poll thread, which is useful when creating and configuring
+    sockets to reduce thread switching.
     """
 
     stopped: Fixed[Self, ProtectedPending] = Fixed(ProtectedPending)
+    """Set when the poll thread event has stopped."""
+
     sockets: Fixed[Self, set[ZMQPollSocket]] = Fixed(set)
+    """The sockets currently registered with this instance."""
 
     def __init__(self) -> None:
 
@@ -235,7 +246,7 @@ class ZMQPoll:
                 sock.recv()
 
             def do_execute() -> None:
-                """Execute pending items added by the `execute` and `execute_async` methods."""
+                """Execute pending items added by the `execute` and `aexecute` methods."""
                 while execute:
                     md = (pen := execute.popleft()).metadata
                     try:
@@ -263,7 +274,7 @@ class ZMQPoll:
                             do_execute()
                             continue
                         try:
-                            for k in zmq_poll(sockets, timeout=-1):
+                            for k in _zmq_poll(sockets, timeout=-1):
                                 try:
                                     handlers[k](*k)  # pyright: ignore[reportArgumentType]
                                 except KeyError:
@@ -317,6 +328,7 @@ class ZMQPoll:
         self.log.debug("ZMQPoll event loop started")
 
     def validate_socket(self, sock: ZMQPollSocket | Any) -> ZMQPollSocket:
+        """Check `sock` is correctly registered."""
         if sock not in self.sockets:
             msg = f"Invalid socket detected! {sock=}"
             raise ValueError(msg)
@@ -334,7 +346,7 @@ class ZMQPoll:
         return self.validate_socket(self.execute(self._zmq_context.socket, socket_type))
 
     def execute(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Execute `func` in the thread waiting for the result synchronously."""
+        """Execute `func` in the 'zmq_poll' thread waiting for the result synchronously."""
         if hasattr(self, "thread"):
             if threading.current_thread() is self.thread:
                 return func(*args, **kwargs)
@@ -346,17 +358,17 @@ class ZMQPoll:
                 finally:
                     pen.metadata.clear()
                     del pen
-        msg = f"Unable to execute {func=} in {self}. Execution is only support while in context."
+        msg = f"Unable to execute {func=} in {self}. Execution is only supported while in context."
         raise RuntimeError(msg)
 
-    async def execute_async(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Execute `func` in the thread waiting for the result asynchronously."""
+    async def aexecute(self, func: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
+        """Execute `func` in the 'zmq_poll' thread waiting for the result asynchronously."""
         if hasattr(self, "thread"):
             self._execute.append(pen := Pending[T](func=func, args=args, kwargs=kwargs))
             if not self.stopped.done():
                 self._wake()
                 return await pen
-        msg = f"Unable to execute {func=} in {self}. Execution is only support while in context."
+        msg = f"Unable to execute {func=} in {self}. Execution is only supported while in context."
         raise RuntimeError(msg)
 
     @contextmanager
@@ -370,11 +382,9 @@ class ZMQPoll:
         count: tuple[int, Callable[[], Any]] | None = None,
         canceller: Callable[[], Any] | NoValue | None = NoValue,
     ) -> Generator[None, Any, None]:
-        """A context manager where `handler` is called with the event number when it occurs for `sock`.
+        """A context manager where `handler` is called in the 'zmq_poll' thread with the event number when it occurs for `sock`.
 
-        Only one `handler` is allowed per `(socket, flags)` combination. If this context manager is entered
-        inside a caller managed task (call_soon, etc) and the ZMQPoll is stopped, the associated pending
-        will be cancelled.
+        Only one `handler` is allowed per `(socket, flags)` combination.
 
         Args:
             sock: A zmq socket or a IO style object with a `fileno`.
@@ -388,12 +398,16 @@ class ZMQPoll:
                 The callback could be an `event.set` to release the context.
             canceller: A callback to use on the event the poll is stopped. The default cancellation
                 behavior is to cancel the pending returned by [async_kernel.caller.Caller.current_pending][].
-                Set to None to disable cancellation support. This is fine when this context manager is inside
-                the context of this object.
+                Set to `None` to disable cancellation support. This is safe when this context manager is
+                inside the context of this instance.
+
+        Raises:
+            BusyResourceError: If the `(sock, flags)` combination is already in use.
+            RuntimeError: If the default canceller can not be created.
 
         Tip:
-            The handler is called inside a dedicated thread which may have been marked using
-            [async_kernel.utils.mark_thread_pydev_do_not_trace][] which disables debug breakpoints.
+            The zmq_poll thread normally disables debugging in the zmq_poll thread so inserting breakpoints
+            in the event handler may interfere with debugging.
         """
         assert not self.stopped.done()
         if canceller is NoValue:

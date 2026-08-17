@@ -211,7 +211,7 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
                 self._sockets[channel] = socket
                 socket.bind(addr)
 
-        await self.zmq_poll.execute_async(bind_sockets)
+        await self.zmq_poll.aexecute(bind_sockets)
 
     @override
     def connection_info(self) -> str:
@@ -277,7 +277,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
                 self._sockets[channel] = socket
             return socket
 
-        return await self.zmq_poll.execute_async(open_socket)
+        return await self.zmq_poll.aexecute(open_socket)
 
     async def _establish_connection(self, timeout: float | None) -> None:
         # Wait for welcome
