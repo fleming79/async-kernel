@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.connection.base import LocalClient
 from async_kernel.interface import Interface
 from async_kernel.interface.ip_app import IPApp
+from async_kernel.messaging.base import LocalClient
 from tests import utils
 
 if TYPE_CHECKING:

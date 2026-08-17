@@ -7,9 +7,9 @@ from aiologic import BinarySemaphore
 
 from async_kernel.common import import_item
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.connection.base import Connection
 from async_kernel.interface import Interface
 from async_kernel.kernelspec import make_argv
+from async_kernel.messaging.base import Connection
 from async_kernel.typing import Channel, T
 
 if TYPE_CHECKING:

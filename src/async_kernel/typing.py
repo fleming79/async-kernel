@@ -23,8 +23,8 @@ from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, ove
 if TYPE_CHECKING:
     import datetime
 
-    from async_kernel.connection.base import PendingMessage
     from async_kernel.interface import Interface
+    from async_kernel.messaging.base import PendingMessage
     from async_kernel.shell import BaseShell
     from async_kernel.shell.ipshell import IPShell
 

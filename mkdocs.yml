@@ -178,11 +178,11 @@ nav:
       - "comm": reference/comm.md
       - "command": reference/command.md
       - "common": reference/common.md
-      - "connection": reference/connection.md
       - "debugger": reference/debugger.md
       - "interface": reference/interface.md
       - "kernel": reference/kernel.md
       - "kernelspec": reference/kernelspec.md
+      - "messaging": reference/messaging.md
       - "shell": reference/shell.md
       - "ipshell": reference/ipshell.md
       - "pending": reference/pending.md

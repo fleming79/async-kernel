@@ -17,8 +17,8 @@ from async_kernel.typing import Channel, Content, Message, MsgType, RunMode, Tag
 from tests import utils
 
 if TYPE_CHECKING:
-    from async_kernel.connection.base import BaseClient
     from async_kernel.interface import Interface
+    from async_kernel.messaging.base import BaseClient
     from async_kernel.shell import IPShell
 
     ClientType = BaseClient[Interface[IPShell]]

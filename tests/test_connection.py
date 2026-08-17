@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from async_kernel.connection.base import BaseClient, Connection
-from async_kernel.connection.zmq import ZMQClient, ZMQConnection
+from async_kernel.messaging.base import BaseClient, Connection
+from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
 from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:

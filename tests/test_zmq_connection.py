@@ -15,7 +15,7 @@ from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
-    from async_kernel.connection.zmq import ZMQClient
+    from async_kernel.messaging.zmq import ZMQClient
     from async_kernel.shell import IPShell
 
 

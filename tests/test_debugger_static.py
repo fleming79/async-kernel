@@ -9,7 +9,7 @@ from async_kernel import Kernel
 from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:
-    from async_kernel.connection.zmq import ZMQClient
+    from async_kernel.messaging.zmq import ZMQClient
 
 
 @pytest.mark.parametrize("command", ["debugInfo", "inspectVariables", "modules", "dumpCell", "source"])

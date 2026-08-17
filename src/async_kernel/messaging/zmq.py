@@ -1,4 +1,4 @@
-"""ZMQ messaging objects for both Connection and Client."""
+"""ZMQ messaging objects using zmq sockets."""
 
 from __future__ import annotations
 
@@ -22,10 +22,10 @@ from traitlets.config import Config
 from typing_extensions import override
 
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
-from async_kernel.connection.base import BaseClient, BaseMessage, Connection
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
 from async_kernel.kernelspec import make_argv
+from async_kernel.messaging.base import BaseClient, BaseMessage, Connection
 from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_interface_co
 
 if TYPE_CHECKING:

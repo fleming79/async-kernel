@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Literal
 import pytest
 from aiologic.lowlevel import create_async_event, create_async_waiter
 
-from async_kernel.connection.zmq import ZMQClient
+from async_kernel.messaging.zmq import ZMQClient
 from async_kernel.typing import Channel, Content, MsgType
 from tests import utils
 

@@ -42,8 +42,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from async_kernel.comm import CommManager
-    from async_kernel.connection.base import Connection, PendingMessage
     from async_kernel.kernel import Kernel
+    from async_kernel.messaging.base import Connection, PendingMessage
     from async_kernel.pending import ProtectedPending
 
 __all__ = ["HasInterface", "Interface"]
@@ -217,7 +217,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
 
     @traitlets.default("autostart_connections")
     def _default_autostart_connections(self) -> list[str]:
-        return ["async_kernel.connection.zmq.ZMQConnection"] if sys.platform != "emscripten" else []
+        return ["async_kernel.messaging.zmq.ZMQConnection"] if sys.platform != "emscripten" else []
 
     @traitlets.default("shell_class")
     def _default_shell_class(self):
@@ -439,7 +439,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         from async_kernel.compat.attr_docs import get_attr_docs  # noqa: PLC0415
 
         if sys.platform != "emscripten":
-            from async_kernel.connection.zmq import ZMQMessage  # noqa: PLC0415
+            from async_kernel.messaging.zmq import ZMQMessage  # noqa: PLC0415
 
             self.classes.append(ZMQMessage)
 

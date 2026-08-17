@@ -8,7 +8,7 @@ import async_kernel.utils
 from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:
-    from async_kernel.connection.zmq import ZMQClient
+    from async_kernel.messaging.zmq import ZMQClient
 
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
     import debugpy.server.api
