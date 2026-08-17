@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import enum
+import typing
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, final
+from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, final, runtime_checkable
 
+import traitlets
 from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, override
 
 if TYPE_CHECKING:
     import datetime
 
-    from async_kernel.interface import BaseInterface
+    from async_kernel.interface import Interface
+    from async_kernel.messaging.base import PendingMessage
     from async_kernel.shell import BaseShell
     from async_kernel.shell.ipshell import IPShell
 
@@ -49,17 +52,17 @@ P = ParamSpec("P")
 
 T_shell_co = TypeVar("T_shell_co", covariant=True, bound="BaseShell", default="BaseShell")
 T_ipshell_co = TypeVar("T_ipshell_co", covariant=True, bound="IPShell", default="IPShell")
-T_interface_co = TypeVar("T_interface_co", covariant=True, bound="BaseInterface", default="BaseInterface")
+T_interface_co = TypeVar("T_interface_co", covariant=True, bound="Interface", default="Interface")
 
 
 class Backend(enum.StrEnum):
     """An enum of library names corresponding to anyio."""
 
     asyncio = "asyncio"
-    "An asyncio style event loop."
+    """An asyncio style event loop."""
 
     trio = "trio"
-    "A trio style event loop."
+    """A trio style event loop."""
 
 
 @final
@@ -67,13 +70,13 @@ class Hosts(enum.StrEnum):
     """An enum of host names that are available in [async_kernel.event_loop.run.run][]."""
 
     tk = "tk"
-    "An eventloop for [tkinter][]."
+    """An eventloop for [tkinter][]."""
 
     qt = "qt"
-    "An event loop for [Qt](https://wiki.qt.io/Qt_for_Python)."
+    """An event loop for [Qt](https://wiki.qt.io/Qt_for_Python)."""
 
     custom = "custom"
-    "A custom host."
+    """A custom host."""
 
     @classmethod
     def from_gui(cls, gui: str | None, /) -> Hosts | None:
@@ -170,13 +173,13 @@ class RunMode(enum.StrEnum):
         return items
 
     queue = "queue"
-    "Run the message handler using [async_kernel.caller.Caller.queue_call][]."
+    """Run the message handler using [async_kernel.caller.Caller.queue_call][]."""
 
     task = "task"
-    "Run the message handler using [async_kernel.caller.Caller.call_soon][]."
+    """Run the message handler using [async_kernel.caller.Caller.call_soon][]."""
 
     thread = "thread"
-    "Run the message handler using [async_kernel.caller.Caller.to_thread][]."
+    """Run the message handler using [async_kernel.caller.Caller.to_thread][]."""
 
 
 class MsgType(enum.StrEnum):
@@ -186,83 +189,89 @@ class MsgType(enum.StrEnum):
     """
 
     kernel_info_request = "kernel_info_request"
-    "[async_kernel.kernel.Kernel.kernel_info_request][]"
+    """[async_kernel.kernel.Kernel.kernel_info_request][]"""
 
     comm_info_request = "comm_info_request"
-    "[async_kernel.kernel.Kernel.comm_info_request][]"
+    """[async_kernel.kernel.Kernel.comm_info_request][]"""
 
     execute_request = "execute_request"
-    "[async_kernel.kernel.Kernel.execute_request][]"
+    """[async_kernel.kernel.Kernel.execute_request][]"""
 
     complete_request = "complete_request"
-    "[async_kernel.kernel.Kernel.complete_request][]"
+    """[async_kernel.kernel.Kernel.complete_request][]"""
 
     is_complete_request = "is_complete_request"
-    "[async_kernel.kernel.Kernel.is_complete_request][]"
+    """[async_kernel.kernel.Kernel.is_complete_request][]"""
 
     inspect_request = "inspect_request"
-    "[async_kernel.kernel.Kernel.inspect_request][]"
+    """[async_kernel.kernel.Kernel.inspect_request][]"""
 
     history_request = "history_request"
-    "[async_kernel.kernel.Kernel.history_request][]"
+    """[async_kernel.kernel.Kernel.history_request][]"""
 
     comm_open = "comm_open"
-    "[async_kernel.kernel.Kernel.comm_open][]"
+    """[async_kernel.kernel.Kernel.comm_open][]"""
 
     comm_msg = "comm_msg"
-    "[async_kernel.kernel.Kernel.comm_msg][]"
+    """[async_kernel.kernel.Kernel.comm_msg][]"""
 
     comm_close = "comm_close"
-    "[async_kernel.kernel.Kernel.comm_close][]"
+    """[async_kernel.kernel.Kernel.comm_close][]"""
 
     # Control
     interrupt_request = "interrupt_request"
-    "[async_kernel.kernel.Kernel.interrupt_request][] (control channel only)"
+    """[async_kernel.kernel.Kernel.interrupt_request][] (control channel only)"""
 
     shutdown_request = "shutdown_request"
-    "[async_kernel.kernel.Kernel.shutdown_request][] (control channel only)"
+    """[async_kernel.kernel.Kernel.shutdown_request][] (control channel only)"""
 
     debug_request = "debug_request"
-    "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
+    """[async_kernel.kernel.Kernel.debug_request][] (control channel only)"""
 
     create_subshell_request = "create_subshell_request"
-    "[async_kernel.kernel.Kernel.create_subshell_request][] (control channel only)"
+    """[async_kernel.kernel.Kernel.create_subshell_request][] (control channel only)"""
 
     delete_subshell_request = "delete_subshell_request"
-    "[async_kernel.kernel.Kernel.delete_subshell_request][] (control channel only)"
+    """[async_kernel.kernel.Kernel.delete_subshell_request][] (control channel only)"""
 
     list_subshell_request = "list_subshell_request"
-    "[async_kernel.kernel.Kernel.debug_request][] (control channel only)"
+    """[async_kernel.kernel.Kernel.debug_request][] (control channel only)"""
 
     # Reverse messaging (kernel -> client)
     input_request = "input_request"
-    "A message sent from the kernel interface to a client asking for raw input."
+    """A message sent from the kernel interface to a client asking for raw input."""
 
     # iopub messages (kernel -> client
 
     iopub_welcome = "iopub_welcome"
-    "A welcome message on the iopub channel for new iopub channel subscriptions."
+    """A welcome message on the iopub channel for new iopub channel subscriptions."""
 
     iopub_status = "status"
-    "An iopub message about a handlers status which can be 'busy' or 'idle'."
+    """An iopub message about a handlers status which can be 'busy' or 'idle'."""
 
     iopub_execute_input = "execute_input"
-    "An iopub message with detail of an execute request."
+    """An iopub message with detail of an execute request."""
 
     iopub_execute_result = "execute_result"
-    "An iopub message with for the global display hook. Generally the last executed line of an execute request."
+    """An iopub message with for the global display hook. Generally the last executed line of an execute request."""
 
     iopub_error = "error"
-    "An iopub message for an error."
+    """An iopub message for an error."""
 
     iopub_stream = "stream"
-    "Stream data such as stdout and stderr."
+    """Stream data such as stdout and stderr."""
 
     iopub_display_data = "display_data"
-    "An iopub message with display output data."
+    """An iopub message with display output data."""
+
+    iopub_update_display_data = "iopub_update_display_data"
+    """An iopub message to update display data."""
 
     iopub_clear_output = "clear_output"
-    "An iopub display message instructing the associated display to clear."
+    """An iopub display message instructing the associated display to clear."""
+
+    debug_event = "debug_event"
+    """An event published by an attached debug adapter."""
 
     # Reply messages (kernel -> client)
     kernel_info_reply = "kernel_info_reply"
@@ -293,11 +302,26 @@ class MsgType(enum.StrEnum):
 
     # Reverse reply (client -> kernel)
     input_reply = "input_reply"
-    "A reply sent from the client to a kernel interface corresponding to an input request."
+    """A reply sent from the client to a kernel interface corresponding to an input request."""
 
 
 MsgTypeNoReply = (MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close)
 
+IOPubMsgTypeAlias = Literal[
+    MsgType.iopub_welcome,
+    MsgType.iopub_status,
+    MsgType.iopub_execute_input,
+    MsgType.iopub_execute_result,
+    MsgType.iopub_error,
+    MsgType.iopub_stream,
+    MsgType.iopub_display_data,
+    MsgType.iopub_clear_output,
+    MsgType.debug_event,
+    MsgType.comm_open,
+    MsgType.comm_close,
+    MsgType.comm_msg,
+]
+"""An alias of the literal MsgTypes that can be published on the iopub channel."""
 
 T_fsb = TypeVar("T_fsb", int, float, str, bool)
 
@@ -342,8 +366,7 @@ class Tags(enum.StrEnum):
         raise ValueError(msg)
 
     raises_exception = "raises-exception"
-    """
-    Indicates the cell should expect an exception to be raised. 
+    """Indicates the cell should expect an exception to be raised. 
     
     Notes:
         - When an exception is raised, stop_on_error is False/
@@ -385,6 +408,68 @@ class CallerState(enum.Enum):
     stopped = enum.auto()
 
 
+BuffersType = list[bytes | memoryview]
+
+
+class MessageMeta(typing._ProtocolMeta, traitlets.MetaHasTraits):  # pyright: ignore[reportUnsafeMultipleInheritance, reportPrivateUsage]
+    # Protocol has a metaclass so we need to merge it with traitlets to make it compatible.
+    pass
+
+
+@runtime_checkable
+class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
+    """The protocol used by a connection and client to send data to the opposite side.
+
+    The data transmission is designed to be symmetric.
+
+    `ident` (a list of bytes) is provided for routing the message, in normal usage this
+    is the `session_id`. `ident` is also used for iopub messages to provide one or more `topics`.
+    """
+
+    def msg(
+        self,
+        msg_type: str | MsgType,
+        content: T | None,
+        channel: Channel,
+        *,
+        parent: Message | dict[str, Any] | None = None,
+        header: MsgHeader | dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        buffers: BuffersType | None = None,
+    ) -> Message[T]:
+        """Create a new message."""
+        ...
+
+    def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The method where incoming messages are handled."""
+
+    def handle_reply(self, msg: Message) -> None:
+        """A handler for relies to requests that originated from this object."""
+
+    def send_message(
+        self,
+        msg: Message,
+        ident: bytes | list[bytes] | None = None,
+    ) -> PendingMessage[Content]:
+        """Sends the message to the opposite side and return a PendingMessage."""
+        ...
+
+    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType | None = None) -> None:
+        """Send a reply to a job (a message of msg_type ending in '_request')."""
+
+    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The method that does the actual data transmission to the opposite side."""
+
+    def send_message_no_reply(self, msg: Message, ident: bytes | list[bytes] | None = None) -> None:
+        """Sends a message without expecting a reply.
+
+        This could be of two categories:
+            1. The reply to a request.
+            2. A message of a type that does not have a reply such as comm_open, comm_close, comm_msg.
+        """
+        ...
+
+
 class MsgHeader(TypedDict):
     """A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."""
 
@@ -408,16 +493,16 @@ class Message(TypedDict, Generic[T]):
     """A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format)."""
 
     channel: Channel
-    "The channel of the message."
+    """The channel of the message."""
 
     header: MsgHeader
-    "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)"
+    """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)"""
 
     parent_header: MsgHeader | None
-    "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"
+    """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"""
 
     metadata: dict[str, Any]
-    "[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"
+    """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"""
 
     content: T | Content
     """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
@@ -425,28 +510,31 @@ class Message(TypedDict, Generic[T]):
     See also:
         - [ExecuteContent][]
     """
-    buffers: list[bytearray | bytes]
+    buffers: BuffersType
     ""
 
 
 class Job(TypedDict, Generic[T]):
-    """A `Message` bundle."""
+    """A `Message` request bundle."""
 
     msg: Message[T]
-    "The message received over the socket."
+    """The message received over the socket."""
 
-    ident: bytes | list[bytes]
-    "The ident associated with the message and its origin."
+    ident: list[bytes]
+    """The ident associated with the message and its origin."""
+
+    owner: Callable[[], MessageProtocol]
+    """A callable that returns the object from which a message originated."""
 
     received_time: float
-    "The time the message was received."
+    """The time the message was received."""
 
 
 class ExecuteContent(TypedDict):
     """[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
 
     code: str
-    "The code to execute."
+    """The code to execute."""
     silent: bool
     ""
     store_history: bool
@@ -485,42 +573,38 @@ class RunSettings(TypedDict):
     """A dict of settings to use with [async_kernel.event_loop.run][]."""
 
     backend: NotRequired[Backend | Literal["asyncio", "trio"]]
-    "The backend to use for the caller."
+    """The backend to use for the caller."""
 
     backend_options: NotRequired[dict | None]
-    """
-    The backend options to specify for [anyio.run][] (or `start_guest_run` when a host is specified).
+    """The backend options to specify for [anyio.run][] (or `start_guest_run` when a host is specified).
     
     Tip:
         When there is no host and the backend is asyncio. 'loop_factory' can be specified as a function
         or importable path like `'asyncio.new_event_loop'`.
     """
 
-    host: NotRequired[Hosts | None | Literal["tk", "qt"]]
-    "The type of host where the backend will run."
+    host: NotRequired[Hosts | Literal["tk", "qt"] | None]
+    """The type of host where the backend will run."""
 
-    "Options to use when starting the host."
     host_options: NotRequired[dict | None]
+    """Options to use when starting the host."""
 
 
 class CallerCreateOptions(RunSettings):
     """Options to use when creating an instance of a [Caller][async_kernel.caller.Caller]."""
 
     name: NotRequired[str]
-    "The name for the new caller instance."
+    """The name for the new caller instance."""
 
     no_debug: NotRequired[bool]
-    "Disable debugpy in the thread if a new thread is created."
+    """Disable debugpy in the thread if a new thread is created."""
 
 
 DebugMessage = dict[str, Any]
-"""
-A TypeAlias for a debug message.
-"""
+"""A TypeAlias for a debug message."""
 
 Content = dict[str, Any]
-"""
-A TypeAlias for the content in `Message`.
+"""A TypeAlias for the content in `Message`.
 
 Notes:
     - The content of a message handler can provide 'buffers'. When present, 
@@ -528,6 +612,4 @@ Notes:
 """
 
 HandlerType = Callable[[Job], Awaitable[Content | None]]
-"""
-A TypeAlias for the handler of message requests.
-"""
+"""A TypeAlias for the handler of message requests."""

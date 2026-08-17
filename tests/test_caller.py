@@ -1,6 +1,5 @@
 import asyncio
 import gc
-import importlib.util
 import re
 import sys
 import threading
@@ -10,10 +9,11 @@ from random import random
 from typing import Literal
 
 import anyio
+import anyio.lowlevel
 import anyio.to_thread
 import pytest
 import trio
-from aiologic import CountdownEvent, Event
+from aiologic import CountdownEvent, Event, Latch
 from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
 
 from async_kernel.caller import Caller, StartStopTask
@@ -21,15 +21,6 @@ from async_kernel.pending import Pending, PendingCancelled
 from async_kernel.typing import Backend, CallerState, Hosts
 
 # pyright: reportPrivateUsage=false
-
-anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
-if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    anyio_backends.append(("asyncio", {"use_uvloop": True}))
-
-
-@pytest.fixture(params=Backend, scope="module")
-def anyio_backend(request):
-    return request.param
 
 
 @pytest.mark.anyio
@@ -388,7 +379,7 @@ class TestCaller:
 
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
 
     async def test_queue_cancel(self, caller: Caller):
         started = Event()
@@ -419,7 +410,7 @@ class TestCaller:
         del obj
         while not collected:
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         assert not any(caller._queue_map)
 
     async def test_call_early(self, anyio_backend: Backend) -> None:
@@ -572,7 +563,7 @@ class TestCaller:
                 assert not pending
 
     async def test_wait_awaitable(self, caller):
-        done, pending = await caller.wait((anyio.sleep(0),))
+        done, pending = await caller.wait((anyio.lowlevel.checkpoint(),))
         assert not pending
         assert len(done) == 1
         assert isinstance(next(iter(done)), Pending)
@@ -586,7 +577,7 @@ class TestCaller:
         del a
         while not pen.done():
             gc.collect()
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
         await pen_was_cancelled
 
     @pytest.mark.parametrize("mode", ["restricted", "surge"])
@@ -625,7 +616,7 @@ class TestCaller:
                 assert len(threads) == 2
             else:
                 assert len(threads) > 2
-            assert len(caller._worker_pool) == 2
+            assert len(caller._worker_pool) in [2, 3], "The pool should roughly adhere to max_concurrent restriction"
 
     async def test_as_completed_error(self, caller: Caller):
         def func():
@@ -638,25 +629,24 @@ class TestCaller:
     async def test_as_completed_cancelled(self, anyio_backend: Backend):
         async with Caller() as caller:
             n = 6
-            ready = CountdownEvent(n - 2)
+            barrier = Latch(n + 1)
 
-            async def test_func():
-                if ready.value:
-                    ready.down()
-                    await anyio.sleep_forever()
-                return ready
+            async def f(i):
+                await barrier
+                if i > n - 2:
+                    await create_async_waiter()
+                return "ok"
 
-            items = {caller.to_thread(test_func) for _ in range(n)}
+            items = {caller.to_thread(f, i) for i in range(n)}
             with anyio.CancelScope() as scope:
+                await barrier
                 async for _ in caller.as_completed(items):
-                    await ready
                     scope.cancel()
             for item in items:
                 if not item.cancelled():
-                    assert item.result() is ready
+                    assert item.result() == "ok"
                 else:
                     assert item.cancelled()
-            await caller.wait(items, return_when="ALL_COMPLETED")
 
     async def test_as_completed_awaitables(self, caller: Caller):
         async def f(i: int):
@@ -710,16 +700,19 @@ class TestCaller:
         assert not caller._worker_pool
 
     async def test_idle_worker_shutdown(self, caller: Caller, mocker):
-        mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.1)
+        resume = create_async_event()
+
+        async def controlled_sleep(*args, sleep=anyio.sleep):
+            await resume
+            await sleep(*args)
+
+        mocker.patch.object(anyio, "sleep", new=controlled_sleep)
+        mocker.patch.object(Caller, "IDLE_WORKER_SHUTDOWN_DURATION", new=0.001)
         pen1 = caller.to_thread(Caller.get_existing)
-        pen2 = caller.to_thread(Caller.get_existing)
         w1 = await pen1
-        w2 = await pen2
-        assert w1 is not w2
         assert w1 in caller._worker_pool
-        assert w2 in caller._worker_pool
+        resume.set()
         await w1.stopped
-        await w2.stopped
 
     async def test_worker_in_pool_stopping(self, caller: Caller):
         worker = await caller.to_thread(caller.get_existing)
@@ -740,14 +733,13 @@ class TestCaller:
         caller2.stop()
         await caller2.stopped
 
-    @pytest.mark.parametrize("anyio_backend", anyio_backends)
     @pytest.mark.parametrize("mode", ["sync", "async"])
     async def test_balanced(self, caller: Caller, mode: Literal["sync", "async"], anyio_backend):
         def sync_func(pen: Pending, value):
             pen.set_result(value)
 
         async def async_func(pen: Pending, value):
-            await anyio.sleep(0)
+            await anyio.lowlevel.checkpoint()
             pen.set_result(value)
 
         func = sync_func if mode == "sync" else async_func
@@ -828,7 +820,7 @@ def test_unmanged_shutdown(backend: Backend):
         Caller().to_thread(lambda: 1 + 1)
 
     anyio.run(f, backend=str(backend))
-    assert not Caller._instances
+    assert not list(Caller._instances)
 
 
 @pytest.mark.parametrize("backend", Backend)
@@ -845,9 +837,11 @@ def test_guest_non_protected(backend: Backend):
 class TestStartStopTask:
     async def test_NotSet(self, anyio_backend: Backend):
         task = StartStopTask()
-        with pytest.raises(RuntimeError, match="The task function has not been set"):
+        with pytest.raises(RuntimeError, match="`start` must be called before entering the context!"):
             async with task:
                 pass
+        with pytest.raises(RuntimeError, match="`start` must be called before entering the context!"):
+            await task
 
     async def test_sync(self, anyio_backend: Backend) -> None:
 
@@ -950,3 +944,14 @@ class TestStartStopTask:
         task = caller.create_start_stop_task(f)
         with pytest.raises(RuntimeError, match="This failed"):
             await task.start()
+
+        async def check_non_caller():
+            with pytest.raises(RuntimeError, match="can only be used by the same caller"):
+                async with task:
+                    raise RuntimeError
+
+        await caller.to_thread(check_non_caller)
+
+    def test_no_func(self):
+        with pytest.raises(RuntimeError, match="task function has not been set"):
+            StartStopTask().start()

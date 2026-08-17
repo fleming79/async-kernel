@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from async_kernel.interface.zmq import ZMQInterface
+from async_kernel.interface import Interface
 from async_kernel.kernel import Kernel
 from async_kernel.shell import IPShell
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 async def test_subclass(anyio_backend: Backend):
 
-    class MyInterface(ZMQInterface[IPShell]):
+    class MyInterface(Interface[IPShell]):
         pass
 
     class ShellSubclass(IPShell):
@@ -21,7 +21,7 @@ async def test_subclass(anyio_backend: Backend):
     class MyKernel(Kernel[MyInterface, IPShell]):
         pass
 
-    async with MyInterface(kernel_class=MyKernel, shell_class=ShellSubclass) as interface:
+    async with MyInterface(kernel_class=MyKernel, shell_class=ShellSubclass).start() as interface:
         assert isinstance(interface, MyInterface)
         assert isinstance(interface.kernel, MyKernel)
         assert isinstance(interface.kernel.shell, ShellSubclass)

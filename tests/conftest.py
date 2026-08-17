@@ -1,27 +1,17 @@
-import asyncio
-import importlib.util
 import logging
 import os
-import subprocess
 import sys
-import threading
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Literal
 
-import anyio
 import pytest
-import traitlets.config
-import zmq
-from aiologic.lowlevel import current_async_library
-from jupyter_client.asynchronous.client import AsyncKernelClient
 
 import async_kernel
-from async_kernel import Caller
-from async_kernel.interface.zmq import ZMQInterface
-from async_kernel.kernel import Kernel
-from async_kernel.kernelspec import make_argv
-from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MsgHeader, MsgType
-from tests import utils
+from async_kernel import Caller, Kernel
+from async_kernel.interface import Interface
+from async_kernel.messaging import LocalClient
+from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
+from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
 
 if TYPE_CHECKING:
     import pathlib
@@ -29,168 +19,80 @@ if TYPE_CHECKING:
 
 assert "IPython" not in sys.modules
 
-from async_kernel.interface.ip_app import IPApp  # noqa: E402
-
-if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
-    params = [pytest.param(("asyncio", {"use_uvloop": True}), id="asyncio+uvloop")]
-else:
-    params = [pytest.param(("asyncio", {"use_uvloop": False}), id="asyncio")]
-
-debug = False
 
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
-    debug = True
+    async_kernel.utils.PYTEST_LOG_CLI_DEBUG = True
+    os.environ.setdefault("PYTEST_LOG_CLI_DEBUG", "1")
     logging.basicConfig(level=10)
 
 
 @pytest.hookimpl
 def pytest_configure(config):
-    global debug  # noqa: PLW0603
+
     if config.getini("log_cli_level") == "DEBUG":
-        debug = True
-    if debug:
-        traitlets.config.Application.log_level.default_value = 10  # pyright: ignore[reportAttributeAccessIssue]
+        async_kernel.utils.PYTEST_LOG_CLI_DEBUG = True
+        os.environ.setdefault("PYTEST_LOG_CLI_DEBUG", "1")
         logging.basicConfig(level=10)
 
 
-def check_anyio_backend(anyio_backend):
-    """Checks the running backend is loaded."""
-    assert current_async_library() == anyio_backend[0]
-    if anyio_backend[0] == "asyncio":
-        loop = asyncio.get_running_loop()
-        if anyio_backend[1]["use_uvloop"]:
-            if sys.platform == "win32":
-                import winloop  # noqa: PLC0415
-
-                assert isinstance(loop, winloop.Loop)
-            else:
-                import uvloop  # noqa: PLC0415
-
-                assert isinstance(loop, uvloop.Loop)
-        else:
-            assert isinstance(loop, asyncio.BaseEventLoop)
+# anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
+# if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
+#     anyio_backends.append(("asyncio", {"use_uvloop": True}))
 
 
-@pytest.fixture(params=params, scope="module")
+@pytest.fixture(params=[Backend.asyncio, Backend.trio], scope="module")
 def anyio_backend(request):
     return request.param
 
 
-@pytest.fixture(scope="module")
-def transport():
-    return "ipc" if sys.platform == "linux" else "tcp"
-
-
-@pytest.fixture(scope="module", params=["MainThread", "ShellThread"])
-async def kernel(anyio_backend, transport: str, request, tmp_path_factory):
-    # Set a blank connection_file
-    connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
-    os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
-
-    # We test both `IPApp` and `ZMQInterface` but doesn't warrant separate tests
-    interface_class = IPApp if anyio_backend[0] == "asyncio" else ZMQInterface
-    interface = (interface_class)(connection_file=connection_file.as_posix(), transport=transport)
-    if debug:
-        interface.log_level = 10
-    if request.param == "MainThread":
-        async with interface:
-            await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
-            assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
-            yield interface.kernel
-
-    else:
-        thread = threading.Thread(target=interface.start, name="ShellThread")
-        thread.start()
-        await interface.started
-        assert os.environ["MPLBACKEND"] == utils.MATPLOTLIB_INLINE_BACKEND
-        await interface.kernel.caller.call_soon(check_anyio_backend, anyio_backend)
-        try:
-            yield interface.kernel
-            await anyio.sleep(0)
-        finally:
-            interface.stop()
-            thread.join()
-
-
-@pytest.fixture(scope="module")
-async def client(kernel: Kernel) -> AsyncGenerator[AsyncKernelClient, Any]:
-    assert isinstance(kernel.parent, ZMQInterface)
-    if kernel.parent.backend is Backend.trio:
-        pytest.skip("AsyncKernelClient needs asyncio")
-    client = AsyncKernelClient()
-    client.load_connection_info(kernel.parent.get_connection_info())
-    client.start_channels()
-
-    # Wait for socket
-    await client.get_iopub_msg()
-    await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
-    try:
-        yield client
-    finally:
-        await utils.clear_iopub(client, timeout=0.1)
-        client.stop_channels()
-        await anyio.sleep(0)
-
-
-@pytest.fixture(scope="module", params=["async", "async-trio"])
-def name(request):
+@pytest.fixture(params=["local", "zmq"], scope="module")
+def connection_name(request):
     return request.param
 
 
 @pytest.fixture(scope="module")
-def encryption(request):
-    return ""
+async def client(
+    anyio_backend: Backend, connection_name: Literal["local", "zmq"], tmp_path_factory
+) -> AsyncGenerator[LocalClient | ZMQClient]:
+
+    os.environ["IPYTHONDIR"] = str(tmp_path_factory.mktemp("ipython_config"))
+    if connection_name == "zmq":
+        connection_file: pathlib.Path = tmp_path_factory.mktemp("async_kernel") / "temp_connection.json"
+        async with Interface([f"--connection_file={connection_file}"]).start() as interface:
+            assert interface.connections
+            connection = interface.connections[0]
+            assert isinstance(connection, ZMQConnection)
+            client = ZMQClient()
+            client.load_connection_info(connection.get_connection_info())
+            async with client.start():
+                yield client
+    else:
+        async with Interface().start(), LocalClient().start() as client:
+            yield client
 
 
 @pytest.fixture(scope="module")
-async def subprocess_kernels_client(anyio_backend, tmp_path_factory, name: str, transport: str, encryption: str):
-    """Starts a kernel in a subprocess and returns an AsyncKernelCient that is connected to it."""
-    assert anyio_backend[0] == "asyncio", "Asyncio is required for the client"
+async def kernel(client: ZMQClient | LocalClient) -> Kernel:
+    return async_kernel.utils.get_kernel()
 
-    tmpdir: pathlib.Path = tmp_path_factory.mktemp("async_kernel")
-    os.chdir(tmpdir)
 
-    backend = Backend.trio if "trio" in name else Backend.asyncio
-    curve_publickey, curve_secretkey = zmq.curve_keypair() if encryption == "curve" else (None, None)
-
-    # Start the client
-    client = AsyncKernelClient(
-        connection_file=str(tmpdir.joinpath(f"kernel-{os.getpid()}.json")),
-        curve_publickey=curve_publickey,
-        curve_secretkey=curve_secretkey,
-        transport=transport,
-        kernel_name=name,
-    )
-    client.write_connection_file()
-    client.start_channels()
-
-    # Start the interface
-    command = make_argv(connection_file=client.connection_file, name=name, backend=backend)
-    if debug:
-        command.append("--debug")
-    process = subprocess.Popen(command)
-    try:
-        # The first message indicates it is connected (could be an iopub welcome, or something else)
-        await client.get_iopub_msg()
-        await utils.get_reply(client, client.kernel_info(), clear_pub=0.1)
-
+@pytest.fixture(scope="module")
+async def subprocess_kernel_client(anyio_backend: Backend):
+    # Launching the subprocess from a fixture enables coverage to be patched correctly by pytest coverage.
+    client = ZMQClient(encryption="curve")
+    async with client.subprocess_kernel(heartbeat_interval=None, backend=anyio_backend):
         yield client
-        await utils.get_reply(client, client.shutdown(), channel=Channel.control)
-        assert process.wait() == 0
-    finally:
-        process.terminate()
-        client.stop_channels()
 
 
 @pytest.fixture
-def job() -> Job[ExecuteContent]:
+def job() -> Job:
     """An execute dummy job."""
     content = ExecuteContent(
         code="", silent=True, store_history=True, user_expressions={}, allow_stdin=False, stop_on_error=True
     )
     header = MsgHeader(msg_id="", session="", username="", date="", msg_type=MsgType.execute_request, version="1")
     msg = Message(header=header, parent_header=header, metadata={}, buffers=[], content=content, channel=Channel.shell)
-    return Job(msg=msg, ident=[b""], received_time=0.0)
+    return Job(msg=msg, ident=[b""], received_time=0.0, owner=MessageProtocol)
 
 
 @pytest.fixture

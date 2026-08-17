@@ -69,14 +69,10 @@ class OutStream(HasInterface, io.TextIOBase):
         if out := self._context.get():
             out.write(string)
         else:
-            interface = self.parent
-            interface.iopub_send(
-                msg_or_type=MsgType.iopub_stream, content={"name": self.name, "text": string}, ident=self.ident
-            )
+            self.parent.iopub_send(MsgType.iopub_stream, {"name": self.name, "text": string}, ident=self.ident)
             if self._origin and not self.parent.quiet:
                 self._origin.write(string)  # pragma: no cover
                 self._origin.flush()  # pragma: no cover
-
         return len(string)
 
     @override

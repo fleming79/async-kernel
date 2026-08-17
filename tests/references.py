@@ -66,8 +66,6 @@ class Version(Unicode):
 
 
 class RMessage(Reference):
-    msg_id = Unicode()
-    msg_type = Unicode()
     header = Dict()
     parent_header = Dict()
     content = Dict()

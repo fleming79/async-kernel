@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 if "PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING" not in os.environ:
     os.environ["PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING"] = "1"
 
-_host_port: None | tuple[str, int] = None
+_host_port: tuple[str, int] | None = None
 
 
 class _FakeCode:
@@ -256,7 +256,7 @@ class Debugger(HasInterface, LoggingConfigurable):
 
     def _publish_event(self, event: dict) -> None:
         self.kernel.parent.iopub_send(
-            msg_or_type="debug_event",
+            msg_type=MsgType.debug_event,
             content=event,
             ident=b"kernel.debug_event",
             parent=None,

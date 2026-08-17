@@ -21,7 +21,7 @@ __all__ = ["Fixed", "KernelInterrupt", "MethodNotSupported", "SingleAsyncQueue",
 
 trio_checkpoint: Callable[[], Awaitable] = lazy_import("trio.lowlevel", "checkpoint")
 globals()["trio"] = lazy_import("trio")
-globals()["BaseInterface"] = lazy_import("async_kernel.interface.base", "BaseInterface")
+globals()["Interface"] = lazy_import("async_kernel.interface.base", "Interface")
 
 
 def import_item(dottedname: str, /) -> Any:

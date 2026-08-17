@@ -1,30 +1,30 @@
-"""A collection of objects to provide a kernel interface based on callbacks."""
-
 from __future__ import annotations
 
-import asyncio
-import time
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Generic, TypedDict
 
-from traitlets.traitlets import TraitType
-from typing_extensions import override
+from aiologic import BinarySemaphore
 
-import async_kernel
+from async_kernel.common import import_item
 from async_kernel.compat.json import pack_json_str, unpack_json
-from async_kernel.interface.base import BaseInterface
-from async_kernel.typing import Channel, Content, Hosts, Job, Message, MsgHeader, MsgType, NoValue, T_shell_co
+from async_kernel.interface import Interface
+from async_kernel.kernelspec import make_argv
+from async_kernel.messaging.base import Connection
+from async_kernel.typing import Channel, T
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from async_kernel.typing import BuffersType, Message
 
-__all__ = ["CallableInterface", "Handlers"]
+
+__all__ = ["start_kernel_callable_interface"]
 
 
-class Handlers(TypedDict):
+class Handlers(TypedDict, Generic[T]):
     """Handlers returned by [async_kernel.interface.callable.CallableInterface][] when it is started."""
 
-    handle_msg: Callable[[str, list[bytes] | list[bytearray] | None]]
+    handle_msg: Callable[[T, BuffersType], None]
     """
     Handle messages from the client.
     
@@ -35,115 +35,82 @@ class Handlers(TypedDict):
     2. A list of buffers if there are any, or None if there are no buffers.
     """
 
-    stop: Callable[[], None]
+    stop: Callable[[], Any]
     "Stop the kernel."
 
 
-class CallableInterface(BaseInterface[T_shell_co], Generic[T_shell_co]):
-    """A callback based interface to interact with the kernel using serialized messages.
+async def start_kernel_callable_interface(
+    *,
+    send: Callable[[T, BuffersType, bool], Any],
+    stopped: Callable[[], Any],
+    settings: dict | None = None,
+    pack_unpack: tuple[Callable[[Message], T], Callable[[T], Message]] = (pack_json_str, unpack_json),
+) -> Handlers[T]:
+    """Start the interface using functions for passing serialised messages.
 
-    Usage:
+    Args:
+        send: A function for the interface to send the packed message.
+        stopped: A callback that is called when the interface has stopped.
+        settings: Additional settings to configure the interface/kernel/shell etc using traitlets config conventions.
+            The settings are converted to argv using [async_kernel.kernelspec.make_argv][]. All settings,
+            including aliases and flags are accepted. _flags_ should be passed as `'flags': [<flag1>, <flag2>, ...]`.
+        pack_unpack: A pair of methods to serialize and unserialize messages.
 
-        ```python
-        from async_kernel.interface.callable import CallableInterface
-
-        # Start the kernel providing the necessary callbacks.
-        kernel_interface = await CallableInterface(options).start(send=..., stopped=...)
-
-        # Pass messages to the kernel.
-        kernel_interface["handle_msg"](msg, buffer)
-
-        # Stop the kernel.
-        kernel_interface["stop"](msg, buffer)
-        ```
-    See also:
-        - [async_kernel.typing.CallableInterfaceReturnArgs]
+    Returns: The connection instance.
     """
+    settings = settings or {}
+    interface_class = settings.get("interface_class") or "async_kernel.interface.Interface"
+    cls: type[Interface] = import_item(interface_class)
+    # A patch to avoid duplicate cell output when using LiteKernelClient which already sends iopub messages to all clients.
 
-    host: TraitType[Hosts | None, Hosts | None] = TraitType(None)
-    "Not yet supported"
+    argv = make_argv(command=(), connection_file="", **settings)[1:]
+    app = cls(argv)
+    assert issubclass(cls, Interface)
+    app.start()
+    await app.started
+    handle_msg = create_interface_messge_callback_handler(app, send, pack_unpack)
+    app.stopped.add_done_callback(lambda _: stopped())
+    return Handlers(stop=app.stop, handle_msg=handle_msg)
 
-    _send: Callable[[str, list | None, bool], None | str]
 
-    async def start_async(
-        self,
-        *,
-        send: Callable[[str, list | None, bool], None | str],
-        stopped: Callable[[], None],
-    ) -> Handlers:
-        """Start the kernel.
+def create_interface_messge_callback_handler(
+    interface: Interface,
+    send: Callable[[T, BuffersType, bool], Any],
+    pack_unpack: tuple[Callable[[Message], T], Callable[[T], Message]] = (pack_json_str, unpack_json),
+) -> Callable[[T, BuffersType], None]:
+    ""
+    cache: dict[str, Connection] = {}
+    lock = BinarySemaphore()
+    session_calls = set()
+    pack, unpack = pack_unpack
 
-        Args:
-            send: The function to send kernel messages to the client. It must accept
+    def handle_msg(packed_msg: T, buffers: BuffersType | None = None) -> None:
+        """Handle a packed message."""
+        msg: Message = unpack(packed_msg)
+        msg["buffers"] = [] if buffers is None else buffers
+        session: str = msg["header"]["session"]
+        session_calls.add(session)
+        conn: Connection | None
 
-                1. A json string of the message.
-                2. A list of buffers, or None if there are no buffers.
-                3. A boolean value that indicates a response is required for the stdio channel.
+        if (conn := cache.get(session)) is None or conn.stopping.done():
+            with lock:
+                if (conn := cache.get(session)) is None or conn.stopping.done():
+                    conn = Connection(interface.caller, session_id=session)
 
-            stopped: A callback that is called once the kernel has stopped.
+                    def transmit_msg(msg: Message, ident: list[bytes]) -> None:
+                        """Pack and send a message."""
+                        # `ident` is not sent.
+                        buffers: BuffersType = msg.pop("buffers")  # pyright: ignore[reportAssignmentType]
+                        reply = send(pack(msg), buffers, blocking_reply := msg["channel"] == Channel.stdin)
+                        if blocking_reply:
+                            conn.handle_incoming_msg(unpack(reply), [conn.bsession])
 
-        Returns: A pending that when resolved returns the message handler callback.
-        """
-        self._send = send
-        self._task = asyncio.create_task(coro=self.run(stopped=stopped))
-        await self.started
-        return Handlers(handle_msg=self._handle_msg, stop=self.stop)
+                    conn.transmit_msg = transmit_msg
+                    conn.stopped.add_done_callback(lambda _: delattr(conn, "transmit_msg"))
+                    conn.start()
+                    conn.stopping.add_done_callback(lambda _: cache.pop(session))
 
-    def _send_to_frontend(
-        self,
-        msg: Message[dict],
-        *,
-        channel: Channel = Channel.shell,
-        buffers: list[bytearray | bytes] | None = None,
-        requires_reply=False,
-    ) -> Message | None:
-        msg["channel"] = channel
-        reply = self._send(pack_json_str(msg), buffers, requires_reply)
-        if requires_reply:
-            assert reply
-            return unpack_json(reply)
-        return None
+                    cache[session] = conn
+        conn.handle_incoming_msg(msg, [conn.bsession])
 
-    async def _send_reply(self, job: Job, content: dict, /) -> None:
-        if "status" not in content:
-            content["status"] = "ok"
-        msg_type = job["msg"]["header"]["msg_type"].replace("request", "reply")
-        msg = self.msg(msg_type, content=content, parent=job["msg"])
-        self._send_to_frontend(msg, channel=job["msg"]["channel"], buffers=content.pop("buffers", None))
-
-    def _handle_msg(self, msg_json: str, buffers: list[bytearray] | list[bytes] | None = None, /):
-        """The main message handler that gets returned by the `start` method."""
-        msg: Message[dict[str, Any]] = unpack_json(msg_json)
-        # Copy the buffer
-        msg["buffers"] = [b[:] for b in buffers] if buffers else []
-        msg["channel"] = Channel(msg["channel"])
-        job = Job(received_time=time.monotonic(), msg=msg, ident=b"")
-        self.kernel.message_handler(job, self._send_reply, self.iopub_send)
-
-    @override
-    def iopub_send(
-        self,
-        msg_or_type: MsgType | Message[dict[str, Any]] | dict[str, Any] | str,
-        *,
-        content: Content | None = None,
-        metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | MsgHeader | None | NoValue = NoValue,  # pyright: ignore[reportInvalidTypeForm]
-        ident: bytes | list[bytes] | None = None,
-        buffers: list[bytes] | None = None,
-    ) -> None:
-        if parent is NoValue:
-            parent = async_kernel.utils.get_parent_message()
-        if not isinstance(msg_or_type, dict):
-            msg_or_type = self.msg(msg_type=msg_or_type, content=content, parent=parent, metadata=metadata)  # pyright: ignore[reportArgumentType]
-        self._send_to_frontend(msg_or_type, channel="iopub", buffers=buffers)  # pyright: ignore[reportArgumentType]
-
-    @override
-    def input_request(self, prompt: str, *, password=False) -> Any:
-        job = async_kernel.utils.get_job()
-        if not job["msg"].get("content", {}).get("allow_stdin", False):
-            msg = "Stdin is not allowed in this context!"
-            raise RuntimeError(msg)
-        msg = self.msg(MsgType.input_request, content={"prompt": prompt, "password": password})
-        reply = self._send_to_frontend(msg, channel=Channel.stdin, requires_reply=True)
-        assert reply
-        return reply["content"]["value"]
+    return handle_msg

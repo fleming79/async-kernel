@@ -7,25 +7,24 @@ import getpass
 import os
 import signal
 import sys
+import time
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self
 
 import anyio
 import traitlets
-from aiologic import Event
-from aiologic.lowlevel import enable_signal_safety
+from aiologic.lowlevel import create_async_waiter, enable_signal_safety
 from traitlets.config import LoggingConfigurable
 
 import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
-from async_kernel.comm import CommManager
 from async_kernel.common import Fixed, KernelInterrupt
 from async_kernel.debugger import Debugger
 from async_kernel.interface import HasInterface
 from async_kernel.outstream import OutStream
-from async_kernel.pending import Pending
+from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.shell.base import ShellPendingManager
 from async_kernel.typing import (
     CallerCreateOptions,
@@ -42,8 +41,9 @@ from async_kernel.typing import (
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
-    from types import CoroutineType, FrameType
+    from types import FrameType
 
+    from async_kernel.comm import CommManager
     from async_kernel.typing import Content, Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
@@ -58,46 +58,42 @@ class Kernel(
     """The class containing the handler methods to implement a Jupyter Kernel."""
 
     help_links = traitlets.List(trait=traitlets.Dict()).tag(config=True)
-    "A list of links provided kernel info request."
+    """A list of links provided kernel info request."""
 
     supported_features = traitlets.List(traitlets.Unicode()).tag(config=True)
-    "A list of features supported by the kernel."
+    """A list of features supported by the kernel."""
 
     handle_in_shell_thread = traitlets.List(
         traitlets.UseEnum(MsgType),
         [MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close],
     ).tag(config=True)
-    """
-    A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_).
-    """
-
-    force_shutdown_delay = traitlets.Float(0.5 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
-    "Between receiving a shutdown request and when parent is 'forced' to shutdown."
+    """A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_)."""
 
     handle_in_thread = traitlets.Dict(key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Unicode())
-    """
-    A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler.
-    """
+    """A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler."""
 
     callers: Fixed[Self, dict] = Fixed(lambda c: c["owner"].parent.callers)
-    "A shortcut to the callers dict on the parent."
+    """A shortcut to the callers dict on the parent."""
 
     caller: Fixed[Self, Caller] = Fixed(lambda c: c["owner"].callers[Channel.shell])
-    "The caller for the shell thread."
+    """The caller for the shell thread."""
 
     debugger = Fixed(Debugger)
-    "The debugger for handling debug requests."
+    """The debugger for handling debug requests."""
 
-    comm_manager = Fixed(CommManager)
-    "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
+    comm_manager: Fixed[Self, CommManager] = Fixed(lambda c: c["owner"].parent.comm_manager)
+    """Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."""
+
+    stopped = Fixed(ProtectedPending)
+    """A pending that is set once the kernel has stopped."""
 
     active_execute_requests: Fixed[Self, set[Pending[Any]]] = Fixed(set)
-    "A set of active execute requests that gets updated by the shell."
+    """A set of active execute requests that gets updated by the shell."""
 
     _interrupt_message = "Kernel interrupted"
 
     _restart = False
-    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Callable], HandlerType]] = {}
+    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Channel] | MsgType, HandlerType]] = {}
     _subshells: dict[str, T_shell_co]
     _interrupt_requested: Pending | None = None
 
@@ -204,6 +200,7 @@ class Kernel(
                 comm.close(deleting=True)
             remove_patch()
             self._handler_cache.clear()
+            self.stopped.set_result(None)
 
     def _signal_handler(self, signum, frame: FrameType | None) -> None:
         """Handle interrupt signals."""
@@ -220,7 +217,6 @@ class Kernel(
 
     async def do_interrupt(self) -> None:
         """Interrupt/cancel non-silent active execute requests."""
-        assert Caller() is self.callers[Channel.control], "Must be called from the control thread."
         for pen in self.active_execute_requests.copy():
             if not pen.metadata.get("kwargs", {}).get("silent", False):
                 pen.cancel(self._interrupt_message)
@@ -258,7 +254,6 @@ class Kernel(
         """Apply patches returning a callable to reverse the patches."""
         original = sys.displayhook, builtins.input, getpass.getpass
         builtins.input, sys.displayhook, getpass.getpass = self.raw_input, self.displayhook, self.getpass
-        restore_comm = self.comm_manager.patch_comm()
         restore_stdout = OutStream("stdout").patch()
         restore_stderr = OutStream("stderr").patch()
         restore_signal = self._patch_signal()
@@ -267,7 +262,6 @@ class Kernel(
             sys.displayhook, builtins.input, getpass.getpass = original
             restore_stdout()
             restore_stderr()
-            restore_comm()
             restore_signal()
 
         return restore
@@ -289,12 +283,20 @@ class Kernel(
             if key[0] == subshell_id:
                 self._handler_cache.pop(key, None)
 
-    def _get_handler(
-        self,
-        job: Job,
-        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
-        iopub_send: Callable,
-    ) -> HandlerType:
+    def _get_handler(self, job: Job) -> HandlerType:
+        """Create or retrieve a handler from the cache.
+
+        Each handler consists of a method from the kernel whose name matches the MsgType such as 'execute_request'.
+        The handler is wrapped in a coroutine `run_job` which performs the steps to publish 'busy' and 'idle' status,
+        execute the handler, and send the reply to the request.
+
+        Args:
+            job: The message request bundle.
+
+        The cache key is:
+            - (subshell id, Msgtype, Channel): When the MsgType is an Execute request.
+            - (None, Msgtype, Channel): For all other requests.
+        """
         try:
             subshell_id = job["msg"]["content"]["subshell_id"]
         except KeyError:
@@ -303,54 +305,49 @@ class Kernel(
             except KeyError:
                 subshell_id = None
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
-
-        if msg_type is MsgType.execute_request:
-            key = (subshell_id, msg_type, send_reply)
-        else:
-            key = (None, msg_type, send_reply)
+        key = (
+            (subshell_id, msg_type, Channel(job["msg"]["channel"])) if msg_type is MsgType.execute_request else msg_type
+        )
         try:
+            # Return an existing handler from the cache.
             return self._handler_cache[key]
         except KeyError:
             handler: HandlerType = getattr(self, msg_type)
+            busy, idle = {"execution_state": "busy"}, {"execution_state": "idle"}
 
             @functools.wraps(handler)
-            async def run_handler(job: Job) -> None:
+            async def run_job(job: Job, iopub_send=self.parent.iopub_send, busy=busy, idle=idle) -> None:
+                """Run the handler for the message request."""
+                # 1. Set the context of the job and subshell.
                 job_token = utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
                 subshell_token = ShellPendingManager._id_contextvar.set(subshell_id)  # pyright: ignore[reportPrivateUsage]
-
+                # 2. Publish busy status.
+                iopub_send(MsgType.iopub_status, busy, parent=job["msg"], ident=b"kernel.status")
                 try:
-                    iopub_send(
-                        msg_or_type="status",
-                        parent=job["msg"],
-                        content={"execution_state": "busy"},
-                        ident=b"kernel.status",
-                    )
-                    if (content := await handler(job)) is not None:
-                        await send_reply(job, content)
+                    # 3. Run the handler.
+                    content = await handler(job)
                 except Exception as e:
-                    await send_reply(job, utils.error_to_content(e))
+                    # 4a. Send a reply that the request failed.
+                    job["owner"]().send_reply(job, utils.error_to_content(e))
                     self.log.exception("Exception in message handler:", exc_info=e)
+                else:
+                    # 4b. Send a reply if the content is not None.
+                    if content is not None:
+                        job["owner"]().send_reply(job, content)
+                        del content
                 finally:
+                    # 5. Publish idle status.
+                    iopub_send(MsgType.iopub_status, idle, parent=job["msg"], ident=b"kernel.status")
+                    # 6. Set the context of the job and subshell.
                     utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
                     ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
-                    iopub_send(
-                        msg_or_type="status",
-                        parent=job["msg"],
-                        content={"execution_state": "idle"},
-                        ident=b"kernel.status",
-                    )
                     del job
 
-            self._handler_cache[key] = run_handler
-            return run_handler
+            # Cache and return the new handler.
+            self._handler_cache.setdefault(key, run_job)
+            return self._handler_cache[key]
 
-    def message_handler(
-        self,
-        job: Job,
-        send_reply: Callable[[Job, dict], CoroutineType[Any, Any, None]],
-        iopub_send: Callable,
-        /,
-    ) -> None:
+    def handle_request(self, job: Job) -> None:
         """Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
 
         Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
@@ -367,10 +364,8 @@ class Kernel(
 
         Args:
             job: A dict with the msg and supporting details.
-            send_reply: The function for the handler to use to send the reply to the message.
-            iopub_send: A function responsible for sending iopub messages.
         """
-        handler = self._get_handler(job, send_reply, iopub_send)
+        handler = self._get_handler(job)
 
         run_mode: RunMode | CallerCreateOptions | None = None
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
@@ -500,25 +495,12 @@ class Kernel(
     async def shutdown_request(self, job: Job[Content], /) -> Content:
         """Handle an [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
         # Thread: Control
-
-        pen: Pending[None] = Caller.current_pending()  # pyright: ignore[reportAssignmentType]
-        send_now = Event()
-
-        def wait_for_stop_before_send(_) -> None:
-            # Thread: shell
-            send_now.set()
-            assert pen
-            # Wait for task to finish which means the interrupt reply has been sent.
-            pen.wait_sync()
-
-        self.parent.stopped.add_done_callback(wait_for_stop_before_send)
+        resume = create_async_waiter()
+        pen = Caller.current_pending()
+        assert pen
+        self.stopped.add_done_callback(lambda _: (resume.wake(), pen.wait_sync(timeout=1)))  # Thread: shell
         self.parent.stop()
-        # Wait for pending.stopped callback to set the event.
-        with anyio.move_on_after(self.force_shutdown_delay):
-            await send_now
-        self.parent.stop(force=True)
-        await send_now
-        # The shell thread will block in the callback until the reply is sent.
+        await resume
         return {"restart": job["msg"]["content"].get("restart", False)}
 
     async def debug_request(self, job: Job[Content], /) -> Content:
@@ -610,8 +592,22 @@ class Kernel(
 
     def getpass(self, prompt="", stream=None) -> str:
         """Matches signature of [ipykernel.kernelbase.Kernel.getpass][]."""
-        return self.parent.input_request(str(prompt), password=True)
+        pen = self.parent.input_request(str(prompt), password=True)
+        if sys.platform == "win32" and sys.version_info < (3, 14):
+            # https://github.com/python/cpython/issues/80116
+            while not pen.done():
+                time.sleep(0.01)
+        else:
+            pen.wait_sync()
+        return pen.result()["content"]["value"]
 
     def raw_input(self, prompt="") -> str:
-        """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][]."""
-        return self.parent.input_request(str(prompt), password=False)
+        """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][], also used for builtin 'input'."""
+        pen = self.parent.input_request(str(prompt), password=False)
+        if sys.platform == "win32" and sys.version_info < (3, 14):
+            # https://github.com/python/cpython/issues/80116
+            while not pen.done():
+                time.sleep(0.01)
+        else:
+            pen.wait_sync()
+        return pen.result()["content"]["value"]

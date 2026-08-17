@@ -4,13 +4,11 @@ from typing import TYPE_CHECKING
 
 import anyio
 
-from async_kernel.typing import MsgType
-from tests import utils
+import async_kernel.utils
+from async_kernel.typing import Channel, MsgType
 
 if TYPE_CHECKING:
-    from jupyter_client.asynchronous.client import AsyncKernelClient
-
-import async_kernel.utils
+    from async_kernel.messaging.zmq import ZMQClient
 
 if async_kernel.utils.LAUNCHED_BY_DEBUGPY:
     import debugpy.server.api
@@ -35,28 +33,25 @@ initialize_args = {
 }
 
 
-async def send_debug_request(client: AsyncKernelClient, command: str, arguments: dict | None = None):
+async def send_debug_request(client: ZMQClient, command: str, arguments: dict | None = None):
     """Carry out a debug request and return the reply content.
 
     It does not check if the request was successful.
     """
     send_debug_request._seq = seq = getattr(send_debug_request, "_seq", 0) + 1  # pyright: ignore[reportFunctionMemberAccess]
-    # DAP Ref: https://microsoft.github.io/debug-adapter-protocol/specification
-    reply = await utils.send_control_message(
-        client,
-        MsgType.debug_request,
-        {
-            "type": "request",
-            "seq": seq,
-            "command": command,
-            "arguments": arguments or {},
-        },
-    )
+    # DAP Ref: https://microsoft.github.io/debug-adapter-protocol/specification\
+    content = {
+        "type": "request",
+        "seq": seq,
+        "command": command,
+        "arguments": arguments or {},
+    }
+    reply = await client.send_message(client.msg(MsgType.debug_request, content, Channel.control))
     return reply["content"]
 
 
-async def test_debugger(subprocess_kernels_client: AsyncKernelClient):
-    client = subprocess_kernels_client
+async def test_debugger(subprocess_kernel_client: ZMQClient):
+    client = subprocess_kernel_client
     reply = await send_debug_request(client=client, command="initialize", arguments=initialize_args)
     assert reply["status"] == "ok"
     await send_debug_request(client, "disconnect")
